@@ -5,8 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
 import {isString, isNil} from 'lodash';
@@ -26,8 +24,6 @@ export class LocalStore extends BaseStore {
     @observable.ref _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
-
-    _loadModel = new PendingTaskModel();
 
     _filter = null;
 
@@ -97,7 +93,6 @@ export class LocalStore extends BaseStore {
     get rootRecords()       {return this._filtered.roots}
     get allRootRecords()    {return this._all.roots}
 
-    get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
@@ -163,9 +158,5 @@ export class LocalStore extends BaseStore {
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
-    }
-
-    destroy() {
-        XH.safeDestroy(this._loadModel);
     }
 }

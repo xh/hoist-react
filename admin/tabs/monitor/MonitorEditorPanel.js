@@ -5,13 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
-@LoadSupport
 export class MonitorEditorPanel extends Component {
 
     model = new RestGridModel({

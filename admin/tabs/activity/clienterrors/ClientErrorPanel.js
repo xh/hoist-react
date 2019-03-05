@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -19,7 +19,6 @@ import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
 @HoistComponent
-@LoadSupport
 export class ClientErrorPanel extends Component {
 
     model = new ClientErrorModel();

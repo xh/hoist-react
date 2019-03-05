@@ -5,21 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, LoadSupport} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
-import {PendingTaskModel, Timer} from '@xh/hoist/utils/async';
+import {Timer} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class MonitorResultsModel {
     @observable.ref results = [];
     @observable lastRun = null;
     timer = null;
     view = null;
-
-    @managed
-    loadModel = new PendingTaskModel();
 
     @computed
     get passed() {
@@ -39,25 +37,23 @@ export class MonitorResultsModel {
     constructor({view}) {
         this.view = view;
         this.timer = Timer.create({
-            runFn: () => this.loadAsync(),
+            runFn: () => this.refreshAsync(),
             delay: 10 * SECONDS,
             interval: 10 * SECONDS
         });
     }
     
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         if (!this.view.isDisplayed) return;
 
         return XH
-            .fetchJson({url: 'monitorAdmin/results'})
+            .fetchJson({url: 'monitorAdmin/results', loadSpec})
             .then(rows => {
                 this.completeLoad(true, rows);
             }).catch(e => {
                 this.completeLoad(false, e);
                 XH.handleException(e);
-            }).linkTo(
-                this.loadModel
-            );
+            });
     }
 
     @action

@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {PropTypes as PT} from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -27,8 +27,8 @@ export class OptionsButton extends Component {
     render() {
         if (!XH.acm.optionsDialogModel.hasOptions) return null;
         const {icon, onClick, ...rest} = this.props;
-        return toolbarButton({
-            item: icon || Icon.gear(),
+        return button({
+            icon: icon || Icon.gear(),
             onClick: onClick || this.onOptionsClick,
             ...rest
         });

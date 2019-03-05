@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
@@ -20,12 +20,14 @@ export class LeftRightChooserModel {
      * Grid Model for the left-hand side.
      * @type GridModel
      */
+    @managed
     leftModel = null;
 
     /**
      * Grid Model for the right-hand side.
      * @type GridModel
      */
+    @managed
     rightModel = null;
 
     hasDescription = false;
@@ -71,27 +73,27 @@ export class LeftRightChooserModel {
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
      * @param {?string} [c.leftTitle] - title of the left-side list.
+     * @param {boolean} [c.leftSorted] - true to sort items on the left-side list.
      * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
      * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
      *      groups initially collapsed.
-     * @param {(string|string[]|Object|Object[])} [c.leftSortBy] - sorter(s) for left-side store.
      * @param {?string} [c.rightTitle] - title of the right-side list.
+     * @param {boolean} [c.rightSorted] - true to sort items on the right-side list.
      * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
-     * @param {(string|string[]|Object|Object[])} [c.rightSortBy] - sorter(s) for right-side store.
      */
     constructor({
         data = [],
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
+        leftSorted = false,
         leftGroupingEnabled = true,
         leftGroupingExpanded = true,
-        leftSortBy = [],
         rightTitle = 'Selected',
+        rightSorted = false,
         rightGroupingEnabled = true,
-        rightGroupingExpanded = true,
-        rightSortBy = []
+        rightGroupingExpanded = true
     }) {
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;
@@ -122,14 +124,14 @@ export class LeftRightChooserModel {
         this.leftModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
-            sortBy: leftSortBy,
+            sortBy: leftSorted ? 'text' : null,
             columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
             store: new LocalStore({fields}),
             selModel: 'multiple',
-            sortBy: rightSortBy,
+            sortBy: rightSorted ? 'text' : null,
             columns: [rightTextCol, groupCol]
         });
 
@@ -217,10 +219,6 @@ export class LeftRightChooserModel {
 
         leftModel.store.loadData(data.filter(it => it.side === 'left'));
         rightModel.store.loadData(data.filter(it => it.side === 'right'));
-    }
-
-    destroy() {
-        XH.safeDestroy(this.leftModel, this.rightModel);
     }
 }
 

@@ -84,8 +84,8 @@ export class HoistInput extends Component {
         value: PT.any
     };
 
-    @observable hasFocus;
-    @observable internalValue;
+    @observable hasFocus = false;
+    @observable internalValue = null;
 
     constructor(props) {
         super(props);

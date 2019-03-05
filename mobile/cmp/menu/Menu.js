@@ -13,6 +13,8 @@ import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {MenuModel} from '@xh/hoist/mobile/cmp/menu/MenuModel';
 
+import './Menu.scss';
+
 /**
  * Menu Component
  */

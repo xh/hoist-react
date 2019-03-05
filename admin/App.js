@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -19,14 +20,12 @@ import './App.scss';
 @HoistComponent
 @ContextMenuSupport
 export class App extends Component {
+
     render() {
         return panel({
             tbar: this.renderAppBar(),
             className: 'xh-admin-app-frame',
-            item: tabContainer({
-                model: this.model.tabModel,
-                switcherPosition: 'none'
-            })
+            item: tabContainer({model: this.model.tabModel})
         });
     }
 
@@ -57,8 +56,10 @@ export class App extends Component {
                 }),
                 appBarSeparator()
             ],
-            hideAdminButton: true,
-            hideFeedbackButton: true
+            appMenuButtonOptions: {
+                hideAdminItem: true,
+                hideFeedbackItem: true
+            }
         });
     }
 

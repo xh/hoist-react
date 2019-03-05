@@ -7,9 +7,7 @@
 export * from './EventSupport';
 export * from './LayoutSupport';
 export * from './ReactiveSupport';
-export * from './LoadSupport';
 export * from './StableIdSupport';
 export * from './XhIdSupport';
 export * from './ManagedSupport';
-
-
+export * from './LoadSupport';

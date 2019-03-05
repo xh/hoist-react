@@ -5,7 +5,7 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {observable, action} from '@xh/hoist/mobx';
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -43,11 +43,15 @@ export class MessageModel {
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;
         this.result = new Promise(resolve => this._resolver = resolve);
+
+        // Message modals are automatically dismissed on app route changes to avoid navigating the
+        // app underneath the dialog in an unsettling way.
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.close()
+        });
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
     @action
     doConfirm() {
         if (this.onConfirm) this.onConfirm();

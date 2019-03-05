@@ -4,8 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {defaultMethods, markClass} from '@xh/hoist/utils/js';
-
+import {applyMixin} from '@xh/hoist/utils/js';
 import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 /**
@@ -15,22 +14,17 @@ import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixi
  * Adds support for managed events, mobx reactivity, and lifecycle initialization.
  */
 export function HoistService(C) {
+    return applyMixin(C, {
+        name: 'HoistService',
+        includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport],
 
-    markClass(C, 'isHoistService');
-
-    C = ManagedSupport(C);
-    C = EventSupport(C);
-    C = ReactiveSupport(C);
-    C = XhIdSupport(C);
-
-    defaultMethods(C, {
-        /**
-         * Called by framework or application to initialize before application startup.
-         * Throwing an exception from this method will typically block startup.
-         * Service writers should take care to stifle and manage all non-fatal exceptions.
-         */
-        async initAsync() {}
+        defaults: {
+            /**
+             * Called by framework or application to initialize before application startup.
+             * Throwing an exception from this method will typically block startup.
+             * Service writers should take care to stifle and manage all non-fatal exceptions.
+             */
+            async initAsync() {}
+        }
     });
-
-    return C;
 }

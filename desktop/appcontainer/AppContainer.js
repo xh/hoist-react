@@ -7,7 +7,8 @@
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, elem, AppState, refreshContextView, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 
@@ -26,11 +27,13 @@ import {ToastSource} from './ToastSource';
 
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
+import {tabContainer} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 
 installDesktopImpls({
+    tabContainer,
     colChooser,
     ColChooserModel,
     StoreContextMenu

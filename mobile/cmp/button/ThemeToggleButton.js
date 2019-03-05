@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toolbarButton} from '@xh/hoist/kit/onsen';
+import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
@@ -17,9 +17,10 @@ import {toolbarButton} from '@xh/hoist/kit/onsen';
 export class ThemeToggleButton extends Component {
 
     render() {
-        return toolbarButton({
-            item: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            onClick: this.onThemeToggleClick
+        return button({
+            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+            onClick: this.onThemeToggleClick,
+            ...this.props
         });
     }
 

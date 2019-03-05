@@ -11,6 +11,8 @@ import {textarea as textareaTag, div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './TextArea.scss';
+
 /**
  * A multi-line text input.
  */
