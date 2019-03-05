@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {clone, pick} from 'lodash';
+import {clone} from 'lodash';
 
 /**
  * Core data for Store.
