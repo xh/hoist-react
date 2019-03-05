@@ -86,7 +86,7 @@ export class RestForm extends Component {
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !formModel.isDirty,
+                disabled: !model.isAdd && !formModel.isDirty,
                 onClick: () => model.validateAndSaveAsync(),
                 omit: formModel.readonly
             })
