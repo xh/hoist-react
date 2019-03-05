@@ -187,12 +187,12 @@ export function fmtPercent(v, opts = {}) {
  * Only ledger opt is supported.
  *
  * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {Object} [opts]
+ * @param {boolean} [opts.ledger] - true to use ledger format.
  */
-export function fmtNumberTooltip(v, opts = {}) {
-    const {ledger} = opts;
+export function fmtNumberTooltip(v, {ledger = false} = {}) {
     return fmtNumber(v, {
-        ledger: ledger,
+        ledger,
         forceLedgerAlign: false,
         precision: MAX_NUMERIC_PRECISION,
         zeroPad: false
