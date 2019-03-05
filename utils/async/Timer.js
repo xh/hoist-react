@@ -4,7 +4,8 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {MINUTES} from '@xh/hoist/utils/datetime';
+import {XH} from '@xh/hoist/core';
+import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {start, wait} from '@xh/hoist/promise';
 import {pull, isString} from 'lodash';
 
@@ -25,12 +26,19 @@ export class Timer {
 
     static _timers = [];
 
+    CORE_INTERVAL = ONE_SECOND;
+
+    lastRun = new Date();
+
     runFn = null;
     cancelled = false;
 
-    intervalMs = null;
-    delayMs = null;
-    timeoutMs = null;
+    interval = null;
+    intervalUnits = null;
+    timeout = null;
+    timeoutUnits = null;
+    delay = null;
+    delayUnits = null;
 
     /**
      * Create a new Timer.
@@ -79,34 +87,46 @@ export class Timer {
     //----------------------
     constructor(args) {
         args.runFn = args.runFn.bind(args.scope);
-
-        args.interval = this.processConfigString(args.interval);
-        args.timeout = this.processConfigString(args.timeout);
-        args.delay = this.processConfigString(args.delay);
-
-        this.intervalMs = args.interval * args.intervalUnits;
-        this.timeoutMs = args.timeout * args.timeoutUnits;
-        this.delayMs = args.delay * args.delayMs;
-
         Object.assign(this, args);
-        wait(this.delayMs).then(this.doRun);
+
+        this.interval = this.processConfigString(args.interval);
+        this.timeout = this.processConfigString(args.timeout);
+
+        const delayMs = this.delay * this.delayUnits;
+        wait(delayMs).then(this.doRun);
     }
 
     doRun = () => {
-        const {cancelled, runFn, timeoutMs, intervalMs, doRun}  = this;
+        const {cancelled, intervalMs, doRun}  = this;
 
         if (cancelled || intervalMs <= 0) return;
 
-        start(runFn)
-            .timeout(timeoutMs)
-            .catch(e => console.error('Error executing timer:', e))
-            .wait(intervalMs)
+        start(this.onCoreTimer)
+            .wait(this.CORE_INTERVAL)
             .finally(doRun);
     }
 
-    processConfigString(arg) {
-        return isString(arg) ? XH.getConf(arg) : arg;
+    onCoreTimer = () => {
+        const {intervalMs, timeoutMs, lastRun, runFn} = this,
+            now = new Date();
+        if (intervalMs > 0 && (now.getTime() - lastRun.getTime()) > intervalMs) {
+            start(runFn)
+                .timeout(timeoutMs)
+                .catch(e => console.error('Error executing timer:', e))
+                .finally(this.lastRun = new Date());
+        }
+    }
 
+    get intervalMs() {
+        return this.interval() * this.intervalUnits;
+    }
+
+    get timeoutMs() {
+        return this.timeout() * this.timeoutUnits;
+    }
+
+    processConfigString(arg) {
+        return isString(arg) ? () => XH.getConf(arg) : () => arg;
     }
 
     destroy() {
