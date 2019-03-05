@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {start, wait} from '@xh/hoist/promise';
-import {pull, isString} from 'lodash';
+import {pull, isFunction} from 'lodash';
 
 /**
  *
@@ -28,35 +27,31 @@ export class Timer {
 
     CORE_INTERVAL = ONE_SECOND;
 
-    lastRun = new Date();
-
     runFn = null;
     cancelled = false;
 
+    isRunning = false;
+    lastRun = null;
+
     interval = null;
-    intervalUnits = null;
     timeout = null;
-    timeoutUnits = null;
     delay = null;
-    delayUnits = null;
 
     /**
      * Create a new Timer.
      *
      * Main entry point, to get a new, managed timer.
+     * The interval, delay, and timeout params can receive closures, allowing support for XH configs and prefs.
      *
      * @param {function} runFn
-     * @param {number} interval - interval between runs, in milliseconds, if <=0 job will not run.
-     * @param {number} [intervalUnits] - value to multiply interval by to get millis [default 1]
-     * @param {number} [delay] - initial delay, in milliseconds
-     * @param {number} [delayUnits] - value to multiply delay by to get millis [default 1]
-     * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
-     * @param {number} [timeoutUnits] - value to multiply timeout by to get millis [default 1]
+     * @param {number|function} interval - interval between runs, in milliseconds, if <=0 job will not run.
+     * @param {number|function} [delay] - initial delay, in milliseconds
+     * @param {number|function} [timeout] - timeout for action in milliseconds, null for no timeout.
 
      * @param {Object} [scope] - scope to run callback in
      */
-    static create({runFn, interval, intervalUnits = 1, delay=0, delayUnits = 1, timeout=3*MINUTES, timeoutUnits = 1, scope=this}) {
-        const ret = new Timer({runFn, interval, intervalUnits, delay, delayUnits, timeout, timeoutUnits, scope});
+    static create({runFn, interval, delay=0, timeout=3*MINUTES, scope=this}) {
+        const ret = new Timer({runFn, interval, delay, timeout, scope});
         this._timers.push(ret);
         return ret;
     }
@@ -89,11 +84,11 @@ export class Timer {
         args.runFn = args.runFn.bind(args.scope);
         Object.assign(this, args);
 
-        this.interval = this.processConfigString(args.interval);
-        this.timeout = this.processConfigString(args.timeout);
+        this.interval = this.toClosure(args.interval);
+        this.timeout = this.toClosure(args.timeout);
+        this.delay = this.toClosure(args.delay);
 
-        const delayMs = this.delay * this.delayUnits;
-        wait(delayMs).then(this.doRun);
+        wait(this.delay).then(this.doRun);
     }
 
     doRun = () => {
@@ -107,26 +102,30 @@ export class Timer {
     }
 
     onCoreTimer = () => {
-        const {intervalMs, timeoutMs, lastRun, runFn} = this,
-            now = new Date();
-        if (intervalMs > 0 && (now.getTime() - lastRun.getTime()) > intervalMs) {
+        const {isRunning, intervalElapsed, timeout, runFn} = this;
+
+        if (!isRunning && intervalElapsed) {
+            this.isRunning = true;
             start(runFn)
-                .timeout(timeoutMs)
+                .timeout(timeout())
                 .catch(e => console.error('Error executing timer:', e))
-                .finally(this.lastRun = new Date());
+                .finally(() => {
+                    this.isRunning = false;
+                    this.lastRun = new Date();
+                });
         }
     }
 
-    get intervalMs() {
-        return this.interval() * this.intervalUnits;
+    get intervalElapsed() {
+        const {lastRun, interval} = this,
+            now = new Date();
+
+        return interval() > 0 &&
+            !lastRun || now.getTime() > lastRun.getTime() + interval();
     }
 
-    get timeoutMs() {
-        return this.timeout() * this.timeoutUnits;
-    }
-
-    processConfigString(arg) {
-        return isString(arg) ? () => XH.getConf(arg) : () => arg;
+    toClosure(arg) {
+        return isFunction(arg) ? arg : () => arg;
     }
 
     destroy() {

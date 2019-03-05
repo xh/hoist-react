@@ -6,9 +6,6 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
-import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
-import {isEqual} from 'lodash';
 
 /**
  * Service to read soft-configuration values.
@@ -29,16 +26,10 @@ import {isEqual} from 'lodash';
 export class ConfigService {
 
     _data = {};
-    REFRESH_INTERVAL = 30;
 
     async initAsync() {
         this._data = await XH.fetchJson({url: 'xh/getConfig'});
         deepFreeze(this._data);
-
-        this.addReaction({
-            when: () => XH.appIsRunning,
-            run: this.createTimer
-        });
     }
 
     /**
@@ -59,21 +50,6 @@ export class ConfigService {
 
         throwIf(defaultValue === undefined, `Config key not found: '${key}'`);
         return defaultValue;
-    }
-    //-----------------
-    // IMPLEMENTATION
-    //-----------------
-
-    createTimer() {
-        Timer.create({
-            runFn: this.checkConfigUpdates,
-            interval: this.REFRESH_INTERVAL * SECONDS
-        });
-    }
-
-    checkConfigUpdates = async () => {
-        const data = await XH.fetchJson({url: 'xh/getConfig'});
-        if (!isEqual(data, this._data)) this._data = data;
     }
 
 }
