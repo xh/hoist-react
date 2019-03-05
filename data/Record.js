@@ -66,15 +66,7 @@ export class Record {
             this[name] = val;
         });
     }
-
-    /**
-     * Return an object containing the current values of all fields in this record.
-     * @returns {Object}
-     */
-    getData() {
-        return pick(this, this.fields.map(it => it.name));
-    }
-
+    
     /**
      * Return a filtered version of this record.
      *
