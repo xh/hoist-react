@@ -5,9 +5,6 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
-import {PropTypes as PT} from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, isEqual, map, isFinite} from 'lodash';
-import {observable, runInAction} from '@xh/hoist/mobx';
 import PT from 'prop-types';
 import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, isEqual, map, isFinite} from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
@@ -214,8 +211,7 @@ export class Grid extends Component {
             groupUseEntireRow: true,
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
-            groupUseEntireRow: true,
+            },
             enableRangeSelection: model.enableCellSelect,
             suppressMultiRangeSelection: true,
             onRangeSelectionChanged: this.onRangeSelectionChanged

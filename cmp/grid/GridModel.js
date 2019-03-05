@@ -66,8 +66,6 @@ export class GridModel {
     contextMenuFn = null;
     /** @member {boolean} */
     enableExport = false;
-    /** @member {string} */
-    exportFilename = 'export';
     /** @member {object} */
     exportOptions = null;
     /** @member {boolean} */
@@ -158,8 +156,6 @@ export class GridModel {
         this.store = store;
         this.treeMode = treeMode;
         this.emptyText = emptyText;
-        this.enableExport = enableExport;
-        this.exportFilename = exportFilename;
         this.enableCellSelect = enableCellSelect;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
