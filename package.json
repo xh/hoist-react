@@ -11,8 +11,8 @@
     "lint": "yarn run eslint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.14.0",
-    "@blueprintjs/datetime": "~3.7.1",
+    "@blueprintjs/core": "~3.14.1",
+    "@blueprintjs/datetime": "~3.7.2",
     "@fortawesome/fontawesome-pro": "~5.7.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.15",
     "@fortawesome/pro-light-svg-icons": "~5.7.2",
