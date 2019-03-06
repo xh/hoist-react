@@ -68,7 +68,7 @@ export class FormField extends Component {
          * Label for form field. Defaults to Field displayName. Set to null to hide.
          * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        label: PT.string,
+        label: PT.node,
 
         /** Alignment of label text, default 'left'. */
         labelAlign: PT.oneOf(['left', 'right']),
