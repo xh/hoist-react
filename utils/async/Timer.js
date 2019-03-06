@@ -17,9 +17,12 @@ import {pull} from 'lodash';
  * the duration of asynchronous tasks by returning a Promise from runFn.
  *
  * This object seeks to mirror the API and semantics of the server-side equivalent 'Timer'
- * as closely as possible. However there are important  differences due to the synchronous
+ * as closely as possible. However there are important differences due to the synchronous
  * nature of javascript.  In particular, there is no support for 'runImmediatelyAndBlock'
  * and the 'timeout' argument will not be able to interrupt synchronous activity of the runFn.
+ *
+ * All public properties should be considered read-only.  See setInterval() to change
+ * the interval of this timer dynamically.
  */
 export class Timer {
 
@@ -27,18 +30,12 @@ export class Timer {
 
     CORE_INTERVAL = ONE_SECOND;
 
-    //-------------------------
-    // Mutable public properties
-    //--------------------------
     runFn = null;
     interval = null;
     timeout = null;
     delay = null;
     scope = null;
 
-    //---------------------------------------
-    // State. Should be considered read-only
-    //--------------------------------------
     cancelled = false;
     isRunning = false;
     lastRun = null;
@@ -51,7 +48,7 @@ export class Timer {
      * The properties may also be set on the object returned directly.
      *
      * @param {function} runFn - return a promise to allow timer to block and prevent overlapping runs.
-     * @param {number} interval - interval between runs, in milliseconds, if <=0 job will not run.
+     * @param {number} interval - interval between runs, in milliseconds. if <=0 job will not run.
      * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
      * @param {number} [delay] - initial delay, in milliseconds
      * @param {Object} [scope] - scope to run callback in
@@ -80,6 +77,15 @@ export class Timer {
         this.cancelled = true;
         this.runFn = null;
         pull(Timer._timers, this);
+    }
+
+    /**
+     * Change the interval of this timer.
+     *
+     * @param {number} interval between runs, in milliseconds. if <=0 job will not run.
+     */
+    setInterval(interval) {
+        this.interval = interval;
     }
 
     //----------------------
