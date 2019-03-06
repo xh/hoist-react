@@ -54,7 +54,7 @@ export class FormField extends Component {
          * Label for form field. Defaults to Field displayName. Set to null to hide.
          * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        label: PT.string,
+        label: PT.node,
 
         /**
          * Apply minimal styling - validation errors are only displayed with a red outline.
