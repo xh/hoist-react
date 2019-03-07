@@ -133,9 +133,6 @@ export class LocalStore extends BaseStore {
         this.rebuildFiltered();
     }
 
-    //------------------------
-    // Private Implementation
-    //------------------------
     createRecords(rawData, parent = null) {
         return rawData.map(raw => this.createRecord(raw, parent));
     }
@@ -157,6 +154,9 @@ export class LocalStore extends BaseStore {
         return rec;
     }
 
+    //------------------------
+    // Private Implementation
+    //------------------------
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
