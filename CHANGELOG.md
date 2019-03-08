@@ -2,8 +2,10 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
-### ⚙️ Technical
+### 🐞 Bug Fixes
+* Fix to Admin ConfigDiffer tool (missing decorator).
 
+### ⚙️ Technical
 * The `GridModel.store` config now accepts a plain object and will internally create a `LocalStore`.
 
 ## v20.0.1 - 2019-03-08
