@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {StoreSelectionModel} from '@xh/hoist/data';
+import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
     defaults,
@@ -109,7 +109,8 @@ export class GridModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {BaseStore} c.store - store containing the data for the grid.
+     * @param {(BaseStore|Object)} c.store - a Store instance, or a config with which to create a
+     *      default LocalStore. The store is the source for the grid's data.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
@@ -149,7 +150,7 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
     }) {
-        this.store = store;
+        this.store = this.parseStore(store);
         this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
@@ -544,6 +545,18 @@ export class GridModel {
         }
     }
 
+    parseStore(store) {
+        if (store instanceof BaseStore) {
+            return store;
+        }
+
+        if (isPlainObject(store)) {
+            return this.markManaged(new LocalStore(store));
+        }
+
+        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+    }
+
     parseSelModel(selModel) {
         selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
 
@@ -554,6 +567,7 @@ export class GridModel {
         if (isPlainObject(selModel)) {
             return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
         }
+
         // Assume its just the mode...
         let mode = 'single';
         if (isString(selModel)) {
