@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {UrlStore, Record} from '@xh/hoist/data';
+import {UrlStore} from '@xh/hoist/data';
 import {pickBy, filter} from 'lodash';
 
 import {RestField} from './RestField';
@@ -78,7 +78,7 @@ export class RestStore extends UrlStore {
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),
-            newRec = new Record({fields: this.fields, raw: response.data});
+            newRec = this.createRecord(response.data);
 
         if (isAdd) {
             this.addRecordInternal(newRec);
