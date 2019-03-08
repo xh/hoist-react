@@ -7,7 +7,6 @@
 import moment from 'moment';
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action, observable, comparer} from '@xh/hoist/mobx';
-import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
@@ -30,12 +29,12 @@ export class ClientErrorModel {
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
-        store: new LocalStore({
+        store: {
             fields: [
                 'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
                 'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
             ]
-        }),
+        },
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             {field: 'dateCreated', ...compactDateCol, width: 140},

@@ -6,7 +6,6 @@
  */
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
@@ -122,14 +121,14 @@ export class LeftRightChooserModel {
             };
 
         this.leftModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             columns: [rightTextCol, groupCol]

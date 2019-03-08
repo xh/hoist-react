@@ -10,7 +10,6 @@ import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -52,14 +51,14 @@ export class ConfigDifferModel  {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            store: new LocalStore({
+            store: {
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'
                 ],
                 idSpec: 'name',
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
-            }),
+            },
             selModel: 'multiple',
             columns: [
                 {field: 'name', width: 200},
