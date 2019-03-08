@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -14,7 +14,7 @@ import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import './FormField.scss';
@@ -68,7 +68,7 @@ export class FormField extends Component {
          * Label for form field. Defaults to Field displayName. Set to null to hide.
          * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        label: PT.string,
+        label: PT.node,
 
         /** Alignment of label text, default 'left'. */
         labelAlign: PT.oneOf(['left', 'right']),
@@ -128,7 +128,7 @@ export class FormField extends Component {
             labelWidth = this.getDefaultedProp('labelWidth', null);
 
         // Styles
-        const classes = [];
+        const classes = [this.childCssName];
         if (isRequired) classes.push('xh-form-field-required');
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
@@ -209,6 +209,11 @@ export class FormField extends Component {
         return child && child.type.hasLayoutSupport;
     }
 
+    get childCssName() {
+        const child = this.props.children;
+        return child ? `xh-form-field-${kebabCase(child.type.name)}` : null;
+    }
+
     getDefaultedProp(name, defaultVal) {
         const {form} = this;
         return withDefault(
@@ -279,7 +284,7 @@ export class FormField extends Component {
     }
 
     defaultReadonlyRenderer(value) {
-        if (isDate(value)) return fmtDate(value);
+        if (isDate(value)) return fmtDateTime(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
         return span(value);

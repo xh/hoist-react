@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -17,6 +17,8 @@
  * are actually provided.
  */
 export let tabContainer = null;
+export let ColChooserModel = null;
+export let colChooser = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -25,4 +27,6 @@ export let tabContainer = null;
  */
 export function installMobileImpls(impls) {
     tabContainer = impls.tabContainer;
+    ColChooserModel = impls.ColChooserModel;
+    colChooser = impls.colChooser;
 }

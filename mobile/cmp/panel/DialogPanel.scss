@@ -1,0 +1,10 @@
+.xh-dialog-panel > .dialog {
+  width: calc(100% - var(--xh-pad-double-px));
+  height: calc(100% - var(--xh-pad-double-px));
+
+  .dialog-container,
+  .dialog-container > .xh-panel {
+    width: 100%;
+    height: 100%;
+  }
+}

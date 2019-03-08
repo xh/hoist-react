@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import React from 'react';
 import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
-import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -23,6 +22,7 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
  * @private
  */
 @HoistModel
+@LoadSupport
 export class ConfigDifferModel  {
 
     configModel;
@@ -52,14 +52,14 @@ export class ConfigDifferModel  {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            store: new LocalStore({
+            store: {
                 fields: [
                     'name', 'status', 'localValue', 'remoteValue'
                 ],
                 idSpec: 'name',
                 name: 'differ',
                 filter: (it) => it.status !== 'Identical'
-            }),
+            },
             selModel: 'multiple',
             columns: [
                 {field: 'name', width: 200},
@@ -101,7 +101,7 @@ export class ConfigDifferModel  {
         return new StoreContextMenu({
             items: [this.applyRemoteAction]
         });
-    }
+    };
 
     async doLoadAsync(loadSpec) {
         if (loadSpec.isAutoRefresh) return;

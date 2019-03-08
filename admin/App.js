@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -56,8 +56,10 @@ export class App extends Component {
                 }),
                 appBarSeparator()
             ],
-            hideAdminButton: true,
-            hideFeedbackButton: true
+            appMenuButtonOptions: {
+                hideAdminItem: true,
+                hideFeedbackItem: true
+            }
         });
     }
 

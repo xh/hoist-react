@@ -1,3 +1,11 @@
+.xh-dim-button.xh-button {
+  justify-content: left;
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .xh-dim-dialog {
   .dim-history-btn {
     text-align: left;

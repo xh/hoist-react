@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {StoreSelectionModel} from '@xh/hoist/data';
+import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
     defaults,
     find,
     findLast,
+    isArray,
     isEmpty,
     isPlainObject,
     isString,
@@ -27,7 +28,8 @@ import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {StoreContextMenu, ColChooserModel} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -108,7 +110,8 @@ export class GridModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {BaseStore} c.store - store containing the data for the grid.
+     * @param {(BaseStore|Object)} c.store - a Store instance, or a config with which to create a
+     *      default LocalStore. The store is the source for the grid's data.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
@@ -148,7 +151,7 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
     }) {
-        this.store = store;
+        this.store = this.parseStore(store);
         this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
@@ -161,17 +164,13 @@ export class GridModel {
 
         this.setColumns(columns);
 
-        if (enableColChooser && !XH.isMobile) {
-            this.colChooserModel = new ColChooserModel(this);
-        }
-
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
         this.setCompact(compact);
 
-        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
-        this.selModel = this.initSelModel(selModel, store);
-        this.stateModel = this.initStateModel(stateModel);
+        this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
+        this.selModel = this.parseSelModel(selModel);
+        this.stateModel = this.parseStateModel(stateModel);
     }
 
     /**
@@ -332,6 +331,11 @@ export class GridModel {
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
+        throwIf(
+            !isArray(colConfigs),
+            'GridModel requires an array of column configurations.'
+        );
+
         throwIf(
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
@@ -547,13 +551,27 @@ export class GridModel {
         }
     }
 
-    initSelModel(selModel, store) {
+    parseStore(store) {
+        if (store instanceof BaseStore) {
+            return store;
+        }
+
+        if (isPlainObject(store)) {
+            return this.markManaged(new LocalStore(store));
+        }
+
+        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+    }
+
+    parseSelModel(selModel) {
+        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
+
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
 
         if (isPlainObject(selModel)) {
-            return new StoreSelectionModel(defaults(selModel, {store}));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
         }
 
         // Assume its just the mode...
@@ -563,24 +581,26 @@ export class GridModel {
         } else if (selModel === null) {
             mode = 'disabled';
         }
-
-        return new StoreSelectionModel({mode, store});
+        return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    initStateModel(stateModel) {
+    parseStateModel(stateModel) {
         let ret = null;
         if (isPlainObject(stateModel)) {
             ret = new GridStateModel(stateModel);
         } else if (isString(stateModel)) {
             ret = new GridStateModel({gridId: stateModel});
         }
-        if (ret) ret.init(this);
-
+        if (ret) {
+            ret.init(this);
+            this.markManaged(ret);
+        }
         return ret;
     }
 
-    destroy() {
-        XH.safeDestroy(this.colChooserModel, this.stateModel);
+    createChooserModel() {
+        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
+        return this.markManaged(new Model(this));
     }
 }
 

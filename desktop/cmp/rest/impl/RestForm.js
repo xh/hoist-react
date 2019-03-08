@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -86,7 +86,7 @@ export class RestForm extends Component {
                 text: 'Save',
                 icon: Icon.check(),
                 intent: 'success',
-                disabled: !formModel.isDirty,
+                disabled: !model.isAdd && !formModel.isDirty,
                 onClick: () => model.validateAndSaveAsync(),
                 omit: formModel.readonly
             })

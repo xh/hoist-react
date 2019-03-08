@@ -1,6 +1,8 @@
 .xh-dialog {
+  position: fixed;
+
   & > .dialog {
-    max-width: 90%;
+    max-width: calc(100% - var(--xh-pad-double-px));
   }
 
   &__title {

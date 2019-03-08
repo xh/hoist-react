@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, elem} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
@@ -17,9 +17,6 @@ import {NavigatorPageModel} from './NavigatorPageModel';
  */
 @HoistModel
 export class NavigatorModel {
-    /** @member {string} */
-    @bindable title;
-
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
@@ -151,11 +148,8 @@ export class NavigatorModel {
 
     @action
     onPageChange() {
-        const {title, disableAppRefreshButton} = this.getCurrentPageModel();
-
-        if (title) this.title = title;
+        const {disableAppRefreshButton} = this.getCurrentPageModel();
         this.disableAppRefreshButton = disableAppRefreshButton;
-
         this.doCallback();
     }
 

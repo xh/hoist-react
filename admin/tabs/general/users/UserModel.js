@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel, XH, LoadSupport, managed} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data';
 import {allSettled} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
@@ -26,10 +25,10 @@ export class UserModel {
         stateModel: 'xhUserGrid',
         enableColChooser: true,
         enableExport: true,
-        store: new LocalStore({
+        store: {
             fields: ['username', 'email', 'displayName', 'active', 'roles'],
             idSpec: 'username'
-        }),
+        },
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -220,7 +220,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltip = isFunction(this.tooltip) ?
+            ret.tooltipValueGetter = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;

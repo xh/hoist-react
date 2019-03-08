@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import React from 'react';
@@ -11,6 +11,8 @@ import {buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {castArray} from 'lodash';
+
+import './ButtonGroupInput.scss';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.

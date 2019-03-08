@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
 
-import {fragment, div} from '@xh/hoist/cmp/layout';
+import {fragment, div, span} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
@@ -47,7 +47,7 @@ export class DimensionChooser extends Component {
     }
 
     get buttonWidth() {
-        return withDefault(this.props.buttonWidth, undefined);
+        return withDefault(this.props.buttonWidth, 150);
     }
 
     render() {
@@ -57,7 +57,8 @@ export class DimensionChooser extends Component {
         return div(
             this.renderDialog(),
             button({
-                text: value.map(it => dimensions[it].label).join(' \u203a '),
+                className: 'xh-dim-button',
+                item: span(value.map(it => dimensions[it].label).join(' \u203a ')),
                 width: this.buttonWidth,
                 onClick: () => model.showMenu()
             })

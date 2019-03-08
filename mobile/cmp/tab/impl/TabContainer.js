@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -12,6 +12,8 @@ import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {throwIf} from '@xh/hoist/utils/js';
 import {tab} from './Tab';
+
+import './Tabs.scss';
 
 /**
  * Mobile Implementation of TabContainer.
@@ -23,20 +25,24 @@ export class TabContainer extends Component {
 
     static modelClass = TabContainerModel;
 
+    baseClassName = 'xh-tabbar';
+
     constructor(props) {
         super(props);
         throwIf(
-            this.model.switcherPosition != 'bottom',
-            'Mobile TabContainer only supports a bottom tab switcher at this time.'
+            !['top', 'bottom'].includes(this.model.switcherPosition),
+            'Mobile TabContainer only supports top and bottom tab switcher positions at this time.'
         );
     }
 
     render() {
         const {model} = this,
-            {activeTab} = model,
+            {activeTab, switcherPosition} = model,
             tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
         return tabbar({
+            className: this.getClassName(`xh-tabbar-${switcherPosition}`),
+            position: switcherPosition,
             index: activeTab ? tabs.indexOf(activeTab) : 0,
             renderTabs: () => tabs.map(tabModel => this.renderTab(tabModel)),
             onPreChange: (e) => model.activateTab(tabs[e.index].id)
