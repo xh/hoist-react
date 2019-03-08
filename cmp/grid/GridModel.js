@@ -12,6 +12,7 @@ import {
     defaults,
     find,
     findLast,
+    isArray,
     isEmpty,
     isPlainObject,
     isString,
@@ -330,6 +331,11 @@ export class GridModel {
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
+        throwIf(
+            !isArray(colConfigs),
+            'GridModel requires an array of column configurations.'
+        );
+
         throwIf(
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
