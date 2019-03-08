@@ -1,5 +1,10 @@
 # Changelog
 
+## v20.0.1 - 2019-03-08
+
+### 🐞 Bug Fixes
+* Ensure `RestStore` processes records in a standard way following a save/add operation (#1010).
+
 ## v20.0.0 - 2019-03-06
 
 ### 💥 Breaking Changes
