@@ -9,7 +9,7 @@ import React from 'react';
 import {action, observable} from '@xh/hoist/mobx';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -22,6 +22,7 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
  * @private
  */
 @HoistModel
+@LoadSupport
 export class ConfigDifferModel  {
 
     configModel;
@@ -100,7 +101,7 @@ export class ConfigDifferModel  {
         return new StoreContextMenu({
             items: [this.applyRemoteAction]
         });
-    }
+    };
 
     async doLoadAsync(loadSpec) {
         if (loadSpec.isAutoRefresh) return;
