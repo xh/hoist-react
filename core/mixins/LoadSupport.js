@@ -8,7 +8,6 @@ import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {allSettled} from '@xh/hoist/promise';
-import {olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
@@ -52,17 +51,11 @@ export function LoadSupport(C) {
              */
             async loadAsync(loadSpec = {}) {
 
-                if (loadSpec.skipLoadDelta && !olderThan(this.lastLoadCompleted, loadSpec.skipLoadDelta)) {
-                    return;
-                }
-
                 this.lastLoadRequested = new Date();
-                const loadModel = this.loadModel,
-                    omitAutoRefreshLoadModel = !loadSpec.isAutoRefresh ? this.omitAutoRefeshLoadModel : null;
+                const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
                 return this
                     .doLoadAsync(loadSpec)
                     .linkTo(loadModel)
-                    .linkTo(omitAutoRefreshLoadModel)
                     .finally(() => {
                         this.lastLoadCompleted = new Date();
                     });
@@ -71,50 +64,36 @@ export function LoadSupport(C) {
             /**
              * Refresh this object from underlying data sources or services.
              * NOT for implementation.  Implement doLoadAsync() instead.
-             *
-             * @parm {Object}  config
-             * @param {number} [config.skipLoadDelta] - skip refresh if there was a load within this interval.
              */
-            async refreshAsync({skipLoadDelta}) {
-                return this.loadAsync({isRefresh: true, isAutoRefresh: false, skipLoadDelta});
+            async refreshAsync() {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: false});
             },
 
             /**
              * Auto-refresh this object from underlying data sources or services.
              * NOT for implementation.  Implement doLoadAsync() instead.
-             *
-             * @parm {Object}  config
-             * @param {number} [skipLoadDelta] - skip refresh if there was a recent load within this interval.
              */
-            async autoRefreshAsync({skipLoadDelta}) {
-                return this.loadAsync({isRefresh: true, isAutoRefresh: true, skipLoadDelta});
+            async autoRefreshAsync() {
+                return this.loadAsync({isRefresh: true, isAutoRefresh: true});
             },
 
 
             /**
-             * PendingTaskModel tracking any loading of this object
+             * PendingTaskModel tracking the loading of this object
+             *
+             * Note that this model will *not* track auto-refreshes.
              */
             loadModel: {
                 get() {
                     if (!this._loadModel) this._loadModel = new PendingTaskModel();
                     return this._loadModel;
                 }
-            },
-
-            /**
-             * PendingTaskModel tracking any loading of this object *excluding* auto-refresh.
-             */
-            omitAutoRefeshLoadModel: {
-                get() {
-                    if (!this._omitAutoRefreshLoadModel) this._omitAutoRefreshLoadModel = new PendingTaskModel();
-                    return this._omitAutoRefreshLoadModel;
-                }
             }
         },
 
         chains: {
             destroy() {
-                XH.safeDestroy(this._loadModel, this._omitAutoRefreshLoadModel);
+                XH.safeDestroy(this._loadModel);
             }
         }
     });
@@ -146,6 +125,4 @@ export async function loadAllAsync(objs, loadSpec) {
  * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
  * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
  *       refresh process, rather than a user action.
- * @property {number} [skipLoadDelta] - skip load if there was recently a load within this
- *      number of milliseconds.  Typically used to skip extraneous autoRefreshes.
  */
