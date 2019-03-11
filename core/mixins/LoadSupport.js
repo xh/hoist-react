@@ -33,7 +33,9 @@ export function LoadSupport(C) {
              *
              * For implementation only.  Callers should call loadAsync() or refreshAsync() instead.
              *
-             * @param {LoadSpec} loadSpec - Metadata about the underlying request
+             * @param {LoadSpec} loadSpec - Metadata about the underlying request. Implementations should
+             *      take care to pass this parameter to any delegates (e.g. other LoadSupport instances)
+             *      that accept it.
              */
             async doLoadAsync(loadSpec) {}
         },
@@ -48,10 +50,12 @@ export function LoadSupport(C) {
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
             async loadAsync(loadSpec = {}) {
+
                 this.lastLoadRequested = new Date();
+                const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
                 return this
                     .doLoadAsync(loadSpec)
-                    .linkTo(this.loadModel)
+                    .linkTo(loadModel)
                     .finally(() => {
                         this.lastLoadCompleted = new Date();
                     });
@@ -73,14 +77,16 @@ export function LoadSupport(C) {
                 return this.loadAsync({isRefresh: true, isAutoRefresh: true});
             },
 
+
+            /**
+             * PendingTaskModel tracking the loading of this object
+             *
+             * Note that this model will *not* track auto-refreshes.
+             */
             loadModel: {
                 get() {
                     if (!this._loadModel) this._loadModel = new PendingTaskModel();
                     return this._loadModel;
-                },
-
-                set(loadModel) {
-                    this._loadModel = loadModel;
                 }
             }
         },
@@ -115,7 +121,7 @@ export async function loadAllAsync(objs, loadSpec) {
 
 /**
  * @typedef {Object} LoadSpec
- * @property {...rest} rest - object specific arguments for data loading
+ *
  * @property {boolean} [isRefresh] - true if this load was triggered by a refresh request.
  * @property {boolean} [isAutoRefresh] - true if this load was triggered by a programmatic
  *       refresh process, rather than a user action.
