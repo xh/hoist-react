@@ -39,8 +39,8 @@ export class ClientErrorDetail extends Component {
                 items: [
                     tbody(
                         tr(th('User:'), td(rec.username)),
-                        tr(th('Message:'), td(rec.msg)),
-                        tr(th('User Alerted:'), td(rec.userAlerted.toString())),
+                        tr(th('Message:'), td(rec.msg || 'None provided')),
+                        tr(th('User Alerted:'), td(`${rec.userAlerted}`)),
                         tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
                         tr(th('Agent:'), td(rec.userAgent)),
                         tr(th('App Version:'), td(rec.appVersion)),

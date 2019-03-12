@@ -4,32 +4,34 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
+    cloneDeep,
+    compact,
     defaults,
     find,
     findLast,
     isArray,
     isEmpty,
+    isNil,
     isPlainObject,
     isString,
     last,
-    sortBy,
+    map,
     pull,
-    uniq,
-    isNil,
-    cloneDeep
+    sortBy,
+    uniq
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
-import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
-import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -110,9 +112,9 @@ export class GridModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {(BaseStore|Object)} c.store - a Store instance, or a config with which to create a
-     *      default LocalStore. The store is the source for the grid's data.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {(BaseStore|Object)} [c.store] - a Store instance, or a config with which to create a
+     *      default LocalStore. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -151,7 +153,6 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
     }) {
-        this.store = this.parseStore(store);
         this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
@@ -163,6 +164,7 @@ export class GridModel {
         Object.assign(this, rest);
 
         this.setColumns(columns);
+        this.store = this.parseStore(store);
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
@@ -379,8 +381,8 @@ export class GridModel {
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf columns are
-     *      represented in these changes then the sort order will be applied as well.
+     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf
+     *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
     applyColumnStateChanges(colStateChanges) {
@@ -552,11 +554,26 @@ export class GridModel {
     }
 
     parseStore(store) {
+        store = withDefault(store, {});
+
         if (store instanceof BaseStore) {
             return store;
         }
 
         if (isPlainObject(store)) {
+            store = cloneDeep(store);
+            store.fields = store.fields || [];
+
+            // Ensure store config has a complete set of fields for all configured columns.
+            const colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                storeFieldNames = map(store.fields, it => isString(it) ? it : it.name);
+
+            colFieldNames.forEach(colField => {
+                if (!storeFieldNames.includes(colField)) {
+                    store.fields.push(colField);
+                }
+            });
+
             return this.markManaged(new LocalStore(store));
         }
 
