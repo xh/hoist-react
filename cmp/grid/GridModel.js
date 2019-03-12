@@ -561,6 +561,7 @@ export class GridModel {
         }
 
         if (isPlainObject(store)) {
+            store = cloneDeep(store);
             store.fields = store.fields || [];
 
             // Ensure store config has a complete set of fields for all configured columns.
