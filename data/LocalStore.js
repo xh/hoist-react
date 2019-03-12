@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
@@ -133,28 +133,30 @@ export class LocalStore extends BaseStore {
         this.rebuildFiltered();
     }
 
-    //------------------------
-    // Private Implementation
-    //------------------------
     createRecords(rawData, parent = null) {
+        return rawData.map(raw => this.createRecord(raw, parent));
+    }
+
+    createRecord(raw, parent = null) {
         const {idSpec} = this;
         const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
 
-        return rawData.map(raw => {
-            if (this.processRawData) this.processRawData(raw);
+        if (this.processRawData) this.processRawData(raw);
 
-            raw.id = idGen(raw);
-            throwIf(
-                isNil(raw.id),
-                "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
-            );
+        raw.id = idGen(raw);
+        throwIf(
+            isNil(raw.id),
+            "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+        );
 
-            const rec = new Record({raw, parent, fields: this.fields});
-            rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
-            return rec;
-        });
+        const rec = new Record({raw, parent, fields: this.fields});
+        rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
+        return rec;
     }
 
+    //------------------------
+    // Private Implementation
+    //------------------------
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);

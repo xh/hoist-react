@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import moment from 'moment';
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action, observable, comparer} from '@xh/hoist/mobx';
-import {LocalStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
@@ -33,13 +32,13 @@ export class ActivityGridModel {
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
-        store: new LocalStore({
+        store: {
             fields: [
                 'severity', 'dateCreated', 'username', 'msg', 'category',
                 'device', 'browser', 'data', 'impersonating', 'elapsed',
                 'userAgent'
             ]
-        }),
+        },
         sortBy: {colId: 'dateCreated', sort: 'desc'},
         columns: [
             {field: 'severity', width: 100},
