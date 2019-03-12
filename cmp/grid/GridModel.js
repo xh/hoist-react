@@ -4,33 +4,34 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
+    cloneDeep,
     compact,
     defaults,
     find,
     findLast,
     isArray,
     isEmpty,
+    isNil,
     isPlainObject,
     isString,
     last,
-    sortBy,
+    map,
     pull,
-    uniq,
-    isNil,
-    cloneDeep
+    sortBy,
+    uniq
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
-import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
-import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -380,8 +381,8 @@ export class GridModel {
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf columns are
-     *      represented in these changes then the sort order will be applied as well.
+     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf
+     *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
     applyColumnStateChanges(colStateChanges) {
@@ -560,11 +561,17 @@ export class GridModel {
         }
 
         if (isPlainObject(store)) {
-            // If not provided, source required store.fields[] config from columns.
-            if (!store.fields) {
-                const colFields = this.getLeafColumns().map(it => it.field);
-                store.fields = uniq(compact(colFields));
-            }
+            store.fields = store.fields || [];
+
+            // Ensure store config has a complete set of fields for all configured columns.
+            const colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                storeFieldNames = map(store.fields, it => isString(it) ? it : it.name);
+
+            colFieldNames.forEach(colField => {
+                if (!storeFieldNames.includes(colField)) {
+                    store.fields.push(colField);
+                }
+            });
 
             return this.markManaged(new LocalStore(store));
         }
