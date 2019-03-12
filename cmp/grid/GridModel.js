@@ -568,7 +568,7 @@ export class GridModel {
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
                 colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
-            
+
             if (missingFieldNames.length) {
                 store = {
                     ...store,
