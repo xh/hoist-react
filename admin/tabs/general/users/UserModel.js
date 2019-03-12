@@ -25,10 +25,7 @@ export class UserModel {
         stateModel: 'xhUserGrid',
         enableColChooser: true,
         enableExport: true,
-        store: {
-            fields: ['username', 'email', 'displayName', 'active', 'roles'],
-            idSpec: 'username'
-        },
+        store: {idSpec: 'username'},
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},

@@ -29,21 +29,18 @@ export class ClientErrorModel {
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
-        store: {
-            fields: [
-                'username', 'error', 'msg', 'userAlerted', 'browser', 'device',
-                'appVersion', 'appEnvironment', 'dateCreated', 'userAgent'
-            ]
-        },
-        sortBy: {colId: 'dateCreated', sort: 'desc'},
+        emptyText: 'No errors reported...',
+        sortBy: 'dateCreated|desc',
         columns: [
             {field: 'dateCreated', ...compactDateCol, width: 140},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},
             {field: 'device', width: 100},
+            {field: 'userAgent', width: 130, hidden: true},
             {field: 'appVersion', width: 130},
             {field: 'appEnvironment', headerName: 'Environment', width: 130},
+            {field: 'msg', width: 130, hidden: true},
             {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)}
         ]
     });

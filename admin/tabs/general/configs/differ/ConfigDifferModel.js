@@ -53,11 +53,7 @@ export class ConfigDifferModel  {
         this.gridModel = new GridModel({
             enableExport: true,
             store: {
-                fields: [
-                    'name', 'status', 'localValue', 'remoteValue'
-                ],
                 idSpec: 'name',
-                name: 'differ',
                 filter: (it) => it.status !== 'Identical'
             },
             selModel: 'multiple',

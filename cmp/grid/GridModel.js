@@ -9,6 +9,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
+    compact,
     defaults,
     find,
     findLast,
@@ -110,9 +111,9 @@ export class GridModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {(BaseStore|Object)} c.store - a Store instance, or a config with which to create a
-     *      default LocalStore. The store is the source for the grid's data.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {(BaseStore|Object)} [c.store] - a Store instance, or a config with which to create a
+     *      default LocalStore. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -151,7 +152,6 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
     }) {
-        this.store = this.parseStore(store);
         this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
@@ -163,6 +163,7 @@ export class GridModel {
         Object.assign(this, rest);
 
         this.setColumns(columns);
+        this.store = this.parseStore(store);
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
@@ -552,11 +553,19 @@ export class GridModel {
     }
 
     parseStore(store) {
+        store = withDefault(store, {});
+
         if (store instanceof BaseStore) {
             return store;
         }
 
         if (isPlainObject(store)) {
+            // If not provided, source required store.fields[] config from columns.
+            if (!store.fields) {
+                const colFields = this.getLeafColumns().map(it => it.field);
+                store.fields = uniq(compact(colFields));
+            }
+
             return this.markManaged(new LocalStore(store));
         }
 

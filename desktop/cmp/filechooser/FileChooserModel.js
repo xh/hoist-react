@@ -23,10 +23,7 @@ export class FileChooserModel {
     lastRejectedCount;
 
     gridModel = new GridModel({
-        store: {
-            fields: ['name', 'extension', 'size'],
-            idSpec: 'name'
-        },
+        store: {idSpec: 'name'},
         columns: [
             {
                 field: 'extension',
