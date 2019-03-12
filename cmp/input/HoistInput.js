@@ -218,14 +218,11 @@ export class HoistInput extends Component {
         this.hasFocus = false;
     }
 
-    onBlur = () => {
-        // Focus very frequently will be jumping internally from element to element *within* a control.
-        // This delay prevents extraneous 'flapping' of focus state at this level.
-        wait(200).then(() => {
-            if (!this.containsElement(document.activeElement)) {
-                this.noteBlurred();
-            }
-        });
+    onBlur = (e) => {
+        // Ignore focus jumping internally from *within* the control.
+        if (!this.containsElement(e.relatedTarget)) {
+            this.noteBlurred();
+        }
     }
 
     /**
