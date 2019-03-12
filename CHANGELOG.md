@@ -7,6 +7,8 @@
 
 ### ⚙️ Technical
 * The `GridModel.store` config now accepts a plain object and will internally create a `LocalStore`.
+  This store config can also be partially specified or even omitted entirely; GridModel will ensure
+  that the store is auto-configured with all fields in configured grid columns.
 
 ## v20.0.1 - 2019-03-08
 
