@@ -212,9 +212,7 @@ export class Grid extends Component {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            enableRangeSelection: model.enableCellSelect,
-            suppressMultiRangeSelection: true,
-            onRangeSelectionChanged: this.onRangeSelectionChanged
+            onCellContextMenu: e => model.setCopyCellValue(e.value)
         };
 
         // Platform specific defaults
@@ -501,28 +499,6 @@ export class Grid extends Component {
 
     onSelectionChanged = (ev) => {
         this.model.selModel.select(ev.api.getSelectedRows());
-    };
-
-    onRangeSelectionChanged = (ev) => {
-        const rangeSelections = ev.api.getRangeSelections();
-        if (!rangeSelections || rangeSelections.length === 0) return;
-
-        const lastRange = last(rangeSelections);
-        if (
-            lastRange.start.rowIndex === lastRange.end.rowIndex &&
-            lastRange.start.column.colId === lastRange.end.column.colId &&
-            rangeSelections.length === 1
-        ) return;
-
-        const rangeSelectParams = {
-            rowStart: lastRange.start.rowIndex,
-            rowEnd: lastRange.start.rowIndex,
-            columnStart: lastRange.start.column.colId,
-            columnEnd: lastRange.start.column.colId
-        };
-
-        ev.api.clearRangeSelection();
-        ev.api.addRangeSelection(rangeSelectParams);
     };
 
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.

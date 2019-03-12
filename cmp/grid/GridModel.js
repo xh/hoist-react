@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {
     castArray,
@@ -69,8 +69,6 @@ export class GridModel {
     enableExport = false;
     /** @member {object} */
     exportOptions = null;
-    /** @member {boolean} */
-    enableCellSelect = true;
 
     //------------------------
     // Observable API
@@ -89,10 +87,12 @@ export class GridModel {
     @observable.ref agApi = null;
     /** @member {ColumnApi} */
     @observable.ref agColumnApi = null;
+    /** @member {string} */
+    @bindable copyCellValue;
 
     static defaultContextMenuTokens = [
-        'copy',
-        'copyWithHeaders',
+        'copyRow',
+        'copyRowHeaders',
         'copyCell',
         '-',
         'expandCollapseAll',
@@ -148,7 +148,6 @@ export class GridModel {
         groupBy = null,
         compact = false,
         enableColChooser = false,
-        enableCellSelect = true,
         enableExport = false,
         exportOptions = {},
         rowClassFn = null,
@@ -158,7 +157,6 @@ export class GridModel {
         this.store = this.parseStore(store);
         this.treeMode = treeMode;
         this.emptyText = emptyText;
-        this.enableCellSelect = enableCellSelect;
         this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
 
@@ -220,7 +218,7 @@ export class GridModel {
     copyCell() {
         const {agApi} = this;
         if (agApi) {
-            agApi.copySelectedRangeToClipboard();
+            agApi.clipboardService.copyDataToClipboard(this.copyCellValue);
         }
     }
 

@@ -15,6 +15,8 @@ import {Icon} from '@xh/hoist/icon';
  */
 export class StoreContextMenu {
 
+    EXCLUDE_COL_IDS = ['emptyFlex', 'actions'];
+
     /** @member {RecordAction[]} */
     items = [];
     /** @member {GridModel} */
@@ -55,8 +57,37 @@ export class StoreContextMenu {
     }
 
     parseToken(token) {
-        const gridModel = this.gridModel;
+        const {gridModel, EXCLUDE_COL_IDS: colIds} = this,
+            copyRowText = gridModel.selModel.ids.length > 1 ? 'Copy rows' : 'Copy row',
+            columnKeys = gridModel.columnState
+                .filter(it => !(colIds.includes(it.colId) || it.hidden))
+                .map(it => it.colId);
+
         switch (token) {
+            case 'copyRow':
+                return new RecordAction({
+                    text: copyRowText,
+                    icon: Icon.copy(),
+                    hidden: !gridModel,
+                    disabled: !gridModel || !gridModel.store.count,
+                    actionFn: () => gridModel.agApi.copySelectedRowsToClipboard(false, columnKeys)
+                });
+            case 'copyRowHeaders':
+                return new RecordAction({
+                    text: copyRowText + ' w/ headers',
+                    icon: Icon.copy(),
+                    hidden: !gridModel,
+                    disabled: !gridModel || !gridModel.store.count,
+                    actionFn: () => gridModel.agApi.copySelectedRowsToClipboard(true, columnKeys)
+                });
+            case 'copyCell':
+                return new RecordAction({
+                    text: 'Copy Cell',
+                    icon: Icon.copy(),
+                    hidden: !gridModel,
+                    disabled: !gridModel || !gridModel.store.count,
+                    actionFn: () => gridModel.copyCell()
+                });
             case 'colChooser':
                 return new RecordAction({
                     text: 'Columns...',
@@ -80,14 +111,6 @@ export class StoreContextMenu {
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
-                });
-            case 'copyCell':
-                return new RecordAction({
-                    text: 'Copy Cell',
-                    icon: Icon.copy(),
-                    hidden: !gridModel || !gridModel.enableCellSelect,
-                    disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.copyCell()
                 });
             case 'expandCollapseAll':
                 return [
