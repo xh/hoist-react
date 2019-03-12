@@ -12,7 +12,6 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {wait} from '@xh/hoist/promise';
 
 import './HoistInput.scss';
 
