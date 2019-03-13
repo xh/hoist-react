@@ -79,6 +79,11 @@ export class BaseStore {
         });
     }
 
+    /**
+     * Destroy this object, cleaning up any resources used.
+     */
+    destroy() {}
+
     //--------------------
     // For Implementations
     //--------------------

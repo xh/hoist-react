@@ -32,14 +32,8 @@ export class ActivityGridModel {
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
-        store: {
-            fields: [
-                'severity', 'dateCreated', 'username', 'msg', 'category',
-                'device', 'browser', 'data', 'impersonating', 'elapsed',
-                'userAgent'
-            ]
-        },
-        sortBy: {colId: 'dateCreated', sort: 'desc'},
+        emptyText: 'No activity reported...',
+        sortBy: 'dateCreated|desc',
         columns: [
             {field: 'severity', width: 100},
             {field: 'dateCreated', ...dateTimeCol},
@@ -47,6 +41,7 @@ export class ActivityGridModel {
             {field: 'category', width: 100},
             {field: 'device', width: 100},
             {field: 'browser', width: 100},
+            {field: 'userAgent', width: 100, hidden: true},
             {field: 'data', width: 70},
             {field: 'impersonating', width: 140},
             {

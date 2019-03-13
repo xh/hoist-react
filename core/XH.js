@@ -48,11 +48,10 @@ class XHClass {
 
     _initCalled = false;
 
-    //------------------------------------------------------------------
-    // Metadata
-    // The values below are set via webpack.DefinePlugin at build time.
+    //----------------------------------------------------------------------------------------------
+    // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
-    //------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     appCode = xhAppCode;
 
@@ -71,9 +70,10 @@ class XHClass {
     /** Whether build is for local development */
     isDevelopmentMode = xhIsDevelopmentMode;
 
-    //---------------------------
-    // Hoist Services
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
+    // Hoist Core Services
+    // Singleton instances of each service are created and installed within initAsync() below.
+    //----------------------------------------------------------------------------------------------
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -86,14 +86,17 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {LocalStorageService} */
+    localStorageService;
     /** @member {PrefService} */
     prefService;
     /** @member {TrackService} */
     trackService;
 
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
     // Aliased methods
-    //---------------------------
+    // Shortcuts to common core service methods and appSpec properties.
+    //----------------------------------------------------------------------------------------------
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
@@ -108,15 +111,15 @@ class XHClass {
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
 
-    //-------------------------------
+    //---------------------------
     // Models
-    //-------------------------------
+    //---------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
     
-    //-----------------------------
+    //---------------------------
     // Other State
-    //-----------------------------
+    //---------------------------
     exceptionHandler = new ExceptionHandler();
 
     /** State of app - see AppState for valid values. */
