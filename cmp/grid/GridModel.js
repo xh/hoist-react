@@ -27,7 +27,8 @@ import {
     map,
     pull,
     sortBy,
-    uniq
+    uniq,
+    difference
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
@@ -561,18 +562,19 @@ export class GridModel {
         }
 
         if (isPlainObject(store)) {
-            store = cloneDeep(store);
-            store.fields = store.fields || [];
 
             // Ensure store config has a complete set of fields for all configured columns.
-            const colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
-                storeFieldNames = map(store.fields, it => isString(it) ? it : it.name);
+            const fields = store.fields || [],
+                storeFieldNames = map(fields, it => isString(it) ? it : it.name),
+                colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                missingFieldNames = difference(colFieldNames, storeFieldNames);
 
-            colFieldNames.forEach(colField => {
-                if (!storeFieldNames.includes(colField)) {
-                    store.fields.push(colField);
-                }
-            });
+            if (missingFieldNames.length) {
+                store = {
+                    ...store,
+                    fields: [...fields, ...missingFieldNames]
+                };
+            }
 
             return this.markManaged(new LocalStore(store));
         }
