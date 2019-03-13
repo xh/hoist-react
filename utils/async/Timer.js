@@ -45,8 +45,6 @@ export class Timer {
      *
      * Main entry point, to get a new, managed timer.
      *
-     * The properties may also be set on the object returned directly.
-     *
      * @param {function} runFn - return a promise to allow timer to block and prevent overlapping runs.
      * @param {number} interval - interval between runs, in milliseconds. if <=0 job will not run.
      * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
