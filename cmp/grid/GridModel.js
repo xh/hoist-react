@@ -218,11 +218,24 @@ export class GridModel {
         }
     }
 
+    copyRows(includeHeaders = false) {
+        const excludeColIds = ['emptyFlex', 'actions'],
+            columnKeys = this.columnState
+                .filter(it => !(it.hidden || excludeColIds.includes(it.colId)))
+                .map(it => it.colId);
+
+        this.agApi.copySelectedRowsToClipboard(includeHeaders, columnKeys);
+    }
+
     copyCell() {
         const {agApi} = this;
         if (agApi) {
             agApi.clipboardService.copyDataToClipboard(this.copyCellValue);
         }
+    }
+
+    get copyRowsButtonText() {
+        return this.selection.length > 1 ? 'Copy Rows' : 'Copy Row';
     }
 
     /** Does the grid have any records to show? */

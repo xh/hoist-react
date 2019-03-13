@@ -15,8 +15,6 @@ import {Icon} from '@xh/hoist/icon';
  */
 export class StoreContextMenu {
 
-    EXCLUDE_COL_IDS = ['emptyFlex', 'actions'];
-
     /** @member {RecordAction[]} */
     items = [];
     /** @member {GridModel} */
@@ -57,35 +55,31 @@ export class StoreContextMenu {
     }
 
     parseToken(token) {
-        const {gridModel, EXCLUDE_COL_IDS: colIds} = this,
-            copyRowText = gridModel.selModel.ids.length > 1 ? 'Copy rows' : 'Copy row',
-            columnKeys = gridModel.columnState
-                .filter(it => !(colIds.includes(it.colId) || it.hidden))
-                .map(it => it.colId);
+        const {gridModel} = this;
 
         switch (token) {
             case 'copyRow':
                 return new RecordAction({
-                    text: copyRowText,
+                    text: gridModel ? gridModel.copyRowsButtonText : '',
                     icon: Icon.copy(),
                     hidden: !gridModel,
-                    disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.agApi.copySelectedRowsToClipboard(false, columnKeys)
+                    recordsRequired: true,
+                    actionFn: () => gridModel.copyRows()
                 });
             case 'copyRowHeaders':
                 return new RecordAction({
-                    text: copyRowText + ' w/ headers',
+                    text: gridModel ? gridModel.copyRowsButtonText + ' w/ Headers' : '',
                     icon: Icon.copy(),
                     hidden: !gridModel,
-                    disabled: !gridModel || !gridModel.store.count,
-                    actionFn: () => gridModel.agApi.copySelectedRowsToClipboard(true, columnKeys)
+                    recordsRequired: true,
+                    actionFn: () => gridModel.copyRows(true)
                 });
             case 'copyCell':
                 return new RecordAction({
                     text: 'Copy Cell',
                     icon: Icon.copy(),
                     hidden: !gridModel,
-                    disabled: !gridModel || !gridModel.store.count,
+                    recordsRequired: true,
                     actionFn: () => gridModel.copyCell()
                 });
             case 'colChooser':
