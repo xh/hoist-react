@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import {XH} from '@xh/hoist/core';
-import {observer} from '@xh/hoist/mobx';
+import {XH, elemFactory} from '@xh/hoist/core';
+import {Observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -14,6 +14,8 @@ import classNames from 'classnames';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 import {loadSupportLinker}  from './impl/LoadSupportLinker';
+
+const observerFactory = elemFactory(Observer);
 
 /**
  * Core decorator for Components in Hoist.
@@ -27,7 +29,7 @@ import {loadSupportLinker}  from './impl/LoadSupportLinker';
 export function HoistComponent(C) {
     return applyMixin(C, {
         name: 'HoistComponent',
-        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**
@@ -174,15 +176,17 @@ export function HoistComponent(C) {
 
         overrides: {
             render: (sup) => {
-                return function() {
-                    const {ownedModel} = this;
-                    const renderFn = sup.bind(this);
 
-                    if (ownedModel && ownedModel.isLoadSupport) {
-                        return loadSupportLinker({renderFn, model: ownedModel});
-                    } else {
-                        return renderFn();
-                    }
+                // Decorate contents with <Observer> (and <LoadSupportLinker>  as needed)
+                return function() {
+                    const {ownedModel} = this,
+                        hasLoadSupport = ownedModel && ownedModel.isLoadSupport,
+                        renderFn = sup.bind(this),
+                        render = hasLoadSupport ?
+                            () => loadSupportLinker({renderFn, model: ownedModel}) :
+                            renderFn;
+
+                    return observerFactory({render});
                 };
             }
         }
