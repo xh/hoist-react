@@ -4,9 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-
+import {hoistComponent, useClassName} from '@xh/hoist/core';
 import {box} from './Box';
 
 /**
@@ -15,45 +13,25 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent
-@LayoutSupport
-export class Frame extends Component {
-    render() {
-        return box({
-            ...this.props,
-            flex: 'auto'
-        });
-    }
-}
+export const [Frame, frame] = hoistComponent(props => {
+    return box({...props, flex: 'auto'});
+});
 
-@HoistComponent
-@LayoutSupport
-export class VFrame extends Component {
-    baseClassName = 'xh-vframe';
-    render() {
-        return box({
-            ...this.props,
-            flex: 'auto',
-            flexDirection: 'column',
-            className: this.getClassName()
-        });
-    }
-}
 
-@HoistComponent
-@LayoutSupport
-export class HFrame extends Component {
-    baseClassName = 'xh-hframe';
-    render() {
-        return box({
-            ...this.props,
-            flex: 'auto',
-            flexDirection: 'row',
-            className: this.getClassName()
-        });
-    }
-}
+export const [VFrame, vframe] = hoistComponent(props => {
+    return box({
+        ...props,
+        flex: 'auto',
+        flexDirection: 'column',
+        className: useClassName('xh-vframe', props)
+    });
+});
 
-export const frame = elemFactory(Frame);
-export const vframe = elemFactory(VFrame);
-export const hframe = elemFactory(HFrame);
+export const [HFrame, hframe] = hoistComponent(props => {
+    return box({
+        ...props,
+        flex: 'auto',
+        flexDirection: 'row',
+        className: useClassName('xh-hframe', props)
+    });
+});

@@ -4,9 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {merge, castArray} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps, useClassName} from '@xh/hoist/core';
 import {div} from './Tags';
 
 /**
@@ -17,50 +16,35 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent
-@LayoutSupport
-export class Box extends Component {
-    render() {
-        let {children, ...props} = this.getNonLayoutProps();
-        props = merge(
-            {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-            {style: this.getLayoutProps()},
-            props
-        );
+export const [Box, box] = hoistComponent(props => {
+    let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
 
-        return div({
-            ...props,
-            items: castArray(children)
-        });
-    }
-}
+    restProps = merge(
+        {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
+        {style: layoutProps},
+        restProps
+    );
 
-@HoistComponent
-@LayoutSupport
-export class VBox extends Component {
-    baseClassName = 'xh-vbox';
-    render() {
-        return box({
-            ...this.props,
-            flexDirection: 'column',
-            className: this.getClassName()
-        });
-    }
-}
+    return div({
+        ...restProps,
+        items: castArray(children)
+    });
+});
 
-@HoistComponent
-@LayoutSupport
-export class HBox extends Component {
-    baseClassName = 'xh-hbox';
-    render() {
-        return box({
-            ...this.props,
-            flexDirection: 'row',
-            className: this.getClassName()
-        });
-    }
-}
+export const [VBox, vbox] = hoistComponent(props => {
+    const className = useClassName('xh-vbox', props);
+    return box({
+        ...props,
+        flexDirection: 'column',
+        className
+    });
+});
 
-export const box = elemFactory(Box);
-export const vbox = elemFactory(VBox);
-export const hbox = elemFactory(HBox);
+export const [HBox, hbox] = hoistComponent(props => {
+    const className = useClassName('xh-hbox', props);
+    return box({
+        ...props,
+        flexDirection: 'column',
+        className
+    });
+});

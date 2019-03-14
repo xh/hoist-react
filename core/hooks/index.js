@@ -4,6 +4,5 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './ReactUtils';
-export * from './LayoutPropUtils';
-export * from './Ref';
+export * from './LayoutProps';
+export * from './ClassName';
