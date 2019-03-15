@@ -55,6 +55,7 @@ export class TabModel {
         disabled,
         excludeFromSwitcher,
         content,
+        contentFn,
         refreshMode,
         renderMode
     }) {
@@ -65,6 +66,7 @@ export class TabModel {
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
+        this.contentFn = contentFn;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
