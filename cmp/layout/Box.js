@@ -16,35 +16,41 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistComponent(props => {
-    let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
+export const [Box, box] = hoistComponent({
+    render(props) {
+        let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
 
-    restProps = merge(
-        {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-        {style: layoutProps},
-        restProps
-    );
+        restProps = merge(
+            {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
+            {style: layoutProps},
+            restProps
+        );
 
-    return div({
-        ...restProps,
-        items: castArray(children)
-    });
+        return div({
+            ...restProps,
+            items: castArray(children)
+        });
+    }
 });
 
-export const [VBox, vbox] = hoistComponent(props => {
-    const className = useClassName('xh-vbox', props);
-    return box({
-        ...props,
-        flexDirection: 'column',
-        className
-    });
+export const [VBox, vbox] = hoistComponent({
+    render(props) {
+        const className = useClassName('xh-vbox', props);
+        return box({
+            ...props,
+            flexDirection: 'column',
+            className
+        });
+    }
 });
 
-export const [HBox, hbox] = hoistComponent(props => {
-    const className = useClassName('xh-hbox', props);
-    return box({
-        ...props,
-        flexDirection: 'column',
-        className
-    });
+export const [HBox, hbox] = hoistComponent({
+    render(props) {
+        const className = useClassName('xh-hbox', props);
+        return box({
+            ...props,
+            flexDirection: 'row',
+            className
+        });
+    }
 });

@@ -25,6 +25,8 @@ const observerFactory = elemFactory(Observer);
  * negatively impacted by the overhead associated with this decorator.
  *
  * Adds support for MobX reactivity, model awareness, and other convenience methods below.
+ *
+ * @see hoistComponent for a functional, hooks-compatible approach to defining a Component in Hoist.
  */
 export function HoistComponent(C) {
     return applyMixin(C, {

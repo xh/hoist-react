@@ -30,7 +30,7 @@ export class Tab extends Component {
     wasActivated = false;
 
     render() {
-        const {content, isActive, renderMode, refreshContextModel} = this.model;
+        const {content, contentFn, isActive, renderMode, refreshContextModel} = this.model;
 
         this.wasActivated = this.wasActivated || isActive;
 
@@ -44,7 +44,7 @@ export class Tab extends Component {
             return null;
         }
 
-        const contentElem = content.prototype.render ? elem(content, {flex: 1}) : content({flex: 1});
+        const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
         
         return frame({
             display: isActive ? 'flex' : 'none',

@@ -33,7 +33,7 @@ export class Form extends Component {
     static modelClass = FormModel;
     static contextType = FormContext;
 
-    static propTypes = {
+    propTypes = {
         /**
          * Defaults for certain props on child/nested FormFields.
          * @see FormField (note there are both desktop and mobile implementations).

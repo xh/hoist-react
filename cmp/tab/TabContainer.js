@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistComponent} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -29,24 +28,17 @@ import {TabContainerModel} from './TabContainerModel';
  *
  * @see TabContainerModel
  */
-@HoistComponent
-export class TabContainer extends Component {
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired
-    }
-    static modelClass = TabContainerModel;
-
-    constructor(props) {
-        super(props);
+export const [TabContainer, tabContainer] = hoistComponent({
+    render(props) {
         throwIf(
             props.switcherPosition,
             "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
         );
-    }
 
-    render() {
-        return XH.isMobile ? mobileTabContainer(this.props) : desktopTabContainer(this.props);
+        return XH.isMobile ? mobileTabContainer(props) : desktopTabContainer(props);
     }
-}
-export const tabContainer = elemFactory(TabContainer);
+});
+
+TabContainer.propTypes = {
+    model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired
+};

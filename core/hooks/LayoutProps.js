@@ -24,6 +24,9 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
  * Components will typically delegate this responsibility to a child component that also
  * implements LayoutSupport. `Box` is typically the Component that is ultimately rendered
  * and will handle this by outputting a div with appropriate styles.
+ *
+ * @param {Array} props
+ * @returns {Object[]} - Array containing a bundle of layout props, and a bundle of all non-layout props.
  */
 export function useLayoutProps(props) {
     // Consider caching this comp if props haven't changed.

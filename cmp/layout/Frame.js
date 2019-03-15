@@ -13,25 +13,31 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Frame, frame] = hoistComponent(props => {
-    return box({...props, flex: 'auto'});
+export const [Frame, frame] = hoistComponent({
+    render(props) {
+        return box({...props, flex: 'auto'});
+    }
 });
 
 
-export const [VFrame, vframe] = hoistComponent(props => {
-    return box({
-        ...props,
-        flex: 'auto',
-        flexDirection: 'column',
-        className: useClassName('xh-vframe', props)
-    });
+export const [VFrame, vframe] = hoistComponent({
+    render(props) {
+        return box({
+            ...props,
+            flex: 'auto',
+            flexDirection: 'column',
+            className: useClassName('xh-vframe', props)
+        });
+    }
 });
 
-export const [HFrame, hframe] = hoistComponent(props => {
-    return box({
-        ...props,
-        flex: 'auto',
-        flexDirection: 'row',
-        className: useClassName('xh-hframe', props)
-    });
+export const [HFrame, hframe] = hoistComponent({
+    render(props) {
+        return box({
+            ...props,
+            flex: 'auto',
+            flexDirection: 'row',
+            className: useClassName('xh-hframe', props)
+        });
+    }
 });
