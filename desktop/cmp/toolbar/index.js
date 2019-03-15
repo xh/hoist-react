@@ -5,4 +5,4 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 export * from './Toolbar';
-export * from './ToolbarSeparator';
+export * from './ToolbarSep';

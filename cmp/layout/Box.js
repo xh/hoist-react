@@ -35,22 +35,20 @@ export const [Box, box] = hoistComponent({
 
 export const [VBox, vbox] = hoistComponent({
     render(props) {
-        const className = useClassName('xh-vbox', props);
         return box({
             ...props,
             flexDirection: 'column',
-            className
+            className: useClassName('xh-vbox', props)
         });
     }
 });
 
 export const [HBox, hbox] = hoistComponent({
     render(props) {
-        const className = useClassName('xh-hbox', props);
         return box({
             ...props,
             flexDirection: 'row',
-            className
+            className: useClassName('xh-hbox', props)
         });
     }
 });

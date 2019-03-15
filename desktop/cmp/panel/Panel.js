@@ -29,14 +29,43 @@ import './Panel.scss';
  */
 @HoistComponent
 @LayoutSupport
-export const [Panel, panel] = hoistComponent({
+export class Panel extends Component {
 
-    render(props) {
-        const [wasDisplayed, setWasDisplayed] = useState(false),
-            className = useClassname('xh-panel', props),
-            model = useProvidedModel(PanelModel),
-            [layoutProps, nonLayoutProps] = useLayoutProps();
+    wasDisplayed = false;
 
+    static modelClass = PanelModel;
+
+    static propTypes = {
+        /** A toolbar to be docked at the bottom of the panel. */
+        bbar: PT.element,
+
+        /** Items to be added to the right-side of the panel's header. */
+        headerItems: PT.node,
+
+        /** An icon placed at the left-side of the panel's header. */
+        icon: PT.element,
+
+        /**
+         * Mask to render on this panel. Set to:
+         *   + a ReactElement specifying a Mask instance - or -
+         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
+         *   + true for a simple default mask.
+         */
+        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
+
+        /** A toolbar to be docked at the top of the panel. */
+        tbar: PT.element,
+
+        /** Title text added to the panel's header. */
+        title: PT.oneOfType([PT.string, PT.node])
+    };
+
+    baseClassName = 'xh-panel';
+
+    render() {
         const {
             tbar,
             bbar,
@@ -47,7 +76,7 @@ export const [Panel, panel] = hoistComponent({
             children,
             model: modelProp,
             ...rest
-        } = nonLayoutProps;
+        } = this.getNonLayoutProps();
 
         // 1) Pre-process layout
         // Block unwanted use of padding props, which will separate the panel's header
@@ -115,33 +144,4 @@ export const [Panel, panel] = hoistComponent({
             item;
     }
 }
-
-Panel.propTypes = {
-    /** A toolbar to be docked at the bottom of the panel. */
-    bbar: PT.element,
-
-    /** Items to be added to the right-side of the panel's header. */
-    headerItems: PT.node,
-
-    /** An icon placed at the left-side of the panel's header. */
-    icon: PT.element,
-
-    /**
-     * Mask to render on this panel. Set to:
-     *   + a ReactElement specifying a Mask instance - or -
-     *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
-     *   + true for a simple default mask.
-     */
-    mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
-
-    /** A toolbar to be docked at the top of the panel. */
-    tbar: PT.element,
-
-    /** Title text added to the panel's header. */
-    title: PT.oneOfType([PT.string, PT.node])
-};
-
 export const panel = elemFactory(Panel);
