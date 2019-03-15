@@ -108,12 +108,16 @@ export class Timer {
     async doRunAsync() {
         this.isRunning = true;
         try {
-            await this.runFn().timeout(this.timeout);
+            await this.internalRunFn().timeout(this.timeout);
         } catch (e) {
             console.error('Error executing timer:', e);
         }
         this.isRunning = false;
         this.lastRun = new Date();
+    }
+
+    async internalRunFn() {
+        return this.runFn();
     }
 
     get intervalElapsed() {
