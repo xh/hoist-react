@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel, useClassName, useLayoutProps} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
@@ -18,16 +17,10 @@ import '../Tabs.scss';
  *
  * @private
  */
-@HoistComponent
-@LayoutSupport
-export class TabContainer extends Component {
-
-    static modelClass = TabContainerModel;
-
-    baseClassName = 'xh-tab-container';
-
-    render() {
-        const {model} = this,
+export const [TabContainer, tabContainer] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(TabContainerModel, props),
+            [layoutProps] = useLayoutProps(props),
             {activeTabId, tabs, switcherPosition} = model,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
@@ -35,14 +28,13 @@ export class TabContainer extends Component {
             container = vertical ? hbox : vbox;
 
         // Default flex = 'auto' if no dimensions / flex specified.
-        const layoutProps = this.getLayoutProps();
         if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
             layoutProps.flex = 'auto';
         }
 
         return container({
             ...layoutProps,
-            className: this.getClassName(),
+            className: useClassName('xh-tab-container', props),
             items: [
                 switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
@@ -63,5 +55,4 @@ export class TabContainer extends Component {
             ]
         });
     }
-}
-export const tabContainer = elemFactory(TabContainer);
+});

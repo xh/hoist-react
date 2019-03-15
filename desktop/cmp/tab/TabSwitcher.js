@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel, useClassName} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {omit} from 'lodash';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -21,31 +21,18 @@ import {omit} from 'lodash';
  * @see TabContainer
  * @see TabContainerModel
  */
-@HoistComponent
-export class TabSwitcher extends Component {
+export const [TabSwitcher, tabSwitcher] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(TabContainerModel, props),
+            {id, tabs, activeTabId} = model;
 
-    static modelClass = TabContainerModel;
-
-    static propTypes = {
-        /** Relative position within the parent TabContainer. Defaults to 'top'. */
-        orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
-    };
-
-    static defaultProps = {
-        orientation: 'top'
-    };
-
-    baseClassName = 'xh-tab-switcher';
-
-    render() {
-        const {id, tabs, activeTabId} = this.model,
-            {orientation} = this.props,
+        const orientation = withDefault(props.orientation, 'top'),
             vertical = ['left', 'right'].includes(orientation);
 
         return blueprintTabs({
             id,
             vertical,
-            onChange: this.onTabChange,
+            onChange: (tabId) => model.activateTab(tabId),
             selectedTabId: activeTabId,
             items: tabs.map(({id, title, icon, disabled, excludeFromSwitcher}) => {
                 if (excludeFromSwitcher) return null;
@@ -55,13 +42,13 @@ export class TabSwitcher extends Component {
                     items: [icon, title]
                 });
             }),
-            ...omit(this.props, 'model'),
-            className: this.getClassName(`xh-tab-switcher--${orientation}`)
+            ...omit(props, 'model'),
+            className: useClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
         });
     }
+});
 
-    onTabChange = (activeTabId) => {
-        this.model.activateTab(activeTabId);
-    };
-}
-export const tabSwitcher = elemFactory(TabSwitcher);
+TabSwitcher.propTypes = {
+    /** Relative position within the parent TabContainer. Defaults to 'top'. */
+    orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
+};

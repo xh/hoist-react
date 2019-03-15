@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {useState} from 'react';
+import {elem, hoistComponent, useProvidedModel, useClassName} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
@@ -21,24 +21,20 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-@HoistComponent
-export class Tab extends Component {
+export const [Tab, tab] = hoistComponent({
+    render(props) {
+        let model = useProvidedModel(TabModel, props),
+            {content, contentFn, isActive, renderMode, refreshContextModel} = model,
+            [flags] = useState({wasActivated: false}),
+            className = useClassName('xh-tab', props);
 
-    static modelClass = TabModel;
-    baseClassName = 'xh-tab';
-
-    wasActivated = false;
-
-    render() {
-        const {content, contentFn, isActive, renderMode, refreshContextModel} = this.model;
-
-        this.wasActivated = this.wasActivated || isActive;
-
+        if (!flags.wasActivated && isActive) flags.wasActivated = true;
+        
         if (
             !isActive &&
             (
                 (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !this.wasActivated)
+                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
             )
         ) {
             return null;
@@ -48,12 +44,11 @@ export class Tab extends Component {
         
         return frame({
             display: isActive ? 'flex' : 'none',
-            className: this.getClassName(),
+            className,
             item: refreshContextView({
                 model: refreshContextModel,
                 item: contentElem
             })
         });
     }
-}
-export const tab = elemFactory(Tab);
+});
