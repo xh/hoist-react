@@ -117,7 +117,7 @@ export class Timer {
     }
 
     async internalRunFn() {
-        return this.runFn();
+        return this.runFn(); // Wrap to ensure we return a promise.
     }
 
     get intervalElapsed() {
