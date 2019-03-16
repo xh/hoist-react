@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -23,14 +22,13 @@ import './AboutDialog.scss';
  *
  * @private
  */
-@HoistComponent
-export class AboutDialog extends Component {
+export const [AboutDialog, aboutDialog] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(AboutDialogModel, props);
 
-    static modelClass = AboutDialogModel;
-
-    render() {
-        const {model} = this;
         if (!model.isOpen) return null;
+
+        const onClose = () => model.hide();
 
         return dialog({
             isOpen: true,
@@ -44,23 +42,16 @@ export class AboutDialog extends Component {
                     className: 'xh-about-dialog__inner',
                     item: model.getTable()
                 }),
-                toolbar({
-                    items: [
-                        filler(),
-                        button({
-                            text: 'Close',
-                            intent: 'primary',
-                            onClick: this.onClose
-                        })
-                    ]
-                })
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Close',
+                        intent: 'primary',
+                        onClick: onClose
+                    })
+                )
             ],
-            onClose: this.onClose
+            onClose
         });
     }
-
-    onClose = () => {
-        this.model.hide();
-    }
-}
-export const aboutDialog = elemFactory(AboutDialog);
+});

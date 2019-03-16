@@ -4,9 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -18,13 +17,9 @@ import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
  *
  * @private
  */
-@HoistComponent
-export class Message extends Component {
-
-    static modelClass = MessageModel;
-
-    render() {
-        const model = this.model,
+export const [Message, message] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(MessageModel, props),
             isOpen = model && model.isOpen;
 
         if (!isOpen) return null;
@@ -36,31 +31,28 @@ export class Message extends Component {
             icon: model.icon,
             items: [
                 dialogBody(model.message),
-                toolbar(this.getButtons())
+                toolbar(getButtons(model))
             ],
-            ...this.props
+            ...props
         });
     }
+});
 
-    getButtons() {
-        const {confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
-        return [
-            filler(),
-            button({
-                text: cancelText,
-                omit: !cancelText,
-                intent: cancelIntent,
-                onClick: this.onCancel
-            }),
-            button({
-                text: confirmText,
-                intent: confirmIntent,
-                onClick: this.onConfirm
-            })
-        ];
-    }
 
-    onConfirm = () =>   {this.model.doConfirm()}
-    onCancel = () =>    {this.model.doCancel()}
+function getButtons(model) {
+    const {confirmText, cancelText, confirmIntent, cancelIntent} = model;
+    return [
+        filler(),
+        button({
+            text: cancelText,
+            omit: !cancelText,
+            intent: cancelIntent,
+            onClick: () => model.doCancel()
+        }),
+        button({
+            text: confirmText,
+            intent: confirmIntent,
+            onClick: () => model.doConfirm()
+        })
+    ];
 }
-export const message = elemFactory(Message);

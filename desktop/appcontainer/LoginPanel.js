@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {text} from '@xh/hoist/kit/blueprint';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -25,81 +24,69 @@ import './LoginPanel.scss';
  *
  * @private
  */
-@HoistComponent
-export class LoginPanel extends Component {
+export const [LoginPanel, loginPanel] = hoistComponent({
 
-    static modelClass = LoginPanelModel;
+    render(props) {
+        const model = useProvidedModel(LoginPanelModel, props),
+            {loginMessage} = XH.appSpec;
 
-    render() {
-        const {loginMessage} = XH.appSpec;
-        const {model} = this;
+        const onKeyPress = (ev) => {
+            if (ev.key === 'Enter') model.submit();
+        };
 
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'column',
-            items: [
-                panel({
-                    title: XH.clientAppName,
-                    icon: Icon.login(),
-                    className: 'xh-login',
-                    width: 300,
-                    items: [
-                        vspacer(10),
-                        textInput({
-                            model,
-                            bind: 'username',
-                            placeholder: 'Username...',
-                            autoFocus: true,
-                            commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
-                            autoComplete: 'on',
-                            width: null
-                        }),
-                        textInput({
-                            model,
-                            bind: 'password',
-                            placeholder: 'Password...',
-                            type: 'password',
-                            commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
-                            autoComplete: 'on',
-                            width: null
-                        }),
-                        text({
-                            omit: !model.warning,
-                            item: model.warning,
-                            ellipsize: true,
-                            className: 'xh-login__warning'
-                        }),
-                        loginMessage ? box({
-                            className: 'xh-login__message',
-                            item: loginMessage
-                        }) : null
-                    ],
-                    bbar: toolbar(
-                        filler(),
-                        button({
-                            text: 'Login',
-                            intent: 'primary',
-                            icon: Icon.login(),
-                            disabled: !model.isValid,
-                            onClick: this.onSubmit
-                        })
-                    )
-                })
-            ]
+            item: panel({
+                title: XH.clientAppName,
+                icon: Icon.login(),
+                className: 'xh-login',
+                width: 300,
+                items: [
+                    vspacer(10),
+                    textInput({
+                        model,
+                        bind: 'username',
+                        placeholder: 'Username...',
+                        autoFocus: true,
+                        commitOnChange: true,
+                        onKeyPress,
+                        autoComplete: 'on',
+                        width: null
+                    }),
+                    textInput({
+                        model,
+                        bind: 'password',
+                        placeholder: 'Password...',
+                        type: 'password',
+                        commitOnChange: true,
+                        onKeyPress,
+                        autoComplete: 'on',
+                        width: null
+                    }),
+                    text({
+                        omit: !model.warning,
+                        item: model.warning,
+                        ellipsize: true,
+                        className: 'xh-login__warning'
+                    }),
+                    loginMessage ? box({
+                        className: 'xh-login__message',
+                        item: loginMessage
+                    }) : null
+                ],
+                bbar: toolbar(
+                    filler(),
+                    button({
+                        text: 'Login',
+                        intent: 'primary',
+                        icon: Icon.login(),
+                        disabled: !model.isValid,
+                        onClick: () => model.submit()
+                    })
+                )
+            })
         });
     }
-
-    onSubmit = () => {
-        this.model.submit();
-    };
-
-    onKeyPress = (ev) => {
-        if (ev.key === 'Enter') {
-            this.onSubmit();
-        }
-    }
-}
-export const loginPanel = elemFactory(LoginPanel);
+});

@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {message} from './Message';
 
@@ -18,18 +17,16 @@ import {message} from './Message';
  *
  * @private
  */
-@HoistComponent
-export class IdleDialog extends Component {
-
-    render() {
+export const [IdleDialog, idleDialog] = hoistComponent({
+    render(props) {
         return message({
             model: {
                 title: 'Application Sleeping',
                 icon: Icon.moon(),
                 message: 'This application is sleeping due to inactivity. Please click below to reload it.',
                 confirmText: 'Reload',
-                onConfirm: this.props.onReactivate
+                onConfirm: props.onReactivate
             }
         });
     }
-}
+});

@@ -72,9 +72,9 @@ export const [PanelHeader, panelHeader] = hoistComponent({
 // Implementation
 //---------------------
 function renderHeaderCollapseButton(model) {
-        if (!model) return null;
+    if (!model) return null;
 
-        return model.showHeaderCollapseButton && model.collapsible ?
-            headerCollapseButton({model}) :
-            null;
-    }
+    return model.showHeaderCollapseButton && model.collapsible ?
+        headerCollapseButton({model}) :
+        null;
+}

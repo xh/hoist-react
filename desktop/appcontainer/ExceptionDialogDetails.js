@@ -4,9 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -16,6 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
+import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
@@ -23,18 +23,16 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-@HoistComponent
-export class ExceptionDialogDetails extends Component {
-
-    render() {
-        const {model} = this,
+export const [ExceptionDialogDetails, exceptionDialogDetails] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(ExceptionDialogModel, props),
             {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
         if (!detailsIsOpen || !exception) return null;
 
-        this.errorStr = stringifyErrorSafely(exception);
+        const errorStr = stringifyErrorSafely(exception);
         const header = table(
             tbody(
                 row('Name', exception.name),
@@ -52,14 +50,14 @@ export class ExceptionDialogDetails extends Component {
             icon: Icon.search(),
             isOpen: true,
             isCloseButtonShown: !requireReload,
-            onClose: !requireReload ? this.onCloseClick : null,
+            onClose: !requireReload ? () => model.close() : null,
             style: {height: 600, width: 800},
             items: [
                 dialogBody({
                     className: 'xh-exception-dialog-details',
                     items: [
                         header,
-                        pre(this.errorStr),
+                        pre(errorStr),
                         textArea({
                             model,
                             bind: 'userMessage',
@@ -76,11 +74,11 @@ export class ExceptionDialogDetails extends Component {
                         icon: Icon.envelope(),
                         text: 'Send',
                         disabled: !model.userMessage,
-                        onClick: this.onSendClick,
+                        onClick: () => model.sendReportAsync(),
                         omit: !clientUserKnown
                     }),
                     clipboardButton({
-                        clipboardSpec: {text: () => this.errorStr},
+                        clipboardSpec: {text: () => errorStr},
                         successMessage: 'Error details copied to clipboard.'
                     }),
                     dismissButton({model})
@@ -88,17 +86,4 @@ export class ExceptionDialogDetails extends Component {
             ]
         });
     }
-
-
-    //------------------------
-    // Implementation
-    //------------------------
-    onSendClick = () => {
-        this.model.sendReportAsync();
-    };
-
-    onCloseClick = () => {
-        this.model.close();
-    };
-}
-export const exceptionDialogDetails = elemFactory(ExceptionDialogDetails);
+});
