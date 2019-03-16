@@ -4,10 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+
+import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps, useClassName, useProvidedModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
@@ -27,45 +28,14 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-@HoistComponent
-@LayoutSupport
-export class Panel extends Component {
+export const [Panel, panel] = hoistComponent({
 
-    wasDisplayed = false;
+    render(props) {
+        let [flags] = useState({wasDisplayed: true}),
+            className = useClassName('xh-panel', props),
+            model = useProvidedModel(PanelModel, props),
+            [layoutProps, nonLayoutProps] = useLayoutProps(props);
 
-    static modelClass = PanelModel;
-
-    static propTypes = {
-        /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
-
-        /** Items to be added to the right-side of the panel's header. */
-        headerItems: PT.node,
-
-        /** An icon placed at the left-side of the panel's header. */
-        icon: PT.element,
-
-        /**
-         * Mask to render on this panel. Set to:
-         *   + a ReactElement specifying a Mask instance - or -
-         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
-         *   + true for a simple default mask.
-         */
-        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
-
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
-
-        /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
-
-        /** Title text added to the panel's header. */
-        title: PT.oneOfType([PT.string, PT.node])
-    };
-
-    baseClassName = 'xh-panel';
-
-    render() {
         const {
             tbar,
             bbar,
@@ -76,12 +46,12 @@ export class Panel extends Component {
             children,
             model: modelProp,
             ...rest
-        } = this.getNonLayoutProps();
+        } = nonLayoutProps;
 
         // 1) Pre-process layout
         // Block unwanted use of padding props, which will separate the panel's header
         // and bottom toolbar from its edges in a confusing way.
-        const layoutProps = omitBy(this.getLayoutProps(), (v, k) => k.startsWith('padding'));
+        layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
 
         // Give Panels a default flexing behavior if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -89,7 +59,6 @@ export class Panel extends Component {
         }
 
         // 2) Prepare 'core' contents according to collapsed state
-        const {model} = this;
         const {
             resizable = false,
             collapsible = false,
@@ -104,7 +73,7 @@ export class Panel extends Component {
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
@@ -114,7 +83,7 @@ export class Panel extends Component {
                 ]
             });
         }
-        if (!collapsed) this.wasDisplayed = true;
+        if (!collapsed) flags.wasDisplayed = true;
 
         // 3) Mask is as provided, or a default simple mask.
         let maskElem = null;
@@ -135,7 +104,7 @@ export class Panel extends Component {
             ],
             ...rest,
             ...layoutProps,
-            className: this.getClassName()
+            className
         });
 
         // 5) Return, wrapped in resizable and its affordances if needed.
@@ -143,5 +112,32 @@ export class Panel extends Component {
             resizeContainer({item, model}) :
             item;
     }
-}
-export const panel = elemFactory(Panel);
+});
+
+Panel.propTypes = {
+    /** A toolbar to be docked at the bottom of the panel. */
+    bbar: PT.element,
+
+    /** Items to be added to the right-side of the panel's header. */
+    headerItems: PT.node,
+
+    /** An icon placed at the left-side of the panel's header. */
+    icon: PT.element,
+
+    /**
+     * Mask to render on this panel. Set to:
+     *   + a ReactElement specifying a Mask instance - or -
+     *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
+     *   + true for a simple default mask.
+     */
+    mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
+
+    /** A toolbar to be docked at the top of the panel. */
+    tbar: PT.element,
+
+    /** Title text added to the panel's header. */
+    title: PT.oneOfType([PT.string, PT.node])
+};

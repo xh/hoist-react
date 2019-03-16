@@ -1,32 +1,29 @@
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {PanelModel} from '../PanelModel';
 
 /**
  * @private
  */
-@HoistComponent
-export class HeaderCollapseButton extends Component {
-    render() {
+export const [HeaderCollapseButton, headerCollapseButton] = hoistComponent({
+    render(props) {
+        const model = useProvidedModel(PanelModel, props);
         return button({
-            icon: Icon[this.getChevron()](),
-            onClick: this.onClick,
+            icon: Icon[getChevron(model)](),
+            onClick: () => model.toggleCollapsed(),
             minimal: true
         });
     }
+});
 
-    getChevron() {
-        const {vertical, collapsed, contentFirst} = this.model,
-            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
-            idx = (contentFirst != collapsed ? 0 : 1);
+//------------------
+// Implementation
+//------------------
+function getChevron(model) {
+    const {vertical, collapsed, contentFirst} = model,
+        directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+        idx = (contentFirst != collapsed ? 0 : 1);
 
-        return directions[idx];
-    }
-
-    onClick = () => {
-        this.model.toggleCollapsed();
-    }
+    return directions[idx];
 }
-
-export const headerCollapseButton = elemFactory(HeaderCollapseButton);
