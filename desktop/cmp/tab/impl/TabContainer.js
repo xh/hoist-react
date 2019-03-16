@@ -36,23 +36,23 @@ export const [TabContainer, tabContainer] = hoistComponent({
             ...layoutProps,
             className: useClassName('xh-tab-container', props),
             items: [
-                switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
+                switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
                     const tabId = tabModel.id,
-                        style = {};
-
-                    if (tabId !== activeTabId) {
-                        style.display = 'none';
-                    }
+                        style = (activeTabId !== tabId) ? hideStyle : undefined;
 
                     return div({
                         className: 'xh-tab-wrapper',
                         style,
+                        key: tabId,
                         item: tab({model: tabModel})
                     });
                 }),
-                switcherAfter ? tabSwitcher({model, orientation: switcherPosition}) : null
+                switcherAfter ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null
             ]
         });
     }
 });
+
+const hideStyle = {display: 'none'};
+
