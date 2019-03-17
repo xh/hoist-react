@@ -35,7 +35,6 @@ export class ButtonGroupInput extends HoistInput {
             buttons = castArray(children).map(button => {
                 const {value} = button.props;
 
-                throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
                 throwIf(value == null, 'ButtonGroupInput child must declare a value');
 
                 return React.cloneElement(button, {

@@ -4,38 +4,21 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
-import {withDefault} from '@xh/hoist/utils/js';
+import {button, Button} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-@HoistComponent
-export class ThemeToggleButton extends Component {
-
-    static propTypes = {
-        ...Button.propTypes
-    }
-
-    render() {
-        const {icon, title, onClick, ...rest} = this.props;
+export const [ThemeToggleButton, themeToggleButton] = hoistComponent({
+    render(props) {
         return button({
-            icon: withDefault(icon, XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon()),
-            title: withDefault(title, XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme'),
-            onClick: withDefault(onClick, this.toggleTheme),
-            ...rest
+            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
+            onClick: () => XH.toggleTheme(),
+            ...props
         });
     }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    toggleTheme = () => {
-        XH.toggleTheme();
-    }
-
-}
-export const themeToggleButton = elemFactory(ThemeToggleButton);
+});
+ThemeToggleButton.propTypes = {...Button.propTypes};

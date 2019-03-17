@@ -5,50 +5,42 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps, useClassName} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-@HoistComponent
-@LayoutSupport
-export class ButtonGroup extends Component {
-
-    static propTypes = {
-        /** True to have all buttons fill available width equally. */
-        fill: PT.bool,
-
-        /** True to render each button with minimal surrounding chrome (default false). */
-        minimal: PT.bool,
-
-        /** Style block. */
-        style: PT.object,
-
-        /** True to render in a vertical orientation. */
-        vertical: PT.bool
-    };
-
-    baseClassName = 'xh-button-group';
-
-    render() {
-        const {fill, minimal, vertical, style, ...rest} = this.getNonLayoutProps();
+export const [ButtonGroup, buttonGroup] = hoistComponent({
+    render(props) {
+        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
+            {fill, minimal, vertical, style, ...rest} = nonLayoutProps;
         return bpButtonGroup({
             fill,
             minimal,
             vertical,
-
             style: {
                 ...style,
-                ...this.getLayoutProps()
+                ...layoutProps
             },
-
             ...rest,
-            className: this.getClassName()
+            className: useClassName('xh-button-group', props)
         });
     }
+});
 
-}
-export const buttonGroup = elemFactory(ButtonGroup);
+
+ButtonGroup.propTypes = {
+    /** True to have all buttons fill available width equally. */
+    fill: PT.bool,
+
+    /** True to render each button with minimal surrounding chrome (default false). */
+    minimal: PT.bool,
+
+    /** Style block. */
+    style: PT.object,
+
+    /** True to render in a vertical orientation. */
+    vertical: PT.bool
+};

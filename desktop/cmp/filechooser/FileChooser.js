@@ -71,7 +71,7 @@ export class FileChooser extends Component {
             {gridModel, lastRejectedCount} = model,
             enableMulti = withDefault(props.enableMulti, true),
             showFileGrid = withDefault(props.showFileGrid, true);
-
+        
         return hbox({
             items: [
                 dropzone({

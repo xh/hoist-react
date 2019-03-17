@@ -5,41 +5,15 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
+import {hoistComponent, useClassName, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-@HoistComponent
-export class AppMenuButton extends Component {
-    static propTypes = {
-        /** True to hide the Launch Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
-        hideAdminItem: PT.bool,
-
-        /** True to hide the Feedback Item. */
-        hideFeedbackItem: PT.bool,
-
-        /** True to hide the Options button. */
-        hideOptionsItem: PT.bool,
-
-        /** True to hide the Theme Toggle button. */
-        hideThemeItem: PT.bool,
-
-        /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
-        hideLogoutItem: PT.bool,
-
-        /**
-         * Array of configs for additional menu items to be shown.
-         */
-        extraItems: PT.array
-    };
-
-    baseClassName = 'xh-app-menu';
-
-    render() {
-        let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = this.props;
+export const [AppMenuButton, appMenuButton] = hoistComponent({
+    render(props) {
+        let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
         extraItems = extraItems ?
             [...extraItems.map(m => menuItem(m)), menuDivider()]  :
             [];
@@ -50,6 +24,7 @@ export class AppMenuButton extends Component {
 
         // TODO:  Need logic from context menu to remove duplicate seperators!
         return popover({
+            className: useClassName('xh-app-menu', props),
             position: 'bottom-right',
             minimal: true,
             target: button({
@@ -93,6 +68,25 @@ export class AppMenuButton extends Component {
             )
         });
     }
-}
+});
+AppMenuButton.propTypes = {
+    /** True to hide the Launch Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
+    hideAdminItem: PT.bool,
 
-export const appMenuButton = elemFactory(AppMenuButton);
+    /** True to hide the Feedback Item. */
+    hideFeedbackItem: PT.bool,
+
+    /** True to hide the Options button. */
+    hideOptionsItem: PT.bool,
+
+    /** True to hide the Theme Toggle button. */
+    hideThemeItem: PT.bool,
+
+    /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
+    hideLogoutItem: PT.bool,
+
+    /**
+     * Array of configs for additional menu items to be shown.
+     */
+    extraItems: PT.array
+};

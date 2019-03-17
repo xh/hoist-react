@@ -5,12 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {button, Button} from './Button';
 
 
 /**
@@ -20,30 +18,20 @@ import {button, Button} from '@xh/hoist/desktop/cmp/button';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-@HoistComponent
-export class ColChooserButton extends Component {
-
-    static propTypes = {
-        ...Button.propTypes,
-
-        /** GridModel of the grid for which this button should show a chooser. */
-        gridModel: PT.instanceOf(GridModel).isRequired
-    };
-
-    render() {
-        const {icon, title, onClick, gridModel, ...rest} = this.props;
-
+export const [ColChooserButton, colChooserButton] = hoistComponent({
+    render({gridModel, ...buttonProps}) {
         return button({
-            icon: withDefault(icon, Icon.gridPanel()),
-            title: withDefault(title, 'Choose grid columns...'),
-            onClick: withDefault(onClick, this.showChooser),
-            ...rest
+            icon: Icon.gridPanel(),
+            title: 'Choose grid columns...',
+            onClick: () => gridModel.showColChooser(),
+            ...buttonProps
         });
     }
+});
 
-    showChooser = () => {
-        this.props.gridModel.showColChooser();
-    }
+ColChooserButton.propTypes = {
+    ...Button.propTypes,
 
-}
-export const colChooserButton = elemFactory(ColChooserButton);
+    /** GridModel of the grid for which this button should show a chooser. */
+    gridModel: PT.instanceOf(GridModel).isRequired
+};
