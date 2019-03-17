@@ -4,17 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './feedback/FeedbackPanel';
 
-@HoistComponent
-export class ActivityTab extends Component {
-
+export const [ActivityTab] = hoistComponent({
     render() {
         return tabContainer({
             model: {
@@ -28,4 +25,4 @@ export class ActivityTab extends Component {
             }
         });
     }
-}
+});

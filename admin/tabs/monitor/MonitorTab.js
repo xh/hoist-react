@@ -4,15 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
-@HoistComponent
-export class MonitorTab extends Component {
+export const [MonitorTab] = hoistComponent({
     render() {
         return tabContainer({
             model: {
@@ -25,4 +24,4 @@ export class MonitorTab extends Component {
             }
         });
     }
-}
+});

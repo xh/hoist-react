@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -14,14 +13,9 @@ import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
-@HoistComponent
-export class ConfigPanel extends Component {
-
-    model = new ConfigModel()
-
+export const [ConfigPanel] = hoistComponent({
     render() {
-        const {model} = this;
-
+        const model = useLocalModel(ConfigModel);
         return fragment(
             restGrid({
                 model: model.gridModel,
@@ -36,4 +30,4 @@ export class ConfigPanel extends Component {
             configDiffer({model: model.differModel})
         );
     }
-}
+});

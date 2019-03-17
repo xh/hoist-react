@@ -17,7 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-export const [ClientErrorPanel, clientErrorPanel] = hoistComponent({
+export const [ClientErrorPanel] = hoistComponent({
 
     render() {
         const model = useLocalModel(ClientErrorModel);

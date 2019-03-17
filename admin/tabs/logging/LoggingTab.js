@@ -4,16 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {LogLevelPanel} from './LogLevelPanel';
 import {LogViewer} from './viewer/LogViewer';
 
-@HoistComponent
-export class LoggingTab extends Component {
-
+export const [LoggingTab] = hoistComponent({
     render() {
         return tabContainer({
             model: {
@@ -26,4 +23,4 @@ export class LoggingTab extends Component {
             }
         });
     }
-}
+});

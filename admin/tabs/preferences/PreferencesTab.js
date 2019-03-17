@@ -4,16 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-@HoistComponent
-export class PreferencesTab extends Component {
-
+export const [PreferencesTab] = hoistComponent({
     render() {
         return tabContainer({
             model: {
@@ -26,4 +23,4 @@ export class PreferencesTab extends Component {
             }
         });
     }
-}
+});

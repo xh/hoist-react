@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {AboutPanel} from './about/AboutPanel';
@@ -14,9 +13,7 @@ import {ServicePanel} from './services/ServicePanel';
 import {EhCachePanel} from './ehcache/EhCachePanel';
 import {UserPanel} from './users/UserPanel';
 
-@HoistComponent
-export class GeneralTab extends Component {
-
+export const [GeneralTab] = hoistComponent({
     render() {
         return tabContainer({
             model: {
@@ -32,4 +29,4 @@ export class GeneralTab extends Component {
             }
         });
     }
-}
+});

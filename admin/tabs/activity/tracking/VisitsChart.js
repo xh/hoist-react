@@ -4,9 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -15,19 +13,15 @@ import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
 
-@HoistComponent
-export class VisitsChart extends Component {
-    
-    model = new VisitsChartModel();
-    
+export const [VisitsChart, visitsChart] = hoistComponent({
     render() {
-        const {model} = this;
+        const model = useLocalModel(VisitsChartModel);
         return panel({
             mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart({model: model.chartModel}),
-            bbar: this.renderToolbar(),
+            bbar: renderToolbar(model),
             model: {
                 defaultSize: 500,
                 side: 'bottom',
@@ -35,34 +29,31 @@ export class VisitsChart extends Component {
             }
         });
     }
+});
 
-    //-----------------------------
-    // Implementation
-    //-----------------------------
-    renderToolbar() {
-        const {model} = this;
-        return toolbar(
-            this.dateInput({bind: 'startDate'}),
-            Icon.angleRight(),
-            this.dateInput({bind: 'endDate'}),
-            textInput({
-                model,
-                bind: 'username',
-                placeholder: 'Username',
-                width: 120
-            }),
-            refreshButton({model})
-        );
-    }
-
-    dateInput(args) {
-        return dateInput({
-            model: this.model,
-            popoverPosition: 'top-left',
-            commitOnChange: true,
-            width: 100,
-            ...args
-        });
-    }
+//-----------------------------
+// Implementation
+//-----------------------------
+function renderToolbar(model) {
+    return toolbar(
+        renderDateInput({model, bind: 'startDate'}),
+        Icon.angleRight(),
+        renderDateInput({model, bind: 'endDate'}),
+        textInput({
+            model,
+            bind: 'username',
+            placeholder: 'Username',
+            width: 120
+        }),
+        refreshButton({model})
+    );
 }
-export const visitsChart = elemFactory(VisitsChart);
+
+function renderDateInput(args) {
+    return dateInput({
+        popoverPosition: 'top-left',
+        commitOnChange: true,
+        width: 100,
+        ...args
+    });
+}

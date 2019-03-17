@@ -4,20 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {vframe} from '@xh/hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
 import {visitsChart} from './VisitsChart';
 
-@HoistComponent
-export class TrackingPanel extends Component {
-
+export const [TrackingPanel, trackingPanel] = hoistComponent({
     render() {
-        return vframe(
-            activityGrid(),
-            visitsChart()
-        );
+        return vframe(activityGrid(), visitsChart());
     }
-}
+});

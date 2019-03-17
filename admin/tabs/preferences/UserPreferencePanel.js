@@ -4,15 +4,18 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-@HoistComponent
-export class UserPreferencePanel extends Component {
+export const [UserPreferencePanel] = hoistComponent({
+    render() {
+        return restGrid({model: useLocalModel(createModel)});
+    }
+});
 
-    model = new RestGridModel({
+function createModel() {
+    return new RestGridModel({
         stateModel: 'xhUserPreferenceGrid',
         enableColChooser: true,
         enableExport: true,
@@ -77,8 +80,4 @@ export class UserPreferencePanel extends Component {
             {field: 'lastUpdatedBy'}
         ]
     });
-
-    render() {
-        return restGrid({model: this.model});
-    }
 }
