@@ -4,31 +4,26 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {callout} from '@xh/hoist/kit/blueprint';
+import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /**
  * Description panel for the LeftRightChooser.
  * @private
  */
-@HoistComponent
-export class Description extends Component {
+export const [Description, description] = hoistComponent(props => {
+    const model = useProvidedModel(LeftRightChooserModel, props),
+        {hasDescription, leftModel, rightModel} = model,
+        selected = leftModel.selectedRecord || rightModel.selectedRecord;
 
-    render() {
-        const model = this.model,
-            {hasDescription, leftModel, rightModel} = model,
-            selected = leftModel.selectedRecord || rightModel.selectedRecord;
+    if (!hasDescription || !(selected && selected.description)) return null;
 
-        if (!hasDescription || !(selected && selected.description)) return null;
-
-        return callout({
-            title: selected.text,
-            className: 'xh-lr-chooser__description',
-            intent: 'primary',
-            icon: null,
-            item: selected.description
-        });
-    }
-}
-export const description = elemFactory(Description);
+    return callout({
+        title: selected.text,
+        className: 'xh-lr-chooser__description',
+        intent: 'primary',
+        icon: null,
+        item: selected.description
+    });
+});
