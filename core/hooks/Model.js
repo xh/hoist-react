@@ -56,9 +56,7 @@ export function useProvidedModel(modelClass, props) {
         }
     }
 
-    const ownedModel = state.isOwned ? state.instance : null;
-    useOnUnmount(() => XH.safeDestroy(ownedModel));
-    useLoadSupportLink(ownedModel);
+    useOwnedModelLinker(state.isOwned ? state.instance : null)
     return state.instance;
 }
 
@@ -73,26 +71,37 @@ export function useProvidedModel(modelClass, props) {
  */
 export function useLocalModel(spec) {
     const [model] = useState(spec.isHoistModel ? () => new spec() : spec);
-    useOnUnmount(() => XH.safeDestroy(model));
-    useLoadSupportLink(model);
+    useOwnedModelLinker(model);
     return model;
+}
+
+/**
+ * Link a HoistModel that is owned by a component to the component.
+ *
+ * Call this hook from the owning component's render method, to wire it
+ * to the Component's lifecycle.
+ *
+ * This includes support for LoadSupport lifecycle, and cleanup when the
+ * component is destroyed.
+ *
+ * @param {Object} model - HoistModel owned by this component.
+ */
+export function useOwnedModelLinker(model) {
+    const loadModel = model && model.isLoadSupport ? model : null,
+        context = useContext(RefreshContext);
+    useOnMount(() => {
+        if (loadModel && context) context.register(loadModel);
+        if (loadModel) loadModel.loadAsync();
+    });
+    useOnUnmount(() => {
+        if (loadModel && context) context.unregister(loadModel);
+        if (model) XH.safeDestroy(model);
+    });
 }
 
 //-------------------------------
 // Implementation
 //--------------------------------
-function useLoadSupportLink(model) {
-    model = model && model.isLoadSupport ? model : null;
-    const context = useContext(RefreshContext);
-    useOnMount(() => {
-        if (model && context) context.register(model);
-        if (model) model.loadAsync();
-    });
-    useOnUnmount(() => {
-        if (model && context) context.unregister(model);
-    });
-}
-
 function throwModelChangeException() {
     throw XH.exception(`
                 Cannot re-render Component with a different model. If a new model is required, ensure 

@@ -5,27 +5,38 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import {XH, elemFactory} from '@xh/hoist/core';
-import {Observer} from '@xh/hoist/mobx';
+import {XH, elemFactory, useOwnedModelLinker} from '@xh/hoist/core';
+import {useObserver, observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
-import {loadSupportLinker}  from './impl/LoadSupportLinker';
-
-const observerFactory = elemFactory(Observer);
 
 /**
- * Core decorator for Components in Hoist.
+ * Create a functional component in Hoist.
  *
- * All React Components in Hoist applications should typically be decorated with this decorator.
- * Exceptions include highly specific low-level components provided to other APIs which may be
- * negatively impacted by the overhead associated with this decorator.
+ * This function will also apply mobx 'observer' behavior to the new component.
+ *
+ * @param {Object} spec
+ * @param {function} renderFn - function defining the component.
+ * @returns {Object[]} - Array containing the Component, and an elemFactory
+ *      for the Component.
+ *
+ * @see HoistComponent decorator for a ES6 class-based approach to defining a Component in Hoist.
+ */
+export function hoistComponent(renderFn) {
+    const component = observer(renderFn);
+    return [component, elemFactory(component)];
+}
+
+
+/**
+ * Create a Class Component in Hoist.
  *
  * Adds support for MobX reactivity, model awareness, and other convenience methods below.
  *
+ * NOTE: This method should be used for legacy applications, or when a class based component is neccessary.
  * @see hoistComponent for a functional, hooks-compatible approach to defining a Component in Hoist.
  */
 export function HoistComponent(C) {
@@ -167,28 +178,13 @@ export function HoistComponent(C) {
                 this._mounted = false;
                 this.destroy();
             },
-
-            destroy() {
-                if (this._modelIsOwned) {
-                    XH.safeDestroy(this._model);
-                }
-            }
         },
 
 
         overrides: {
             render: (sup) => {
-
-                // Decorate contents with <Observer> (and <LoadSupportLinker>  as needed)
                 return function() {
-                    const {ownedModel} = this,
-                        hasLoadSupport = ownedModel && ownedModel.isLoadSupport,
-                        renderFn = sup.bind(this),
-                        render = hasLoadSupport ?
-                            () => loadSupportLinker({renderFn, model: ownedModel}) :
-                            renderFn;
-
-                    return observerFactory({render});
+                    return classComponentWrapper({render: sup.bind(this), ownedModel: this.ownedModel});
                 };
             }
         }
@@ -213,3 +209,13 @@ function throwWrongModelClass(obj) {
 function warnNoModelClassProvided() {
     console.warn('Component class definition must specify a modelClass to support creating models from prop objects.');
 }
+
+
+//---------------------------------------------------------------------------
+// Internal component to wrap the contents of a class based @HoistComponent.
+// Provides observation and ownedModel linkage.
+//---------------------------------------------------------------------------
+export const [ClassComponentWrapper, classComponentWrapper] = hoistComponent(props => {
+    useOwnedModelLinker(props.ownedModel);
+    return useObserver(props.render);
+});
