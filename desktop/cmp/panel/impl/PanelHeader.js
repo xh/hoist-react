@@ -15,56 +15,53 @@ import {PanelModel} from '../PanelModel';
  * A standardized header for a Panel component
  * @private
  */
-export const [PanelHeader, panelHeader] = hoistComponent({
-    render(props) {
+export const [PanelHeader, panelHeader] = hoistComponent(props => {
+    const model = useProvidedModel(PanelModel, props),
+        {title, icon, headerItems = []} = props,
+        {collapsed, vertical, side, showHeaderCollapseButton} = model || {};
 
-        const model = useProvidedModel(PanelModel, props),
-            {title, icon, headerItems = []} = props,
-            {collapsed, vertical, side, showHeaderCollapseButton} = model || {};
+    if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
-        if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
+    const onDoubleClick = () => {
+        if (model && model.collapsible) model.toggleCollapsed();
+    };
 
-        const onDoubleClick = () => {
-            if (model && model.collapsible) model.toggleCollapsed();
-        };
-
-        if (!collapsed || vertical) {
-            return hbox({
-                className: 'xh-panel-header',
-                items: [
-                    icon || null,
-                    title ?
-                        box({
-                            className: 'xh-panel-header-title',
-                            flex: 1,
-                            item: title
-                        }) :
-                        filler(),
-                    ...(!collapsed ? headerItems : []),
-                    renderHeaderCollapseButton(model)
-                ],
-                onDoubleClick
-            });
-        } else {
-            // For Compressed vertical layout, skip header items.
-            const isLeft = side === 'left';
-            return vbox({
-                className: `xh-panel-header xh-panel-header-${side}`,
-                flex: 1,
-                items: [
-                    isLeft ? filler() : renderHeaderCollapseButton(model),
-                    icon || null,
-                    title ?
-                        box({
-                            className: 'xh-panel-header-title',
-                            item: title
-                        }) :
-                        null,
-                    !isLeft ? filler() : renderHeaderCollapseButton(model)
-                ],
-                onDoubleClick
-            });
-        }
+    if (!collapsed || vertical) {
+        return hbox({
+            className: 'xh-panel-header',
+            items: [
+                icon || null,
+                title ?
+                    box({
+                        className: 'xh-panel-header-title',
+                        flex: 1,
+                        item: title
+                    }) :
+                    filler(),
+                ...(!collapsed ? headerItems : []),
+                renderHeaderCollapseButton(model)
+            ],
+            onDoubleClick
+        });
+    } else {
+        // For Compressed vertical layout, skip header items.
+        const isLeft = side === 'left';
+        return vbox({
+            className: `xh-panel-header xh-panel-header-${side}`,
+            flex: 1,
+            items: [
+                isLeft ? filler() : renderHeaderCollapseButton(model),
+                icon || null,
+                title ?
+                    box({
+                        className: 'xh-panel-header-title',
+                        item: title
+                    }) :
+                    null,
+                !isLeft ? filler() : renderHeaderCollapseButton(model)
+            ],
+            onDoubleClick
+        });
     }
 });
 

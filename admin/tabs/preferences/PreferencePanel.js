@@ -9,10 +9,8 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const [PreferencePanel] = hoistComponent({
-    render() {
-        return restGrid({model: useLocalModel(createModel)});
-    }
+export const [PreferencePanel] = hoistComponent(() => {
+    return restGrid({model: useLocalModel(createModel)});
 });
 
 function createModel() {

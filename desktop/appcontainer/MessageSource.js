@@ -14,11 +14,9 @@ import {MessageSourceModel} from '@xh/hoist/core/appcontainer/MessageSourceModel
  *
  *  @private
  */
-export const [MessageSource, messageSource] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(MessageSourceModel, props),
-            models = model.msgModels,
-            children = models.map(model => message({model, key: model.xhId}));
-        return children.length ? fragment(...children) : null;
-    }
+export const [MessageSource, messageSource] = hoistComponent(props => {
+    const model = useProvidedModel(MessageSourceModel, props),
+        models = model.msgModels,
+        children = models.map(model => message({model, key: model.xhId}));
+    return children.length ? fragment(...children) : null;
 });

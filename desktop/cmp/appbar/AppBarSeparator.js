@@ -11,8 +11,6 @@ import {navbarDivider} from '@xh/hoist/kit/blueprint';
 /**
  * Convenience component for adding a separator between AppBar items.
  */
-export const [AppBarSeparator, appBarSeparator] = hoistComponent({
-    render() {
-        return navbarDivider();
-    }
+export const [AppBarSeparator, appBarSeparator] = hoistComponent(() => {
+    return navbarDivider();
 });

@@ -12,11 +12,9 @@ import './Toolbar.scss';
 /**
  * Convenience component to insert a pre-styled separator | between Toolbar items.
  */
-export const [ToolbarSep, toolbarSep] = hoistComponent({
-    render(props) {
-        return span({
-            ...props,
-            className: useClassName('xh-toolbar__separator', props)
-        });
-    }
+export const [ToolbarSep, toolbarSep] = hoistComponent(props => {
+    return span({
+        ...props,
+        className: useClassName('xh-toolbar__separator', props)
+    });
 });

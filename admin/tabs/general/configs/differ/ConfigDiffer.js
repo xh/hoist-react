@@ -20,22 +20,20 @@ import {configDifferDetail} from './ConfigDifferDetail';
 import {ConfigDifferModel} from './ConfigDifferModel';
 
 
-export const [ConfigDiffer, configDiffer] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(ConfigDifferModel, props),
-            {detailModel} = model;
+export const [ConfigDiffer, configDiffer] = hoistComponent(props => {
+    const model = useProvidedModel(ConfigDifferModel, props),
+        {detailModel} = model;
 
-        return fragment(
-            dialog({
-                isOpen: model.isOpen,
-                canOutsideClickClose: false,
-                onClose: () => model.close(),
-                style: {height: 600, width: '80%'},
-                item: renderContents(model)
-            }),
-            configDifferDetail({model: detailModel})
-        );
-    }
+    return fragment(
+        dialog({
+            isOpen: model.isOpen,
+            canOutsideClickClose: false,
+            onClose: () => model.close(),
+            style: {height: 600, width: '80%'},
+            item: renderContents(model)
+        }),
+        configDifferDetail({model: detailModel})
+    );
 });
 
 //------------------------

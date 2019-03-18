@@ -19,41 +19,39 @@ import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogMod
  *
  * @private
  */
-export const [FeedbackDialog, feedbackDialog] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(FeedbackDialogModel, props);
-        if (!model.isOpen) return null;
+export const [FeedbackDialog, feedbackDialog] = hoistComponent(props => {
+    const model = useProvidedModel(FeedbackDialogModel, props);
+    if (!model.isOpen) return null;
 
-        return dialog({
-            title: 'Submit Feedback',
-            style: {width: 450},
-            isOpen: true,
-            onClose: () => model.hide(),
-            canOutsideClickClose: false,
-            items: [
-                textArea({
-                    placeholder: 'Please enter your comments...',
-                    width: null,
-                    height: 250,
-                    style: {marginBottom: 2},
-                    commitOnChange: true,
-                    model,
-                    bind: 'message'
+    return dialog({
+        title: 'Submit Feedback',
+        style: {width: 450},
+        isOpen: true,
+        onClose: () => model.hide(),
+        canOutsideClickClose: false,
+        items: [
+            textArea({
+                placeholder: 'Please enter your comments...',
+                width: null,
+                height: 250,
+                style: {marginBottom: 2},
+                commitOnChange: true,
+                model,
+                bind: 'message'
+            }),
+            toolbar(
+                filler(),
+                button({
+                    text: 'Cancel',
+                    onClick: () => model.hide()
                 }),
-                toolbar(
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        onClick: () => model.hide()
-                    }),
-                    button({
-                        text: 'Send',
-                        intent: 'success',
-                        disabled: !model.message,
-                        onClick: () => model.submitAsync()
-                    })
-                )
-            ]
-        });
-    }
+                button({
+                    text: 'Send',
+                    intent: 'success',
+                    disabled: !model.message,
+                    onClick: () => model.submitAsync()
+                })
+            )
+        ]
+    });
 });

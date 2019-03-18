@@ -17,33 +17,31 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
 
-export const [ConfigDifferDetail, configDifferDetail] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(ConfigDifferDetailModel, props);
-        if (!model.record) return null;
+export const [ConfigDifferDetail, configDifferDetail] = hoistComponent(props => {
+    const model = useProvidedModel(ConfigDifferDetailModel, props);
+    if (!model.record) return null;
 
-        return dialog({
-            title: 'Detail',
-            isOpen: model.record,
-            onClose: () => model.close(),
-            item: panel({
-                item: renderDiffTable(),
-                bbar: toolbar(
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        onClick: () => model.close()
-                    }),
-                    button({
-                        text: 'Accept Remote',
-                        icon: Icon.cloudDownload(),
-                        intent: 'primary',
-                        onClick: () => model.confirmApplyRemote()
-                    })
-                )
-            })
-        });
-    }
+    return dialog({
+        title: 'Detail',
+        isOpen: model.record,
+        onClose: () => model.close(),
+        item: panel({
+            item: renderDiffTable(),
+            bbar: toolbar(
+                filler(),
+                button({
+                    text: 'Cancel',
+                    onClick: () => model.close()
+                }),
+                button({
+                    text: 'Accept Remote',
+                    icon: Icon.cloudDownload(),
+                    intent: 'primary',
+                    onClick: () => model.confirmApplyRemote()
+                })
+            )
+        })
+    });
 });
 
 //------------------------

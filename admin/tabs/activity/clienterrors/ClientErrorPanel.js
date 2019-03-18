@@ -17,23 +17,19 @@ import {Icon} from '@xh/hoist/icon';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-export const [ClientErrorPanel] = hoistComponent({
-
-    render() {
-        const model = useLocalModel(ClientErrorModel);
-
-        return panel({
-            mask: model.loadModel,
-            tbar: renderToolbar(model),
-            items: [
-                grid({
-                    model: model.gridModel,
-                    onRowDoubleClicked: (e) => model.openDetail(e.data)
-                }),
-                clientErrorDetail({model})
-            ]
-        });
-    }
+export const [ClientErrorPanel] = hoistComponent(() => {
+    const model = useLocalModel(ClientErrorModel);
+    return panel({
+        mask: model.loadModel,
+        tbar: renderToolbar(model),
+        items: [
+            grid({
+                model: model.gridModel,
+                onRowDoubleClicked: (e) => model.openDetail(e.data)
+            }),
+            clientErrorDetail({model})
+        ]
+    });
 });
 
 //--------------------------

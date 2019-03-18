@@ -9,10 +9,8 @@ import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const [MonitorEditorPanel] = hoistComponent({
-    render() {
-        return restGrid({model: useLocalModel(createModel)});
-    }
+export const [MonitorEditorPanel] = hoistComponent(() => {
+    return restGrid({model: useLocalModel(createModel)});
 });
 
 function createModel() {

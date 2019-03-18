@@ -6,15 +6,13 @@ import {PanelModel} from '../PanelModel';
 /**
  * @private
  */
-export const [HeaderCollapseButton, headerCollapseButton] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(PanelModel, props);
-        return button({
-            icon: Icon[getChevron(model)](),
-            onClick: () => model.toggleCollapsed(),
-            minimal: true
-        });
-    }
+export const [HeaderCollapseButton, headerCollapseButton] = hoistComponent(props => {
+    const model = useProvidedModel(PanelModel, props);
+    return button({
+        icon: Icon[getChevron(model)](),
+        onClick: () => model.toggleCollapsed(),
+        minimal: true
+    });
 });
 
 //------------------

@@ -13,22 +13,20 @@ import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
 
-export const [VisitsChart, visitsChart] = hoistComponent({
-    render() {
-        const model = useLocalModel(VisitsChartModel);
-        return panel({
-            mask: model.loadModel,
-            icon: Icon.users(),
-            title: 'Unique Daily Visitors',
-            item: chart({model: model.chartModel}),
-            bbar: renderToolbar(model),
-            model: {
-                defaultSize: 500,
-                side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
-            }
-        });
-    }
+export const [VisitsChart, visitsChart] = hoistComponent(() => {
+    const model = useLocalModel(VisitsChartModel);
+    return panel({
+        mask: model.loadModel,
+        icon: Icon.users(),
+        title: 'Unique Daily Visitors',
+        item: chart({model: model.chartModel}),
+        bbar: renderToolbar(model),
+        model: {
+            defaultSize: 500,
+            side: 'bottom',
+            prefName: 'xhAdminActivityChartSize'
+        }
+    });
 });
 
 //-----------------------------

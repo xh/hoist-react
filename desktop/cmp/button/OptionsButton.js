@@ -14,14 +14,12 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [OptionsButton, optionsButton] = hoistComponent({
-    render(props) {
-        return button({
-            icon: Icon.gear(),
-            title: 'Options',
-            onClick: () => XH.showOptionsDialog(),
-            ...props
-        });
-    }
+export const [OptionsButton, optionsButton] = hoistComponent(props => {
+    return button({
+        icon: Icon.gear(),
+        title: 'Options',
+        onClick: () => XH.showOptionsDialog(),
+        ...props
+    });
 });
 OptionsButton.propTypes = {...Button.propTypes};

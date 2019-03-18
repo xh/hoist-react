@@ -12,25 +12,23 @@ import './VersionBar.scss';
 /**
  * @private
  */
-export const [VersionBar, versionBar] = hoistComponent({
-    render() {
-        const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter'));
+export const [VersionBar, versionBar] = hoistComponent(() => {
+    const env = XH.getEnv('appEnvironment'),
+        version = XH.getEnv('clientVersion'),
+        isVisible = (env !== 'Production' || XH.getPref('xhForceEnvironmentFooter'));
 
-        if (!isVisible) return null;
+    if (!isVisible) return null;
 
-        return box({
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 'none',
-            className: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
-            items: [
-                [XH.appName, env, version].join(' • '),
-                Icon.info({
-                    onClick: () => XH.showAboutDialog()
-                })
-            ]
-        });
-    }
+    return box({
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 'none',
+        className: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
+        items: [
+            [XH.appName, env, version].join(' • '),
+            Icon.info({
+                onClick: () => XH.showAboutDialog()
+            })
+        ]
+    });
 });

@@ -28,90 +28,87 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-export const [Panel, panel] = hoistComponent({
+export const [Panel, panel] = hoistComponent(props => {
+    let model = useProvidedModel(PanelModel, props),
+        [flags] = useState({wasDisplayed: true}),
+        className = useClassName('xh-panel', props),
+        [layoutProps, nonLayoutProps] = useLayoutProps(props);
 
-    render(props) {
-        let [flags] = useState({wasDisplayed: true}),
-            className = useClassName('xh-panel', props),
-            model = useProvidedModel(PanelModel, props),
-            [layoutProps, nonLayoutProps] = useLayoutProps(props);
+    const {
+        tbar,
+        bbar,
+        title,
+        icon,
+        headerItems,
+        mask: maskProp,
+        children,
+        model: modelProp,
+        ...rest
+    } = nonLayoutProps;
 
-        const {
-            tbar,
-            bbar,
-            title,
-            icon,
-            headerItems,
-            mask: maskProp,
-            children,
-            model: modelProp,
-            ...rest
-        } = nonLayoutProps;
+    // 1) Pre-process layout
+    // Block unwanted use of padding props, which will separate the panel's header
+    // and bottom toolbar from its edges in a confusing way.
+    layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
 
-        // 1) Pre-process layout
-        // Block unwanted use of padding props, which will separate the panel's header
-        // and bottom toolbar from its edges in a confusing way.
-        layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
-
-        // Give Panels a default flexing behavior if no dimensions / flex specified.
-        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
-            layoutProps.flex = 'auto';
-        }
-
-        // 2) Prepare 'core' contents according to collapsed state
-        const {
-            resizable = false,
-            collapsible = false,
-            collapsed = false,
-            collapsedRenderMode = null,
-            vertical = false
-        } = model || {};
-
-        if (collapsed) {
-            delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
-            delete layoutProps[vertical ? 'height' : 'width'];
-        }
-
-        let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
-            coreContents = vframe({
-                style: {display: collapsed ? 'none' : 'flex'},
-                items: [
-                    tbar || null,
-                    ...(castArray(children)),
-                    bbar || null
-                ]
-            });
-        }
-        if (!collapsed) flags.wasDisplayed = true;
-
-        // 3) Mask is as provided, or a default simple mask.
-        let maskElem = null;
-        if (maskProp === true) {
-            maskElem = mask({isDisplayed: true});
-        } else if (maskProp instanceof PendingTaskModel) {
-            maskElem = mask({model: maskProp, spinner: true});
-        } else if (isReactElement(maskProp)) {
-            maskElem = maskProp;
-        }
-
-        // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
-        const item = vbox({
-            items: [
-                panelHeader({title, icon, headerItems, model}),
-                coreContents,
-                maskElem
-            ],
-            ...rest,
-            ...layoutProps,
-            className
-        });
-
-        // 5) Return, wrapped in resizable and its affordances if needed.
-        return resizable || collapsible ?
-            resizeContainer({item, model}) :
-            item;
+    // Give Panels a default flexing behavior if no dimensions / flex specified.
+    if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+        layoutProps.flex = 'auto';
     }
+
+    // 2) Prepare 'core' contents according to collapsed state
+    const {
+        resizable = false,
+        collapsible = false,
+        collapsed = false,
+        collapsedRenderMode = null,
+        vertical = false
+    } = model || {};
+
+    if (collapsed) {
+        delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
+        delete layoutProps[vertical ? 'height' : 'width'];
+    }
+
+    let coreContents = null;
+    if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
+        coreContents = vframe({
+            style: {display: collapsed ? 'none' : 'flex'},
+            items: [
+                tbar || null,
+                ...(castArray(children)),
+                bbar || null
+            ]
+        });
+    }
+    if (!collapsed) flags.wasDisplayed = true;
+
+    // 3) Mask is as provided, or a default simple mask.
+    let maskElem = null;
+    if (maskProp === true) {
+        maskElem = mask({isDisplayed: true});
+    } else if (maskProp instanceof PendingTaskModel) {
+        maskElem = mask({model: maskProp, spinner: true});
+    } else if (isReactElement(maskProp)) {
+        maskElem = maskProp;
+    }
+
+    // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+    const item = vbox({
+        items: [
+            panelHeader({title, icon, headerItems, model}),
+            coreContents,
+            maskElem
+        ],
+        ...rest,
+        ...layoutProps,
+        className
+    });
+
+    // 5) Return, wrapped in resizable and its affordances if needed.
+    return resizable || collapsible ?
+        resizeContainer({item, model}) :
+        item;
 });
 
 Panel.propTypes = {

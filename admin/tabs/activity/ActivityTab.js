@@ -11,18 +11,16 @@ import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './feedback/FeedbackPanel';
 
-export const [ActivityTab] = hoistComponent({
-    render() {
-        return tabContainer({
-            model: {
-                route: 'default.activity',
-                switcherPosition: 'left',
-                tabs: [
-                    {id: 'tracking', content: TrackingPanel},
-                    {id: 'clientErrors', content: ClientErrorPanel},
-                    {id: 'feedback', content: FeedbackPanel}
-                ]
-            }
-        });
-    }
+export const [ActivityTab] = hoistComponent(() => {
+    return tabContainer({
+        model: {
+            route: 'default.activity',
+            switcherPosition: 'left',
+            tabs: [
+                {id: 'tracking', content: TrackingPanel},
+                {id: 'clientErrors', content: ClientErrorPanel},
+                {id: 'feedback', content: FeedbackPanel}
+            ]
+        }
+    });
 });

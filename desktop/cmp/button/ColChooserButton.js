@@ -18,16 +18,15 @@ import {button, Button} from './Button';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-export const [ColChooserButton, colChooserButton] = hoistComponent({
-    render({gridModel, ...buttonProps}) {
+export const [ColChooserButton, colChooserButton] = hoistComponent(
+    ({gridModel, ...buttonProps}) => {
         return button({
             icon: Icon.gridPanel(),
             title: 'Choose grid columns...',
             onClick: () => gridModel.showColChooser(),
             ...buttonProps
         });
-    }
-});
+    });
 
 ColChooserButton.propTypes = {
     ...Button.propTypes,

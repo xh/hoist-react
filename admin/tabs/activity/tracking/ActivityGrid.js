@@ -17,21 +17,19 @@ import {Icon} from '@xh/hoist/icon';
 import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
-export const [ActivityGrid, activityGrid] = hoistComponent({
-    render(props) {
-        const model = useLocalModel(ActivityGridModel);
-        return panel({
-            mask: model.loadModel,
-            tbar: renderToolbar(model),
-            items: [
-                grid({
-                    model: model.gridModel,
-                    onRowDoubleClicked: (e) => model.openDetail(e.data)
-                }),
-                activityDetail({model})
-            ]
-        });
-    }
+export const [ActivityGrid, activityGrid] = hoistComponent(props => {
+    const model = useLocalModel(ActivityGridModel);
+    return panel({
+        mask: model.loadModel,
+        tbar: renderToolbar(model),
+        items: [
+            grid({
+                model: model.gridModel,
+                onRowDoubleClicked: (e) => model.openDetail(e.data)
+            }),
+            activityDetail({model})
+        ]
+    });
 });
 
 //------------------

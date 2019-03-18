@@ -20,8 +20,8 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-export const [ExportButton, exportButton] = hoistComponent({
-    render({gridModel, exportOptions = {}, ...buttonProps}) {
+export const [ExportButton, exportButton] = hoistComponent(
+    ({gridModel, exportOptions = {}, ...buttonProps}) => {
         return button({
             icon: Icon.download(),
             title: 'Export',
@@ -29,7 +29,7 @@ export const [ExportButton, exportButton] = hoistComponent({
             ...buttonProps
         });
     }
-});
+);
 
 ExportButton.propTypes = {
     ...Button.propTypes,

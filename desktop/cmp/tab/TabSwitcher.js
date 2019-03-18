@@ -21,31 +21,29 @@ import {withDefault} from '@xh/hoist/utils/js';
  * @see TabContainer
  * @see TabContainerModel
  */
-export const [TabSwitcher, tabSwitcher] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(TabContainerModel, props),
-            {id, tabs, activeTabId} = model;
+export const [TabSwitcher, tabSwitcher] = hoistComponent(props => {
+    const model = useProvidedModel(TabContainerModel, props),
+        {id, tabs, activeTabId} = model;
 
-        const orientation = withDefault(props.orientation, 'top'),
-            vertical = ['left', 'right'].includes(orientation);
+    const orientation = withDefault(props.orientation, 'top'),
+        vertical = ['left', 'right'].includes(orientation);
 
-        return blueprintTabs({
-            id,
-            vertical,
-            onChange: (tabId) => model.activateTab(tabId),
-            selectedTabId: activeTabId,
-            items: tabs.map(({id, title, icon, disabled, excludeFromSwitcher}) => {
-                if (excludeFromSwitcher) return null;
-                return blueprintTab({
-                    id,
-                    disabled,
-                    items: [icon, title]
-                });
-            }),
-            ...omit(props, 'model'),
-            className: useClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
-        });
-    }
+    return blueprintTabs({
+        id,
+        vertical,
+        onChange: (tabId) => model.activateTab(tabId),
+        selectedTabId: activeTabId,
+        items: tabs.map(({id, title, icon, disabled, excludeFromSwitcher}) => {
+            if (excludeFromSwitcher) return null;
+            return blueprintTab({
+                id,
+                disabled,
+                items: [icon, title]
+            });
+        }),
+        ...omit(props, 'model'),
+        className: useClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
+    });
 });
 
 TabSwitcher.propTypes = {

@@ -16,12 +16,12 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistComponent({
-    render({
+export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistComponent(
+    ({
         warningMessage = 'Are you sure you want to restore defaults?',
         warningTitle = 'All app customizations, including grid customizations, will be restored to their default settings and the app will be reloaded.',
         ...buttonProps
-    }) {
+    }) => {
 
         const onClick = () => {
             XH.confirm({
@@ -40,7 +40,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistComponent({
             ...buttonProps
         });
     }
-});
+);
 RestoreDefaultsButton.propTypes = {
     ...Button.propTypes,
 

@@ -15,23 +15,21 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistComponent({
-    render(props) {
-        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-            {icon, text, onClick, minimal = true, style, ...rest} = nonLayoutProps;
-        return bpButton({
-            icon,
-            minimal,
-            onClick,
-            text,
-            style: {
-                ...style,
-                ...layoutProps
-            },
-            ...rest,
-            className: useClassName('xh-button', props, minimal ? 'xh-button--minimal' : '')
-        });
-    }
+export const [Button, button] = hoistComponent(props => {
+    const [layoutProps, nonLayoutProps] = useLayoutProps(props),
+        {icon, text, onClick, minimal = true, style, ...rest} = nonLayoutProps;
+    return bpButton({
+        icon,
+        minimal,
+        onClick,
+        text,
+        style: {
+            ...style,
+            ...layoutProps
+        },
+        ...rest,
+        className: useClassName('xh-button', props, minimal ? 'xh-button--minimal' : '')
+    });
 });
 
 Button.propTypes = {

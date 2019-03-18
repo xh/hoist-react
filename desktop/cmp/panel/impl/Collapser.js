@@ -16,24 +16,22 @@ import './Collapser.scss';
 /**
  * @private
  */
-export const [Collapser, collapser] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(PanelModel, props),
-            {vertical, showSplitterCollapseButton} = model;
+export const [Collapser, collapser] = hoistComponent(props => {
+    const model = useProvidedModel(PanelModel, props),
+        {vertical, showSplitterCollapseButton} = model;
 
-        const cmp = vertical ? hbox : vbox,
-            cfg = {
-                className: `xh-resizable-collapser ${vertical ? 'vertical' : 'horizontal'}`,
-                item: button({
-                    className: 'xh-resizable-collapser-btn',
-                    icon: Icon[getChevron(model)](),
-                    onClick: () => model.toggleCollapsed(),
-                    omit: !showSplitterCollapseButton
-                })
-            };
+    const cmp = vertical ? hbox : vbox,
+        cfg = {
+            className: `xh-resizable-collapser ${vertical ? 'vertical' : 'horizontal'}`,
+            item: button({
+                className: 'xh-resizable-collapser-btn',
+                icon: Icon[getChevron(model)](),
+                onClick: () => model.toggleCollapsed(),
+                omit: !showSplitterCollapseButton
+            })
+        };
 
-        return cmp(cfg);
-    }
+    return cmp(cfg);
 });
 
 //------------------

@@ -17,41 +17,39 @@ import '../Tabs.scss';
  *
  * @private
  */
-export const [TabContainer, tabContainer] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(TabContainerModel, props),
-            [layoutProps] = useLayoutProps(props),
-            {activeTabId, tabs, switcherPosition} = model,
-            switcherBefore = ['left', 'top'].includes(switcherPosition),
-            switcherAfter = ['right', 'bottom'].includes(switcherPosition),
-            vertical = ['left', 'right'].includes(switcherPosition),
-            container = vertical ? hbox : vbox;
+export const [TabContainer, tabContainer] = hoistComponent(props => {
+    const model = useProvidedModel(TabContainerModel, props),
+        [layoutProps] = useLayoutProps(props),
+        {activeTabId, tabs, switcherPosition} = model,
+        switcherBefore = ['left', 'top'].includes(switcherPosition),
+        switcherAfter = ['right', 'bottom'].includes(switcherPosition),
+        vertical = ['left', 'right'].includes(switcherPosition),
+        container = vertical ? hbox : vbox;
 
-        // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
-            layoutProps.flex = 'auto';
-        }
-
-        return container({
-            ...layoutProps,
-            className: useClassName('xh-tab-container', props),
-            items: [
-                switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
-                ...tabs.map(tabModel => {
-                    const tabId = tabModel.id,
-                        style = (activeTabId !== tabId) ? hideStyle : undefined;
-
-                    return div({
-                        className: 'xh-tab-wrapper',
-                        style,
-                        key: tabId,
-                        item: tab({model: tabModel})
-                    });
-                }),
-                switcherAfter ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null
-            ]
-        });
+    // Default flex = 'auto' if no dimensions / flex specified.
+    if (layoutProps.width === null && layoutProps.height === null && layoutProps.flex === null) {
+        layoutProps.flex = 'auto';
     }
+
+    return container({
+        ...layoutProps,
+        className: useClassName('xh-tab-container', props),
+        items: [
+            switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
+            ...tabs.map(tabModel => {
+                const tabId = tabModel.id,
+                    style = (activeTabId !== tabId) ? hideStyle : undefined;
+
+                return div({
+                    className: 'xh-tab-wrapper',
+                    style,
+                    key: tabId,
+                    item: tab({model: tabModel})
+                });
+            }),
+            switcherAfter ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null
+        ]
+    });
 });
 
 const hideStyle = {display: 'none'};

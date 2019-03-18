@@ -15,25 +15,23 @@ import {DataViewModel} from './DataViewModel';
  * single column, using a configured component for rendering each item.
  */
 
-export const [DataView, dataView] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(DataViewModel, props),
-            [layoutProps] = useLayoutProps(props),
-            className = useClassName('xh-data-view', props),
-            {rowCls, itemHeight, onRowDoubleClicked} = props;
+export const [DataView, dataView] = hoistComponent(props => {
+    const model = useProvidedModel(DataViewModel, props),
+        [layoutProps] = useLayoutProps(props),
+        className = useClassName('xh-data-view', props),
+        {rowCls, itemHeight, onRowDoubleClicked} = props;
 
-        return grid({
-            ...layoutProps,
-            className,
-            model: model.gridModel,
-            agOptions: {
-                headerHeight: 0,
-                rowClass: rowCls,
-                getRowHeight: () => itemHeight
-            },
-            onRowDoubleClicked
-        });
-    }
+    return grid({
+        ...layoutProps,
+        className,
+        model: model.gridModel,
+        agOptions: {
+            headerHeight: 0,
+            rowClass: rowCls,
+            getRowHeight: () => itemHeight
+        },
+        onRowDoubleClicked
+    });
 });
 
 DataView.propTypes = {

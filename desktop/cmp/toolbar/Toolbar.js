@@ -14,15 +14,13 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-export const [Toolbar, toolbar] = hoistComponent({
-    render(props) {
-        const {vertical, ...rest} = props;
+export const [Toolbar, toolbar] = hoistComponent(props => {
+    const {vertical, ...rest} = props;
 
-        return (vertical ? vbox : hbox)({
-            ...rest,
-            className: useClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
-        });
-    }
+    return (vertical ? vbox : hbox)({
+        ...rest,
+        className: useClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
+    });
 });
 
 Toolbar.propTypes = {

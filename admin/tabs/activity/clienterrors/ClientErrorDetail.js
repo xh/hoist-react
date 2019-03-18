@@ -14,22 +14,19 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
 import {ClientErrorModel} from './ClientErrorModel';
 
-export const [ClientErrorDetail, clientErrorDetail] = hoistComponent({
+export const [ClientErrorDetail, clientErrorDetail] = hoistComponent(props => {
+    const model = useProvidedModel(ClientErrorModel, props),
+        rec = model.detailRecord;
 
-    render(props) {
-        const model = useProvidedModel(ClientErrorModel, props),
-            rec = model.detailRecord;
+    if (!rec) return null;
 
-        if (!rec) return null;
-
-        return dialog({
-            title: 'Error Details',
-            style: {width: 1000},
-            isOpen: true,
-            onClose: () => model.closeDetail(),
-            items: renderDetail(model, rec)
-        });
-    }
+    return dialog({
+        title: 'Error Details',
+        style: {width: 1000},
+        isOpen: true,
+        onClose: () => model.closeDetail(),
+        items: renderDetail(model, rec)
+    });
 });
 
 //----------------

@@ -17,16 +17,14 @@ import {message} from './Message';
  *
  * @private
  */
-export const [IdleDialog, idleDialog] = hoistComponent({
-    render(props) {
-        return message({
-            model: {
-                title: 'Application Sleeping',
-                icon: Icon.moon(),
-                message: 'This application is sleeping due to inactivity. Please click below to reload it.',
-                confirmText: 'Reload',
-                onConfirm: props.onReactivate
-            }
-        });
-    }
+export const [IdleDialog, idleDialog] = hoistComponent(props => {
+    return message({
+        model: {
+            title: 'Application Sleeping',
+            icon: Icon.moon(),
+            message: 'This application is sleeping due to inactivity. Please click below to reload it.',
+            confirmText: 'Reload',
+            onConfirm: props.onReactivate
+        }
+    });
 });

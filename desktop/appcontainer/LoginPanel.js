@@ -24,69 +24,66 @@ import './LoginPanel.scss';
  *
  * @private
  */
-export const [LoginPanel, loginPanel] = hoistComponent({
+export const [LoginPanel, loginPanel] = hoistComponent(props => {
+    const model = useProvidedModel(LoginPanelModel, props),
+        {loginMessage} = XH.appSpec;
 
-    render(props) {
-        const model = useProvidedModel(LoginPanelModel, props),
-            {loginMessage} = XH.appSpec;
+    const onKeyPress = (ev) => {
+        if (ev.key === 'Enter') model.submit();
+    };
 
-        const onKeyPress = (ev) => {
-            if (ev.key === 'Enter') model.submit();
-        };
-
-        return viewport({
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            item: panel({
-                title: XH.clientAppName,
-                icon: Icon.login(),
-                className: 'xh-login',
-                width: 300,
-                items: [
-                    vspacer(10),
-                    textInput({
-                        model,
-                        bind: 'username',
-                        placeholder: 'Username...',
-                        autoFocus: true,
-                        commitOnChange: true,
-                        onKeyPress,
-                        autoComplete: 'on',
-                        width: null
-                    }),
-                    textInput({
-                        model,
-                        bind: 'password',
-                        placeholder: 'Password...',
-                        type: 'password',
-                        commitOnChange: true,
-                        onKeyPress,
-                        autoComplete: 'on',
-                        width: null
-                    }),
-                    text({
-                        omit: !model.warning,
-                        item: model.warning,
-                        ellipsize: true,
-                        className: 'xh-login__warning'
-                    }),
-                    loginMessage ? box({
-                        className: 'xh-login__message',
-                        item: loginMessage
-                    }) : null
-                ],
-                bbar: toolbar(
-                    filler(),
-                    button({
-                        text: 'Login',
-                        intent: 'primary',
-                        icon: Icon.login(),
-                        disabled: !model.isValid,
-                        onClick: () => model.submit()
-                    })
-                )
-            })
-        });
-    }
+    return viewport({
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        item: panel({
+            title: XH.clientAppName,
+            icon: Icon.login(),
+            className: 'xh-login',
+            width: 300,
+            items: [
+                vspacer(10),
+                textInput({
+                    model,
+                    bind: 'username',
+                    placeholder: 'Username...',
+                    autoFocus: true,
+                    commitOnChange: true,
+                    onKeyPress,
+                    autoComplete: 'on',
+                    width: null
+                }),
+                textInput({
+                    model,
+                    bind: 'password',
+                    placeholder: 'Password...',
+                    type: 'password',
+                    commitOnChange: true,
+                    onKeyPress,
+                    autoComplete: 'on',
+                    width: null
+                }),
+                text({
+                    omit: !model.warning,
+                    item: model.warning,
+                    ellipsize: true,
+                    className: 'xh-login__warning'
+                }),
+                loginMessage ? box({
+                    className: 'xh-login__message',
+                    item: loginMessage
+                }) : null
+            ],
+            bbar: toolbar(
+                filler(),
+                button({
+                    text: 'Login',
+                    intent: 'primary',
+                    icon: Icon.login(),
+                    disabled: !model.isValid,
+                    onClick: () => model.submit()
+                })
+            )
+        })
+    });
 });

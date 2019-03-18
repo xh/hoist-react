@@ -20,8 +20,8 @@ import {warnIf} from '@xh/hoist/utils/js';
  * provided. If neither of these props are provided, the contextual RefreshContextModel for this
  * button will be used.
  */
-export const [RefreshButton, refreshButton] = hoistComponent({
-    render({model, ...buttonProps}) {
+export const [RefreshButton, refreshButton] = hoistComponent(
+    ({model, ...buttonProps}) => {
         const refreshContext = useContext(RefreshContext);
 
         warnIf(
@@ -42,7 +42,7 @@ export const [RefreshButton, refreshButton] = hoistComponent({
             ...buttonProps
         });
     }
-});
+);
 RefreshButton.propTypes = {
     ...Button.propTypes,
 

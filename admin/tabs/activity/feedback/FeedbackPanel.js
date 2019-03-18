@@ -8,9 +8,7 @@ import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {FeedbackPanelModel} from './FeedbackPanelModel';
 
-export const [FeedbackPanel] = hoistComponent({
-    render() {
-        const model = useLocalModel(FeedbackPanelModel);
-        return restGrid({model: model.gridModel});
-    }
+export const [FeedbackPanel] = hoistComponent(() => {
+    const model = useLocalModel(FeedbackPanelModel);
+    return restGrid({model: model.gridModel});
 });

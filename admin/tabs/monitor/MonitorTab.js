@@ -11,17 +11,15 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
-export const [MonitorTab] = hoistComponent({
-    render() {
-        return tabContainer({
-            model: {
-                route: 'default.monitor',
-                switcherPosition: 'left',
-                tabs: [
-                    {id: 'status', content: MonitorResultsPanel},
-                    {id: 'editMonitors', content: MonitorEditorPanel}
-                ]
-            }
-        });
-    }
+export const [MonitorTab] = hoistComponent(() => {
+    return tabContainer({
+        model: {
+            route: 'default.monitor',
+            switcherPosition: 'left',
+            tabs: [
+                {id: 'status', content: MonitorResultsPanel},
+                {id: 'editMonitors', content: MonitorEditorPanel}
+            ]
+        }
+    });
 });

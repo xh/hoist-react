@@ -13,7 +13,7 @@ import {RefreshContext} from '@xh/hoist/core/refresh/RefreshContext';
 
 
 /**
- * This hook provides support for components that will receive a model from props. If
+ * This hook provides support for components that will receive a model from props.
  * The model can be passed as either an already-created class instance or as a config
  * for one to be created internally.
  *
@@ -34,32 +34,32 @@ import {RefreshContext} from '@xh/hoist/core/refresh/RefreshContext';
  * @returns {Object} - instance of a HoistModel
  */
 export function useProvidedModel(modelClass, props) {
-    let [model, setModel] = useState(null),
-        [modelIsOwned, setModelIsOwned] = useState(false);
-    const propsModel = props.model;
+    let [state] = useState({instance: null, isOwned: false}),
+        propsModel = props.model;
 
-    // Return any model instance that has already been provided to the component.
-    if (model && !modelIsOwned && propsModel !== model) throwModelChangeException();
+    // Recognize any disalloeddynamic change to the model
+    if (state.instance && !state.isOwned && propsModel !== state.instance) throwModelChangeException();
 
     // if we don't have one, potentially source from props,instantiating if appropriate.
-    if (!model && propsModel) {
+    if (!state.instance && propsModel) {
         if (isPlainObject(propsModel)) {
             if (modelClass) {
-                setModel(model = new modelClass(propsModel));
-                setModelIsOwned(modelIsOwned = true);
+                state.instance = new modelClass(propsModel);
+                state.isOwned = true;
             } else {
                 warnNoModelClassProvided();
             }
         } else {
             if (modelClass && !(propsModel instanceof modelClass)) throwWrongModelClass(this);
-            setModel(model = propsModel);
-            setModelIsOwned(modelIsOwned = false);
+            state.instance = propsModel;
+            state.isOwned = false;
         }
     }
 
-    useOnUnmount(() => XH.safeDestroy(model));
-    useLoadSupportLink(modelIsOwned ? model : null);
-    return model;
+    const ownedModel = state.isOwned ? state.instance : null;
+    useOnUnmount(() => XH.safeDestroy(ownedModel));
+    useLoadSupportLink(ownedModel);
+    return state.instance;
 }
 
 /**

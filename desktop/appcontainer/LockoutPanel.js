@@ -18,21 +18,19 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
  *
  * @private
  */
-export const [LockoutPanel, lockoutPanel] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(AppContainerModel, props);
-        return viewport(
-            vframe(
-                impersonationBar({model: model.impersonationBarModel}),
-                filler(),
-                box({
-                    className: 'xh-lockout-panel',
-                    item: unauthorizedMessage(model.accessDeniedMessage)
-                }),
-                filler()
-            )
-        );
-    }
+export const [LockoutPanel, lockoutPanel] = hoistComponent(props => {
+    const model = useProvidedModel(AppContainerModel, props);
+    return viewport(
+        vframe(
+            impersonationBar({model: model.impersonationBarModel}),
+            filler(),
+            box({
+                className: 'xh-lockout-panel',
+                item: unauthorizedMessage(model.accessDeniedMessage)
+            }),
+            filler()
+        )
+    );
 });
 
 //------------------------

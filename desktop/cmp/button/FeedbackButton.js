@@ -12,15 +12,13 @@ import {Icon} from '@xh/hoist/icon';
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [FeedbackButton, feedBackButton] = hoistComponent({
-    render(props) {
-        return button({
-            icon: Icon.comment({className: 'fa-flip-horizontal'}),
-            title: 'Feedback',
-            onClick: () => XH.showFeedbackDialog(),
-            ...props
-        });
-    }
+export const [FeedbackButton, feedBackButton] = hoistComponent(props => {
+    return button({
+        icon: Icon.comment({className: 'fa-flip-horizontal'}),
+        title: 'Feedback',
+        onClick: () => XH.showFeedbackDialog(),
+        ...props
+    });
 });
 FeedbackButton.propTypes = {...Button.propTypes};
 

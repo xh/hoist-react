@@ -13,20 +13,18 @@ import {ServicePanel} from './services/ServicePanel';
 import {EhCachePanel} from './ehcache/EhCachePanel';
 import {UserPanel} from './users/UserPanel';
 
-export const [GeneralTab] = hoistComponent({
-    render() {
-        return tabContainer({
-            model: {
-                route: 'default.general',
-                switcherPosition: 'left',
-                tabs: [
-                    {id: 'about', content: AboutPanel},
-                    {id: 'config', content: ConfigPanel},
-                    {id: 'services', content: ServicePanel},
-                    {id: 'ehCache', title: 'Caches', content: EhCachePanel},
-                    {id: 'users', content: UserPanel}
-                ]
-            }
-        });
-    }
+export const [GeneralTab] = hoistComponent(() => {
+    return tabContainer({
+        model: {
+            route: 'default.general',
+            switcherPosition: 'left',
+            tabs: [
+                {id: 'about', content: AboutPanel},
+                {id: 'config', content: ConfigPanel},
+                {id: 'services', content: ServicePanel},
+                {id: 'ehCache', title: 'Caches', content: EhCachePanel},
+                {id: 'users', content: UserPanel}
+            ]
+        }
+    });
 });

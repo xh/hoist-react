@@ -28,15 +28,13 @@ import {TabContainerModel} from './TabContainerModel';
  *
  * @see TabContainerModel
  */
-export const [TabContainer, tabContainer] = hoistComponent({
-    render(props) {
-        throwIf(
-            props.switcherPosition,
-            "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
-        );
+export const [TabContainer, tabContainer] = hoistComponent(props => {
+    throwIf(
+        props.switcherPosition,
+        "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
+    );
 
-        return XH.isMobile ? mobileTabContainer(props) : desktopTabContainer(props);
-    }
+    return XH.isMobile ? mobileTabContainer(props) : desktopTabContainer(props);
 });
 
 TabContainer.propTypes = {

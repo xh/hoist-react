@@ -13,17 +13,15 @@ import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
-export const [AboutPanel] = hoistComponent({
-    render() {
-        return div({
-            className: 'xh-admin-about-panel',
-            items: [
-                h1(Icon.info(), 'About This Application'),
-                ...renderTables(),
-                renderBlurb()
-            ]
-        });
-    }
+export const [AboutPanel] = hoistComponent(() => {
+    return div({
+        className: 'xh-admin-about-panel',
+        items: [
+            h1(Icon.info(), 'About This Application'),
+            ...renderTables(),
+            renderBlurb()
+        ]
+    });
 });
 
 //-----------------

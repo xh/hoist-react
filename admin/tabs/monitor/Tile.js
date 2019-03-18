@@ -13,44 +13,42 @@ import {Icon} from '@xh/hoist/icon';
 
 import './Tile.scss';
 
-export const [Tile, tile] = hoistComponent({
-    render(props) {
-        const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
-            {icon, statusText} = statusProperties(status),
-            tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
-            relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});
+export const [Tile, tile] = hoistComponent(props => {
+    const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
+        {icon, statusText} = statusProperties(status),
+        tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
+        relativeString = getRelativeTimestamp(new Date(lastStatusChanged), {pastSuffix: ''});
 
-        return vbox({
-            className: tileClass,
-            items: [
-                div({
-                    className: 'xh-status-tile__name',
-                    item: name
-                }),
-                vbox({
-                    className: 'xh-status-tile__content',
-                    items: [
-                        icon,
-                        div({
-                            className: 'xh-status-tile__elapsed',
-                            item: `${statusText} for ${relativeString} (${pluralize('check', checksInStatus, true)})`,
-                            hidden: !!status.match('UNKNOWN|INACTIVE')
-                        }),
-                        div({
-                            className: 'xh-status-tile__metric',
-                            item: `${metric} ${metricUnit || ''}`,
-                            hidden: metric == null
-                        }),
-                        div({
-                            className: 'xh-status-tile__message',
-                            item: `${message}`,
-                            hidden: !message
-                        })
-                    ]
-                })
-            ]
-        });
-    }
+    return vbox({
+        className: tileClass,
+        items: [
+            div({
+                className: 'xh-status-tile__name',
+                item: name
+            }),
+            vbox({
+                className: 'xh-status-tile__content',
+                items: [
+                    icon,
+                    div({
+                        className: 'xh-status-tile__elapsed',
+                        item: `${statusText} for ${relativeString} (${pluralize('check', checksInStatus, true)})`,
+                        hidden: !!status.match('UNKNOWN|INACTIVE')
+                    }),
+                    div({
+                        className: 'xh-status-tile__metric',
+                        item: `${metric} ${metricUnit || ''}`,
+                        hidden: metric == null
+                    }),
+                    div({
+                        className: 'xh-status-tile__message',
+                        item: `${message}`,
+                        hidden: !message
+                    })
+                ]
+            })
+        ]
+    });
 });
 
 function statusProperties(status) {

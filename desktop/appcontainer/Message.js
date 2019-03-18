@@ -17,25 +17,23 @@ import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
  *
  * @private
  */
-export const [Message, message] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(MessageModel, props),
-            isOpen = model && model.isOpen;
+export const [Message, message] = hoistComponent(props => {
+    const model = useProvidedModel(MessageModel, props),
+        isOpen = model && model.isOpen;
 
-        if (!isOpen) return null;
+    if (!isOpen) return null;
 
-        return dialog({
-            isOpen: true,
-            isCloseButtonShown: false,
-            title: model.title,
-            icon: model.icon,
-            items: [
-                dialogBody(model.message),
-                toolbar(getButtons(model))
-            ],
-            ...props
-        });
-    }
+    return dialog({
+        isOpen: true,
+        isCloseButtonShown: false,
+        title: model.title,
+        icon: model.icon,
+        items: [
+            dialogBody(model.message),
+            toolbar(getButtons(model))
+        ],
+        ...props
+    });
 });
 
 

@@ -21,34 +21,32 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-export const [Tab, tab] = hoistComponent({
-    render(props) {
-        let model = useProvidedModel(TabModel, props),
-            {content, contentFn, isActive, renderMode, refreshContextModel} = model,
-            [flags] = useState({wasActivated: false}),
-            className = useClassName('xh-tab', props);
+export const [Tab, tab] = hoistComponent(props => {
+    let model = useProvidedModel(TabModel, props),
+        {content, contentFn, isActive, renderMode, refreshContextModel} = model,
+        [flags] = useState({wasActivated: false}),
+        className = useClassName('xh-tab', props);
 
-        if (!flags.wasActivated && isActive) flags.wasActivated = true;
-        
-        if (
-            !isActive &&
-            (
-                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
-            )
-        ) {
-            return null;
-        }
+    if (!flags.wasActivated && isActive) flags.wasActivated = true;
 
-        const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
-        
-        return frame({
-            display: isActive ? 'flex' : 'none',
-            className,
-            item: refreshContextView({
-                model: refreshContextModel,
-                item: contentElem
-            })
-        });
+    if (
+        !isActive &&
+        (
+            (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
+            (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
+        )
+    ) {
+        return null;
     }
+
+    const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
+
+    return frame({
+        display: isActive ? 'flex' : 'none',
+        className,
+        item: refreshContextView({
+            model: refreshContextModel,
+            item: contentElem
+        })
+    });
 });

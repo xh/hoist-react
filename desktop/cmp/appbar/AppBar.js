@@ -22,41 +22,39 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppBar, appBar] = hoistComponent({
-    render(props) {
-        const {
-            icon,
-            title,
-            leftItems,
-            rightItems,
-            hideRefreshButton,
-            hideAppMenuButton,
-            appMenuButtonOptions = {}
-        } = props;
+export const [AppBar, appBar] = hoistComponent(props => {
+    const {
+        icon,
+        title,
+        leftItems,
+        rightItems,
+        hideRefreshButton,
+        hideAppMenuButton,
+        appMenuButtonOptions = {}
+    } = props;
 
-        return navbar({
-            className: useClassName('xh-appbar', props),
-            items: [
-                navbarGroup({
-                    align: 'left',
-                    items: [
-                        icon,
-                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
-                        appBarSeparator({omit: isEmpty(leftItems)}),
-                        ...leftItems || []
-                    ]
-                }),
-                navbarGroup({
-                    align: 'right',
-                    items: [
-                        ...rightItems || [],
-                        refreshButton({omit: hideRefreshButton}),
-                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
-                    ]
-                })
-            ]
-        });
-    }
+    return navbar({
+        className: useClassName('xh-appbar', props),
+        items: [
+            navbarGroup({
+                align: 'left',
+                items: [
+                    icon,
+                    span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
+                    appBarSeparator({omit: isEmpty(leftItems)}),
+                    ...leftItems || []
+                ]
+            }),
+            navbarGroup({
+                align: 'right',
+                items: [
+                    ...rightItems || [],
+                    refreshButton({omit: hideRefreshButton}),
+                    appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
+                ]
+            })
+        ]
+    });
 });
 
 AppBar.propTypes = {

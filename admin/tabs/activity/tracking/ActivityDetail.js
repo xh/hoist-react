@@ -13,21 +13,19 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 import {ActivityGridModel} from './ActivityGridModel';
 
-export const [ActivityDetail, activityDetail] = hoistComponent({
-    render(props) {
-        const model = useProvidedModel(ActivityGridModel, props),
-            rec = model.detailRecord;
+export const [ActivityDetail, activityDetail] = hoistComponent(props => {
+    const model = useProvidedModel(ActivityGridModel, props),
+        rec = model.detailRecord;
 
-        if (!rec) return null;
+    if (!rec) return null;
 
-        return dialog({
-            title: 'Activity Details',
-            style: {width: 600},
-            isOpen: model.detailRecord,
-            onClose: () => model.closeDetail(),
-            items: renderDetail(model, rec)
-        });
-    }
+    return dialog({
+        title: 'Activity Details',
+        style: {width: 600},
+        isOpen: model.detailRecord,
+        onClose: () => model.closeDetail(),
+        items: renderDetail(model, rec)
+    });
 });
 
 //---------------------

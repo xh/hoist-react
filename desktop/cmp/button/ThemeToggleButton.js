@@ -11,14 +11,12 @@ import {button, Button} from './Button';
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-export const [ThemeToggleButton, themeToggleButton] = hoistComponent({
-    render(props) {
-        return button({
-            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
-            onClick: () => XH.toggleTheme(),
-            ...props
-        });
-    }
+export const [ThemeToggleButton, themeToggleButton] = hoistComponent(props => {
+    return button({
+        icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+        title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
+        onClick: () => XH.toggleTheme(),
+        ...props
+    });
 });
 ThemeToggleButton.propTypes = {...Button.propTypes};
