@@ -2,6 +2,17 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
+### 🎁 New Features
+* Hoist now fully supports React functional components and hooks.  See the new function `hoistComponent`
+for more information.  Class-based functions are still fully supported using the `@HoistComponent` class.
+
+
+### 💥 Breaking Changes
+* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general factory function.
+Previously functions could also be provided to the `content` prop, but not that prop must be a Class or a
+function that is strictly a React Component definition.    
+
+
 * TBD
 
 ## v20.1.0 - 2019-03-14
