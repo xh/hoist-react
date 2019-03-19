@@ -33,9 +33,6 @@ export const [LockoutPanel, lockoutPanel] = hoistComponent(props => {
     );
 });
 
-//------------------------
-// Implementation
-//--------------------------
 function unauthorizedMessage(msg) {
     const {appSpec} = XH,
         user = XH.getUser(),

@@ -56,7 +56,7 @@ export function useProvidedModel(modelClass, props) {
         }
     }
 
-    useOwnedModelLinker(state.isOwned ? state.instance : null)
+    useOwnedModelLinker(state.isOwned ? state.instance : null);
     return state.instance;
 }
 

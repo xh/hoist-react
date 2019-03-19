@@ -24,9 +24,6 @@ export const [AboutPanel] = hoistComponent(() => {
     });
 });
 
-//-----------------
-// Implementation
-//-----------------
 function renderTables() {
     const svc = XH.environmentService,
         row = (label, data) => tr(th(label), td(data));

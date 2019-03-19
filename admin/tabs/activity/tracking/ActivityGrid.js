@@ -32,9 +32,6 @@ export const [ActivityGrid, activityGrid] = hoistComponent(props => {
     });
 });
 
-//------------------
-// Implementation
-//------------------
 function renderToolbar(model) {
     return toolbar(
         renderDateInput({model, bind: 'startDate'}),

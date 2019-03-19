@@ -29,9 +29,6 @@ export const [ClientErrorDetail, clientErrorDetail] = hoistComponent(props => {
     });
 });
 
-//----------------
-// Implementation
-//----------------
 function renderDetail(model, rec) {
     return [
         table({

@@ -29,9 +29,6 @@ export const [VisitsChart, visitsChart] = hoistComponent(() => {
     });
 });
 
-//-----------------------------
-// Implementation
-//-----------------------------
 function renderToolbar(model) {
     return toolbar(
         renderDateInput({model, bind: 'startDate'}),

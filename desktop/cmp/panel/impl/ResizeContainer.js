@@ -43,9 +43,6 @@ export const [ResizeContainer, resizeContainer] = hoistComponent(props => {
     });
 });
 
-//---------------
-// Implementation
-//---------------
 function renderChild(model, child) {
     const {vertical, size, collapsed} = model,
         dim = vertical ? 'height' : 'width';

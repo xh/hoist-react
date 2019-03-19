@@ -36,9 +36,6 @@ export const [ConfigDiffer, configDiffer] = hoistComponent(props => {
     );
 });
 
-//------------------------
-// Implementation
-//------------------------
 function renderContents(model) {
     const {gridModel} = model,
         {store} = gridModel;

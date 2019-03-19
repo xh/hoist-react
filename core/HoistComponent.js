@@ -18,7 +18,6 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
  *
  * This function will also apply mobx 'observer' behavior to the new component.
  *
- * @param {Object} spec
  * @param {function} renderFn - function defining the component.
  * @returns {Object[]} - Array containing the Component, and an elemFactory
  *      for the Component.
@@ -177,7 +176,7 @@ export function HoistComponent(C) {
             componentWillUnmount() {
                 this._mounted = false;
                 this.destroy();
-            },
+            }
         },
 
 

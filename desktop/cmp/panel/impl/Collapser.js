@@ -34,9 +34,6 @@ export const [Collapser, collapser] = hoistComponent(props => {
     return cmp(cfg);
 });
 
-//------------------
-// Implementation
-//------------------
 function getChevron(model) {
     const {vertical, collapsed, contentFirst} = model,
         directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],

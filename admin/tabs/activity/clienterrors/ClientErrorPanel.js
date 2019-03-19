@@ -32,9 +32,6 @@ export const [ClientErrorPanel] = hoistComponent(() => {
     });
 });
 
-//--------------------------
-// Implementation
-//---------------------------
 function renderToolbar(model) {
     return toolbar(
         renderDateInput({model, bind: 'startDate'}),
@@ -64,9 +61,6 @@ function renderToolbar(model) {
     );
 }
 
-//-----------------------------
-// Implementation
-//-----------------------------
 function renderDateInput(args) {
     return dateInput({
         popoverPosition: 'bottom',

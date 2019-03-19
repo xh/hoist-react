@@ -28,9 +28,7 @@ export const [ActivityDetail, activityDetail] = hoistComponent(props => {
     });
 });
 
-//---------------------
-// Implementation
-//---------------------
+
 function renderDetail(model, rec) {
     const user = rec.impersonating? `${rec.username} as ${rec.impersonating}`: rec.username;
     return [

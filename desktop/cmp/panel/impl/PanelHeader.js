@@ -65,9 +65,6 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
     }
 });
 
-//---------------------
-// Implementation
-//---------------------
 function renderHeaderCollapseButton(model) {
     if (!model) return null;
 

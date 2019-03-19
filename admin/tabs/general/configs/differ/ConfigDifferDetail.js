@@ -44,9 +44,6 @@ export const [ConfigDifferDetail, configDifferDetail] = hoistComponent(props => 
     });
 });
 
-//------------------------
-// Implementation
-//------------------------
 function renderDiffTable(model) {
     const rec = model.record,
         local = rec.localValue,
