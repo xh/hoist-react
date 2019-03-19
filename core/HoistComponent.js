@@ -14,13 +14,15 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 
 /**
- * Create a functional component in Hoist.
+ * Core Hoist utility for defining a React function component and corresponding Hoist elemFactory.
  *
- * This function will also apply mobx 'observer' behavior to the new component.
+ * This function always applies the MobX 'observer' behavior to the new component, enabling MobX
+ * powered reactivity and auto-re-rendering. See the hooks package for additional Hoist-provided
+ * custom hooks that can (and should!) be used within function components to replicate the most
+ * essential / relevant capabilities of the class-based HoistComponent decorator below.
  *
- * @param {function} renderFn - function defining the component.
- * @returns {Object[]} - Array containing the Component, and an elemFactory
- *      for the Component.
+ * @param {function} renderFn - function defining a React component.
+ * @returns {Object[]} - Array containing the Component and an elemFactory for the Component.
  *
  * @see HoistComponent decorator for a ES6 class-based approach to defining a Component in Hoist.
  */
@@ -35,8 +37,12 @@ export function hoistComponent(renderFn) {
  *
  * Adds support for MobX reactivity, model awareness, and other convenience methods below.
  *
- * NOTE: This method should be used for legacy applications, or when a class based component is neccessary.
- * @see hoistComponent for a functional, hooks-compatible approach to defining a Component in Hoist.
+ * NOTE: This decorator provided the original method for specifying class-based components within
+ * Hoist React, and is maintained to support legacy applications and any exceptional cases where
+ * a class-based component continues to be necessary or preferred.
+ *
+ * Developers are encouraged to @see hoistComponent above for a functional, hooks-compatible
+ * approach to component definition for Hoist apps.
  */
 export function HoistComponent(C) {
     return applyMixin(C, {
@@ -47,14 +53,15 @@ export function HoistComponent(C) {
             /**
              * Model instance which this component is rendering.
              *
-             * Applications specify a Component's model by either setting it as a field directly on the
-             * Component class definition or by passing it as a prop from a parent Component. If
-             * provided as a prop, the model can be passed as either an already-created class instance
-             * or as a config for one to be created internally. A Component class definition should
-             * include a static `modelClass` field to support this latter create-on-demand pattern.
+             * Applications specify a Component's model by either setting it as a field directly on
+             * the Component class definition or by passing it as a prop from a parent Component.
+             * If provided as a prop, the model can be passed as either an already-created class
+             * instance or as a config for one to be created internally. A Component class
+             * definition should include a static `modelClass` field to support this latter
+             * create-on-demand pattern.
              *
-             * Parent components should provide concrete instances of models to their children only if
-             * they wish to programmatically access those models to reference data or otherwise
+             * Parent components should provide concrete instances of models to their children only
+             * if they wish to programmatically access those models to reference data or otherwise
              * manipulate the component using the model's API. Otherwise, models can and should be
              * created internally by the Component, either in the class definition or via a config
              * object prop.
@@ -62,14 +69,14 @@ export function HoistComponent(C) {
              * Models that are created internally by the component may be considered "owned" models.
              * They will be destroyed when the component is unmounted (via destroy()).
              *
-             * When concrete instances are provided via props they are assumed to be owned and managed
+             * When concrete instances are provided via props they are assumed to be owned / managed
              * by a parent Component. Otherwise models are considered to be "locally owned" by the
              * Component itself and will be destroyed when the Component is unmounted and destroyed.
              *
-             * The model instance is not expected to change for the lifetime of the component. Apps that
-             * wish to swap out the model for a mounted component should ensure that a new instance of
-             * the component gets mounted. This can be accomplished by setting the component's `key`
-             * prop to `model.xhId` (as a model will always return an ID unique to each instance).
+             * The model instance is not expected to change for the lifetime of the component. Apps
+             * that wish to swap out the model for a mounted component should ensure that a new
+             * instance of the component gets mounted. This can be done by setting the component's
+             * `key` prop to `model.xhId`, as HoistModels always return IDs unique to each instance.
              *
              * @see HoistModel
              */

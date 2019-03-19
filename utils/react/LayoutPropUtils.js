@@ -7,11 +7,18 @@
 
 import {pick, isNumber, isString, forOwn, omit} from 'lodash';
 
+
 /**
- * These functions provides support for flexbox related styles that are set as top-level properties
- * on a component.
+ * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
+ * and are typically accessed via the `@LayoutSupport` mixin (for class-based components) or the
+ * `useLayoutProps()` Hook (for function components).
  *
- * The following properties will be supported:
+ * Any supported properties will be extracted from the overall props bundle and returned from
+ * `getLayoutProps()`. The contrasting `getNonLayoutProps()` will output all other props _not_
+ * included in this list, useful when e.g. relaying unrelated props to a child component without
+ * also sending down unwanted/unexpected layout-related keys.
+ *
+ * The following properties are supported:
  *     margin, marginTop, marginRight, marginBottom, marginLeft,
  *     padding, paddingTop, paddingRight, paddingBottom, paddingLeft,
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
@@ -19,15 +26,20 @@ import {pick, isNumber, isString, forOwn, omit} from 'lodash';
  *     alignItems, alignSelf, alignContent, justifyContent,
  *     overflow, overflowX, overflowY,
  *     top, left, position, display
+ *
+ * NOTE - this system relies on Components respecting and responding to these properties.
+ * Component authors must ensure they do, typically by spreading the extracted props onto a
+ * child component that also implements LayoutSupport. `Box` is typically the Hoist layout Component
+ * that is ultimately rendered and will actually implement this system by outputting a div with
+ * appropriate styles set.
  */
 
 /**
  * Return all layout related props found in props.
  *
- * This method implements some minor translations, to allow a more user friendly
- * specification than that afforded by the underlying flexbox styles.
- *
- * In particular, it accepts flex and sizing props as raw numbers rather than strings.
+ * This method implements some minor translations, to allow a more user friendly specification than
+ * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
+ * as raw numbers rather than strings.
  */
 export function getLayoutProps(props) {
 
