@@ -9,22 +9,10 @@ import {applyMixin} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 
 /**
- * This mixin provides support for flexbox related styles that are set as top-level properties
- * on a component.
+ * Supports accepting an enumerated set of core CSS styles as top-level props of a Component.
  *
- * The following properties will be supported:
- *     margin, marginTop, marginRight, marginBottom, marginLeft,
- *     padding, paddingTop, paddingRight, paddingBottom, paddingLeft,
- *     height, minHeight, maxHeight, width, minWidth, maxWidth,
- *     flex, flexBasis, flexDirection, flexGrow, flexShrink, flexWrap,
- *     alignItems, alignSelf, alignContent, justifyContent,
- *     overflow, overflowX, overflowY,
- *     top, left, position, display
- *
- * This mixin also promises that the Component will respect and respond to these properties.
- * Components will typically delegate this responsibility to a child component that also
- * implements LayoutSupport. `Box` is typically the Component that is ultimately rendered
- * and will handle this by outputting a div with appropriate styles.
+ * @see getLayoutProps for supported properties and overall documentation on this system, including
+ * important notes on what Components must do to ensure layout props are actually applied.
  */
 export function LayoutSupport(C) {
     return applyMixin(C, {
