@@ -12,7 +12,10 @@ import {useEffect} from 'react';
  * @param {function} fn
  */
 export function useOnMount(fn) {
-    useEffect(fn, []);
+    useEffect(
+        () => {fn(); return undefined;},
+        []
+    );
 }
 
 /**
@@ -20,5 +23,8 @@ export function useOnMount(fn) {
  * @param {function} fn
  */
 export function useOnUnmount(fn) {
-    useEffect(() => fn, []);
+    useEffect(
+        () => fn,
+        []
+    );
 }
