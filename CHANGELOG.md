@@ -3,25 +3,28 @@
 ## v21.0.0-SNAPSHOT (under development)
 
 ### 🎁 New Features
-* Hoist now fully supports React functional components and hooks.  See the new function `hoistComponent`
-for more information.  Class-based functions are still fully supported using the `@HoistComponent` class.
 
+* Hoist now fully supports React functional components and hooks. See the new function
+  `hoistComponent` for more information. While functional components and hooks are considered
+  essential forward-looking patterns in the React world, Class-based Components remain fully
+  supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 
 ### 💥 Breaking Changes
-* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general factory function.
-Previously functions could also be provided to the `content` prop, but not that prop must be a Class or a
-function that is strictly a React Component definition.    
 
+* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
+  factory function. Previously functions could also be provided to the `content` prop, but now that
+  prop must be a Class or a function that is strictly a React Component definition.
 
-* TBD
 
 ## v20.1.0 - 2019-03-14
 
 ### 🎁 New Features
+
 * Standard app options panel now includes a "Restore Defaults" button to clear all user preferences
   as well as any custom grid state, resetting the app to its default state for that user.
 
 ### 🐞 Bug Fixes
+
 * Removed a delay from `HoistInput` blur handling, ensuring `noteBlurred()` is called as soon as the
   element loses focus. This should remove a class of bugs related to input values not flushing into
   their models quickly enough when `commitOnChange: false` and the user moves directly from an input
@@ -29,6 +32,7 @@ function that is strictly a React Component definition.
 * Fix to Admin ConfigDiffer tool (missing decorator).
 
 ### ⚙️ Technical
+
 * The `GridModel.store` config now accepts a plain object and will internally create a `LocalStore`.
   This store config can also be partially specified or even omitted entirely. GridModel will ensure
   that the store is auto-configured with all fields in configured grid columns, reducing the need
@@ -42,6 +46,7 @@ function that is strictly a React Component definition.
 ## v20.0.1 - 2019-03-08
 
 ### 🐞 Bug Fixes
+
 * Ensure `RestStore` processes records in a standard way following a save/add operation (#1010).
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v20.0.0...v20.0.1)
@@ -50,6 +55,7 @@ function that is strictly a React Component definition.
 ## v20.0.0 - 2019-03-06
 
 ### 💥 Breaking Changes
+
 * The `@LoadSupport` decorator has been substantially reworked and enhanced from its initial release
   in v19. It is no longer needed on the HoistComponent, but rather should be put directly on the
   owned HoistModel implementing the loading. IMPORTANT NOTE: all models should implement
@@ -67,6 +73,7 @@ function that is strictly a React Component definition.
   `rightSorted` instead.
 
 #### Mobile
+
 * Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
   with a `NavigationModel` or `TabContainer`. `Page` accepts the same props as `Panel`, meaning uses
   of `loadModel` should be replaced with `mask`.
@@ -74,6 +81,7 @@ function that is strictly a React Component definition.
   titles, it is recommended to use the `title` prop on the `Page`.
 
 ### 🎁 New Features
+
 * Enhancements to Model and Component data loading via `@LoadSupport` provides a stronger set of
   conventions and better support for distinguishing between initial loads / auto/background
   refreshes / user- driven refreshes. It also provides new patterns for ensuring application
@@ -91,6 +99,7 @@ function that is strictly a React Component definition.
   (mixins).
 
 #### Mobile
+
 * Column chooser support available for mobile Grids. Users can check/uncheck columns to add/remove
   them from a configurable grid and reorder the columns in the list via drag and drop. Pair
   `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
@@ -104,6 +113,7 @@ function that is strictly a React Component definition.
 * Added routing support to mobile.
 
 ### 🐞 Bug Fixes
+
 * The HighCharts wrapper component properly resizes its chart.
 * Mobile dimension chooser button properly handles overflow for longer labels.
 * Sizing fixes for multi-line inputs such as textArea and jsonInput.
@@ -111,6 +121,7 @@ function that is strictly a React Component definition.
 * Layout fixes on several admin panels and detail popups.
 
 ### 📚 Libraries
+
 * @blueprintjs/core `3.13 -> 3.14`
 * @xh/hoist-dev-utils `3.5 -> 3.6`
 * ag-Grid `~20.0 -> ~20.1`
@@ -125,6 +136,7 @@ function that is strictly a React Component definition.
 ## v19.0.1 - 2019-02-12
 
 ### 🐞 Bug Fixes
+
 * Additional updates and simplifications to `FormField` sizing of child `HoistInput` elements, for
   more reliable sizing and spacing filling behavior.
 
@@ -134,6 +146,7 @@ function that is strictly a React Component definition.
 ## v19.0.0 - 2019-02-08
 
 ### 🎁 New Features
+
 * Added a new architecture for signaling the need to load / refresh new data across either the
   entire app or a section of the component hierarchy. This new system relies on React context to
   minimizes the need for explicit application wiring, and improves support for auto-refresh. See
@@ -160,6 +173,7 @@ function that is strictly a React Component definition.
   render it in a flex layout.
 
 ### 💥 Breaking Changes
+
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
@@ -181,9 +195,11 @@ function that is strictly a React Component definition.
   See `LocalStore.idSpec` for more information.
 
 ### 🐞 Bug Fixes
+
 * SwitchInput and RadioInput now properly highlight validation errors in `minimal` mode.
 
 ### 📚 Libraries
+
 * @blueprintjs/core `3.12 -> 3.13`
 * ag-Grid `~19.1.4 -> ~20.0.0`
 
@@ -193,6 +209,7 @@ function that is strictly a React Component definition.
 ## v18.1.2 - 2019-01-30
 
 ### 🐞 Bug Fixes
+
 * Grid integrations relying on column visibility (namely export, storeFilterField) now correctly
   consult updated column state from GridModel. #935
 * Ensure `FieldModel.initialValue` is observable to ensure that computed dirty state (and any other
