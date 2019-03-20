@@ -84,14 +84,14 @@ export class Record {
                 child = child.applyFilter(filter);
                 if (child) {
                     passingChildren.push(child);
-                    childrenChanged = childrenChanged
+                    childrenChanged = childrenChanged || true;
                 }
             });
         }
 
         // ... then potentially apply to self.
         if (passingChildren.length || filter(this)) {
-            if (childrenChanged) {
+            if (!childrenChanged) {
                 return this;
             } else {
                 const ret = clone(this);
