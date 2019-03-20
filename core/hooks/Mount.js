@@ -13,7 +13,7 @@ import {useEffect} from 'react';
  */
 export function useOnMount(fn) {
     useEffect(
-        () => {fn(); return undefined;},
+        () => {fn(); return undefined},
         []
     );
 }
