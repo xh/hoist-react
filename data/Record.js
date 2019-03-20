@@ -77,17 +77,21 @@ export class Record {
         const {children} = this;
         
         // apply to any children;
-        let passingChildren =[];
+        let passingChildren =[],
+            childrenChanged = false;
         if (children) {
             children.forEach(child => {
                 child = child.applyFilter(filter);
-                if (child) passingChildren.push(child);
+                if (child) {
+                    passingChildren.push(child);
+                    childrenChanged = childrenChanged
+                }
             });
         }
 
         // ... then potentially apply to self.
         if (passingChildren.length || filter(this)) {
-            if (passingChildren.length == children.length) {
+            if (childrenChanged) {
                 return this;
             } else {
                 const ret = clone(this);
