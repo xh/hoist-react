@@ -74,7 +74,7 @@ body {
   --xh-grid-bg-hover: var(--grid-bg-highlight, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
-  --xh-grid-border-color: var(--grid-border-color, var(--xh-border-color));
+  --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '300')});
   --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, transparent);
   --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
   --xh-grid-cell-lr-pad-px: calc(var(--xh-grid-cell-lr-pad) * 1px);
