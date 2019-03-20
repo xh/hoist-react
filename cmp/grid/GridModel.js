@@ -9,7 +9,7 @@ import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -86,13 +86,13 @@ export class GridModel {
     @observable groupBy = null;
 
     /** @member {boolean} */
-    @observable compact = false;
+    @bindable compact = false;
     /** @member {boolean} */
-    @observable highlightOnHover = false;
+    @bindable highlightOnHover = false;
     /** @member {boolean} */
-    @observable rowBorders = false;
+    @bindable rowBorders = false;
     /** @member {boolean} */
-    @observable stripeRows = true;
+    @bindable stripeRows = true;
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
@@ -186,10 +186,10 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        this.setCompact(compact);
-        this.setHighlightOnHover(highlightOnHover);
-        this.setRowBorders(rowBorders);
-        this.setStripeRows(stripeRows);
+        this.compact = compact;
+        this.highlightOnHover = highlightOnHover;
+        this.rowBorders = rowBorders;
+        this.stripeRows = stripeRows;
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -493,14 +493,7 @@ export class GridModel {
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
-
-    // Misc setters for visual/style observables.
-    @action setCompact(compact)                     {this.compact = compact}
-    @action setHighlightOnHover(highlightOnHover)   {this.highlightOnHover = highlightOnHover}
-    @action setRowBorders(rowBorders)               {this.rowBorders = rowBorders}
-    @action setStripeRows(stripeRows)               {this.stripeRows = stripeRows}
-
-
+    
     //-----------------------
     // Implementation
     //-----------------------
