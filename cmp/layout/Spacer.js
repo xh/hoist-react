@@ -11,7 +11,7 @@ import {box} from './Box';
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
  * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
-export const [Spacer, spacer] = hoistComponent(props => {
+export const [Spacer, spacer] = hoistComponent(function Spacer(props) {
     return box({
         ...props,
         flex: 'none',
@@ -22,7 +22,7 @@ export const [Spacer, spacer] = hoistComponent(props => {
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-export const [Filler, filler] = hoistComponent(props => {
+export const [Filler, filler] = hoistComponent(function Filler(props) {
     return box({
         ...props,
         flex: 'auto',

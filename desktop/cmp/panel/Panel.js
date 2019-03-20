@@ -28,7 +28,7 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-export const [Panel, panel] = hoistComponent(props => {
+export const [Panel, panel] = hoistComponent(function Panel(props) {
     let model = useProvidedModel(PanelModel, props),
         [flags] = useState({wasDisplayed: true}),
         className = useClassName('xh-panel', props),

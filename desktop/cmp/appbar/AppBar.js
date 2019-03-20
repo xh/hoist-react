@@ -22,7 +22,7 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppBar, appBar] = hoistComponent(props => {
+export const [AppBar, appBar] = hoistComponent(function AppBar(props) {
     const {
         icon,
         title,

@@ -16,7 +16,7 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistComponent(props => {
+export const [Box, box] = hoistComponent(function Box(props) {
     let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
 
     restProps = merge(
@@ -31,7 +31,7 @@ export const [Box, box] = hoistComponent(props => {
     });
 });
 
-export const [VBox, vbox] = hoistComponent(props => {
+export const [VBox, vbox] = hoistComponent(function VBox(props) {
     return box({
         ...props,
         flexDirection: 'column',
@@ -39,7 +39,7 @@ export const [VBox, vbox] = hoistComponent(props => {
     });
 });
 
-export const [HBox, hbox] = hoistComponent(props => {
+export const [HBox, hbox] = hoistComponent(function HBox(props) {
     return box({
         ...props,
         flexDirection: 'row',

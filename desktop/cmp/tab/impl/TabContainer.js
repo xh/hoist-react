@@ -17,7 +17,7 @@ import '../Tabs.scss';
  *
  * @private
  */
-export const [TabContainer, tabContainer] = hoistComponent(props => {
+export const [TabContainer, tabContainer] = hoistComponent(function TabContainer(props) {
     const model = useProvidedModel(TabContainerModel, props),
         [layoutProps] = useLayoutProps(props),
         {activeTabId, tabs, switcherPosition} = model,

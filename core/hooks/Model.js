@@ -105,16 +105,9 @@ export function useLoadSupportLinker(model) {
  * @param model - HoistModel owned by this component, If null this hook will be a no-op;
  */
 export function useOwnedModelLinker(model) {
-    const loadModel = model && model.isLoadSupport ? model : null,
-        context = useContext(RefreshContext);
-    useOnMount(() => {
-        if (loadModel && context) context.register(loadModel);
-        if (loadModel) loadModel.loadAsync();
-    });
-    useOnUnmount(() => {
-        if (loadModel && context) context.unregister(loadModel);
-        if (model) XH.safeDestroy(model);
-    });
+    useEffect(() => {
+        if (model) return () => XH.safeDestroy(model);
+    }, [model]);
 }
 
 //-------------------------------

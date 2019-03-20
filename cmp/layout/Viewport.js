@@ -12,7 +12,7 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
-export const [Viewport, viewport] = hoistComponent(props => {
+export const [Viewport, viewport] = hoistComponent(function Viewport(props) {
     return box({
         ...props,
         top: 0,

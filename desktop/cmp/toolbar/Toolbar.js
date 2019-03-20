@@ -14,7 +14,7 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-export const [Toolbar, toolbar] = hoistComponent(props => {
+export const [Toolbar, toolbar] = hoistComponent(function Toolbar(props) {
     const {vertical, ...rest} = props;
 
     return (vertical ? vbox : hbox)({

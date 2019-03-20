@@ -20,7 +20,7 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const [Mask, mask] = hoistComponent(props => {
+export const [Mask, mask] = hoistComponent(function Mask(props) {
     const model = useProvidedModel(PendingTaskModel, props),
         isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
         className = useClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);

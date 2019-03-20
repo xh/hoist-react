@@ -12,7 +12,7 @@ import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-export const [ButtonGroup, buttonGroup] = hoistComponent(props => {
+export const [ButtonGroup, buttonGroup] = hoistComponent(function ButtonGroup(props) {
     const [layoutProps, nonLayoutProps] = useLayoutProps(props),
         {fill, minimal, vertical, style, ...rest} = nonLayoutProps;
     return bpButtonGroup({

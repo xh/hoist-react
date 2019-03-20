@@ -21,7 +21,7 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-export const [Tab, tab] = hoistComponent(props => {
+export const [Tab, tab] = hoistComponent(function Tab(props) {
     let model = useProvidedModel(TabModel, props),
         {content, contentFn, isActive, renderMode, refreshContextModel} = model,
         [flags] = useState({wasActivated: false}),

@@ -28,7 +28,7 @@ import {TabContainerModel} from './TabContainerModel';
  *
  * @see TabContainerModel
  */
-export const [TabContainer, tabContainer] = hoistComponent(props => {
+export const [TabContainer, tabContainer] = hoistComponent(function TabContainer(props) {
     throwIf(
         props.switcherPosition,
         "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
