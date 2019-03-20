@@ -81,10 +81,10 @@ export class Record {
             childrenChanged = false;
         if (children) {
             children.forEach(child => {
-                child = child.applyFilter(filter);
-                if (child) {
+                const filteredChild = child.applyFilter(filter);
+                if (filteredChild !== child) childrenChanged = true;
+                if (filteredChild) {
                     passingChildren.push(child);
-                    childrenChanged = childrenChanged || true;
                 }
             });
         }
