@@ -83,12 +83,7 @@ export class Grid extends Component {
          * Callback to call when a cell is double clicked. Function will receive an event
          * with a data node, cell value, and column.
          */
-        onCellDoubleClicked: PT.func,
-
-        /**
-         * Show a colored row background on hover. Defaults to false.
-         */
-        showHover: PT.bool
+        onCellDoubleClicked: PT.func
     };
 
     static ROW_HEIGHT = 28;
@@ -124,8 +119,9 @@ export class Grid extends Component {
     }
 
     render() {
-        const {compact, treeMode} = this.model,
-            {agOptions, showHover, onKeyDown} = this.props,
+        const {model, props} = this,
+            {treeMode, compact, highlightOnHover, rowBorders, stripeRows} = model,
+            {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
 
@@ -144,9 +140,11 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    treeMode && this._isHierarchical ? 'xh-grid-hierarchical' : '',
-                    !isMobile && showHover ? 'xh-grid-show-hover' : ''
+                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    compact ? 'xh-grid--compact' : 'xh-grid--standard',
+                    rowBorders ? '' : 'xh-grid--no-row-borders',
+                    stripeRows ? '' : 'xh-grid--no-stripes',
+                    !isMobile && highlightOnHover ? 'xh-grid--highlight-on-hover' : ''
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
