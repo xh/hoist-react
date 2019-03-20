@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {useState, useContext} from 'react';
-import {useOnMount, useOnUnmount} from './Mount';
+import {useState, useContext, useEffect} from 'react';
 import {isPlainObject} from 'lodash';
 import {XH} from '@xh/hoist/core/index';
 import {RefreshContext} from '@xh/hoist/core/refresh/RefreshContext';
@@ -56,7 +55,9 @@ export function useProvidedModel(modelClass, props) {
         }
     }
 
-    useOwnedModelLinker(state.isOwned ? state.instance : null);
+    const ownedModel = state.isOwned ? state.instance : null;
+    useLoadSupportLinker(ownedModel);
+    useOwnedModelLinker(ownedModel);
     return state.instance;
 }
 
@@ -72,15 +73,36 @@ export function useProvidedModel(modelClass, props) {
  */
 export function useLocalModel(spec) {
     const [model] = useState(spec.isHoistModel ? () => new spec() : spec);
+    useLoadSupportLinker(model);
     useOwnedModelLinker(model);
     return model;
 }
 
 /**
  * Integrate a HoistModel owned by a component into the component's lifecycle, enabling support for
- * the LoadSupport lifecycle (if enabled on the model) and auto-destroy on unmount.
+ * the LoadSupport lifecycle (if enabled on the model).
  *
- * @param {Object} model - HoistModel owned by this component.
+ * @param {Object} model - HoistModel owned by this component.  If null, or does not implement
+ *      LoadSupport, this hook will be a no-op.
+ */
+export function useLoadSupportLinker(model) {
+    model = model && model.isLoadSupport ? model : null;
+    const context = useContext(RefreshContext);
+    useEffect(() => {
+        if (model) {
+            model.loadAsync();
+            if (context) {
+                context.register(model);
+                return () => context.unregister(model);
+            }
+        }
+    }, [model, context]);
+}
+
+/**
+ * Hook to generally link a Component to its owned Model.
+ *
+ * @param model - HoistModel owned by this component, If null this hook will be a no-op;
  */
 export function useOwnedModelLinker(model) {
     const loadModel = model && model.isLoadSupport ? model : null,

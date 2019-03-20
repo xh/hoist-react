@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import {XH, elemFactory, useOwnedModelLinker} from '@xh/hoist/core';
+import {XH, elemFactory, useLoadSupportLinker, useOwnedModelLinker} from '@xh/hoist/core';
 import {useObserver, observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
@@ -190,7 +190,9 @@ export function HoistComponent(C) {
         overrides: {
             render: (sup) => {
                 return function() {
-                    return classComponentWrapper({render: sup.bind(this), ownedModel: this.ownedModel});
+                    const {ownedModel} = this,
+                        wrapper = ownedModel && ownedModel.isLoadSupport ? loadSupportWrapper : standardWrapper;
+                    return wrapper({render: sup.bind(this), ownedModel});
                 };
             }
         }
@@ -218,10 +220,16 @@ function warnNoModelClassProvided() {
 
 
 //---------------------------------------------------------------------------
-// Internal component to wrap the contents of a class based @HoistComponent.
+// Internal components to wrap the contents of a class based @HoistComponent.
 // Provides observation and ownedModel linkage.
 //---------------------------------------------------------------------------
-export const [ClassComponentWrapper, classComponentWrapper] = hoistComponent(props => {
+const [, standardWrapper] = hoistComponent(props => {
     useOwnedModelLinker(props.ownedModel);
+    return useObserver(props.render);
+});
+
+const [, loadSupportWrapper] = hoistComponent(props => {
+    useOwnedModelLinker(props.ownedModel);
+    useLoadSupportLinker(props.ownedModel);
     return useObserver(props.render);
 });
