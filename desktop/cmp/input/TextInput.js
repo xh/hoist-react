@@ -101,7 +101,6 @@ export class TextInput extends HoistInput {
                 type: props.type,
 
                 id: props.id,
-                className: this.getClassName(),
                 style: {
                     ...props.style,
                     ...layoutProps,
@@ -112,6 +111,7 @@ export class TextInput extends HoistInput {
                 onKeyPress: this.onKeyPress
             }),
 
+            className: this.getClassName(),
             style: {
                 width: withDefault(width, 200),
                 flex: withDefault(flex, null)
