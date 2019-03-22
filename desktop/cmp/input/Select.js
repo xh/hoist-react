@@ -7,7 +7,7 @@
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import {castArray, isEmpty, isPlainObject, keyBy, find, assign, debounce} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -107,6 +107,11 @@ export class Select extends HoistInput {
         queryFn: PT.func,
 
         /**
+         * Delay (in ms) to buffer calls the async queryFn.
+         */
+        queryBuffer: PT.number,
+
+        /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props
          * in the react-select API are guaranteed to be supported by this Hoist component,
          * and providing them directly can interfere with the implementation of this class.
@@ -179,7 +184,7 @@ export class Select extends HoistInput {
             };
 
         if (this.asyncMode) {
-            rsProps.loadOptions = this.doQueryAsync;
+            rsProps.loadOptions = debounce(this.doQueryAsync, withDefault(props.queryBuffer, 0));
             rsProps.loadingMessage = this.loadingMessageFn;
         } else {
             rsProps.options = this.internalOptions;
