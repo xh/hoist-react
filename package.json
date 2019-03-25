@@ -31,7 +31,7 @@
     "lodash": "~4.17.11",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.9.0",
-    "mobx-react-lite": "~1.1.1",
+    "mobx-react": "~6.0.0-rc.4",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",
     "onsenui": "~2.10.6",

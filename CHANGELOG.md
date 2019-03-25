@@ -15,6 +15,12 @@
   factory function. Previously functions could also be provided to the `content` prop, but now that
   prop must be a Class or a function that is strictly a React Component definition.
 
+### ⚙️ Technical
+
+* This version of hoist brings in mobx-react v6.  Along with support for hooks and functional components,
+  this new version has a number of signifigant optimizations and simplifications described here:
+  https://github.com/mobxjs/mobx-react/blob/v6/CHANGELOG.md 
+
 
 ## v20.1.0 - 2019-03-14
 

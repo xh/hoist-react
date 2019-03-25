@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import {XH, elemFactory, useLoadSupportLinker, useOwnedModelLinker} from '@xh/hoist/core';
-import {useObserver, observer} from '@xh/hoist/mobx';
+import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
+import {observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -47,7 +47,7 @@ export function hoistComponent(renderFn) {
 export function HoistComponent(C) {
     return applyMixin(C, {
         name: 'HoistComponent',
-        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**
@@ -183,6 +183,12 @@ export function HoistComponent(C) {
             componentWillUnmount() {
                 this._mounted = false;
                 this.destroy();
+            },
+
+            destroy() {
+                if (this._modelIsOwned) {
+                    XH.safeDestroy(this._model);
+                }
             }
         },
 
@@ -191,8 +197,11 @@ export function HoistComponent(C) {
             render: (sup) => {
                 return function() {
                     const {ownedModel} = this,
-                        wrapper = ownedModel && ownedModel.isLoadSupport ? loadSupportWrapper : standardWrapper;
-                    return wrapper({render: sup.bind(this), ownedModel});
+                        renderFn = sup.bind(this);
+
+                    return (ownedModel && ownedModel.isLoadSupport) ?
+                        loadSupportWrapper({renderFn, loadSupport: ownedModel}) :
+                        renderFn();
                 };
             }
         }
@@ -221,15 +230,8 @@ function warnNoModelClassProvided() {
 
 //---------------------------------------------------------------------------
 // Internal components to wrap the contents of a class based @HoistComponent.
-// Provides observation and ownedModel linkage.
 //---------------------------------------------------------------------------
-const [, standardWrapper] = hoistComponent(props => {
-    useOwnedModelLinker(props.ownedModel);
-    return useObserver(props.render);
-});
-
 const [, loadSupportWrapper] = hoistComponent(props => {
-    useOwnedModelLinker(props.ownedModel);
-    useLoadSupportLinker(props.ownedModel);
-    return useObserver(props.render);
+    useLoadSupportLinker(props.loadSupport);
+    return props.renderFn();
 });
