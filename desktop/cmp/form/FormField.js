@@ -6,7 +6,7 @@
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -146,7 +146,8 @@ export class FormField extends Component {
                     htmlFor: clickableLabel ? idAttr : null,
                     style: {
                         textAlign: labelAlign,
-                        width: labelWidth
+                        width: labelWidth,
+                        minWidth: isNil(labelWidth) ? 80 : 0
                     }
                 }),
                 div({

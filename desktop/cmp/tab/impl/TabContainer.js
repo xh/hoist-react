@@ -44,24 +44,24 @@ export class TabContainer extends Component {
             ...layoutProps,
             className: this.getClassName(),
             items: [
-                switcherBefore ? tabSwitcher({model, orientation: switcherPosition}) : null,
+                switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
                     const tabId = tabModel.id,
-                        style = {};
-
-                    if (tabId !== activeTabId) {
-                        style.display = 'none';
-                    }
-
+                        style = (activeTabId !== tabId) ? this.hideStyle : undefined;
+                    
                     return div({
                         className: 'xh-tab-wrapper',
                         style,
+                        key: tabId,
                         item: tab({model: tabModel})
                     });
                 }),
-                switcherAfter ? tabSwitcher({model, orientation: switcherPosition}) : null
+                switcherAfter ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null
             ]
         });
     }
+    
+    hideStyle = {display: 'none'}
 }
+
 export const tabContainer = elemFactory(TabContainer);
