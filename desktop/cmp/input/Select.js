@@ -108,7 +108,7 @@ export class Select extends HoistInput {
         queryFn: PT.func,
 
         /**
-         * Delay (in ms) to buffer calls the async queryFn.
+         * Delay (in ms) to buffer calls the async queryFn. Defaults to 300.
          */
         queryBuffer: PT.number,
 
@@ -185,7 +185,7 @@ export class Select extends HoistInput {
             };
 
         if (this.asyncMode) {
-            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 0));
+            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
             rsProps.loadingMessage = this.loadingMessageFn;
         } else {
             rsProps.options = this.internalOptions;
