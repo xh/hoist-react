@@ -86,13 +86,15 @@ export class GridModel {
     @observable groupBy = null;
 
     /** @member {boolean} */
-    @bindable compact = false;
+    @bindable compact;
     /** @member {boolean} */
-    @bindable highlightOnHover = false;
+    @bindable highlightOnHover;
     /** @member {boolean} */
-    @bindable rowBorders = false;
+    @bindable rowBorders;
     /** @member {boolean} */
-    @bindable stripeRows = true;
+    @bindable stripeRows;
+    /** @member {boolean} */
+    @bindable showCellFocus;
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
@@ -137,6 +139,7 @@ export class GridModel {
      * @param {boolean} [c.highlightOnHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -162,6 +165,7 @@ export class GridModel {
         highlightOnHover = false,
         rowBorders = false,
         stripeRows = true,
+        showCellFocus = false,
 
         enableColChooser = false,
         enableExport = false,
@@ -190,6 +194,7 @@ export class GridModel {
         this.highlightOnHover = highlightOnHover;
         this.rowBorders = rowBorders;
         this.stripeRows = stripeRows;
+        this.showCellFocus = showCellFocus;
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);

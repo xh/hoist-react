@@ -120,7 +120,7 @@ export class Grid extends Component {
 
     render() {
         const {model, props} = this,
-            {treeMode, compact, highlightOnHover, rowBorders, stripeRows} = model,
+            {treeMode, compact, highlightOnHover, rowBorders, stripeRows, showCellFocus} = model,
             {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -144,6 +144,7 @@ export class Grid extends Component {
                     compact ? 'xh-grid--compact' : 'xh-grid--standard',
                     rowBorders ? '' : 'xh-grid--no-row-borders',
                     stripeRows ? '' : 'xh-grid--no-stripes',
+                    showCellFocus ? 'xh-grid--show-cell-focus' : '',
                     !isMobile && highlightOnHover ? 'xh-grid--highlight-on-hover' : ''
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
