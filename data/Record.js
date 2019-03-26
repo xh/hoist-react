@@ -82,7 +82,10 @@ export class Record {
         if (children) {
             children.forEach(child => {
                 const filteredChild = child.applyFilter(filter);
+
+                // If the child does not return itself, remember that we must create a new reference for this record
                 if (filteredChild !== child) childrenChanged = true;
+
                 if (filteredChild) {
                     passingChildren.push(child);
                 }
@@ -92,8 +95,10 @@ export class Record {
         // ... then potentially apply to self.
         if (passingChildren.length || filter(this)) {
             if (!childrenChanged) {
+                // To improve performance, record returns self if none of its child references have changed...
                 return this;
             } else {
+                // ...otherwise, create a new reference to this record and rebuild children
                 const ret = clone(this);
                 ret.children = passingChildren.map(child => {
                     child = clone(child);

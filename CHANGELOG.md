@@ -14,6 +14,8 @@
 * A small `FormField.labelWidth` config value will now be respected, even if it is less than the
   default minWidth of 80px. #1026
 * Unnecessary re-renders of inactive tab panels now avoided.
+* `Grid`'s filter will now be consistently applied to all tree grid records. Previously, the filter 
+  skipped deeply nested records under specific conditions. 
 
 ## v20.1.0 - 2019-03-14
 
