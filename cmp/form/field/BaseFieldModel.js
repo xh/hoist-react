@@ -9,6 +9,7 @@ import {managed} from '@xh/hoist/core';
 import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
 import {observable, action, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {wait} from '@xh/hoist/promise';
 
 import {ValidationState} from '../validation/ValidationState';
 import {Rule} from '../validation/Rule';
@@ -158,9 +159,17 @@ export class BaseFieldModel {
     @action
     reset() {
         this.value = this.initialValue;
+
+        // Force an immediate 'Unknown' state -- the async recompute leaves the old state in place until it completed.
+        // (We want that for a value change, but not reset/init)  Force the recompute only if needed.
         this.errors = null;
+        wait(0).then(() => {
+            if (!this.isValidationPending && this.validationState == ValidationState.Unknown) {
+                this.computeValidationAsync();
+            }
+        });
+
         this.validationDisplayed = false;
-        this.computeValidationAsync();
     }
 
     /** @member {boolean} - true if value has been changed since last reset/init. */
