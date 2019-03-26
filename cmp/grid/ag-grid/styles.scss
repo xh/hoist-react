@@ -102,7 +102,7 @@
 
   // Suppress zebra striping.
   &--no-stripes {
-    .ag-row.ag-row-odd {
+    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg);
     }
   }
