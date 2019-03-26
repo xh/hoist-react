@@ -7,7 +7,8 @@
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {castArray, isEmpty, isPlainObject, keyBy, find, assign, debounce} from 'lodash';
+import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import debouncePromise from 'debounce-promise';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -184,7 +185,7 @@ export class Select extends HoistInput {
             };
 
         if (this.asyncMode) {
-            rsProps.loadOptions = debounce(this.doQueryAsync, withDefault(props.queryBuffer, 0));
+            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 0));
             rsProps.loadingMessage = this.loadingMessageFn;
         } else {
             rsProps.options = this.internalOptions;
