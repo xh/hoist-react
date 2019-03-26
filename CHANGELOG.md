@@ -2,18 +2,54 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
+### 🎁 New Features
+
+* `GridModel` exposes two new configs `rowBorders` and `stripRows` to provide additional control
+  over grid styling, and the former `Grid` prop `showHover` has been renamed and also converted to a
+  `GridModel` config as `highlightOnHover`. Note that some grid-related CSS classes have also been
+  modified to better conform to the BEM approach used elsewhere.
+
 ### 🐞 Bug Fixes
+
+* A small `FormField.labelWidth` config value will now be respected, even if it is less than the
+  default minWidth of 80px. #1026
+* Unnecessary re-renders of inactive tab panels now avoided.
+
+## v20.1.0 - 2019-03-14
+
+### 🎁 New Features
+
+* Standard app options panel now includes a "Restore Defaults" button to clear all user preferences
+  as well as any custom grid state, resetting the app to its default state for that user.
+
+### 🐞 Bug Fixes
+
+* Removed a delay from `HoistInput` blur handling, ensuring `noteBlurred()` is called as soon as the
+  element loses focus. This should remove a class of bugs related to input values not flushing into
+  their models quickly enough when `commitOnChange: false` and the user moves directly from an input
+  to e.g. clicking a submit button. #1023
 * Fix to Admin ConfigDiffer tool (missing decorator).
 
 ### ⚙️ Technical
+
 * The `GridModel.store` config now accepts a plain object and will internally create a `LocalStore`.
-  This store config can also be partially specified or even omitted entirely; GridModel will ensure
-  that the store is auto-configured with all fields in configured grid columns.
+  This store config can also be partially specified or even omitted entirely. GridModel will ensure
+  that the store is auto-configured with all fields in configured grid columns, reducing the need
+  for app code boilerplate (re)enumerating field names.
+* `Timer` class reworked to allow its interval to be adjusted dynamically via `setInterval()`,
+  without requiring the Timer to be re-created.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.0.1...v20.1.0)
+
 
 ## v20.0.1 - 2019-03-08
 
 ### 🐞 Bug Fixes
+
 * Ensure `RestStore` processes records in a standard way following a save/add operation (#1010).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.0.0...v20.0.1)
+
 
 ## v20.0.0 - 2019-03-06
 
@@ -36,6 +72,7 @@
   `rightSorted` instead.
 
 #### Mobile
+
 * Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
   with a `NavigationModel` or `TabContainer`. `Page` accepts the same props as `Panel`, meaning uses
   of `loadModel` should be replaced with `mask`.
@@ -61,6 +98,7 @@
   (mixins).
 
 #### Mobile
+
 * Column chooser support available for mobile Grids. Users can check/uncheck columns to add/remove
   them from a configurable grid and reorder the columns in the list via drag and drop. Pair
   `GridModel.enableColChooser` with a mobile `colChooserButton` to allow use.
@@ -102,6 +140,7 @@
   more reliable sizing and spacing filling behavior.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.0...v19.0.1)
+
 
 ## v19.0.0 - 2019-02-08
 
@@ -165,6 +204,7 @@
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v18.1.2...v19.0.0)
 
+
 ## v18.1.2 - 2019-01-30
 
 ### 🐞 Bug Fixes
@@ -185,6 +225,7 @@
 * The `addRecordAsync()` and `saveRecordAsync()` methods on `RestStore` return the updated record.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v18.1.0...v18.1.1)
+
 
 ## v18.1.0 - 2019-01-28
 

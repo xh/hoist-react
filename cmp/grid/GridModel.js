@@ -9,7 +9,7 @@ import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -84,8 +84,16 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
+
     /** @member {boolean} */
-    @observable compact = false;
+    @bindable compact = false;
+    /** @member {boolean} */
+    @bindable highlightOnHover = false;
+    /** @member {boolean} */
+    @bindable rowBorders = false;
+    /** @member {boolean} */
+    @bindable stripeRows = true;
+
     /** @member {GridApi} */
     @observable.ref agApi = null;
     /** @member {ColumnApi} */
@@ -125,7 +133,10 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.compact] - true to render the grid in compact mode.
+     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {boolean} [c.highlightOnHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.rowBorders] - true to render row borders.
+     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -146,7 +157,12 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+
         compact = false,
+        highlightOnHover = false,
+        rowBorders = false,
+        stripeRows = true,
+
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
@@ -169,7 +185,11 @@ export class GridModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
-        this.setCompact(compact);
+
+        this.compact = compact;
+        this.highlightOnHover = highlightOnHover;
+        this.rowBorders = rowBorders;
+        this.stripeRows = stripeRows;
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -313,11 +333,6 @@ export class GridModel {
         }
 
         this.sortBy = sorters;
-    }
-
-    @action
-    setCompact(compact) {
-        this.compact = compact;
     }
 
     /** Load the underlying store. */
@@ -478,8 +493,7 @@ export class GridModel {
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
-
-
+    
     //-----------------------
     // Implementation
     //-----------------------
