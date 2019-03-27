@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import classNames from 'classnames';
@@ -743,6 +743,8 @@ export const fileIcon = function(extension) {
         case 'doc':
         case 'docx':
             return Icon.fileWord();
+        case 'csv':
+            return Icon.fileCsv();
         case 'xls':
         case 'xlsx':
             return Icon.fileExcel();

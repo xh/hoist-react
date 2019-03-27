@@ -2,14 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {pickBy, filter} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -36,6 +37,15 @@ export const viewAction = {
     actionFn: ({record, gridModel}) => gridModel.restGridModel.viewRecord(record)
 };
 
+export const cloneAction = {
+    text: 'Clone',
+    icon: Icon.copy(),
+    recordsRequired: 1,
+    actionFn: ({record, gridModel}) => {
+        gridModel.restGridModel.cloneRecord(record);
+    }
+};
+
 export const deleteAction = {
     text: 'Delete',
     icon: Icon.delete(),
@@ -51,6 +61,7 @@ export const deleteAction = {
  * Core Model for a RestGrid.
  */
 @HoistModel
+@LoadSupport
 export class RestGridModel {
 
     //----------------
@@ -68,6 +79,8 @@ export class RestGridModel {
         edit: null,
         del: 'Are you sure you want to delete the selected record?'
     };
+
+    prepareCloneFn;
 
     unit = null;
     filterFields = null;
@@ -97,16 +110,19 @@ export class RestGridModel {
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
+     * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
      * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
+
     constructor({
         readonly = false,
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
         actionWarning,
+        prepareCloneFn,
         unit = 'record',
         filterFields,
         enhanceToolbar,
@@ -120,6 +136,8 @@ export class RestGridModel {
         this.formActions = formActions;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
+
+        this.prepareCloneFn = prepareCloneFn;
 
         this.unit = unit;
         this.filterFields = filterFields;
@@ -136,8 +154,8 @@ export class RestGridModel {
     }
 
     /** Load the underlying store. */
-    loadAsync(...args) {
-        return this.store.loadAsync(...args).linkTo(this.loadModel);
+    doLoadAsync(loadSpec) {
+        return this.store.loadAsync(loadSpec);
     }
 
     /** Load the underlying store. */
@@ -151,6 +169,15 @@ export class RestGridModel {
     @action
     addRecord() {
         this.formModel.openAdd();
+    }
+
+    @action
+    cloneRecord(record) {
+        const editableFields = filter(record.fields, 'editable').map(it => it.name),
+            clone = pickBy(record, (v, k) => editableFields.includes(k));
+        const {prepareCloneFn} = this;
+        if (prepareCloneFn) prepareCloneFn({record, clone});
+        this.formModel.openClone(clone);
     }
 
     @action
@@ -227,3 +254,11 @@ export class RestGridModel {
  * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for form display.
  *      May be used for to specify additional validation requirements.
  */
+
+/**
+ * @callback PrepareCloneFn
+ * @param {Object} input
+ * @param {input.record} original record from the REST grid
+ * @param {input.clone} cloned record that is used to populate the editor form
+ */
+

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
@@ -54,7 +54,7 @@ export class FormField extends Component {
          * Label for form field. Defaults to Field displayName. Set to null to hide.
          * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        label: PT.string,
+        label: PT.node,
 
         /**
          * Apply minimal styling - validation errors are only displayed with a red outline.
@@ -172,7 +172,7 @@ export class FormField extends Component {
 
     get childIsSizeable() {
         const child = this.props.children;
-        return child && child.type.hasLayoutSupport;
+        return child && child.type.isLayoutSupport;
     }
 
     getDefaultedProp(name, defaultVal) {

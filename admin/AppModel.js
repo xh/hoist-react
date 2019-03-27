@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistAppModel, managed} from '@xh/hoist/core';
-import {TabContainerModel} from '@xh/hoist/desktop/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 import {ActivityTab} from './tabs/activity/ActivityTab';
 import {GeneralTab} from './tabs/general/GeneralTab';
@@ -19,6 +19,7 @@ export class AppModel {
     @managed
     tabModel = new TabContainerModel({
         route: 'default',
+        switcherPosition: 'none',
         tabs: this.createTabs()
     });
     

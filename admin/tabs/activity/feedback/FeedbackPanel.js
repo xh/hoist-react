@@ -2,23 +2,23 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {HoistComponent, LoadSupport} from '@xh/hoist/core';
+import {HoistComponent} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
 import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistComponent
-@LoadSupport
 export class FeedbackPanel extends Component {
 
     model = new RestGridModel({
         stateModel: 'xhFeedbackGrid',
         enableColChooser: true,
         enableExport: true,
+        emptyText: 'No feedback reported...',
         store: new RestStore({
             url: 'rest/feedbackAdmin',
             fields: [
@@ -55,7 +55,7 @@ export class FeedbackPanel extends Component {
         menuActions: [deleteAction],
         formActions: [deleteAction],
         unit: 'report',
-        sortBy: {colId: 'dateCreated', sort: 'desc'},
+        sortBy: 'dateCreated|desc',
         filterFields: ['username', 'msg'],
         columns: [
             {field: 'dateCreated', ...compactDateCol, width: 140},

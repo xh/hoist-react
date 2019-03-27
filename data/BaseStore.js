@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
 
@@ -30,10 +30,7 @@ export class BaseStore {
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
-
-    /** Current loading state. */
-    get loadModel() {}
-
+    
     /** Current records. These represent the post-filtered records. */
     get records() {}
 
@@ -81,6 +78,11 @@ export class BaseStore {
             return new this.defaultFieldClass(f);
         });
     }
+
+    /**
+     * Destroy this object, cleaning up any resources used.
+     */
+    destroy() {}
 
     //--------------------
     // For Implementations

@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elem, elemFactory, refreshContextView, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
@@ -24,9 +25,17 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
-import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
-installMobileImpls({});
+
+import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+
+installMobileImpls({
+    tabContainer,
+    colChooser,
+    ColChooserModel
+});
 
 /**
  * Top-level wrapper for Mobile applications.

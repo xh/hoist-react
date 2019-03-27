@@ -2,19 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {lowerFirst} from 'lodash';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class ServiceModel {
-
-    @managed
-    loadModel = new PendingTaskModel();
 
     @managed
     gridModel = new GridModel({
@@ -52,8 +49,8 @@ export class ServiceModel {
         XH.toast({message: 'Caches Cleared'});
     }
 
-    async loadAsync() {
-        return this.gridModel.loadAsync().linkTo(this.loadModel);
+    async doLoadAsync(loadSpec) {
+        return this.gridModel.loadAsync(loadSpec);
     }
 
     processRawData(r) {

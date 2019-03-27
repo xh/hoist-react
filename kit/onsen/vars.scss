@@ -1,9 +1,27 @@
-// Mobile specific CSS variable declarations.
 // See ./styles/vars.scss for shared vars
 body {
+  /*
+   * Mobile specific CSS variable declarations.
+   */
   --xh-accent-color: var(--accent-color, var(--xh-blue-light));
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
   --xh-btn-color: var(--btn-color, var(--xh-accent-color));
   --xh-btn-text-color: var(--btn-text-color, var(--xh-text-color));
   --xh-toolbar-btn-color: var(--toolbar-btn-color, var(--xh-blue-gray-light));
+
+  /*
+   * Mobile specific variable defaults
+   */
+  // Navbar (top app toolbar)
+  --xh-navbar-bg: var(--navbar-bg, var(--xh-blue-gray));
+  --xh-navbar-color: var(--navbar-color, var(--xh-blue-gray-light));
+  --xh-navbar-title-color: var(--navbar-title-color, var(--xh-navbar-color));
+  --xh-navbar-title-font-size: var(--navbar-title-font-size, 17);
+
+  // Titles (e.g. panels, dialogs)
+  --xh-title-bg: var(--title-bg, var(--xh-bg-alt));
+  --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '700')});
+  --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
+  --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
+  --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
 }

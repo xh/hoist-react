@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -83,6 +83,8 @@ export class TextInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, flex, ...layoutProps} = this.getLayoutProps();
 
+        const isClearable = (this.internalValue !== null);
+
         return div({
             item: inputGroup({
                 value: this.renderValue || '',
@@ -92,14 +94,13 @@ export class TextInput extends HoistInput {
                 disabled: props.disabled,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
-                rightElement: props.rightElement || (props.enableClear ? this.renderClearIcon() : null),
+                rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
                 type: props.type,
 
                 id: props.id,
-                className: this.getClassName(),
                 style: {
                     ...props.style,
                     ...layoutProps,
@@ -110,6 +111,7 @@ export class TextInput extends HoistInput {
                 onKeyPress: this.onKeyPress
             }),
 
+            className: this.getClassName(),
             style: {
                 width: withDefault(width, 200),
                 flex: withDefault(flex, null)
@@ -120,7 +122,7 @@ export class TextInput extends HoistInput {
         });
     }
 
-    renderClearIcon() {
+    renderClearButton() {
         return button({
             icon: Icon.cross(),
             minimal: true,

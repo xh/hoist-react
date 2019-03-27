@@ -66,8 +66,11 @@
   //------------------------
   .ag-row {
     background-color: var(--xh-grid-bg);
-    border-bottom-color: var(--xh-grid-border-color);
 
+    // Row borders.
+    border-color: var(--xh-grid-border-color);
+
+    // Zebra striping.
     &.ag-row-odd {
       background-color: var(--xh-grid-bg-odd);
     }
@@ -90,6 +93,20 @@
     }
   }
 
+  // Suppress row borders.
+  &--no-row-borders {
+    .ag-row {
+      border-color: transparent;
+    }
+  }
+
+  // Suppress zebra striping.
+  &--no-stripes {
+    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg);
+    }
+  }
+
 
   //------------------------
   // Core Cell Classes
@@ -107,7 +124,7 @@
   //------------------------
   // Trees and Grouping
   //------------------------
-  &.xh-grid-hierarchical {
+  &--hierarchical {
     // Generate indentations for tree grids with hierarchical data.
     // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
     $xh-tree-indent: 10px !default;
@@ -126,14 +143,40 @@
     }
   }
 
+  // Suppress default indenting when grid is in tree mode but no root records have children.
+  &--flat {
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 0;
+    }
+  }
+
+
   // As of agGrid 20, the group row always reserve space for a grouping checkbox.
   // We remove this to tighten up the spacing.
   .ag-group-checkbox.ag-invisible {
     display: none;
   }
 
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: 0;
+
+  //------------------------
+  // Compact Mode
+  //------------------------
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-compact-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-compact-font-size-px);
+    }
+
+    .ag-cell, .ag-header-cell, .ag-header-group-cell {
+      padding-left: var(--xh-grid-compact-cell-lr-pad-px);
+      padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+    }
+
   }
 
 
@@ -145,12 +188,12 @@
     outline: 0 !important;
   }
 
-  &.xh-grid-show-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
+  &--highlight-on-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
     background-color: var(--xh-grid-bg-hover);
   }
 
   // Grouped rows appear slightly misaligned (standard mode only)
-  &.xh-grid-standard .ag-row.ag-row-group {
+  &--standard .ag-row.ag-row-group {
     padding-top: 2px;
   }
 
@@ -162,27 +205,6 @@
 
   // Disabling the "row loading" render overlay
   .ag-bl-overlay {display: none;}
-}
-
-
-//------------------------
-// Compact Mode
-//------------------------
-.xh-grid-compact {
-  font-size: var(--xh-grid-compact-font-size-px);
-
-  .ag-cell-value {
-    line-height: var(--xh-grid-compact-line-height-px);
-  }
-
-  .ag-header {
-    font-size: var(--xh-grid-compact-font-size-px);
-  }
-
-  .ag-cell, .ag-header-cell, .ag-header-group-cell {
-    padding-left: var(--xh-grid-compact-cell-lr-pad-px);
-    padding-right: var(--xh-grid-compact-cell-lr-pad-px);
-  }
 
 }
 

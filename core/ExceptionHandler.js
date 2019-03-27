@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
@@ -127,7 +127,8 @@ export class ExceptionHandler {
 
     parseOptions(exception, options) {
         const ret = Object.assign({}, options),
-            isAutoRefresh = exception.fetchOptions && exception.fetchOptions.isAutoRefresh;
+            {fetchOptions} = exception,
+            isAutoRefresh = fetchOptions && fetchOptions.loadSpec && fetchOptions.loadSpec.isAutoRefresh;
 
         ret.requireReload = !!ret.requireReload;
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -66,7 +66,7 @@ export class Record {
             this[name] = val;
         });
     }
-
+    
     /**
      * Return a filtered version of this record.
      *
@@ -77,19 +77,28 @@ export class Record {
         const {children} = this;
         
         // apply to any children;
-        let passingChildren =[];
+        let passingChildren =[],
+            childrenChanged = false;
         if (children) {
             children.forEach(child => {
-                child = child.applyFilter(filter);
-                if (child) passingChildren.push(child);
+                const filteredChild = child.applyFilter(filter);
+
+                // If the child does not return itself, remember that we must create a new reference for this record
+                if (filteredChild !== child) childrenChanged = true;
+
+                if (filteredChild) {
+                    passingChildren.push(child);
+                }
             });
         }
 
         // ... then potentially apply to self.
         if (passingChildren.length || filter(this)) {
-            if (passingChildren.length == children.length) {
+            if (!childrenChanged) {
+                // To improve performance, record returns self if none of its child references have changed...
                 return this;
             } else {
+                // ...otherwise, create a new reference to this record and rebuild children
                 const ret = clone(this);
                 ret.children = passingChildren.map(child => {
                     child = clone(child);

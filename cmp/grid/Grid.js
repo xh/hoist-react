@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
@@ -13,8 +13,10 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
-import {colChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {GridModel} from './GridModel';
+
+import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -81,12 +83,7 @@ export class Grid extends Component {
          * Callback to call when a cell is double clicked. Function will receive an event
          * with a data node, cell value, and column.
          */
-        onCellDoubleClicked: PT.func,
-
-        /**
-         * Show a colored row background on hover. Defaults to false.
-         */
-        showHover: PT.bool
+        onCellDoubleClicked: PT.func
     };
 
     static ROW_HEIGHT = 28;
@@ -122,8 +119,9 @@ export class Grid extends Component {
     }
 
     render() {
-        const {colChooserModel, compact, treeMode} = this.model,
-            {agOptions, showHover, onKeyDown} = this.props,
+        const {model, props} = this,
+            {treeMode, compact, highlightOnHover, rowBorders, stripeRows} = model,
+            {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
 
@@ -142,14 +140,22 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    treeMode && this._isHierarchical ? 'xh-grid-hierarchical' : '',
-                    !isMobile && showHover ? 'xh-grid-show-hover' : ''
+                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    compact ? 'xh-grid--compact' : 'xh-grid--standard',
+                    rowBorders ? '' : 'xh-grid--no-row-borders',
+                    stripeRows ? '' : 'xh-grid--no-stripes',
+                    !isMobile && highlightOnHover ? 'xh-grid--highlight-on-hover' : ''
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
-            colChooserModel ? colChooser({model: colChooserModel}) : null
+            this.renderColChooser()
         );
+    }
+
+    renderColChooser() {
+        const {colChooserModel} = this.model,
+            cmp = XH.isMobile ? mobileColChooser : desktopColChooser;
+        return colChooserModel ? cmp({model: colChooserModel}) : null;
     }
 
     //------------------------

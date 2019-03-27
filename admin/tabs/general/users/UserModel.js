@@ -2,35 +2,30 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, XH} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data';
+import {HoistModel, XH, LoadSupport, managed} from '@xh/hoist/core';
 import {allSettled} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {bindable, action} from '@xh/hoist/mobx/index';
 import {keyBy, keys} from 'lodash';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 @HoistModel
+@LoadSupport
 export class UserModel {
 
     @bindable activeOnly = true;
     @bindable withRolesOnly = false;
 
-    loadModel = new PendingTaskModel();
-
+    @managed
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
         enableColChooser: true,
         enableExport: true,
-        store: new LocalStore({
-            fields: ['username', 'email', 'displayName', 'active', 'roles'],
-            idSpec: 'username'
-        }),
+        store: {idSpec: 'username'},
         sortBy: 'username',
         columns: [
             {field: 'username', ...usernameCol},
@@ -44,16 +39,23 @@ export class UserModel {
     constructor() {
         this.addReaction({
             track: () => [this.activeOnly, this.withRolesOnly],
-            run: () => this.loadAsync()
+            run: this.loadAsync
         });
     }
 
     @action
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
-        const userLoad = XH.fetchJson({url: 'userAdmin/users', params: {activeOnly: this.activeOnly}}),
-            rolesLoad = XH.fetchJson({url: 'userAdmin/roles'});
+        const userLoad = XH.fetchJson({
+            url: 'userAdmin/users',
+            params: {activeOnly: this.activeOnly},
+            loadSpec
+        });
+        const rolesLoad = XH.fetchJson({
+            url: 'userAdmin/roles',
+            loadSpec
+        });
 
         return allSettled([
             userLoad, rolesLoad
@@ -79,9 +81,7 @@ export class UserModel {
             }
 
             this.gridModel.loadData(users);
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        }).catchDefault();
     }
 }
 

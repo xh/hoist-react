@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -10,6 +10,8 @@ import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import {hspacer} from '@xh/hoist/cmp/layout';
+
+import './Button.scss';
 
 /**
  * Wrapper around Onsen's Button component. Adds LayoutSupport for top-level sizing and margin/padding props.

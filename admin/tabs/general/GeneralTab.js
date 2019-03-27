@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {AboutPanel} from './about/AboutPanel';
 import {ConfigPanel} from './configs/ConfigPanel';
@@ -21,6 +21,7 @@ export class GeneralTab extends Component {
         return tabContainer({
             model: {
                 route: 'default.general',
+                switcherPosition: 'left',
                 tabs: [
                     {id: 'about', content: AboutPanel},
                     {id: 'config', content: ConfigPanel},
@@ -28,8 +29,7 @@ export class GeneralTab extends Component {
                     {id: 'ehCache', title: 'Caches', content: EhCachePanel},
                     {id: 'users', content: UserPanel}
                 ]
-            },
-            switcherPosition: 'left'
+            }
         });
     }
 }

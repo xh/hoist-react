@@ -2,11 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
 import {isString, isNil} from 'lodash';
@@ -26,8 +24,6 @@ export class LocalStore extends BaseStore {
     @observable.ref _dataLastUpdated;
     @observable.ref _all = new RecordSet([]);
     @observable.ref _filtered = this._all;
-
-    _loadModel = new PendingTaskModel();
 
     _filter = null;
 
@@ -97,7 +93,6 @@ export class LocalStore extends BaseStore {
     get rootRecords()       {return this._filtered.roots}
     get allRootRecords()    {return this._all.roots}
 
-    get loadModel()     {return this._loadModel}
     get filter()        {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
@@ -138,34 +133,32 @@ export class LocalStore extends BaseStore {
         this.rebuildFiltered();
     }
 
-    //------------------------
-    // Private Implementation
-    //------------------------
     createRecords(rawData, parent = null) {
+        return rawData.map(raw => this.createRecord(raw, parent));
+    }
+
+    createRecord(raw, parent = null) {
         const {idSpec} = this;
         const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
 
-        return rawData.map(raw => {
-            if (this.processRawData) this.processRawData(raw);
+        if (this.processRawData) this.processRawData(raw);
 
-            raw.id = idGen(raw);
-            throwIf(
-                isNil(raw.id),
-                "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
-            );
+        raw.id = idGen(raw);
+        throwIf(
+            isNil(raw.id),
+            "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+        );
 
-            const rec = new Record({raw, parent, fields: this.fields});
-            rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
-            return rec;
-        });
+        const rec = new Record({raw, parent, fields: this.fields});
+        rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
+        return rec;
     }
 
+    //------------------------
+    // Private Implementation
+    //------------------------
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
-    }
-
-    destroy() {
-        XH.safeDestroy(this._loadModel);
     }
 }

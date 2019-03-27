@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, LoadSupport} from '@xh/hoist/core';
 
 import {LocalStore} from './LocalStore';
 
 /**
  * A store with built-in support for loading data from a URL.
  */
+@LoadSupport
 export class UrlStore extends LocalStore {
 
     url;
@@ -32,14 +33,13 @@ export class UrlStore extends LocalStore {
     /**
      * Reload store from url.
      */
-    async loadAsync() {
+    async doLoadAsync(loadSpec) {
         const {url, dataRoot} = this;
         return XH
-            .fetchJson({url})
+            .fetchJson({url, loadSpec})
             .then(data => {
                 if (dataRoot) data = data[dataRoot];
                 return this.loadData(data);
-            })
-            .linkTo(this.loadModel);
+            });
     }
 }

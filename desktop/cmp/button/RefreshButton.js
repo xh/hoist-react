@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, RefreshContext} from '@xh/hoist/core';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {RefreshContext} from '@xh/hoist/core/refresh';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
 import {warnIf} from '@xh/hoist/utils/js';

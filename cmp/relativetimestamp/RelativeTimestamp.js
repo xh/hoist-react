@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {HoistComponent, LayoutSupport, elemFactory, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {span} from '@xh/hoist/cmp/layout';
@@ -61,7 +61,10 @@ export class RelativeTimestamp extends Component {
     baseClassName = 'xh-relative-timestamp';
 
     @observable relativeTimeString;
-    timer = null;
+    @managed timer = Timer.create({
+        runFn: () => this.refreshLabel(),
+        interval: 10 * SECONDS
+    });
 
     render() {
         const {relativeTimeString, props} = this;
@@ -76,7 +79,7 @@ export class RelativeTimestamp extends Component {
         });
     }
 
-    refreshLabel = () => {
+    refreshLabel() {
         this.updateRelativeTimeString(this.props);
     }
 
@@ -85,18 +88,7 @@ export class RelativeTimestamp extends Component {
         const {timestamp, options} = props;
         this.relativeTimeString = getRelativeTimestamp(timestamp, options);
     }
-
-    componentDidMount() {
-        this.timer = new Timer({
-            runFn: this.refreshLabel,
-            interval: 10 * SECONDS
-        });
-    }
-
-    componentWillUnmount() {
-        this.timer.cancel();
-    }
-
+    
     componentWillReceiveProps(nextProps) {
         this.updateRelativeTimeString(nextProps);
     }
