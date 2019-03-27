@@ -2,13 +2,18 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
+* TBD
+
+## v20.2.0 - 2019-03-27
+
 ### 🎁 New Features
 
 * `GridModel` exposes three new configs - `rowBorders`, `stripeRows`, and `showCellFocus` - to
-  provide additional control over grid styling, and the former `Grid` prop `showHover` has been
-  renamed and also converted to a `GridModel` config as `highlightOnHover`. Note that some
-  grid-related CSS classes have also been modified to better conform to the BEM approach used
-  elsewhere.
+  provide additional control over grid styling. The former `Grid` prop `showHover` has been
+  converted to a `GridModel` config for symmetry with these other flags and more efficient
+  re-rendering. Note that some grid-related CSS classes have also been modified to better conform to
+  the BEM approach used elsewhere - this could be a breaking change for apps that keyed off of
+  certain Hoist grid styles (not expected to be a common case).
 * `Select` adds a `queryBuffer` prop to avoid over-eager calls to an async `queryFn`. This buffer is
   defaulted to 300ms to provide some out-of-the-box debouncing of keyboard input when an async query
   is provided. A longer value might be appropriate for slow / intensive queries to a remote API.
@@ -16,16 +21,20 @@
 ### 🐞 Bug Fixes
 
 * A small `FormField.labelWidth` config value will now be respected, even if it is less than the
-  default minWidth of 80px. #1026
+  default minWidth of 80px.
 * Unnecessary re-renders of inactive tab panels now avoided.
-* `Grid`'s filter will now be consistently applied to all tree grid records. Previously, the filter 
-  skipped deeply nested records under specific conditions. 
-  
-  
+* `Grid`'s filter will now be consistently applied to all tree grid records. Previously, the filter
+  skipped deeply nested records under specific conditions.
+* `Timer` no longer requires its `runFn` to be a promise, as it briefly (and unintentionally) did.
+* Suppressed default browser resize handles on `textarea`.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.1.1...v20.2.0)
+
 ## v20.1.1 - 2019-03-27
 
 ### 🐞 Bug Fixes
-* Fix form field reset so that it will call computeValidationAsync even if revalidation is not 
+
+* Fix form field reset so that it will call computeValidationAsync even if revalidation is not
   triggered because the field's value did not change when reset.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v20.1.0...v20.1.1)
