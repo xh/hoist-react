@@ -18,6 +18,9 @@ import {GridModel} from './GridModel';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
+import './Grid.scss';
+
+
 /**
  * The primary rich data grid component within the Hoist toolkit.
  * It is a highly managed wrapper around ag-Grid and is the main display component for GridModel.
@@ -120,7 +123,7 @@ export class Grid extends Component {
 
     render() {
         const {model, props} = this,
-            {treeMode, compact, highlightOnHover, rowBorders, stripeRows} = model,
+            {treeMode, compact, rowBorders, stripeRows, showHover, showCellFocus} = model,
             {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -142,9 +145,10 @@ export class Grid extends Component {
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
                     compact ? 'xh-grid--compact' : 'xh-grid--standard',
-                    rowBorders ? '' : 'xh-grid--no-row-borders',
-                    stripeRows ? '' : 'xh-grid--no-stripes',
-                    !isMobile && highlightOnHover ? 'xh-grid--highlight-on-hover' : ''
+                    rowBorders ? 'xh-grid--row-borders' : 'xh-grid--no-row-borders',
+                    stripeRows ? 'xh-grid--stripe-rows' : 'xh-grid--no-stripe-rows',
+                    showCellFocus ? 'xh-grid--show-cell-focus' : 'xh-grid--no-cell-focus',
+                    !isMobile && showHover ? 'xh-grid--show-hover' : 'xh-grid--no-hover'
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
