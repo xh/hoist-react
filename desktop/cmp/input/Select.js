@@ -108,7 +108,7 @@ export class Select extends HoistInput {
         queryFn: PT.func,
 
         /**
-         * Delay (in ms) to buffer calls the async queryFn. Defaults to 300.
+         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
          */
         queryBuffer: PT.number,
 
