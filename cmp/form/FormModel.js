@@ -145,7 +145,7 @@ export class FormModel {
     /** @member {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
-        return this.fields.some(m => m.isValidationPending);
+        return some(this.fields, m => m.isValidationPending);
     }
 
     /** @member {boolean} - true if all fields are valid. */
