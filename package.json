@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "20.2.0",
+  "version": "21.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:exhi/hoist-react",
   "homepage": "https://github.com/exhi/hoist-react",
