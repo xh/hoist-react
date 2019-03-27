@@ -4,6 +4,15 @@
 
 * TBD
 
+## v20.1.1 - 2019-03-27
+
+### 🐞 Bug Fixes
+* Fix form field reset so that it will call computeValidationAsync even if revalidation is not 
+  triggered because the field's value did not change when reset.
+
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.1.0...v20.1.1)
+
 ## v20.1.0 - 2019-03-14
 
 ### 🎁 New Features
