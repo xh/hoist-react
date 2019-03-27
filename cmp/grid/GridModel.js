@@ -88,11 +88,11 @@ export class GridModel {
     /** @member {boolean} */
     @bindable compact;
     /** @member {boolean} */
-    @bindable highlightOnHover;
-    /** @member {boolean} */
     @bindable rowBorders;
     /** @member {boolean} */
     @bindable stripeRows;
+    /** @member {boolean} */
+    @bindable showHover;
     /** @member {boolean} */
     @bindable showCellFocus;
 
@@ -136,9 +136,9 @@ export class GridModel {
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
-     * @param {boolean} [c.highlightOnHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -162,7 +162,7 @@ export class GridModel {
         groupBy = null,
 
         compact = false,
-        highlightOnHover = false,
+        showHover = false,
         rowBorders = false,
         stripeRows = true,
         showCellFocus = false,
@@ -191,7 +191,7 @@ export class GridModel {
         this.setSortBy(sortBy);
 
         this.compact = compact;
-        this.highlightOnHover = highlightOnHover;
+        this.showHover = showHover;
         this.rowBorders = rowBorders;
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;

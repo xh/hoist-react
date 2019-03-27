@@ -67,14 +67,6 @@
   .ag-row {
     background-color: var(--xh-grid-bg);
 
-    // Row borders.
-    border-color: var(--xh-grid-border-color);
-
-    // Zebra striping.
-    &.ag-row-odd {
-      background-color: var(--xh-grid-bg-odd);
-    }
-
     &.ag-row-selected, &:active {
       background-color: var(--xh-grid-bg-highlight);
     }
@@ -93,17 +85,32 @@
     }
   }
 
-  // Suppress row borders.
+  // Row borders
+  &--row-borders {
+    .ag-row {border-color: var(--xh-grid-border-color);}
+  }
+
   &--no-row-borders {
-    .ag-row {
-      border-color: transparent;
+    .ag-row {border-color: transparent;}
+  }
+
+  // Row zebra striping
+  &--stripe-rows {
+    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-odd);
     }
   }
 
-  // Suppress zebra striping.
-  &--no-stripes {
+  &--no-stripe-rows {
     .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg);
+    }
+  }
+
+  // Hover highlight
+  &--show-hover {
+    .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-hover);
     }
   }
 
@@ -118,6 +125,21 @@
 
   .ag-cell-value {
     line-height: var(--xh-grid-line-height-px);
+  }
+
+  // Cell focus
+  &--no-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: transparent !important;
+    }
+  }
+
+  &--show-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: var(--xh-grid-cell-focus-border-color) !important;
+    }
   }
 
 
@@ -151,13 +173,6 @@
   }
 
 
-  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
-  // We remove this to tighten up the spacing.
-  .ag-group-checkbox.ag-invisible {
-    display: none;
-  }
-
-
   //------------------------
   // Compact Mode
   //------------------------
@@ -182,27 +197,16 @@
   //------------------------
   // Other Optional Modifiers + Overrides
   //------------------------
-  &--highlight-on-hover .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
-    background-color: var(--xh-grid-bg-hover);
+  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
+  // We remove this to tighten up the spacing.
+  .ag-group-checkbox.ag-invisible {
+    display: none;
   }
 
   // Restore right border on cells - not included by default with ag-grid but
   // causes right-aligned content to shift by one pixel when focused.
   .ag-cell.ag-cell-no-focus {
     border-right: 1px solid transparent;
-  }
-
-  // Disable default cell focus outline/border.
-  .ag-cell-focus {
-    outline: 0 !important;
-    border-color: transparent !important;
-  }
-
-  // Unless enabled by extra class/flag - then restore.
-  &--show-cell-focus {
-    .ag-cell-focus {
-      border-color: var(--xh-grid-cell-focus-border-color) !important;
-    }
   }
 
   // Grouped rows appear slightly misaligned (standard mode only)
