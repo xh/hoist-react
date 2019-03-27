@@ -16,6 +16,16 @@
 * Unnecessary re-renders of inactive tab panels now avoided.
 * `Grid`'s filter will now be consistently applied to all tree grid records. Previously, the filter 
   skipped deeply nested records under specific conditions. 
+  
+  
+## v20.1.1 - 2019-03-27
+
+### 🐞 Bug Fixes
+* Fix form field reset so that it will call computeValidationAsync even if revalidation is not 
+  triggered because the field's value did not change when reset.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.1.0...v20.1.1)
+
 
 ## v20.1.0 - 2019-03-14
 
