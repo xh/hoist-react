@@ -4,10 +4,11 @@
 
 ### 🎁 New Features
 
-* `GridModel` exposes two new configs `rowBorders` and `stripRows` to provide additional control
-  over grid styling, and the former `Grid` prop `showHover` has been renamed and also converted to a
-  `GridModel` config as `highlightOnHover`. Note that some grid-related CSS classes have also been
-  modified to better conform to the BEM approach used elsewhere.
+* `GridModel` exposes three new configs - `rowBorders`, `stripeRows`, and `showCellFocus` - to
+  provide additional control over grid styling, and the former `Grid` prop `showHover` has been
+  renamed and also converted to a `GridModel` config as `highlightOnHover`. Note that some
+  grid-related CSS classes have also been modified to better conform to the BEM approach used
+  elsewhere.
 * `Select` adds a `queryBuffer` prop to avoid over-eager calls to an async `queryFn`. This buffer is
   defaulted to 300ms to provide some out-of-the-box debouncing of keyboard input when an async query
   is provided. A longer value might be appropriate for slow / intensive queries to a remote API.
