@@ -9,6 +9,9 @@
   renamed and also converted to a `GridModel` config as `highlightOnHover`. Note that some
   grid-related CSS classes have also been modified to better conform to the BEM approach used
   elsewhere.
+* `Select` adds a `queryBuffer` prop to avoid over-eager calls to an async `queryFn`. This buffer is
+  defaulted to 300ms to provide some out-of-the-box debouncing of keyboard input when an async query
+  is provided. A longer value might be appropriate for slow / intensive queries to a remote API.
 
 ### 🐞 Bug Fixes
 
@@ -17,6 +20,16 @@
 * Unnecessary re-renders of inactive tab panels now avoided.
 * `Grid`'s filter will now be consistently applied to all tree grid records. Previously, the filter 
   skipped deeply nested records under specific conditions. 
+  
+  
+## v20.1.1 - 2019-03-27
+
+### 🐞 Bug Fixes
+* Fix form field reset so that it will call computeValidationAsync even if revalidation is not 
+  triggered because the field's value did not change when reset.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.1.0...v20.1.1)
+
 
 ## v20.1.0 - 2019-03-14
 
