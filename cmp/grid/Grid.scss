@@ -123,6 +123,12 @@
     padding-right: var(--xh-grid-cell-lr-pad-px);
   }
 
+  // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
+  .ag-cell.xh-align-center {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .ag-cell-value {
     line-height: var(--xh-grid-line-height-px);
   }
