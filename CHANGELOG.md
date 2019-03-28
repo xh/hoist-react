@@ -2,7 +2,10 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
-* TBD
+### 💥 Breaking Changes
+
+* Multiple HoistInputs have changed their `onKeyPress` props to `onKeyDown`. TextInput, NumberInput,
+  TextArea & SearchInput have been changed.
 
 ## v20.2.0 - 2019-03-27
 
