@@ -83,6 +83,10 @@
     .group-header-icon-contracted {
       margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
     }
+    
+    &.ag-cell-last-left-pinned, .ag-cell:not(.ag-cell-focus).ag-cell-last-left-pinned {
+      border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+    }
   }
 
   // Row borders
