@@ -1,11 +1,12 @@
+// Ag-grid installs an outer div around itself.
+// This should use height: auto rather than height: 100%, to allow layoutConfig to work.
 .ag-grid-holder > div {
-  // Ag-grid installs an outer div around itself.
-  // This should use height: auto rather than height: 100%, to allow the layoutConfig to work.
   width: 100%;
   height: auto !important;
 }
 
-.xh-grid {
+// Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
+.ag-theme-balham.xh-grid, .ag-theme-balham-dark.xh-grid {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
@@ -122,6 +123,11 @@
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
   }
+
+  .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
+    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+  }
+
 
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
