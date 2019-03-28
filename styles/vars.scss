@@ -74,8 +74,8 @@ body {
   --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '200')});
+  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, var(--xh-focus-outline-color));
   --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
   --xh-grid-cell-lr-pad-px: calc(var(--xh-grid-cell-lr-pad) * 1px);
@@ -254,8 +254,8 @@ body.xh-dark {
 
   // Grid
   --xh-grid-bg-odd: var(--grid-bg-odd, var(--xh-gray-dark));
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '800')});
+  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
 
