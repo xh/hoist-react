@@ -4,6 +4,13 @@
 
 * TBD
 
+## v20.2.1 - 2019-03-28
+
+* Minor tweaks to grid styles - CSS var for pinned column borders, drop left/right padding on
+  center-aligned grid cells.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.2.0...v20.2.1)
+
 ## v20.2.0 - 2019-03-27
 
 ### 🎁 New Features
