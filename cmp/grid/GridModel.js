@@ -544,12 +544,6 @@ export class GridModel {
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
         );
-
-        warnIf(
-            !cols.some(c => c.flex),
-            `No columns have flex set (flex=true). Consider making the last column a flex column, 
-            or adding an 'emptyFlexCol' at the end of your columns array.`
-        );
     }
 
     collectIds(cols, groupIds = [], colIds = []) {
