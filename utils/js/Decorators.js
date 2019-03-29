@@ -33,7 +33,7 @@ export function ensureParameterizedDecoratorPreCalled(decoratorName, ...params) 
  * Decorates a class method so that it is debounced by the specified duration.
  * Based on https://github.com/bvaughn/debounce-decorator.
  *
- *  @param {name} duration - milliseconds to debounce.
+ * @param {number} duration - milliseconds to debounce.
  */
 export function debounced(duration) {
     return function(target, key, descriptor) {
