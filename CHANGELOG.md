@@ -2,6 +2,13 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
+### 💥 Breaking Changes
+* The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.   In most cases 
+    applications should use `!FormModel.isValid` instead; this expresssion will return `false` for the `Unknown` as 
+    well as the `NotValid` state.  Applications that wish to explicitly test for the `NotValid` state should use the
+   `validationState` gettter. 
+   
+ 
 * TBD
 
 ## v20.2.0 - 2019-03-27

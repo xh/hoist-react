@@ -153,11 +153,6 @@ export class FormModel {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @member {boolean} - true if any fields are not valid. */
-    get isNotValid() {
-        return this.validationState == ValidationState.NotValid;
-    }
-
     /** @member {String[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
