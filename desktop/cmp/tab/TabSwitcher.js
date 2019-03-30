@@ -5,8 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, useProvidedModel, useClassName} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
+import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {omit} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -42,7 +43,7 @@ export const [TabSwitcher, tabSwitcher] = hoistComponent(function TabSwitcher(pr
             });
         }),
         ...omit(props, 'model'),
-        className: useClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
+        className: getClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
     });
 });
 

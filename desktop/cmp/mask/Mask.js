@@ -6,11 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useProvidedModel, useClassName} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './Mask.scss';
 
@@ -23,7 +24,7 @@ import './Mask.scss';
 export const [Mask, mask] = hoistComponent(function Mask(props) {
     const model = useProvidedModel(PendingTaskModel, props),
         isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
-        className = useClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
+        className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
 
     if (!isDisplayed) return null;
 

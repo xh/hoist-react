@@ -4,7 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useProvidedModel, useClassName, useLayoutProps} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
@@ -33,7 +34,7 @@ export const [TabContainer, tabContainer] = hoistComponent(function TabContainer
 
     return container({
         ...layoutProps,
-        className: useClassName('xh-tab-container', props),
+        className: getClassName('xh-tab-container', props),
         items: [
             switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
             ...tabs.map(tabModel => {

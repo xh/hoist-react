@@ -6,9 +6,10 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useClassName, XH} from '@xh/hoist/core';
+import {hoistComponent, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {getClassName} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 
 export const [AppMenuButton, appMenuButton] = hoistComponent(props => {
@@ -23,7 +24,7 @@ export const [AppMenuButton, appMenuButton] = hoistComponent(props => {
 
     // TODO:  Need logic from context menu to remove duplicate seperators!
     return popover({
-        className: useClassName('xh-app-menu', props),
+        className: getClassName('xh-app-menu', props),
         position: 'bottom-right',
         minimal: true,
         target: button({

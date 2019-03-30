@@ -9,7 +9,7 @@ import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
+import {getClassName} from '@xh/hoist/utils/react';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 
@@ -161,16 +161,20 @@ export function HoistComponent(C) {
             },
 
             /**
-             * Concatenate a CSS baseClassName (if defined on component) with any instance-specific
+             * Concatenate a CSS baseClassName (as defined on component) with any instance-specific
              * className provided via props and optional extra names provided at render-time.
              *
-             * Components should call this to produce a combined class list and apply it to their
-             * outermost (or otherwise most appropriate) rendered component.
+             * @param {...string} [extraNames] - additional optional classNames to append.
              *
-             * @param {...string} extraClassNames - additional classNames to append.
+             * This method delegates to the utility function {@link getClassName}.  See that method
+             * for more information.
              */
-            getClassName(...extraClassNames) {
-                return classNames(this.baseClassName, this.props.className, ...extraClassNames);
+            getClassName(...extraNames) {
+                return getClassName(
+                    this.baseClassName,
+                    this.props,
+                    ...extraNames
+                );
             }
         },
 

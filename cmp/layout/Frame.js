@@ -4,7 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useClassName} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
+
 import {box} from './Box';
 
 /**
@@ -22,7 +24,7 @@ export const [VFrame, vframe] = hoistComponent(function VFrame(props) {
         ...props,
         flex: 'auto',
         flexDirection: 'column',
-        className: useClassName('xh-vframe', props)
+        className: getClassName('xh-vframe', props)
     });
 });
 
@@ -31,6 +33,6 @@ export const [HFrame, hframe] = hoistComponent(function HFrame(props) {
         ...props,
         flex: 'auto',
         flexDirection: 'row',
-        className: useClassName('xh-hframe', props)
+        className: getClassName('xh-hframe', props)
     });
 });

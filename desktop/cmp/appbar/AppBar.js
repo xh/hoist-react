@@ -6,11 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useClassName, XH} from '@xh/hoist/core';
+import {hoistComponent, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
+import {getClassName} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
 
@@ -34,7 +35,7 @@ export const [AppBar, appBar] = hoistComponent(function AppBar(props) {
     } = props;
 
     return navbar({
-        className: useClassName('xh-appbar', props),
+        className: getClassName('xh-appbar', props),
         items: [
             navbarGroup({
                 align: 'left',

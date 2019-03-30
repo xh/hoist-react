@@ -6,8 +6,9 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useLayoutProps, useClassName} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
+import {getClassName} from '@xh/hoist/utils/react';
 
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
@@ -28,7 +29,7 @@ export const [Button, button] = hoistComponent(function Button(props) {
             ...layoutProps
         },
         ...rest,
-        className: useClassName('xh-button', props, minimal ? 'xh-button--minimal' : '')
+        className: getClassName('xh-button', props, minimal ? 'xh-button--minimal' : '')
     });
 });
 

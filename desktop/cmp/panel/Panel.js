@@ -8,10 +8,10 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistComponent, useLayoutProps, useClassName, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {isReactElement} from '@xh/hoist/utils/react';
+import {isReactElement, getClassName} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -31,7 +31,7 @@ import './Panel.scss';
 export const [Panel, panel] = hoistComponent(function Panel(props) {
     let model = useProvidedModel(PanelModel, props),
         [flags] = useState({wasDisplayed: true}),
-        className = useClassName('xh-panel', props),
+        className = getClassName('xh-panel', props),
         [layoutProps, nonLayoutProps] = useLayoutProps(props);
 
     const {

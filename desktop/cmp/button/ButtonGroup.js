@@ -6,8 +6,9 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useLayoutProps, useClassName} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
+import {getClassName} from '@xh/hoist/utils/react';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
@@ -24,7 +25,7 @@ export const [ButtonGroup, buttonGroup] = hoistComponent(function ButtonGroup(pr
             ...layoutProps
         },
         ...rest,
-        className: useClassName('xh-button-group', props)
+        className: getClassName('xh-button-group', props)
     });
 });
 

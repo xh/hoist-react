@@ -4,7 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useClassName} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
 
@@ -20,6 +21,6 @@ export const [Viewport, viewport] = hoistComponent(function Viewport(props) {
         position: 'fixed',
         width: '100%',
         height: '100%',
-        className: useClassName('xh-viewport', props)
+        className: getClassName('xh-viewport', props)
     });
 });

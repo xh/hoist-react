@@ -4,7 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useClassName} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {box} from './Box';
 
 /**
@@ -15,7 +16,7 @@ export const [Spacer, spacer] = hoistComponent(function Spacer(props) {
     return box({
         ...props,
         flex: 'none',
-        className: useClassName('xh-spacer', props)
+        className: getClassName('xh-spacer', props)
     });
 });
 
@@ -26,7 +27,7 @@ export const [Filler, filler] = hoistComponent(function Filler(props) {
     return box({
         ...props,
         flex: 'auto',
-        className: useClassName('xh-filler', props)
+        className: getClassName('xh-filler', props)
     });
 });
 

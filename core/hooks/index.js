@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 export * from './LayoutProps';
-export * from './ClassName';
 export * from './Model';
 export * from './Mount';
 

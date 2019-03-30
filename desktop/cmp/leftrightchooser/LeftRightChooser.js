@@ -6,9 +6,10 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistComponent, useProvidedModel, useClassName, useLayoutProps} from '@xh/hoist/core';
+import {hoistComponent, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
@@ -24,7 +25,7 @@ import './LeftRightChooser.scss';
  */
 export const [LeftRightChooser, leftRightChooser] = hoistComponent(props =>  {
     const model = useProvidedModel(LeftRightChooserModel, props),
-        className = useClassName('xh-lr-chooser', props),
+        className = getClassName('xh-lr-chooser', props),
         [layoutProps] = useLayoutProps(props),
         {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
         gridOptions = {

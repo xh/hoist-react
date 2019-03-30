@@ -5,8 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {merge, castArray} from 'lodash';
-import {hoistComponent, useLayoutProps, useClassName} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {div} from './Tags';
+
 
 /**
  * A Component that supports flexbox-based layout of its contents.
@@ -35,7 +37,7 @@ export const [VBox, vbox] = hoistComponent(function VBox(props) {
     return box({
         ...props,
         flexDirection: 'column',
-        className: useClassName('xh-vbox', props)
+        className: getClassName('xh-vbox', props)
     });
 });
 
@@ -43,6 +45,6 @@ export const [HBox, hbox] = hoistComponent(function HBox(props) {
     return box({
         ...props,
         flexDirection: 'row',
-        className: useClassName('xh-hbox', props)
+        className: getClassName('xh-hbox', props)
     });
 });

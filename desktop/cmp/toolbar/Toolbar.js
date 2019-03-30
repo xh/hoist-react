@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, useClassName} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
@@ -19,7 +20,7 @@ export const [Toolbar, toolbar] = hoistComponent(function Toolbar(props) {
 
     return (vertical ? vbox : hbox)({
         ...rest,
-        className: useClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
+        className: getClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
     });
 });
 
