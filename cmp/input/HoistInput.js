@@ -89,7 +89,8 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
-        throwIf(props.field, "HoistInput no longer supports a field property.  Use 'bind' instead.");
+        throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
+        throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
