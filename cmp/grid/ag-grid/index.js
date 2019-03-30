@@ -9,12 +9,8 @@ import {AgGridReact} from 'ag-grid-react';
 import {LicenseManager} from 'ag-grid-enterprise';
 import {elemFactory} from '@xh/hoist/core';
 import 'ag-grid-community/dist/styles/ag-grid.css';
-
-// TODO - determine if we can avoid importing both of these, and/or use a SASS import
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
-
-import './styles.scss';
 
 // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);

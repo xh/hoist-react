@@ -86,13 +86,15 @@ export class GridModel {
     @observable groupBy = null;
 
     /** @member {boolean} */
-    @bindable compact = false;
+    @bindable compact;
     /** @member {boolean} */
-    @bindable highlightOnHover = false;
+    @bindable rowBorders;
     /** @member {boolean} */
-    @bindable rowBorders = false;
+    @bindable stripeRows;
     /** @member {boolean} */
-    @bindable stripeRows = true;
+    @bindable showHover;
+    /** @member {boolean} */
+    @bindable showCellFocus;
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
@@ -134,9 +136,10 @@ export class GridModel {
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
-     * @param {boolean} [c.highlightOnHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -159,9 +162,10 @@ export class GridModel {
         groupBy = null,
 
         compact = false,
-        highlightOnHover = false,
+        showHover = false,
         rowBorders = false,
         stripeRows = true,
+        showCellFocus = false,
 
         enableColChooser = false,
         enableExport = false,
@@ -187,9 +191,10 @@ export class GridModel {
         this.setSortBy(sortBy);
 
         this.compact = compact;
-        this.highlightOnHover = highlightOnHover;
+        this.showHover = showHover;
         this.rowBorders = rowBorders;
         this.stripeRows = stripeRows;
+        this.showCellFocus = showCellFocus;
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -538,12 +543,6 @@ export class GridModel {
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
-        );
-
-        warnIf(
-            !cols.some(c => c.flex),
-            `No columns have flex set (flex=true). Consider making the last column a flex column, 
-            or adding an 'emptyFlexCol' at the end of your columns array.`
         );
     }
 
