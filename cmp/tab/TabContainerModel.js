@@ -72,7 +72,7 @@ export class TabContainerModel {
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.route = route;
-        this.activeTabId = this.initialActiveTabId(tabs, defaultTabId)
+        this.activeTabId = this.initialActiveTabId(tabs, defaultTabId);
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
 
         if (route) {
@@ -154,14 +154,14 @@ export class TabContainerModel {
 
         // or default
         ret = tabConfigs.find(t => t.id == defaultTabId);
-        if (ret && !ret.disabled) return ret.id
+        if (ret && !ret.disabled) return ret.id;
 
         // or first enabled tab
         ret = tabConfigs.find(t => !t.disabled);
         if (ret) return ret.id;
         
         // sigh...
-        return tabConfigs[0].id
+        return tabConfigs[0].id;
     }
 
 
