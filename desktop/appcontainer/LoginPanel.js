@@ -52,7 +52,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
+                            onKeyDown: this.onKeyDown,
                             autoComplete: 'on',
                             width: null
                         }),
@@ -62,7 +62,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
+                            onKeyDown: this.onKeyDown,
                             autoComplete: 'on',
                             width: null
                         }),
@@ -96,7 +96,7 @@ export class LoginPanel extends Component {
         this.model.submit();
     };
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key === 'Enter') {
             this.onSubmit();
         }
