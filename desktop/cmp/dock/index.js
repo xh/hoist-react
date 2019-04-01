@@ -4,7 +4,5 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-export * from './container/DockContainer';
-export * from './container/DockContainerModel';
-export * from './view/DockView';
-export * from './view/DockViewModel';
+export * from './DockContainer';
+export * from './DockContainerModel';

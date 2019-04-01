@@ -10,14 +10,29 @@
   bottom: 0;
   left: 0;
   right: 0;
-  justify-content: flex-end;
-  align-items: flex-end;
   pointer-events: none;
+  align-items: flex-end;
+  justify-content: flex-end;
+
+  &.xh-dock-container-ltr {
+    flex-direction: row-reverse !important;
+
+    .xh-dock-view {
+      margin-left: var(--xh-pad-px);
+    }
+  }
+
+  &.xh-dock-container-rtl {
+    flex-direction: row !important;
+
+    .xh-dock-view {
+      margin-right: var(--xh-pad-px);
+    }
+  }
 }
 
 .xh-dock-view {
   flex: 0 0 auto;
-  margin-right: var(--xh-pad-px);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   z-index: 10;
   pointer-events: auto;

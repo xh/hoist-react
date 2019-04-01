@@ -5,16 +5,21 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {isFunction} from 'lodash';
+import {isReactElement} from '@xh/hoist/utils/react';
 
 import {DockViewModel} from './DockViewModel';
 import '../Dock.scss';
 
+/**
+ * Wrapper for contents to be shown within a DockContainer.
+ *
+ * @private
+ */
 @HoistComponent
 export class DockView extends Component {
 
@@ -28,12 +33,9 @@ export class DockView extends Component {
     }
 
     renderInDock() {
-        const {collapsed} = this.model,
-            width = this.getWidth(),
-            style = collapsed ? {maxWidth: width} : {width};
+        const {collapsed} = this.model;
 
         return vbox({
-            style,
             className: this.getClassName(collapsed ? 'xh-dock-view-collapsed' : null),
             items: [
                 this.renderHeader(),
@@ -43,16 +45,13 @@ export class DockView extends Component {
     }
 
     renderInDialog() {
-        const width = this.getWidth(),
-            style = {width};
-
         return dialog({
-            style,
             className: this.getClassName('xh-dock-view-dialog'),
             isOpen: true,
             onClose: () => this.onClose(),
             canOutsideClickClose: false,
             transitionName: 'none',
+            transitionDuration: 0,
             items: [
                 this.renderHeader(),
                 this.renderBody()
@@ -61,20 +60,22 @@ export class DockView extends Component {
     }
 
     renderHeader() {
-        const {collapsed, docked} = this.model;
+        const {icon, title, collapsed, docked, allowDialog} = this.model;
 
         return hbox({
             className: 'xh-dock-view-header',
             items: [
                 span({
+                    omit: !icon,
+                    item: icon,
                     className: 'xh-dock-view-header-icon',
-                    onDoubleClick: () => this.onToggleCollapsed(),
-                    item: this.renderIcon()
+                    onDoubleClick: () => this.onToggleCollapsed()
                 }),
                 span({
+                    omit: !title,
+                    item: title,
                     className: 'xh-dock-view-header-title',
-                    onDoubleClick: () => this.onToggleCollapsed(),
-                    item: this.renderTitle()
+                    onDoubleClick: () => this.onToggleCollapsed()
                 }),
                 filler(),
                 button({
@@ -82,6 +83,7 @@ export class DockView extends Component {
                     onClick: () => this.onToggleCollapsed()
                 }),
                 button({
+                    omit: !allowDialog,
                     icon: docked ? Icon.expand() : Icon.collapse(),
                     onClick: () => this.onToggleDocked()
                 }),
@@ -94,26 +96,17 @@ export class DockView extends Component {
     }
 
     renderBody() {
-        const {viewFactory, viewProps} = this.model;
         return div({
             className: 'xh-dock-view-body',
-            item: viewFactory(viewProps)
+            item: this.renderContent()
         });
     }
 
-    renderIcon() {
-        const {viewModel, icon} = this.model;
-        return isFunction(icon) ? icon(viewModel) : icon;
-    }
-
-    renderTitle() {
-        const {viewModel, title} = this.model;
-        return isFunction(title) ? title(viewModel) : title;
-    }
-
-    getWidth() {
-        const {viewModel, width} = this.model;
-        return isFunction(width) ? width(viewModel) : width;
+    renderContent() {
+        const {content} = this.model;
+        if (isReactElement(content)) return content;
+        if (content.prototype.render) return elem(content);
+        return content();
     }
 
     onToggleDocked = () => {
