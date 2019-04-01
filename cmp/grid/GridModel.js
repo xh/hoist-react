@@ -147,9 +147,9 @@ export class GridModel {
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
-     * @param {*} [c...rest] - additional data to store
-     *      @see StoreContextMenu
+     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     *      StoreContextMenu when the grid is right-clicked (desktop only).
+     * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
         store,
@@ -641,4 +641,11 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ */
+
+/**
+ * @callback GridStoreContextMenuFn - context menu factory function, provided to GridModel.
+ * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
+ * @param {GridModel} gridModel - controlling GridModel instance
+ * @returns {StoreContextMenu} - context menu to display, or null
  */
