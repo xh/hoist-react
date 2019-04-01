@@ -3,13 +3,22 @@
 ## v21.0.0-SNAPSHOT (under development)
 
 ### 💥 Breaking Changes
-* The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.   In most cases 
-    applications should use `!FormModel.isValid` instead; this expresssion will return `false` for the `Unknown` as 
-    well as the `NotValid` state.  Applications that wish to explicitly test for the `NotValid` state should use the
-   `validationState` gettter. 
-   
- 
-* TBD
+
+* The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.
+  In most cases applications should use `!FormModel.isValid` instead; this expression will return
+  `false` for the `Unknown` as well as the `NotValid` state. Applications that wish to explicitly
+  test for the `NotValid` state should use the `validationState` getter.
+* Multiple HoistInputs have changed their `onKeyPress` props to `onKeyDown`, including TextInput,
+  NumberInput, TextArea & SearchInput. The `onKeyPress` event has been deprecated in general and has
+  limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
+  keypress).
+
+## v20.2.1 - 2019-03-28
+
+* Minor tweaks to grid styles - CSS var for pinned column borders, drop left/right padding on
+  center-aligned grid cells.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.2.0...v20.2.1)
 
 ## v20.2.0 - 2019-03-27
 
