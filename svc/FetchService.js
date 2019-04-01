@@ -8,6 +8,7 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {throwIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
+import {isPlainObject} from 'lodash';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -15,6 +16,8 @@ import {stringify} from 'qs';
  * Wrapper around the standard Fetch API with some enhancements to streamline the process for
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
+ *
+ * Todo: Explain setting headers app-wide / per request
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
@@ -25,6 +28,16 @@ import {stringify} from 'qs';
 export class FetchService {
 
     autoAbortControllers = {};
+    appHeaders = {};
+
+    /**
+     * Todo: Doc
+     * @param headers
+     */
+    setAppHeaders(headers) {
+        throwIf(!isPlainObject(headers), 'Todo');
+        this.appHeaders = headers;
+    }
 
     /**
      * Send a request via the underlying fetch API.
@@ -40,6 +53,7 @@ export class FetchService {
      * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
      *     If not specified, contentType is set based on method: 'application/x-www-form-urlencoded'
      *     for POSTs, 'text/plain' otherwise.
+     * @param {Object|Headers} [opts.headers] - Todo: Doc
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
@@ -50,7 +64,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, url, autoAbortKey} = opts;
+        let {params, method, contentType, headers, url, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
 
         // 1) Compute / install defaults
@@ -66,13 +80,15 @@ export class FetchService {
             url = XH.baseUrl + url;
         }
 
+        headers = this.getHeaders(headers, contentType, url);
+
         // 2) Prepare merged options
         const defaults = {
                 method,
                 cors: true,
                 credentials: 'include',
                 redirect: 'follow',
-                headers: new Headers({'Content-Type': contentType})
+                headers: new Headers(headers)
             },
             fetchOpts = Object.assign(defaults, opts);
 
@@ -180,6 +196,17 @@ export class FetchService {
     //-----------------------
     // Implementation
     //-----------------------
+    getHeaders(headers, contentType, url) {
+        const defaultHeaders = {'Content-Type': contentType},
+            isHoistRequest = url.includes('/xh/');
+
+        return Object.assign(
+            defaultHeaders,
+            !isHoistRequest ? this.appHeaders : {},
+            isPlainObject(headers) ? headers : {}
+        );
+    }
+
     abort(key) {
         const ctrl = this.autoAbortControllers[key];
         if (ctrl) {

@@ -100,6 +100,7 @@ class XHClass {
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+    setAppHeaders(headers)      {return this.fetchService.setAppHeaders(headers)}
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
