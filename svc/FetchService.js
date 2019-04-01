@@ -17,7 +17,8 @@ import {isPlainObject} from 'lodash';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Todo: Explain setting headers app-wide / per request
+ * Custom headers can be provide to fetch as either a plain object or a Headers object. App-wide
+ * headers can be set using setAppHeaders (aliased to XH for convenience).
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
@@ -31,8 +32,10 @@ export class FetchService {
     appHeaders = {};
 
     /**
-     * Todo: Doc
-     * @param headers
+     * Set App-wide headers for all subsequent requests. App-wide headers are not
+     * sent with core framework requests.
+     *
+     * @param {Object} headers - Headers to be sent with all requests.
      */
     setAppHeaders(headers) {
         throwIf(!isPlainObject(headers), 'Todo');
@@ -53,7 +56,9 @@ export class FetchService {
      * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
      *     If not specified, contentType is set based on method: 'application/x-www-form-urlencoded'
      *     for POSTs, 'text/plain' otherwise.
-     * @param {Object|Headers} [opts.headers] - Todo: Doc
+     * @param {Object|Headers} [opts.headers] - headers to send with this request. If an Object,
+     *      will be merged with existing default headers. Alternatively, provide an
+     *      instantiated Headers object to replace entirely.
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
@@ -202,7 +207,7 @@ export class FetchService {
 
         return Object.assign(
             defaultHeaders,
-            !isHoistRequest ? this.appHeaders : {},
+            !isHoistRequest ? this.appHeaders : {}, // Skip app headers for core framework requests.
             isPlainObject(headers) ? headers : {}
         );
     }
