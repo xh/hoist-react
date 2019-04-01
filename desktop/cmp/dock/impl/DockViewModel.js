@@ -26,7 +26,8 @@ export class DockViewModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
-    @observable allowDialog;
+    allowClose;
+    allowDialog;
 
     containerModel;
 
@@ -41,7 +42,8 @@ export class DockViewModel {
      *      element factory of the form returned by elemFactory.
      * @param {boolean} [c.docked] - true to initialise in dock, false to use Dialog. Respects allowDialog. Default true.
      * @param {boolean} [c.collapsed] - true to initialise collapsed, false for expanded. Default false.
-     * @param {boolean} [c.allowDialog] - true to allow removing from dock and displaying in a Dialog. Default true.
+     * @param {boolean} [c.allowClose] - true to allow removing from the dock entirely. Default true.
+     * @param {boolean} [c.allowDialog] - true to allow popping out of the dock and displaying in a Dialog. Default true.
      */
     constructor({
         id,
@@ -51,6 +53,7 @@ export class DockViewModel {
         content,
         docked,
         collapsed,
+        allowClose,
         allowDialog
     }) {
         this.id = withDefault(id, XH.genId());
@@ -60,6 +63,7 @@ export class DockViewModel {
         this.content = content;
         this.docked = withDefault(docked, true);
         this.collapsed = withDefault(collapsed, false);
+        this.allowClose = withDefault(allowClose, true);
         this.allowDialog = withDefault(allowDialog, true);
     }
 

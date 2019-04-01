@@ -60,7 +60,7 @@ export class DockView extends Component {
     }
 
     renderHeader() {
-        const {icon, title, collapsed, docked, allowDialog} = this.model;
+        const {icon, title, collapsed, docked, allowClose, allowDialog} = this.model;
 
         return hbox({
             className: 'xh-dock-view-header',
@@ -88,6 +88,7 @@ export class DockView extends Component {
                     onClick: () => this.onToggleDocked()
                 }),
                 button({
+                    omit: !allowClose,
                     icon: Icon.close(),
                     onClick: () => this.onClose()
                 })
