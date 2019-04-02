@@ -2,6 +2,14 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
+### 🎁 New Features
+
+* FetchService fetch methods now accept a plain object as the `headers` argument. These headers will
+  be merged with the default headers provided by FetchService.
+* It is now possible to set default headers to be sent with every fetch request. These can be set
+  using either `FetchService.setDefaultHeaders()` or `AppSpec.defaultFetchHeaders`. In both cases,
+  either a plain object or a closure to generate one can be used.
+
 ### 💥 Breaking Changes
 
 * The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.
@@ -12,6 +20,8 @@
   NumberInput, TextArea & SearchInput. The `onKeyPress` event has been deprecated in general and has
   limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
   keypress).
+* FetchService's fetch methods no longer support `contentType` parameter. You can specify a custom
+  content-type by setting a 'Content-Type' header using the `headers` parameter.
 
 ## v20.2.1 - 2019-03-28
 

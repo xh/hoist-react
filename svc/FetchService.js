@@ -6,9 +6,9 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
-import {isPlainObject} from 'lodash';
+import {isFunction, isPlainObject} from 'lodash';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -17,8 +17,9 @@ import {isPlainObject} from 'lodash';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provide to fetch as either a plain object or a Headers object. App-wide
- * headers can be set using setAppHeaders (aliased to XH for convenience).
+ * Custom headers can be provide to fetch as either a plain object or a Headers object.
+ * App-wide default headers can be set using setDefaultHeaders. Default headers can also be
+ * provided via `AppSpec.defaultFetchHeaders`
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
@@ -29,17 +30,20 @@ import {isPlainObject} from 'lodash';
 export class FetchService {
 
     autoAbortControllers = {};
-    appHeaders = {};
+    defaultHeaders = {};
+
+    constructor() {
+        const {defaultFetchHeaders} = XH.appSpec;
+        if (defaultFetchHeaders) this.setDefaultHeaders(defaultFetchHeaders);
+    }
 
     /**
-     * Set App-wide headers for all subsequent requests. App-wide headers are not
-     * sent with core framework requests.
+     * Set default headers to be sent with all subsequent requests.
      *
-     * @param {Object} headers - Headers to be sent with all requests.
+     * @param {Object|function} headers - Headers to be sent with all fetch requests, or a closure to generate
      */
-    setAppHeaders(headers) {
-        throwIf(!isPlainObject(headers), 'Todo');
-        this.appHeaders = headers;
+    setDefaultHeaders(headers) {
+        this.defaultHeaders = headers;
     }
 
     /**
@@ -53,12 +57,10 @@ export class FetchService {
      *      with the request body (for POSTs/PUTs sending form-url-encoded).
      * @param {string} [opts.method] - HTTP Request method to use for the request. If not specified,
      *      the method will be set to POST if there are params, otherwise GET.
-     * @param {string} [opts.contentType] - value to use in the Content-Type header in the request.
-     *     If not specified, contentType is set based on method: 'application/x-www-form-urlencoded'
-     *     for POSTs, 'text/plain' otherwise.
      * @param {Object|Headers} [opts.headers] - headers to send with this request. If an Object,
-     *      will be merged with existing default headers. Alternatively, provide an
-     *      instantiated Headers object to replace entirely.
+     *      will be merged with existing default headers. A Content-Type header will be set if not
+     *      provided by the caller directly or via one of the dedicated xxxJson methods on this service.
+     *      Alternatively, provide an instantiated Headers object to replace default headers entirely.
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
@@ -69,46 +71,54 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, contentType, headers, url, autoAbortKey} = opts;
+        let {params, method, headers, url, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
+        warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
 
         // 1) Compute / install defaults
         if (!method) {
             method = (params ? 'POST' : 'GET');
         }
 
-        if (!contentType) {
-            contentType = (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain';
-        }
-
         if (!url.startsWith('/') && !url.includes('//')) {
             url = XH.baseUrl + url;
         }
 
-        headers = this.getHeaders(headers, contentType, url);
+        // 2) Compute headers
+        if (!(headers instanceof Headers)) {
+            const baseHeaders = {
+                'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain'
+            };
+            if (opts.acceptJson) {
+                baseHeaders['Accept'] = 'application/json';
+                delete opts.acceptJson;
+            }
 
-        // 2) Prepare merged options
+            const {defaultHeaders} = this;
+            headers = new Headers(Object.assign(
+                baseHeaders,
+                isFunction(defaultHeaders) ? defaultHeaders() : defaultHeaders,
+                isPlainObject(headers) ? headers : {}
+            ));
+        }
+        delete opts.headers;
+
+        // 3) Prepare merged options
         const defaults = {
                 method,
+                headers,
                 cors: true,
                 credentials: 'include',
-                redirect: 'follow',
-                headers: new Headers(headers)
+                redirect: 'follow'
             },
             fetchOpts = Object.assign(defaults, opts);
-
-        if (opts.acceptJson) {
-            fetchOpts.headers.append('Accept', 'application/json');
-            delete fetchOpts.acceptJson;
-        }
-
 
         // 3) Preprocess and apply params
         if (params) {
             const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
                 paramsString = stringify(params, qsOpts);
 
-            if (['POST', 'PUT'].includes(method) && fetchOpts.contentType != 'application/json') {
+            if (['POST', 'PUT'].includes(method) && headers.get('Content-Type') !== 'application/json') {
                 // Fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json.
                 fetchOpts.body = paramsString;
             } else {
@@ -124,7 +134,6 @@ export class FetchService {
             this.autoAbortControllers[autoAbortKey] = ctlr;
         }
 
-        delete fetchOpts.contentType;
         delete fetchOpts.url;
 
         let ret;
@@ -201,17 +210,6 @@ export class FetchService {
     //-----------------------
     // Implementation
     //-----------------------
-    getHeaders(headers, contentType, url) {
-        const defaultHeaders = {'Content-Type': contentType},
-            isHoistRequest = url.includes('/xh/');
-
-        return Object.assign(
-            defaultHeaders,
-            !isHoistRequest ? this.appHeaders : {}, // Skip app headers for core framework requests.
-            isPlainObject(headers) ? headers : {}
-        );
-    }
-
     abort(key) {
         const ctrl = this.autoAbortControllers[key];
         if (ctrl) {
@@ -224,7 +222,7 @@ export class FetchService {
         opts = {
             ...opts,
             body: JSON.stringify(opts.body),
-            contentType: 'application/json'
+            headers: {'Content-Type': 'application/json'}
         };
         return this.fetchJson(opts);
     }
