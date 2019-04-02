@@ -67,8 +67,8 @@ export class NumberInput extends HoistInput {
         /** Minor step size for increment/decrement handling. */
         minorStepSize: PT.number,
 
-        /** Callback for normalized keypress event. */
-        onKeyPress: PT.func,
+        /** Callback for normalized keydown event. */
+        onKeyDown: PT.func,
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
@@ -131,7 +131,7 @@ export class NumberInput extends HoistInput {
             },
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-            onKeyPress: this.onKeyPress,
+            onKeyDown: this.onKeyDown,
             onValueChange: this.onValueChange
         });
     }
@@ -145,9 +145,9 @@ export class NumberInput extends HoistInput {
         return isNaN(val) ? null : val;
     }
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
-        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+        if (this.props.onKeyDown) this.props.onKeyDown(ev);
     }
 
     formatRenderValue(value) {
