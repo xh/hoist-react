@@ -40,7 +40,8 @@ export class FetchService {
     /**
      * Set default headers to be sent with all subsequent requests.
      *
-     * @param {Object|function} headers - Headers to be sent with all fetch requests, or a closure to generate
+     * @param {(Object|function)} headers - Headers to be sent with all fetch requests, or a closure
+     *      to generate.
      */
     setDefaultHeaders(headers) {
         this.defaultHeaders = headers;
@@ -57,10 +58,10 @@ export class FetchService {
      *      with the request body (for POSTs/PUTs sending form-url-encoded).
      * @param {string} [opts.method] - HTTP Request method to use for the request. If not specified,
      *      the method will be set to POST if there are params, otherwise GET.
-     * @param {Object|Headers} [opts.headers] - headers to send with this request. If an Object,
+     * @param {(Object|Headers)} [opts.headers] - headers to send with this request. If an Object,
      *      will be merged with existing default headers. A Content-Type header will be set if not
-     *      provided by the caller directly or via one of the dedicated xxxJson methods on this service.
-     *      Alternatively, provide an instantiated Headers object to replace default headers entirely.
+     *      provided by the caller directly or via one of the xxxJson methods on this service.
+     *      Provide an instantiated Headers object to replace default headers entirely.
      * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
