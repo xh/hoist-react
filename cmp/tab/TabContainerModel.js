@@ -129,7 +129,7 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
-        this.markActiveTabWithRouter(id)
+        this.markActiveTabWithRouter(id);
     }
 
     syncWithRouter() {
