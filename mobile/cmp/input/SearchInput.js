@@ -28,8 +28,8 @@ export class SearchInput extends HoistInput {
         /** Onsen modifier string */
         modifier: PT.string,
 
-        /** Function which receives keypress event */
-        onKeyPress: PT.func,
+        /** Function which receives keydown event */
+        onKeyDown: PT.func,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -72,7 +72,7 @@ export class SearchInput extends HoistInput {
             },
 
             onChange: this.onChange,
-            onKeyPress: this.onKeyPress,
+            onKeyDown: this.onKeyDown,
             onBlur: this.onBlur,
             onFocus: this.onFocus
         });
@@ -82,10 +82,10 @@ export class SearchInput extends HoistInput {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyPress = (ev) => {
-        const {onKeyPress} = this.props;
+    onKeyDown = (ev) => {
+        const {onKeyDown} = this.props;
         if (ev.key === 'Enter') this.doCommit();
-        if (onKeyPress) onKeyPress(ev);
+        if (onKeyDown) onKeyDown(ev);
     };
 
     onFocus = (ev) => {

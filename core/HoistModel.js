@@ -20,7 +20,7 @@ import {applyMixin} from '@xh/hoist/utils/js';
  *
  * For HoistModels that need to load/refresh data consider implementing LoadSupport.
  * This decorator will load data into the model when its component is first mounted, and will
- * register the model with the nearest ResfreshContextModel for subsequent refreshes.
+ * register the model with the nearest RefreshContextModel for subsequent refreshes.
  *
  * @see LoadSupport
  */
