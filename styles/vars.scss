@@ -333,7 +333,6 @@ body.xh-mobile {
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
   --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
   --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
-  --xh-title-pad: var(--title-pad, var(--xh-pad));
 }
 
 body.xh-mobile.xh-dark {
