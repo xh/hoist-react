@@ -1,4 +1,12 @@
 .xh-col-chooser {
+  .xh-panel-header {
+    padding: 10px;  // Match dimension chooser dialog
+  }
+
+  .xh-vframe {
+    background-color: var(--xh-bg-alt);
+  }
+
   .xh-col-chooser-list {
     display: flex;
     flex-direction: column;
@@ -39,5 +47,9 @@
         color: var(--xh-accent-color);
       }
     }
+  }
+
+  .xh-col-chooser-toolbar {
+    padding: var(--xh-pad-px); // Match dimension chooser dialog
   }
 }

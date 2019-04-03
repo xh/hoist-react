@@ -5,14 +5,30 @@
     text-overflow: ellipsis;
   }
 }
-
 .xh-dim-dialog {
-  .dim-history-btn {
-    text-align: left;
-    background: var(--xh-bg-alt);
-    justify-content: flex-start;
-    &:not(:last-of-type) {
-      margin-bottom: 5px;
+  .xh-dialog__inner {
+    background-color: var(--xh-bg-alt);
+
+    .dim-history-btn {
+      text-align: left;
+      background-color: var(--xh-bg);
+      justify-content: flex-start;
+      overflow: hidden;
+
+      &:not(:last-of-type) {
+        margin-bottom: 5px;
+      }
+      span {
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      &--active {
+        background-color: var(--xh-bg-highlight);
+        div:last-child {
+          padding-left: 10px;
+        }
+      }
     }
   }
 

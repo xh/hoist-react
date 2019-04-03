@@ -220,6 +220,7 @@ export class Grid extends Component {
         if (XH.isMobile) {
             ret = {
                 ...ret,
+                suppressContextMenu: true,
                 allowContextMenuWithControlKey: false,
                 scrollbarWidth: 0
             };

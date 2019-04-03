@@ -9,13 +9,14 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
 
-import {fragment, div, span} from '@xh/hoist/cmp/layout';
+import {fragment, div, span, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import {size, isEmpty} from 'lodash';
+import classNames from 'classnames';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
@@ -115,13 +116,18 @@ export class DimensionChooser extends Component {
             {history, dimensions} = model;
 
         const historyItems = history.map((value, i) => {
-            const labels = value.map(h => dimensions[h].label);
+            const labels = value.map(h => dimensions[h].label),
+                isActive = value === model.value;
             return button({
-                className: 'dim-history-btn',
-                title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
-                text: labels.join(' \u203a '),
+                className: classNames('dim-history-btn',
+                    isActive ? 'dim-history-btn--active' : null),
                 key: `dim-history-${i}`,
                 modifier: 'quiet',
+                items: [
+                    span(` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`),
+                    filler(),
+                    div({item: isActive ? Icon.check() : null, style: {width: 25}})
+                ],
                 onClick: () => {
                     this.onSetFromHistory(value);
                 }
