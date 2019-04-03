@@ -1222,20 +1222,20 @@ adm-zip@^0.4.9:
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.13.tgz#597e2f8cc3672151e1307d3e95cddbc75672314a"
   integrity sha512-fERNJX8sOXfel6qCBCMPvZLzENBEhZTzKqg6vrOW5pvoEaQuJhRU4ndTAh6lHOxn1I6jnz2NHra56ZODM751uw==
 
-ag-grid-community@~20.1.0:
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-20.1.0.tgz#38c11aaaf7418dc33627d7e67e00de3ba99786a8"
-  integrity sha512-58JQj2n/2NvqStDO0aNEEUUvc1ziRcEhi1NY+AYzsADzA0snrn228D4ea974JYjxbqy4cqFsqn9hDX11aInIfg==
+ag-grid-community@~20.2.0:
+  version "20.2.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-20.2.0.tgz#22f26d53e309b51a156878d180c9ec6f16bc6403"
+  integrity sha512-3oAzg58lenhpyIfZ6dBp6cCE+PEoh0N+OSci2+k5fHROn8PMrginAkygONDd068E2NC+qfmDNRkU2WjPgiH/BA==
 
-ag-grid-enterprise@~20.1.0:
-  version "20.1.0"
-  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-20.1.0.tgz#e6784e45e89ab6f6778f768ee84ed7364e87fa2d"
-  integrity sha512-HmXHpPskxOPSGZmxmQrD9LRRx1u7cOjO7ciYtMc1ryIjwvqgPFH+yh7eOOBwXCiNyLlClXPYl6887Re8+wsq+Q==
+ag-grid-enterprise@~20.2.0:
+  version "20.2.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-20.2.0.tgz#dbc2c4f6d3c097661911fe40c18dcac775dac04d"
+  integrity sha512-3Nd2RPjK1/HKAQ6/4TO7ZgoW0bGWsKmp03tfqO1uT4WMn6VeNBTcALdSMfkzuvEfcDbmLzTSuguxDyOJbJ7q5w==
 
-ag-grid-react@~20.1.0:
-  version "20.1.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-20.1.1.tgz#3e2c6f0fcdb48c7b6bd46b9c7c771e7008d21ab7"
-  integrity sha512-4t7oPh+/qD0Di6JLW/6umRVgqo4EvL8XuRvM/CGcf0RZba/zI4kNLxQsALIURQ8lMCPo/REeUkiQ9A95mXvbtA==
+ag-grid-react@~20.2.0:
+  version "20.2.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-20.2.0.tgz#b2fd24950a31fc491a1c79ce92657b8aa7582c45"
+  integrity sha512-rXyCcmxWNfLactMYqM8KCv9t2qp+6gUd/bsw7bBKZ7m8F7lFsibAb+WMg39iOWZYuYRijrXUtO36yVcot3hmjg==
   dependencies:
     prop-types "^15.6.2"
 
