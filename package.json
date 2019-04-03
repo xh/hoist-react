@@ -11,8 +11,8 @@
     "lint": "yarn run eslint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.14.1",
-    "@blueprintjs/datetime": "~3.7.2",
+    "@blueprintjs/core": "~3.15.0",
+    "@blueprintjs/datetime": "~3.8.0",
     "@fortawesome/fontawesome-pro": "~5.8.1",
     "@fortawesome/fontawesome-svg-core": "~1.2.17",
     "@fortawesome/pro-light-svg-icons": "~5.8.1",
@@ -31,18 +31,18 @@
     "highcharts": "~7.0.3",
     "lodash": "~4.17.11",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.9.0",
+    "mobx": "~5.9.4",
     "mobx-react": "~5.4.3",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",
-    "onsenui": "~2.10.6",
+    "onsenui": "~2.10.8",
     "prop-types": "~15.7.2",
     "qs": "~6.7.0",
-    "react-beautiful-dnd": "~10.1.0",
-    "react-dropzone": "~10.0.6",
+    "react-beautiful-dnd": "~10.1.1",
+    "react-dropzone": "~10.1.0",
     "react-onsenui": "~1.11.2",
     "react-select": "~2.4.2",
-    "react-transition-group": "~2.6.1",
+    "react-transition-group": "~2.8.0",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
     "rsvp": "~4.8.4",
@@ -54,7 +54,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.6.0",
+    "@xh/hoist-dev-utils": "~3.7.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2"
