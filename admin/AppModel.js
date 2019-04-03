@@ -28,7 +28,6 @@ export class AppModel {
             {
                 name: 'default',
                 path: '/admin',
-                forwardTo: 'default.general',
                 children: this.getTabRoutes()
             }
         ];
@@ -42,7 +41,6 @@ export class AppModel {
             {
                 name: 'general',
                 path: '/general',
-                forwardTo: 'default.general.about',
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
@@ -54,7 +52,6 @@ export class AppModel {
             {
                 name: 'logging',
                 path: '/logging',
-                forwardTo: 'default.logging.viewer',
                 children: [
                     {name: 'viewer', path: '/viewer'},
                     {name: 'levels', path: '/levels'}
@@ -63,7 +60,6 @@ export class AppModel {
             {
                 name: 'monitor',
                 path: '/monitor',
-                forwardTo: 'default.monitor.status',
                 children: [
                     {name: 'status', path: '/status'},
                     {name: 'editMonitors', path: '/editMonitors'}
@@ -72,7 +68,6 @@ export class AppModel {
             {
                 name: 'activity',
                 path: '/activity',
-                forwardTo: 'default.activity.tracking',
                 children: [
                     {name: 'tracking', path: '/tracking'},
                     {name: 'clientErrors', path: '/clientErrors'},
@@ -82,7 +77,6 @@ export class AppModel {
             {
                 name: 'preferences',
                 path: '/preferences',
-                forwardTo: 'default.preferences.prefs',
                 children: [
                     {name: 'prefs', path: '/prefs'},
                     {name: 'userPrefs', path: '/userPrefs'}

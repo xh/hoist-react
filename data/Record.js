@@ -18,15 +18,15 @@ export class Record {
     static RESERVED_FIELD_NAMES = ['raw', 'fields', 'children', 'parent']
 
     /** @member {string} - unique ID. */
-    id
+    id;
     /** @member {Object} - unconverted source data. */
-    raw
+    raw;
     /** @member {Field[]} - fields for this record. */
-    fields
+    fields;
     /** @member {Record[]} - Children of this record. */
-    children
+    children;
     /** @member {Record} - Parent of this record. */
-    parent
+    parent;
 
     /**
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to

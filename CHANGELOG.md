@@ -2,7 +2,44 @@
 
 ## v21.0.0-SNAPSHOT (under development)
 
-* TBD
+### 🎁 New Features
+
+* `FetchService` fetch methods now accept a plain object as the `headers` argument. These headers
+  will be merged with the default headers provided by FetchService.
+* An app can also now specify default headers to be sent with every fetch request via
+  `XH.fetchService.setDefaultHeaders()`. You can pass either a plain object, or a closure which
+  returns one.
+* `Grid` supports a new `onGridReady` prop, allowing apps to hook into the ag-Grid event callback
+  without inadvertently short-circuiting the Grid's own internal handler.
+
+### 💥 Breaking Changes
+
+* The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.
+  In most cases applications should use `!FormModel.isValid` instead; this expression will return
+  `false` for the `Unknown` as well as the `NotValid` state. Applications that wish to explicitly
+  test for the `NotValid` state should use the `validationState` getter.
+* Multiple HoistInputs have changed their `onKeyPress` props to `onKeyDown`, including TextInput,
+  NumberInput, TextArea & SearchInput. The `onKeyPress` event has been deprecated in general and has
+  limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
+  keypress).
+* FetchService's fetch methods no longer support `contentType` parameter. Instead, specify a custom
+  content-type by setting a 'Content-Type' header using the `headers` parameter.
+* FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an {"Accept":
+  "application/json"} header using the `headers` parameter.
+
+### 🐞 Bug Fixes
+
+* Avoid throwing React error due to tab / routing interactions. Tab / routing / state support
+  generally improved. (#1052)
+
+### 📚 Libraries
+
+* ag-Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
+* @blueprint/core `3.14 -> 3.15`
+* @blueprint/datetime `3.7 -> 3.8`
+* react-dropzone `10.0 -> 10.1`
+* react-transition-group `2.6 -> 2.8`
+
 
 ## v20.2.1 - 2019-03-28
 
