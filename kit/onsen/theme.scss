@@ -1,7 +1,5 @@
-@import 'vars';
-
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
-body.xh-app {
+body.xh-app.xh-mobile {
 
   // Background
   .page,

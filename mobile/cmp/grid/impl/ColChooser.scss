@@ -1,16 +1,16 @@
 .xh-col-chooser {
-  .xh-panel-header {
-    padding: 10px;  // Match dimension chooser dialog
-  }
-
   .xh-vframe {
-    background-color: var(--xh-bg-alt);
+    background-color: var(--xh-bg);
   }
 
   .xh-col-chooser-list {
     display: flex;
     flex-direction: column;
     flex: none;
+
+    >:nth-child(even) {
+      background-color: var(--xh-grid-bg-odd);
+    }
   }
 
   .xh-col-chooser-row {
@@ -47,9 +47,5 @@
         color: var(--xh-accent-color);
       }
     }
-  }
-
-  .xh-col-chooser-toolbar {
-    padding: var(--xh-pad-px); // Match dimension chooser dialog
   }
 }

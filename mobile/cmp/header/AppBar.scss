@@ -2,6 +2,7 @@
   display: flex;
   background-color: var(--xh-navbar-bg);
   color: var(--xh-navbar-title-color);
+  padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
 
   .xh-appbar-title {
     font-size: var(--xh-navbar-title-font-size-px);

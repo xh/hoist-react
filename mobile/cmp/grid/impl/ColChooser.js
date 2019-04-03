@@ -70,17 +70,14 @@ export class ColChooser extends Component {
                 })
             ],
             bbar: toolbar({
-                className: 'xh-col-chooser-toolbar',
                 items: [
                     button({
                         icon: Icon.x(),
-                        modifier: 'quiet',
                         flex: 1,
                         onClick: () => model.close()
                     }),
                     button({
-                        icon: Icon.check({className: 'xh-green'}),
-                        modifier: 'quiet',
+                        icon: Icon.check(),
                         flex: 1,
                         onClick: this.onOK
                     })
@@ -102,7 +99,7 @@ export class ColChooser extends Component {
 
         const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
         this.model.moveToIndex(draggableId, toIdx);
-    }
+    };
 
     //------------------------
     // Implementation

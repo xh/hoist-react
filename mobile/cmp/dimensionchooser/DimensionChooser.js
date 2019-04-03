@@ -71,12 +71,12 @@ export class DimensionChooser extends Component {
     //--------------------
     onDimChange = (dim, i) => {
         this.model.addPendingDim(dim, i);
-    }
+    };
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
         this.model.closeMenu();
-    }
+    };
 
     //---------------------------
     // Rendering dialog
@@ -88,6 +88,7 @@ export class DimensionChooser extends Component {
         return dialog({
             className: this.getClassName('xh-dim-dialog'),
             title: 'Group By',
+            icon: Icon.treeList(),
             isOpen: model.isMenuOpen,
             onCancel: () => model.commitPendingValueAndClose(),
             width: this.dialogWidth,
@@ -142,13 +143,11 @@ export class DimensionChooser extends Component {
         return [
             button({
                 icon: Icon.x(),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.closeMenu()
             }),
             button({
                 icon: Icon.edit(),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.showEditor()
             })
@@ -228,13 +227,11 @@ export class DimensionChooser extends Component {
             button({
                 icon: Icon.arrowLeft(),
                 omit: isEmpty(model.history),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.showHistory()
             }),
             button({
-                icon: Icon.check({className: 'xh-green'}),
-                modifier: 'quiet',
+                icon: Icon.check(),
                 flex: 1,
                 onClick: () => model.commitPendingValueAndClose()
             })
