@@ -13,6 +13,21 @@
   limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
   keypress).
 
+### 🎁 New Features
+
+* Support a `Grid.onGridReady` prop, allowing apps to hook into this ag-Grid event without
+  inadvertently short-circuiting the Grid's own internal handler.
+
+### 🐞 Bug Fixes
+
+* Avoid throwing React error due to tab / routing interactions. Tab / routing / state support
+  generally improved. (#1052)
+
+### 📚 Libraries
+
+* ag-Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
+
+
 ## v20.2.1 - 2019-03-28
 
 * Minor tweaks to grid styles - CSS var for pinned column borders, drop left/right padding on

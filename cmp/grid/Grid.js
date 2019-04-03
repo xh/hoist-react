@@ -56,8 +56,14 @@ export class Grid extends Component {
         model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
 
         /**
-         * Callback to call when a key down event is detected on this component.
-         * Function will receive an event with the standard 'target' element.
+         * Callback when the grid has initialized. The component will call this with the ag-Grid
+         * event after running its internal handler to associate the ag-Grid APIs with its model.
+         */
+        onGridReady: PT.func,
+
+        /**
+         * Callback when a key down event is detected on this component. Function will receive an
+         * event with the standard 'target' element.
          *
          * Note that the ag-Grid API provides limited ability to customize keyboard handling.
          * This handler is designed to allow application to workaround this.
@@ -65,26 +71,26 @@ export class Grid extends Component {
         onKeyDown: PT.func,
 
         /**
-         * Callback to call when a row is clicked. Function will receive an event
-         * with a data node containing the row's data.
+         * Callback when a row is clicked. Function will receive an event with a data node
+         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
          */
         onRowClicked: PT.func,
 
         /**
-         * Callback to call when a row is double clicked. Function will receive an event
-         * with a data node containing the row's data.
+         * Callback when a row is double clicked. Function will receive an event with a data node
+         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
          */
         onRowDoubleClicked: PT.func,
 
         /**
-         * Callback to call when a cell is clicked. Function will receive an event
-         * with a data node, cell value, and column.
+         * Callback when a cell is clicked. Function will receive an event with a data node, cell
+         * value, and column.
          */
         onCellClicked: PT.func,
 
         /**
-         * Callback to call when a cell is double clicked. Function will receive an event
-         * with a data node, cell value, and column.
+         * Callback when a cell is double clicked. Function will receive an event with a data node,
+         * cell value, and column.
          */
         onCellDoubleClicked: PT.func
     };
@@ -492,6 +498,10 @@ export class Grid extends Component {
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
         this.model.setAgColumnApi(ev.columnApi);
+
+        if (this.props.onGridReady) {
+            this.props.onGridReady(ev);
+        }
     };
 
     onNavigateToNextCell = (params) => {
