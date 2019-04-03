@@ -30,9 +30,6 @@ export class AppSpec {
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
      *      be able to access the UI.
-     * @param {(Object|function)} [c.defaultFetchHeaders] - Headers to be sent with all fetch
-     *      requests, or a closure to generate.
-     *      @see FetchService
      * @param {boolean} [c.trackAppLoad] - true (default) to write a track log statement after the
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
@@ -50,7 +47,6 @@ export class AppSpec {
         isMobile,
         isSSO,
         checkAccess,
-        defaultFetchHeaders,
         trackAppLoad = true,
         idleDetectionEnabled = false,
         idleDialogClass = null,
@@ -78,7 +74,6 @@ export class AppSpec {
         this.isMobile = isMobile;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
-        this.defaultFetchHeaders = defaultFetchHeaders;
         this.trackAppLoad = trackAppLoad;
 
         this.idleDetectionEnabled = idleDetectionEnabled;

@@ -18,8 +18,7 @@ import {isFunction, isPlainObject} from 'lodash';
  * included, and redirects followed.
  *
  * Custom headers can be provide to fetch as either a plain object or a Headers object.
- * App-wide default headers can be set using setDefaultHeaders. Default headers can also be
- * provided via `AppSpec.defaultFetchHeaders`
+ * App-wide default headers can be set using setDefaultHeaders.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
@@ -31,11 +30,6 @@ export class FetchService {
 
     autoAbortControllers = {};
     defaultHeaders = {};
-
-    constructor() {
-        const {defaultFetchHeaders} = XH.appSpec;
-        if (defaultFetchHeaders) this.setDefaultHeaders(defaultFetchHeaders);
-    }
 
     /**
      * Set default headers to be sent with all subsequent requests.
@@ -62,7 +56,8 @@ export class FetchService {
      *      will be merged with existing default headers. A Content-Type header will be set if not
      *      provided by the caller directly or via one of the xxxJson methods on this service.
      *      Provide an instantiated Headers object to replace default headers entirely.
-     * @param {boolean} [opts.acceptJson] - true to set Accept header to 'application/json'.
+     * @param {Object} [opts.fetchOpts] - options to pass to the underlying fetch request.
+     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch}
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
      *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
      *      @see {@link https://www.npmjs.com/package/qs}
@@ -72,9 +67,10 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        let {params, method, headers, url, autoAbortKey} = opts;
+        let {url, method, headers, body, params, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
+        warnIf(opts.acceptJson, 'acceptJson has been deprecated - please pass an {"Accept": "application/json"} header instead.');
 
         // 1) Compute / install defaults
         if (!method) {
@@ -90,29 +86,27 @@ export class FetchService {
             const baseHeaders = {
                 'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain'
             };
-            if (opts.acceptJson) {
-                baseHeaders['Accept'] = 'application/json';
-                delete opts.acceptJson;
-            }
 
             const {defaultHeaders} = this;
             headers = new Headers(Object.assign(
                 baseHeaders,
-                isFunction(defaultHeaders) ? defaultHeaders() : defaultHeaders,
+                isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders,
                 isPlainObject(headers) ? headers : {}
             ));
         }
         delete opts.headers;
 
         // 3) Prepare merged options
-        const defaults = {
-                method,
-                headers,
-                cors: true,
-                credentials: 'include',
-                redirect: 'follow'
-            },
-            fetchOpts = Object.assign(defaults, opts);
+        const fetchOpts = Object.assign({
+            cors: true,
+            credentials: 'include',
+            redirect: 'follow'
+        }, {
+            method,
+            headers,
+            body,
+            ...opts.fetchOpts
+        });
 
         // 3) Preprocess and apply params
         if (params) {
@@ -134,8 +128,6 @@ export class FetchService {
             fetchOpts.signal = ctlr.signal;
             this.autoAbortControllers[autoAbortKey] = ctlr;
         }
-
-        delete fetchOpts.url;
 
         let ret;
         try {
@@ -163,7 +155,9 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        const ret = await this.fetch({acceptJson: true, ...opts});
+        if (!opts.headers) opts.headers = {};
+        if (isPlainObject(opts.headers)) opts.headers['Accept'] = 'application/json';
+        const ret = await this.fetch(opts);
         return ret.status === 204 ? null : ret.json();
     }
 

@@ -6,9 +6,8 @@
 
 * FetchService fetch methods now accept a plain object as the `headers` argument. These headers will
   be merged with the default headers provided by FetchService.
-* It is now possible to set default headers to be sent with every fetch request. These can be set
-  using either `FetchService.setDefaultHeaders()` or `AppSpec.defaultFetchHeaders`. In both cases,
-  either a plain object or a closure to generate one can be used.
+* It is now possible to set default headers to be sent with every fetch request with
+  `FetchService.setDefaultHeaders()`. You can pass either a plain object, or a closure which returns one.
 
 ### 💥 Breaking Changes
 
