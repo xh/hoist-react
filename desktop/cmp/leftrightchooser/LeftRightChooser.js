@@ -40,7 +40,10 @@ export class LeftRightChooser extends Component {
         const {model} = this,
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
-                onRowDoubleClicked: (e) => model.moveRows([e.data]),
+                onRowDoubleClicked: (e) => {
+                    // Conditional avoids error if group header double-clicked to expand/collapse.
+                    if (e.data) model.moveRows([e.data]);
+                },
                 agOptions: {
                     defaultColDef: {
                         resizable: false
