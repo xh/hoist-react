@@ -94,7 +94,6 @@ export class FetchService {
                 isPlainObject(headers) ? headers : {}
             ));
         }
-        delete opts.headers;
 
         // 3) Prepare merged options
         const fetchOpts = Object.assign({
