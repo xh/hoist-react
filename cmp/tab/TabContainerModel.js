@@ -85,6 +85,8 @@ export class TabContainerModel {
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
+
+            this.forwardRouterToTab(this.activeTabId);
         }
     }
 
@@ -127,6 +129,7 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
+        this.forwardRouterToTab(id);
     }
 
     syncWithRouter() {
@@ -135,16 +138,22 @@ export class TabContainerModel {
 
         if (router.isActive(route)) {
             const tab = tabs.find(t => router.isActive(route + '.' + t.id));
-
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabId(tab.id);
             }
         }
     }
 
+    forwardRouterToTab(id) {
+        const {route && id} = this;
+        if (route) {
+            XH.router.forward(route, route + '.' + id);
+        }
+    }
+    
     initialActiveTabId(tabConfigs, defaultTabId) {
         let ret;
-
+        
         // try route
         const {route} = this, {router} = XH;
         if (route && router.isActive(route)) {
@@ -159,10 +168,7 @@ export class TabContainerModel {
         // or first enabled tab
         ret = tabConfigs.find(t => !t.disabled);
         if (ret) return ret.id;
-        
-        // sigh...
-        return tabConfigs[0].id;
+
+        return null;
     }
-
-
 }
