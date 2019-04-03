@@ -145,8 +145,8 @@ export class TabContainerModel {
     }
 
     forwardRouterToTab(id) {
-        const {route && id} = this;
-        if (route) {
+        const {route} = this;
+        if (route && id) {
             XH.router.forward(route, route + '.' + id);
         }
     }
