@@ -6,7 +6,7 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {isFunction, isPlainObject, isNil, omitBy} from 'lodash';
 
@@ -156,7 +156,7 @@ export class FetchService {
             ...opts,
             headers: {
                 'Accept': 'application/json',
-                ...(withDefault(opts.headers, {}))
+                ...opts.headers
             }
         });
         return ret.status === 204 ? null : ret.json();
@@ -228,7 +228,7 @@ export class FetchService {
             body: JSON.stringify(opts.body),
             headers: {
                 'Content-Type': 'application/json',
-                ...(withDefault(opts.headers, {}))
+                ...opts.headers
             }
         });
     }
