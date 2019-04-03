@@ -19,8 +19,10 @@
   NumberInput, TextArea & SearchInput. The `onKeyPress` event has been deprecated in general and has
   limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
   keypress).
-* FetchService's fetch methods no longer support `contentType` parameter. You can specify a custom
+* FetchService's fetch methods no longer support `contentType` parameter. Instead, specify a custom
   content-type by setting a 'Content-Type' header using the `headers` parameter.
+* FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an
+  {"Accept": "application/json"} header using the `headers` parameter.
 
 ## v20.2.1 - 2019-03-28
 

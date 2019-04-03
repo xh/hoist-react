@@ -6,9 +6,9 @@
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
-import {isFunction, isPlainObject} from 'lodash';
+import {isFunction, isPlainObject, isNil, omitBy} from 'lodash';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -17,8 +17,8 @@ import {isFunction, isPlainObject} from 'lodash';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provide to fetch as either a plain object or a Headers object.
- * App-wide default headers can be set using setDefaultHeaders.
+ * Custom headers can be provided to fetch as a plain object. App-wide default headers
+ * can be set using setDefaultHeaders.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
  *
@@ -52,10 +52,8 @@ export class FetchService {
      *      with the request body (for POSTs/PUTs sending form-url-encoded).
      * @param {string} [opts.method] - HTTP Request method to use for the request. If not specified,
      *      the method will be set to POST if there are params, otherwise GET.
-     * @param {(Object|Headers)} [opts.headers] - headers to send with this request. If an Object,
-     *      will be merged with existing default headers. A Content-Type header will be set if not
-     *      provided by the caller directly or via one of the xxxJson methods on this service.
-     *      Provide an instantiated Headers object to replace default headers entirely.
+     * @param {Object} [opts.headers] - headers to send with this request. A Content-Type header will
+     *      be set if not provided by the caller directly or via one of the xxxJson methods on this service.
      * @param {Object} [opts.fetchOpts] - options to pass to the underlying fetch request.
      *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch}
      * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
@@ -69,6 +67,7 @@ export class FetchService {
     async fetch(opts) {
         let {url, method, headers, body, params, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
+        throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
         warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
         warnIf(opts.acceptJson, 'acceptJson has been deprecated - please pass an {"Accept": "application/json"} header instead.');
 
@@ -82,18 +81,17 @@ export class FetchService {
         }
 
         // 2) Compute headers
-        if (!(headers instanceof Headers)) {
-            const baseHeaders = {
+        const {defaultHeaders} = this,
+            baseHeaders = {
                 'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain'
-            };
-
-            const {defaultHeaders} = this;
-            headers = new Headers(Object.assign(
+            },
+            headerEntries = Object.assign(
                 baseHeaders,
                 isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders,
                 isPlainObject(headers) ? headers : {}
-            ));
-        }
+            );
+
+        headers = new Headers(omitBy(headerEntries, isNil));
 
         // 3) Prepare merged options
         const fetchOpts = Object.assign({
@@ -154,9 +152,13 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        if (!opts.headers) opts.headers = {};
-        if (isPlainObject(opts.headers)) opts.headers['Accept'] = 'application/json';
-        const ret = await this.fetch(opts);
+        const ret = await this.fetch({
+            ...opts,
+            headers: {
+                'Accept': 'application/json',
+                ...(withDefault(opts.headers, {}))
+            }
+        });
         return ret.status === 204 ? null : ret.json();
     }
 
@@ -166,8 +168,10 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async getJson(opts) {
-        opts.method = 'GET';
-        return this.fetchJson(opts);
+        return this.fetchJson({
+            method: 'GET',
+            ...opts
+        });
     }
 
     /**
@@ -176,8 +180,10 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async postJson(opts) {
-        opts.method = 'POST';
-        return this.sendJson(opts);
+        return this.sendJson({
+            method: 'POST',
+            ...opts
+        });
     }
 
     /**
@@ -186,8 +192,10 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async putJson(opts) {
-        opts.method = 'PUT';
-        return this.sendJson(opts);
+        return this.sendJson({
+            method: 'PUT',
+            ...opts
+        });
     }
 
     /**
@@ -196,8 +204,10 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async deleteJson(opts) {
-        opts.method = 'DELETE';
-        return this.sendJson(opts);
+        return this.sendJson({
+            method: 'DELETE',
+            ...opts
+        });
     }
 
 
@@ -213,12 +223,14 @@ export class FetchService {
     }
 
     async sendJson(opts) {
-        opts = {
+        return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),
-            headers: {'Content-Type': 'application/json'}
-        };
-        return this.fetchJson(opts);
+            headers: {
+                'Content-Type': 'application/json',
+                ...(withDefault(opts.headers, {}))
+            }
+        });
     }
 
     async safeResponseTextAsync(response) {
