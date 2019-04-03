@@ -86,7 +86,7 @@ export class TabContainerModel {
                 run: this.syncWithRouter
             });
 
-            this.markActiveTabWithRouter(this.activeTabId);
+            this.forwardRouterToTab(this.activeTabId);
         }
     }
 
@@ -129,7 +129,7 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
-        this.markActiveTabWithRouter(id);
+        this.forwardRouterToTab(id);
     }
 
     syncWithRouter() {
@@ -144,8 +144,8 @@ export class TabContainerModel {
         }
     }
 
-    markActiveTabWithRouter(id) {
-        const {route} = this;
+    forwardRouterToTab(id) {
+        const {route && id} = this;
         if (route) {
             XH.router.forward(route, route + '.' + id);
         }
