@@ -11,6 +11,9 @@
   returns one.
 * `Grid` supports a new `onGridReady` prop, allowing apps to hook into the ag-Grid event callback
   without inadvertently short-circuiting the Grid's own internal handler.
+* Mobile styles have been adjusted to increase the default font size and grid row height, in
+  addition to a number of other smaller visual adjustments.
+
 
 ### 💥 Breaking Changes
 

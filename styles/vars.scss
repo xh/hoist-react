@@ -13,7 +13,7 @@
   @return transparentize(material-color($color-name, $color-variant), $amount);
 }
 
-// CSS variable declarations - non-color-related + light-theme color defaults
+// Core variable declarations - non-color-related + light-theme color defaults
 body {
   // Core colors
   --xh-black: var(--black, #{mc('grey', '900')});
@@ -235,8 +235,10 @@ body {
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 }
 
-// CSS variable declarations - dark-theme color overrides
-// (Note any of the color vars above can be overridden at the app level for a dark theme)
+
+//------------------------
+// Dark Theme
+//------------------------
 body.xh-dark {
   // Colors
   --xh-black: var(--black, #111111);
@@ -304,4 +306,38 @@ body.xh-dark {
   --xh-intent-danger: var(--intent-danger, var(--xh-red-muted));
   --xh-intent-success: var(--intent-success, var(--xh-green-muted));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
+}
+
+
+//------------------------
+// Mobile
+//------------------------
+body.xh-mobile {
+  --xh-font-size: 15;
+  --xh-grid-line-height: 30;
+
+  --xh-accent-color: var(--accent-color, var(--xh-blue-light));
+  --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
+
+  // Buttons
+  --xh-btn-color: var(--btn-color, #{mc('blue-grey', '600')});
+  --xh-toolbar-btn-color: var(--toolbar-btn-color, var(--xh-btn-color));
+
+  // Navbar (top app toolbar)
+  --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '600')});
+  --xh-navbar-color: var(--navbar-color, #{mc('blue-grey', '50')});
+  --xh-navbar-title-color: var(--navbar-title-color, var(--xh-navbar-color));
+  --xh-navbar-title-font-size: var(--navbar-title-font-size, 19);
+
+  // Titles (e.g. panels, dialogs)
+  --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
+  --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
+  --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
+}
+
+body.xh-mobile.xh-dark {
+  --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
+  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+  --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
+  --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
 }

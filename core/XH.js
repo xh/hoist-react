@@ -442,8 +442,9 @@ class XHClass {
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh-app class to body element to power Hoist CSS selectors
-        document.body.classList.add('xh-app');
+        // Add xh-app and platform classes to body element to power Hoist CSS selectors.
+        const platformCls = XH.isMobile ? 'xh-mobile' : 'xh-desktop';
+        document.body.classList.add('xh-app', platformCls);
 
         try {
             await this.installServicesAsync(FetchService, LocalStorageService);
