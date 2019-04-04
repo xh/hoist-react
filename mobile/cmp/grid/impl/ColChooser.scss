@@ -1,4 +1,6 @@
 .xh-col-chooser {
+  border: var(--xh-border-solid);
+
   .xh-vframe {
     background-color: var(--xh-bg);
   }
@@ -48,4 +50,5 @@
       }
     }
   }
+
 }
