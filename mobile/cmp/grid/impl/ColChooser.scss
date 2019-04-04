@@ -9,10 +9,6 @@
     display: flex;
     flex-direction: column;
     flex: none;
-
-    >:nth-child(even) {
-      background-color: var(--xh-grid-bg-odd);
-    }
   }
 
   .xh-col-chooser-row {
