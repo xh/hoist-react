@@ -105,6 +105,11 @@ body.xh-app.xh-mobile {
     color: var(--xh-text-color);
   }
 
+  // Dialogs
+  .dialog-container {
+    border: var(--xh-border-solid);
+  }
+
   // Accented
   .alert-dialog-button,
   :checked + .tabbar__button {
