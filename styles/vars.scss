@@ -313,15 +313,21 @@ body.xh-dark {
 // Mobile
 //------------------------
 body.xh-mobile {
-  --xh-font-size: 15;
-  --xh-grid-line-height: 30;
-
   --xh-accent-color: var(--accent-color, var(--xh-blue-light));
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
   --xh-btn-color: var(--btn-color, #{mc('blue-grey', '600')});
   --xh-toolbar-btn-color: var(--toolbar-btn-color, var(--xh-btn-color));
+
+  // Grid
+  --xh-grid-font-size: var(--grid-font-size, 14);
+  --xh-grid-line-height: var(--grid-line-height, 30);
+  --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
+  --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
+
+  // Fonts
+  --xh-font-size: var(--font-size, 15);
 
   // Navbar (top app toolbar)
   --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '600')});

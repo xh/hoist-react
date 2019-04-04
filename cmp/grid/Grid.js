@@ -95,7 +95,7 @@ export class Grid extends Component {
         onCellDoubleClicked: PT.func
     };
 
-    static get ROW_HEIGHT() {return XH.isMobile ? 36 : 28}
+    static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
     static MULTIFIELD_ROW_HEIGHT = 38;
 
