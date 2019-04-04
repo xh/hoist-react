@@ -2,7 +2,11 @@
   border: var(--xh-border-solid);
 
   .xh-vframe {
-    background-color: var(--xh-bg);
+    background-color: var(--xh-bg-alt);
+
+    .xh-dark & {
+      background-color: var(--xh-bg);
+    }
   }
 
   .xh-col-chooser-list {

@@ -241,7 +241,7 @@ body {
 //------------------------
 body.xh-dark {
   // Colors
-  --xh-black: var(--black, #111111);
+  --xh-black: var(--black, #12171a);
   --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
   --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
   --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
@@ -256,8 +256,8 @@ body.xh-dark {
   --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
 
   // Grid
-  --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '900')});
-  --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '800')});
+  --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
+  --xh-grid-border-color: var(--grid-border-color, #293233);
   --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
@@ -287,7 +287,7 @@ body.xh-dark {
   --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
 
   // Scrollbars (customized for webkit)
-  --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('grey', '800')});
+  --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
   --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
 
   // Toolbars
