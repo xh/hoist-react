@@ -1,5 +1,13 @@
 .xh-login {
-  margin: 40px;
+  .xh-toolbar {
+    font-size: var(--xh-navbar-title-font-size-px);
+    background-color: var(--xh-navbar-bg);
+    color: var(--xh-navbar-title-color);
+  }
+
+  &__body {
+    margin: 40px;
+  }
 
   &__fields {
     margin-bottom: 20px;
