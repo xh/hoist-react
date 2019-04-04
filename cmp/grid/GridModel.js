@@ -232,11 +232,15 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agApi, selModel} = this;
-        if (agApi) {
-            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
-                first = agApi.getDisplayedRowAtIndex(idx);
 
-            if (first) selModel.select(first);
+        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
+        if (agApi) {
+            let dataNode = null;
+            agApi.forEachNodeAfterFilterAndSort(node => {
+                if (!dataNode && node.data) dataNode = node;
+            });
+
+            if (dataNode) selModel.select(dataNode);
         }
     }
 
