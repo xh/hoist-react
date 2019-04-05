@@ -1,6 +1,10 @@
 # Changelog
 
-## v21.0.0-SNAPSHOT (under development)
+## v22.0.0-SNAPSHOT (under development)
+
+* TBD
+
+## v21.0.0 - 2019-04-04
 
 ### 🎁 New Features
 
@@ -11,9 +15,6 @@
   returns one.
 * `Grid` supports a new `onGridReady` prop, allowing apps to hook into the ag-Grid event callback
   without inadvertently short-circuiting the Grid's own internal handler.
-* Mobile styles have been adjusted to increase the default font size and grid row height, in
-  addition to a number of other smaller visual adjustments.
-
 
 ### 💥 Breaking Changes
 
@@ -30,10 +31,18 @@
 * FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an {"Accept":
   "application/json"} header using the `headers` parameter.
 
+### ✨ Style
+
+* Black point + grid colors adjusted in dark theme to better blend with overall blue-gray tint.
+* Mobile styles have been adjusted to increase the default font size and grid row height, in
+  addition to a number of other smaller visual adjustments.
+
 ### 🐞 Bug Fixes
 
 * Avoid throwing React error due to tab / routing interactions. Tab / routing / state support
   generally improved. (#1052)
+* `GridModel.selectFirst()` improved to reliably select first visible record even when one or more
+  groupBy levels active. (#1058)
 
 ### 📚 Libraries
 
@@ -43,6 +52,7 @@
 * react-dropzone `10.0 -> 10.1`
 * react-transition-group `2.6 -> 2.8`
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.2.1...v21.0.0)
 
 ## v20.2.1 - 2019-03-28
 
