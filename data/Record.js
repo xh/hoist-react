@@ -84,6 +84,7 @@ export class Record {
         if (children && children.length || filter(this)) {
             const ret = clone(this);
             ret.children = children;
+            children.forEach(c => c.parent = ret);
             return ret;
         } else {
             return null;
