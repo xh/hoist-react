@@ -232,17 +232,26 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agApi, selModel} = this;
-        if (agApi) {
-            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
-                first = agApi.getDisplayedRowAtIndex(idx);
 
-            if (first) selModel.select(first);
+        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
+        if (agApi) {
+            let record = null;
+            agApi.forEachNodeAfterFilterAndSort(node => {
+                if (!record && node.data) record = node.data;
+            });
+
+            if (record) selModel.select(record);
         }
     }
 
     /** Does the grid have any records to show? */
     get empty() {
         return this.store.empty;
+    }
+
+    /** Are any records currently selected? */
+    get hasSelection() {
+        return !this.selModel.isEmpty;
     }
 
     /**
