@@ -235,18 +235,23 @@ export class GridModel {
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
         if (agApi) {
-            let dataNode = null;
+            let record = null;
             agApi.forEachNodeAfterFilterAndSort(node => {
-                if (!dataNode && node.data) dataNode = node;
+                if (!record && node.data) record = node.data;
             });
 
-            if (dataNode) selModel.select(dataNode);
+            if (record) selModel.select(record);
         }
     }
 
     /** Does the grid have any records to show? */
     get empty() {
         return this.store.empty;
+    }
+
+    /** Are any records currently selected? */
+    get hasSelection() {
+        return !this.selModel.isEmpty;
     }
 
     /**

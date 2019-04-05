@@ -60,10 +60,11 @@ export class BaseStore {
     get allEmpty() {return this.allCount === 0}
 
     /**
-     * Get a record by ID. Return null if no record found.
+     * Get a record by ID, or null if no matching record found.
      *
-     * @param {number} id
-     * @param {boolean} filteredOnly - true to skip non-filtered records.
+     * @param {string} id
+     * @param {boolean} [filteredOnly] - true to skip non-filtered records.
+     * @return {Record}
      */
     getById(id, filteredOnly) {}
 
@@ -79,9 +80,7 @@ export class BaseStore {
         });
     }
 
-    /**
-     * Destroy this object, cleaning up any resources used.
-     */
+    /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
     //--------------------
