@@ -147,9 +147,9 @@ export class GridModel {
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
-     * @param {*} [c...rest] - additional data to store
-     *      @see StoreContextMenu
+     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     *      StoreContextMenu when the grid is right-clicked (desktop only).
+     * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
         store,
@@ -232,17 +232,26 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agApi, selModel} = this;
-        if (agApi) {
-            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
-                first = agApi.getDisplayedRowAtIndex(idx);
 
-            if (first) selModel.select(first);
+        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
+        if (agApi) {
+            let record = null;
+            agApi.forEachNodeAfterFilterAndSort(node => {
+                if (!record && node.data) record = node.data;
+            });
+
+            if (record) selModel.select(record);
         }
     }
 
     /** Does the grid have any records to show? */
     get empty() {
         return this.store.empty;
+    }
+
+    /** Are any records currently selected? */
+    get hasSelection() {
+        return !this.selModel.isEmpty;
     }
 
     /**
@@ -641,4 +650,11 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ */
+
+/**
+ * @callback GridStoreContextMenuFn - context menu factory function, provided to GridModel.
+ * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
+ * @param {GridModel} gridModel - controlling GridModel instance
+ * @returns {StoreContextMenu} - context menu to display, or null
  */

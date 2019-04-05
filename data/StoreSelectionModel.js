@@ -16,8 +16,10 @@ import {castArray, intersection, union} from 'lodash';
 @HoistModel
 export class StoreSelectionModel {
 
-    store = null;
-    mode = null;
+    /** @member {BaseStore} */
+    store;
+    /** @member {string} */
+    mode;
 
     @observable.ref ids = [];
 

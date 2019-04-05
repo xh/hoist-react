@@ -88,11 +88,25 @@
 
   // Row borders
   &--row-borders {
-    .ag-row {border-color: var(--xh-grid-border-color);}
+    .ag-row {
+      border-color: var(--xh-grid-border-color);
+
+      &.ag-row-group {
+        border-color: var(--xh-grid-group-border-color);
+      }
+    }
   }
 
   &--no-row-borders {
-    .ag-row {border-color: transparent;}
+    .ag-row {
+      border-color: transparent;
+
+      // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
+      // Without this collapsed groups (which don't stripe) blend together in a solid block.
+      &.ag-row-group {
+        border-color: var(--xh-grid-group-border-color);
+      }
+    }
   }
 
   // Row zebra striping

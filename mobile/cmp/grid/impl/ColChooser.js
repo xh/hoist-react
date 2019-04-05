@@ -10,7 +10,6 @@ import {div} from '@xh/hoist/cmp/layout';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 
@@ -45,6 +44,15 @@ export class ColChooser extends Component {
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
+            headerItems: [
+                button({
+                    icon: Icon.undo({size: 'sm'}),
+                    style: {maxHeight: 16},
+                    modifier: 'quiet',
+                    omit: !gridModel.stateModel,
+                    onClick: () => model.restoreDefaults()
+                })
+            ],
             icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
             scrollable: true,
@@ -61,26 +69,20 @@ export class ColChooser extends Component {
                     })
                 })
             ],
-            bbar: toolbar(
-                button({
-                    text: 'Reset',
-                    icon: Icon.undo(),
-                    modifier: 'quiet',
-                    omit: !gridModel.stateModel,
-                    onClick: () => model.restoreDefaults()
-                }),
-                filler(),
-                button({
-                    text: 'Cancel',
-                    modifier: 'quiet',
-                    onClick: () => model.close()
-                }),
-                button({
-                    text: 'Save',
-                    icon: Icon.check(),
-                    onClick: this.onOK
-                })
-            )
+            bbar: toolbar({
+                items: [
+                    button({
+                        icon: Icon.x(),
+                        flex: 1,
+                        onClick: () => model.close()
+                    }),
+                    button({
+                        icon: Icon.check(),
+                        flex: 1,
+                        onClick: this.onOK
+                    })
+                ]
+            })
         });
     }
 
@@ -97,7 +99,7 @@ export class ColChooser extends Component {
 
         const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
         this.model.moveToIndex(draggableId, toIdx);
-    }
+    };
 
     //------------------------
     // Implementation

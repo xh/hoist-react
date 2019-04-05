@@ -29,8 +29,8 @@ export class LocalStore extends BaseStore {
 
     /**
      * @param {Object} c - LocalStore configuration.
-     * @param {function} [c.processRawData] - Function to run on data
-     *      presented to loadData() before creating records.
+     * @param {function} [c.processRawData] - Function to run on each individual data object
+     *      presented to loadData() prior to creating a record from that raw object.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a property (default is 'id') or a function to
      *      create an id from a record. If there is no natural id to select/generate, you can use

@@ -124,11 +124,13 @@ export class Column {
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
+        this.hidden = withDefault(hidden, false);
+        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
+
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerTooltip = headerTooltip;
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.hidden = withDefault(hidden, false);
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
