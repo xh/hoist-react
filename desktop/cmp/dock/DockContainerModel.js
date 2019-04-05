@@ -4,7 +4,7 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {uniqBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -44,45 +44,35 @@ export class DockContainerModel {
         this.views = views.map(v => new DockViewModel({...v, containerModel: this}));
     }
 
-    /**
-     * @param cfg - Configs for DockViewModel to be added.
-     */
-    addView(cfg = {}) {
-        const exists = this.findView(cfg.id);
-
-        if (exists) {
-            this.expandView(cfg.id);
-        } else {
-            const views = [new DockViewModel({...cfg, containerModel: this}), ...this.views];
-            this.setViews(views);
-        }
+    getView(id) {
+        return this.views.find(it => it.id === id);
     }
 
+    /**
+     * @param cfg - Config for DockViewModel to be added.
+     */
+    @action
+    addView(cfg = {}) {
+        const {id} = cfg;
+        if (id && this.getView(id)) this.removeView(id);
+        this.views = [new DockViewModel({...cfg, containerModel: this}), ...this.views];
+    }
+
+    @action
     removeView(id) {
-        const views = this.views.filter(it => it.id !== id);
-        this.setViews(views);
+        const view = this.getView(id);
+        if (view) XH.safeDestroy(view);
+        this.views = this.views.filter(it => it.id !== id);
     }
 
     expandView(id) {
-        const view = this.findView(id);
+        const view = this.getView(id);
         if (view) view.expand();
     }
 
     collapseView(id) {
-        const view = this.findView(id);
+        const view = this.getView(id);
         if (view) view.collapse();
-    }
-
-    //-----------------------
-    // Implementation
-    //-----------------------
-    findView(id) {
-        return this.views.find(it => it.id === id);
-    }
-
-    @action
-    setViews(views) {
-        this.views = views;
     }
 
 }

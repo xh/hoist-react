@@ -51,20 +51,20 @@ export class DockViewModel {
         title,
         icon,
         content,
-        docked,
-        collapsed,
-        allowClose,
-        allowDialog
+        docked = true,
+        collapsed = false,
+        allowClose = true,
+        allowDialog = true
     }) {
-        this.id = withDefault(id, XH.genId());
+        this.id = withDefault(id, this.xhId);
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
         this.content = content;
-        this.docked = withDefault(docked, true);
-        this.collapsed = withDefault(collapsed, false);
-        this.allowClose = withDefault(allowClose, true);
-        this.allowDialog = withDefault(allowDialog, true);
+        this.docked = docked;
+        this.collapsed = collapsed;
+        this.allowClose = allowClose;
+        this.allowDialog = allowDialog;
     }
 
     //-----------------------
@@ -118,6 +118,10 @@ export class DockViewModel {
     //-----------------------
     close() {
         this.containerModel.removeView(this.id);
+    }
+
+    destroy() {
+        XH.safeDestroy(this.content);
     }
 
 }

@@ -110,17 +110,17 @@ export class DockView extends Component {
         return content();
     }
 
-    onToggleDocked = () => {
+    onToggleDocked() {
         this.model.toggleDocked();
-    };
+    }
 
-    onToggleCollapsed = () => {
+    onToggleCollapsed() {
         this.model.toggleCollapsed();
-    };
+    }
 
-    onClose = () => {
+    onClose() {
         this.model.close();
-    };
+    }
 
 }
 
