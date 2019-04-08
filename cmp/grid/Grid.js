@@ -6,20 +6,31 @@
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
-import {isNil, isString, merge, xor, dropRightWhile, dropWhile, isEmpty, last, isEqual, map, isFinite} from 'lodash';
+import {
+    isNil,
+    isString,
+    merge,
+    xor,
+    dropRightWhile,
+    dropWhile,
+    isEmpty,
+    last,
+    isEqual,
+    map,
+    isFinite
+} from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {agGridReact, navigateSelection, ColumnHeader} from './ag-grid';
+import {navigateSelection, ColumnHeader, agGridWrapper} from './ag-grid';
 import {GridModel} from './GridModel';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
-
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -96,7 +107,9 @@ export class Grid extends Component {
     };
 
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
+
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
+
     static MULTIFIELD_ROW_HEIGHT = 38;
 
     // The minimum required row height specified by the columns (if any) */
@@ -118,6 +131,7 @@ export class Grid extends Component {
 
     constructor(props) {
         super(props);
+        this.addReaction(this.gridReadyReaction());
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
@@ -129,7 +143,7 @@ export class Grid extends Component {
 
     render() {
         const {model, props} = this,
-            {treeMode, compact, rowBorders, stripeRows, showHover, showCellFocus} = model,
+            {treeMode, compact, rowBorders, stripeRows, showHover, showCellFocus, agGridModel} = model,
             {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -145,10 +159,11 @@ export class Grid extends Component {
         return fragment(
             box({
                 ...layoutProps,
-                item: agGridReact(merge(this.createDefaultAgOptions(), agOptions)),
+                item: agGridWrapper({
+                    model: agGridModel,
+                    ...merge(this.createDefaultAgOptions(), agOptions)
+                }),
                 className: this.getClassName(
-                    'ag-grid-holder',
-                    XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                     treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
                     compact ? 'xh-grid--compact' : 'xh-grid--standard',
                     rowBorders ? 'xh-grid--row-borders' : 'xh-grid--no-row-borders',
@@ -207,7 +222,6 @@ export class Grid extends Component {
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
-            onGridReady: this.onGridReady,
             onSelectionChanged: this.onSelectionChanged,
             onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
@@ -340,54 +354,74 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    dataReaction() {
-        const {model} = this;
+    gridReadyReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [model.agApi, model.store.records, model.store.dataLastUpdated],
-            run: ([api, records]) => {
-                if (api) {
-                    runInAction(() => {
-                        // Load updated data into the grid.
-                        api.setRowData(records);
-
-                        // Size columns to account for scrollbar show/hide due to row count change.
-                        api.sizeColumnsToFit();
-
-                        // Force grid to fully re-render cells. We are *not* relying on its default
-                        // cell-level change detection as this does not account for our current
-                        // renderer API (where renderers can reference other properties on the data
-                        // object). See https://github.com/exhi/hoist-react/issues/550.
-                        api.refreshCells({force: true});
-
-                        // Set flag if data is hierarchical.
-                        this._isHierarchical = model.store.allRecords.some(
-                            rec => !!rec.children.length
-                        );
-
-                        // Increment version counter to trigger selectionReaction w/latest data.
-                        this._dataVersion++;
-                    });
+            track: () => agGridModel.isReady,
+            run: (isReady) => {
+                if (isReady && this.props.onGridReady) {
+                    // TODO: This formerly passed in the ag-grid event, what to do here?
+                    this.props.onGridReady();
                 }
             }
         };
     }
 
-    selectionReaction() {
-        const {model} = this;
-        return {
-            track: () => [model.agApi, model.selection, this._dataVersion],
-            run: ([api]) => {
-                if (!api) return;
+    dataReaction() {
+        const {model} = this,
+            {agGridModel} = model;
 
-                const modelSelection = model.selModel.ids,
-                    gridSelection = api.getSelectedRows().map(it => it.id),
+        return {
+            track: () => [agGridModel.isReady, model.store.records, model.store.dataLastUpdated],
+            run: ([isReady, records]) => {
+                if (!isReady) return;
+
+                runInAction(() => {
+                    const {agApi} = agGridModel;
+
+                    // Load updated data into the grid.
+                    agApi.setRowData(records);
+
+                    // Size columns to account for scrollbar show/hide due to row count change.
+                    agApi.sizeColumnsToFit();
+
+                    // Force grid to fully re-render cells. We are *not* relying on its default
+                    // cell-level change detection as this does not account for our current
+                    // renderer API (where renderers can reference other properties on the data
+                    // object). See https://github.com/exhi/hoist-react/issues/550.
+                    agApi.refreshCells({force: true});
+
+                    // Set flag if data is hierarchical.
+                    this._isHierarchical = model.store.allRecords.some(
+                        rec => !!rec.children.length
+                    );
+
+                    // Increment version counter to trigger selectionReaction w/latest data.
+                    this._dataVersion++;
+                });
+            }
+        };
+    }
+
+    selectionReaction() {
+        const {model} = this,
+            {agGridModel} = model;
+
+        return {
+            track: () => [agGridModel.isReady, model.selection, this._dataVersion],
+            run: ([isReady]) => {
+                if (!isReady) return;
+
+                const {agApi} = agGridModel,
+                    modelSelection = model.selModel.ids,
+                    gridSelection = agApi.getSelectedRows().map(it => it.id),
                     diff = xor(modelSelection, gridSelection);
 
                 // If ag-grid's selection differs from the selection model, set it to match.
                 if (diff.length > 0) {
-                    api.deselectAll();
+                    agApi.deselectAll();
                     modelSelection.forEach(id => {
-                        const node = api.getRowNode(id);
+                        const node = agApi.getRowNode(id);
                         if (node) node.setSelected(true);
                     });
                 }
@@ -396,44 +430,50 @@ export class Grid extends Component {
     }
 
     sortReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [this.model.agApi, this.model.sortBy],
-            run: ([api, sortBy]) => {
-                if (api) api.setSortModel(sortBy);
+            track: () => [agGridModel.isReady, this.model.sortBy],
+            run: ([isReady, sortBy]) => {
+                if (isReady) agGridModel.agApi.setSortModel(sortBy);
             }
         };
     }
 
     groupReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [this.model.agColumnApi, this.model.groupBy],
-            run: ([colApi, groupBy]) => {
-                if (colApi) colApi.setRowGroupColumns(groupBy);
+            track: () => [agGridModel.isReady, this.model.groupBy],
+            run: ([isReady, groupBy]) => {
+                if (isReady) agGridModel.agColumnApi.setRowGroupColumns(groupBy);
             }
         };
     }
 
     columnsReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [this.model.agApi, this.model.columns],
-            run: ([api]) => {
-                if (api) {
-                    this.doWithPreservedState({expansion: true, filters: true}, () => {
-                        api.setColumnDefs(this.getColumnDefs());
-                    });
-                    api.sizeColumnsToFit();
-                }
+            track: () => [agGridModel.isReady, this.model.columns],
+            run: ([isReady]) => {
+                if (!isReady) return;
+
+                const {agApi} = agGridModel;
+                this.doWithPreservedState({expansion: true, filters: true}, () => {
+                    agApi.setColumnDefs(this.getColumnDefs());
+                });
+                agApi.sizeColumnsToFit();
             }
         };
     }
 
     columnStateReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [this.model.agApi, this.model.agColumnApi, this.model.columnState],
-            run: ([api, colApi, colState]) => {
-                if (!colApi || !api) return;
+            track: () => [agGridModel.isReady, this.model.columnState],
+            run: ([isReady, colState]) => {
+                if (!isReady) return;
 
-                const agColState = colApi.getColumnState();
+                const {agApi, agColumnApi} = agGridModel;
+                const agColState = agColumnApi.getColumnState();
 
                 // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
@@ -448,15 +488,15 @@ export class Grid extends Component {
                         const agCol = agColState[index],
                             id = col.colId;
                         if (agCol.width != col.width) {
-                            colApi.setColumnWidth(id, col.width);
+                            agColumnApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
-                            colApi.setColumnVisible(id, !col.hidden);
+                            agColumnApi.setColumnVisible(id, !col.hidden);
                             hadChanges = true;
                         }
                     });
-                    if (hadChanges) api.sizeColumnsToFit();
+                    if (hadChanges) agApi.sizeColumnsToFit();
                     return;
                 }
 
@@ -473,18 +513,19 @@ export class Grid extends Component {
                 });
 
                 this.doWithPreservedState({expansion: true}, () => {
-                    colApi.setColumnState(colState);
+                    agColumnApi.setColumnState(colState);
                 });
-                api.sizeColumnsToFit();
+                agApi.sizeColumnsToFit();
             }
         };
     }
 
     compactReaction() {
+        const {agGridModel} = this.model;
         return {
-            track: () => [this.model.agApi, this.model.compact],
-            run: ([api]) => {
-                if (api) api.resetRowHeights();
+            track: () => [agGridModel.isReady, this.model.compact],
+            run: ([isReady]) => {
+                if (isReady) agGridModel.agApi.resetRowHeights();
             }
         };
     }
@@ -494,15 +535,6 @@ export class Grid extends Component {
     //------------------------
     getDataPath = (data) => {
         return data.xhTreePath;
-    };
-
-    onGridReady = (ev) => {
-        this.model.setAgApi(ev.api);
-        this.model.setAgColumnApi(ev.columnApi);
-
-        if (this.props.onGridReady) {
-            this.props.onGridReady(ev);
-        }
     };
 
     onNavigateToNextCell = (params) => {
@@ -593,4 +625,5 @@ export class Grid extends Component {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
 }
+
 export const grid = elemFactory(Grid);

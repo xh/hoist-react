@@ -7,7 +7,10 @@
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {
+    ColChooserModel as DesktopColChooserModel,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -32,7 +35,7 @@ import {
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-
+import {AgGridWrapperModel} from './ag-grid';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -96,10 +99,19 @@ export class GridModel {
     /** @member {boolean} */
     @bindable showCellFocus;
 
+    agGridModel = new AgGridWrapperModel();
+
     /** @member {GridApi} */
-    @observable.ref agApi = null;
+    // @observable.ref agApi = null;
+    get agApi() {
+        return this.agGridModel.agApi;
+    }
+
     /** @member {ColumnApi} */
-    @observable.ref agColumnApi = null;
+    // @observable.ref agColumnApi = null;
+    get agColumnApi() {
+        return this.agGridModel.agColumnApi;
+    }
 
     static defaultContextMenuTokens = [
         'copy',
@@ -507,7 +519,7 @@ export class GridModel {
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
-    
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -601,7 +613,8 @@ export class GridModel {
             return this.markManaged(new LocalStore(store));
         }
 
-        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+        throw XH.exception(
+            'The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
     }
 
     parseSelModel(selModel) {
@@ -612,7 +625,8 @@ export class GridModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel,
+                {store: this.store})));
         }
 
         // Assume its just the mode...

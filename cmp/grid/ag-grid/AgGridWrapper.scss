@@ -1,41 +1,54 @@
+// Ag-grid installs an outer div around itself.
+// This should use height: auto rather than height: 100%, to allow layoutConfig to work.
+.xh-ag-grid-wrapper > div {
+  width: 100%;
+  height: auto !important;
+}
+
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-.xh-grid {
+.ag-theme-balham, .ag-theme-balham-dark {
+  font-family: var(--xh-grid-font-family);
+  font-size: var(--xh-grid-font-size-px);
+
+  .ag-root {
+    border: none;
+    background-color: var(--xh-grid-bg);
+  }
+
+
   //------------------------
   // Core Header Classes
   //------------------------
-  .xh-grid-header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    min-height: 32px;
-    cursor: pointer;
-
-    span {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    svg {
-      margin-left: var(--xh-pad-half-px);
-      color: var(--xh-grid-header-icon-color);
-    }
-
-    &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
-      opacity: 0.5;
-    }
-
-    .xh-grid-header-menu-icon {
-      cursor: pointer;
-    }
+  .ag-header {
+    color: var(--xh-grid-header-text-color);
+    background-color: var(--xh-grid-header-bg);
+    font-family: var(--xh-grid-font-family);
+    font-size: var(--xh-grid-font-size-px);
   }
 
-  .xh-column-header-align-right .xh-grid-header {
-    text-align: right;
-  }
 
-  .xh-column-header-align-center .xh-grid-header {
-    text-align: center;
+  //------------------------
+  // Core Row Classes
+  //------------------------
+  .ag-row {
+    background-color: var(--xh-grid-bg);
+
+    &.ag-row-selected, &:active {
+      background-color: var(--xh-grid-bg-highlight);
+    }
+
+    &.ag-row-group {
+      color: var(--xh-grid-group-text-color);
+      background-color: var(--xh-grid-group-bg);
+    }
+
+    .group-header-icon-expanded {
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
+    }
+
+    .group-header-icon-contracted {
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
+    }
   }
 
   // Row borders
@@ -49,41 +62,33 @@
     }
   }
 
-  &--no-row-borders {
-    .ag-row {
-      border-color: transparent;
+  .ag-row {
+    border-color: transparent;
 
-      // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
-      // Without this collapsed groups (which don't stripe) blend together in a solid block.
-      &.ag-row-group {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
+    // Without this collapsed groups (which don't stripe) blend together in a solid block.
+    &.ag-row-group {
+      border-color: var(--xh-grid-group-border-color);
     }
   }
 
-  // Row zebra striping
-  &--stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg-odd);
-    }
+  .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+    background-color: var(--xh-grid-bg-odd);
   }
 
-  &--no-stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg);
-    }
-  }
-
-  // Hover highlight
-  &--show-hover {
-    .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg-hover);
-    }
-  }
 
   //------------------------
   // Core Cell Classes
   //------------------------
+  .ag-cell, .ag-header-cell, .ag-header-group-cell {
+    padding-left: var(--xh-grid-cell-lr-pad-px);
+    padding-right: var(--xh-grid-cell-lr-pad-px);
+  }
+
+  .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
+    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+  }
+
 
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
@@ -96,19 +101,11 @@
   }
 
   // Cell focus
-  &--no-cell-focus {
-    .ag-cell-focus {
-      outline: 0 !important;
-      border-color: transparent !important;
-    }
+  .ag-cell-focus {
+    outline: 0 !important;
+    border-color: transparent !important;
   }
 
-  &--show-cell-focus {
-    .ag-cell-focus {
-      outline: 0 !important;
-      border-color: var(--xh-grid-cell-focus-border-color) !important;
-    }
-  }
 
   //------------------------
   // Trees and Grouping
@@ -132,12 +129,10 @@
     }
   }
 
-  // Suppress default indenting when grid is in tree mode but no root records have children.
-  &--flat {
-    .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: 0;
-    }
+  .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: 0;
   }
+
 
   //------------------------
   // Compact Mode
@@ -159,46 +154,36 @@
     }
   }
 
+
   //------------------------
   // Other Optional Modifiers + Overrides
   //------------------------
+  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
+  // We remove this to tighten up the spacing.
+  .ag-group-checkbox.ag-invisible {
+    display: none;
+  }
+
+  // Restore right border on cells - not included by default with ag-grid but
+  // causes right-aligned content to shift by one pixel when focused.
+  .ag-cell.ag-cell-no-focus {
+    border-right: 1px solid transparent;
+  }
 
   // Grouped rows appear slightly misaligned (standard mode only)
-  &--standard .ag-row.ag-row-group {
+  .ag-row.ag-row-group {
     padding-top: 2px;
   }
-}
 
-//------------------------
-// Multi-field (mobile)
-//------------------------
-.xh-multifield-renderer {
-  line-height: var(--xh-grid-multifield-line-height-px);
+  // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
+  // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
+  // want to override and restore borders.
+  .ag-side-bar {border: none;}
+  .ag-status-bar {border: none;}
 
-  .xh-multifield-renderer-row {
-    display: flex;
+  // Disabling the "row loading" render overlay
+  .ag-bl-overlay {display: none;}
 
-    &.xh-multifield-renderer-top {
-      padding: 4px 0 0;
-      font-size: var(--xh-grid-multifield-top-font-size-px);
-    }
-    &.xh-multifield-renderer-bottom {
-      font-size: var(--xh-grid-multifield-bottom-font-size-px);
-      color: var(--xh-text-color-muted);
-    }
-
-    .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
-      margin: 0 2px 0 0;
-    }
-  }
-}
-
-.xh-align-right .xh-multifield-renderer .xh-multifield-renderer-row {
-  justify-content: flex-end;
-
-  .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
-    margin: 0 0 0 2px;
-  }
 }
 
 //------------------------
@@ -219,6 +204,7 @@
     color: var(--xh-grid-empty-text-color);
   }
 }
+
 
 //------------------------
 // Context Menu (matching ag-Grid provided menus to BP menus)

@@ -17,4 +17,6 @@ LicenseManager.setLicenseKey(xhAgGridLicenseKey);
 
 export * from './ColumnHeader';
 export * from './NavigateSelection';
+export * from './AgGridWrapper';
+export * from './AgGridWrapperModel';
 export const agGridReact = elemFactory(AgGridReact);
