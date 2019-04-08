@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import PT from 'prop-types';
+import {throwIf} from '@xh/hoist/utils/js';
 
+import {dockContainer as desktopDockContainer} from '@xh/hoist/dynamics/desktop';
 import {DockContainerModel} from './DockContainerModel';
-import {dockView} from './impl/DockView';
-import './Dock.scss';
 
 /**
  * Display a set of views in a dock. Using a DockContainer provides a user-friendly way to display multiple
@@ -26,23 +26,16 @@ import './Dock.scss';
  * @see DockContainerModel
  */
 @HoistComponent
-@LayoutSupport
 export class DockContainer extends Component {
 
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object]).isRequired
+    }
     static modelClass = DockContainerModel;
 
-    baseClassName = 'xh-dock-container';
-
     render() {
-        const {direction} = this.model;
-
-        return hbox({
-            className: this.getClassName(`xh-dock-container-${direction}`),
-            items: this.model.views.map(model => {
-                return dockView({key: model.xhId, model});
-            }),
-            ...this.getLayoutProps()
-        });
+        throwIf(XH.isMobile, 'DockContainer is not implemented on mobile');
+        return desktopDockContainer(this.props);
     }
 
 }

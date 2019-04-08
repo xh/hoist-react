@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -11,9 +11,9 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isReactElement} from '@xh/hoist/utils/react';
+import {DockViewModel} from '@xh/hoist/cmp/dock';
 
-import {DockViewModel} from './DockViewModel';
-import '../Dock.scss';
+import './Dock.scss';
 
 /**
  * Wrapper for contents to be shown within a DockContainer.
