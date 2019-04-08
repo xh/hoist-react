@@ -15,28 +15,29 @@ import {clone} from 'lodash';
  */
 export class Record {
 
-    static RESERVED_FIELD_NAMES = ['raw', 'fields', 'children', 'parent']
-
     /** @member {string} - unique ID. */
     id;
+
     /** @member {Object} - unconverted source data. */
     raw;
+
+    /** @member {Object} - converted data. */
+    data;
+
     /** @member {Field[]} - fields for this record. */
     fields;
-    /** @member {Record[]} - Children of this record. */
-    children;
-    /** @member {Record} - Parent of this record. */
-    parent;
+
+    /** @member {string} - Parent of this record, or null if there is no parent. */
+    parentId;
 
     /**
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
      * a JS Date object). An exception will be thrown if the validation or conversion fails.
      */
-    constructor({raw, parent, fields, children = []}) {
+    constructor({raw, parent, fields) {
         this.id = raw.id;
         this.raw = raw;
-        this.parent = parent;
-        this.children = children;
+        this.parentId = parent ? parentId : null;
         this.fields = fields;
 
         this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
@@ -63,52 +64,7 @@ export class Record {
                         throw XH.exception(`Unknown field type '${type}'`);
                 }
             }
-            this[name] = val;
+            this.data[name] = val;
         });
-    }
-    
-    /**
-     * Return a filtered version of this record.
-     *
-     * If the record fails the filter, null will be returned.
-     * @return {Record}
-     */
-    applyFilter(filter) {
-        const {children} = this;
-        
-        // apply to any children;
-        let passingChildren =[],
-            childrenChanged = false;
-        if (children) {
-            children.forEach(child => {
-                const filteredChild = child.applyFilter(filter);
-
-                // If the child does not return itself, remember that we must create a new reference for this record
-                if (filteredChild !== child) childrenChanged = true;
-
-                if (filteredChild) {
-                    passingChildren.push(child);
-                }
-            });
-        }
-
-        // ... then potentially apply to self.
-        if (passingChildren.length || filter(this)) {
-            if (!childrenChanged) {
-                // To improve performance, record returns self if none of its child references have changed...
-                return this;
-            } else {
-                // ...otherwise, create a new reference to this record and rebuild children
-                const ret = clone(this);
-                ret.children = passingChildren.map(child => {
-                    child = clone(child);
-                    child.parent = ret;
-                    return child;
-                });
-                return ret;
-            }
-        }
-
-        return null;
     }
 }

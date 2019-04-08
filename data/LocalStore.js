@@ -22,8 +22,8 @@ export class LocalStore extends BaseStore {
     idSpec;
 
     @observable.ref _dataLastUpdated;
-    @observable.ref _all = new RecordSet([]);
-    @observable.ref _filtered = this._all;
+    @observable.ref _all;
+    @observable.ref _filtered;
 
     _filter = null;
 
@@ -50,6 +50,7 @@ export class LocalStore extends BaseStore {
         this.setFilter(filter);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
+        this._filtered = this._all = new RecordSet({store: this});
         this._dataLastUpdated = new Date();
     }
 
@@ -60,7 +61,7 @@ export class LocalStore extends BaseStore {
      */
     @action
     loadData(rawRecords) {
-        this._all = new RecordSet(this.createRecords(rawRecords));
+        this._all = this.all.loadData(rawRecords);
         this.rebuildFiltered();
         this._dataLastUpdated = new Date();
     }
@@ -90,10 +91,8 @@ export class LocalStore extends BaseStore {
     //-----------------------------
     get records()           {return this._filtered.list}
     get allRecords()        {return this._all.list}
-    get rootRecords()       {return this._filtered.roots}
-    get allRootRecords()    {return this._all.roots}
 
-    get filter()        {return this._filter}
+    get filter()            {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
         this.rebuildFiltered();
@@ -116,42 +115,15 @@ export class LocalStore extends BaseStore {
     // Protected methods for subclasses
     //-----------------------------------
     @action
-    deleteRecordInternal(rec) {
-        this._all = this._all.removeRecord(rec);
+    deleteRecordInternal(id) {
+        this._all = this._all.removeRecord(id);
         this.rebuildFiltered();
     }
 
     @action
-    updateRecordInternal(oldRec, newRec) {
-        this._all = this._all.updateRecord(oldRec, newRec);
+    updateRecordInternal(rawData) {
+        this._all = this._all.updateRecord(rawData);
         this.rebuildFiltered();
-    }
-
-    @action
-    addRecordInternal(rec) {
-        this._all = this._all.addRecord(rec);
-        this.rebuildFiltered();
-    }
-
-    createRecords(rawData, parent = null) {
-        return rawData.map(raw => this.createRecord(raw, parent));
-    }
-
-    createRecord(raw, parent = null) {
-        const {idSpec} = this;
-        const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
-
-        if (this.processRawData) this.processRawData(raw);
-
-        raw.id = idGen(raw);
-        throwIf(
-            isNil(raw.id),
-            "Cannot load record with a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
-        );
-
-        const rec = new Record({raw, parent, fields: this.fields});
-        rec.children = raw.children ? this.createRecords(raw.children, rec) : [];
-        return rec;
     }
 
     //------------------------

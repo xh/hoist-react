@@ -6,8 +6,9 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {without, isEmpty, findIndex, clone} from 'lodash';
+import {without, isEmpty, findIndex, clone, isString, isNil} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
+import {Record} from "@xh/hoist/data/Record";
 
 /**
  * Internal Recordset for Store.
@@ -18,32 +19,26 @@ import {throwIf} from '@xh/hoist/utils/js/';
  */
 export class RecordSet {
 
-    roots;        // List of records at root, in order as presented to store
-    list;         // List of all records, in "infix" order
-    map;          // map of all records, by id
+    store;
+
+    records;          // map of all records, by id
 
     /**
-     * @param {Record[]} rootRecords -  ordered list of root records to be included. This array
-     *      will be used and modified by this object and should not be re-used.
+     * @param {Map} records - collection of records to be included.
+     *      if Map, this object will be used directly by this object for internal
+     *      storage.
+     *
+     * @param {Store} store
+     * @param {Map} [records]
      */
-    constructor(rootRecords) {
-        this.roots = rootRecords;
-
-        const {list, map} = this.gatherAllRecords(rootRecords);
-
-        throwIf(
-            list.length != map.size,
-            'Store records cannot contain non-unique IDs.'
-        );
-
-        // If all records are roots (not a tree structure), avoid holding two copies of what will be an identical list.
-        this.list = (rootRecords.length == map.size ? rootRecords : list);
-        this.map = map;
+    constructor({records = new Map(), store}) {
+        this.records = records;
+        this.store = store;
     }
 
     /** Number of records contained in this recordset */
     get count() {
-        return this.list.length;
+        return this.records.length;
     }
 
     /**
@@ -54,63 +49,102 @@ export class RecordSet {
      */
     applyFilter(filter) {
         if (!filter) return this;
-        const newRoots = this.roots.map(r => r.applyFilter(filter));
-        return new RecordSet(without(newRoots, null));
+
+        const passes =  new Map(),
+            records = {this};
+
+        // A record that passes the filter also recursively passes all its parents.
+        const markPass = (rec) => {
+            if (passses.has(rec.id)) return;
+            passes.set(rec.id) = rec;
+            const parent = this.getParent(record);
+            if (parent) markPass(parent);
+        };
+
+        records.forEach(rec => {
+            if (filter(rec)) markPass(rec);
+        });
+
+        return new RecordSet({records: passes, store: this.store});
     }
 
     /**
-     * Return a version of this recordset with a child removed.
+     * Load new rawData to replace existing records.
+     * Re-use existing records if rawData is unchanged.
      *
-     * @param {Record} record to be removed.
+     * @param {Object[]} rawData
      * @return {RecordSet}
      */
-    removeRecord(record) {
-        return this.applyFilter(r => r.id !== record.id);
+    loadData(rawData) {
+        const newRecords = createRecords({rawData, store: this.store});
+        if ()
+
+
+
+            
+
     }
 
     /**
-     * Return a version of this recordset with a child added.
-     * NOTE: Currently adding a record at the root is the only supported operation.
+     * Return a version of this recordset with a record removed.
      *
-     * @param {Record} record to be added.
+     * @param {string} id - id to be removed.
      * @return {RecordSet}
      */
-    addRecord(record) {
-        return new RecordSet([...this.roots, record]);
+    removeRecord(id) {
+        const filter = (rec) => {
+            if (rec.id == id) return false;
+            const parent = this.getParent(rec);
+            if (parent && !filter(parent)) return false;
+            return true;
+        }
+
+        return this.applyFilter(filter);
     }
 
     /**
-     * Return a version of this recordset with a record replaced.
-     * NOTE: Currently replacing a record at the root is the only supported operation.
+     * Return a version of this recordset with additional records added or updated.
      *
-     * @param {Record} oldRecord
-     * @param {Record} newRecord
+     * @param {Object[]} rawData -  raw data for records to be added or updated.
      * @return {RecordSet}
      */
-    updateRecord(oldRecord, newRecord) {
-        const newRoots = clone(this.roots),
-            index = findIndex(newRoots, {id: oldRecord.id});
+    updateData(rawData) {
 
-        if (index < 0) throw XH.exception(`Cannot find Record to update: id = ${oldRecord.id}`);
-
-        newRecord.children = oldRecord.children;
-        newRoots[index] = newRecord;
-
-        return new RecordSet(newRoots);
     }
 
+
+    //-----------------------------------
+    // Implementatation
+    //-----------------------------------
+    createRecords({rawData, createdRecords = {}, parent = null}) {
+        rawData.forEach(raw => this.createRecord(raw, createdRecords, parent));
+        return createdRecords;
+    }
+
+    createRecord(raw, createdRecords, parent = null) {
+        const {idSpec} = this;
+        const idGen = isString(idSpec) ? r => r[idSpec] : idSpec;
+
+        if (this.store.processRawData) this.store.processRawData(raw);
+
+        raw.id = idGen(raw);
+        throwIf(
+            isNil(raw.id),
+            "Record has a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+        );
+        throwIf(
+            createdRecords.has(raw.id),
+            `ID ${raw.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
+        )
+        const rec = new Record({raw, parent, fields: this.store.fields});
+        createdRecords.set(rec.id, rec);
+        this.createRecords(raw.children, createdRecords, rec);
+    }
     
     //------------------
     // Implementation
     // ------------------
-    gatherAllRecords(records, list = [], map = new Map()) {
-        records.forEach(r => {
-            list.push(r);
-            map.set(r.id, r);
-            if (!isEmpty(r.children)) {
-                this.gatherAllRecords(r.children, list, map);
-            }
-        });
-        return {list, map};
+    getParent(rec) {
+        return rec.parentId != null ? this.records[rec.parentId] : null;
     }
 }
