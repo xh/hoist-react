@@ -582,33 +582,12 @@ export class Grid extends Component {
     };
 
     doWithPreservedState({expansion, filters}, fn) {
-        const expandState = expansion ? this.readExpandState() : null,
+        const {agGridModel} = this.model,
+            expandState = expansion ? agGridModel.expandState : null,
             filterState = filters ? this.readFilterState() : null;
         fn();
-        if (expandState) this.writeExpandState(expandState);
+        if (expandState) agGridModel.setExpandState(expandState);
         if (filterState) this.writeFilterState(filterState);
-    }
-
-    readExpandState() {
-        const ret = [];
-        this.model.agApi.forEachNode(node => ret.push(node.expanded));
-        return ret;
-    }
-
-    writeExpandState(expandState) {
-        const api = this.model.agApi;
-        let wasChanged = false,
-            i = 0;
-        api.forEachNode(node => {
-            const state = expandState[i++];
-            if (node.expanded !== state) {
-                node.expanded = state;
-                wasChanged = true;
-            }
-        });
-        if (wasChanged) {
-            api.onGroupExpandedOrCollapsed();
-        }
     }
 
     readFilterState() {

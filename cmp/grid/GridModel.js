@@ -243,17 +243,13 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {agApi, selModel} = this;
+        const {agGridModel, selModel} = this;
+        warnIf(!agGridModel.isReady, 'Called selectFirst before the grid was ready!');
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        if (agApi) {
-            let record = null;
-            agApi.forEachNodeAfterFilterAndSort(node => {
-                if (!record && node.data) record = node.data;
-            });
+        const record = agGridModel.getFirstRowData();
 
-            if (record) selModel.select(record);
-        }
+        if (record) selModel.select(record);
     }
 
     /** Does the grid have any records to show? */
@@ -283,16 +279,6 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
-    @action
-    setAgApi(agApi) {
-        this.agApi = agApi;
-    }
-
-    @action
-    setAgColumnApi(columnApi) {
-        this.agColumnApi = columnApi;
-    }
-
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
      * This method is no-op if provided any ids without a corresponding column.
@@ -318,7 +304,9 @@ export class GridModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agApi} = this;
+        const {agGridModel} = this,
+            {agApi} = agGridModel;
+
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
@@ -327,7 +315,9 @@ export class GridModel {
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agApi} = this;
+        const {agGridModel} = this,
+            {agApi} = agGridModel;
+
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();
