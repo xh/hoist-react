@@ -12,7 +12,7 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
