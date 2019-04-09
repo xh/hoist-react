@@ -12,8 +12,8 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {action, observable, bindable} from '@xh/hoist/mobx';
+import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     cloneDeep,
@@ -560,11 +560,8 @@ export class GridModel {
 
         const {groupIds, colIds} = this.collectIds(cols);
 
-        const colsHaveDupes = colIds.length != uniq(colIds).length;
-        throwIf(colsHaveDupes, 'All colIds in column collection must be unique.');
-
-        const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
-        throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
+        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
+        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
