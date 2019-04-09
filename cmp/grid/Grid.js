@@ -24,13 +24,14 @@ import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {navigateSelection, ColumnHeader, agGridWrapper} from './ag-grid';
+import {navigateSelection, ColumnHeader, agGrid} from './ag-grid';
 import {GridModel} from './GridModel';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
+import {AgGrid} from './ag-grid/AgGrid';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -106,16 +107,12 @@ export class Grid extends Component {
         onCellDoubleClicked: PT.func
     };
 
-    static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
-
-    static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
-
     static MULTIFIELD_ROW_HEIGHT = 38;
 
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const modelHeight = this.model.compact ? Grid.COMPACT_ROW_HEIGHT : Grid.ROW_HEIGHT,
+        const modelHeight = this.model.compact ? AgGrid.COMPACT_ROW_HEIGHT : AgGrid.ROW_HEIGHT,
             columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
         return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
     }
@@ -131,19 +128,17 @@ export class Grid extends Component {
 
     constructor(props) {
         super(props);
-        this.addReaction(this.gridReadyReaction());
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
-        this.addReaction(this.compactReaction());
         this.addReaction(this.groupReaction());
     }
 
     render() {
         const {model, props} = this,
-            {treeMode, compact, rowBorders, stripeRows, showHover, showCellFocus, agGridModel} = model,
+            {treeMode, agGridModel} = model,
             {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
@@ -159,17 +154,12 @@ export class Grid extends Component {
         return fragment(
             box({
                 ...layoutProps,
-                item: agGridWrapper({
+                item: agGrid({
                     model: agGridModel,
                     ...merge(this.createDefaultAgOptions(), agOptions)
                 }),
                 className: this.getClassName(
-                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
-                    compact ? 'xh-grid--compact' : 'xh-grid--standard',
-                    rowBorders ? 'xh-grid--row-borders' : 'xh-grid--no-row-borders',
-                    stripeRows ? 'xh-grid--stripe-rows' : 'xh-grid--no-stripe-rows',
-                    showCellFocus ? 'xh-grid--show-cell-focus' : 'xh-grid--no-cell-focus',
-                    !isMobile && showHover ? 'xh-grid--show-hover' : 'xh-grid--no-hover'
+                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
@@ -354,19 +344,6 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    gridReadyReaction() {
-        const {agGridModel} = this.model;
-        return {
-            track: () => agGridModel.isReady,
-            run: (isReady) => {
-                if (isReady && this.props.onGridReady) {
-                    // TODO: This formerly passed in the ag-grid event, what to do here?
-                    this.props.onGridReady();
-                }
-            }
-        };
-    }
-
     dataReaction() {
         const {model} = this,
             {agGridModel, store} = model;
@@ -516,16 +493,6 @@ export class Grid extends Component {
                     agColumnApi.setColumnState(colState);
                 });
                 agApi.sizeColumnsToFit();
-            }
-        };
-    }
-
-    compactReaction() {
-        const {agGridModel} = this.model;
-        return {
-            track: () => [agGridModel.isReady, this.model.compact],
-            run: ([isReady]) => {
-                if (isReady) agGridModel.agApi.resetRowHeights();
             }
         };
     }

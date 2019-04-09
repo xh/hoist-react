@@ -1,12 +1,12 @@
 // Ag-grid installs an outer div around itself.
 // This should use height: auto rather than height: 100%, to allow layoutConfig to work.
-.xh-ag-grid-wrapper > div {
+.xh-ag-grid > div {
   width: 100%;
   height: auto !important;
 }
 
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-.ag-theme-balham, .ag-theme-balham-dark {
+.ag-theme-balham.xh-ag-grid, .ag-theme-balham-dark.xh-ag-grid {
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
@@ -15,6 +15,11 @@
     background-color: var(--xh-grid-bg);
   }
 
+  // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
+  // scrollbar
+  .ag-center-cols-container {
+    min-width: 100%;
+  }
 
   //------------------------
   // Core Header Classes
@@ -25,7 +30,6 @@
     font-family: var(--xh-grid-font-family);
     font-size: var(--xh-grid-font-size-px);
   }
-
 
   //------------------------
   // Core Row Classes
@@ -62,18 +66,36 @@
     }
   }
 
-  .ag-row {
-    border-color: transparent;
+  &--no-row-borders {
+    .ag-row {
+      border-color: transparent;
 
-    // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
-    // Without this collapsed groups (which don't stripe) blend together in a solid block.
-    &.ag-row-group {
-      border-color: var(--xh-grid-group-border-color);
+      // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
+      // Without this collapsed groups (which don't stripe) blend together in a solid block.
+      &.ag-row-group {
+        border-color: var(--xh-grid-group-border-color);
+      }
     }
   }
 
-  .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
-    background-color: var(--xh-grid-bg-odd);
+  // Row zebra striping
+  &--stripe-rows {
+    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-odd);
+    }
+  }
+
+  &--no-stripe-rows {
+    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg);
+    }
+  }
+
+  // Hover highlight
+  &--show-hover {
+    .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-hover);
+    }
   }
 
 
@@ -101,38 +123,19 @@
   }
 
   // Cell focus
-  .ag-cell-focus {
-    outline: 0 !important;
-    border-color: transparent !important;
-  }
-
-
-  //------------------------
-  // Trees and Grouping
-  //------------------------
-  &--hierarchical {
-    // Generate indentations for tree grids with hierarchical data.
-    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
-    $xh-tree-indent: 10px !default;
-    @for $i from 0 to 50 {
-      .ag-ltr .ag-row-group-indent-#{$i} {
-        padding-left: $i * $xh-tree-indent;
-      }
-    }
-
-    .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: 20px;
-    }
-
-    .ag-group-contracted + .ag-group-value:not(:empty) {
-      margin-left: 0;
+  &--no-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: transparent !important;
     }
   }
 
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: 0;
+  &--show-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: var(--xh-grid-cell-focus-border-color) !important;
+    }
   }
-
 
   //------------------------
   // Compact Mode
@@ -171,7 +174,7 @@
   }
 
   // Grouped rows appear slightly misaligned (standard mode only)
-  .ag-row.ag-row-group {
+  &--standard .ag-row.ag-row-group {
     padding-top: 2px;
   }
 
@@ -185,6 +188,7 @@
   .ag-bl-overlay {display: none;}
 
 }
+
 
 //------------------------
 // Overlay masks

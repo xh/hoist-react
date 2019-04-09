@@ -12,7 +12,7 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -35,7 +35,7 @@ import {
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {AgGridWrapperModel} from './ag-grid';
+import {AgGridModel} from './ag-grid';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -88,27 +88,12 @@ export class GridModel {
     /** @member {string[]} */
     @observable groupBy = null;
 
-    /** @member {boolean} */
-    @bindable compact;
-    /** @member {boolean} */
-    @bindable rowBorders;
-    /** @member {boolean} */
-    @bindable stripeRows;
-    /** @member {boolean} */
-    @bindable showHover;
-    /** @member {boolean} */
-    @bindable showCellFocus;
+    agGridModel = new AgGridModel();
 
-    agGridModel = new AgGridWrapperModel();
-
-    /** @member {GridApi} */
-    // @observable.ref agApi = null;
     get agApi() {
         return this.agGridModel.agApi;
     }
 
-    /** @member {ColumnApi} */
-    // @observable.ref agColumnApi = null;
     get agColumnApi() {
         return this.agGridModel.agColumnApi;
     }
@@ -202,11 +187,13 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        this.compact = compact;
-        this.showHover = showHover;
-        this.rowBorders = rowBorders;
-        this.stripeRows = stripeRows;
-        this.showCellFocus = showCellFocus;
+        this.agGridModel.setStyle({
+            compact,
+            showHover,
+            rowBorders,
+            stripeRows,
+            showCellFocus
+        });
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -277,6 +264,46 @@ export class GridModel {
      */
     get selectedRecord() {
         return this.selModel.singleRecord;
+    }
+
+    get compact() {
+        return this.agGridModel.compact;
+    }
+
+    setCompact(compact) {
+        this.agGridModel.setCompact(compact);
+    }
+
+    get rowBorders() {
+        return this.agGridModel.rowBorders;
+    }
+
+    setRowBorders(rowBorders) {
+        this.agGridModel.setRowBorders(rowBorders);
+    }
+
+    get stripeRows() {
+        return this.agGridModel.stripeRows;
+    }
+
+    setStripeRows(stripeRows) {
+        this.agGridModel.setStripeRows(stripeRows);
+    }
+
+    get showHover() {
+        return this.agGridModel.showHover;
+    }
+
+    setShowHover(showHover) {
+        this.agGridModel.setShowHover(showHover);
+    }
+
+    get showCellFocus() {
+        return this.agGridModel.showCellFocus;
+    }
+
+    setShowCellFocus(showCellFocus) {
+        this.agGridModel.setShowCellFocus(showCellFocus);
     }
 
     /**
