@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -54,7 +54,8 @@ export class DockViewModel {
         allowClose = true,
         allowDialog = true
     }) {
-        this.id = withDefault(id, this.xhId);
+        throwIf(!id, 'DockViewModel requires an id');
+        this.id = id;
         this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
@@ -69,10 +70,7 @@ export class DockViewModel {
     // Docked state
     //-----------------------
     toggleDocked() {
-        if (this.collapsed) {
-            this.showInDock();
-            this.expand();
-        } else if (this.docked && this.allowDialog) {
+        if (this.docked) {
             this.showInDialog();
         } else {
             this.showInDock();
@@ -109,6 +107,7 @@ export class DockViewModel {
     @action
     collapse() {
         this.collapsed = true;
+        this.docked = true;
     }
 
     //-----------------------

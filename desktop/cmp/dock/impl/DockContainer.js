@@ -29,7 +29,7 @@ export class DockContainer extends Component {
         const {direction} = this.model;
 
         return hbox({
-            className: this.getClassName(`xh-dock-container-${direction}`),
+            className: this.getClassName(`xh-dock-container--${direction}`),
             items: this.model.views.map(model => {
                 return dockView({key: model.xhId, model});
             }),

@@ -36,7 +36,7 @@ export class DockView extends Component {
         const {collapsed} = this.model;
 
         return vbox({
-            className: this.getClassName(collapsed ? 'xh-dock-view-collapsed' : null),
+            className: this.getClassName(collapsed ? 'xh-dock-view--collapsed' : null),
             items: [
                 this.renderHeader(),
                 this.renderBody()
@@ -46,7 +46,7 @@ export class DockView extends Component {
 
     renderInDialog() {
         return dialog({
-            className: this.getClassName('xh-dock-view-dialog'),
+            className: this.getClassName('xh-dock-view--dialog'),
             isOpen: true,
             onClose: () => this.onClose(),
             canOutsideClickClose: false,
@@ -63,18 +63,18 @@ export class DockView extends Component {
         const {icon, title, collapsed, docked, allowClose, allowDialog} = this.model;
 
         return hbox({
-            className: 'xh-dock-view-header',
+            className: 'xh-dock-view__header',
             items: [
                 span({
                     omit: !icon,
                     item: icon,
-                    className: 'xh-dock-view-header-icon',
+                    className: 'xh-dock-view__header__icon',
                     onDoubleClick: () => this.onToggleCollapsed()
                 }),
                 span({
                     omit: !title,
                     item: title,
-                    className: 'xh-dock-view-header-title',
+                    className: 'xh-dock-view__header__title',
                     onDoubleClick: () => this.onToggleCollapsed()
                 }),
                 filler(),
@@ -83,7 +83,7 @@ export class DockView extends Component {
                     onClick: () => this.onToggleCollapsed()
                 }),
                 button({
-                    omit: !allowDialog,
+                    omit: collapsed || !allowDialog,
                     icon: docked ? Icon.expand() : Icon.collapse(),
                     onClick: () => this.onToggleDocked()
                 }),
@@ -98,7 +98,7 @@ export class DockView extends Component {
 
     renderBody() {
         return div({
-            className: 'xh-dock-view-body',
+            className: 'xh-dock-view__body',
             item: this.renderContent()
         });
     }
