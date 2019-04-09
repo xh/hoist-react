@@ -36,8 +36,8 @@ export class DockViewModel {
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - Title text added to the header.
      * @param {Icon} [c.icon] - An icon placed at the left-side of the header.
-     * @param {Object} c.content - content to be rendered by this DockedView. Component class or a custom
-     *      element factory of the form returned by elemFactory.
+     * @param {Object} c.content - content to be rendered by this DockedView. Component class or a
+     *      custom element factory of the form returned by elemFactory.
      * @param {boolean} [c.docked] - true to initialise in dock, false to use Dialog. Respects allowDialog. Default true.
      * @param {boolean} [c.collapsed] - true to initialise collapsed, false for expanded. Default false.
      * @param {boolean} [c.allowClose] - true to allow removing from the dock entirely. Default true.

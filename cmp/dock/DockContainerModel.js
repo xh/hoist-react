@@ -6,8 +6,7 @@
  */
 import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {uniqBy} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 
 import {DockViewModel} from './DockViewModel';
 
@@ -28,16 +27,19 @@ export class DockContainerModel {
 
     /**
      * @param {Object} c - DockContainerModel configuration.
-     * @param {Object[]} c.views - Configs for DockViewModel to be displayed.
-     * @param {string} [c.direction] - For direction for views docked within this component.
-     *      Valid values are 'ltr', 'rtl'.
+     * @param {Object[]} c.views - DockViewModel configs to be displayed.
+     * @param {string} [c.direction] - direction in which docked views build up as they are added to
+     *      the container. Valid values are 'ltr', 'rtl' - the default of 'rtl' causes the first
+     *      view to be docked to the bottom right of the container with each subsequent view docked
+     *      to the left of view before it.
      */
     constructor({
         views,
-        direction = 'ltr'
+        direction = 'rtl'
     }) {
         views = views.filter(v => !v.omit);
-        throwIf(views.length !== uniqBy(views, 'id').length, 'One or more views in DockContainerModel has a non-unique id.');
+
+        ensureUniqueBy(views, 'id');
         throwIf(!['ltr', 'rtl'].includes(direction), 'Unsupported value for direction.');
 
         this.direction = direction;
@@ -49,7 +51,7 @@ export class DockContainerModel {
     }
 
     /**
-     * @param cfg - Config for DockViewModel to be added.
+     * @param {Object} cfg - Config for DockViewModel to be added.
      */
     @action
     addView(cfg = {}) {
