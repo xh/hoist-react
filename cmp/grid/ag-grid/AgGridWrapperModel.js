@@ -1,21 +1,24 @@
 import {HoistModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
-import {has} from 'lodash';
+import {observable, runInAction} from '@xh/hoist/mobx';
+import {has, isNil} from 'lodash';
 
 @HoistModel
 export class AgGridWrapperModel {
-    @bindable isReady = false;
-
     /** @member {GridApi} */
-    agApi = null;
+    @observable.ref agApi = null;
 
     /** @member {ColumnApi} */
-    agColumnApi = null;
+    @observable.ref agColumnApi = null;
+
+    get isReady() {
+        return !isNil(this.agApi) && !isNil(this.agColumnApi);
+    }
 
     onGridReady = ({api, columnApi}) => {
-        this.agApi = api;
-        this.agColumnApi = columnApi;
-        this.setIsReady(true);
+        runInAction(() => {
+            this.agApi = api;
+            this.agColumnApi = columnApi;
+        });
     };
 
     getFirstRowData() {

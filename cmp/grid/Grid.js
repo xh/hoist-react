@@ -369,10 +369,10 @@ export class Grid extends Component {
 
     dataReaction() {
         const {model} = this,
-            {agGridModel} = model;
+            {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.isReady, model.store.records, model.store.dataLastUpdated],
+            track: () => [agGridModel.isReady, store.records, store.dataLastUpdated],
             run: ([isReady, records]) => {
                 if (!isReady) return;
 
