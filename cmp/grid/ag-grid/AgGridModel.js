@@ -1,5 +1,5 @@
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {has, isNil} from 'lodash';
 
 @HoistModel
@@ -130,8 +130,8 @@ export class AgGridModel {
      * This is *loosely* based on an example from the AG Docs.
      * It has been modified for efficiency and to allow multi-selection.
      */
-    navigateSelection(params) {
-        const {nextCellDef, previousCellDef, event} = params,
+    navigateSelection(agParams) {
+        const {nextCellDef, previousCellDef, event} = agParams,
             shiftKey = event.shiftKey,
             prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
             nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
@@ -141,7 +141,7 @@ export class AgGridModel {
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
             KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
 
-        switch (params.key) {
+        switch (agParams.key) {
             case KEY_DOWN:
             case KEY_UP:
                 if (nextNode) {
@@ -171,10 +171,9 @@ export class AgGridModel {
     //------------------------
     // Implementation
     //------------------------
-    onGridReady = ({api, columnApi}) => {
-        runInAction(() => {
-            this.agApi = api;
-            this.agColumnApi = columnApi;
-        });
-    };
+    @action
+    onGridReady({api, columnApi}) {
+        this.agApi = api;
+        this.agColumnApi = columnApi;
+    }
 }
