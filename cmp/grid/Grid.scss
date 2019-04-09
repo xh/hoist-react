@@ -39,6 +39,16 @@
   }
 
   //------------------------
+  // Core Cell Classes
+  //------------------------
+
+  // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
+  .ag-cell.xh-align-center {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  //------------------------
   // Trees and Grouping
   //------------------------
   &--hierarchical {

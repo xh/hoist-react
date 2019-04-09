@@ -41,7 +41,7 @@
       background-color: var(--xh-grid-bg-highlight);
     }
 
-    &.ag-row-group {
+    &.ag-row-group.ag-full-width-row  {
       color: var(--xh-grid-group-text-color);
       background-color: var(--xh-grid-group-bg);
     }
@@ -70,9 +70,9 @@
     .ag-row {
       border-color: transparent;
 
-      // Deliberately keep border on grouped rows even when we aren't otherwise adding row borders.
+      // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
-      &.ag-row-group {
+      &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
     }
@@ -80,24 +80,23 @@
 
   // Row zebra striping
   &--stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg-odd);
     }
   }
 
   &--no-stripe-rows {
-    .ag-row.ag-row-odd:not(.ag-row-group):not(.ag-row-selected) {
+    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg);
     }
   }
 
   // Hover highlight
   &--show-hover {
-    .ag-row.ag-row-hover:not(.ag-row-group):not(.ag-row-selected) {
+    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg-hover);
     }
   }
-
 
   //------------------------
   // Core Cell Classes
@@ -109,13 +108,6 @@
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
     border-right: 1px solid var(--xh-grid-pinned-column-border-color);
-  }
-
-
-  // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
-  .ag-cell.xh-align-center {
-    padding-left: 0;
-    padding-right: 0;
   }
 
   .ag-cell-value {
@@ -173,8 +165,8 @@
     border-right: 1px solid transparent;
   }
 
-  // Grouped rows appear slightly misaligned (standard mode only)
-  &--standard .ag-row.ag-row-group {
+  // Full-width grouped rows appear slightly misaligned (standard mode only)
+  &--standard .ag-row.ag-row-group.ag-full-width-row {
     padding-top: 2px;
   }
 
