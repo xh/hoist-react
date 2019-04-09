@@ -53,11 +53,11 @@ export class AgGrid extends Component {
         return box({
             className: this.getClassName(
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                compact ? 'xh-grid--compact' : 'xh-grid--standard',
-                rowBorders ? 'xh-grid--row-borders' : 'xh-grid--no-row-borders',
-                stripeRows ? 'xh-grid--stripe-rows' : 'xh-grid--no-stripe-rows',
-                showCellFocus ? 'xh-grid--show-cell-focus' : 'xh-grid--no-cell-focus',
-                !isMobile && showHover ? 'xh-grid--show-hover' : 'xh-grid--no-hover'
+                compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
+                rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
+                stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
+                showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
+                !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
             item: agGridReact({
