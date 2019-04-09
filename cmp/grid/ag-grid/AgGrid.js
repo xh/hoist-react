@@ -63,6 +63,7 @@ export class AgGrid extends Component {
             item: agGridReact({
                 // ag-grid props which we provide defaults for, but can be overridden
                 getRowHeight: this.getRowHeight,
+                navigateToNextCell: !isMobile ? this.onNavigateToNextCell : undefined,
 
                 ...agGridProps,
 
@@ -70,6 +71,10 @@ export class AgGrid extends Component {
                 onGridReady: this.onGridReady
             })
         });
+    }
+
+    onNavigateToNextCell = (agParams) => {
+        return this.model.navigateSelection(agParams);
     }
 
     getRowHeight = () => {

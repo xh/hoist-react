@@ -24,14 +24,13 @@ import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
-import {navigateSelection, ColumnHeader, agGrid} from './ag-grid';
+import {ColumnHeader, agGrid, AgGrid} from './ag-grid';
 import {GridModel} from './GridModel';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
-import {AgGrid} from './ag-grid/AgGrid';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -238,8 +237,7 @@ export class Grid extends Component {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems,
-                navigateToNextCell: this.onNavigateToNextCell
+                getContextMenuItems: this.getContextMenuItems
             };
         }
 
@@ -389,18 +387,13 @@ export class Grid extends Component {
             run: ([isReady]) => {
                 if (!isReady) return;
 
-                const {agApi} = agGridModel,
-                    modelSelection = model.selModel.ids,
-                    gridSelection = agApi.getSelectedRows().map(it => it.id),
+                const modelSelection = model.selModel.ids,
+                    gridSelection = agGridModel.selectedRowNodeIds,
                     diff = xor(modelSelection, gridSelection);
 
                 // If ag-grid's selection differs from the selection model, set it to match.
                 if (diff.length > 0) {
-                    agApi.deselectAll();
-                    modelSelection.forEach(id => {
-                        const node = agApi.getRowNode(id);
-                        if (node) node.setSelected(true);
-                    });
+                    agGridModel.setSelectedRowNodeIds(modelSelection);
                 }
             }
         };
@@ -504,10 +497,6 @@ export class Grid extends Component {
         return data.xhTreePath;
     };
 
-    onNavigateToNextCell = (params) => {
-        return navigateSelection(params, this.model.agApi);
-    };
-
     onSelectionChanged = (ev) => {
         this.model.selModel.select(ev.api.getSelectedRows());
     };
@@ -532,7 +521,7 @@ export class Grid extends Component {
     };
 
     onRowGroupOpened = () => {
-        this.model.agApi.sizeColumnsToFit();
+        this.model.agGridModel.agApi.sizeColumnsToFit();
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
@@ -558,11 +547,11 @@ export class Grid extends Component {
     }
 
     readFilterState() {
-        return this.model.agApi.getFilterModel();
+        return this.model.agGridModel.agApi.getFilterModel();
     }
 
     writeFilterState(filterState) {
-        this.model.agApi.setFilterModel(filterState);
+        this.model.agGridModel.agApi.setFilterModel(filterState);
     }
 
     // Underlying value for treeColumns is actually the record ID due to getDataPath() impl.

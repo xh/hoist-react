@@ -46,13 +46,6 @@ export class AgGridModel {
         return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
-    onGridReady = ({api, columnApi}) => {
-        runInAction(() => {
-            this.agApi = api;
-            this.agColumnApi = columnApi;
-        });
-    };
-
     get style() {
         const {compact, rowBorders, stripeRows, showHover, showCellFocus} = this;
         return {
@@ -107,6 +100,22 @@ export class AgGridModel {
         }
     }
 
+    get selectedRowNodeIds() {
+        return this.agApi.getSelectedRows().map(it => it.id);
+    }
+
+    setSelectedRowNodeIds(ids) {
+        const {agApi} = this;
+        agApi.deselectAll();
+        ids.forEach(id => {
+            const node = agApi.getRowNode(id);
+            if (node) node.setSelected(true);
+        });
+    }
+
+    /**
+     * @returns {Object} the data associated with the first non-group row in the grid.
+     */
     getFirstRowData() {
         let data = null;
         this.agApi.forEachNodeAfterFilterAndSort(node => {
@@ -114,4 +123,58 @@ export class AgGridModel {
         });
         return data;
     }
+
+    /**
+     * Allow Key Presses to navigate selection.
+     *
+     * This is *loosely* based on an example from the AG Docs.
+     * It has been modified for efficiency and to allow multi-selection.
+     */
+    navigateSelection(params) {
+        const {nextCellDef, previousCellDef, event} = params,
+            shiftKey = event.shiftKey,
+            prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
+            nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
+            {agApi} = this,
+            prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
+            nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
+            prevNodeIsParent = prevNode && prevNode.allChildrenCount,
+            KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
+
+        switch (params.key) {
+            case KEY_DOWN:
+            case KEY_UP:
+                if (nextNode) {
+                    if (!shiftKey || !prevNode.isSelected()) {
+                        // 0) Simple move of selection
+                        nextNode.setSelected(true, true);
+                    } else {
+                        // 1) Extend or shrink multi-selection.
+                        if (!nextNode.isSelected()) {
+                            nextNode.setSelected(true, false);
+                        } else {
+                            prevNode.setSelected(false, false);
+                        }
+                    }
+                }
+                return nextCellDef;
+            case KEY_LEFT:
+                if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
+                return nextCellDef;
+            case KEY_RIGHT:
+                if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
+                return nextCellDef;
+            default:
+        }
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    onGridReady = ({api, columnApi}) => {
+        runInAction(() => {
+            this.agApi = api;
+            this.agColumnApi = columnApi;
+        });
+    };
 }

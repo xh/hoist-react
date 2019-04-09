@@ -76,6 +76,8 @@ export class GridModel {
     /** @member {object} */
     exportOptions = null;
 
+    agGridModel = new AgGridModel();
+
     //------------------------
     // Observable API
     //------------------------
@@ -87,16 +89,6 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
-
-    agGridModel = new AgGridModel();
-
-    get agApi() {
-        return this.agGridModel.agApi;
-    }
-
-    get agColumnApi() {
-        return this.agGridModel.agColumnApi;
-    }
 
     static defaultContextMenuTokens = [
         'copy',
@@ -218,13 +210,14 @@ export class GridModel {
      * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(filename, type, params = {}) {
-        if (!this.agApi) return;
+        const {isReady, agApi} = this.agGridModel;
+        if (!isReady) return;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
-            this.agApi.exportDataAsExcel(params);
+            agApi.exportDataAsExcel(params);
         } else if (type === 'csv') {
-            this.agApi.exportDataAsCsv(params);
+            agApi.exportDataAsCsv(params);
         }
     }
 
@@ -331,9 +324,7 @@ export class GridModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agGridModel} = this,
-            {agApi} = agGridModel;
-
+        const {agApi} = this.agGridModel;
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
@@ -342,9 +333,7 @@ export class GridModel {
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agGridModel} = this,
-            {agApi} = agGridModel;
-
+        const {agApi} = this.agGridModel;
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();

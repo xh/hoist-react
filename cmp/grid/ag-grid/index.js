@@ -16,7 +16,6 @@ import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);
 
 export * from './ColumnHeader';
-export * from './NavigateSelection';
 export * from './AgGrid';
 export * from './AgGridModel';
 export const agGridReact = elemFactory(AgGridReact);
