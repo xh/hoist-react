@@ -74,41 +74,20 @@ export class Record {
      * @return {Record}
      */
     applyFilter(filter) {
-        const {children} = this;
-        
-        // apply to any children;
-        let passingChildren =[],
-            childrenChanged = false;
+        let {children} = this;
         if (children) {
-            children.forEach(child => {
-                const filteredChild = child.applyFilter(filter);
-
-                // If the child does not return itself, remember that we must create a new reference for this record
-                if (filteredChild !== child) childrenChanged = true;
-
-                if (filteredChild) {
-                    passingChildren.push(child);
-                }
-            });
+            children = children
+                .map(child => child.applyFilter(filter))
+                .filter(it => it != null);
         }
 
-        // ... then potentially apply to self.
-        if (passingChildren.length || filter(this)) {
-            if (!childrenChanged) {
-                // To improve performance, record returns self if none of its child references have changed...
-                return this;
-            } else {
-                // ...otherwise, create a new reference to this record and rebuild children
-                const ret = clone(this);
-                ret.children = passingChildren.map(child => {
-                    child = clone(child);
-                    child.parent = ret;
-                    return child;
-                });
-                return ret;
-            }
+        if (children && children.length || filter(this)) {
+            const ret = clone(this);
+            ret.children = children;
+            children.forEach(c => c.parent = ret);
+            return ret;
+        } else {
+            return null;
         }
-
-        return null;
     }
 }
