@@ -80,6 +80,7 @@ export class DockViewModel {
     @action
     showInDialog() {
         if (!this.allowDialog) return;
+        this.containerModel.views.forEach(it => it.showInDock());
         this.docked = false;
     }
 
