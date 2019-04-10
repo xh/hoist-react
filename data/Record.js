@@ -5,8 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {clone, isEqual} from 'lodash';
 
 /**
  * Core data for Store.

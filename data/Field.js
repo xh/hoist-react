@@ -8,7 +8,7 @@
 import {Record} from '@xh/hoist/data/Record';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase, isEqual} from 'lodash';
-import {XH} from "@xh/hoist/core";
+import {XH} from '@xh/hoist/core';
 
 /**
  * Metadata for an individual data field within a Store record.

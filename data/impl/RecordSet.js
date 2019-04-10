@@ -5,10 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {without, isEmpty, findIndex, clone, isString, isNil} from 'lodash';
+import {isString, isNil} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
-import {Record} from "@xh/hoist/data/Record";
+import {Record} from '../Record';
 
 /**
  * Internal Recordset for Store.
@@ -92,7 +91,7 @@ export class RecordSet {
             if (currRec && currRec.isEqual(newRec)) {
                 newRecords.set(key, currRec);
             }
-        };
+        }
         return new RecordSet(this.store, newRecords);
     }
 
@@ -108,7 +107,7 @@ export class RecordSet {
             const parent = this.getParent(rec);
             if (parent && !filter(parent)) return false;
             return true;
-        }
+        };
 
         return this.applyFilter(filter);
     }
@@ -130,7 +129,7 @@ export class RecordSet {
             }
         });
 
-        return new RecordSet(this.store, existingRecords)
+        return new RecordSet(this.store, existingRecords);
     }
 
 
@@ -158,7 +157,7 @@ export class RecordSet {
         throwIf(
             records.has(raw.id),
             `ID ${raw.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
-        )
+        );
         const rec = new Record({raw, parent, store});
         records.set(rec.id, rec);
         if (raw.children) {

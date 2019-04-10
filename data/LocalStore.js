@@ -5,12 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {isString, isNil, partition} from 'lodash';
+import {partition} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
-import {Record} from './Record';
 import {BaseStore} from './BaseStore';
 
 /**
@@ -181,8 +179,4 @@ export class LocalStore extends BaseStore {
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
     }
-
-
-
-
 }
