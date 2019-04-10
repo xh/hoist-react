@@ -6,8 +6,8 @@
  */
 import {XH, HoistModel, elem} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {uniqBy, keys, find, merge, isEqual} from 'lodash';
+import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {keys, find, merge, isEqual} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
 
@@ -34,8 +34,9 @@ export class NavigatorModel {
      *      pages within this Navigator/App.
      */
     constructor({routes}) {
-        throwIf(routes.length === 0, 'NavigatorModel needs at least one route.');
-        throwIf(routes.length !== uniqBy(routes, 'id').length, 'One or more routes in NavigatorModel has a non-unique id.');
+        ensureNotEmpty(routes, 'NavigatorModel needs at least one route.');
+        ensureUniqueBy(routes, 'id', 'Multiple NavigatorModel routes share a non-unique id.');
+
         this.routes = routes;
 
         this.addReaction({

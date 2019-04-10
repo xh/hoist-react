@@ -2,7 +2,11 @@
 
 ## v22.0.0-SNAPSHOT (under development)
 
-* TBD
+### 🎁 New Features
+
+* A new `DockContainer` component provides a user-friendly way to render multiple child components
+  "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
+  to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
 
 ## v21.0.0 - 2019-04-04
 

@@ -7,8 +7,8 @@
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
-import {find, uniqBy} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
+import {find} from 'lodash';
+import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
 
 /**
@@ -64,8 +64,8 @@ export class TabContainerModel {
     }) {
 
         tabs = tabs.filter(p => !p.omit);
-        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
-        throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
+        ensureNotEmpty(tabs, 'TabContainerModel needs at least one child.');
+        ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
 
         this.switcherPosition = switcherPosition;
