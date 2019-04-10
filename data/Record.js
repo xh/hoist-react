@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {clone} from 'lodash';
+import {clone, isEqual} from 'lodash';
 
 /**
  * Core data for Store.
@@ -15,56 +15,44 @@ import {clone} from 'lodash';
  */
 export class Record {
 
+    static RESERVED_FIELD_NAMES = ['store', 'parentId', 'xhTreePath']
+
     /** @member {string} - unique ID. */
     id;
 
-    /** @member {Object} - unconverted source data. */
-    raw;
+    /** @member {Store} - source store for this record. */
+    store;
 
-    /** @member {Object} - converted data. */
-    data;
-
-    /** @member {Field[]} - fields for this record. */
-    fields;
-
-    /** @member {string} - Parent of this record, or null if there is no parent. */
+    /** @member {string} - id of parent of this record, or null if there is no parent. */
     parentId;
+
+    /** @private {String[]} - unique path.  For agGrid implementation. */
+    xHTreePath;
 
     /**
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
      * a JS Date object). An exception will be thrown if the validation or conversion fails.
      */
-    constructor({raw, parent, fields) {
-        this.id = raw.id;
-        this.raw = raw;
-        this.parentId = parent ? parentId : null;
-        this.fields = fields;
+    constructor({raw, parent, store}) {
+        const id = raw.id;
 
-        this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
+        this.id = id;
+        this.parentId = parent ? parent.id : null;
+        this.store = store;
+        this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
 
-        fields.forEach(field => {
-            const {type, name, defaultValue} = field;
-            let val = raw[name];
-            if (val === undefined || val === null) val = defaultValue;
-
-            if (val !== null) {
-                switch (type) {
-                    case 'auto':
-                    case 'string':
-                    case 'int':
-                    case 'number':
-                    case 'bool':
-                    case 'json':
-                    case 'day':
-                        break;
-                    case 'date':
-                        val = new Date(val);
-                        break;
-                    default:
-                        throw XH.exception(`Unknown field type '${type}'`);
-                }
-            }
-            this.data[name] = val;
+        store.fields.forEach(f => {
+            this[f.name] = f.parseVal(raw[f.name]);
         });
     }
+
+    isEqual(rec) {
+        return (
+            this.id == rec.id &&
+            this.parentId == rec.parentId &&
+            this.store == rec.store &&
+            this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
+        );
+    }
 }
+

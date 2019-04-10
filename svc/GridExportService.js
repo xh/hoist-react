@@ -6,6 +6,7 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
+import {LocalStore} from '@xh/hoist/data/LocalStore';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -42,17 +43,17 @@ export class GridExportService {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const columns = this.getExportableColumns(gridModel, includeHiddenCols),
-            records = gridModel.store.rootRecords,
+            recordNodes = LocalStore.getRecordsAsTree(gridModel.store.records),
             meta = this.getColumnMetadata(columns),
             rows = [];
 
-        if (records.length === 0) {
+        if (recordNodes.length === 0) {
             XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
             return;
         }
 
         rows.push(this.getHeaderRow(columns, type));
-        rows.push(...this.getRecordRowsRecursive(gridModel, records, columns, 0));
+        rows.push(...this.getRecordRowsRecursive(gridModel, recordNodes, columns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
@@ -127,17 +128,20 @@ export class GridExportService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRowsRecursive(gridModel, records, columns, depth) {
+    getRecordRowsRecursive(gridModel, recordNodes, columns, depth) {
         const {sortBy, treeMode} = gridModel,
-            sortColIds = sortBy.map(it => it.colId),
+            sortFns = sortBy.map(sort => {
+                const {colId} = sort;
+                return (node) => node.record[colId];
+            }),
             sorts = sortBy.map(it => it.sort),
-            sortedRecords = orderBy(records, sortColIds, sorts),
+            sortedNodes = orderBy(recordNodes, sortFns, sorts),
             ret = [];
 
-        sortedRecords.forEach(record => {
-            ret.push(this.getRecordRow(record, columns, depth));
-            if (treeMode && record.children.length) {
-                ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));
+        sortedNodes.forEach(node => {
+            ret.push(this.getRecordRow(node.record, columns, depth));
+            if (treeMode && node.children.length) {
+                ret.push(...this.getRecordRowsRecursive(gridModel, node.children, columns, depth + 1));
             }
         });
 
@@ -148,6 +152,7 @@ export class GridExportService {
         const data = columns.map(it => this.getCellData(record, it));
         return {data, depth};
     }
+
 
     getCellData(record, column) {
         const {field, exportValue, exportFormat} = column;

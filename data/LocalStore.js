@@ -7,7 +7,7 @@
 
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, action} from '@xh/hoist/mobx';
-import {isString, isNil} from 'lodash';
+import {isString, isNil, partition} from 'lodash';
 
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -47,24 +47,53 @@ export class LocalStore extends BaseStore {
             ...baseStoreArgs
         }) {
         super(baseStoreArgs);
+        this._filtered = this._all = new RecordSet(this);
         this.setFilter(filter);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
-        this._filtered = this._all = new RecordSet({store: this});
         this._dataLastUpdated = new Date();
     }
 
     /**
-     * Replace existing records with new records.
+     * Replace existing data in store with new data set.
      *
-     * @param {Object[]} rawRecords - raw records to be loaded into the store.
+     * @param {Object[]} rawData - raw records to be loaded into the store.
+     * All existing data will be replaced.
+     *
+     * Note that this object will seek to preserve object references for records that
+     * have not been changed.  This is designed to maximize the ability of downstream
+     * components (e.g. grids) to recognize records that have not been changed and do
+     * not need to be updated.
      */
     @action
-    loadData(rawRecords) {
-        this._all = this.all.loadData(rawRecords);
+    loadData(rawData) {
+        this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
         this._dataLastUpdated = new Date();
     }
+
+    /**
+     * Add/edit data in store.
+     *
+     * @param {Object[]} rawData - raw records to be added/edited the store.
+     */
+    @action
+    updateData(rawData) {
+        this._all = this._all.updateData(rawData);
+        this.rebuildFiltered();
+    }
+
+    /**
+     * Remove record from the store.
+     *
+     * @param {string} id - id of the the record to be removed.
+     */
+    @action
+    removeRecord(id) {
+        this._all = this._all.removeRecord(id);
+        this.rebuildFiltered();
+    }
+
 
     /**
      * Call when data contained in the records contained by this store have been exogenously updated.
@@ -108,22 +137,41 @@ export class LocalStore extends BaseStore {
 
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
-        return rs.map.get(id);
+        return rs.records.get(id);
     }
 
-    //-----------------------------------
-    // Protected methods for subclasses
-    //-----------------------------------
-    @action
-    deleteRecordInternal(id) {
-        this._all = this._all.removeRecord(id);
-        this.rebuildFiltered();
-    }
 
-    @action
-    updateRecordInternal(rawData) {
-        this._all = this._all.updateRecord(rawData);
-        this.rebuildFiltered();
+    /**
+     * Get a flat set of records representing a store in a tree representations
+     *
+     * @param {Record[]} - records
+     *
+     * @returns {[]} -- array of records of form {record, children};
+     */
+    static getRecordsAsTree(records) {
+        const childrenMap = new Map();
+
+        // Pass 1, create nodes.
+        const nodes = records.map(record => {return {record, children: []}}),
+            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
+
+        // Pass 2, collect children by parent
+        nonRoots.forEach(node => {
+            let {parentId} = node.record,
+                children = childrenMap.get(parentId);
+            if (!children) {
+                children = [];
+                childrenMap.set(parentId, children);
+            }
+            children.push(node);
+        });
+
+        // Pass 3, assign children
+        nodes.forEach(node => {
+            node.children = childrenMap.get(node.record.id) || [];
+        });
+
+        return roots;
     }
 
     //------------------------
@@ -133,4 +181,8 @@ export class LocalStore extends BaseStore {
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
     }
+
+
+
+
 }

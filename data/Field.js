@@ -7,7 +7,8 @@
 
 import {Record} from '@xh/hoist/data/Record';
 import {throwIf} from '@xh/hoist/utils/js';
-import {startCase} from 'lodash';
+import {startCase, isEqual} from 'lodash';
+import {XH} from "@xh/hoist/core";
 
 /**
  * Metadata for an individual data field within a Store record.
@@ -47,5 +48,33 @@ export class Field {
         this.label = label;
         this.nullable = nullable;
         this.defaultValue = defaultValue;
+    }
+
+    parseVal(val) {
+        const {type, defaultValue} = this;
+        if (val === undefined || val === null) val = defaultValue;
+
+        if (val !== null) {
+            switch (type) {
+                case 'auto':
+                case 'string':
+                case 'int':
+                case 'number':
+                case 'bool':
+                case 'json':
+                case 'day':
+                    break;
+                case 'date':
+                    val = new Date(val);
+                    break;
+                default:
+                    throw XH.exception(`Unknown field type '${type}'`);
+            }
+        }
+        return val;
+    }
+
+    isEqual(val1, val2) {
+        return isEqual(val1, val2);
     }
 }
