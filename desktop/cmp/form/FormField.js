@@ -138,6 +138,7 @@ export class FormField extends Component {
         const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
 
         return box({
+            key: fieldModel ? fieldModel.xhId : null,
             items: [
                 labelEl({
                     omit: !label,
@@ -230,7 +231,6 @@ export class FormField extends Component {
             {propTypes} = item.type;
 
         const overrides = {
-            key: fieldModel ? fieldModel.xhId : null,
             model: fieldModel,
             bind: 'value',
             disabled: fieldModel && fieldModel.disabled,
