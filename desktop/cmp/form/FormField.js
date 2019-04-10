@@ -230,6 +230,7 @@ export class FormField extends Component {
             {propTypes} = item.type;
 
         const overrides = {
+            key: fieldModel ? fieldModel.xhId : null,
             model: fieldModel,
             bind: 'value',
             disabled: fieldModel && fieldModel.disabled,
