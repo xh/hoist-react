@@ -80,7 +80,7 @@ export class StoreCountLabel extends Component {
     rootCount(store) {
         return reduce(
             store.records,
-            (ret, val) => {if (val.parentId == null) ret++;},
+            (ret, val) => val.parentId == null ? ret + 1 : ret,
             0
         );
     }
