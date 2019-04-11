@@ -18,14 +18,14 @@ export class Record {
     /** @member {string} - unique ID. */
     id;
 
-    /** @member {Store} - source store for this record. */
+    /** @member {BaseStore} - source store for this record. */
     store;
 
     /** @member {string} - id of parent of this record, or null if there is no parent. */
     parentId;
 
-    /** @private {String[]} - unique path.  For agGrid implementation. */
-    xHTreePath;
+    /** @private {String[]} - unique path.  For ag-Grid implementation. */
+    xhTreePath;
 
     /**
      * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
@@ -51,6 +51,10 @@ export class Record {
             this.store == rec.store &&
             this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
         );
+    }
+
+    get parent() {
+        return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 }
 

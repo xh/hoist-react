@@ -31,11 +31,33 @@ export class BaseStore {
         return this.fields.find(it => it.name === name);
     }
     
-    /** Current records. These represent the post-filtered records. */
+    /**
+     * Current records. These represent the post-filtered records.
+     * @return {Record[]}
+     */
     get records() {}
 
-    /** All records.  These are the pre-filtered records. */
+    /**
+     * All records.  These are the pre-filtered records.
+     * @return {Record[]}
+     */
     get allRecords() {}
+
+
+    /**
+     * Current records. These represent the post-filtered records.
+     * Returned in a tree structure.
+     * @return {RecordNode[]}
+     */
+    get recordsAsTree() {}
+
+    /**
+     * Current records. These are the pre-filtered records.
+     * Returned in a tree structure.
+     * @return {RecordNode[]}
+     */
+    get allRecordsAsTree() {}
+
 
     /** Filter.  Filter function to be applied. */
     get filter() {}
@@ -84,3 +106,10 @@ export class BaseStore {
         return Field;
     }
 }
+
+/**
+ * @typedef {Object} RecordNode - Node representing Store record in a tree representation.
+ * @property {Record} record
+ * @property {RecordNode[]} children
+ */
+

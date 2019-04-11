@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {isString, isNil} from 'lodash';
+import {isString, isNil, partition} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
 import {Record} from '../Record';
 
@@ -20,7 +20,9 @@ export class RecordSet {
 
     store;            // source store
     records;          // map of all records, by id
-    _list;            // Lazy array of store records
+
+    _list;            // Lazy array of records
+    _tree;            // Lazy array of root RecordNodes
 
     /**
      * @param {Store} store
@@ -36,11 +38,20 @@ export class RecordSet {
         return this.records.length;
     }
 
+    /** Return all records as a flat list */
     get list() {
         if (!this._list) {
             this._list = Array.from(this.records.values());
         }
         return this._list;
+    }
+
+    /** Return all records in a tree representation. */
+    get tree() {
+        if (!this._tree) {
+            this._tree = this.toTree();
+        }
+        return this._tree;
     }
 
     /**
@@ -59,7 +70,7 @@ export class RecordSet {
         const markPass = (rec) => {
             if (passes.has(rec.id)) return;
             passes.set(rec.id, rec);
-            const parent = this.getParent(rec);
+            const {parent} = rec;
             if (parent) markPass(parent);
         };
 
@@ -104,7 +115,7 @@ export class RecordSet {
     removeRecord(id) {
         const filter = (rec) => {
             if (rec.id == id) return false;
-            const parent = this.getParent(rec);
+            const {parent} = rec;
             if (parent && !filter(parent)) return false;
             return true;
         };
@@ -131,7 +142,6 @@ export class RecordSet {
 
         return new RecordSet(this.store, existingRecords);
     }
-
 
     //-----------------------------------
     // Implementatation
@@ -164,11 +174,30 @@ export class RecordSet {
             raw.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
     }
-    
-    //------------------
-    // Implementation
-    // ------------------
-    getParent(rec) {
-        return rec.parentId != null ? this.records[rec.parentId] : null;
+
+    toTree() {
+        const childrenMap = new Map();
+
+        // Pass 1, create nodes.
+        const nodes = this.list.map(record => {return {record, children: []}}),
+            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
+
+        // Pass 2, collect children by parent
+        nonRoots.forEach(node => {
+            let {parentId} = node.record,
+                children = childrenMap.get(parentId);
+            if (!children) {
+                children = [];
+                childrenMap.set(parentId, children);
+            }
+            children.push(node);
+        });
+
+        // Pass 3, assign children
+        nodes.forEach(node => {
+            node.children = childrenMap.get(node.record.id) || [];
+        });
+
+        return roots;
     }
 }

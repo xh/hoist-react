@@ -6,8 +6,6 @@
  */
 
 import {observable, action} from '@xh/hoist/mobx';
-import {partition} from 'lodash';
-
 import {RecordSet} from './impl/RecordSet';
 import {BaseStore} from './BaseStore';
 
@@ -118,6 +116,8 @@ export class LocalStore extends BaseStore {
     //-----------------------------
     get records()           {return this._filtered.list}
     get allRecords()        {return this._all.list}
+    get recordsAsTree()     {return this._filtered.tree}
+    get allRecordsAsTree()  {return this._all.tree}
 
     get filter()            {return this._filter}
     setFilter(filterFn) {
@@ -137,41 +137,7 @@ export class LocalStore extends BaseStore {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.records.get(id);
     }
-
-
-    /**
-     * Get a flat set of records representing a store in a tree representations
-     *
-     * @param {Record[]} - records
-     *
-     * @returns {[]} -- array of records of form {record, children};
-     */
-    static getRecordsAsTree(records) {
-        const childrenMap = new Map();
-
-        // Pass 1, create nodes.
-        const nodes = records.map(record => {return {record, children: []}}),
-            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
-
-        // Pass 2, collect children by parent
-        nonRoots.forEach(node => {
-            let {parentId} = node.record,
-                children = childrenMap.get(parentId);
-            if (!children) {
-                children = [];
-                childrenMap.set(parentId, children);
-            }
-            children.push(node);
-        });
-
-        // Pass 3, assign children
-        nodes.forEach(node => {
-            node.children = childrenMap.get(node.record.id) || [];
-        });
-
-        return roots;
-    }
-
+    
     //------------------------
     // Private Implementation
     //------------------------

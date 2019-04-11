@@ -6,7 +6,6 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
-import {LocalStore} from '@xh/hoist/data/LocalStore';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -43,7 +42,7 @@ export class GridExportService {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const columns = this.getExportableColumns(gridModel, includeHiddenCols),
-            recordNodes = LocalStore.getRecordsAsTree(gridModel.store.records),
+            recordNodes = gridModel.store.recordsAsTree,
             meta = this.getColumnMetadata(columns),
             rows = [];
 
