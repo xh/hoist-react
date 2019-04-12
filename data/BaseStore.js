@@ -16,6 +16,8 @@ import {Field} from './Field';
  */
 export class BaseStore {
 
+    shapeChanged = false;
+
     /**
      * Fields contained in each record.
      * @member {HoistField[]}

@@ -348,7 +348,12 @@ export class Grid extends Component {
                 if (api) {
                     runInAction(() => {
                         // Load updated data into the grid.
-                        api.setRowData(records);
+
+                        if (model.shapeChanged) {
+                            api.clientSideRowModel.setRowData(records);
+                        } else {
+                            api.setRowData(records);
+                        }
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();

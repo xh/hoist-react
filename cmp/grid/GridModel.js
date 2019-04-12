@@ -113,6 +113,8 @@ export class GridModel {
         'colChooser'
     ];
 
+    shapeChanged = false;
+
     defaultContextMenu = () => {
         if (XH.isMobile) return null;
         return new StoreContextMenu({
