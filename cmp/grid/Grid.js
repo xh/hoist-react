@@ -184,7 +184,6 @@ export class Grid extends Component {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
@@ -215,6 +214,7 @@ export class Grid extends Component {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
+            defaultGroupSortComparator: model.groupSortFn,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             autoGroupColumnDef: {
@@ -325,16 +325,6 @@ export class Grid extends Component {
         items = dropRightWhile(items, it => it === 'separator');
         items = dropWhile(items, it => it === 'separator');
         return items;
-    }
-
-    sortByGroup(nodeA, nodeB) {
-        if (nodeA.key < nodeB.key) {
-            return -1;
-        } else if (nodeA.key > nodeB.key) {
-            return 1;
-        } else {
-            return 0;
-        }
     }
 
     //------------------------

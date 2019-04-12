@@ -55,23 +55,25 @@ export class GridModel {
     // Immutable public properties
     //------------------------
     /** @member {BaseStore} */
-    store = null;
+    store;
     /** @member {StoreSelectionModel} */
-    selModel = null;
+    selModel;
     /** @member {boolean} */
-    treeMode = false;
+    treeMode;
     /** @member {GridStateModel} */
-    stateModel = null;
+    stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel = null;
+    colChooserModel;
     /** @member {function} */
-    rowClassFn = null;
+    rowClassFn;
     /** @member {function} */
-    contextMenuFn = null;
+    contextMenuFn;
+    /** @member {function} */
+    groupSortFn;
     /** @member {boolean} */
-    enableExport = false;
+    enableExport;
     /** @member {object} */
-    exportOptions = null;
+    exportOptions;
 
     //------------------------
     // Observable API
@@ -113,14 +115,6 @@ export class GridModel {
         'colChooser'
     ];
 
-    defaultContextMenu = () => {
-        if (XH.isMobile) return null;
-        return new StoreContextMenu({
-            items: GridModel.defaultContextMenuTokens,
-            gridModel: this
-        });
-    };
-
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
@@ -146,7 +140,9 @@ export class GridModel {
      *      install default context menu items.
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
-     *      Should return a string or array of strings. Receives record data as param.
+     *      Called with record data, returns a string or array of strings.
+     * @param {function} [c.groupSortFn] - closure to sort full-row groups. Called with two nodes to
+     *      be compared, returns a number as per a standard JS comparator.
      * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
      *      StoreContextMenu when the grid is right-clicked (desktop only).
      * @param {*} [c...rest] - additional data to attach to this model instance.
@@ -171,13 +167,15 @@ export class GridModel {
         enableExport = false,
         exportOptions = {},
         rowClassFn = null,
-        contextMenuFn = () => this.defaultContextMenu(),
+        groupSortFn,
+        contextMenuFn,
         ...rest
     }) {
         this.treeMode = treeMode;
         this.emptyText = emptyText;
-        this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+        this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
+        this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
@@ -640,6 +638,20 @@ export class GridModel {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
         return this.markManaged(new Model(this));
     }
+
+    defaultContextMenuFn = (agParams, gridModel) => {
+        if (XH.isMobile) return null;
+        return new StoreContextMenu({
+            items: GridModel.defaultContextMenuTokens,
+            gridModel
+        });
+    }
+
+    defaultGroupSortFn = (nodeA, nodeB) => {
+        const a = nodeA.key, b = nodeB.key;
+        return a < b ? -1 : (a > b ? 1 : 0);
+    }
+
 }
 
 /**
