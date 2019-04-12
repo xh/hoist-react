@@ -40,6 +40,8 @@ export class RadioInput extends HoistInput {
         options: PT.arrayOf(PT.oneOfType([PT.object, PT.string]))
     };
 
+    baseClassName = 'xh-radio-input';
+
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
@@ -65,7 +67,7 @@ export class RadioInput extends HoistInput {
                 disabled: opt.disabled,
                 label: opt.label,
                 value: opt.value,
-                className: 'xh-radio-input'
+                className: 'xh-radio-input-option'
             });
         });
 
