@@ -10,29 +10,34 @@ import {RecordSet} from './impl/RecordSet';
 import {BaseStore} from './BaseStore';
 
 /**
- * Basic implementation of Store for local in-memory data.
+ * Primary BaseStore implementation for local, in-memory data.
  */
 export class LocalStore extends BaseStore {
 
+    /** @member {function} */
     processRawData;
+    /** @member {(function|string)} */
     idSpec;
 
+    /** @member {Date} */
     @observable.ref _dataLastUpdated;
+    /** @member {RecordSet} */
     @observable.ref _all;
+    /** @member {RecordSet} */
     @observable.ref _filtered;
 
     _filter = null;
 
     /**
      * @param {Object} c - LocalStore configuration.
-     * @param {function} [c.processRawData] - Function to run on each individual data object
+     * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a record from that raw object.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a property (default is 'id') or a function to
      *      create an id from a record. If there is no natural id to select/generate, you can use
      *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
      *      components bound to this store will not be able to maintain record state across reloads.
-     * @param {function} [c.filter] - Filter function to be run.
+     * @param {function} [c.filter] - filter function to be run.
      * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
     constructor(
@@ -51,15 +56,14 @@ export class LocalStore extends BaseStore {
     }
 
     /**
-     * Replace existing data in store with new data set.
+     * Load new data into this store, replacing any/all pre-existing rows.
      *
-     * @param {Object[]} rawData - raw records to be loaded into the store.
-     * All existing data will be replaced.
+     * If raw data objects have a `children` property it will be expected to be an array
+     * and its items will be recursively processed into child records.
      *
-     * Note that this object will seek to preserve object references for records that
-     * have not been changed.  This is designed to maximize the ability of downstream
-     * components (e.g. grids) to recognize records that have not been changed and do
-     * not need to be updated.
+     * Note {@see RecordSet.loadData} regarding the re-use of existing Records for efficiency.
+     *
+     * @param {Object[]} rawData
      */
     @action
     loadData(rawData) {
@@ -69,33 +73,34 @@ export class LocalStore extends BaseStore {
     }
 
     /**
-     * Add/edit data in store.
-     *
-     * @param {Object[]} rawData - raw records to be added/edited the store.
+     * Add or update data in store. Existing records not matched by ID to rows in the update
+     * dataset will be left in place.
+     * @param {Object[]} rawData
      */
     @action
     updateData(rawData) {
         this._all = this._all.updateData(rawData);
         this.rebuildFiltered();
+        this._dataLastUpdated = new Date();
     }
 
     /**
-     * Remove record from the store.
-     *
-     * @param {string} id - id of the the record to be removed.
+     * Remove a record (and all its children, if any) from the store.
+     * @param {(string|number)} id - ID of the the record to be removed.
      */
     @action
     removeRecord(id) {
         this._all = this._all.removeRecord(id);
         this.rebuildFiltered();
+        this._dataLastUpdated = new Date();
     }
 
-
     /**
-     * Call when data contained in the records contained by this store have been exogenously updated.
+     * Call if/when any records have had their data modified directly, outside of this store's load
+     * and update APIs.
      *
-     * This method is used to signal that data properties within records have been changed.  If the structure of the
-     * data has changed (e.g. deletion, additions, re-parenting of children) loadData() should be called instead.
+     * If the structure of the data has changed (e.g. deletion, additions, re-parenting of children)
+     * loadData() should be called instead.
      */
     @action
     noteDataUpdated() {
@@ -104,8 +109,7 @@ export class LocalStore extends BaseStore {
     }
     
     /**
-     * Last time the underlying data in store was changed either via loadData(), or as
-     * marked by noteDataUpdated().
+     * The last time this store's data was changed via loadData() or as marked by noteDataUpdated().
      */
     get dataLastUpdated() {
         return this._dataLastUpdated;
