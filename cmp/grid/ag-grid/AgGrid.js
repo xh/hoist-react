@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
-import {box} from '@xh/hoist/cmp/layout';
 import {omit} from 'lodash';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
+import {frame} from '../../layout';
 
 /**
  * Wrapper for AgGridReact
@@ -42,15 +42,10 @@ export class AgGrid extends Component {
         const layoutProps = this.getLayoutProps(),
             agGridProps = omit(this.getNonLayoutProps(), ['model', 'key']);
 
-        // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
-            layoutProps.flex = 'auto';
-        }
-
         const {compact, rowBorders, stripeRows, showCellFocus, showHover} = this.model,
             {darkTheme, isMobile} = XH;
 
-        return box({
+        return frame({
             className: this.getClassName(
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
@@ -63,7 +58,7 @@ export class AgGrid extends Component {
             item: agGridReact({
                 // ag-grid props which we provide defaults for, but can be overridden
                 getRowHeight: this.getRowHeight,
-                navigateToNextCell: !isMobile ? this.onNavigateToNextCell : undefined,
+                navigateToNextCell: this.navigateToNextCell,
 
                 ...agGridProps,
 
@@ -73,18 +68,53 @@ export class AgGrid extends Component {
         });
     }
 
-    onNavigateToNextCell = (agParams) => {
-        return this.model.navigateSelection(agParams);
-    }
+    onGridReady = (agParams) => {
+        this.model.init(agParams);
+        if (this.props.init) {
+            this.props.init(agParams);
+        }
+    };
 
     getRowHeight = () => {
         return this.model.compact ? AgGrid.COMPACT_ROW_HEIGHT : AgGrid.ROW_HEIGHT;
     };
 
-    onGridReady = (agParams) => {
-        this.model.onGridReady(agParams);
-        if (this.props.onGridReady) {
-            this.props.onGridReady(agParams);
+    navigateToNextCell = (agParams) => {
+        if (XH.isMobile) return;
+
+        const {nextCellDef, previousCellDef, event, api} = agParams,
+            shiftKey = event.shiftKey,
+            prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
+            nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
+            prevNode = prevIndex != null ? api.getDisplayedRowAtIndex(prevIndex) : null,
+            nextNode = nextIndex != null ? api.getDisplayedRowAtIndex(nextIndex) : null,
+            prevNodeIsParent = prevNode && prevNode.allChildrenCount,
+            KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
+
+        switch (agParams.key) {
+            case KEY_DOWN:
+            case KEY_UP:
+                if (nextNode) {
+                    if (!shiftKey || !prevNode.isSelected()) {
+                        // 0) Simple move of selection
+                        nextNode.setSelected(true, true);
+                    } else {
+                        // 1) Extend or shrink multi-selection.
+                        if (!nextNode.isSelected()) {
+                            nextNode.setSelected(true, false);
+                        } else {
+                            prevNode.setSelected(false, false);
+                        }
+                    }
+                }
+                return nextCellDef;
+            case KEY_LEFT:
+                if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
+                return nextCellDef;
+            case KEY_RIGHT:
+                if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
+                return nextCellDef;
+            default:
         }
     };
 }

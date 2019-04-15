@@ -21,7 +21,7 @@ import {
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
-import {box, fragment} from '@xh/hoist/cmp/layout';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {ColumnHeader, agGrid, AgGrid} from './ag-grid';
@@ -31,6 +31,7 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
+import {frame} from '../layout';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -133,34 +134,29 @@ export class Grid extends Component {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
+
+        this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
     }
 
     render() {
-        const {model, props} = this,
+        const {model, props, agOptions} = this,
             {treeMode, agGridModel} = model,
-            {agOptions, onKeyDown} = props,
-            {isMobile} = XH,
-            layoutProps = this.getLayoutProps();
-
-        // Default flex = 'auto' if no dimensions / flex specified.
-        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
-            layoutProps.flex = 'auto';
-        }
+            {onKeyDown} = props;
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
-            box({
-                ...layoutProps,
-                item: agGrid({
-                    model: agGridModel,
-                    ...merge(this.createDefaultAgOptions(), agOptions)
-                }),
+            frame({
                 className: this.getClassName(
                     treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'
                 ),
-                onKeyDown: !isMobile ? onKeyDown : null
+                item: agGrid({
+                    model: agGridModel,
+                    ...this.getLayoutProps(),
+                    ...agOptions
+                }),
+                onKeyDown
             }),
             this.renderColChooser()
         );

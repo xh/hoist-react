@@ -227,9 +227,9 @@ export class GridModel {
         warnIf(!agGridModel.isReady, 'Called selectFirst before the grid was ready!');
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        const record = agGridModel.getFirstRowData();
+        const id = agGridModel.getFirstSelectableRowNodeId();
 
-        if (record) selModel.select(record);
+        if (id) selModel.select(id);
     }
 
     /** Does the grid have any records to show? */
