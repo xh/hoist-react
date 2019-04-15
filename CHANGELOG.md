@@ -17,6 +17,14 @@
 * When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
   the declared `Field.type`. The unused `Field.nullable` has been removed.
 
+## v21.0.2 - 2019-04-05
+
+### 📚 Libraries
+
+* Rollback ag-Grid to v20.0.0 after running into new performance issues with large datasets and
+  `deltaRowDataMode`. Updates to tree filtering logic, also related to grid performance issues with
+  filtered tree results returning much larger record counts.
+
 ## v21.0.0 - 2019-04-04
 
 ### 🎁 New Features
