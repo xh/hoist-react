@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
@@ -18,6 +18,7 @@ export class FeedbackPanel extends Component {
         stateModel: 'xhFeedbackGrid',
         enableColChooser: true,
         enableExport: true,
+        emptyText: 'No feedback reported...',
         store: new RestStore({
             url: 'rest/feedbackAdmin',
             fields: [
@@ -54,7 +55,7 @@ export class FeedbackPanel extends Component {
         menuActions: [deleteAction],
         formActions: [deleteAction],
         unit: 'report',
-        sortBy: {colId: 'dateCreated', sort: 'desc'},
+        sortBy: 'dateCreated|desc',
         filterFields: ['username', 'msg'],
         columns: [
             {field: 'dateCreated', ...compactDateCol, width: 140},

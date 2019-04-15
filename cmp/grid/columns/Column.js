@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -124,11 +124,13 @@ export class Column {
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
+        this.hidden = withDefault(hidden, false);
+        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
+
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerTooltip = headerTooltip;
         this.headerClass = castArray(headerClass);
         this.cellClass = castArray(cellClass);
-        this.hidden = withDefault(hidden, false);
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
@@ -220,7 +222,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltip = isFunction(this.tooltip) ?
+            ret.tooltipValueGetter = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
@@ -11,7 +11,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {isFunction, isNil, isString, orderBy, uniq} from 'lodash';
+import {isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -42,17 +42,17 @@ export class GridExportService {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const columns = this.getExportableColumns(gridModel, includeHiddenCols),
-            records = gridModel.store.rootRecords,
+            recordNodes = gridModel.store.recordsAsTree,
             meta = this.getColumnMetadata(columns),
             rows = [];
 
-        if (records.length === 0) {
+        if (recordNodes.length === 0) {
             XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
             return;
         }
 
         rows.push(this.getHeaderRow(columns, type));
-        rows.push(...this.getRecordRowsRecursive(gridModel, records, columns, 0));
+        rows.push(...this.getRecordRowsRecursive(gridModel, recordNodes, columns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
@@ -76,9 +76,11 @@ export class GridExportService {
             url: 'xh/export',
             method: 'POST',
             body: formData,
-            // Note: We must explicitly *not* set Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
+            // Note: We must explicitly unset Content-Type headers to allow the browser to set it's own multipart/form-data boundary.
             // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
-            headers: new Headers()
+            headers: {
+                'Content-Type': null
+            }
         });
 
         const blob = response.status === 204 ? null : await response.blob(),
@@ -125,17 +127,21 @@ export class GridExportService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRowsRecursive(gridModel, records, columns, depth) {
+    getRecordRowsRecursive(gridModel, recordNodes, columns, depth) {
         const {sortBy, treeMode} = gridModel,
-            sortColIds = sortBy.map(it => it.colId),
-            sorts = sortBy.map(it => it.sort),
-            sortedRecords = orderBy(records, sortColIds, sorts),
-            ret = [];
+            ret = [],
+            nodes = [...recordNodes];
+        
+        [...sortBy].reverse().forEach(it => {
+            const compFn = it.comparator.bind(it),
+                direction = it.sort === 'desc' ? -1 : 1;
+            nodes.sort((a, b) => compFn(a.record[it.colId], b.record[it.colId]) * direction);
+        });
 
-        sortedRecords.forEach(record => {
-            ret.push(this.getRecordRow(record, columns, depth));
-            if (treeMode && record.children.length) {
-                ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));
+        nodes.forEach(node => {
+            ret.push(this.getRecordRow(node.record, columns, depth));
+            if (treeMode && node.children.length) {
+                ret.push(...this.getRecordRowsRecursive(gridModel, node.children, columns, depth + 1));
             }
         });
 

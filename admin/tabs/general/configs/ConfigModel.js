@@ -2,11 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
-import {RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
+import {
+    RestGridModel,
+    RestStore,
+    addAction,
+    editAction,
+    cloneAction,
+    deleteAction
+} from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
@@ -69,6 +76,19 @@ export class ConfigModel {
         actionWarning: {
             del: 'Are you sure you want to delete? Deleting configs can break running apps!'
         },
+        toolbarActions: [
+            addAction,
+            editAction,
+            cloneAction,
+            deleteAction
+        ],
+        menuActions: [
+            addAction,
+            editAction,
+            cloneAction,
+            deleteAction
+        ],
+        prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',
         filterFields: ['name', 'value', 'groupName', 'note'],
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -12,7 +12,6 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {throwIf} from '@xh/hoist/utils/js';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {wait} from '@xh/hoist/promise';
 
 import './HoistInput.scss';
 
@@ -90,7 +89,8 @@ export class HoistInput extends Component {
     constructor(props) {
         super(props);
 
-        throwIf(props.field, "HoistInput no longer supports a field property.  Use 'bind' instead.");
+        throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
+        throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
@@ -218,14 +218,11 @@ export class HoistInput extends Component {
         this.hasFocus = false;
     }
 
-    onBlur = () => {
-        // Focus very frequently will be jumping internally from element to element *within* a control.
-        // This delay prevents extraneous 'flapping' of focus state at this level.
-        wait(200).then(() => {
-            if (!this.containsElement(document.activeElement)) {
-                this.noteBlurred();
-            }
-        });
+    onBlur = (e) => {
+        // Ignore focus jumping internally from *within* the control.
+        if (!this.containsElement(e.relatedTarget)) {
+            this.noteBlurred();
+        }
     }
 
     /**

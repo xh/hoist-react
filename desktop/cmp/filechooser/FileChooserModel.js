@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {LocalStore} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
@@ -24,10 +23,7 @@ export class FileChooserModel {
     lastRejectedCount;
 
     gridModel = new GridModel({
-        store: new LocalStore({
-            fields: ['name', 'extension', 'size'],
-            idSpec: 'name'
-        }),
+        store: {idSpec: 'name'},
         columns: [
             {
                 field: 'extension',

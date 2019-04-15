@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -30,8 +30,8 @@ export class TextArea extends HoistInput {
         /** Height of the control in pixels. */
         height: PT.number,
 
-        /** Function which receives keypress event */
-        onKeyPress: PT.func,
+        /** Function which receives keydown event */
+        onKeyDown: PT.func,
 
         /** Text to display when control is empty */
         placeholder: PT.string,
@@ -63,7 +63,7 @@ export class TextArea extends HoistInput {
                 tabIndex: props.tabIndex,
 
                 onChange: this.onChange,
-                onKeyPress: this.onKeyPress,
+                onKeyDown: this.onKeyDown,
                 onBlur: this.onBlur,
                 onFocus: this.onFocus
             }),
@@ -81,9 +81,9 @@ export class TextArea extends HoistInput {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyPress = (ev) => {
-        const {onKeyPress} = this.props;
-        if (onKeyPress) onKeyPress(ev);
+    onKeyDown = (ev) => {
+        const {onKeyDown} = this.props;
+        if (onKeyDown) onKeyDown(ev);
     };
 
     onFocus = (ev) => {

@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
-import {find, uniqBy} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
+import {find} from 'lodash';
+import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
 
 /**
@@ -64,14 +64,15 @@ export class TabContainerModel {
     }) {
 
         tabs = tabs.filter(p => !p.omit);
-        throwIf(tabs.length == 0, 'TabContainerModel needs at least one child.');
-        throwIf(tabs.length != uniqBy(tabs, 'id').length, 'One or more tabs in TabContainerModel has a non-unique id.');
+        ensureNotEmpty(tabs, 'TabContainerModel needs at least one child.');
+        ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
 
         this.switcherPosition = switcherPosition;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
-        this.activeTabId = find(tabs, {id: defaultTabId}) ? defaultTabId : tabs[0].id;
+        this.route = route;
+        this.activeTabId = this.initialActiveTabId(tabs, defaultTabId);
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
 
         if (route) {
@@ -80,15 +81,12 @@ export class TabContainerModel {
                 return;
             }
 
-            this.route = route;
             this.addReaction({
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
 
-            // Need to do call below separately instead of w/fireImmediately to avoid react warning (!?)
-            // (Occurs when routing immediately on load to secondary tab in nested tab set)
-            this.syncWithRouter();
+            this.forwardRouterToTab(this.activeTabId);
         }
     }
 
@@ -131,6 +129,7 @@ export class TabContainerModel {
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
 
         this.activeTabId = id;
+        this.forwardRouterToTab(id);
     }
 
     syncWithRouter() {
@@ -138,14 +137,38 @@ export class TabContainerModel {
             {router} = XH;
 
         if (router.isActive(route)) {
-            const activateTab = tabs.find(tab => {
-                return router.isActive(route + '.' + tab.id) && !tab.isActive && !tab.disabled;
-            });
-
-            if (activateTab) {
-                this.setActiveTabId(activateTab.id);
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id));
+            if (tab && !tab.isActive && !tab.disabled) {
+                this.setActiveTabId(tab.id);
             }
         }
     }
 
+    forwardRouterToTab(id) {
+        const {route} = this;
+        if (route && id) {
+            XH.router.forward(route, route + '.' + id);
+        }
+    }
+    
+    initialActiveTabId(tabConfigs, defaultTabId) {
+        let ret;
+        
+        // try route
+        const {route} = this, {router} = XH;
+        if (route && router.isActive(route)) {
+            ret = tabConfigs.find(t => router.isActive(route + '.' + t.id));
+            if (ret && !ret.disabled) return ret.id;
+        }
+
+        // or default
+        ret = tabConfigs.find(t => t.id == defaultTabId);
+        if (ret && !ret.disabled) return ret.id;
+
+        // or first enabled tab
+        ret = tabConfigs.find(t => !t.disabled);
+        if (ret) return ret.id;
+
+        return null;
+    }
 }

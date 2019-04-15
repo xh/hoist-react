@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import debouncePromise from 'debounce-promise';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -107,6 +108,11 @@ export class Select extends HoistInput {
         queryFn: PT.func,
 
         /**
+         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
+         */
+        queryBuffer: PT.number,
+
+        /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props
          * in the react-select API are guaranteed to be supported by this Hoist component,
          * and providing them directly can interfere with the implementation of this class.
@@ -179,7 +185,7 @@ export class Select extends HoistInput {
             };
 
         if (this.asyncMode) {
-            rsProps.loadOptions = this.doQueryAsync;
+            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
             rsProps.loadingMessage = this.loadingMessageFn;
         } else {
             rsProps.options = this.internalOptions;
@@ -200,7 +206,7 @@ export class Select extends HoistInput {
             item: factory(rsProps),
             className: this.getClassName(),
             onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keypress event
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -48,8 +48,8 @@ export class TextInput extends HoistInput {
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
-        /** Callback for normalized keypress event. */
-        onKeyPress: PT.func,
+        /** Callback for normalized keydown event. */
+        onKeyDown: PT.func,
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
@@ -101,7 +101,6 @@ export class TextInput extends HoistInput {
                 type: props.type,
 
                 id: props.id,
-                className: this.getClassName(),
                 style: {
                     ...props.style,
                     ...layoutProps,
@@ -109,9 +108,10 @@ export class TextInput extends HoistInput {
                 },
 
                 onChange: this.onChange,
-                onKeyPress: this.onKeyPress
+                onKeyDown: this.onKeyDown
             }),
 
+            className: this.getClassName(),
             style: {
                 width: withDefault(width, 200),
                 flex: withDefault(flex, null)
@@ -137,9 +137,9 @@ export class TextInput extends HoistInput {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
-        if (this.props.onKeyPress) this.props.onKeyPress(ev);
+        if (this.props.onKeyDown) this.props.onKeyDown(ev);
     }
 
     onFocus = (ev) => {

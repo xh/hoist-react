@@ -2,33 +2,37 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
-import {StoreSelectionModel} from '@xh/hoist/data';
+import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
+import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {action, observable, bindable} from '@xh/hoist/mobx';
+import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
+    cloneDeep,
+    compact,
     defaults,
     find,
     findLast,
+    isArray,
     isEmpty,
+    isNil,
     isPlainObject,
     isString,
     last,
-    sortBy,
+    map,
     pull,
+    sortBy,
     uniq,
-    isNil,
-    cloneDeep
+    difference
 } from 'lodash';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
-import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
-import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -80,8 +84,18 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
+
     /** @member {boolean} */
-    @observable compact = false;
+    @bindable compact;
+    /** @member {boolean} */
+    @bindable rowBorders;
+    /** @member {boolean} */
+    @bindable stripeRows;
+    /** @member {boolean} */
+    @bindable showHover;
+    /** @member {boolean} */
+    @bindable showCellFocus;
+
     /** @member {GridApi} */
     @observable.ref agApi = null;
     /** @member {ColumnApi} */
@@ -109,8 +123,9 @@ export class GridModel {
 
     /**
      * @param {Object} c - GridModel configuration.
-     * @param {BaseStore} c.store - store containing the data for the grid.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {(BaseStore|Object)} [c.store] - a Store instance, or a config with which to create a
+     *      default LocalStore. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -120,7 +135,11 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.compact] - true to render the grid in compact mode.
+     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {boolean} [c.rowBorders] - true to render row borders.
+     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -128,9 +147,9 @@ export class GridModel {
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Should return a string or array of strings. Receives record data as param.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
-     * @param {*} [c...rest] - additional data to store
-     *      @see StoreContextMenu
+     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     *      StoreContextMenu when the grid is right-clicked (desktop only).
+     * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
         store,
@@ -141,7 +160,13 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+
         compact = false,
+        showHover = false,
+        rowBorders = false,
+        stripeRows = true,
+        showCellFocus = false,
+
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
@@ -149,7 +174,6 @@ export class GridModel {
         contextMenuFn = () => this.defaultContextMenu(),
         ...rest
     }) {
-        this.store = store;
         this.treeMode = treeMode;
         this.emptyText = emptyText;
         this.contextMenuFn = contextMenuFn;
@@ -161,10 +185,16 @@ export class GridModel {
         Object.assign(this, rest);
 
         this.setColumns(columns);
+        this.store = this.parseStore(store);
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
-        this.setCompact(compact);
+
+        this.compact = compact;
+        this.showHover = showHover;
+        this.rowBorders = rowBorders;
+        this.stripeRows = stripeRows;
+        this.showCellFocus = showCellFocus;
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -202,17 +232,26 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agApi, selModel} = this;
-        if (agApi) {
-            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
-                first = agApi.getDisplayedRowAtIndex(idx);
 
-            if (first) selModel.select(first);
+        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
+        if (agApi) {
+            let record = null;
+            agApi.forEachNodeAfterFilterAndSort(node => {
+                if (!record && node.data) record = node.data;
+            });
+
+            if (record) selModel.select(record);
         }
     }
 
     /** Does the grid have any records to show? */
     get empty() {
         return this.store.empty;
+    }
+
+    /** Are any records currently selected? */
+    get hasSelection() {
+        return !this.selModel.isEmpty;
     }
 
     /**
@@ -310,11 +349,6 @@ export class GridModel {
         this.sortBy = sorters;
     }
 
-    @action
-    setCompact(compact) {
-        this.compact = compact;
-    }
-
     /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
         throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
@@ -329,6 +363,11 @@ export class GridModel {
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
+        throwIf(
+            !isArray(colConfigs),
+            'GridModel requires an array of column configurations.'
+        );
+
         throwIf(
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
@@ -372,8 +411,8 @@ export class GridModel {
      * This means that if a column has been redefined to a new column group, that entire group may
      * be moved to a new index.
      *
-     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf columns are
-     *      represented in these changes then the sort order will be applied as well.
+     * @param {ColumnState[]} colStateChanges - changes to apply to the columns. If all leaf
+     *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
     applyColumnStateChanges(colStateChanges) {
@@ -468,8 +507,7 @@ export class GridModel {
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
-
-
+    
     //-----------------------
     // Implementation
     //-----------------------
@@ -504,22 +542,13 @@ export class GridModel {
 
         const {groupIds, colIds} = this.collectIds(cols);
 
-        const colsHaveDupes = colIds.length != uniq(colIds).length;
-        throwIf(colsHaveDupes, 'All colIds in column collection must be unique.');
-
-        const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
-        throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
+        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
+        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
-        );
-
-        warnIf(
-            !cols.some(c => c.flex),
-            `No columns have flex set (flex=true). Consider making the last column a flex column, 
-            or adding an 'emptyFlexCol' at the end of your columns array.`
         );
     }
 
@@ -544,6 +573,34 @@ export class GridModel {
         }
     }
 
+    parseStore(store) {
+        store = withDefault(store, {});
+
+        if (store instanceof BaseStore) {
+            return store;
+        }
+
+        if (isPlainObject(store)) {
+
+            // Ensure store config has a complete set of fields for all configured columns.
+            const fields = store.fields || [],
+                storeFieldNames = map(fields, it => isString(it) ? it : it.name),
+                colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                missingFieldNames = difference(colFieldNames, storeFieldNames);
+
+            if (missingFieldNames.length) {
+                store = {
+                    ...store,
+                    fields: [...fields, ...missingFieldNames]
+                };
+            }
+
+            return this.markManaged(new LocalStore(store));
+        }
+
+        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+    }
+
     parseSelModel(selModel) {
         selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
 
@@ -554,6 +611,7 @@ export class GridModel {
         if (isPlainObject(selModel)) {
             return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
         }
+
         // Assume its just the mode...
         let mode = 'single';
         if (isString(selModel)) {
@@ -589,4 +647,11 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ */
+
+/**
+ * @callback GridStoreContextMenuFn - context menu factory function, provided to GridModel.
+ * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
+ * @param {GridModel} gridModel - controlling GridModel instance
+ * @returns {StoreContextMenu} - context menu to display, or null
  */

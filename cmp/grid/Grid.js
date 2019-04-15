@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
@@ -17,6 +17,9 @@ import {GridModel} from './GridModel';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+
+import './Grid.scss';
+
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -53,8 +56,14 @@ export class Grid extends Component {
         model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
 
         /**
-         * Callback to call when a key down event is detected on this component.
-         * Function will receive an event with the standard 'target' element.
+         * Callback when the grid has initialized. The component will call this with the ag-Grid
+         * event after running its internal handler to associate the ag-Grid APIs with its model.
+         */
+        onGridReady: PT.func,
+
+        /**
+         * Callback when a key down event is detected on this component. Function will receive an
+         * event with the standard 'target' element.
          *
          * Note that the ag-Grid API provides limited ability to customize keyboard handling.
          * This handler is designed to allow application to workaround this.
@@ -62,37 +71,32 @@ export class Grid extends Component {
         onKeyDown: PT.func,
 
         /**
-         * Callback to call when a row is clicked. Function will receive an event
-         * with a data node containing the row's data.
+         * Callback when a row is clicked. Function will receive an event with a data node
+         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
          */
         onRowClicked: PT.func,
 
         /**
-         * Callback to call when a row is double clicked. Function will receive an event
-         * with a data node containing the row's data.
+         * Callback when a row is double clicked. Function will receive an event with a data node
+         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
          */
         onRowDoubleClicked: PT.func,
 
         /**
-         * Callback to call when a cell is clicked. Function will receive an event
-         * with a data node, cell value, and column.
+         * Callback when a cell is clicked. Function will receive an event with a data node, cell
+         * value, and column.
          */
         onCellClicked: PT.func,
 
         /**
-         * Callback to call when a cell is double clicked. Function will receive an event
-         * with a data node, cell value, and column.
+         * Callback when a cell is double clicked. Function will receive an event with a data node,
+         * cell value, and column.
          */
-        onCellDoubleClicked: PT.func,
-
-        /**
-         * Show a colored row background on hover. Defaults to false.
-         */
-        showHover: PT.bool
+        onCellDoubleClicked: PT.func
     };
 
-    static ROW_HEIGHT = 28;
-    static COMPACT_ROW_HEIGHT = 24;
+    static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
+    static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
     static MULTIFIELD_ROW_HEIGHT = 38;
 
     // The minimum required row height specified by the columns (if any) */
@@ -124,8 +128,9 @@ export class Grid extends Component {
     }
 
     render() {
-        const {compact, treeMode} = this.model,
-            {agOptions, showHover, onKeyDown} = this.props,
+        const {model, props} = this,
+            {treeMode, compact, rowBorders, stripeRows, showHover, showCellFocus} = model,
+            {agOptions, onKeyDown} = props,
             {isMobile} = XH,
             layoutProps = this.getLayoutProps();
 
@@ -144,9 +149,12 @@ export class Grid extends Component {
                 className: this.getClassName(
                     'ag-grid-holder',
                     XH.darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                    compact ? 'xh-grid-compact' : 'xh-grid-standard',
-                    treeMode && this._isHierarchical ? 'xh-grid-hierarchical' : '',
-                    !isMobile && showHover ? 'xh-grid-show-hover' : ''
+                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat',
+                    compact ? 'xh-grid--compact' : 'xh-grid--standard',
+                    rowBorders ? 'xh-grid--row-borders' : 'xh-grid--no-row-borders',
+                    stripeRows ? 'xh-grid--stripe-rows' : 'xh-grid--no-stripe-rows',
+                    showCellFocus ? 'xh-grid--show-cell-focus' : 'xh-grid--no-cell-focus',
+                    !isMobile && showHover ? 'xh-grid--show-hover' : 'xh-grid--no-hover'
                 ),
                 onKeyDown: !isMobile ? onKeyDown : null
             }),
@@ -218,6 +226,7 @@ export class Grid extends Component {
         if (XH.isMobile) {
             ret = {
                 ...ret,
+                suppressContextMenu: true,
                 allowContextMenuWithControlKey: false,
                 scrollbarWidth: 0
             };
@@ -352,7 +361,7 @@ export class Grid extends Component {
 
                         // Set flag if data is hierarchical.
                         this._isHierarchical = model.store.allRecords.some(
-                            rec => !!rec.children.length
+                            rec => rec.parentId != null
                         );
 
                         // Increment version counter to trigger selectionReaction w/latest data.
@@ -490,6 +499,10 @@ export class Grid extends Component {
     onGridReady = (ev) => {
         this.model.setAgApi(ev.api);
         this.model.setAgColumnApi(ev.columnApi);
+
+        if (this.props.onGridReady) {
+            this.props.onGridReady(ev);
+        }
     };
 
     onNavigateToNextCell = (params) => {

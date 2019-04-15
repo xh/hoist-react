@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -49,7 +49,7 @@ export class RestoreDefaultsButton extends Component {
         const {warningTitle, warningMessage} = this.props;
         XH.confirm({
             title: withDefault(warningTitle, 'Are you sure you want to restore defaults?'),
-            message: withDefault(warningMessage, 'All customizations will be restored to their default settings'),
+            message: withDefault(warningMessage, 'All app customizations, including grid customizations, will be restored to their default settings and the app will be reloaded.'),
             icon: Icon.warning({size: 'lg'}),
             onConfirm: () => XH.restoreDefaultsAsync()
         });
