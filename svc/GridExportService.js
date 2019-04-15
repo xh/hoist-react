@@ -130,16 +130,15 @@ export class GridExportService {
     getRecordRowsRecursive(gridModel, recordNodes, columns, depth) {
         const {sortBy, treeMode} = gridModel,
             ret = [],
-            recordNodes = [...recordNodes];
-
-
+            nodes = [...recordNodes];
+        
         [...sortBy].reverse().forEach(it => {
             const compFn = it.comparator.bind(it),
                 direction = it.sort === 'desc' ? -1 : 1;
-            recordNodes.sort((a, b) => compFn(a.record[it.colId], b.record[it.colId]) * direction);
+            nodes.sort((a, b) => compFn(a.record[it.colId], b.record[it.colId]) * direction);
         });
 
-        recordNodes.forEach(node => {
+        nodes.forEach(node => {
             ret.push(this.getRecordRow(node.record, columns, depth));
             if (treeMode && node.children.length) {
                 ret.push(...this.getRecordRowsRecursive(gridModel, node.children, columns, depth + 1));
