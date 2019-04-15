@@ -347,9 +347,17 @@ export class Grid extends Component {
             run: ([api, records]) => {
                 if (api) {
                     runInAction(() => {
+
+                        // Workaround for AG-2879.
+                        // pre-emptively dump rows with internal ag API to avoid expensive removals
+                        if (this.pendingDeletionCount(records, api) > 50) {
+                            api.selectionController.reset();
+                            api.clientSideRowModel.setRowData([]);
+                        }
+
                         // Load updated data into the grid.
                         api.setRowData(records);
-
+                       
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
 
@@ -371,6 +379,7 @@ export class Grid extends Component {
             }
         };
     }
+
 
     selectionReaction() {
         const {model} = this;
@@ -487,6 +496,14 @@ export class Grid extends Component {
                 if (api) api.resetRowHeights();
             }
         };
+    }
+
+    // Get the number of records to be removed in upcoming update. For AG-2879 Workaround.
+    pendingDeletionCount(newRecords, api) {
+        const ids = new Set();
+        api.forEachNode((node, index) => ids.add(node.id));
+        newRecords.forEach(rec => ids.delete(rec.id));
+        return ids.size;
     }
 
     //------------------------
