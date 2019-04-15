@@ -351,7 +351,7 @@ export class Grid extends Component {
 
                         // Set flag if data is hierarchical.
                         this._isHierarchical = model.store.allRecords.some(
-                            rec => !!rec.children.length
+                            rec => rec.parentId != null
                         );
 
                         // Increment version counter to trigger selectionReaction w/latest data.

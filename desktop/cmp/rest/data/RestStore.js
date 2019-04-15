@@ -49,7 +49,7 @@ export class RestStore extends UrlStore {
             url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
-            this.deleteRecordInternal(rec);
+            this.removeRecord(rec.id);
         }).linkTo(
             this.loadModel
         );
@@ -77,17 +77,11 @@ export class RestStore extends UrlStore {
             data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
-            response = await XH.fetchService[fetchMethod]({url, body: {data}}),
-            newRec = this.createRecord(response.data);
+            response = await XH.fetchService[fetchMethod]({url, body: {data}});
 
-        if (isAdd) {
-            this.addRecordInternal(newRec);
-        } else {
-            this.updateRecordInternal(rec, newRec);
-        }
+        this.updateData([response.data]);
 
         await this.ensureLookupsLoadedAsync();
-        return newRec;
     }
 
     async ensureLookupsLoadedAsync() {
