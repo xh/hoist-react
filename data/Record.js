@@ -4,90 +4,77 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {XH} from '@xh/hoist/core';
-import {clone} from 'lodash';
+import {isEqual} from 'lodash';
 
 /**
- * Core data for Store.
+ * Wrapper object for each data element within a {@see BaseStore}.
  *
- * This object is intended to be created and managed internally by Store implementations.
+ * Records are intended to be created and managed internally by Store implementations and should
+ * most not typically be constructed directly within application code.
  */
 export class Record {
 
-    static RESERVED_FIELD_NAMES = ['raw', 'fields', 'children', 'parent']
+    static RESERVED_FIELD_NAMES = ['parentId', 'store', 'xhTreePath']
 
-    /** @member {string} - unique ID. */
+    /** @member {(string|number)} */
     id;
-    /** @member {Object} - unconverted source data. */
-    raw;
-    /** @member {Field[]} - fields for this record. */
-    fields;
-    /** @member {Record[]} - Children of this record. */
-    children;
-    /** @member {Record} - Parent of this record. */
-    parent;
+    /** @member {BaseStore} */
+    store;
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
+    xhTreePath;
+
+    /** @member {(string|number)} */
+    parentId;
+
+    /** @returns {Record} */
+    get parent() {
+        return this.parentId != null ? this.store.getById(this.parentId) : null;
+    }
 
     /**
-     * Will apply basic validation and conversion (e.g. 'date' will convert from UTC time to
-     * a JS Date object). An exception will be thrown if the validation or conversion fails.
+     * Construct a Record from a raw source object. Extract values from the source object for all
+     * Fields defined on the given Store and install them as top-level properties on the new Record.
+     *
+     * This process will apply basic conversions if required, based on the specified Field types.
+     * Properties of the raw object *not* included in the store's Fields config will be ignored.
+     *
+     * Also tracks a pointer to its parent record, if any, via that parent's ID. (Note this is
+     * deliberately not a direct object reference, to allow parent records to be recreated without
+     * requiring children to also be recreated.)
+     *
+     * @param {Object} c - Record configuration
+     * @param {Object} c.raw - raw data for record.
+     * @param {BaseStore} c.store - store containing this record.
+     * @param {Record} [c.parent] - parent record, if any.
      */
-    constructor({raw, parent, fields, children = []}) {
-        this.id = raw.id;
-        this.raw = raw;
-        this.parent = parent;
-        this.children = children;
-        this.fields = fields;
+    constructor({raw, store, parent}) {
+        const id = raw.id;
 
-        this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
+        this.id = id;
+        this.store = store;
+        this.parentId = parent ? parent.id : null;
+        this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
 
-        fields.forEach(field => {
-            const {type, name, defaultValue} = field;
-            let val = raw[name];
-            if (val === undefined || val === null) val = defaultValue;
-
-            if (val !== null) {
-                switch (type) {
-                    case 'auto':
-                    case 'string':
-                    case 'int':
-                    case 'number':
-                    case 'bool':
-                    case 'json':
-                    case 'day':
-                        break;
-                    case 'date':
-                        val = new Date(val);
-                        break;
-                    default:
-                        throw XH.exception(`Unknown field type '${type}'`);
-                }
-            }
-            this[name] = val;
+        store.fields.forEach(f => {
+            this[f.name] = f.parseVal(raw[f.name]);
         });
     }
-    
-    /**
-     * Return a filtered version of this record.
-     *
-     * If the record fails the filter, null will be returned.
-     * @return {Record}
-     */
-    applyFilter(filter) {
-        let {children} = this;
-        if (children) {
-            children = children
-                .map(child => child.applyFilter(filter))
-                .filter(it => it != null);
-        }
 
-        if (children && children.length || filter(this)) {
-            const ret = clone(this);
-            ret.children = children;
-            children.forEach(c => c.parent = ret);
-            return ret;
-        } else {
-            return null;
-        }
+    /**
+     * Determine if another record is entirely equivalent to the current record in terms of its
+     * enumerated data, containing store, and place within any applicable tree hierarchy.
+     * @param {Record} rec - the other record to compare.
+     * @returns {boolean}
+     */
+    isEqual(rec) {
+        return (
+            this.id == rec.id &&
+            this.parentId == rec.parentId &&
+            isEqual(this.xhTreePath, rec.xhTreePath) &&
+            this.store == rec.store &&
+            this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
+        );
     }
+
 }
+
