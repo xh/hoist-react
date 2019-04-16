@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, hashCode} from '@xh/hoist/utils/js';
 import store from 'store2';
 
 @HoistService
@@ -55,6 +55,7 @@ export class LocalStorageService {
     //------------------
     getInstance() {
         throwIf(!this._supported, 'Local Storage is not supported');
-        return store.namespace(XH.appName);
+        const namespace = hashCode(XH.appCode + XH.getUsername()).toString();
+        return store.namespace(namespace);
     }
 }

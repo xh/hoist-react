@@ -126,10 +126,36 @@ export function ensureUniqueBy(arr, uniqueKey, exceptionMessage) {
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }
 
+/**
+ * Returns the singular version of the plural word passed to it.
+ *
+ * @param {string} string - the string to singularize.
+ */
 export function singularize(string) {
     return _inflection.singularize(string);
 }
 
+/**
+ * Returns the plural version of the singular word passed to it.
+ *
+ * @param {string} string - the string to pluralize.
+ * @param {int} [count] - if provided, will pluralize to match this number
+ * @param {boolean} [includeCount] - include count in the output
+ */
 export function pluralize(string, count, includeCount) {
     return _inflection.pluralize(string, count, includeCount);
+}
+
+/**
+ * Javascript implementation of Java's String.hashCode() method. This is not intended
+ * to be used as an security measure, instead providing a lightweight way to obscure information.
+ *
+ * @param {string} string - the string to hash.
+ */
+export function hashCode(string) {
+    let ret = 0;
+    for (let i = 0; i < string.length; i++) {
+        ret = Math.imul(31, ret) + string.charCodeAt(i) | 0;
+    }
+    return ret;
 }
