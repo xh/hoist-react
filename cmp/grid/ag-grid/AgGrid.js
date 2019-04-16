@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
+import {frame} from '@xh/hoist/cmp/layout';
 import {omit} from 'lodash';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
-import {frame} from '../../layout';
 
 /**
  * Wrapper for AgGridReact
@@ -30,10 +30,9 @@ export class AgGrid extends Component {
 
         const {model} = this;
         this.addReaction({
-            track: () => [model.isReady, model.compact],
-            run: ([isReady]) => {
-                if (!isReady) return;
-                model.agApi.resetRowHeights();
+            track: () => model.compact,
+            run: () => {
+                if (model.isReady) model.agApi.resetRowHeights();
             }
         });
     }
@@ -62,7 +61,8 @@ export class AgGrid extends Component {
 
                 ...agGridProps,
 
-                // ag-grid props which we do not allow to be overridden
+                // ag-grid props which we do not allow to be overridden, should be chained with
+                // anything passed to this component
                 onGridReady: this.onGridReady
             })
         });
@@ -70,8 +70,8 @@ export class AgGrid extends Component {
 
     onGridReady = (agParams) => {
         this.model.init(agParams);
-        if (this.props.init) {
-            this.props.init(agParams);
+        if (this.props.onGridReady) {
+            this.props.onGridReady(agParams);
         }
     };
 

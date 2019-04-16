@@ -36,6 +36,7 @@ import {
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 import {AgGridModel} from './ag-grid';
+import {managed} from '../../core/mixins';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -76,7 +77,8 @@ export class GridModel {
     /** @member {object} */
     exportOptions = null;
 
-    agGridModel = new AgGridModel();
+    @managed
+    agGridModel;
 
     //------------------------
     // Observable API
@@ -179,7 +181,7 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        this.agGridModel.setStyle({
+        this.agGridModel = new AgGridModel({
             compact,
             showHover,
             rowBorders,
@@ -259,6 +261,7 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    // TODO: Optimize whitespace to 1-line per prop
     get compact() {
         return this.agGridModel.compact;
     }
