@@ -9,6 +9,8 @@
   to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
 * Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
   `agOptions.defaultGroupSortComparator`).
+* The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
+  generate custom classes based on the Record and/or Column being rendered.
 
 ### ⚙️ Technical
 
