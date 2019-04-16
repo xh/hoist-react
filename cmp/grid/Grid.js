@@ -184,7 +184,6 @@ export class Grid extends Component {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
@@ -215,6 +214,7 @@ export class Grid extends Component {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
+            defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             autoGroupColumnDef: {
@@ -325,16 +325,6 @@ export class Grid extends Component {
         items = dropRightWhile(items, it => it === 'separator');
         items = dropWhile(items, it => it === 'separator');
         return items;
-    }
-
-    sortByGroup(nodeA, nodeB) {
-        if (nodeA.key < nodeB.key) {
-            return -1;
-        } else if (nodeA.key > nodeB.key) {
-            return 1;
-        } else {
-            return 0;
-        }
     }
 
     //------------------------
@@ -549,6 +539,11 @@ export class Grid extends Component {
         }
     };
 
+    groupSortComparator = (nodeA, nodeB) => {
+        const gridModel = this.model;
+        return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
+    };
+
     doWithPreservedState({expansion, filters}, fn) {
         const expandState = expansion ? this.readExpandState() : null,
             filterState = filters ? this.readFilterState() : null;
@@ -592,5 +587,6 @@ export class Grid extends Component {
     processCellForClipboard({value, node, column}) {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
+
 }
 export const grid = elemFactory(Grid);
