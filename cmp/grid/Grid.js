@@ -490,8 +490,6 @@ export class Grid extends Component {
 
     //  Workaround for n^2 deletion behavior in ag-Grid (AG-2879)
     clearDataIfExpensiveDeletionPending(newRecords, api) {
-        const now = Date.now();
-
         let currCount = 0, deleteCount = 0, addCount = 0;
 
         const ids = new Set();
@@ -506,6 +504,7 @@ export class Grid extends Component {
         // Heuristic -- we think slow deletions grow by order (D * (C + A))
         if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
             console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
+            const now = Date.now();
             api.selectionController.reset();
             api.clientSideRowModel.setRowData([]);
             console.debug(`Pre-Cleared ${currCount} records from ag-Grid: ${Date.now() - now}ms`);
