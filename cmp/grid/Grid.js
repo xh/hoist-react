@@ -504,7 +504,7 @@ export class Grid extends Component {
         deleteCount = ids.size;
 
         // Heuristic -- we think slow deletions grow by order (D * (C + A))
-        if (deleteCount > 10 && (deleteCount * (currCount + addCount)) > 10000000) {
+        if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
             console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
             api.selectionController.reset();
             api.clientSideRowModel.setRowData([]);
