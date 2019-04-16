@@ -326,13 +326,13 @@ export class Column {
  * @callback Column~cellClassFn - normalized function to generate grid cell CSS classes.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
- * @return {string|string[]} - CSS class(es) to use.
+ * @return {(string|string[])} - CSS class(es) to use.
  */
 
 /**
  * @callback Column~headerClassFn - normalized function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
- * @return {string|string[]} - CSS class(es) to use.
+ * @return {(string|string[])} - CSS class(es) to use.
  */
 
 /**
