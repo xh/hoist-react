@@ -338,28 +338,27 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.isReady, store.records, store.dataLastUpdated],
-            run: ([isReady, records]) => {
-                if (!isReady) return;
+            track: () => [agGridModel.agApi, store.records, store.dataLastUpdated],
+            run: ([api, records]) => {
+                if (!api) return;
 
                 runInAction(() => {
-                    const {agApi} = agGridModel,
-                        now = Date.now();
+                    const now = Date.now();
 
                     // Workaround for AG-2879.
-                    this.clearDataIfExpensiveDeletionPending(records, agApi);
+                    this.clearDataIfExpensiveDeletionPending(records, api);
 
                     // Load updated data into the grid.
-                    agApi.setRowData(records);
+                    api.setRowData(records);
 
                     // Size columns to account for scrollbar show/hide due to row count change.
-                    agApi.sizeColumnsToFit();
+                    api.sizeColumnsToFit();
 
                     // Force grid to fully re-render cells. We are *not* relying on its default
                     // cell-level change detection as this does not account for our current
                     // renderer API (where renderers can reference other properties on the data
                     // object). See https://github.com/exhi/hoist-react/issues/550.
-                    agApi.refreshCells({force: true});
+                    api.refreshCells({force: true});
 
                     console.debug(`Loaded ${records.length} records into ag-Grid: ${Date.now() - now}ms`);
 
@@ -380,9 +379,9 @@ export class Grid extends Component {
             {agGridModel} = model;
 
         return {
-            track: () => [agGridModel.isReady, model.selection, this._dataVersion],
-            run: ([isReady]) => {
-                if (!isReady) return;
+            track: () => [agGridModel.agApi, model.selection, this._dataVersion],
+            run: ([api]) => {
+                if (!api) return;
 
                 const modelSelection = model.selModel.ids,
                     selectedIds = agGridModel.getSelectedRowNodeIds(),
@@ -399,9 +398,9 @@ export class Grid extends Component {
     sortReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.isReady, this.model.sortBy],
-            run: ([isReady, sortBy]) => {
-                if (isReady) agGridModel.agApi.setSortModel(sortBy);
+            track: () => [agGridModel.agApi, this.model.sortBy],
+            run: ([api, sortBy]) => {
+                if (api) api.setSortModel(sortBy);
             }
         };
     }
@@ -409,9 +408,9 @@ export class Grid extends Component {
     groupReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.isReady, this.model.groupBy],
-            run: ([isReady, groupBy]) => {
-                if (isReady) agGridModel.agColumnApi.setRowGroupColumns(groupBy);
+            track: () => [agGridModel.agColumnApi, this.model.groupBy],
+            run: ([colApi, groupBy]) => {
+                if (colApi) colApi.setRowGroupColumns(groupBy);
             }
         };
     }
@@ -419,15 +418,14 @@ export class Grid extends Component {
     columnsReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.isReady, this.model.columns],
-            run: ([isReady]) => {
-                if (!isReady) return;
+            track: () => [agGridModel.agApi, this.model.columns],
+            run: ([api]) => {
+                if (!api) return;
 
-                const {agApi} = agGridModel;
                 this.doWithPreservedState({expansion: true, filters: true}, () => {
-                    agApi.setColumnDefs(this.getColumnDefs());
+                    api.setColumnDefs(this.getColumnDefs());
                 });
-                agApi.sizeColumnsToFit();
+                api.sizeColumnsToFit();
             }
         };
     }
@@ -435,12 +433,11 @@ export class Grid extends Component {
     columnStateReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.isReady, this.model.columnState],
-            run: ([isReady, colState]) => {
-                if (!isReady) return;
+            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.model.columnState],
+            run: ([api, colApi, colState]) => {
+                if (!api || !colApi) return;
 
-                const {agApi, agColumnApi} = agGridModel;
-                const agColState = agColumnApi.getColumnState();
+                const agColState = colApi.getColumnState();
 
                 // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
@@ -455,15 +452,15 @@ export class Grid extends Component {
                         const agCol = agColState[index],
                             id = col.colId;
                         if (agCol.width != col.width) {
-                            agColumnApi.setColumnWidth(id, col.width);
+                            colApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
-                            agColumnApi.setColumnVisible(id, !col.hidden);
+                            colApi.setColumnVisible(id, !col.hidden);
                             hadChanges = true;
                         }
                     });
-                    if (hadChanges) agApi.sizeColumnsToFit();
+                    if (hadChanges) api.sizeColumnsToFit();
                     return;
                 }
 
@@ -480,9 +477,9 @@ export class Grid extends Component {
                 });
 
                 this.doWithPreservedState({expansion: true}, () => {
-                    agColumnApi.setColumnState(colState);
+                    colApi.setColumnState(colState);
                 });
-                agApi.sizeColumnsToFit();
+                api.sizeColumnsToFit();
             }
         };
     }

@@ -210,8 +210,8 @@ export class GridModel {
      * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(filename, type, params = {}) {
-        const {isReady, agApi} = this.agGridModel;
-        if (!isReady) return;
+        const {agApi} = this.agGridModel;
+        if (!agApi) return;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
@@ -224,7 +224,7 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agGridModel, selModel} = this;
-        if (!agGridModel.isReady) {
+        if (!agGridModel.agApi) {
             console.warn('Called selectFirst before the grid was ready!');
             return;
         }

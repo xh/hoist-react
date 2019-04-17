@@ -1,6 +1,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {has, isNil} from 'lodash';
+import {warnIf} from '../../utils/js';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -53,14 +54,9 @@ export class AgGridModel {
         this.addReaction({
             track: () => this.compact,
             run: () => {
-                if (this.isReady) this.agApi.resetRowHeights();
+                if (this.agApi) this.agApi.resetRowHeights();
             }
         });
-    }
-
-    /** @returns {boolean} - true if the grid is ready to be interacted with (ag-grid onGridReady event has been fired) */
-    get isReady() {
-        return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
     /**
@@ -142,6 +138,8 @@ export class AgGridModel {
     //------------------------
     @action
     init({api, columnApi}) {
+        warnIf(!isNil(this.agApi), 'AgGridModel is being re-initialized! AgGrid component must have been re-rendered!');
+
         this.agApi = api;
         this.agColumnApi = columnApi;
     }
