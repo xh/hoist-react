@@ -7,6 +7,10 @@
 * A new `DockContainer` component provides a user-friendly way to render multiple child components
   "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
   to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
+* Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
+  `agOptions.defaultGroupSortComparator`).
+* The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
+  generate custom classes based on the Record and/or Column being rendered.
 
 ### ⚙️ Technical
 
