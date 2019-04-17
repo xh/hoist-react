@@ -7,6 +7,11 @@
 * A new `DockContainer` component provides a user-friendly way to render multiple child components
   "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
   to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
+  
+* A new `AgGrid` component provides a lighter Hoist wrapper around ag-Grid, allowing applications
+  to use any features supported by ag-Grid without worrying about conflicting with any functionality
+  in the Grid component.  An associated `AgGridModel` also provides access to to the ag-Grid APIs as
+  well as several utility methods for managing Grid state.
 
 ## v21.0.0 - 2019-04-04
 
