@@ -6,6 +6,7 @@
  */
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
 import {
     ColChooserModel as DesktopColChooserModel,
@@ -35,7 +36,6 @@ import {
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {AgGridModel} from './ag-grid';
 import {managed} from '../../core/mixins';
 
 /**

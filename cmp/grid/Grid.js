@@ -23,8 +23,8 @@ import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import './ag-grid';
-import {ColumnHeader, agGrid, AgGrid} from './ag-grid';
+import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
+import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
