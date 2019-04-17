@@ -9,6 +9,12 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import store from 'store2';
 
+/**
+ * Service to provide simple key/value access to browser local storage, appropriately namespaced
+ * by application code and username.
+ *
+ * Relied upon by Hoist features such as local preference values and grid state.
+ */
 @HoistService
 export class LocalStorageService {
 
@@ -71,6 +77,9 @@ export class LocalStorageService {
         return `${XH.appCode}.${XH.getUsername()}`;
     }
 
+    // Added in April 2019 to support a switch to the new user-specific namespace without current
+    // users losing their local state. Remove when we are confident essential apps have been updated
+    // and accessed by end users to run this routine.
     migrateLegacyNamespace() {
         try {
             const oldSpace = store.namespace(XH.appName);

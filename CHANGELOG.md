@@ -25,6 +25,10 @@
   optimizations by ag-Grid and its `deltaRowDataMode`.
 * When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
   the declared `Field.type`. The unused `Field.nullable` has been removed.
+* `LocalStorageService` now uses both the `appCode` and current username for its namespace key,
+  ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
+  profile, or when admin impersonation is active. The service will automatically perform a one-time
+  migration of existing local state from the old namespace to the new. #674
 
 ### 🐞 Bug Fixes
 
