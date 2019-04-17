@@ -6,10 +6,14 @@
  */
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {
+    ColChooserModel as DesktopColChooserModel,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable, bindable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -32,7 +36,7 @@ import {
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-
+import {managed} from '../../core/mixins';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -75,6 +79,9 @@ export class GridModel {
     /** @member {object} */
     exportOptions;
 
+    /** @member {AgGridModel} */
+    @managed agGridModel;
+
     //------------------------
     // Observable API
     //------------------------
@@ -86,22 +93,6 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
-
-    /** @member {boolean} */
-    @bindable compact;
-    /** @member {boolean} */
-    @bindable rowBorders;
-    /** @member {boolean} */
-    @bindable stripeRows;
-    /** @member {boolean} */
-    @bindable showHover;
-    /** @member {boolean} */
-    @bindable showCellFocus;
-
-    /** @member {GridApi} */
-    @observable.ref agApi = null;
-    /** @member {ColumnApi} */
-    @observable.ref agColumnApi = null;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -188,11 +179,13 @@ export class GridModel {
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
 
-        this.compact = compact;
-        this.showHover = showHover;
-        this.rowBorders = rowBorders;
-        this.stripeRows = stripeRows;
-        this.showCellFocus = showCellFocus;
+        this.agGridModel = new AgGridModel({
+            compact,
+            showHover,
+            rowBorders,
+            stripeRows,
+            showCellFocus
+        });
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -217,29 +210,29 @@ export class GridModel {
      * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(filename, type, params = {}) {
-        if (!this.agApi) return;
+        const {agApi} = this.agGridModel;
+        if (!agApi) return;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
-            this.agApi.exportDataAsExcel(params);
+            agApi.exportDataAsExcel(params);
         } else if (type === 'csv') {
-            this.agApi.exportDataAsCsv(params);
+            agApi.exportDataAsCsv(params);
         }
     }
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {agApi, selModel} = this;
+        const {agGridModel, selModel} = this;
+        if (!agGridModel.agApi) {
+            console.warn('Called selectFirst before the grid was ready!');
+            return;
+        }
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
-        if (agApi) {
-            let record = null;
-            agApi.forEachNodeAfterFilterAndSort(node => {
-                if (!record && node.data) record = node.data;
-            });
+        const id = agGridModel.getFirstSelectableRowNodeId();
 
-            if (record) selModel.select(record);
-        }
+        if (id) selModel.select(id);
     }
 
     /** Does the grid have any records to show? */
@@ -269,15 +262,23 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
-    @action
-    setAgApi(agApi) {
-        this.agApi = agApi;
-    }
+    get agApi() {return this.agGridModel.agApi}
+    get agColumnApi() {return this.agGridModel.agColumnApi}
 
-    @action
-    setAgColumnApi(columnApi) {
-        this.agColumnApi = columnApi;
-    }
+    get compact() { return this.agGridModel.compact}
+    setCompact(compact) { this.agGridModel.setCompact(compact)}
+
+    get rowBorders() { return this.agGridModel.rowBorders }
+    setRowBorders(rowBorders) { this.agGridModel.setRowBorders(rowBorders) }
+
+    get stripeRows() { return this.agGridModel.stripeRows }
+    setStripeRows(stripeRows) { this.agGridModel.setStripeRows(stripeRows) }
+
+    get showHover() { return this.agGridModel.showHover }
+    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+
+    get showCellFocus() { return this.agGridModel.showCellFocus }
+    setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
@@ -505,7 +506,7 @@ export class GridModel {
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
-    
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -596,7 +597,8 @@ export class GridModel {
             return this.markManaged(new LocalStore(store));
         }
 
-        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+        throw XH.exception(
+            'The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
     }
 
     parseSelModel(selModel) {
@@ -607,7 +609,8 @@ export class GridModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel,
+                {store: this.store})));
         }
 
         // Assume its just the mode...
