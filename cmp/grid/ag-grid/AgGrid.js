@@ -13,19 +13,22 @@ import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
 
 /**
- * Wrapper around AgGridReact which allows ag-Grid to be used in a consistent manner to other Hoist
- * components. Provides consistent styling for ag-Grid to make it look and feel like a first-class
- * Hoist component.
+ * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
+ * enhancements for consistent Hoist themes/styling, layout support, keyboard navigation, and a
+ * backing model for convenient access to the ag-Grid APIs and other utility methods.
  *
- * Applications can pass ag-Grid properties as props to this component and generally use this component
- * as they would use AgGridReact directly.
+ * All {@link https://www.ag-grid.com/javascript-grid-properties/ ag-Grid Grid Properties}
+ * can be passed as props directly to this component. Pass an {@see AgGridModel} via the `model`
+ * prop to control additional Hoist customizations.
  *
- * Applications can provide an AgGridModel to this component via the model property, which provides
- * control over the styling of the grid as well as access to the ag-Grid APIs and several utilities
- * for managing the grid state.
+ * This component complements and contrasts with the primary Hoist `Grid` class, which provides a
+ * significantly more managed and opinionated wrapper around ag-Grid and a number of Hoist-specific
+ * extensions and customizations. That fully managed component is expected to cover the majority of
+ * use cases within Hoist apps and is recommended as the primary grid class within the toolkit.
  *
- * @see {@link https://www.ag-grid.com/javascript-grid-properties/|ag-Grid Grid Properties}
- * @see AgGridModel
+ * This wrapper is provided for advanced usages of grid that wish to leverage features of the
+ * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
+ * managed option would conflict with or complicate access to those features.
  */
 @HoistComponent
 @LayoutSupport
