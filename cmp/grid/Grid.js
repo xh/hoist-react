@@ -21,7 +21,7 @@ import {
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
-import {fragment} from '@xh/hoist/cmp/layout';
+import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import './ag-grid';
 import {ColumnHeader, agGrid, AgGrid} from './ag-grid';
@@ -31,7 +31,6 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
-import {frame} from '../layout';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -58,6 +57,8 @@ export class Grid extends Component {
          * This constitutes an 'escape hatch' for applications that need to get to the underlying
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
          * interfere with the implementation of this component and its use of the ag-Grid API.
+         *
+         * Note that changes to these options after the initial render of this component will be ignored.
          */
         agOptions: PT.object,
 
@@ -384,8 +385,8 @@ export class Grid extends Component {
                 if (!isReady) return;
 
                 const modelSelection = model.selModel.ids,
-                    gridSelection = agGridModel.selectedRowNodeIds,
-                    diff = xor(modelSelection, gridSelection);
+                    selectedIds = agGridModel.getSelectedRowNodeIds(),
+                    diff = xor(modelSelection, selectedIds);
 
                 // If ag-grid's selection differs from the selection model, set it to match.
                 if (diff.length > 0) {
@@ -535,7 +536,7 @@ export class Grid extends Component {
 
     doWithPreservedState({expansion, filters}, fn) {
         const {agGridModel} = this.model,
-            expandState = expansion ? agGridModel.expandState : null,
+            expandState = expansion ? agGridModel.getExpandState() : null,
             filterState = filters ? this.readFilterState() : null;
         fn();
         if (expandState) agGridModel.setExpandState(expandState);

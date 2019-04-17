@@ -77,8 +77,8 @@ export class GridModel {
     /** @member {object} */
     exportOptions = null;
 
-    @managed
-    agGridModel;
+    /** @member {AgGridModel} */
+    @managed agGridModel;
 
     //------------------------
     // Observable API
@@ -261,46 +261,20 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
-    // TODO: Optimize whitespace to 1-line per prop
-    get compact() {
-        return this.agGridModel.compact;
-    }
+    get compact() { return this.agGridModel.compact}
+    setCompact(compact) { this.agGridModel.setCompact(compact)}
 
-    setCompact(compact) {
-        this.agGridModel.setCompact(compact);
-    }
+    get rowBorders() { return this.agGridModel.rowBorders }
+    setRowBorders(rowBorders) { this.agGridModel.setRowBorders(rowBorders) }
 
-    get rowBorders() {
-        return this.agGridModel.rowBorders;
-    }
+    get stripeRows() { return this.agGridModel.stripeRows }
+    setStripeRows(stripeRows) { this.agGridModel.setStripeRows(stripeRows) }
 
-    setRowBorders(rowBorders) {
-        this.agGridModel.setRowBorders(rowBorders);
-    }
+    get showHover() { return this.agGridModel.showHover }
+    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
 
-    get stripeRows() {
-        return this.agGridModel.stripeRows;
-    }
-
-    setStripeRows(stripeRows) {
-        this.agGridModel.setStripeRows(stripeRows);
-    }
-
-    get showHover() {
-        return this.agGridModel.showHover;
-    }
-
-    setShowHover(showHover) {
-        this.agGridModel.setShowHover(showHover);
-    }
-
-    get showCellFocus() {
-        return this.agGridModel.showCellFocus;
-    }
-
-    setShowCellFocus(showCellFocus) {
-        this.agGridModel.setShowCellFocus(showCellFocus);
-    }
+    get showCellFocus() { return this.agGridModel.showCellFocus }
+    setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).

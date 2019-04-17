@@ -5,15 +5,27 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {omit} from 'lodash';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
-import {omit} from 'lodash';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
 
 /**
- * Wrapper for AgGridReact
+ * Wrapper around AgGridReact which allows ag-Grid to be used in a consistent manner to other Hoist
+ * components. Provides consistent styling for ag-Grid to make it look and feel like a first-class
+ * Hoist component.
+ *
+ * Applications can pass ag-Grid properties as props to this component and generally use this component
+ * as they would use AgGridReact directly.
+ *
+ * Applications can provide an AgGridModel to this component via the model property, which provides
+ * control over the styling of the grid as well as access to the ag-Grid APIs and several utilities
+ * for managing the grid state.
+ *
+ * @see {@link https://www.ag-grid.com/javascript-grid-properties/|ag-Grid Grid Properties}
+ * @see AgGridModel
  */
 @HoistComponent
 @LayoutSupport
@@ -22,20 +34,7 @@ export class AgGrid extends Component {
     modelClass = AgGridModel;
 
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
-
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
-
-    constructor(props) {
-        super(props);
-
-        const {model} = this;
-        this.addReaction({
-            track: () => model.compact,
-            run: () => {
-                if (model.isReady) model.agApi.resetRowHeights();
-            }
-        });
-    }
 
     render() {
         const layoutProps = this.getLayoutProps(),

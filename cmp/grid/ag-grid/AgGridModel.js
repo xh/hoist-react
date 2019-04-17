@@ -2,6 +2,12 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {has, isNil} from 'lodash';
 
+/**
+ * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
+ * ag-Grid API and Column API references for interacting with ag-Grid.
+ *
+ * Also provides a series of utility methods that are generally useful when managing grid state.
+ */
 @HoistModel
 export class AgGridModel {
     //------------------------
@@ -20,7 +26,6 @@ export class AgGridModel {
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
-
     /** @member {ColumnApi} */
     @observable.ref agColumnApi = null;
 
@@ -39,34 +44,29 @@ export class AgGridModel {
         stripeRows = true,
         showCellFocus = false
     } = {}) {
-        this.setStyle({compact, showHover, rowBorders, stripeRows, showCellFocus});
+        this.compact = compact;
+        this.showHover = showHover;
+        this.rowBorders = rowBorders;
+        this.stripeRows = stripeRows;
+        this.showCellFocus = showCellFocus;
+
+        this.addReaction({
+            track: () => this.compact,
+            run: () => {
+                if (this.isReady) this.agApi.resetRowHeights();
+            }
+        });
     }
 
+    /** @returns {boolean} - true if the grid is ready to be interacted with (ag-grid onGridReady event has been fired) */
     get isReady() {
         return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
-    get style() {
-        const {compact, rowBorders, stripeRows, showHover, showCellFocus} = this;
-        return {
-            compact,
-            rowBorders,
-            stripeRows,
-            showHover,
-            showCellFocus
-        };
-    }
-
-    @action
-    setStyle({compact, rowBorders, stripeRows, showHover, showCellFocus}) {
-        this.compact = compact;
-        this.rowBorders = rowBorders;
-        this.stripeRows = stripeRows;
-        this.showHover = showHover;
-        this.showCellFocus = showCellFocus;
-    }
-
-    get expandState() {
+    /**
+     * @returns {Object} - the current row expansion state of the grid in a serializable form
+     */
+    getExpandState() {
         const expandState = {};
         this.agApi.forEachNode(node => {
             if (!node.group) return;
@@ -80,6 +80,10 @@ export class AgGridModel {
         });
     }
 
+    /**
+     * Sets the grid row expansion state
+     * @param {Object} expandState - grid expand state retrieved via getExpandState()
+     */
     setExpandState(expandState) {
         const {agApi} = this;
         let wasChanged = false;
@@ -100,10 +104,16 @@ export class AgGridModel {
         }
     }
 
-    get selectedRowNodeIds() {
+    /** @returns {Number[]} - list of selected row node ids */
+    getSelectedRowNodeIds() {
         return this.agApi.getSelectedRows().map(it => it.id);
     }
 
+    /**
+     * Sets the selected row node ids. Any rows currently selected which are not in the list will be
+     * deselected.
+     * @param ids {Number[]} - list of row node ids to mark as selected
+     */
     setSelectedRowNodeIds(ids) {
         const {agApi} = this;
         agApi.deselectAll();
@@ -114,7 +124,8 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Object} the data associated with the first non-group row in the grid.
+     * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
+ *                         has data associated with it (non-group row)
      */
     getFirstSelectableRowNodeId() {
         let id = null;
@@ -129,6 +140,7 @@ export class AgGridModel {
     //------------------------
     // Implementation
     //------------------------
+
     @action
     init({api, columnApi}) {
         this.agApi = api;
