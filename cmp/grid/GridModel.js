@@ -224,7 +224,10 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agGridModel, selModel} = this;
-        warnIf(!agGridModel.isReady, 'Called selectFirst before the grid was ready!');
+        if (!agGridModel.isReady) {
+            console.warn('Called selectFirst before the grid was ready!');
+            return;
+        }
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = agGridModel.getFirstSelectableRowNodeId();
