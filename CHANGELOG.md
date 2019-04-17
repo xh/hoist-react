@@ -19,12 +19,25 @@
 
 ### ⚙️ Technical
 
+* `Grid` now performs an important performance workaround when loading a new dataset that would
+  result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
+  component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
+  grid wrapper will now detect when this is likely and proactively clear all data using a different
+  API call before loading the new dataset.
 * The implementations of Hoist store classes, `RecordSet`, and `Record` have been updated to more
   efficiently re-use existing record references when loading, updating, or filtering data in a
   store. This keeps the Record objects within a store as stable as possible, and allows additional
   optimizations by ag-Grid and its `deltaRowDataMode`.
 * When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
   the declared `Field.type`. The unused `Field.nullable` has been removed.
+
+### 🐞 Bug Fixes
+
+* `Grid` exports retain sorting, including support for absolute value sorting. #1068
+* Ensure `FormField`s are keyed with their model ID, so that React can properly account for dynamic
+  changes to fields within a form. #1031
+* Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
+  (This can happen during impersonation and is defended against in server-side code.) #675
 
 ## v21.0.2 - 2019-04-05
 
