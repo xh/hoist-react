@@ -259,6 +259,9 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    get agApi() {return this.agGridModel.agApi}
+    get agColumnApi() {return this.agGridModel.agColumnApi}
+
     get compact() { return this.agGridModel.compact}
     setCompact(compact) { this.agGridModel.setCompact(compact)}
 
@@ -299,7 +302,7 @@ export class GridModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agApi} = this.agGridModel;
+        const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
@@ -308,7 +311,7 @@ export class GridModel {
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agApi} = this.agGridModel;
+        const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();
