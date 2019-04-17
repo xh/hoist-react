@@ -10,8 +10,9 @@
   
 * A new `AgGrid` component provides a lighter Hoist wrapper around ag-Grid, allowing applications
   to use any features supported by ag-Grid without worrying about conflicting with any functionality
-  in the Grid component.  An associated `AgGridModel` also provides access to to the ag-Grid APIs as
-  well as several utility methods for managing Grid state.
+  in the Grid component, while maintaining a consistent look-and-feel with the Grid component. An 
+  associated `AgGridModel` also provides access to to the ag-Grid APIs as well as several utility 
+  methods for managing Grid state.
 
 ## v21.0.0 - 2019-04-04
 
