@@ -40,7 +40,11 @@ import './Grid.scss';
  * support for specifying the Grid's data Store, Column definitions, sorting and grouping state,
  * selection API, and more.
  *
- * Use this Component's props to control the ag-Grid-specific UI options and handlers.
+ * For advanced ag-Grid use-cases that are not well supported by this component, note that the
+ * {@see AgGrid} Hoist component provides much thinner and less opinionated wrapper around ag-Grid
+ * while still retaining consistent styling and some additional conveniences. However a number of
+ * core Hoist integrations and features will *not* be available with that thinner wrapper.
+ *
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */

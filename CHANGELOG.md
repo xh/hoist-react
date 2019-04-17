@@ -7,15 +7,17 @@
 * A new `DockContainer` component provides a user-friendly way to render multiple child components
   "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
   to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
+* A new `AgGrid` component provides a much lighter Hoist wrapper around ag-Grid while maintaining
+  consistent styling and layout support. This allows apps to use any features supported by ag-Grid
+  without conflicting with functionality added by the core Hoist `Grid`.
+  * Note that this lighter wrapper lacks a number of core Hoist features and integrations, including
+    store support, grid state, enhanced column and renderer APIs, absolute value sorting, and more.
+  * An associated `AgGridModel` provides access to to the ag-Grid APIs, minimal styling configs, and
+    several utility methods for managing Grid state.
 * Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
   `agOptions.defaultGroupSortComparator`).
 * The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
-  generate custom classes based on the Record and/or Column being rendered.  
-* A new `AgGrid` component provides a lighter Hoist wrapper around ag-Grid, allowing applications
-  to use any features supported by ag-Grid without worrying about conflicting with any functionality
-  in the Grid component, while maintaining a consistent look-and-feel with the Grid component. An 
-  associated `AgGridModel` also provides access to to the ag-Grid APIs as well as several utility 
-  methods for managing Grid state.
+  generate custom classes based on the Record and/or Column being rendered.
 
 ### ⚙️ Technical
 
