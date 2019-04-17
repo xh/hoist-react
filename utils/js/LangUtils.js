@@ -145,17 +145,3 @@ export function singularize(string) {
 export function pluralize(string, count, includeCount) {
     return _inflection.pluralize(string, count, includeCount);
 }
-
-/**
- * Javascript implementation of Java's String.hashCode() method. This is not intended
- * to be used as an security measure, instead providing a lightweight way to obscure information.
- *
- * @param {string} string - the string to hash.
- */
-export function hashCode(string) {
-    let ret = 0;
-    for (let i = 0; i < string.length; i++) {
-        ret = Math.imul(31, ret) + string.charCodeAt(i) | 0;
-    }
-    return ret;
-}

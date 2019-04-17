@@ -6,12 +6,20 @@
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
-import {throwIf, hashCode} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import store from 'store2';
 
 @HoistService
 export class LocalStorageService {
+
     _supported = !store.isFake();
+
+    async initAsync() {
+        this.addReaction({
+            when: () => XH.appIsRunning,
+            run: this.migrateNamespace
+        });
+    }
 
     get(key, defaultValue) {
         const storage = this.getInstance(),
@@ -55,7 +63,21 @@ export class LocalStorageService {
     //------------------
     getInstance() {
         throwIf(!this._supported, 'Local Storage is not supported');
-        const namespace = hashCode(XH.appCode + XH.getUsername()).toString();
-        return store.namespace(namespace);
+        return store.namespace(this.getNamespace());
     }
+
+    getNamespace() {
+        return `${XH.appCode}.${XH.getUsername().toLowerCase()}`;
+    }
+
+    migrateNamespace() {
+        const oldNamespace = store.namespace(XH.appName),
+            namespace = store.namespace(this.getNamespace());
+
+        if (oldNamespace.size() && !namespace.size()) {
+            namespace.setAll(oldNamespace.getAll());
+            oldNamespace.clear();
+        }
+    }
+
 }
