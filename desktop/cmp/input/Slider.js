@@ -14,6 +14,8 @@ import {toJS} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './Slider.scss';
+
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  */

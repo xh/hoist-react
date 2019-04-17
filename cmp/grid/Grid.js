@@ -185,7 +185,6 @@ export class Grid extends Component {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            defaultGroupSortComparator: this.sortByGroup,
             headerHeight: props.hideHeaders ? 0 : undefined,
             icons: {
                 groupExpanded: convertIconToSvg(
@@ -215,6 +214,7 @@ export class Grid extends Component {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
+            defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             autoGroupColumnDef: {
@@ -326,16 +326,6 @@ export class Grid extends Component {
         return items;
     }
 
-    sortByGroup(nodeA, nodeB) {
-        if (nodeA.key < nodeB.key) {
-            return -1;
-        } else if (nodeA.key > nodeB.key) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
     //------------------------
     // Reactions to model
     //------------------------
@@ -349,7 +339,11 @@ export class Grid extends Component {
                 if (!isReady) return;
 
                 runInAction(() => {
-                    const {agApi} = agGridModel;
+                    const {agApi} = agGridModel,
+                        now = Date.now();
+
+                    // Workaround for AG-2879.
+                    this.clearDataIfExpensiveDeletionPending(records, agApi);
 
                     // Load updated data into the grid.
                     agApi.setRowData(records);
@@ -363,9 +357,11 @@ export class Grid extends Component {
                     // object). See https://github.com/exhi/hoist-react/issues/550.
                     agApi.refreshCells({force: true});
 
+                    console.debug(`Loaded ${records.length} records into ag-Grid: ${Date.now() - now}ms`);
+
                     // Set flag if data is hierarchical.
                     this._isHierarchical = model.store.allRecords.some(
-                        rec => !!rec.children.length
+                        rec => rec.parentId != null
                     );
 
                     // Increment version counter to trigger selectionReaction w/latest data.
@@ -487,6 +483,29 @@ export class Grid extends Component {
         };
     }
 
+    //  Workaround for n^2 deletion behavior in ag-Grid (AG-2879)
+    clearDataIfExpensiveDeletionPending(newRecords, api) {
+        let currCount = 0, deleteCount = 0, addCount = 0;
+
+        const ids = new Set();
+        api.forEachNode((node, index) => ids.add(node.id));
+        currCount = ids.size;
+
+        newRecords.forEach(rec => {
+            if (!ids.delete(rec.id)) addCount++;
+        });
+        deleteCount = ids.size;
+
+        // Heuristic -- we think slow deletions grow by order (D * (C + A))
+        if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
+            console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
+            const now = Date.now();
+            api.selectionController.reset();
+            api.clientSideRowModel.setRowData([]);
+            console.debug(`Pre-Cleared ${currCount} records from ag-Grid: ${Date.now() - now}ms`);
+        }
+    }
+
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
@@ -534,6 +553,11 @@ export class Grid extends Component {
         }
     };
 
+    groupSortComparator = (nodeA, nodeB) => {
+        const gridModel = this.model;
+        return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
+    };
+
     doWithPreservedState({expansion, filters}, fn) {
         const {agGridModel} = this.model,
             expandState = expansion ? agGridModel.getExpandState() : null,
@@ -556,6 +580,7 @@ export class Grid extends Component {
     processCellForClipboard({value, node, column}) {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
+
 }
 
 export const grid = elemFactory(Grid);

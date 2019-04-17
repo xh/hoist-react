@@ -59,23 +59,25 @@ export class GridModel {
     // Immutable public properties
     //------------------------
     /** @member {BaseStore} */
-    store = null;
+    store;
     /** @member {StoreSelectionModel} */
-    selModel = null;
+    selModel;
     /** @member {boolean} */
-    treeMode = false;
+    treeMode;
     /** @member {GridStateModel} */
-    stateModel = null;
+    stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel = null;
+    colChooserModel;
     /** @member {function} */
-    rowClassFn = null;
-    /** @member {function} */
-    contextMenuFn = null;
+    rowClassFn;
+    /** @member {GridStoreContextMenuFn} */
+    contextMenuFn;
+    /** @member {GridGroupSortFn} */
+    groupSortFn;
     /** @member {boolean} */
-    enableExport = false;
+    enableExport;
     /** @member {object} */
-    exportOptions = null;
+    exportOptions;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -104,14 +106,6 @@ export class GridModel {
         'colChooser'
     ];
 
-    defaultContextMenu = () => {
-        if (XH.isMobile) return null;
-        return new StoreContextMenu({
-            items: GridModel.defaultContextMenuTokens,
-            gridModel: this
-        });
-    };
-
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
@@ -137,7 +131,9 @@ export class GridModel {
      *      install default context menu items.
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
-     *      Should return a string or array of strings. Receives record data as param.
+     *      Called with record data, returns a string or array of strings.
+     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
+     *      group values to compare, returns a number as per a standard JS comparator.
      * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
      *      StoreContextMenu when the grid is right-clicked (desktop only).
      * @param {*} [c...rest] - additional data to attach to this model instance.
@@ -162,13 +158,15 @@ export class GridModel {
         enableExport = false,
         exportOptions = {},
         rowClassFn = null,
-        contextMenuFn = () => this.defaultContextMenu(),
+        groupSortFn,
+        contextMenuFn,
         ...rest
     }) {
         this.treeMode = treeMode;
         this.emptyText = emptyText;
-        this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+        this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
+        this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
@@ -637,6 +635,19 @@ export class GridModel {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
         return this.markManaged(new Model(this));
     }
+
+    defaultContextMenuFn = (agParams, gridModel) => {
+        if (XH.isMobile) return null;
+        return new StoreContextMenu({
+            items: GridModel.defaultContextMenuTokens,
+            gridModel
+        });
+    }
+
+    defaultGroupSortFn = (a, b) => {
+        return a < b ? -1 : (a > b ? 1 : 0);
+    }
+
 }
 
 /**
@@ -644,6 +655,18 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ */
+
+/**
+ * @callback GridGroupSortFn - comparator for custom grid group sorting, provided to GridModel.
+ * @param {*} groupAVal - first group value to be compared.
+ * @param {*} groupBVal - second group value to be compared.
+ * @param {string} groupField - field name being grouped at this level.
+ * @param {Object} metadata - additional metadata with raw ag-Grid group nodes.
+ * @param {GridModel} metadata.gridModel - controlling GridModel.
+ * @param {RowNode} metadata.nodeA - first raw ag-Grid row node.
+ * @param {RowNode} metadata.nodeB - second raw ag-Grid row node.
+ * @returns {number} - 0 if group values are equal, <0 if `a` sorts first, >0 if `b` sorts first.
  */
 
 /**
