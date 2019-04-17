@@ -125,7 +125,7 @@ export class AgGridModel {
 
     /**
      * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
- *                         has data associated with it (non-group row)
+     *                         has data associated with it (non-group row)
      */
     getFirstSelectableRowNodeId() {
         let id = null;
