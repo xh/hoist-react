@@ -104,7 +104,7 @@ export class AgGridModel {
         }
     }
 
-    /** @returns {Number[]} - list of selected row node ids */
+    /** @returns {(string[]|number[])} - list of selected row node ids */
     getSelectedRowNodeIds() {
         return this.agApi.getSelectedRows().map(it => it.id);
     }
@@ -112,7 +112,7 @@ export class AgGridModel {
     /**
      * Sets the selected row node ids. Any rows currently selected which are not in the list will be
      * deselected.
-     * @param ids {Number[]} - list of row node ids to mark as selected
+     * @param ids {(string[]|number[])} - row node ids to mark as selected
      */
     setSelectedRowNodeIds(ids) {
         const {agApi} = this;
@@ -125,7 +125,7 @@ export class AgGridModel {
 
     /**
      * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
-     *                         has data associated with it (non-group row)
+     *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {
         let id = null;
@@ -140,7 +140,6 @@ export class AgGridModel {
     //------------------------
     // Implementation
     //------------------------
-
     @action
     init({api, columnApi}) {
         this.agApi = api;

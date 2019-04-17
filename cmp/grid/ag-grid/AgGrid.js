@@ -57,14 +57,15 @@ export class AgGrid extends Component {
             ),
             ...layoutProps,
             item: agGridReact({
-                // ag-grid props which we provide defaults for, but can be overridden
+                // Default some ag-grid props, but allow overriding.
                 getRowHeight: this.getRowHeight,
                 navigateToNextCell: this.navigateToNextCell,
 
+                // Pass others on directly.
                 ...agGridProps,
 
-                // ag-grid props which we do not allow to be overridden, should be chained with
-                // anything passed to this component
+                // Always specify an onGridReady handler to wire the model to the ag APIs, but note
+                // the implementation will also call any onGridReady passed via props.
                 onGridReady: this.onGridReady
             })
         });
