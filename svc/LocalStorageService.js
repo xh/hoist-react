@@ -12,13 +12,10 @@ import store from 'store2';
 @HoistService
 export class LocalStorageService {
 
-    _supported = !store.isFake();
-
     async initAsync() {
-        this.addReaction({
-            when: () => XH.appIsRunning,
-            run: this.migrateNamespace
-        });
+        if (this.supported) {
+            this.migrateLegacyNamespace();
+        }
     }
 
     get(key, defaultValue) {
@@ -61,23 +58,33 @@ export class LocalStorageService {
     //------------------
     //  Implementation
     //------------------
+    get supported() {
+        return !store.isFake();
+    }
+
     getInstance() {
-        throwIf(!this._supported, 'Local Storage is not supported');
+        throwIf(!this.supported, 'Local Storage is not supported');
         return store.namespace(this.getNamespace());
     }
 
     getNamespace() {
-        return `${XH.appCode}.${XH.getUsername().toLowerCase()}`;
+        return `${XH.appCode}.${XH.getUsername()}`;
     }
 
-    migrateNamespace() {
-        const oldNamespace = store.namespace(XH.appName),
-            namespace = store.namespace(this.getNamespace());
-
-        if (oldNamespace.size() && !namespace.size()) {
-            namespace.setAll(oldNamespace.getAll());
-            oldNamespace.clear();
+    migrateLegacyNamespace() {
+        try {
+            const oldSpace = store.namespace(XH.appName);
+            if (oldSpace.size()) {
+                console.log('Migrating Namespace for Local Storage');
+                const newSpace = store.namespace(this.getNamespace());
+                if (!newSpace.size()) {
+                    newSpace.setAll(oldSpace.getAll());
+                    console.log(`Migrated ${oldSpace.size()} keys`);
+                }
+                oldSpace.clear();
+            }
+        } catch (e) {
+            console.error('Failure in Migrate Namespace for Local Storage', e);
         }
     }
-
 }
