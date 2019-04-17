@@ -447,8 +447,8 @@ class XHClass {
         document.body.classList.add('xh-app', platformCls);
 
         try {
-            await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(TrackService, IdleService, GridExportService);
+            await this.installServicesAsync(FetchService);
+            await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {
@@ -492,7 +492,9 @@ class XHClass {
         this.setAppState(S.INITIALIZING);
         try {
             await this.installServicesAsync(IdentityService);
+            await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(IdleService, GridExportService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

@@ -126,10 +126,22 @@ export function ensureUniqueBy(arr, uniqueKey, exceptionMessage) {
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }
 
+/**
+ * Returns the singular version of the plural word passed to it.
+ *
+ * @param {string} string - the string to singularize.
+ */
 export function singularize(string) {
     return _inflection.singularize(string);
 }
 
+/**
+ * Returns the plural version of the singular word passed to it.
+ *
+ * @param {string} string - the string to pluralize.
+ * @param {int} [count] - if provided, will pluralize to match this number
+ * @param {boolean} [includeCount] - include count in the output
+ */
 export function pluralize(string, count, includeCount) {
     return _inflection.pluralize(string, count, includeCount);
 }
