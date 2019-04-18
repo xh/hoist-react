@@ -9,6 +9,8 @@ import {merge, castArray} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div} from './Tags';
 
+import './Layout.scss';
+
 /**
  * A Component that supports flexbox-based layout of its contents.
  *
@@ -23,7 +25,6 @@ export class Box extends Component {
     render() {
         let {children, ...props} = this.getNonLayoutProps();
         props = merge(
-            {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: this.getLayoutProps()},
             props
         );
@@ -42,7 +43,6 @@ export class VBox extends Component {
     render() {
         return box({
             ...this.props,
-            flexDirection: 'column',
             className: this.getClassName()
         });
     }
@@ -55,7 +55,6 @@ export class HBox extends Component {
     render() {
         return box({
             ...this.props,
-            flexDirection: 'row',
             className: this.getClassName()
         });
     }

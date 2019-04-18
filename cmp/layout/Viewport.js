@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 
-import {box} from './Box';
+import {vbox} from './Box';
 
 /**
  * A container for the top level of the application.
@@ -18,7 +18,7 @@ import {box} from './Box';
 export class Viewport extends Component {
     baseClassName = 'xh-viewport';
     render() {
-        return box({
+        return vbox({
             ...this.props,
             top: 0,
             left: 0,

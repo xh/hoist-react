@@ -7,6 +7,7 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 
+import './Layout.scss';
 import {box} from './Box';
 
 /**
@@ -18,10 +19,11 @@ import {box} from './Box';
 @HoistComponent
 @LayoutSupport
 export class Frame extends Component {
+    baseClassName = 'xh-frame';
     render() {
         return box({
             ...this.props,
-            flex: 'auto'
+            className: this.getClassName()
         });
     }
 }
@@ -33,8 +35,6 @@ export class VFrame extends Component {
     render() {
         return box({
             ...this.props,
-            flex: 'auto',
-            flexDirection: 'column',
             className: this.getClassName()
         });
     }
@@ -47,8 +47,6 @@ export class HFrame extends Component {
     render() {
         return box({
             ...this.props,
-            flex: 'auto',
-            flexDirection: 'row',
             className: this.getClassName()
         });
     }
