@@ -1,26 +1,129 @@
 # Changelog
 
-## v21.0.0-SNAPSHOT (under development)
+## v23.0.0-SNAPSHOT (under development)
+
+### 🎁 New Features
+ 
+ * Hoist now fully supports React functional components and hooks. See the new function
+   `hoistComponent` for more information. While functional components and hooks are considered
+   essential forward-looking patterns in the React world, Class-based Components remain fully
+   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
+ 
+ ### 💥 Breaking Changes
+ 
+ * TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
+   factory function. Previously functions could also be provided to the `content` prop, but now that
+   prop must be a Class or a function that is strictly a React Component definition.
+ 
+ ### ⚙️ Technical
+ 
+ * This version of hoist brings in mobx-react v6.  Along with support for hooks and functional components,
+   this new version has a number of signifigant optimizations and simplifications described here:
+   https://github.com/mobxjs/mobx-react/blob/v6/CHANGELOG.md 
+
+
+## v22.0.0-SNAPSHOT (under development)
 
 ### 🎁 New Features
 
-* Hoist now fully supports React functional components and hooks. See the new function
-  `hoistComponent` for more information. While functional components and hooks are considered
-  essential forward-looking patterns in the React world, Class-based Components remain fully
-  supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
-
-### 💥 Breaking Changes
-
-* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
-  factory function. Previously functions could also be provided to the `content` prop, but now that
-  prop must be a Class or a function that is strictly a React Component definition.
+* A new `DockContainer` component provides a user-friendly way to render multiple child components
+  "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
+  to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
+* A new `AgGrid` component provides a much lighter Hoist wrapper around ag-Grid while maintaining
+  consistent styling and layout support. This allows apps to use any features supported by ag-Grid
+  without conflicting with functionality added by the core Hoist `Grid`.
+  * Note that this lighter wrapper lacks a number of core Hoist features and integrations, including
+    store support, grid state, enhanced column and renderer APIs, absolute value sorting, and more.
+  * An associated `AgGridModel` provides access to to the ag-Grid APIs, minimal styling configs, and
+    several utility methods for managing Grid state.
+* Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
+  `agOptions.defaultGroupSortComparator`).
+* The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
+  generate custom classes based on the Record and/or Column being rendered.
 
 ### ⚙️ Technical
 
-* This version of hoist brings in mobx-react v6.  Along with support for hooks and functional components,
-  this new version has a number of signifigant optimizations and simplifications described here:
-  https://github.com/mobxjs/mobx-react/blob/v6/CHANGELOG.md 
+* `Grid` now performs an important performance workaround when loading a new dataset that would
+  result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
+  component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
+  grid wrapper will now detect when this is likely and proactively clear all data using a different
+  API call before loading the new dataset.
+* The implementations of Hoist store classes, `RecordSet`, and `Record` have been updated to more
+  efficiently re-use existing record references when loading, updating, or filtering data in a
+  store. This keeps the Record objects within a store as stable as possible, and allows additional
+  optimizations by ag-Grid and its `deltaRowDataMode`.
+* When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
+  the declared `Field.type`. The unused `Field.nullable` has been removed.
+* `LocalStorageService` now uses both the `appCode` and current username for its namespace key,
+  ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
+  profile, or when admin impersonation is active. The service will automatically perform a one-time
+  migration of existing local state from the old namespace to the new. #674
 
+### 🐞 Bug Fixes
+
+* `Grid` exports retain sorting, including support for absolute value sorting. #1068
+* Ensure `FormField`s are keyed with their model ID, so that React can properly account for dynamic
+  changes to fields within a form. #1031
+* Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
+  (This can happen during impersonation and is defended against in server-side code.) #675
+
+## v21.0.2 - 2019-04-05
+
+### 📚 Libraries
+
+* Rollback ag-Grid to v20.0.0 after running into new performance issues with large datasets and
+  `deltaRowDataMode`. Updates to tree filtering logic, also related to grid performance issues with
+  filtered tree results returning much larger record counts.
+
+## v21.0.0 - 2019-04-04
+
+### 🎁 New Features
+
+* `FetchService` fetch methods now accept a plain object as the `headers` argument. These headers
+  will be merged with the default headers provided by FetchService.
+* An app can also now specify default headers to be sent with every fetch request via
+  `XH.fetchService.setDefaultHeaders()`. You can pass either a plain object, or a closure which
+  returns one.
+* `Grid` supports a new `onGridReady` prop, allowing apps to hook into the ag-Grid event callback
+  without inadvertently short-circuiting the Grid's own internal handler.
+
+### 💥 Breaking Changes
+
+* The shortcut getter `FormModel.isNotValid` was deemed confusing and has been removed from the API.
+  In most cases applications should use `!FormModel.isValid` instead; this expression will return
+  `false` for the `Unknown` as well as the `NotValid` state. Applications that wish to explicitly
+  test for the `NotValid` state should use the `validationState` getter.
+* Multiple HoistInputs have changed their `onKeyPress` props to `onKeyDown`, including TextInput,
+  NumberInput, TextArea & SearchInput. The `onKeyPress` event has been deprecated in general and has
+  limitations on which keys will trigger the event to fire (i.e. it would not fire on an arrow
+  keypress).
+* FetchService's fetch methods no longer support `contentType` parameter. Instead, specify a custom
+  content-type by setting a 'Content-Type' header using the `headers` parameter.
+* FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an {"Accept":
+  "application/json"} header using the `headers` parameter.
+
+### ✨ Style
+
+* Black point + grid colors adjusted in dark theme to better blend with overall blue-gray tint.
+* Mobile styles have been adjusted to increase the default font size and grid row height, in
+  addition to a number of other smaller visual adjustments.
+
+### 🐞 Bug Fixes
+
+* Avoid throwing React error due to tab / routing interactions. Tab / routing / state support
+  generally improved. (#1052)
+* `GridModel.selectFirst()` improved to reliably select first visible record even when one or more
+  groupBy levels active. (#1058)
+
+### 📚 Libraries
+
+* ag-Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
+* @blueprint/core `3.14 -> 3.15`
+* @blueprint/datetime `3.7 -> 3.8`
+* react-dropzone `10.0 -> 10.1`
+* react-transition-group `2.6 -> 2.8`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v20.2.1...v21.0.0)
 
 ## v20.2.1 - 2019-03-28
 
@@ -226,10 +329,9 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1044,9 +1146,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

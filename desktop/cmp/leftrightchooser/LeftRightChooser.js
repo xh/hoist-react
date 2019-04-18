@@ -29,7 +29,9 @@ export const [LeftRightChooser, leftRightChooser] = hoistComponent(props =>  {
         [layoutProps] = useLayoutProps(props),
         {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
         gridOptions = {
-            onRowDoubleClicked: (e) => model.moveRows([e.data]),
+            onRowDoubleClicked: (e) => {
+                if (e.data) model.moveRows([e.data]);
+            },
             agOptions: {
                 defaultColDef: {
                     resizable: false

@@ -28,7 +28,7 @@ export const [LoginPanel, loginPanel] = hoistComponent(props => {
     const model = useProvidedModel(LoginPanelModel, props),
         {loginMessage} = XH.appSpec;
 
-    const onKeyPress = (ev) => {
+    const onKeyDown = (ev) => {
         if (ev.key === 'Enter') model.submit();
     };
 
@@ -49,7 +49,7 @@ export const [LoginPanel, loginPanel] = hoistComponent(props => {
                     placeholder: 'Username...',
                     autoFocus: true,
                     commitOnChange: true,
-                    onKeyPress,
+                    onKeyDown,
                     autoComplete: 'on',
                     width: null
                 }),
@@ -59,7 +59,7 @@ export const [LoginPanel, loginPanel] = hoistComponent(props => {
                     placeholder: 'Password...',
                     type: 'password',
                     commitOnChange: true,
-                    onKeyPress,
+                    onKeyDown,
                     autoComplete: 'on',
                     width: null
                 }),

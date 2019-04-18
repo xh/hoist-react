@@ -5,112 +5,213 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {without, isEmpty, findIndex, clone} from 'lodash';
+import {isString, isNil, partition} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
+import {Record} from '../Record';
 
 /**
- * Internal Recordset for Store.
- *
- * This is an immutable object.
+ * Internal container for Record management within a Store.
+ * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
  * @private
  */
 export class RecordSet {
 
-    roots;        // List of records at root, in order as presented to store
-    list;         // List of all records, in "infix" order
-    map;          // map of all records, by id
+    /** @member {BaseStore} - source store. */
+    store;
+    /** @member {Map} - map of all records by id. */
+    records;
+
+    /** @member {Record[]} - lazily constructed array of Records. */
+    _list;
+    /** @member {RecordNode[]} - lazily constructed array of root RecordNodes. */
+    _tree;
 
     /**
-     * @param {Record[]} rootRecords -  ordered list of root records to be included. This array
-     *      will be used and modified by this object and should not be re-used.
+     * @param {BaseStore} store
+     * @param {Map} [records]
      */
-    constructor(rootRecords) {
-        this.roots = rootRecords;
-
-        const {list, map} = this.gatherAllRecords(rootRecords);
-
-        throwIf(
-            list.length != map.size,
-            'Store records cannot contain non-unique IDs.'
-        );
-
-        // If all records are roots (not a tree structure), avoid holding two copies of what will be an identical list.
-        this.list = (rootRecords.length == map.size ? rootRecords : list);
-        this.map = map;
+    constructor(store, records = new Map()) {
+        this.records = records;
+        this.store = store;
     }
 
-    /** Number of records contained in this recordset */
+    /** Total number of records contained in this RecordSet. */
     get count() {
-        return this.list.length;
+        return this.records.size;
+    }
+
+    /** All records as a flat list. */
+    get list() {
+        if (!this._list) {
+            this._list = Array.from(this.records.values());
+        }
+        return this._list;
+    }
+
+    /** All records in a tree representation. */
+    get tree() {
+        if (!this._tree) {
+            this._tree = this.toTree();
+        }
+        return this._tree;
     }
 
     /**
-     * Return a filtered version of this recordset.
+     * Return a filtered version of this RecordSet.
      *
-     * @param {function} filter. If null, this method will return the recordset itself.
+     * @param {function} filter - if null, this method will return the RecordSet itself.
      * @return {RecordSet}
      */
     applyFilter(filter) {
         if (!filter) return this;
-        const newRoots = this.roots.map(r => r.applyFilter(filter));
-        return new RecordSet(without(newRoots, null));
+
+        const passes = new Map(),
+            {records} = this;
+
+        // A record that passes the filter also recursively passes all its parents.
+        const markPass = (rec) => {
+            if (passes.has(rec.id)) return;
+            passes.set(rec.id, rec);
+            const {parent} = rec;
+            if (parent) markPass(parent);
+        };
+
+        records.forEach(rec => {
+            if (filter(rec)) markPass(rec);
+        });
+
+        return new RecordSet(this.store, passes);
     }
 
     /**
-     * Return a version of this recordset with a child removed.
+     * Create a new RecordSet with new rawData to replace this instance.
      *
-     * @param {Record} record to be removed.
+     * Note that this process will re-use pre-existing Records if they are present in the new
+     * dataset (as identified by their ID), contain the same data, and occupy the same place in any
+     * hierarchy across old and new loads.
+     *
+     * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
+     * that have not changed and do not need to be re-evaluated / re-rendered.
+     *
+     * @param {Object[]} rawData
      * @return {RecordSet}
      */
-    removeRecord(record) {
-        return this.applyFilter(r => r.id !== record.id);
+    loadData(rawData) {
+        const {records} = this,
+            newRecords = this.createRecords(rawData);
+
+        if (records.size) {
+            const newKeys = newRecords.keys();
+            for (let key of newKeys) {
+                const currRec = records.get(key),
+                    newRec = newRecords.get(key);
+
+                if (currRec && currRec.isEqual(newRec)) {
+                    newRecords.set(key, currRec);
+                }
+            }
+        }
+
+        return new RecordSet(this.store, newRecords);
     }
 
     /**
-     * Return a version of this recordset with a child added.
-     * NOTE: Currently adding a record at the root is the only supported operation.
+     * Return a version of this RecordSet with a record (and all its children, if any) removed.
      *
-     * @param {Record} record to be added.
+     * @param {(string|number)} id - ID of record to be removed.
      * @return {RecordSet}
      */
-    addRecord(record) {
-        return new RecordSet([...this.roots, record]);
+    removeRecord(id) {
+        const filter = (rec) => {
+            if (rec.id == id) return false;
+            const {parent} = rec;
+            if (parent && !filter(parent)) return false;
+            return true;
+        };
+
+        return this.applyFilter(filter);
     }
 
     /**
-     * Return a version of this recordset with a record replaced.
-     * NOTE: Currently replacing a record at the root is the only supported operation.
+     * Return a version of this RecordSet with records added or updated. Existing records not
+     * matched by ID to rows in the update dataset will be left in place.
      *
-     * @param {Record} oldRecord
-     * @param {Record} newRecord
+     * @param {Object[]} rawData - raw data for records to be added or updated.
      * @return {RecordSet}
      */
-    updateRecord(oldRecord, newRecord) {
-        const newRoots = clone(this.roots),
-            index = findIndex(newRoots, {id: oldRecord.id});
+    updateData(rawData) {
+        const newRecords = this.createRecords(rawData),
+            existingRecords = new Map(this.records);
 
-        if (index < 0) throw XH.exception(`Cannot find Record to update: id = ${oldRecord.id}`);
-
-        newRecord.children = oldRecord.children;
-        newRoots[index] = newRecord;
-
-        return new RecordSet(newRoots);
-    }
-
-    
-    //------------------
-    // Implementation
-    // ------------------
-    gatherAllRecords(records, list = [], map = new Map()) {
-        records.forEach(r => {
-            list.push(r);
-            map.set(r.id, r);
-            if (!isEmpty(r.children)) {
-                this.gatherAllRecords(r.children, list, map);
+        newRecords.forEach((newRecord, id) => {
+            const currRecord = existingRecords.get(id);
+            if (!currRecord || !currRecord.isEqual(newRecord)) {
+                existingRecords.set(id, newRecord);
             }
         });
-        return {list, map};
+
+        return new RecordSet(this.store, existingRecords);
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    createRecords(rawData) {
+        const ret = new Map();
+        rawData.forEach(raw => this.createRecord(raw, ret, null));
+        return ret;
+    }
+
+    createRecord(raw, records, parent) {
+        const {store} = this,
+            {idSpec} = store;
+
+        if (store.processRawData) store.processRawData(raw);
+
+        raw.id = isString(idSpec) ? raw[idSpec] : idSpec(raw);
+
+        throwIf(
+            isNil(raw.id),
+            "Record has a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+        );
+
+        throwIf(
+            records.has(raw.id),
+            `ID ${raw.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
+        );
+
+        const rec = new Record({raw, parent, store});
+        records.set(rec.id, rec);
+
+        if (raw.children) {
+            raw.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
+        }
+    }
+
+    toTree() {
+        const childrenMap = new Map();
+
+        // Pass 1, create nodes.
+        const nodes = this.list.map(record => ({record})),
+            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
+
+        // Pass 2, collect children by parent.
+        nonRoots.forEach(node => {
+            let {parentId} = node.record,
+                children = childrenMap.get(parentId);
+            if (!children) {
+                children = [];
+                childrenMap.set(parentId, children);
+            }
+            children.push(node);
+        });
+
+        // Pass 3, assign children.
+        nodes.forEach(node => {
+            node.children = childrenMap.get(node.record.id) || [];
+        });
+
+        return roots;
     }
 }

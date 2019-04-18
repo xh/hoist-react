@@ -30,8 +30,9 @@ export class ToastSource extends Component {
 
         if (!next) return null;
 
-        if (!next.dismissFn) {
-            next.dismissFn = wait(next.timeout).then(() => next.dismiss());
+        if (!next.dismissIsPending) {
+            wait(next.timeout).then(() => next.dismiss());
+            next.dismissIsPending = true;
         }
         return toast({model: next, key: next.xhId});
     }

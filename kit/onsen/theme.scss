@@ -1,7 +1,5 @@
-@import 'vars';
-
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
-body.xh-app {
+body.xh-app.xh-mobile {
 
   // Background
   .page,
@@ -105,6 +103,11 @@ body.xh-app {
   .button--quiet:active,
   .tabbar__button {
     color: var(--xh-text-color);
+  }
+
+  // Dialogs
+  .dialog-container {
+    border: var(--xh-border-solid);
   }
 
   // Accented
