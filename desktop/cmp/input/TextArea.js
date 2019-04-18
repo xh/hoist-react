@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -32,6 +32,9 @@ export class TextArea extends HoistInput {
 
         /** True to take up the full width of container. */
         fill: PT.bool,
+
+        /** Callback for normalized keydown event. */
+        onKeyDown: PT.func,
 
         /** True to select contents when control receives focus. */
         selectOnFocus: PT.bool,
@@ -75,7 +78,7 @@ export class TextArea extends HoistInput {
             onBlur: this.onBlur,
             onChange: this.onChange,
             onFocus: this.onFocus,
-            onKeyPress: this.onKeyPress
+            onKeyDown: this.onKeyDown
         });
     }
 
@@ -83,8 +86,9 @@ export class TextArea extends HoistInput {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
+        if (this.props.onKeyDown) this.props.onKeyDown(ev);
     };
 
     onFocus = (ev) => {

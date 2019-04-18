@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import ReactDOM from 'react-dom';
@@ -48,11 +48,10 @@ class XHClass {
 
     _initCalled = false;
 
-    //------------------------------------------------------------------
-    // Metadata
-    // The values below are set via webpack.DefinePlugin at build time.
+    //----------------------------------------------------------------------------------------------
+    // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
-    //------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     appCode = xhAppCode;
 
@@ -71,9 +70,10 @@ class XHClass {
     /** Whether build is for local development */
     isDevelopmentMode = xhIsDevelopmentMode;
 
-    //---------------------------
-    // Hoist Services
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
+    // Hoist Core Services
+    // Singleton instances of each service are created and installed within initAsync() below.
+    //----------------------------------------------------------------------------------------------
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -86,14 +86,17 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {LocalStorageService} */
+    localStorageService;
     /** @member {PrefService} */
     prefService;
     /** @member {TrackService} */
     trackService;
 
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
     // Aliased methods
-    //---------------------------
+    // Shortcuts to common core service methods and appSpec properties.
+    //----------------------------------------------------------------------------------------------
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
@@ -108,15 +111,15 @@ class XHClass {
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
 
-    //-------------------------------
+    //---------------------------
     // Models
-    //-------------------------------
+    //---------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
     
-    //-----------------------------
+    //---------------------------
     // Other State
-    //-----------------------------
+    //---------------------------
     exceptionHandler = new ExceptionHandler();
 
     /** State of app - see AppState for valid values. */
@@ -439,12 +442,13 @@ class XHClass {
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh-app class to body element to power Hoist CSS selectors
-        document.body.classList.add('xh-app');
+        // Add xh-app and platform classes to body element to power Hoist CSS selectors.
+        const platformCls = XH.isMobile ? 'xh-mobile' : 'xh-desktop';
+        document.body.classList.add('xh-app', platformCls);
 
         try {
-            await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(TrackService, IdleService, GridExportService);
+            await this.installServicesAsync(FetchService);
+            await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {
@@ -488,7 +492,9 @@ class XHClass {
         this.setAppState(S.INITIALIZING);
         try {
             await this.installServicesAsync(IdentityService);
+            await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(IdleService, GridExportService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

@@ -2,6 +2,9 @@
   font-family: var(--xh-font-family);
   font-size: var(--xh-font-size-px);
 
+  // Suppress resize handles added by browser - we want to manage the size more closely.
+  resize: none;
+
   &.xh-input-invalid {
     border: var(--xh-form-field-invalid-border);
   }

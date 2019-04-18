@@ -58,7 +58,6 @@
 
     .xh-form-field-label {
       padding: 0 var(--xh-pad-half-px) 0 0;
-      min-width: 80px;
     }
   }
 
@@ -102,4 +101,22 @@
 ul.xh-form-field-error-tooltip {
   margin: 0;
   padding: 0 1em 0 2em;
+}
+
+// Toolbar specific style
+.xh-toolbar .xh-form-field {
+  padding: 0;
+  margin: 0 var(--xh-pad-half-px);
+  flex-direction: row;
+  align-items: baseline;
+  overflow: visible !important;
+
+  .xh-form-field-fill {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .xh-form-field-error-msg {
+    margin: 0 var(--xh-pad-px);
+  }
 }

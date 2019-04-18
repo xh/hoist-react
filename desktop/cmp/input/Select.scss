@@ -103,3 +103,12 @@
   }
 }
 
+// Ensure multi-value selects don't overflow vertically in the toolbar
+.xh-toolbar {
+  .xh-select {
+    &__value-container--is-multi {
+      height: 28px;
+      overflow-y: auto !important;
+    }
+  }
+}

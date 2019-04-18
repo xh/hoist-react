@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -13,6 +13,8 @@ import {isArray} from 'lodash';
 import {toJS} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
+
+import './Slider.scss';
 
 /**
  * A slider input to edit either a single number or an array of two (for a range).

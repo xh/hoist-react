@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import debouncePromise from 'debounce-promise';
 import {observable, action, bindable} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -79,7 +80,7 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
-      /** Callback to execute on input focus */
+        /** Callback to execute on input focus */
         onFocus: PT.func,
 
         /** True to show a "clear" button at the right of the control.  Defaults to false. */
@@ -108,6 +109,11 @@ export class Select extends HoistInput {
          * Replaces the `options` prop - use one or the other.
          */
         queryFn: PT.func,
+
+        /**
+         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
+         */
+        queryBuffer: PT.number,
 
         /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -194,7 +200,7 @@ export class Select extends HoistInput {
         }
 
         if (this.asyncMode) {
-            rsProps.loadOptions = this.doQueryAsync;
+            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
             rsProps.loadingMessage = this.loadingMessageFn;
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
@@ -215,7 +221,7 @@ export class Select extends HoistInput {
             item: factory(rsProps),
             className: this.getClassName(),
             onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keypress event
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
@@ -226,7 +232,6 @@ export class Select extends HoistInput {
             width: withDefault(width, 200)
         });
     }
-
 
     onSelectChange = (opt) => {
         this.setInputValue(opt ? opt.label : null);
@@ -243,7 +248,7 @@ export class Select extends HoistInput {
     }
 
     onInputChange = (input, {action}) => {
-        console.log(input, action)
+        console.log(input, action);
         switch (action) {
             case 'input-change':
                 this.setInputValue(input);
@@ -254,7 +259,7 @@ export class Select extends HoistInput {
                 this.setInputValue(null);
                 this.setControlShouldRenderValue(true);
         }
-    }
+    };
 
     onFocus = () => {
         if (this.isTextEditable) {
@@ -262,7 +267,7 @@ export class Select extends HoistInput {
             this.setControlShouldRenderValue(false);
         }
         if (this.props.onFocus) this.props.onFocus();
-    }
+    };
 
     //-------------------------
     // Options / value handling

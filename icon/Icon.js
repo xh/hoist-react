@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import classNames from 'classnames';
@@ -10,6 +10,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
 import {elemFactory} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
+import {toLower} from 'lodash';
 
 import {
     faAddressCard,
@@ -734,7 +735,7 @@ export const convertIconToSvg = function(iconElem, opts) {
  * @return {Element}
  */
 export const fileIcon = function(extension) {
-    switch (extension) {
+    switch (toLower(extension)) {
         case 'png':
         case 'gif':
         case 'jpg':
@@ -743,12 +744,17 @@ export const fileIcon = function(extension) {
         case 'doc':
         case 'docx':
             return Icon.fileWord();
+        case 'csv':
+            return Icon.fileCsv();
         case 'xls':
         case 'xlsx':
             return Icon.fileExcel();
         case 'ppt':
         case 'pptx':
             return Icon.filePowerpoint();
+        case 'msg':
+        case 'eml':
+            return Icon.mail();
         case 'pdf':
             return Icon.filePdf();
         case 'txt':

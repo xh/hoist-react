@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
 
@@ -18,32 +18,44 @@ export class BaseStore {
 
     /**
      * Fields contained in each record.
-     * @member {HoistField[]}
+     * @member {Field[]}
      */
     fields = null;
 
     /**
      * Get a specific field, by name.
      * @param {string} name - field name to locate.
-     * @return {HoistField}
+     * @return {Field}
      */
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
     
-    /** Current records. These represent the post-filtered records. */
+    /**
+     * Records in this store, respecting any filter (if applied).
+     * @return {Record[]}
+     */
     get records() {}
 
-    /** All records.  These are the pre-filtered records. */
+    /**
+     * All records in this store, unfiltered.
+     * @return {Record[]}
+     */
     get allRecords() {}
 
-    /** Current records.  These represent the post-filtered root records. */
-    get rootRecords() {}
+    /**
+     * Records in this store, respecting any filter, returned in a tree structure.
+     * @return {RecordNode[]}
+     */
+    get recordsAsTree() {}
 
-    /** All records.  These are the pre-filtered root records. */
-    get allRootRecords() {}
+    /**
+     * All records in this store, unfiltered, returned in a tree structure.
+     * @return {RecordNode[]}
+     */
+    get allRecordsAsTree() {}
 
-    /** Filter.  Filter function to be applied. */
+    /** Filter function to be applied. */
     get filter() {}
     setFilter(filterFn) {}
 
@@ -60,16 +72,17 @@ export class BaseStore {
     get allEmpty() {return this.allCount === 0}
 
     /**
-     * Get a record by ID. Return null if no record found.
+     * Get a record by ID, or null if no matching record found.
      *
-     * @param {number} id
-     * @param {boolean} filteredOnly - true to skip non-filtered records.
+     * @param {(string|number)} id
+     * @param {boolean} [filteredOnly] - true to skip records excluded by any active filter.
+     * @return {Record}
      */
     getById(id, filteredOnly) {}
 
     /**
      * @param {Object} c - BaseStore configuration.
-     * @param {(string[]|Object[]|HoistField[])} c.fields - names or config objects for Fields.
+     * @param {(string[]|Object[]|Field[])} c.fields - names or config objects for Fields.
      */
     constructor({fields}) {
         this.fields = fields.map(f => {
@@ -79,6 +92,9 @@ export class BaseStore {
         });
     }
 
+    /** Destroy this store, cleaning up any resources used. */
+    destroy() {}
+
     //--------------------
     // For Implementations
     //--------------------
@@ -86,3 +102,10 @@ export class BaseStore {
         return Field;
     }
 }
+
+/**
+ * @typedef {Object} RecordNode - node for a record and its children, representing a tree structure.
+ * @property {Record} record
+ * @property {RecordNode[]} children
+ */
+

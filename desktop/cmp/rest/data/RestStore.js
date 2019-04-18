@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
-import {UrlStore, Record} from '@xh/hoist/data';
+import {UrlStore} from '@xh/hoist/data';
 import {pickBy, filter} from 'lodash';
 
 import {RestField} from './RestField';
@@ -49,7 +49,7 @@ export class RestStore extends UrlStore {
             url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
-            this.deleteRecordInternal(rec);
+            this.removeRecord(rec.id);
         }).linkTo(
             this.loadModel
         );
@@ -77,17 +77,11 @@ export class RestStore extends UrlStore {
             data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
-            response = await XH.fetchService[fetchMethod]({url, body: {data}}),
-            newRec = new Record({fields: this.fields, raw: response.data});
+            response = await XH.fetchService[fetchMethod]({url, body: {data}});
 
-        if (isAdd) {
-            this.addRecordInternal(newRec);
-        } else {
-            this.updateRecordInternal(rec, newRec);
-        }
+        this.updateData([response.data]);
 
         await this.ensureLookupsLoadedAsync();
-        return newRec;
     }
 
     async ensureLookupsLoadedAsync() {

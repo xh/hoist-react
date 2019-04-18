@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
@@ -122,14 +121,14 @@ export class LeftRightChooserModel {
             };
 
         this.leftModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             columns: [rightTextCol, groupCol]
