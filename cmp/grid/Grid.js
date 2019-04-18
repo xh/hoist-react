@@ -238,7 +238,8 @@ export class Grid extends Component {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems
+                getContextMenuItems: this.getContextMenuItems,
+                onCellContextMenu: this.onCellContextMenu
             };
         }
 
@@ -280,6 +281,12 @@ export class Grid extends Component {
         if (!record) selModel.clear();
 
         return this.buildMenuItems(menu.items, record, selModel.records);
+    };
+
+    onCellContextMenu = () => {
+        // Suppress the browser's context menu when the grid's context menu is right-clicked
+        const agMenu = document.getElementsByClassName('ag-menu-list');
+        if (agMenu.length) agMenu[0].oncontextmenu = () => false;
     };
 
     buildMenuItems(recordActions, record, selectedRecords) {
