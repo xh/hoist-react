@@ -173,21 +173,21 @@ export class LeftRightChooserModel {
 
     preprocessData(data) {
         return data
-            .filter(rec => !rec.exclude)
-            .map(raw => {
-                raw.group = raw.group || this._ungroupedName;
-                raw.side = raw.side || 'left';
-                raw.id = isNil(raw.id) ? XH.genId() : raw.id;
-                return raw;
+            .filter(r => !r.exclude)
+            .map(r => {
+                return {
+                    id: XH.genId(),
+                    group: this._ungroupedName,
+                    side: 'left',
+                    ...r
+                };
             });
     }
 
     moveRows(rows) {
         rows.forEach(rec => {
             if (rec.locked) return;
-
-            const rawRec = this._data.find(raw => raw === rec.raw);
-            rawRec.side = (rec.side === 'left' ? 'right' : 'left');
+            rec.raw.side = (rec.side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();

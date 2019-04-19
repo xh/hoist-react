@@ -164,28 +164,22 @@ export class RecordSet {
     }
 
     createRecord(raw, records, parent) {
-        const {store} = this,
-            {idSpec} = store;
+        const {store} = this;
 
-        if (store.processRawData) store.processRawData(raw);
+        let data = raw;
+        if (store.processRawData) {
+            data = store.processRawData(raw);
+            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
+        }
 
-        raw.id = isString(idSpec) ? raw[idSpec] : idSpec(raw);
-
+        const rec = new Record({data, raw, parent, store});
         throwIf(
-            isNil(raw.id),
-            "Record has a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+            records.has(rec.id),
+            `ID ${rec.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
         );
-
-        throwIf(
-            records.has(raw.id),
-            `ID ${raw.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
-        );
-
-        const rec = new Record({raw, parent, store});
         records.set(rec.id, rec);
-
-        if (raw.children) {
-            raw.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
+        if (data.children) {
+            data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
     }
 
