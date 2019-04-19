@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '@xh/hoist/utils/js';
 import {startCase, isEqual as lodashIsEqual} from 'lodash';
 import {XH} from '@xh/hoist/core';
 

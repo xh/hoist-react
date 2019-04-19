@@ -8,7 +8,6 @@ import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {isNil} from 'lodash';
 
 /**
  * A Model for managing the state of a LeftRightChooser.

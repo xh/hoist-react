@@ -18,6 +18,10 @@
   `agOptions.defaultGroupSortComparator`).
 * The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
   generate custom classes based on the Record and/or Column being rendered.
+  
+### 💥 Breaking Changes
+* The argument `LocalStore.processRawData` now expects a function that *returns* a modified object with the
+  necessary edits.  This allows implementations to safely *clone* the raw data rather than mutating it.     
 
 ### ⚙️ Technical
 

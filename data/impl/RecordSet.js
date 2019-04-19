@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {isString, isNil, partition} from 'lodash';
+import {partition} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
 import {Record} from '../Record';
 
