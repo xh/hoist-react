@@ -17,7 +17,7 @@ import {Record} from '../Record';
  */
 export class RecordSet {
 
-    /** @member {BaseStore} - source store. */
+    /** @member {Store} - source store. */
     store;
     /** @member {Map} - map of all records by id. */
     records;
@@ -28,7 +28,7 @@ export class RecordSet {
     _tree;
 
     /**
-     * @param {BaseStore} store
+     * @param {Store} store
      * @param {Map} [records]
      */
     constructor(store, records = new Map()) {
@@ -175,7 +175,7 @@ export class RecordSet {
         const rec = new Record({data, raw, parent, store});
         throwIf(
             records.has(rec.id),
-            `ID ${rec.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
+            `ID ${rec.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
         );
         records.set(rec.id, rec);
         if (data.children) {

@@ -13,7 +13,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {singularize, pluralize} from '@xh/hoist/utils/js';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {BaseStore} from '@xh/hoist/data';
+import {Store} from '@xh/hoist/data';
 import {reduce} from 'lodash';
 
 /**
@@ -28,7 +28,7 @@ export class StoreCountLabel extends Component {
     static propTypes = {
 
         /** Store to count.  Specify this or 'gridModel' */
-        store: PT.instanceOf(BaseStore),
+        store: PT.instanceOf(Store),
 
         /** GridModel with Store that this control should count. Specify this or 'store' */
         gridModel: PT.instanceOf(GridModel),

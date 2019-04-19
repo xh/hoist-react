@@ -7,12 +7,21 @@
 
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
-import {BaseStore} from './BaseStore';
+import {Field} from './Field';
+import {isString} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Primary BaseStore implementation for local, in-memory data.
+ * A managed and observable set of local, in-memory records.
  */
-export class LocalStore extends BaseStore {
+export class Store {
+
+    /**
+     * Fields contained in each record.
+     * @member {Field[]}
+     */
+    fields = null;
+
 
     /** @member {function} */
     processRawData;
@@ -29,7 +38,8 @@ export class LocalStore extends BaseStore {
     _filter = null;
 
     /**
-     * @param {Object} c - LocalStore configuration.
+     * @param {Object} c - Store configuration.
+     * @param {(string[]|Object[]|Field[])} c.fields - names or config objects for Fields.
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
@@ -39,16 +49,15 @@ export class LocalStore extends BaseStore {
      *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
      *      components bound to this store will not be able to maintain record state across reloads.
      * @param {function} [c.filter] - filter function to be run.
-     * @param {...*} [c.baseStoreArgs] - Additional properties to pass to BaseStore.
      */
     constructor(
         {
+            fields,
             processRawData = null,
             filter = null,
-            idSpec = 'id',
-            ...baseStoreArgs
+            idSpec = 'id'
         }) {
-        super(baseStoreArgs);
+        this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
         this.setFilter(filter);
         this.idSpec = idSpec;
@@ -116,38 +125,97 @@ export class LocalStore extends BaseStore {
         return this._dataLastUpdated;
     }
 
-    //-----------------------------
-    // Implementation of Store
-    //-----------------------------
-    get records()           {return this._filtered.list}
-    get allRecords()        {return this._all.list}
-    get recordsAsTree()     {return this._filtered.tree}
-    get allRecordsAsTree()  {return this._all.tree}
 
+    /**
+     * Get a specific field, by name.
+     * @param {string} name - field name to locate.
+     * @return {Field}
+     */
+    getField(name) {
+        return this.fields.find(it => it.name === name);
+    }
+
+    /**
+     * Records in this store, respecting any filter (if applied).
+     * @return {Record[]}
+     */
+    get records()           {
+        return this._filtered.list;
+    }
+
+
+    /**
+     * All records in this store, unfiltered.
+     * @return {Record[]}
+     */
+    get allRecords()        {return this._all.list}
+
+
+    /** Filter function to be applied. */
     get filter()            {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
         this.rebuildFiltered();
     }
 
+    /** Get the count of all records loaded into the store. */
     get allCount() {
         return this._all.count;
     }
 
+    /** Get the count of the filtered record in the store. */
     get count() {
         return this._filtered.count;
     }
 
+    /** Is the store empty after filters have been applied? */
+    get empty() {return this.count === 0}
+
+    /** Is this store empty before filters have been applied? */
+    get allEmpty() {return this.allCount === 0}
+
+    /**
+     * Get a record by ID, or null if no matching record found.
+     *
+     * @param {(string|number)} id
+     * @param {boolean} [filteredOnly] - true to skip records excluded by any active filter.
+     * @return {Record}
+     */
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.records.get(id);
     }
-    
+
+    //--------------------
+    // For Implementations
+    //--------------------
+    get defaultFieldClass() {
+        return Field;
+    }
+
+    /** Destroy this store, cleaning up any resources used. */
+    destroy() {}
+
     //------------------------
     // Private Implementation
     //------------------------
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
+    }
+
+    parseFields(fields) {
+        const ret = fields.map(f => {
+            if (f instanceof Field) return f;
+            if (isString(f)) f = {name: f};
+            return new this.defaultFieldClass(f);
+        });
+
+        throwIf(
+            ret.some(it => it.name == 'id'),
+            `Applications should not specify a field for the id of a record.  An id property is created 
+            automatically for all records. See Store.idSpec for more info.`
+        );
+        return ret;
     }
 }

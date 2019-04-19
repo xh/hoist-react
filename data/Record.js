@@ -17,7 +17,7 @@ export class Record {
 
     /** @member {(string|number)} */
     id;
-    /** @member {BaseStore} */
+    /** @member {Store} */
     store;
     /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
     xhTreePath;
@@ -44,14 +44,14 @@ export class Record {
      * @param {Object} c - Record configuration
      * @param {Object} c.data - data for constructing the record.
      * @param {Object} c.raw - raw data for record.
-     * @param {BaseStore} c.store - store containing this record.
+     * @param {Store} c.store - store containing this record.
      * @param {Record} [c.parent] - parent record, if any.
      */
     constructor({data, raw, store, parent}) {
         const {idSpec} = store,
             id = isString(idSpec) ? data[idSpec] : idSpec(data);
 
-        throwIf(isNil(id), "Record has an undefined ID. Use 'LocalStore.idSpec' to resolve a unique ID for each record.");
+        throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 
         this.id = id;
         this.store = store;
@@ -61,7 +61,6 @@ export class Record {
 
         store.fields.forEach(f => {
             const {name} = f;
-            if (name == 'id') return;
             throwIf(
                 name in this,
                 `Field name "${name}" cannot be used for data. It is reserved as a top-level property of the Record class.`
