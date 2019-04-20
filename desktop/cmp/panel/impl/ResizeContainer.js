@@ -6,7 +6,7 @@
  */
 import {Children, Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {frame, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './Dragger';
 import {collapser} from './Collapser';
@@ -58,8 +58,8 @@ export class ResizeContainer extends Component {
             item = Children.only(this.props.children);
 
         return collapsed ?
-            box({item}) :
-            box({item, [dim]: size});
+            frame({item}) :
+            frame({item, [dim]: size});
     }
 }
 export const resizeContainer = elemFactory(ResizeContainer);

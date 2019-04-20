@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box} from '@xh/hoist/cmp/layout';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import './VersionBar.scss';
@@ -28,7 +28,7 @@ export class VersionBar extends Component {
 
         if (!isVisible) return null;
 
-        return box({
+        return hbox({
             justifyContent: 'center',
             alignItems: 'center',
             flex: 'none',

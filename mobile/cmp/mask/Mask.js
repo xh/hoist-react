@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
+import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {progressCircular} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -60,7 +60,7 @@ export class Mask extends Component {
                 items: [
                     showSpinner ? progressCircular({indeterminate: true}) : null,
                     showSpinner ? vspacer(10) : null,
-                    message ? box({className: 'xh-mask-text', item: message}) : null
+                    message ? div({className: 'xh-mask-text', item: message}) : null
                 ]
             })
         });
