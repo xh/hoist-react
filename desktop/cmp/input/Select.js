@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
 import debouncePromise from 'debounce-promise';
-import {observable, action, bindable} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -135,13 +135,14 @@ export class Select extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    @bindable inputValue = null;
-    @bindable controlShouldRenderValue = null;
+    // Controlled value of the internal text input.
+    @observable inputValue = null;
 
     // Prop flags that switch core behavior.
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
     get multiMode() {return !!this.props.enableMulti}
+    get editableMode() {return withDefault(this.props.enableFilter, true) && !this.props.enableMulti}
 
     constructor(props) {
         super(props);
@@ -154,7 +155,6 @@ export class Select extends HoistInput {
             },
             fireImmediately: true
         });
-        this.controlShouldRenderValue = true;
     }
 
     reactSelectRef = React.createRef();
@@ -192,9 +192,8 @@ export class Select extends HoistInput {
                 ref: this.reactSelectRef
             };
 
-        if (this.isTextEditable) {
+        if (this.editableMode) {
             rsProps.inputValue = this.inputValue || '';
-            rsProps.controlShouldRenderValue = this.controlShouldRenderValue;
             rsProps.onInputChange = this.onInputChange;
             rsProps.escapeClearsValue = true;
         }
@@ -233,40 +232,31 @@ export class Select extends HoistInput {
         });
     }
 
+    @action
     onSelectChange = (opt) => {
-        this.setInputValue(opt ? opt.label : null);
+        this.inputValue = opt ? opt.label : null;
         this.noteValueChange(opt);
-    }
+    };
 
     //-------------------------
     // Text input handling
     //-------------------------
-
-    get isTextEditable() {
-        const {props} = this;
-        return withDefault(props.enableFilter, true) && !props.enableMulti;
-    }
-
-    onInputChange = (input, {action}) => {
-        console.log(input, action);
-        switch (action) {
-            case 'input-change':
-                this.setInputValue(input);
-                this.setControlShouldRenderValue(false);
-                if (!input) this.noteValueChange(null);
-                break;
-            case 'input-blur':
-                this.setInputValue(null);
-                this.setControlShouldRenderValue(true);
+    @action
+    onInputChange = (value, {action}) => {
+        if (action == 'input-change') {
+            this.inputValue = value;
+            if (!value) this.noteValueChange(null);
+        } else if (action == 'input-blur') {
+            this.inputValue = null;
         }
     };
 
-    onFocus = () => {
-        if (this.isTextEditable) {
-            if (this.renderValue) this.setInputValue(this.renderValue.label);
-            this.setControlShouldRenderValue(false);
+    @action
+    onFocus = (ev) => {
+        if (this.editableMode) {
+            this.inputValue = this.renderValue ? this.renderValue.label : null;
         }
-        if (this.props.onFocus) this.props.onFocus();
+        if (this.props.onFocus) this.props.onFocus(ev);
     };
 
     //-------------------------

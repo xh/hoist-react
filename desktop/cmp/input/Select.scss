@@ -14,7 +14,6 @@
 
   // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
   .xh-select {
-
     &__control {
       background: var(--xh-input-bg);
       border: none;
@@ -50,7 +49,6 @@
     &__value-container input {
       opacity: 1 !important;
     }
-
 
     &__indicator {
       padding: 0 var(--xh-pad-half-px);
