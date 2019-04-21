@@ -20,11 +20,12 @@
   generate custom classes based on the Record and/or Column being rendered.
   
 ### 💥 Breaking Changes
+* The class `LocalStore` has been renamed `Store`, and is now the main implementation and base class
+  for Store Data.  The extraneous abstract superclass `BaseStore` has been removed.  
 * The argument `LocalStore.processRawData` now expects a function that *returns* a modified object with the
   necessary edits.  This allows implementations to safely *clone* the raw data rather than mutating it.     
 
 ### ⚙️ Technical
-
 * `Grid` now performs an important performance workaround when loading a new dataset that would
   result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
   component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
