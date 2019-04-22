@@ -42,17 +42,17 @@ export class GridExportService {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const columns = this.getExportableColumns(gridModel, includeHiddenCols),
-            recordNodes = gridModel.store.recordsAsTree,
+            records = gridModel.store.records.filter(r => r.parentId == null),
             meta = this.getColumnMetadata(columns),
             rows = [];
 
-        if (recordNodes.length === 0) {
+        if (records.length === 0) {
             XH.toast({message: 'No data found to export', intent: 'danger', icon: Icon.warning()});
             return;
         }
 
         rows.push(this.getHeaderRow(columns, type));
-        rows.push(...this.getRecordRowsRecursive(gridModel, recordNodes, columns, 0));
+        rows.push(...this.getRecordRowsRecursive(gridModel, records, columns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
@@ -127,21 +127,22 @@ export class GridExportService {
         return {data: headers, depth: 0};
     }
 
-    getRecordRowsRecursive(gridModel, recordNodes, columns, depth) {
+    getRecordRowsRecursive(gridModel, records, columns, depth) {
         const {sortBy, treeMode} = gridModel,
-            ret = [],
-            nodes = [...recordNodes];
+            ret = [];
+
+        records = [...records];
         
         [...sortBy].reverse().forEach(it => {
             const compFn = it.comparator.bind(it),
                 direction = it.sort === 'desc' ? -1 : 1;
-            nodes.sort((a, b) => compFn(a.record[it.colId], b.record[it.colId]) * direction);
+            records.sort((a, b) => compFn(a[it.colId], b[it.colId]) * direction);
         });
 
-        nodes.forEach(node => {
-            ret.push(this.getRecordRow(node.record, columns, depth));
-            if (treeMode && node.children.length) {
-                ret.push(...this.getRecordRowsRecursive(gridModel, node.children, columns, depth + 1));
+        records.forEach(record => {
+            ret.push(this.getRecordRow(record, columns, depth));
+            if (treeMode && record.children.length) {
+                ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));
             }
         });
 

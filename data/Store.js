@@ -16,53 +16,49 @@ import {throwIf} from '@xh/hoist/utils/js';
  */
 export class Store {
 
-    /**
-     * Fields contained in each record.
-     * @member {Field[]}
-     */
+    /** @member {Field[]} */
     fields = null;
-
-
-    /** @member {function} */
-    processRawData;
     /** @member {(function|string)} */
     idSpec;
+    /** @member {function} */
+    processRawData;
 
-    /** @member {Date} */
-    @observable.ref _dataLastUpdated;
-    /** @member {RecordSet} */
+    /**
+     * Timestamp (ms) of last time this store's data was changed via loadData() or as marked by noteDataUpdated().
+     */
+    @observable lastUpdated;
+
+
     @observable.ref _all;
-    /** @member {RecordSet} */
     @observable.ref _filtered;
-
     _filter = null;
 
     /**
      * @param {Object} c - Store configuration.
-     * @param {(string[]|Object[]|Field[])} c.fields - names or config objects for Fields.
-     * @param {function} [c.processRawData] - function to run on each individual data object
-     *      presented to loadData() prior to creating a record from that object.  This function should
-     *      return a data object, taking care to clone the original object if edits are necessary.
+     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or config objects for Fields.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a property (default is 'id') or a function to
      *      create an id from a record. If there is no natural id to select/generate, you can use
      *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
      *      components bound to this store will not be able to maintain record state across reloads.
+     * @param {function} [c.processRawData] - function to run on each individual data object
+     *      presented to loadData() prior to creating a record from that object.  This function should
+     *      return a data object, taking care to clone the original object if edits are necessary.
      * @param {function} [c.filter] - filter function to be run.
      */
     constructor(
         {
             fields,
+            idSpec = 'id',
             processRawData = null,
-            filter = null,
-            idSpec = 'id'
+            filter = null
         }) {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
         this.setFilter(filter);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
-        this._dataLastUpdated = new Date();
+        this.lastUpdated = Date.now();
     }
 
     /**
@@ -71,7 +67,12 @@ export class Store {
      * If raw data objects have a `children` property it will be expected to be an array
      * and its items will be recursively processed into child records.
      *
-     * Note {@see RecordSet.loadData} regarding the re-use of existing Records for efficiency.
+     * Note that this process will re-use pre-existing Records if they are present in the new
+     * dataset (as identified by their ID), contain the same data, and occupy the same place in any
+     * hierarchy across old and new loads.
+     *
+     * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
+     * that have not changed and do not need to be re-evaluated / re-rendered.
      *
      * @param {Object[]} rawData
      */
@@ -79,19 +80,21 @@ export class Store {
     loadData(rawData) {
         this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
-        this._dataLastUpdated = new Date();
+        this.lastUpdated = Date.now();
     }
 
     /**
      * Add or update data in store. Existing records not matched by ID to rows in the update
      * dataset will be left in place.
+     *
+     *
      * @param {Object[]} rawData
      */
     @action
     updateData(rawData) {
         this._all = this._all.updateData(rawData);
         this.rebuildFiltered();
-        this._dataLastUpdated = new Date();
+        this.lastUpdated = Date.now();
     }
 
     /**
@@ -102,7 +105,7 @@ export class Store {
     removeRecord(id) {
         this._all = this._all.removeRecord(id);
         this.rebuildFiltered();
-        this._dataLastUpdated = new Date();
+        this.lastUpdated = Date.now();
     }
 
     /**
@@ -115,14 +118,7 @@ export class Store {
     @action
     noteDataUpdated() {
         this.rebuildFiltered();
-        this._dataLastUpdated = new Date();
-    }
-    
-    /**
-     * The last time this store's data was changed via loadData() or as marked by noteDataUpdated().
-     */
-    get dataLastUpdated() {
-        return this._dataLastUpdated;
+        this.lastUpdated = Date.now();
     }
 
 
@@ -143,14 +139,14 @@ export class Store {
         return this._filtered.list;
     }
 
-
     /**
      * All records in this store, unfiltered.
      * @return {Record[]}
      */
-    get allRecords()        {return this._all.list}
-
-
+    get allRecords()        {
+        return this._all.list;
+    }
+    
     /** Filter function to be applied. */
     get filter()            {return this._filter}
     setFilter(filterFn) {
@@ -178,12 +174,28 @@ export class Store {
      * Get a record by ID, or null if no matching record found.
      *
      * @param {(string|number)} id
-     * @param {boolean} [filteredOnly] - true to skip records excluded by any active filter.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      * @return {Record}
      */
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.records.get(id);
+    }
+
+    /**
+     * Get children records for a record.
+     *
+     * See also the 'children' and 'allChildren' properties on Record. These
+     * should be more convenient for most applications.
+     *
+     * @param {(string|number)} id - id of record to be queried.
+     * @param {boolean} [filteredOnly] - true to skip records excluded by any active filter.
+     * @return {Record[]}
+     */
+    getChildrenById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all,
+            ret = rs.childrenMap.get(id);
+        return ret ? ret : [];
     }
 
     //--------------------

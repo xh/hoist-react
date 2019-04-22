@@ -31,6 +31,22 @@ export class Record {
     }
 
     /**
+     * The children of this record, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
+    get children() {
+        return this.store.getChildrenById(this.id, true);
+    }
+
+    /**
+     * All children of this record unfiltered.
+     * @returns {Record[]}
+     */
+    get allChildren() {
+        return this.store.getChildrenById(this.id, false);
+    }
+
+    /**
      * Construct a Record from a raw source object. Extract values from the source object for all
      * Fields defined on the given Store and install them as top-level properties on the new Record.
      *

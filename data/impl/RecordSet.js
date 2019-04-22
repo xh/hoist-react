@@ -4,8 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {partition} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
 import {Record} from '../Record';
 
@@ -17,31 +15,31 @@ import {Record} from '../Record';
  */
 export class RecordSet {
 
-    /** @member {Store} - source store. */
     store;
-    /** @member {Map} - map of all records by id. */
-    records;
+    records;        // Records by id
+    childrenMap;    // Children by parentId
+    _list;          // Lazy, list representation of all records.
 
-    /** @member {Record[]} - lazily constructed array of Records. */
-    _list;
-    /** @member {RecordNode[]} - lazily constructed array of root RecordNodes. */
-    _tree;
-
-    /**
-     * @param {Store} store
-     * @param {Map} [records]
-     */
     constructor(store, records = new Map()) {
-        this.records = records;
         this.store = store;
+        this.records = records;
+
+        const childrenMap = this.childrenMap = new Map();
+        records.forEach(record => {
+            const {parentId} = record,
+                children = childrenMap.get(parentId);
+            if (!children) {
+                childrenMap.set(parentId, [record]);
+            } else {
+                children.push(record);
+            }
+        });
     }
 
-    /** Total number of records contained in this RecordSet. */
     get count() {
-        return this.records.size;
+        return this.records.size();
     }
 
-    /** All records as a flat list. */
     get list() {
         if (!this._list) {
             this._list = Array.from(this.records.values());
@@ -49,20 +47,6 @@ export class RecordSet {
         return this._list;
     }
 
-    /** All records in a tree representation. */
-    get tree() {
-        if (!this._tree) {
-            this._tree = this.toTree();
-        }
-        return this._tree;
-    }
-
-    /**
-     * Return a filtered version of this RecordSet.
-     *
-     * @param {function} filter - if null, this method will return the RecordSet itself.
-     * @return {RecordSet}
-     */
     applyFilter(filter) {
         if (!filter) return this;
 
@@ -84,19 +68,6 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    /**
-     * Create a new RecordSet with new rawData to replace this instance.
-     *
-     * Note that this process will re-use pre-existing Records if they are present in the new
-     * dataset (as identified by their ID), contain the same data, and occupy the same place in any
-     * hierarchy across old and new loads.
-     *
-     * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
-     * that have not changed and do not need to be re-evaluated / re-rendered.
-     *
-     * @param {Object[]} rawData
-     * @return {RecordSet}
-     */
     loadData(rawData) {
         const {records} = this,
             newRecords = this.createRecords(rawData);
@@ -116,12 +87,6 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-    /**
-     * Return a version of this RecordSet with a record (and all its children, if any) removed.
-     *
-     * @param {(string|number)} id - ID of record to be removed.
-     * @return {RecordSet}
-     */
     removeRecord(id) {
         const filter = (rec) => {
             if (rec.id == id) return false;
@@ -133,13 +98,6 @@ export class RecordSet {
         return this.applyFilter(filter);
     }
 
-    /**
-     * Return a version of this RecordSet with records added or updated. Existing records not
-     * matched by ID to rows in the update dataset will be left in place.
-     *
-     * @param {Object[]} rawData - raw data for records to be added or updated.
-     * @return {RecordSet}
-     */
     updateData(rawData) {
         const newRecords = this.createRecords(rawData),
             existingRecords = new Map(this.records);
@@ -181,31 +139,5 @@ export class RecordSet {
         if (data.children) {
             data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
-    }
-
-    toTree() {
-        const childrenMap = new Map();
-
-        // Pass 1, create nodes.
-        const nodes = this.list.map(record => ({record})),
-            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
-
-        // Pass 2, collect children by parent.
-        nonRoots.forEach(node => {
-            let {parentId} = node.record,
-                children = childrenMap.get(parentId);
-            if (!children) {
-                children = [];
-                childrenMap.set(parentId, children);
-            }
-            children.push(node);
-        });
-
-        // Pass 3, assign children.
-        nodes.forEach(node => {
-            node.children = childrenMap.get(node.record.id) || [];
-        });
-
-        return roots;
     }
 }

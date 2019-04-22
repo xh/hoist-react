@@ -338,7 +338,7 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.dataLastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
             run: ([api, records]) => {
                 if (!api) return;
 
