@@ -64,7 +64,6 @@ export const DarkTheme = {
         lineColor: '#707073',
         minorGridLineColor: '#505053',
         tickColor: '#707073',
-        // default tickWidth here ??
         tickLength: 5,
         title: {
             style: {
