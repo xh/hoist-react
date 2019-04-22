@@ -37,7 +37,7 @@ export class RecordSet {
     }
 
     get count() {
-        return this.records.size();
+        return this.records.size;
     }
 
     get list() {
