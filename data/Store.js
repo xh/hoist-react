@@ -28,7 +28,6 @@ export class Store {
      */
     @observable lastUpdated;
 
-
     @observable.ref _all;
     @observable.ref _filtered;
     _filter = null;
@@ -87,7 +86,6 @@ export class Store {
      * Add or update data in store. Existing records not matched by ID to rows in the update
      * dataset will be left in place.
      *
-     *
      * @param {Object[]} rawData
      */
     @action
@@ -120,7 +118,6 @@ export class Store {
         this.rebuildFiltered();
         this.lastUpdated = Date.now();
     }
-
 
     /**
      * Get a specific field, by name.
@@ -189,7 +186,7 @@ export class Store {
      * should be more convenient for most applications.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [filteredOnly] - true to skip records excluded by any active filter.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
     getChildrenById(id, fromFiltered = false) {
