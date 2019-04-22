@@ -9,6 +9,7 @@ import {Record} from '../Record';
 
 /**
  * Internal container for Record management within a Store.
+ *
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
  * @private
@@ -17,36 +18,47 @@ export class RecordSet {
 
     store;
     records;        // Records by id
-    childrenMap;    // Children by parentId
-    _list;          // Lazy, list representation of all records.
+
+    _childrenMap;   // Lazy map of children by parentId
+    _list;          // Lazy list of all records.
+    _rootList;      // Lazy list of root records.
 
     constructor(store, records = new Map()) {
         this.store = store;
         this.records = records;
-
-        const childrenMap = this.childrenMap = new Map();
-        records.forEach(record => {
-            const {parentId} = record,
-                children = childrenMap.get(parentId);
-            if (!children) {
-                childrenMap.set(parentId, [record]);
-            } else {
-                children.push(record);
-            }
-        });
     }
 
     get count() {
         return this.records.size;
     }
 
+    //----------------------------------------------------------
+    // Lazy getters
+    // Avoid memory allocation and work -- in many cases
+    // clients will never ask for list or tree representations.
+    //----------------------------------------------------------
+    get childrenMap() {
+        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.records);
+        return this._childrenMap;
+    }
+
     get list() {
-        if (!this._list) {
-            this._list = Array.from(this.records.values());
-        }
+        if (!this._list) this._list = Array.from(this.records.values());
         return this._list;
     }
 
+    get rootList() {
+        if (!this._rootList) {
+            const {childrenMap, list} = this;
+            this._rootList = (childrenMap.size == 0 ? list : list.filter(r => r.parentId == null));
+        }
+        return this._rootList;
+    }
+
+    //----------------------------------------------
+    // Editing operations that spawn new recordsets.
+    // Preserve all record references we can!
+    //-----------------------------------------------
     applyFilter(filter) {
         if (!filter) return this;
 
@@ -139,5 +151,21 @@ export class RecordSet {
         if (data.children) {
             data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
+    }
+
+    computeChildrenMap(records) {
+        const ret = new Map();
+        records.forEach(r => {
+            const {parentId} = r;
+            if (parentId) {
+                let children = ret.get(parentId);
+                if (!children) {
+                    ret.set(parentId, [r]);
+                } else {
+                    children.push(r);
+                }
+            }
+        });
+        return ret;
     }
 }

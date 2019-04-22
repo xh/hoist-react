@@ -143,7 +143,27 @@ export class Store {
     get allRecords()        {
         return this._all.list;
     }
-    
+
+    /**
+     * Root records in this store, respecting any filter (if applied).
+     * If this store is not hierarchical, this will be identical to 'records'.
+     *
+     * @return {Record[]}
+     */
+    get rootRecords()           {
+        return this._filtered.rootList;
+    }
+
+    /**
+     * Root records in this store, unfiltered.
+     * If this store is not hierarchical, this will be identical to 'allRecords'.
+     *
+     * @return {Record[]}
+     */
+    get allRootRecords()        {
+        return this._all.rootList;
+    }
+
     /** Filter function to be applied. */
     get filter()            {return this._filter}
     setFilter(filterFn) {

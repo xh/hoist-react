@@ -42,7 +42,7 @@ export class GridExportService {
         if (isFunction(filename)) filename = filename(gridModel);
 
         const columns = this.getExportableColumns(gridModel, includeHiddenCols),
-            records = gridModel.store.records.filter(r => r.parentId == null),
+            records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(columns),
             rows = [];
 

@@ -14,7 +14,6 @@ import {singularize, pluralize} from '@xh/hoist/utils/js';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {Store} from '@xh/hoist/data';
-import {reduce} from 'lodash';
 
 /**
  * A component to display the number of records in a given store.
@@ -58,7 +57,7 @@ export class StoreCountLabel extends Component {
         if (!store) return null;
 
         const includeChildren = withDefault(this.props.includeChildren, false),
-            count = includeChildren ? store.count : this.rootCount(store),
+            count = includeChildren ? store.count : store.rootRecords.length,
             countStr = fmtNumber(count, {precision: 0}),
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 
@@ -75,14 +74,6 @@ export class StoreCountLabel extends Component {
     getActiveStore() {
         const {gridModel, store} = this.props;
         return store || (gridModel && gridModel.store);
-    }
-
-    rootCount(store) {
-        return reduce(
-            store.records,
-            (ret, val) => val.parentId == null ? ret + 1 : ret,
-            0
-        );
     }
 }
 export const storeCountLabel = elemFactory(StoreCountLabel);
