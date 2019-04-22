@@ -25,11 +25,12 @@
 ### 💥 Breaking Changes
 * The class `LocalStore` has been renamed `Store`, and is now the main implementation and base class
   for Store Data.  The extraneous abstract superclass `BaseStore` has been removed.  
-* `LocalStore.dataLastUpdated` had been renamed `Store.lastUpdated` on the new class and is now a 
+* `Store.dataLastUpdated` had been renamed `Store.lastUpdated` on the new class and is now a 
   simple timestamp (ms) rather than a javascript date object.  
-* The argument `LocalStore.processRawData` now expects a function that *returns* a modified object with the
+* The constructor argument `Store.processRawData` now expects a function that *returns* a modified object with the
   necessary edits.  This allows implementations to safely *clone* the raw data rather than mutating it.     
-
+* The method `Store.removeRecord` has been replaced with the method `Store.removeRecords`.  This will
+  facilitate efficient bulk deletes. 
 ### ⚙️ Technical
 * `Grid` now performs an important performance workaround when loading a new dataset that would
   result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
