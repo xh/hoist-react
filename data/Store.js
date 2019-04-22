@@ -8,7 +8,7 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {isString} from 'lodash';
+import {isString, castArray} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -101,6 +101,7 @@ export class Store {
      */
     @action
     removeRecords(ids) {
+        ids = castArray(ids);
         this._all = this._all.removeRecords(ids);
         this.rebuildFiltered();
         this.lastUpdated = Date.now();
