@@ -4,7 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual} from 'lodash';
+import {isEqual, isNil, isString} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Wrapper object for each data element within a {@see BaseStore}.
@@ -14,11 +15,9 @@ import {isEqual} from 'lodash';
  */
 export class Record {
 
-    static RESERVED_FIELD_NAMES = ['parentId', 'store', 'xhTreePath']
-
     /** @member {(string|number)} */
     id;
-    /** @member {BaseStore} */
+    /** @member {Store} */
     store;
     /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
     xhTreePath;
@@ -32,6 +31,23 @@ export class Record {
     }
 
     /**
+     * The children of this record, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
+    get children() {
+        return this.store.getChildrenById(this.id, true);
+    }
+
+    /**
+     * All children of this record unfiltered.
+     * @returns {Record[]}
+     */
+    get allChildren() {
+        return this.store.getChildrenById(this.id, false);
+    }
+
+
+    /**
      * Construct a Record from a raw source object. Extract values from the source object for all
      * Fields defined on the given Store and install them as top-level properties on the new Record.
      *
@@ -43,20 +59,30 @@ export class Record {
      * requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
+     * @param {Object} c.data - data for constructing the record.
      * @param {Object} c.raw - raw data for record.
-     * @param {BaseStore} c.store - store containing this record.
+     * @param {Store} c.store - store containing this record.
      * @param {Record} [c.parent] - parent record, if any.
      */
-    constructor({raw, store, parent}) {
-        const id = raw.id;
+    constructor({data, raw, store, parent}) {
+        const {idSpec} = store,
+            id = isString(idSpec) ? data[idSpec] : idSpec(data);
+
+        throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 
         this.id = id;
         this.store = store;
+        this.raw = raw;
         this.parentId = parent ? parent.id : null;
         this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
 
         store.fields.forEach(f => {
-            this[f.name] = f.parseVal(raw[f.name]);
+            const {name} = f;
+            throwIf(
+                name in this,
+                `Field name "${name}" cannot be used for data. It is reserved as a top-level property of the Record class.`
+            );
+            this[name] = f.parseVal(data[name]);
         });
     }
 

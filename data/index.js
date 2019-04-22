@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './BaseStore';
 export * from './Field';
-export * from './LocalStore';
+export * from './Store';
 export * from './Record';
 export * from './RecordAction';
 export * from './StoreSelectionModel';
