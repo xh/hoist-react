@@ -57,7 +57,7 @@ export class StoreCountLabel extends Component {
         if (!store) return null;
 
         const includeChildren = withDefault(this.props.includeChildren, false),
-            count = includeChildren ? store.count : store.rootRecords.length,
+            count = includeChildren ? store.count : store.rootCount,
             countStr = fmtNumber(count, {precision: 0}),
             unitLabel = count === 1 ? this.oneUnit : this.manyUnits;
 

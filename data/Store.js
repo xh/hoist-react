@@ -97,11 +97,11 @@ export class Store {
 
     /**
      * Remove a record (and all its children, if any) from the store.
-     * @param {(string|number)} id - ID of the the record to be removed.
+     * @param {(string[]|number[])} ids - IDs of the records to be removed.
      */
     @action
-    removeRecord(id) {
-        this._all = this._all.removeRecord(id);
+    removeRecords(ids) {
+        this._all = this._all.removeRecords(ids);
         this.rebuildFiltered();
         this.lastUpdated = Date.now();
     }
@@ -176,9 +176,19 @@ export class Store {
         return this._all.count;
     }
 
-    /** Get the count of the filtered record in the store. */
+    /** Get the count of the filtered records in the store. */
     get count() {
         return this._filtered.count;
+    }
+
+    /** Get the count of the filtered root records in the store. */
+    get rootCount() {
+        return this._filtered.rootCount;
+    }
+
+    /** Get the count of all root records in the store. */
+    get allRootCount() {
+        return this._all.rootCount;
     }
 
     /** Is the store empty after filters have been applied? */

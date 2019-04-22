@@ -18,6 +18,8 @@ export class RecordSet {
 
     store;
     records;        // Records by id
+    count;
+    rootCount;
 
     _childrenMap;   // Lazy map of children by parentId
     _list;          // Lazy list of all records.
@@ -26,10 +28,8 @@ export class RecordSet {
     constructor(store, records = new Map()) {
         this.store = store;
         this.records = records;
-    }
-
-    get count() {
-        return this.records.size;
+        this.count = records.size;
+        this.rootCount = this.countRoots(records);
     }
 
     //----------------------------------------------------------
@@ -49,8 +49,8 @@ export class RecordSet {
 
     get rootList() {
         if (!this._rootList) {
-            const {childrenMap, list} = this;
-            this._rootList = (childrenMap.size == 0 ? list : list.filter(r => r.parentId == null));
+            const {list, count, rootCount} = this;
+            this._rootList = (count == rootCount ? list : list.filter(r => r.parentId == null));
         }
         return this._rootList;
     }
@@ -99,17 +99,6 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-    removeRecord(id) {
-        const filter = (rec) => {
-            if (rec.id == id) return false;
-            const {parent} = rec;
-            if (parent && !filter(parent)) return false;
-            return true;
-        };
-
-        return this.applyFilter(filter);
-    }
-
     updateData(rawData) {
         const newRecords = this.createRecords(rawData),
             existingRecords = new Map(this.records);
@@ -122,6 +111,12 @@ export class RecordSet {
         });
 
         return new RecordSet(this.store, existingRecords);
+    }
+
+    removeRecords(ids) {
+        const removes = new Set();
+        ids.forEach(id => this.gatherDescendants(id, removes));
+        return this.applyFilter(r => !removes.has(r.id));
     }
 
     //------------------------
@@ -158,7 +153,7 @@ export class RecordSet {
         records.forEach(r => {
             const {parentId} = r;
             if (parentId) {
-                let children = ret.get(parentId);
+                const children = ret.get(parentId);
                 if (!children) {
                     ret.set(parentId, [r]);
                 } else {
@@ -167,5 +162,23 @@ export class RecordSet {
             }
         });
         return ret;
+    }
+
+    countRoots(records) {
+        let ret = 0;
+        records.forEach(rec => {
+            if (rec.parentId == null) ret++;
+        });
+        return ret;
+    }
+
+    gatherDescendants(id, idSet) {
+        if (!idSet.has(id)) {
+            idSet.add(id);
+            const children = this.childrenMap.get(id);
+            if (children) {
+                children.forEach(child => this.gatherDescendants(child.id, idSet));
+            }
+        }
     }
 }

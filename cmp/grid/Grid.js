@@ -363,10 +363,8 @@ export class Grid extends Component {
                     console.debug(`Loaded ${records.length} records into ag-Grid: ${Date.now() - now}ms`);
 
                     // Set flag if data is hierarchical.
-                    this._isHierarchical = model.store.allRecords.some(
-                        rec => rec.parentId != null
-                    );
-
+                    this._isHierarchical = store.allRootCount != store.allCount;
+                  
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
