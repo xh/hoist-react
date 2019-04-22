@@ -18,10 +18,15 @@
   `agOptions.defaultGroupSortComparator`).
 * The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
   generate custom classes based on the Record and/or Column being rendered.
+* The `Record` object now provides an additional getter `Record.allChildren` to return all children of the
+  record, irrespective of the current filter in place on the record's store.  This supplements the
+  existing `Record.children` getter, which returns only the children meeting the filter.   
   
 ### 💥 Breaking Changes
 * The class `LocalStore` has been renamed `Store`, and is now the main implementation and base class
   for Store Data.  The extraneous abstract superclass `BaseStore` has been removed.  
+* `LocalStore.dataLastUpdated` had been renamed `Store.lastUpdated` on the new class and is now a 
+  simple timestamp (ms) rather than a javascript date object.  
 * The argument `LocalStore.processRawData` now expects a function that *returns* a modified object with the
   necessary edits.  This allows implementations to safely *clone* the raw data rather than mutating it.     
 
@@ -31,7 +36,7 @@
   component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
   grid wrapper will now detect when this is likely and proactively clear all data using a different
   API call before loading the new dataset.
-* The implementations of Hoist store classes, `RecordSet`, and `Record` have been updated to more
+* The implementations `Store`, `RecordSet`, and `Record` have been updated to more
   efficiently re-use existing record references when loading, updating, or filtering data in a
   store. This keeps the Record objects within a store as stable as possible, and allows additional
   optimizations by ag-Grid and its `deltaRowDataMode`.
