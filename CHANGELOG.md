@@ -59,6 +59,8 @@
   changes to fields within a form. #1031
 * Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
   (This can happen during impersonation and is defended against in server-side code.) #675
+* Include null values in `elem`'s children object. Fixes a React-related bug in which conditionally
+  rendered children caused their siblings to remount.
 
 ## v21.0.2 - 2019-04-05
 
