@@ -54,7 +54,7 @@
 * `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
    play the role of placeholders when using conditional rendering, and skipping them was causing React to 
    trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
-   unneccessary divergence with the behavior of JSX.
+   unnecessary divergence with the behavior of JSX.
 
 
 ### 🐞 Bug Fixes
