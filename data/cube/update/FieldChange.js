@@ -10,14 +10,14 @@
  *
  * The field member of this class is a reference to the field definition in the Cube.
  */
-Ext.define('XH.cube.update.FieldChange', {
-    field: null,   // XH.cube.Field
-    oldVal: null,
-    newVal: null,
+export class FieldChange {
+    field = null;   // XH.cube.Field
+    oldVal = null;
+    newVal = null;
 
     constructor(field, oldVal, newVal) {
         this.field = field;
         this.oldVal = oldVal;
         this.newVal = newVal;
     }
-});
+}

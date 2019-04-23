@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-Ext.define('XH.cube.filter.Filter', {
+export class Filter {
 
     matches(record) {
         throw {name: 'Cube Filter Error', message: 'Abstract class. Not implemented.'};
     }
-});
+}

@@ -5,9 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-Ext.define('XH.cube.filter.NoMatchFilter', {
+export class NoMatchFilter {
 
     matches(record) {
         return false;
     }
-});
+}

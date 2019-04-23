@@ -5,16 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require RecordUpdate.js
+import {RecordUpdate} from '@xh/hoist/data/cube/update/RecordUpdate';
 
 /**
  * Represents an addition of a record.
  */
-Ext.define('XH.cube.update.RecordAdd', {
-    extend: XH.cube.update.RecordUpdate,
-    type: 'ADD',
+export class RecordAdd extends RecordUpdate {
+    type = 'ADD';
 
     constructor(record) {
-        this.callParent([record]);
+        super(record);
     }
-});
+}

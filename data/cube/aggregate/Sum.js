@@ -5,11 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require Aggregator.js
+import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-Ext.define('XH.cube.aggregate.Sum', {
-    extend: XH.cube.aggregate.Aggregator,
-    singleton: true,
+export class Sum extends Aggregator {
 
     aggregate(records, fieldName) {
         return records.reduce((ret, it) => {
@@ -17,11 +15,11 @@ Ext.define('XH.cube.aggregate.Sum', {
             if (val != null) ret += val;
             return ret;
         }, null);
-    },
+    }
 
     replace(records, currAgg, update) {
         if (update.oldVal != null) currAgg -= update.oldVal;
         if (update.newVal != null) currAgg += update.newVal;
         return currAgg;
     }
-});
+}

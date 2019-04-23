@@ -5,18 +5,19 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {isString} from 'lodash';
 
 /**
  * Metadata used to define a measure or dimension in XH.cube.Cube.
  */
-Ext.define('XH.cube.Field', {
+export class Field {
 
-    name: null,
-    displayName: null,
-    aggregator: null,
-    isDimension: false,
-    isLeafDimension: false,
-    parentDimension: null,
+    name = null;
+    displayName = null;
+    aggregator = null;
+    isDimension = false;
+    isLeafDimension = false;
+    parentDimension = null;
 
     /**
      * Construct this object.
@@ -44,14 +45,14 @@ Ext.define('XH.cube.Field', {
         this.isDimension = isDimension;
         this.isLeafDimension = isLeafDimension;
         this.parentDimension = parentDimension;
-    },
+    }
 
     //---------------------------
     // Implementation
     //---------------------------
     parseAggregator(val) {
         const AG = XH.cube.aggregate;
-        if (Ext.isString(val)) {
+        if (isString(val)) {
             switch (val) {
                 case 'MAX':         return AG.Max;
                 case 'MIN':         return AG.Min;
@@ -65,4 +66,4 @@ Ext.define('XH.cube.Field', {
         if (val instanceof AG.Aggregator) return val;
         return AG.Unique;
     }
-});
+}

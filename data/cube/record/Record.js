@@ -2,16 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-Ext.define('XH.cube.record.Record', {
 
-    fields: null,
-    parent: null,
-    children: null,
-    data: null,
 
-    isLeaf: true,
+export class Record {
+
+    fields = null;
+    parent = null;
+    children = null;
+    data = null;
+
+    isLeaf = true;
 
     constructor(fields, data) {
         this.fields = fields;
@@ -26,16 +28,16 @@ Ext.define('XH.cube.record.Record', {
                 myData[name] = data[name];
             });
         }
-    },
+    }
 
-    getId()         {return this.data.id},
-    get(fieldName)  {return this.data[fieldName]},
+    getId()         {return this.data.id}
+    get(fieldName)  {return this.data[fieldName]}
 
     /**
      * Update the state of this record to reflect changed data.
      *
-     * @param change, RecordChange to be applied to this record.
-     * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
+     * @param change RecordChange to be applied to this record.
+     * @param appliedUpdates map of RecordUpdate that have occurred during this batch.
      */
     processChange(change, appliedUpdates = {}) {
         const id = this.getId(),
@@ -47,14 +49,15 @@ Ext.define('XH.cube.record.Record', {
         change.fieldChanges.forEach(it => {
             data[it.field.name] = it.newVal;
         });
+
         if (parent) {
             parent.processChildChange(change, appliedUpdates);
         }
-    },
+    }
 
     eachField(fn) {
-        return Ext.Object.each(this.fields, fn);
-    },
+        return forEach(this.fields, fn);
+    }
 
     //------------------------------------
     // Implementation
@@ -70,5 +73,5 @@ Ext.define('XH.cube.record.Record', {
         return new XH.cube.update.RecordRefresh(a.record);
     }
 
-});
+}
 

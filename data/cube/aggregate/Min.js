@@ -5,11 +5,9 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require Aggregator.js
+import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-Ext.define('XH.cube.aggregate.Min', {
-    extend: XH.cube.aggregate.Aggregator,
-    singleton: true,
+export class Min extends Aggregator {
 
     aggregate(records, fieldName) {
         return records.reduce((ret, it) => {
@@ -19,7 +17,7 @@ Ext.define('XH.cube.aggregate.Min', {
             }
             return ret;
         }, null);
-    },
+    }
 
     replace(records, currAgg, update) {
         if (update.newVal <= currAgg) return update.newVal;
@@ -27,4 +25,4 @@ Ext.define('XH.cube.aggregate.Min', {
 
         return currAgg;
     }
-});
+}

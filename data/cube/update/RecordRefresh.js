@@ -5,16 +5,14 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require RecordUpdate.js
+import {RecordUpdate} from '@xh/hoist/data/cube/update/RecordUpdate';
 
 /**
  * Represents a change to all fields of an existing record.
  */
-Ext.define('XH.cube.update.RecordRefresh', {
-    extend: XH.cube.update.RecordUpdate,
-    type: 'REFRESH',
+export class RecordRefresh extends RecordUpdate {
 
     constructor(record) {
-        this.callParent([record]);
+        super(record);
     }
-});
+}

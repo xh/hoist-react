@@ -5,13 +5,11 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require Aggregator.js
+import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-Ext.define('XH.cube.aggregate.Null', {
-    extend: XH.cube.aggregate.Aggregator,
-    singleton: true,
+export class Null extends Aggregator {
 
     aggregate(records, fieldName) {
         return null;
     }
-});
+}

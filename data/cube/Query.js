@@ -5,19 +5,20 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
+import {values} from 'lodash';
 
 /**
  *  Specification used to define the shape of data to be consumed from cube.
  *  This is the primary object used to define and alter a XH.cube.View.
  */
-Ext.define('XH.cube.Query', {
+export class Query {
 
-    fields: null,           // Map of String (field name) -> XH.cube.Field
-    dimensions: null,       // list of XH.cube.Fields on which to group and aggregate
-    filters: null,          // list of XH.cube.Filters
-    includeRoot: false,     // Include a root aggregate in results
-    includeLeaves: false,   // Include leaves in results
-    cube: null,             // Associated cube
+    fields = null;           // Map of String (field name) -> XH.cube.Field
+    dimensions = null;       // list of XH.cube.Fields on which to group and aggregate
+    filters = null;          // list of XH.cube.Filters
+    includeRoot = false;     // Include a root aggregate in results
+    includeLeaves = false;   // Include leaves in results
+    cube = null;             // Associated cube
 
     /**
      * Create this object.
@@ -48,10 +49,10 @@ Ext.define('XH.cube.Query', {
         this.filters = this.parseFilters(filters);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
-    },
+    }
 
     clone(overrides) {
-        const conf = Ext.apply({
+        const conf = Object.assign({
             dimensions: this.getDimensionNames(),
             fields: this.getFieldNames(),
             filters: this.filters,
@@ -61,19 +62,19 @@ Ext.define('XH.cube.Query', {
         }, overrides);
 
         return new XH.cube.Query(conf);
-    },
+    }
 
     getFieldsAsList() {
-        return Ext.Object.getValues(this.fields);
-    },
+        return values(this.fields);
+    }
 
     getFieldNames() {
         return this.getFieldsAsList().map(f => f.name);
-    },
+    }
 
     getDimensionNames() {
         return this.dimensions ? this.dimensions.map(f => f.name) : [];
-    },
+    }
 
     filtersAsString() {
         let ret = 'root';
@@ -83,7 +84,7 @@ Ext.define('XH.cube.Query', {
             });
         }
         return ret;
-    },
+    }
 
     //---------------------------
     // Implementation
@@ -100,7 +101,7 @@ Ext.define('XH.cube.Query', {
             ret[name] = field;
         });
         return ret;
-    },
+    }
 
     parseDimensions(names) {
         if (!names) return null;
@@ -111,7 +112,7 @@ Ext.define('XH.cube.Query', {
             }
             return field;
         });
-    },
+    }
 
     parseFilters(filters) {
         if (!filters) return null;
@@ -122,4 +123,4 @@ Ext.define('XH.cube.Query', {
         });
     }
 
-});
+}

@@ -5,12 +5,12 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-Ext.define('XH.cube.aggregate.Aggregator', {
+export class Aggregator {
 
     /**
      * Aggregate values
      */
-    aggregate(records, fieldName) {},
+    aggregate(records, fieldName) {}
 
     /**
      * Adjust an aggregated value, by replacing one of its constituent components.
@@ -26,4 +26,4 @@ Ext.define('XH.cube.aggregate.Aggregator', {
     replace(records, currAgg, change) {
         return this.aggregate(records, change.field.name);
     }
-});
+}

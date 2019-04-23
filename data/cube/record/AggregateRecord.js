@@ -5,16 +5,15 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require Record.js
+import {Record} from '@xh/hoist/data/cube/record/Record';
 
-Ext.define('XH.cube.record.AggregateRecord', {
-    extend: XH.cube.record.Record,
+class AggregateRecord extends Record {
 
-    isLeaf: false,
-    dim: null,
+    isLeaf = false;
+    dim = null;
 
     constructor(fields, id, children, dim, val) {
-        this.callParent([fields]);
+        super(fields);
 
         const data = this.data = {};
         data.id = id;
@@ -28,7 +27,7 @@ Ext.define('XH.cube.record.AggregateRecord', {
         this.children = children;
 
         this.computeAggregates();
-    },
+    }
 
     computeAggregates() {
         this.eachField((name, field) => {
@@ -37,7 +36,7 @@ Ext.define('XH.cube.record.AggregateRecord', {
                 this.data[name] = aggregator.aggregate(this.children, name);
             }
         });
-    },
+    }
 
     /**
      * Note that a child of this record has changed, and update the state of this
@@ -73,4 +72,4 @@ Ext.define('XH.cube.record.AggregateRecord', {
             this.processChange(myChange, appliedUpdates);
         }
     }
-});
+}

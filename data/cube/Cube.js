@@ -8,6 +8,8 @@
 
 import {assign, isEmpty, merge, forEach} from 'lodash';
 import {RecordAdd, RecordChange, FieldChange} from '/update';
+import {Field} from './Field';
+import {Record} from '@xh/hoist/data/cube/record/Record';
 
 /**
  * An object for grouping and aggregating data on multiple dimensions.
@@ -122,7 +124,6 @@ class Cube {
         return ret;
     }
 
-,
 
     createRecord(raw) {
         const id = raw[this._idProperty];

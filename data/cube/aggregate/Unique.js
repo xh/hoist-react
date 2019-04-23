@@ -5,22 +5,22 @@
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
 
-//= require Aggregator.js
+import {isEmpty} from 'lodash';
 
-Ext.define('XH.cube.aggregate.Unique', {
-    extend: XH.cube.aggregate.Aggregator,
-    singleton: true,
+import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
+
+export class Unique extends Aggregator {
 
     aggregate(records, fieldName) {
-        if (Ext.isEmpty(records)) return null;
+        if (isEmpty(records)) return null;
 
         const val = records[0].get(fieldName);
         return records.every(it => it.get(fieldName) == val) ? val : null;
-    },
+    }
 
     replace(records, currAgg, update) {
         if (records.length == 1) return update.newVal;
 
         return update.newVal == currAgg ? currAgg : null;
     }
-});
+}

@@ -4,10 +4,9 @@
  *
  * Copyright © 2018 Extremely Heavy Industries Inc.
  */
+import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-Ext.define('XH.cube.aggregate.SumStrict', {
-    extend: XH.cube.aggregate.Aggregator,
-    singleton: true,
+export class SumStrict extends Aggregator {
 
     aggregate(records, fieldName) {
         if (!records.length || records.some(it => it.get(fieldName) == null)) return null;
@@ -16,7 +15,7 @@ Ext.define('XH.cube.aggregate.SumStrict', {
             ret += it.get(fieldName);
             return ret;
         }, 0);
-    },
+    }
 
     replace(records, currAgg, update) {
         const {oldVal, newVal} = update;
@@ -25,4 +24,4 @@ Ext.define('XH.cube.aggregate.SumStrict', {
         }
         return currAgg - oldVal + newVal;
     }
-});
+}
