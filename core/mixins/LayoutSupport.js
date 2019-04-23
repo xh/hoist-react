@@ -12,7 +12,9 @@ import {pick, isNumber, isString, forOwn, omit} from 'lodash';
  * This mixin provides support for flexbox related styles that are set as top-level properties
  * on a component.
  *
- * The following properties will be supported:
+ * The following properties are typically supported, although individual components might override
+ * or not fully support all of these, depending on their particular requirements:
+ *
  *     margin, marginTop, marginRight, marginBottom, marginLeft,
  *     padding, paddingTop, paddingRight, paddingBottom, paddingLeft,
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
@@ -21,10 +23,28 @@ import {pick, isNumber, isString, forOwn, omit} from 'lodash';
  *     overflow, overflowX, overflowY,
  *     top, left, position, display
  *
- * This mixin also promises that the Component will respect and respond to these properties.
- * Components will typically delegate this responsibility to a child component that also
- * implements LayoutSupport. `Box` is typically the Component that is ultimately rendered
- * and will handle this by outputting a div with appropriate styles.
+ * This mixin requires that the Component respect and will actually respond to these properties.
+ * Components can delegate this responsibility to a child component that also implements
+ * LayoutSupport, often one of the `Box` or `Frame` classes. (In the end these will render a `Box`
+ * that applies the requested layout by outputting a div with appropriate styles.)
+ *
+ * A component can use the methods provided to accomplish this like so:
+ *
+ * ```
+ * @LayoutSupport
+ * class MyComponent extends Component {
+ *      render() {
+ *          const {foo, ...rest} = this.getNonLayoutProps();
+ *          return vbox({
+ *              ...this.getLayoutProps(),
+ *              items: [
+ *                  childA({foo}),
+ *                  childB({...rest})
+ *              ]
+ *          })
+ *      }
+ * }
+ * ```
  */
 export function LayoutSupport(C) {
     return applyMixin(C, {
@@ -55,7 +75,7 @@ export function LayoutSupport(C) {
                 const dimConfig = pick(ret, dimKeys);
                 forOwn(dimConfig, (v, k) => {ret[k] = toPx(v)});
 
-                // Extra handling for margin and padding to support TLBR multi-value strings.
+                // Extra handling for margin and padding to support TRBL multi-value strings.
                 if (ret.margin) ret.margin = toTlbrPx(ret.margin);
                 if (ret.padding) ret.padding = toTlbrPx(ret.padding);
 

@@ -12,9 +12,9 @@ import {div} from './Tags';
 import './Layout.scss';
 
 /**
- * A Component that supports flexbox-based layout of its contents.
+ * Core building blocks for application layouts.
  *
- * Box is the component that provides the core implementation of the LayoutSupport mixin.
+ * Box is the component that provides the core implementation of the {@see LayoutSupport} mixin.
  * It renders a div and merges all layout props to that div's `style` property.
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.

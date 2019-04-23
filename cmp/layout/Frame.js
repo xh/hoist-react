@@ -11,8 +11,8 @@ import './Layout.scss';
 import {box} from './Box';
 
 /**
- * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
- * creating nested layouts.
+ * A {@see Box} class that flexes to grow and stretch within its *own* parent via `flex:'auto'`.
+ * Useful for creating space-filling nested layouts.
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
