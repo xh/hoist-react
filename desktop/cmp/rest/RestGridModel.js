@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {pickBy, filter} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 export const addAction = {
     text: 'Add',
