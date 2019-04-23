@@ -33,6 +33,14 @@
   than mutating it.
 * The method `Store.removeRecord` has been replaced with the method `Store.removeRecords`. This will
   facilitate efficient bulk deletes.
+* The low-level `Box` component no longer applies default flex-related styles. Previously `Box` and
+  `HBox` were functionally identical, given that `Box` declared `display: 'flex'` and the default
+  for flex boxes is `flex-direction: 'column'`. Now `Box` makes no assumptions about flexing its
+  children and acts as a simpler replacement for `div` with the convenience of `@LayoutSupport`.
+  * Apps which relied on the default flexing of `Box` should replace those usages with `HBox`.
+  * Additionally, all box and frame related styles are applied via pre-existing `.xh-` CSS classes,
+    and are no longer applied directly to the rendered DOM element. (This change is not expected to
+    require app-level adjustments.)
 
 ### ⚙️ Technical
 
