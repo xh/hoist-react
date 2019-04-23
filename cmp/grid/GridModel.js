@@ -7,7 +7,7 @@
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
+import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {
     ColChooserModel as DesktopColChooserModel,
     StoreContextMenu
@@ -58,7 +58,7 @@ export class GridModel {
     //------------------------
     // Immutable public properties
     //------------------------
-    /** @member {BaseStore} */
+    /** @member {Store} */
     store;
     /** @member {StoreSelectionModel} */
     selModel;
@@ -109,8 +109,8 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {(BaseStore|Object)} [c.store] - a Store instance, or a config with which to create a
-     *      default LocalStore. If not supplied, store fields will be inferred from columns config.
+     * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
+     *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
@@ -575,17 +575,19 @@ export class GridModel {
     parseStore(store) {
         store = withDefault(store, {});
 
-        if (store instanceof BaseStore) {
+        if (store instanceof Store) {
             return store;
         }
 
         if (isPlainObject(store)) {
-
             // Ensure store config has a complete set of fields for all configured columns.
             const fields = store.fields || [],
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
                 colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
+
+            // ID is always present on a Record, yet will never be listed within store.fields.
+            pull(missingFieldNames, 'id');
 
             if (missingFieldNames.length) {
                 store = {
@@ -594,11 +596,11 @@ export class GridModel {
                 };
             }
 
-            return this.markManaged(new LocalStore(store));
+            return this.markManaged(new Store(store));
         }
 
         throw XH.exception(
-            'The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
     }
 
     parseSelModel(selModel) {

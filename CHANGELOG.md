@@ -40,6 +40,21 @@
   `agOptions.defaultGroupSortComparator`).
 * The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
   generate custom classes based on the Record and/or Column being rendered.
+* The `Record` object now provides an additional getter `Record.allChildren` to return all children
+  of the record, irrespective of the current filter in place on the record's store. This supplements
+  the existing `Record.children` getter, which returns only the children meeting the filter.
+
+### 💥 Breaking Changes
+
+* The class `LocalStore` has been renamed `Store`, and is now the main implementation and base class
+  for Store Data. The extraneous abstract superclass `BaseStore` has been removed.
+* `Store.dataLastUpdated` had been renamed `Store.lastUpdated` on the new class and is now a simple
+  timestamp (ms) rather than a Javascript Date object.
+* The constructor argument `Store.processRawData` now expects a function that *returns* a modified
+  object with the necessary edits. This allows implementations to safely *clone* the raw data rather
+  than mutating it.
+* The method `Store.removeRecord` has been replaced with the method `Store.removeRecords`. This will
+  facilitate efficient bulk deletes.
 
 ### ⚙️ Technical
 
@@ -48,16 +63,21 @@
   component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
   grid wrapper will now detect when this is likely and proactively clear all data using a different
   API call before loading the new dataset.
-* The implementations of Hoist store classes, `RecordSet`, and `Record` have been updated to more
-  efficiently re-use existing record references when loading, updating, or filtering data in a
-  store. This keeps the Record objects within a store as stable as possible, and allows additional
-  optimizations by ag-Grid and its `deltaRowDataMode`.
+* The implementations `Store`, `RecordSet`, and `Record` have been updated to more efficiently
+  re-use existing record references when loading, updating, or filtering data in a store. This keeps
+  the Record objects within a store as stable as possible, and allows additional optimizations by
+  ag-Grid and its `deltaRowDataMode`.
 * When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
   the declared `Field.type`. The unused `Field.nullable` has been removed.
 * `LocalStorageService` now uses both the `appCode` and current username for its namespace key,
   ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
   profile, or when admin impersonation is active. The service will automatically perform a one-time
   migration of existing local state from the old namespace to the new. #674
+* `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
+   play the role of placeholders when using conditional rendering, and skipping them was causing React to 
+   trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
+   unnecessary divergence with the behavior of JSX.
+
 
 ### 🐞 Bug Fixes
 
