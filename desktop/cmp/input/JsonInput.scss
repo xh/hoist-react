@@ -5,6 +5,7 @@
 
 .xh-json-input {
   display: flex;
+  flex-direction: column;
 
   &.xh-input-invalid {
     div.CodeMirror {
@@ -18,7 +19,7 @@
     }
   }
 
-  .CodeMirror {
+  & > .CodeMirror {
     height: 100px;
     flex: 1;
     display: flex;
@@ -27,5 +28,16 @@
     .CodeMirror-scroll {
       flex: 1;
     }
+  }
+}
+
+.xh-form-field-inline .xh-json-input {
+  flex-direction: row;
+
+  & > .CodeMirror {
+    // Flex items won't shrink below their minimum content size, unless a width / min-width is defined.
+    // See https://dfmcphee.com/flex-items-and-min-width-0/
+    width: 0;
+    min-width: 0;
   }
 }

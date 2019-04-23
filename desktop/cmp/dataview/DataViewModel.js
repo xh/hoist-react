@@ -25,8 +25,8 @@ export class DataViewModel {
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
-     * @param {(BaseStore|Object)} c.store - a Store instance, or a config with which to create a
-     *      default LocalStore. The store is the source for the view's data.
+     * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
+     *      default Store. The store is the source for the view's data.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.

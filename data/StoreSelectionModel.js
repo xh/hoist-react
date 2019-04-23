@@ -16,7 +16,7 @@ import {castArray, intersection, union} from 'lodash';
 @HoistModel
 export class StoreSelectionModel {
 
-    /** @member {BaseStore} */
+    /** @member {Store} */
     store;
     /** @member {string} */
     mode;
@@ -25,7 +25,7 @@ export class StoreSelectionModel {
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
-     * @param {BaseStore} c.store - Store containing the data.
+     * @param {Store} c.store - Store containing the data.
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
