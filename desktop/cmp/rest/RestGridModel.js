@@ -91,9 +91,6 @@ export class RestGridModel {
     @managed
     formModel = null;
 
-    @managed
-    loadModel = new PendingTaskModel();
-
     get store() {return this.gridModel.store}
 
     get selModel() {return this.gridModel.selModel}
