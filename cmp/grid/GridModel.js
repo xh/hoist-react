@@ -580,13 +580,13 @@ export class GridModel {
         }
 
         if (isPlainObject(store)) {
-
             // Ensure store config has a complete set of fields for all configured columns.
             const fields = store.fields || [],
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
                 colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
 
+            // ID is always present on a Record, yet will never be listed within store.fields.
             pull(missingFieldNames, 'id');
 
             if (missingFieldNames.length) {

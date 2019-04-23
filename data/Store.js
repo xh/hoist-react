@@ -24,7 +24,8 @@ export class Store {
     processRawData;
 
     /**
-     * Timestamp (ms) of last time this store's data was changed via loadData() or as marked by noteDataUpdated().
+     * @member {number} - timestamp (ms) of the last time this store's data was changed via
+     *      loadData() or as marked by noteDataUpdated().
      */
     @observable lastUpdated;
 
@@ -34,7 +35,7 @@ export class Store {
 
     /**
      * @param {Object} c - Store configuration.
-     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or config objects for Fields.
+     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or Field config objects.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a property (default is 'id') or a function to
      *      create an id from a record. If there is no natural id to select/generate, you can use
@@ -166,7 +167,7 @@ export class Store {
     }
 
     /** Filter function to be applied. */
-    get filter()            {return this._filter}
+    get filter() {return this._filter}
     setFilter(filterFn) {
         this._filter = filterFn;
         this.rebuildFiltered();
@@ -213,8 +214,8 @@ export class Store {
     /**
      * Get children records for a record.
      *
-     * See also the 'children' and 'allChildren' properties on Record. These
-     * should be more convenient for most applications.
+     * See also the 'children' and 'allChildren' properties on Record - those getters will likely
+     * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.

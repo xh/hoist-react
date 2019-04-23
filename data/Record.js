@@ -8,7 +8,7 @@ import {isEqual, isNil, isString} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Wrapper object for each data element within a {@see BaseStore}.
+ * Wrapper object for each data element within a {@see Store}.
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
@@ -17,13 +17,14 @@ export class Record {
 
     /** @member {(string|number)} */
     id;
-    /** @member {Store} */
-    store;
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
-    xhTreePath;
-
     /** @member {(string|number)} */
     parentId;
+    /** @member {Store} */
+    store;
+    /** @member {Object} */
+    raw;
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
+    xhTreePath;
 
     /** @returns {Record} */
     get parent() {
@@ -59,8 +60,9 @@ export class Record {
      * requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
-     * @param {Object} c.data - data for constructing the record.
-     * @param {Object} c.raw - raw data for record.
+     * @param {Object} c.data - data used to construct this record,
+     *      pre-processed if applicable by `store.processRawData()`.
+     * @param {Object} c.raw - the same data, prior to any store pre-processing.
      * @param {Store} c.store - store containing this record.
      * @param {Record} [c.parent] - parent record, if any.
      */
