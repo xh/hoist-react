@@ -51,6 +51,11 @@
   ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
   profile, or when admin impersonation is active. The service will automatically perform a one-time
   migration of existing local state from the old namespace to the new. #674
+* `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
+   play the role of placeholders when using conditional rendering, and skipping them was causing React to 
+   trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
+   unneccessary divergence with the behavior of JSX.
+
 
 ### 🐞 Bug Fixes
 
@@ -59,8 +64,6 @@
   changes to fields within a form. #1031
 * Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
   (This can happen during impersonation and is defended against in server-side code.) #675
-* Include null values in `elem`'s children object. Fixes a React-related bug in which conditionally
-  rendered children caused their siblings to remount.
 
 ## v21.0.2 - 2019-04-05
 

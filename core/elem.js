@@ -42,7 +42,7 @@ export function elem(type, config = {}) {
     // 1) Convenience omission syntax.
     if (omit) return null;
 
-    // 2) Read children from item[s] config. Ensure empty array is returned when no children are present.
+    // 2) Read children from item[s] config.
     const itemConfig = item || items,
         children = (itemConfig === undefined ? [] : castArray(itemConfig));
 
