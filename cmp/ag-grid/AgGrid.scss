@@ -37,7 +37,7 @@
   .ag-row {
     background-color: var(--xh-grid-bg);
 
-    &.ag-row-selected, &:active {
+    &.ag-row-selected {
       background-color: var(--xh-grid-bg-highlight);
     }
 
