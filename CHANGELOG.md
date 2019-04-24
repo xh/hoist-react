@@ -1,6 +1,6 @@
 # Changelog
 
-## v22.0.0-SNAPSHOT (under development)
+## v22.0.0-rc1  2019-04-24
 
 ### 🎁 New Features
 
