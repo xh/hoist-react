@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Record, FieldChange, RecordChange} from '@xh/hoist/data/cube';
+import {FieldChange, RecordChange} from '@xh/hoist/data/cube';
+import {Record} from './Record';
 
 export class AggregateRecord extends Record {
 

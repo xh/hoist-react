@@ -31,13 +31,13 @@ export class Field {
     isLeafDimension = false;
     parentDimension = null;
 
-    static maxAggregator = new MaxAggregator();
-    static minAggregator = new MinAggregator();
-    static nullAggregator = new NullAggregator();
-    static sumAggregator = new SumAggregator();
-    static sumStrictAggregator = new SumStrictAggregator();
-    static uniqueAggregator = new UniqueAggregator();
-    static singleAggregator = new SingleAggregator();
+    maxAggregator = new MaxAggregator();
+    minAggregator = new MinAggregator();
+    nullAggregator = new NullAggregator();
+    sumAggregator = new SumAggregator();
+    sumStrictAggregator = new SumStrictAggregator();
+    uniqueAggregator = new UniqueAggregator();
+    singleAggregator = new SingleAggregator();
 
 
     /**

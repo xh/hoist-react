@@ -89,7 +89,7 @@ export class Query {
     // Implementation
     //---------------------------
     parseFields(names) {
-        const cubeFields = this.cube.getFields();
+        const cubeFields = this.cube.fields;
         if (!names) return cubeFields;
         const ret = {};
         names.forEach(name => {

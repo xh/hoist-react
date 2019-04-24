@@ -8,6 +8,7 @@
 
 import {Field} from './Field';
 import {Record} from '@xh/hoist/data/cube/record/Record';
+import {values} from 'lodash';
 
 /**
  * An object for grouping and aggregating data on multiple dimensions.
@@ -67,7 +68,7 @@ export class Cube {
     loadData(rawData, info) {
         this._recordMap = this.processRawData(rawData);
         this._info = info;
-        this._connectedViews.forEach(it => it.noteCubeLoaded);
+        this._connectedViews.forEach(it => it.noteCubeLoaded());
     }
 
     //--------------------
