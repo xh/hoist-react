@@ -67,12 +67,8 @@ export class Query {
         return new Query(conf);
     }
 
-    getFieldsAsList() {
-        return values(this.fields);
-    }
-
     getFieldNames() {
-        return this.getFieldsAsList().map(f => f.name);
+        return values(this.fields).map(f => f.name);
     }
 
     getDimensionNames() {

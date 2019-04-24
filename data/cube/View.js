@@ -10,25 +10,14 @@ import {
     Cube,
     AggregateRecord,
     Record,
-    RecordAdd,
-    RecordChange,
-    RecordRefresh,
     ValueFilter
 } from '@xh/hoist/data/cube';
-import {values, isEmpty, keyBy, forEach, clone} from 'lodash';
+import {isEmpty, groupBy, forEach, clone} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- *
- * This object will fire the following events against itself:
- *
- *      'dataloaded'  -- all records and info may have been changed.
- *      'recordsupdated' -- provides an array of RecordUpdate made to records.
- *      'infoupdated' -- all info for this cube may have changed.
  */
-
 export class View {
-    mixins = [Ext.mixin.Observable];
 
     // Immutable
     cube = null;
@@ -38,29 +27,22 @@ export class View {
     _boundStore = null;
 
     _records = [];   // top-level record(s)
-    _leafMap = {}   // all leaf records by id
-    _aggMap = {}    // all aggregate records by id
+    _leafMap = new Map();   // all leaf records by id
+    _aggMap = new Map();    // all aggregate records by id
 
     /**
      * Create this object.
      *
-     * @param cube, source XH.cube.Cube for this view.
-     * @param query, XH.query.Query to be used to construct this view (or config to create same).
+     * @param cube, source Cube for this view.
+     * @param query, Query to be used to construct this view (or config to create same).
      * @param connect, boolean.  Should this view receive updates when its source Cube changes?
-     * @param listeners, map of listeners.  See Observable.addListener.
-     * @param boundStore, Ext.data.TreeStore, or Ext.data.Store.  An optional store to bind to this view.
+     * @param boundStore, Store.  An optional store to bind to this view.
      *      If provided, this store will automatically be updated when this view changes.
      */
-    constructor({cube, query, connect = false, listeners = null, boundStore = null}) {
-        this.mixins.observable.constructor.call(this);
+    constructor({cube, query, connect = false, boundStore = null}) {
         this.cube = cube;
         this.setQuery(query);
         this.setBoundStore(boundStore);
-
-        // Add listeners late to avoid spurious changes during construction.
-        if (listeners) {
-            this.addListener(listeners);
-        }
 
         // Connect late to avoid connecting if an exception thrown.
         if (connect) {
@@ -76,19 +58,7 @@ export class View {
      *
      * Main entry point.
      */
-    getDataAsync() {
-        return XH.resolve(this.getRecordsAsData(this._records, true));
-    }
-
-    /**
-     * Return current state of view as a collection of anonymous json nodes.
-     *
-     * See async version of this method, which is non-blocking, and the preferred
-     * method for getting this data.
-     *
-     * TODO: Can we remove?  This would be inappropriate for server-side implementations.
-     */
-    getData() {
+    async getDataAsync() {
         return this.getRecordsAsData(this._records, true);
     }
 
@@ -99,8 +69,10 @@ export class View {
     setQuery(query) {
         if (query != this._query) {
             if (!(query instanceof Query)) {
-                query.cube = this.cube;
-                query = new Query(query);
+                query = new Query({
+                    ...query,
+                    cube: this.cube
+                });
             }
             this._query = query;
             this.loadRecordsFromCube();
@@ -136,14 +108,14 @@ export class View {
     }
 
     getDimensionValues() {
-        const leaves = values(this._leafMap),
-            fields = this._query.getFieldsAsList(),
+        const {_leafMap} = this,
+            fields = this._query,
             ret = [];
 
-        fields.forEach(f => {
+        forEach(fields, f => {
             if (f.isDimension) {
                 const vals = [];
-                leaves.forEach(rec => {
+                _leafMap.forEach(rec => {
                     const lVal = rec.get(f.name);
                     if (lVal != null && !vals.includes(lVal)) {
                         vals.push(lVal);
@@ -168,53 +140,32 @@ export class View {
         this.loadRecordsFromCube();
     }
 
-    noteCubeUpdated(recordUpdates, infoUpdated) {
-        const appliedUpdates = {},
-            changes = recordUpdates.filter(it => it.type == 'CHANGE'),
-            adds = recordUpdates.filter(it => it.type == 'ADD');
-
-        this.applyChanges(changes, appliedUpdates);
-        this.applyAdds(adds, appliedUpdates);
-
-        if (!isEmpty(appliedUpdates)) {
-            const updates = values(appliedUpdates);
-            this.updateBoundStore(updates);
-            this.fireEvent('recordsupdated', updates);
-        }
-
-        if (infoUpdated) {
-            this.fireEvent('infoupdated');
-        }
-    }
-
     //------------------------
     // Implementation
     //------------------------
     loadRecordsFromCube() {
-        const q = this._query,
-            dimensions = q.dimensions;
+        const {_query, cube} = this,
+            {dimensions} = _query,
+            {records: sourceRecords} = cube;
 
         this._records = null;
-        this._aggMap = {};
-        this._leafMap = {};
+        this._aggMap = new Map();
+        this._leafMap = new Map();
 
         // Create the new structure
-        const sourceRecords = values(this.cube.getRecords()),
-            newLeaves = this.createLeaves(sourceRecords);
+        const newLeaves = this.createLeaves(sourceRecords);
         this._records = this.groupAndInsertLeaves(newLeaves, dimensions, [], []);
-        if (q.includeRoot) {
-            this._records = [new AggregateRecord(q.fields, this.getRootId(), this._records, null, 'Total')];
+        if (_query.includeRoot) {
+            this._records = [new AggregateRecord(_query.fields, this.getRootId(), this._records, null, 'Total')];
         }
 
         // Broadcast any changes
         this.loadBoundStore();
-        this.fireEvent('dataloaded');
     }
 
     destroy() {
         this.disconnect();
         this._boundStore = null;
-        this.mixins.observable.destroy.call(this);
     }
 
     /**
@@ -224,20 +175,17 @@ export class View {
      * @return Array, newly added leaves associated with inserted records.
      */
     createLeaves(sourceRecords) {
-        const q = this._query,
-            filters = q.filters,
-            fields = q.fields;
+        const {_query, _leafMap} = this,
+            {filters, fields} = _query;
 
         // 0) Filter source records
-        if (!isEmpty(filters)) {
-            sourceRecords = sourceRecords.filter(rec => {
-                return filters.every(f => f.matches(rec));
-            });
+        if (filters && filters.length) {
+            sourceRecords = sourceRecords.filter(rec => filters.every(f => f.matches(rec)));
         }
 
         // 1) Create and store cloned leaves.
         const ret = sourceRecords.map(r => new Record(fields, r.data));
-        ret.forEach(r => this._leafMap[r.getId()] = r);
+        ret.forEach(r => _leafMap.set(r.id, r));
 
         return ret;
     }
@@ -256,18 +204,19 @@ export class View {
      * @return Array, records to be added at this level to accommodate the leaf insertion.
      */
     groupAndInsertLeaves(leaves, dimensions, aggsAdded, aggsToUpdate, parentId = this.getRootId()) {
-        if (isEmpty(dimensions)) return leaves;
+        if (!dimensions || isEmpty(dimensions)) return leaves;
 
-        const fields = this._query.fields,
+        const {_aggMap, _query} = this,
+            {fields} = _query,
             dim = dimensions[0],
-            groups = keyBy(leaves, (it) => it.get(dim.name)),
+            groups = groupBy(leaves, (it) => it.get(dim.name)),
             ret = [];
 
         forEach(groups, (groupLeaves, val) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
 
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), aggsAdded, aggsToUpdate, id);
-            let rec = this._aggMap[id];
+            let rec = _aggMap.get(id);
             if (rec) {
                 rec.children = rec.children.concat(newChildren);
                 newChildren.forEach(it => it.parent = rec);
@@ -275,7 +224,7 @@ export class View {
             } else {
                 rec = new AggregateRecord(fields, id, newChildren, dim, val);
                 aggsAdded.push(rec);
-                this._aggMap[id] = rec;
+                _aggMap.set(id, rec);
                 ret.push(rec);
             }
         });
@@ -283,176 +232,18 @@ export class View {
         return ret;
     }
 
-    /**
-     * Update all aggregates associated with a new set of leaves.
-     *
-     * This method will ensure that any aggregate parents of new leaves will be updated
-     * These updates will be applied in the correct order, and in a way to avoid
-     * recomputing aggregates multiple times.
-     *
-     * @param adds, Array of RecordAdd objects associated with source cube
-     * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
-     */
-    applyAdds(adds, appliedUpdates) {
-        const q = this._query;
-
-        // 0) Generate and add the new leaves
-        const cubeRecs = adds.map(it => it.record),
-            newLeaves = this.createLeaves(cubeRecs);
-
-        if (!newLeaves.length) return;
-
-        // 1) Insert the new leaves into the tree
-        const aggsAdded = [],
-            aggsToUpdate = [],
-            recs = this._records,
-            newRecs = this.groupAndInsertLeaves(newLeaves, q.dimensions, aggsAdded, aggsToUpdate);
-        if (q.includeRoot) {
-            const root = recs[0];
-            root.children = root.children.concat(newRecs);
-            newRecs.forEach(it => it.parent = root);
-        } else {
-            this._records = recs.concat(newRecs);
-        }
-
-        // 2) Update records that need to be updated. This ordering is correct (bottom up)
-        aggsToUpdate.forEach(r => r.computeAggregates());
-
-        // 3) Generate change records.  Note the ordering of the events:
-        //      'add' trumps 'refresh'.  Downstream clients don't even know about these records yet
-        aggsToUpdate.forEach(r => {
-            appliedUpdates[r.getId()] = new RecordRefresh(r);
-        });
-
-        newLeaves.forEach(r => {
-            appliedUpdates[r.getId()] = new RecordAdd(r);
-        });
-
-        aggsAdded.forEach(r => {
-            appliedUpdates[r.getId()] = new RecordAdd(r);
-        });
-    }
-
-    /**
-     * Apply a collection of changes to existing leaf records
-     *
-     * @param changes, Array of RecordChange related to source cube.
-     * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
-     */
-    applyChanges(changes, appliedUpdates) {
-        changes.forEach(change => {
-            const rec = this._leafMap[change.record.getId()];
-            if (rec) {
-                const fieldChanges = change.fieldChanges.filter(it => rec.fields[it.field.name]);
-                if (fieldChanges.length) {
-                    const change = new RecordChange(rec, fieldChanges);
-                    rec.processChange(change, appliedUpdates);
-                }
-            }
-        });
-    }
-
-    /**
-     * Update store to correspond to a set of updates.
-
-     * @param updates, Array of updates that occurred during this batch.
-     */
-    updateBoundStore(updates) {
-        if (!this._boundStore) return;
-
-        const store = this._boundStore,
-            isTreeStore = store.isTreeStore,
-            adds = updates.filter(it => it.type == 'ADD'),
-            edits = updates.filter(it => it.type != 'ADD');
-
-        let storeAddCount = 0,
-            storeEditCount = 0;
-
-        // Apply the changes in bulk, with events suspended.
-        const startTime = Date.now();
-        XH.bulkUpdateStore(store, () => {
-            // 1) Add records to store first.  Skip adding any record with a parent not already in the store.
-            //    It's part of an entirely new subtree that will be added in bulk
-            const rootAdds = adds.filter(add => {
-                const rec = add.record;
-                return !rec.parent || store.getById(rec.parent.data.id);
-            });
-
-            rootAdds.forEach(add => {
-                const rec = add.record;
-                const dataRecords = this.getRecordsAsData([rec], isTreeStore),
-                    dataRecord = dataRecords.length ? dataRecords[0] : null;
-
-                if (dataRecord) {
-                    if (isTreeStore) {
-                        if (rec.parent) {
-                            const parent = this.findRecord(store, rec.parent.data.id);
-                            parent.appendChild(dataRecord);
-                        } else {
-                            store.getRoot().appendChild(dataRecord);
-                        }
-                    } else {
-                        store.add(dataRecord);
-                    }
-                    storeAddCount++;
-                }
-            });
-
-            // 2) Apply edits (minimally) using set()
-            const editFlags = {dirty: false};
-            edits.forEach(edit => {
-                const rec = edit.record,
-                    storeRec = this.findRecord(store, rec.getId());
-
-                if (!storeRec) return;
-
-                storeRec.beginEdit();
-                switch (edit.type) {
-                    case 'CHANGE':
-                        edit.fieldChanges.forEach(it => {
-                            const name = it.field.name;
-                            storeRec.set(name, rec.get(name), editFlags);
-                        });
-                        break;
-                    case 'REFRESH':
-                        rec.eachField(name => {
-                            storeRec.set(name, rec.get(name), editFlags);
-                        });
-                        break;
-                }
-                storeEditCount++;
-                storeRec.endEdit();
-            });
-        });
-        const elapsed = Date.now() - startTime;
-        if (console.debug) console.debug(`Updated store: ${storeEditCount} edits | ${storeAddCount} adds | ${elapsed}ms`);
-    }
-
     loadBoundStore() {
-        const q = this._query,
-            store = this._boundStore;
+        const {_records, _boundStore: store}  = this;
 
         if (store) {
-            const startTime = Date.now();
-            XH.bulkUpdateStore(store, () => {
-                if (store.isTreeStore) {
-                    const data = this.getRecordsAsData(this._records, true);
-                    store.loadNodes(q.includeRoot ? data[0] : data);
-                } else {
-                    const data = this.getRecordsAsData(this._records, false);
-                    store.loadData(data);
-                }
-            });
-
-            const elapsed = Date.now() - startTime;
-            if (console.debug) console.debug(`Loaded store: ${elapsed}ms`);
+            const data = this.getRecordsAsData(_records, false);
+            store.loadData(data);
         }
     }
 
 
     getRecordsAsData(records, includeChildren) {
-        const q = this._query,
-            lockFn = this.cube._lockFn;
+        const {_query: q, cube: {_lockFn}} = this;
 
         if (!records.length || (!q.includeLeaves && records[0].isLeaf)) {
             return [];
@@ -465,7 +256,7 @@ export class View {
 
             if (includeChildren && children) {
                 // Potentially Lock children
-                if (lockFn && lockFn(rec)) {
+                if (_lockFn && _lockFn(rec)) {
                     data.locked = true;
                     children = [];
                 } else if (children.length == 1) {
@@ -485,7 +276,6 @@ export class View {
                     data.children = childrenAsData;
                 }
             }
-            data.leaf = !data.children;
             data.xhDimension = dim ? dim.name : null;
             return data;
         });
@@ -493,17 +283,5 @@ export class View {
 
     getRootId() {
         return this._query.filtersAsString();
-    }
-
-    findRecord(store, id) {
-        let ret = store.getById(id);
-        // need to find root, even if store.rootVisible false,
-        if (!ret && store.isTreeStore) {
-            const root = store.getRoot();
-            if (root.getId() == id) {
-                ret = root;
-            }
-        }
-        return ret;
     }
 }

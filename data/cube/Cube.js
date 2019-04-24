@@ -6,8 +6,6 @@
  */
 
 
-import {assign, isEmpty, merge, forEach} from 'lodash';
-import {RecordAdd, RecordChange, FieldChange} from './update';
 import {Field} from './Field';
 import {Record} from '@xh/hoist/data/cube/record/Record';
 
@@ -51,15 +49,15 @@ export class Cube {
         this._connectedViews = new Set();
     }
 
-    getFields() {
+    get fields() {
         return this._fields;
     }
 
-    getRecords() {
+    get records() {
         return this._recordMap;
     }
 
-    getInfo() {
+    get info() {
         return this._info;
     }
 
@@ -70,31 +68,6 @@ export class Cube {
         this._recordMap = this.processRawData(rawData);
         this._info = info;
         this._connectedViews.forEach(it => it.noteCubeLoaded);
-    }
-
-    loadUpdates(rawUpdates, info) {
-        // 1) Process record changes locally
-        const updates = this.processRawUpdates(rawUpdates);
-        updates.forEach(it => {
-            const rec = it.record;
-            switch (it.type) {
-                case 'CHANGE':
-                    rec.processChange(it);
-                    break;
-                case 'ADD':
-                    this._recordMap[rec.getId()] = rec;
-                    break;
-            }
-        });
-
-        // 2) Process info changes locally (merge with existing to allow for partial updates)
-        const infoUpdated = !isEmpty(info);
-        if (infoUpdated) {
-            this._info = merge({}, this._info, info);
-        }
-
-        // 3) Notify connected views
-        this._connectedViews.forEach(it => it.noteCubeUpdated(updates, infoUpdated));
     }
 
     //--------------------
@@ -124,7 +97,6 @@ export class Cube {
         return ret;
     }
 
-
     createRecord(raw) {
         const id = raw[this._idProperty];
         raw.id = id;
@@ -133,63 +105,11 @@ export class Cube {
     }
 
     processRawData(rawData) {
-        const ret = {};
+        const ret = new Map();
         rawData.forEach(raw => {
             const rec = this.createRecord(raw);
-            ret[rec.getId()] = rec;
+            ret.set(rec.id, rec);
         });
-        return ret;
-    }
-
-    processRawUpdates(rawUpdates) {
-        const newRecords = {},
-            ret = [];
-
-        // 0) Flatten interstitial changes to a single change by id.
-        const rawMap = {};
-        rawUpdates.forEach(raw => {
-            const id = raw[this._idProperty],
-                prevRaw = rawMap[id];
-            rawMap[id] = prevRaw ? assign(prevRaw, raw) : raw;
-        });
-
-
-        // 2) Process and validate changes
-        forEach(rawMap, (raw, id) => {
-
-            // 1) Handle new record
-            let rec = this._recordMap[id] || newRecords[id];
-            if (!rec) {
-                rec = this.createRecord(raw);
-                newRecords[rec.getId()] = rec;
-                ret.push(new RecordAdd(rec));
-                return;
-            }
-
-            // 2) Handle and validate non-spurious changes
-            const fieldChanges = [];
-            for (const f in raw) {
-                if (f === this._idProperty) continue;
-                const field = this._fields[f],
-                    currVal = rec.get(f),
-                    rawVal = raw[f];
-
-                if (!field || currVal === rawVal) {
-                    continue;
-                }
-
-                if (field.isDimension) {
-                    console.error('Streaming Dimension Change not currently handled by Cube. Change has been skipped');
-                    continue;
-                }
-
-                fieldChanges.push(new FieldChange(field, currVal, rawVal));
-            }
-            if (fieldChanges.length) {
-                ret.push(new RecordChange(rec, fieldChanges));
-            }
-        });
-
         return ret;
     }
 }

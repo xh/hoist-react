@@ -6,7 +6,7 @@
  */
 
 import {Filter, Cube} from '@xh/hoist/data/cube';
-import {castArray, flattenDeep, keyBy, uniq, map, forEach} from 'lodash';
+import {castArray, flattenDeep, groupBy, uniq, map, forEach} from 'lodash';
 
 export class ValueFilter extends Filter {
 
@@ -26,7 +26,7 @@ export class ValueFilter extends Filter {
     // Decode a collection of ValueFilters from an aggregate record (by parsing its ID)
     static fromRecord(record) {
         return record.id
-            .split(Cube.constructor.RECORD_ID_DELIMITER)
+            .split(Cube.RECORD_ID_DELIMITER)
             .slice(1) // first component in ID path is "root"
             .map(it => ValueFilter.decode(it));
     }
@@ -43,7 +43,7 @@ export class ValueFilter extends Filter {
     static union(filters) {
         filters = flattenDeep(filters);
 
-        const byName = keyBy(filters, 'fieldName'),
+        const byName = groupBy(filters, 'fieldName'),
             ret = [];
 
         forEach(byName, (fieldFilters, fieldName) => {

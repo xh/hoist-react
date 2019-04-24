@@ -31,7 +31,7 @@ export class Record {
         }
     }
 
-    getId()         {return this.data.id}
+    get id()         {return this.data.id}
     get(fieldName)  {return this.data[fieldName]}
 
     /**
