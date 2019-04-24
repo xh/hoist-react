@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
+import {RecordRefresh} from '@xh/hoist/data/cube';
 
 export class Record {
 
@@ -70,7 +70,7 @@ export class Record {
 
         // Could do better merging two updates of type 'CHANGE',
         // However, this is just used for appliedUpdates collection, so keep it simple.
-        return new XH.cube.update.RecordRefresh(a.record);
+        return new RecordRefresh(a.record);
     }
 
 }

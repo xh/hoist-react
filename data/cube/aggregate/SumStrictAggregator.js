@@ -4,25 +4,24 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-export class Max extends Aggregator {
+export class SumStrictAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
+        if (!records.length || records.some(it => it.get(fieldName) == null)) return null;
+
         return records.reduce((ret, it) => {
-            const val = it.get(fieldName);
-            if (val != null  && (ret == null || val > ret)) {
-                ret = val;
-            }
+            ret += it.get(fieldName);
             return ret;
-        }, null);
+        }, 0);
     }
 
     replace(records, currAgg, update) {
-        if (update.newVal >= currAgg) return update.newVal;
-        if (update.oldVal >= currAgg) return this.aggregate(records, update.field.name);
-
-        return currAgg;
+        const {oldVal, newVal} = update;
+        if (currAgg == null || oldVal == null || newVal == null) {
+            return this.callParent([records, currAgg, update]);
+        }
+        return currAgg - oldVal + newVal;
     }
 }

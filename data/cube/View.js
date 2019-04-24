@@ -5,6 +5,16 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {
+    Query,
+    Cube,
+    AggregateRecord,
+    Record,
+    RecordAdd,
+    RecordChange,
+    RecordRefresh,
+    ValueFilter
+} from '@xh/hoist/data/cube';
 import {values, isEmpty, keyBy, forEach, clone} from 'lodash';
 
 /**
@@ -88,7 +98,6 @@ export class View {
 
     setQuery(query) {
         if (query != this._query) {
-            const Query = XH.cube.Query;
             if (!(query instanceof Query)) {
                 query.cube = this.cube;
                 query = new Query(query);
@@ -182,8 +191,7 @@ export class View {
     // Implementation
     //------------------------
     loadRecordsFromCube() {
-        const AggregateRecord = XH.cube.record.AggregateRecord,
-            q = this._query,
+        const q = this._query,
             dimensions = q.dimensions;
 
         this._records = null;
@@ -216,8 +224,7 @@ export class View {
      * @return Array, newly added leaves associated with inserted records.
      */
     createLeaves(sourceRecords) {
-        const Record = XH.cube.record.Record,
-            q = this._query,
+        const q = this._query,
             filters = q.filters,
             fields = q.fields;
 
@@ -251,15 +258,13 @@ export class View {
     groupAndInsertLeaves(leaves, dimensions, aggsAdded, aggsToUpdate, parentId = this.getRootId()) {
         if (isEmpty(dimensions)) return leaves;
 
-        const AggregateRecord = XH.cube.record.AggregateRecord,
-            ValueFilter = XH.cube.filter.ValueFilter,
-            fields = this._query.fields,
+        const fields = this._query.fields,
             dim = dimensions[0],
             groups = keyBy(leaves, (it) => it.get(dim.name)),
             ret = [];
 
         forEach(groups, (groupLeaves, val) => {
-            const id = parentId + XH.cube.Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
+            const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
 
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), aggsAdded, aggsToUpdate, id);
             let rec = this._aggMap[id];
@@ -289,9 +294,7 @@ export class View {
      * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
      */
     applyAdds(adds, appliedUpdates) {
-        const RecordRefresh = XH.cube.update.RecordRefresh,
-            RecordAdd = XH.cube.update.RecordAdd,
-            q = this._query;
+        const q = this._query;
 
         // 0) Generate and add the new leaves
         const cubeRecs = adds.map(it => it.record),
@@ -337,7 +340,6 @@ export class View {
      * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
      */
     applyChanges(changes, appliedUpdates) {
-        const RecordChange = XH.cube.update.RecordChange;
         changes.forEach(change => {
             const rec = this._leafMap[change.record.getId()];
             if (rec) {

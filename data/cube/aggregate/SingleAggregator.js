@@ -7,9 +7,9 @@
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-export class Null extends Aggregator {
+export class SingleAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
-        return null;
+        return records.length == 1 ? records.get(fieldName) : null;
     }
 }

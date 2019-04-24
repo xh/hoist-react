@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {ValueFilter, Query} from '@xh/hoist/data/cube';
 import {values} from 'lodash';
 
 /**
@@ -61,7 +62,7 @@ export class Query {
             cube: this.cube
         }, overrides);
 
-        return new XH.cube.Query(conf);
+        return new Query(conf);
     }
 
     getFieldsAsList() {
@@ -116,7 +117,6 @@ export class Query {
 
     parseFilters(filters) {
         if (!filters) return null;
-        const ValueFilter = XH.cube.filter.ValueFilter;
         return filters.map(f => {
             // TODO - support other filter subclasses here
             return f instanceof ValueFilter ? f : new ValueFilter(f.name, f.values);

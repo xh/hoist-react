@@ -5,6 +5,18 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {
+    Aggregator,
+    MaxAggregator,
+    MinAggregator,
+    NullAggregator,
+    SumAggregator,
+    SumStrictAggregator,
+    UniqueAggregator,
+    SingleAggregator,
+    
+} from '@xh/hoist/data/cube';
+
 import {isString} from 'lodash';
 
 /**
@@ -51,19 +63,18 @@ export class Field {
     // Implementation
     //---------------------------
     parseAggregator(val) {
-        const AG = XH.cube.aggregate;
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return AG.Max;
-                case 'MIN':         return AG.Min;
-                case 'NULL':        return AG.Null;
-                case 'SUM':         return AG.Sum;
-                case 'SUM_STRICT':  return AG.SumStrict;
-                case 'UNIQUE':      return AG.Unique;
-                case 'SINGLE':      return AG.Single;
+                case 'MAX':         return MaxAggregator;
+                case 'MIN':         return MinAggregator;
+                case 'NULL':        return NullAggregator;
+                case 'SUM':         return SumAggregator;
+                case 'SUM_STRICT':  return SumStrictAggregator;
+                case 'UNIQUE':      return UniqueAggregator;
+                case 'SINGLE':      return SingleAggregator;
             }
         }
-        if (val instanceof AG.Aggregator) return val;
-        return AG.Unique;
+        if (val instanceof Aggregator) return val;
+        return UniqueAggregator
     }
 }

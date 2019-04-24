@@ -7,22 +7,19 @@
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-export class Min extends Aggregator {
+export class SumAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
         return records.reduce((ret, it) => {
             const val = it.get(fieldName);
-            if (val != null  && (ret == null || val < ret)) {
-                ret = val;
-            }
+            if (val != null) ret += val;
             return ret;
         }, null);
     }
 
     replace(records, currAgg, update) {
-        if (update.newVal <= currAgg) return update.newVal;
-        if (update.oldVal <= currAgg) return this.aggregate(records, update.field.name);
-
+        if (update.oldVal != null) currAgg -= update.oldVal;
+        if (update.newVal != null) currAgg += update.newVal;
         return currAgg;
     }
 }

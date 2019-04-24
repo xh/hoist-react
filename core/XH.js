@@ -14,8 +14,6 @@ import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
-import {cube} from '@xh/hoist/data/cube';
-
 import {
     ConfigService,
     EnvironmentService,
@@ -422,10 +420,6 @@ class XHClass {
      */
     genId() {
         return uniqueId('xh-id-');
-    }
-
-    get cube() {
-        return cube;
     }
 
     //---------------------------------

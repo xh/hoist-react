@@ -9,7 +9,7 @@ import {isEmpty} from 'lodash';
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-export class Unique extends Aggregator {
+export class UniqueAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
         if (isEmpty(records)) return null;

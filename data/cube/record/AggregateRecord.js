@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Record} from '@xh/hoist/data/cube/record/Record';
+import {Record, FieldChange, RecordChange} from '@xh/hoist/data/cube';
 
 export class AggregateRecord extends Record {
 
@@ -46,9 +46,7 @@ export class AggregateRecord extends Record {
      * @param appliedUpdates, map of RecordUpdate that have occurred during this batch.
      */
     processChildChange(change, appliedUpdates) {
-        const FieldChange = XH.cube.update.FieldChange,
-            RecordChange = XH.cube.update.RecordChange,
-            myFieldChanges = [],
+        const myFieldChanges = [],
             data = this.data,
             fields = this.fields,
             children = this.children;
