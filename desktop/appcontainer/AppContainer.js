@@ -10,7 +10,7 @@ import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, vframe, viewport} from '@xh/hoist/cmp/layout';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
@@ -99,7 +99,7 @@ export class AppContainer extends Component {
                         updateBar({model}),
                         refreshContextView({
                             model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                            item: vframe(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                         }),
                         versionBar({model})
                     ),

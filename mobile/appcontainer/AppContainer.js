@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {div, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
@@ -92,7 +92,7 @@ export class AppContainer extends Component {
                         updateBar({model}),
                         refreshContextView({
                             model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                            item: vframe(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                         }),
                         versionBar({model}),
                         this.renderAppMenu()

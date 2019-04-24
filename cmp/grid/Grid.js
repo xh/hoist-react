@@ -21,7 +21,7 @@ import {
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
-import {fragment, frame} from '@xh/hoist/cmp/layout';
+import {fragment, hframe} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
@@ -152,7 +152,7 @@ export class Grid extends Component {
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
         // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
         return fragment(
-            frame({
+            hframe({
                 className: this.getClassName(
                     treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'
                 ),
