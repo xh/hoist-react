@@ -7,7 +7,7 @@
 
 
 import {assign, isEmpty, merge, forEach} from 'lodash';
-import {RecordAdd, RecordChange, FieldChange} from '/update';
+import {RecordAdd, RecordChange, FieldChange} from './update';
 import {Field} from './Field';
 import {Record} from '@xh/hoist/data/cube/record/Record';
 
@@ -20,7 +20,7 @@ import {Record} from '@xh/hoist/data/cube/record/Record';
  * This API in intended primarily for data specification and loading.
  * See View for the main API for accessing data from this object.
  */
-class Cube {
+export class Cube {
 
     _fields = null;
     _recordMap = null;

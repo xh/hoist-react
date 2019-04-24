@@ -7,7 +7,7 @@
 
 import {Record} from '@xh/hoist/data/cube/record/Record';
 
-class AggregateRecord extends Record {
+export class AggregateRecord extends Record {
 
     isLeaf = false;
     dim = null;

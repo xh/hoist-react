@@ -6,7 +6,7 @@
  */
 
 import {Filter} from '@xh/hoist/data/cube/filter/Filter';
-import {castArray, flattenDeep, keyBy} from 'lodash';
+import {castArray, flattenDeep, keyBy, unique, map} from 'lodash';
 
 export class ValueFilter extends Filter {
 
@@ -53,7 +53,7 @@ export class ValueFilter extends Filter {
             ret = [];
 
         forEach(byName, (fieldName, fieldFilters) => {
-            const fieldVals = ARR.unique(ARR.flatten(ARR.pluck(fieldFilters, 'values')));
+            const fieldVals = unique(flattenDeep(map(fieldFilters, 'values')));
             ret.push(new XH.cube.filter.ValueFilter(fieldName, fieldVals));
         });
 
