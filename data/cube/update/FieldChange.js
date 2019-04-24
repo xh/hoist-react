@@ -6,12 +6,12 @@
  */
 
 /**
- * Encapsulates the data associated with a value change of a field (XH.cube.Field) on a record (XH.cube.Record).
+ * Encapsulates the data associated with a value change of a field (Field) on a record (Record).
  *
  * The field member of this class is a reference to the field definition in the Cube.
  */
 export class FieldChange {
-    field = null;   // XH.cube.Field
+    field = null;
     oldVal = null;
     newVal = null;
 

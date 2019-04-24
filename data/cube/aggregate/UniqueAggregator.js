@@ -6,7 +6,6 @@
  */
 
 import {isEmpty} from 'lodash';
-
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
 export class UniqueAggregator extends Aggregator {

@@ -1,16 +1,16 @@
-import {Cube} from './Cube';
-import {Field} from './Field';
-import {Query} from './Query';
-import {View} from './View';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2019 Extremely Heavy Industries Inc.
+ */
+
+export * from './Cube';
+export * from './Field';
+export * from './Query';
+export * from './View';
 
 export * from './aggregate';
 export * from './filter';
 export * from './record';
 export * from './update';
-
-export {
-    Cube,
-    Field,
-    Query,
-    View
-};

@@ -13,14 +13,14 @@ import {
     SumAggregator,
     SumStrictAggregator,
     UniqueAggregator,
-    SingleAggregator,
+    SingleAggregator
     
 } from '@xh/hoist/data/cube';
 
 import {isString} from 'lodash';
 
 /**
- * Metadata used to define a measure or dimension in XH.cube.Cube.
+ * Metadata used to define a measure or dimension in Cube.
  */
 export class Field {
 
@@ -31,12 +31,21 @@ export class Field {
     isLeafDimension = false;
     parentDimension = null;
 
+    static maxAggregator = new MaxAggregator();
+    static minAggregator = new MinAggregator();
+    static nullAggregator = new NullAggregator();
+    static sumAggregator = new SumAggregator();
+    static sumStrictAggregator = new SumStrictAggregator();
+    static uniqueAggregator = new UniqueAggregator();
+    static singleAggregator = new SingleAggregator();
+
+
     /**
      * Construct this object.
      *
      * @param name, string. Unique key describing this field.
      * @param displayName, string. Descriptive name suitable for display to end users.
-     * @param aggregator, XH.cube.aggregate.Aggregator, or alias for Hoist aggregators in XH.cube.aggregate package (e.g. 'MAX').
+     * @param aggregator, Aggregator, or alias for Hoist aggregators in aggregate package (e.g. 'MAX').
      * @param isDimension, boolean. True to allow this field to be used for groupings and aggregations.
      * @param isLeafDimension, boolean. True if any further groupings below this dimension would be derivative (have only one member).
      * @param parentDimension, name of field that is a 'parent' dimension of this dimension. This marks this dimension as a
@@ -65,16 +74,16 @@ export class Field {
     parseAggregator(val) {
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return MaxAggregator;
-                case 'MIN':         return MinAggregator;
-                case 'NULL':        return NullAggregator;
-                case 'SUM':         return SumAggregator;
-                case 'SUM_STRICT':  return SumStrictAggregator;
-                case 'UNIQUE':      return UniqueAggregator;
-                case 'SINGLE':      return SingleAggregator;
+                case 'MAX':         return this.maxAggregator;
+                case 'MIN':         return this.minAggregator;
+                case 'NULL':        return this.nullAggregator;
+                case 'SUM':         return this.sumAggregator;
+                case 'SUM_STRICT':  return this.sumStrictAggregator;
+                case 'UNIQUE':      return this.uniqueAggregator;
+                case 'SINGLE':      return this.singleAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
-        return UniqueAggregator
+        return UniqueAggregator;
     }
 }

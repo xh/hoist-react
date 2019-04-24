@@ -5,8 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {} from 'lodash';
-
 /**
  * Represents an update to an existing record.
  */

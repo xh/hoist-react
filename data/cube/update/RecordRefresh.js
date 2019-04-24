@@ -5,12 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {RecordUpdate} from '@xh/hoist/data/cube/update/RecordUpdate';
+
+import {RecordUpdate} from './RecordUpdate';
 
 /**
  * Represents a change to all fields of an existing record.
  */
 export class RecordRefresh extends RecordUpdate {
+    type = 'REFRESH';
 
     constructor(record) {
         super(record);

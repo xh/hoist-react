@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
+import {Aggregator} from './Aggregator';
 
 export class SumStrictAggregator extends Aggregator {
 
@@ -20,7 +20,7 @@ export class SumStrictAggregator extends Aggregator {
     replace(records, currAgg, update) {
         const {oldVal, newVal} = update;
         if (currAgg == null || oldVal == null || newVal == null) {
-            return this.callParent([records, currAgg, update]);
+            return super(records, currAgg, update);
         }
         return currAgg - oldVal + newVal;
     }

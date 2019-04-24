@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {RecordRefresh} from '@xh/hoist/data/cube';
+import {forEach} from 'lodash';
 
 export class Record {
 
@@ -24,7 +25,7 @@ export class Record {
                 cubeLabel: data.cubeLabel
             };
 
-            this.eachField(name => {
+            this.eachField((field, name) => {
                 myData[name] = data[name];
             });
         }

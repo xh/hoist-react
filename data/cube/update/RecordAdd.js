@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {RecordUpdate} from '@xh/hoist/data/cube/update/RecordUpdate';
+import {RecordUpdate} from './RecordUpdate';
 
 /**
  * Represents an addition of a record.

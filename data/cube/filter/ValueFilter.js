@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Filter, ValueFilter, Cube} from '@xh/hoist/data/cube';
-import {castArray, flattenDeep, keyBy, unique, map} from 'lodash';
+import {Filter, Cube} from '@xh/hoist/data/cube';
+import {castArray, flattenDeep, keyBy, uniq, map, forEach} from 'lodash';
 
 export class ValueFilter extends Filter {
 
@@ -46,8 +46,8 @@ export class ValueFilter extends Filter {
         const byName = keyBy(filters, 'fieldName'),
             ret = [];
 
-        forEach(byName, (fieldName, fieldFilters) => {
-            const fieldVals = unique(flattenDeep(map(fieldFilters, 'values')));
+        forEach(byName, (fieldFilters, fieldName) => {
+            const fieldVals = uniq(flattenDeep(map(fieldFilters, 'values')));
             ret.push(new ValueFilter(fieldName, fieldVals));
         });
 
@@ -67,5 +67,4 @@ export class ValueFilter extends Filter {
     toString() {
         return ValueFilter.encode(this.fieldName, this.values);
     }
-
 }

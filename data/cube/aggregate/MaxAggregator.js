@@ -5,9 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
-
-import {} from '@xh/hoist/data/cube';
+import {Aggregator} from './Aggregator';
 
 export class MaxAggregator extends Aggregator {
 

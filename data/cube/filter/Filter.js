@@ -5,9 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export class Filter {
+import {XH} from '@xh/hoist/core';
 
+export class Filter {
     matches(record) {
-        throw {name: 'Cube Filter Error', message: 'Abstract class. Not implemented.'};
+        throw XH.exception({name: 'Cube Filter Error', message: 'Abstract class. Not implemented.'});
     }
 }

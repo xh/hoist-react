@@ -5,18 +5,19 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {ValueFilter, Query} from '@xh/hoist/data/cube';
+import {XH} from '@xh/hoist/core';
+import {ValueFilter} from '@xh/hoist/data/cube';
 import {values} from 'lodash';
 
 /**
  *  Specification used to define the shape of data to be consumed from cube.
- *  This is the primary object used to define and alter a XH.cube.View.
+ *  This is the primary object used to define and alter a View.
  */
 export class Query {
 
-    fields = null;           // Map of String (field name) -> XH.cube.Field
-    dimensions = null;       // list of XH.cube.Fields on which to group and aggregate
-    filters = null;          // list of XH.cube.Filters
+    fields = null;           // Map of String (field name) -> Field
+    dimensions = null;       // list of Fields on which to group and aggregate
+    filters = null;          // list of Filters
     includeRoot = false;     // Include a root aggregate in results
     includeLeaves = false;   // Include leaves in results
     cube = null;             // Associated cube
@@ -27,7 +28,7 @@ export class Query {
      * @param fields, array of field names. Default of null to include all available fields.
      * @param dimensions, array of field names. All entries must be in fields, above.
      *                    Default of null will skip grouping.
-     * @param filters, array of XH.cube.Filter (or configs for such)
+     * @param filters, array of Filter (or configs for such)
      * @param includeRoot, boolean.  True to include a synthetic Root nodes with global aggregates for this view.
      * @param includeLeaves, boolean.  True to include leaf nodes in results.
      * @param cube, associated cube, required.
@@ -53,14 +54,15 @@ export class Query {
     }
 
     clone(overrides) {
-        const conf = Object.assign({
+        const conf = {
             dimensions: this.getDimensionNames(),
             fields: this.getFieldNames(),
             filters: this.filters,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
-            cube: this.cube
-        }, overrides);
+            cube: this.cube,
+            ...overrides
+        };
 
         return new Query(conf);
     }
@@ -122,5 +124,4 @@ export class Query {
             return f instanceof ValueFilter ? f : new ValueFilter(f.name, f.values);
         });
     }
-
 }

@@ -30,7 +30,7 @@ export class AggregateRecord extends Record {
     }
 
     computeAggregates() {
-        this.eachField((name, field) => {
+        this.eachField((field, name) => {
             if (field !== this.dim) {
                 const aggregator = field.aggregator;
                 this.data[name] = aggregator.aggregate(this.children, name);
