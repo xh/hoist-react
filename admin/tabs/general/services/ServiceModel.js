@@ -54,7 +54,8 @@ export class ServiceModel {
     }
 
     processRawData(r) {
-        r.provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
-        r.displayName = lowerFirst(r.name.replace('hoistCore', ''));
+        const provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
+        const displayName = lowerFirst(r.name.replace('hoistCore', ''));
+        return {provider, displayName, ...r};
     }
 }
