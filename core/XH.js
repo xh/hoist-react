@@ -245,6 +245,11 @@ class XHClass {
         return this.acm.themeModel.toggleTheme();
     }
 
+    /** Enable/disable the dark theme directly (useful for custom app option controls). */
+    setDarkTheme(value) {
+        return this.acm.themeModel.setDarkTheme(value);
+    }
+
     /** Is the app currently rendering in dark theme? */
     get darkTheme() {
         return this.acm.themeModel.darkTheme;
