@@ -42,7 +42,6 @@ export class Cube {
      */
     constructor({fields, lockFn, idSpec = 'id', data, info}) {
         this._idSpec = idSpec;
-        console.log(this._idSpec)
         this._fields = this.processRawFields(fields);
         this._recordMap = this.processRawData(data || []);
         this._info = Object.freeze(info || {});
