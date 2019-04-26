@@ -15,7 +15,7 @@ import {
     UniqueAggregator,
     SingleAggregator
     
-} from '@xh/hoist/data/cube';
+} from './aggregate';
 
 import {isString} from 'lodash';
 
@@ -31,14 +31,13 @@ export class Field {
     isLeafDimension = false;
     parentDimension = null;
 
-    maxAggregator = new MaxAggregator();
-    minAggregator = new MinAggregator();
-    nullAggregator = new NullAggregator();
-    sumAggregator = new SumAggregator();
-    sumStrictAggregator = new SumStrictAggregator();
-    uniqueAggregator = new UniqueAggregator();
-    singleAggregator = new SingleAggregator();
-
+    static maxAggregator = new MaxAggregator();
+    static minAggregator = new MinAggregator();
+    static nullAggregator = new NullAggregator();
+    static sumAggregator = new SumAggregator();
+    static sumStrictAggregator = new SumStrictAggregator();
+    static uniqueAggregator = new UniqueAggregator();
+    static singleAggregator = new SingleAggregator();
 
     /**
      * Construct this object.
@@ -74,16 +73,16 @@ export class Field {
     parseAggregator(val) {
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return this.maxAggregator;
-                case 'MIN':         return this.minAggregator;
-                case 'NULL':        return this.nullAggregator;
-                case 'SUM':         return this.sumAggregator;
-                case 'SUM_STRICT':  return this.sumStrictAggregator;
-                case 'UNIQUE':      return this.uniqueAggregator;
-                case 'SINGLE':      return this.singleAggregator;
+                case 'MAX':         return Field.maxAggregator;
+                case 'MIN':         return Field.minAggregator;
+                case 'NULL':        return Field.nullAggregator;
+                case 'SUM':         return Field.sumAggregator;
+                case 'SUM_STRICT':  return Field.sumStrictAggregator;
+                case 'UNIQUE':      return Field.uniqueAggregator;
+                case 'SINGLE':      return Field.singleAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
-        return UniqueAggregator;
+        return Field.uniqueAggregator;
     }
 }

@@ -7,8 +7,7 @@
 
 
 import {Field} from './Field';
-import {Record} from '@xh/hoist/data/cube/record/Record';
-import {values} from 'lodash';
+import {Record} from './record';
 
 /**
  * An object for grouping and aggregating data on multiple dimensions.
@@ -24,7 +23,7 @@ export class Cube {
     _fields = null;
     _recordMap = null;
     _connectedViews = null;
-    _idProperty = null;
+    _idSpec = null;
     _info = null;
     _lockFn = null;
 
@@ -33,19 +32,20 @@ export class Cube {
     /**
      * Construct this object.
      *
-     * @param {Object[]} data - array of raw data.
-     * @param {Object} info - map of metadata associated with this data.
      * @param {Field[]} fields - array of Fields to be loaded in this cube.
-     * @param {String} idProperty - property representing unique id of loaded records.
-     * @param {boolean} lockFn - function to be applied to a node to determine if it should be "locked",
+     * @param {Object[]} [data] - array of raw data.
+     * @param {Object} [info] - map of metadata associated with this data.
+     * @param {(String|function)} [idSpec] - property representing unique id of loaded records.
+     * @param {boolean} [lockFn] - function to be applied to a node to determine if it should be "locked",
      *      preventing drilldown into its children (optional).  If true returned for a node,
      *      no drilldown will be allowed, and the row will be marked with a boolean "locked" property.
      */
-    constructor({data, info, fields, lockFn, idProperty = 'id'}) {
-        this._idProperty = idProperty;
+    constructor({fields, lockFn, idSpec = 'id', data, info}) {
+        this._idSpec = idSpec;
+        console.log(this._idSpec)
         this._fields = this.processRawFields(fields);
-        this._recordMap = this.processRawData(data);
-        this._info = Object.freeze(info);
+        this._recordMap = this.processRawData(data || []);
+        this._info = Object.freeze(info || {});
         this._lockFn = lockFn;
         this._connectedViews = new Set();
     }
@@ -99,10 +99,9 @@ export class Cube {
     }
 
     createRecord(raw) {
-        const id = raw[this._idProperty];
-        raw.id = id;
-        raw.cubeLabel = id;
-        return new Record(this._fields, raw);
+        const {_idSpec} = this;
+        const id = _idSpec instanceof String ? raw[_idSpec] : _idSpec(raw);
+        return new Record(this._fields, raw, id);
     }
 
     processRawData(rawData) {
