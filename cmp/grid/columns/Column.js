@@ -222,7 +222,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
+            ret.tooltip = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
