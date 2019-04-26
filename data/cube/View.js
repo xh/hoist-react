@@ -239,7 +239,7 @@ export class View {
         const {_records, _boundStore: store}  = this;
 
         if (store) {
-            const data = this.getRecordsAsData(_records, false);
+            const data = this.getRecordsAsData(_records, true);
             store.loadData(data);
         }
     }
