@@ -25,12 +25,11 @@ export class Toast extends Component {
     static modelClass = ToastModel;
 
     render() {
-        const {icon, message, timeout, intent} = this.model,
+        const {icon, message, intent} = this.model,
             cls = `xh-toast xh-intent-${intent}`;
 
         return onsenToast({
             isOpen: true,
-            timeout: timeout,
             className: cls,
             items: [
                 icon,

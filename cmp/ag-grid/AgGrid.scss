@@ -1,0 +1,225 @@
+// Ag-grid installs an outer div around itself.
+// This should use height: auto rather than height: 100%, to allow layoutConfig to work.
+.xh-ag-grid > div {
+  width: 100%;
+  height: auto !important;
+}
+
+// Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
+.ag-theme-balham.xh-ag-grid, .ag-theme-balham-dark.xh-ag-grid {
+  font-family: var(--xh-grid-font-family);
+  font-size: var(--xh-grid-font-size-px);
+
+  .ag-root {
+    border: none;
+    background-color: var(--xh-grid-bg);
+  }
+
+  // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
+  // scrollbar
+  .ag-center-cols-container {
+    min-width: 100%;
+  }
+
+  //------------------------
+  // Core Header Classes
+  //------------------------
+  .ag-header {
+    color: var(--xh-grid-header-text-color);
+    background-color: var(--xh-grid-header-bg);
+    font-family: var(--xh-grid-font-family);
+    font-size: var(--xh-grid-font-size-px);
+  }
+
+  //------------------------
+  // Core Row Classes
+  //------------------------
+  .ag-row {
+    background-color: var(--xh-grid-bg);
+
+    &.ag-row-selected {
+      background-color: var(--xh-grid-bg-highlight);
+    }
+
+    &.ag-row-group.ag-full-width-row  {
+      color: var(--xh-grid-group-text-color);
+      background-color: var(--xh-grid-group-bg);
+    }
+
+    .group-header-icon-expanded {
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
+    }
+
+    .group-header-icon-contracted {
+      margin: var(--xh-pad-half-px) var(--xh-pad-half-px) 0 0;
+    }
+  }
+
+  // Row borders
+  &--row-borders {
+    .ag-row {
+      border-color: var(--xh-grid-border-color);
+
+      &.ag-row-group {
+        border-color: var(--xh-grid-group-border-color);
+      }
+    }
+  }
+
+  &--no-row-borders {
+    .ag-row {
+      border-color: transparent;
+
+      // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
+      // Without this collapsed groups (which don't stripe) blend together in a solid block.
+      &.ag-row-group.ag-full-width-row {
+        border-color: var(--xh-grid-group-border-color);
+      }
+    }
+  }
+
+  // Row zebra striping
+  &--stripe-rows {
+    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-odd);
+    }
+  }
+
+  &--no-stripe-rows {
+    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg);
+    }
+  }
+
+  // Hover highlight
+  &--show-hover {
+    .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+      background-color: var(--xh-grid-bg-hover);
+    }
+  }
+
+  //------------------------
+  // Core Cell Classes
+  //------------------------
+  .ag-cell, .ag-header-cell, .ag-header-group-cell {
+    padding-left: var(--xh-grid-cell-lr-pad-px);
+    padding-right: var(--xh-grid-cell-lr-pad-px);
+  }
+
+  .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
+    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+  }
+
+  .ag-cell-value {
+    line-height: var(--xh-grid-line-height-px);
+  }
+
+  // Cell focus
+  &--no-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: transparent !important;
+    }
+  }
+
+  &--show-cell-focus {
+    .ag-cell-focus {
+      outline: 0 !important;
+      border-color: var(--xh-grid-cell-focus-border-color) !important;
+    }
+  }
+
+  //------------------------
+  // Compact Mode
+  //------------------------
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-compact-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-compact-font-size-px);
+    }
+
+    .ag-cell, .ag-header-cell, .ag-header-group-cell {
+      padding-left: var(--xh-grid-compact-cell-lr-pad-px);
+      padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+    }
+  }
+
+
+  //------------------------
+  // Other Optional Modifiers + Overrides
+  //------------------------
+  // As of agGrid 20, the group row always reserve space for a grouping checkbox.
+  // We remove this to tighten up the spacing.
+  .ag-group-checkbox.ag-invisible {
+    display: none;
+  }
+
+  // Restore right border on cells - not included by default with ag-grid but
+  // causes right-aligned content to shift by one pixel when focused.
+  .ag-cell.ag-cell-no-focus {
+    border-right: 1px solid transparent;
+  }
+
+  // Full-width grouped rows appear slightly misaligned (standard mode only)
+  &--standard .ag-row.ag-row-group.ag-full-width-row {
+    padding-top: 2px;
+  }
+
+  // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
+  // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
+  // want to override and restore borders.
+  .ag-side-bar {border: none;}
+  .ag-status-bar {border: none;}
+
+  // Disabling the "row loading" render overlay
+  .ag-bl-overlay {display: none;}
+
+}
+
+
+//------------------------
+// Overlay masks
+//------------------------
+.ag-overlay {
+  // Match loading overlay color to mask, suppress display of text in center.
+  .ag-overlay-loading-wrapper {
+    background-color: var(--xh-mask-bg);
+
+    .ag-overlay-loading-center {
+      display: none;
+    }
+  }
+
+  // Reduce default contrast of emptyText.
+  .ag-overlay-no-rows-wrapper {
+    color: var(--xh-grid-empty-text-color);
+  }
+}
+
+
+//------------------------
+// Context Menu (matching ag-Grid provided menus to BP menus)
+//------------------------
+.ag-theme-balham .ag-menu, .ag-theme-balham-dark .ag-menu {
+  z-index: 9999 !important; // always show context menus above other content, e.g. dialog
+
+  font-family: var(--xh-font-family);
+  background-color: var(--xh-bg-alt);
+
+  // Matching no border + box-shadow of Blueprint context menu popover
+  border: none;
+  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
+
+  .ag-menu-option.ag-menu-option-active {
+    background-color: var(--xh-bg-highlight);
+  }
+
+  .ag-menu-option-icon {
+    text-align: center;
+  }
+}

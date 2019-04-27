@@ -28,8 +28,10 @@ export class Column {
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
-     * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column header.
-     * @param {(string|string[])} [c.cellClass] - additional css classes to add to each cell in the column.
+     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
+     *      to the column header. Supports both string values or function to generate strings.
+     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
+     *      to each cell in the column. Supports both string values or function to generate strings.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
@@ -129,8 +131,8 @@ export class Column {
 
         this.headerName = withDefault(headerName, startCase(this.colId));
         this.headerTooltip = headerTooltip;
-        this.headerClass = castArray(headerClass);
-        this.cellClass = castArray(cellClass);
+        this.headerClass = headerClass;
+        this.cellClass = cellClass;
         this.align = align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
@@ -186,8 +188,6 @@ export class Column {
                 colId: this.colId,
                 headerName: this.headerName,
                 headerTooltip: this.headerTooltip,
-                headerClass: this.headerClass,
-                cellClass: this.cellClass,
                 hide: this.hidden,
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
@@ -222,19 +222,43 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
+            ret.tooltip = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
         }
 
+        // Generate CSS classes for headers and cells.
+        // Default alignment classes are mixed in with any provided custom classes.
         const {align} = this;
-        if (align === 'center' || align === 'right') {
-            ret.headerClass = castArray(ret.headerClass) || [];
-            ret.cellClass = castArray(ret.cellClass) || [];
-            ret.headerClass.push('xh-column-header-align-' + align);
-            ret.cellClass.push('xh-align-' + align);
-        }
+        ret.headerClass = (agParams) => {
+            let r = [];
+            if (this.headerClass) {
+                r = castArray(
+                    isFunction(this.headerClass) ?
+                        this.headerClass({column: this, gridModel, agParams}) :
+                        this.headerClass
+                );
+            }
+            if (align === 'center' || align === 'right') {
+                r.push('xh-column-header-align-' + align);
+            }
+            return r;
+        };
+        ret.cellClass = (agParams) => {
+            let r = [];
+            if (this.cellClass) {
+                r = castArray(
+                    isFunction(this.cellClass) ?
+                        this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
+                        this.cellClass
+                );
+            }
+            if (align === 'center' || align === 'right') {
+                r.push('xh-align-' + align);
+            }
+            return r;
+        };
 
         if (this.flex) {
             ret.resizable = false;
@@ -247,14 +271,14 @@ export class Column {
         const {renderer, elementRenderer} = this;
         if (renderer) {
             ret.cellRenderer = (agParams) => {
-                return renderer(agParams.value, {record: agParams.data, column: this, agParams, gridModel});
+                return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
             };
         } else if (elementRenderer) {
             ret.cellRendererFramework = class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
-                    return elementRenderer(value, {record, agParams, column: me, gridModel});
+                    return elementRenderer(value, {record, column: me, gridModel, agParams});
                 }
 
                 refresh() {return false}
@@ -287,23 +311,43 @@ export class Column {
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererContext} context - additional data about the column, row and GridModel.
+ * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {string} - the formatted value for display.
  */
 
 /**
  * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
  * @param {*} value - cell data value (column + row).
- * @param {CellRendererContext} context - additional data about the column, row and GridModel.
+ * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {Element} - the React element to render.
  */
 
 /**
- * @typedef {Object} CellRendererContext
+ * @callback Column~cellClassFn - normalized function to generate grid cell CSS classes.
+ * @param {*} value - cell data value (column + row).
+ * @param {CellContext} context - additional data about the column, row and GridModel.
+ * @return {(string|string[])} - CSS class(es) to use.
+ */
+
+/**
+ * @callback Column~headerClassFn - normalized function to generate header CSS classes.
+ * @param {HeaderContext} context - contains data about the column and GridModel.
+ * @return {(string|string[])} - CSS class(es) to use.
+ */
+
+/**
+ * @typedef {Object} CellContext
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
  * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
+ */
+
+/**
+ * @typedef {Object} HeaderContext
+ * @property {Column} column - column for the header being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
+ * @property {ICellRendererParams} [agParams] - the ag-grid header renderer params.
  */
 
 /**

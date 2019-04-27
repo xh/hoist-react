@@ -138,6 +138,7 @@ export class FormField extends Component {
         const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
 
         return box({
+            key: fieldModel ? fieldModel.xhId : null,
             items: [
                 labelEl({
                     omit: !label,

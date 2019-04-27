@@ -1,8 +1,77 @@
 # Changelog
 
-## v22.0.0-SNAPSHOT (under development)
+## v22.0.0 - 2019-04-29
 
-* TBD
+### 🎁 New Features
+
+* A new `DockContainer` component provides a user-friendly way to render multiple child components
+  "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
+  to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
+* A new `AgGrid` component provides a much lighter Hoist wrapper around ag-Grid while maintaining
+  consistent styling and layout support. This allows apps to use any features supported by ag-Grid
+  without conflicting with functionality added by the core Hoist `Grid`.
+  * Note that this lighter wrapper lacks a number of core Hoist features and integrations, including
+    store support, grid state, enhanced column and renderer APIs, absolute value sorting, and more.
+  * An associated `AgGridModel` provides access to to the ag-Grid APIs, minimal styling configs, and
+    several utility methods for managing Grid state.
+* Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
+  `agOptions.defaultGroupSortComparator`).
+* The `Column.cellClass` and `Column.headerClass` configs now accept functions to dynamically
+  generate custom classes based on the Record and/or Column being rendered.
+* The `Record` object now provides an additional getter `Record.allChildren` to return all children
+  of the record, irrespective of the current filter in place on the record's store. This supplements
+  the existing `Record.children` getter, which returns only the children meeting the filter.
+
+### 💥 Breaking Changes
+
+* The class `LocalStore` has been renamed `Store`, and is now the main implementation and base class
+  for Store Data. The extraneous abstract superclass `BaseStore` has been removed.
+* `Store.dataLastUpdated` had been renamed `Store.lastUpdated` on the new class and is now a simple
+  timestamp (ms) rather than a Javascript Date object.
+* The constructor argument `Store.processRawData` now expects a function that *returns* a modified
+  object with the necessary edits. This allows implementations to safely *clone* the raw data rather
+  than mutating it.
+* The method `Store.removeRecord` has been replaced with the method `Store.removeRecords`. This will
+  facilitate efficient bulk deletes.
+
+### ⚙️ Technical
+
+* `Grid` now performs an important performance workaround when loading a new dataset that would
+  result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
+  component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
+  grid wrapper will now detect when this is likely and proactively clear all data using a different
+  API call before loading the new dataset.
+* The implementations `Store`, `RecordSet`, and `Record` have been updated to more efficiently
+  re-use existing record references when loading, updating, or filtering data in a store. This keeps
+  the Record objects within a store as stable as possible, and allows additional optimizations by
+  ag-Grid and its `deltaRowDataMode`.
+* When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
+  the declared `Field.type`. The unused `Field.nullable` has been removed.
+* `LocalStorageService` now uses both the `appCode` and current username for its namespace key,
+  ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
+  profile, or when admin impersonation is active. The service will automatically perform a one-time
+  migration of existing local state from the old namespace to the new. #674
+* `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
+   play the role of placeholders when using conditional rendering, and skipping them was causing React to 
+   trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
+   unnecessary divergence with the behavior of JSX.
+
+
+### 🐞 Bug Fixes
+
+* `Grid` exports retain sorting, including support for absolute value sorting. #1068
+* Ensure `FormField`s are keyed with their model ID, so that React can properly account for dynamic
+  changes to fields within a form. #1031
+* Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
+  (This can happen during impersonation and is defended against in server-side code.) #675
+
+## v21.0.2 - 2019-04-05
+
+### 📚 Libraries
+
+* Rollback ag-Grid to v20.0.0 after running into new performance issues with large datasets and
+  `deltaRowDataMode`. Updates to tree filtering logic, also related to grid performance issues with
+  filtered tree results returning much larger record counts.
 
 ## v21.0.0 - 2019-04-04
 
@@ -258,10 +327,9 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1076,9 +1144,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

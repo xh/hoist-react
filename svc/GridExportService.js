@@ -11,7 +11,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {isFunction, isNil, isString, orderBy, uniq} from 'lodash';
+import {isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -129,12 +129,17 @@ export class GridExportService {
 
     getRecordRowsRecursive(gridModel, records, columns, depth) {
         const {sortBy, treeMode} = gridModel,
-            sortColIds = sortBy.map(it => it.colId),
-            sorts = sortBy.map(it => it.sort),
-            sortedRecords = orderBy(records, sortColIds, sorts),
             ret = [];
 
-        sortedRecords.forEach(record => {
+        records = [...records];
+        
+        [...sortBy].reverse().forEach(it => {
+            const compFn = it.comparator.bind(it),
+                direction = it.sort === 'desc' ? -1 : 1;
+            records.sort((a, b) => compFn(a[it.colId], b[it.colId]) * direction);
+        });
+
+        records.forEach(record => {
             ret.push(this.getRecordRow(record, columns, depth));
             if (treeMode && record.children.length) {
                 ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));

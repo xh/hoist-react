@@ -17,6 +17,7 @@
  * See the platform specific AppContainer where these implementations are actually provided.
  */
 export let tabContainer = null;
+export let dockContainer = null;
 export let StoreContextMenu = null;
 export let ColChooserModel = null;
 export let colChooser = null;
@@ -28,6 +29,7 @@ export let colChooser = null;
  */
 export function installDesktopImpls(impls) {
     tabContainer = impls.tabContainer;
+    dockContainer = impls.dockContainer;
     StoreContextMenu = impls.StoreContextMenu;
     ColChooserModel = impls.ColChooserModel;
     colChooser = impls.colChooser;
