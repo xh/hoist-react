@@ -17,7 +17,7 @@ import {
     
 } from './aggregate';
 
-import {isString} from 'lodash';
+import {isString, startCase} from 'lodash';
 
 /**
  * Metadata used to define a measure or dimension in Cube.
@@ -60,7 +60,7 @@ export class Field {
         parentDimension = null
     }) {
         this.name = name;
-        this.displayName = displayName || name;
+        this.displayName = displayName || startCase(name);
         this.aggregator = this.parseAggregator(aggregator);
         this.isDimension = isDimension;
         this.isLeafDimension = isLeafDimension;
