@@ -187,7 +187,7 @@ export class View {
         }
 
         // 1) Create and store cloned leaves.
-        const ret = sourceRecords.map(r => new Record(fields, r.data));
+        const ret = sourceRecords.map(r => new Record(fields, r.data, r.id));
         ret.forEach(r => _leafMap.set(r.id, r));
 
         return ret;
