@@ -28,7 +28,13 @@ export class DimensionChooser extends Component {
     static modelClass = DimensionChooserModel;
 
     static propTypes = {
-        /** Width in pixels of the target button (that triggers show of popover). */
+        /** Icon for target button. */
+        buttonIcon: PT.element,
+
+        /** Static text for target button, or null (default) to display current dimensions. */
+        buttonText: PT.node,
+
+        /** Width in pixels of the target button. */
         buttonWidth: PT.number,
 
         /** Primary component model instance. */
@@ -38,7 +44,10 @@ export class DimensionChooser extends Component {
         popoverTitle: PT.string,
 
         /** Width in pixels of the popover menu itself. */
-        popoverWidth: PT.number
+        popoverWidth: PT.number,
+
+        /** True (default) to style target button as an input field - blends better in toolbars. */
+        styleButtonAsInput: PT.bool
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -53,6 +62,14 @@ export class DimensionChooser extends Component {
 
     get buttonWidth() {
         return withDefault(this.props.buttonWidth, 220);
+    }
+
+    get buttonIcon() {
+        return this.props.buttonIcon;
+    }
+
+    get styleButtonAsInput() {
+        return withDefault(this.props.styleButtonAsInput, true);
     }
 
     render() {
@@ -94,14 +111,17 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {value, dimensions, isMenuOpen, activeMode} = this.model,
-            labels = value.map(it => dimensions[it].label);
+        const {isMenuOpen, activeMode} = this.model,
+            styleAsInput = this.styleButtonAsInput,
+            className = styleAsInput ? 'xh-dim-button xh-dim-button--as-input' : 'xh-dim-button';
 
         const target = button({
-            item: labels.join(' \u203a '),
-            title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
+            item: this.getButtonText(),
+            title: this.getButtonTitle(),
+            icon: this.buttonIcon,
             width: this.buttonWidth,
-            className: 'xh-dim-button',
+            className,
+            minimal: styleAsInput,
             onClick: () => this.model.showMenu()
         });
 
@@ -118,6 +138,24 @@ export class DimensionChooser extends Component {
             }),
             onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e)
         });
+    }
+
+    getButtonText() {
+        const staticText = this.props.buttonText;
+        return staticText !== undefined ? staticText : this.getCurrDimensionLabels().join(' › ');
+    }
+
+    getButtonTitle() {
+        const staticTitle = this.props.buttonTitle;
+        if (staticTitle != undefined) return staticTitle;
+
+        const labels = this.getCurrDimensionLabels();
+        return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
+    }
+
+    getCurrDimensionLabels() {
+        const {value, dimensions} = this.model;
+        return value.map(it => dimensions[it].label);
     }
 
     renderHistoryMenu() {
