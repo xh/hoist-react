@@ -8,6 +8,7 @@
 
 import {Field} from './Field';
 import {Record} from './record';
+import {isString} from 'lodash';
 
 /**
  * An object for grouping and aggregating data on multiple dimensions.
@@ -99,7 +100,7 @@ export class Cube {
 
     createRecord(raw) {
         const {_idSpec} = this;
-        const id = _idSpec instanceof String ? raw[_idSpec] : _idSpec(raw);
+        const id = isString(_idSpec) ? raw[_idSpec] : _idSpec(raw);
         return new Record(this._fields, raw, id);
     }
 
