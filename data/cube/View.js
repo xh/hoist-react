@@ -13,7 +13,6 @@ import {
     ValueFilter
 } from '@xh/hoist/data/cube';
 import {isEmpty, groupBy, forEach, clone} from 'lodash';
-import {observable} from '@xh/hoist/mobx';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -27,7 +26,6 @@ export class View {
     _query = null;
     _boundStore = null;
 
-    @observable.ref
     _records = [];   // top-level record(s)
     _leafMap = new Map();   // all leaf records by id
     _aggMap = new Map();    // all aggregate records by id
