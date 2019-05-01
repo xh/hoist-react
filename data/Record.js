@@ -31,6 +31,11 @@ export class Record {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
+    /** @member {Field[]} */
+    get fields() {
+        return this.store.fields;
+    }
+
     /**
      * The children of this record, respecting any filter (if applied).
      * @returns {Record[]}
