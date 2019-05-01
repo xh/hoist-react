@@ -5,9 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './Field';
-export * from './Store';
-export * from './Record';
-export * from './RecordAction';
-export * from './StoreSelectionModel';
-export * from './UrlStore';
+import {XH} from '@xh/hoist/core';
+
+export class Filter {
+    matches(record) {
+        throw XH.exception({name: 'Cube Filter Error', message: 'Abstract class. Not implemented.'});
+    }
+}

@@ -4,32 +4,54 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual} from 'lodash';
+import {isEqual, isNil, isString} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Wrapper object for each data element within a {@see BaseStore}.
+ * Wrapper object for each data element within a {@see Store}.
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
  */
 export class Record {
 
-    static RESERVED_FIELD_NAMES = ['parentId', 'store', 'xhTreePath']
-
     /** @member {(string|number)} */
     id;
-    /** @member {BaseStore} */
-    store;
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
-    xhTreePath;
-
     /** @member {(string|number)} */
     parentId;
+    /** @member {Store} */
+    store;
+    /** @member {Object} */
+    raw;
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
+    xhTreePath;
 
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
+
+    /** @member {Field[]} */
+    get fields() {
+        return this.store.fields;
+    }
+
+    /**
+     * The children of this record, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
+    get children() {
+        return this.store.getChildrenById(this.id, true);
+    }
+
+    /**
+     * All children of this record unfiltered.
+     * @returns {Record[]}
+     */
+    get allChildren() {
+        return this.store.getChildrenById(this.id, false);
+    }
+
 
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all
@@ -43,20 +65,31 @@ export class Record {
      * requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
-     * @param {Object} c.raw - raw data for record.
-     * @param {BaseStore} c.store - store containing this record.
+     * @param {Object} c.data - data used to construct this record,
+     *      pre-processed if applicable by `store.processRawData()`.
+     * @param {Object} c.raw - the same data, prior to any store pre-processing.
+     * @param {Store} c.store - store containing this record.
      * @param {Record} [c.parent] - parent record, if any.
      */
-    constructor({raw, store, parent}) {
-        const id = raw.id;
+    constructor({data, raw, store, parent}) {
+        const {idSpec} = store,
+            id = isString(idSpec) ? data[idSpec] : idSpec(data);
+
+        throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 
         this.id = id;
         this.store = store;
+        this.raw = raw;
         this.parentId = parent ? parent.id : null;
         this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
 
         store.fields.forEach(f => {
-            this[f.name] = f.parseVal(raw[f.name]);
+            const {name} = f;
+            throwIf(
+                name in this,
+                `Field name "${name}" cannot be used for data. It is reserved as a top-level property of the Record class.`
+            );
+            this[name] = f.parseVal(data[name]);
         });
     }
 

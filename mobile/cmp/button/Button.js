@@ -38,7 +38,7 @@ export class Button extends Component {
             items.push(icon, hspacer(8), text);
         } else if (icon) {
             items.push(icon);
-        } else {
+        } else if (text) {
             items.push(text);
         }
 

@@ -49,7 +49,7 @@ export class RestStore extends UrlStore {
             url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
-            this.removeRecord(rec.id);
+            this.removeRecords([rec.id]);
         }).linkTo(
             this.loadModel
         );

@@ -4,65 +4,61 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {isString, isNil, partition} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js/';
 import {Record} from '../Record';
 
 /**
  * Internal container for Record management within a Store.
+ *
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
  * @private
  */
 export class RecordSet {
 
-    /** @member {BaseStore} - source store. */
     store;
-    /** @member {Map} - map of all records by id. */
-    records;
+    records;        // Records by id
+    count;
+    rootCount;
 
-    /** @member {Record[]} - lazily constructed array of Records. */
-    _list;
-    /** @member {RecordNode[]} - lazily constructed array of root RecordNodes. */
-    _tree;
+    _childrenMap;   // Lazy map of children by parentId
+    _list;          // Lazy list of all records.
+    _rootList;      // Lazy list of root records.
 
-    /**
-     * @param {BaseStore} store
-     * @param {Map} [records]
-     */
     constructor(store, records = new Map()) {
-        this.records = records;
         this.store = store;
+        this.records = records;
+        this.count = records.size;
+        this.rootCount = this.countRoots(records);
     }
 
-    /** Total number of records contained in this RecordSet. */
-    get count() {
-        return this.records.size;
+    //----------------------------------------------------------
+    // Lazy getters
+    // Avoid memory allocation and work -- in many cases
+    // clients will never ask for list or tree representations.
+    //----------------------------------------------------------
+    get childrenMap() {
+        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.records);
+        return this._childrenMap;
     }
 
-    /** All records as a flat list. */
     get list() {
-        if (!this._list) {
-            this._list = Array.from(this.records.values());
-        }
+        if (!this._list) this._list = Array.from(this.records.values());
         return this._list;
     }
 
-    /** All records in a tree representation. */
-    get tree() {
-        if (!this._tree) {
-            this._tree = this.toTree();
+    get rootList() {
+        if (!this._rootList) {
+            const {list, count, rootCount} = this;
+            this._rootList = (count == rootCount ? list : list.filter(r => r.parentId == null));
         }
-        return this._tree;
+        return this._rootList;
     }
 
-    /**
-     * Return a filtered version of this RecordSet.
-     *
-     * @param {function} filter - if null, this method will return the RecordSet itself.
-     * @return {RecordSet}
-     */
+    //----------------------------------------------
+    // Editing operations that spawn new recordsets.
+    // Preserve all record references we can!
+    //-----------------------------------------------
     applyFilter(filter) {
         if (!filter) return this;
 
@@ -84,19 +80,6 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    /**
-     * Create a new RecordSet with new rawData to replace this instance.
-     *
-     * Note that this process will re-use pre-existing Records if they are present in the new
-     * dataset (as identified by their ID), contain the same data, and occupy the same place in any
-     * hierarchy across old and new loads.
-     *
-     * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
-     * that have not changed and do not need to be re-evaluated / re-rendered.
-     *
-     * @param {Object[]} rawData
-     * @return {RecordSet}
-     */
     loadData(rawData) {
         const {records} = this,
             newRecords = this.createRecords(rawData);
@@ -116,30 +99,6 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-    /**
-     * Return a version of this RecordSet with a record (and all its children, if any) removed.
-     *
-     * @param {(string|number)} id - ID of record to be removed.
-     * @return {RecordSet}
-     */
-    removeRecord(id) {
-        const filter = (rec) => {
-            if (rec.id == id) return false;
-            const {parent} = rec;
-            if (parent && !filter(parent)) return false;
-            return true;
-        };
-
-        return this.applyFilter(filter);
-    }
-
-    /**
-     * Return a version of this RecordSet with records added or updated. Existing records not
-     * matched by ID to rows in the update dataset will be left in place.
-     *
-     * @param {Object[]} rawData - raw data for records to be added or updated.
-     * @return {RecordSet}
-     */
     updateData(rawData) {
         const newRecords = this.createRecords(rawData),
             existingRecords = new Map(this.records);
@@ -154,6 +113,12 @@ export class RecordSet {
         return new RecordSet(this.store, existingRecords);
     }
 
+    removeRecords(ids) {
+        const removes = new Set();
+        ids.forEach(id => this.gatherDescendants(id, removes));
+        return this.applyFilter(r => !removes.has(r.id));
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -164,54 +129,56 @@ export class RecordSet {
     }
 
     createRecord(raw, records, parent) {
-        const {store} = this,
-            {idSpec} = store;
+        const {store} = this;
 
-        if (store.processRawData) store.processRawData(raw);
+        let data = raw;
+        if (store.processRawData) {
+            data = store.processRawData(raw);
+            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
+        }
 
-        raw.id = isString(idSpec) ? raw[idSpec] : idSpec(raw);
-
+        const rec = new Record({data, raw, parent, store});
         throwIf(
-            isNil(raw.id),
-            "Record has a null/undefined ID. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record."
+            records.has(rec.id),
+            `ID ${rec.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
         );
-
-        throwIf(
-            records.has(raw.id),
-            `ID ${raw.id} is not unique. Use the 'LocalStore.idSpec' config to resolve a unique ID for each record.`
-        );
-
-        const rec = new Record({raw, parent, store});
         records.set(rec.id, rec);
-
-        if (raw.children) {
-            raw.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
+        if (data.children) {
+            data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
     }
 
-    toTree() {
-        const childrenMap = new Map();
-
-        // Pass 1, create nodes.
-        const nodes = this.list.map(record => ({record})),
-            [roots, nonRoots] = partition(nodes, (node) => node.record.parentId == null);
-
-        // Pass 2, collect children by parent.
-        nonRoots.forEach(node => {
-            let {parentId} = node.record,
-                children = childrenMap.get(parentId);
-            if (!children) {
-                children = [];
-                childrenMap.set(parentId, children);
+    computeChildrenMap(records) {
+        const ret = new Map();
+        records.forEach(r => {
+            const {parentId} = r;
+            if (parentId) {
+                const children = ret.get(parentId);
+                if (!children) {
+                    ret.set(parentId, [r]);
+                } else {
+                    children.push(r);
+                }
             }
-            children.push(node);
         });
+        return ret;
+    }
 
-        // Pass 3, assign children.
-        nodes.forEach(node => {
-            node.children = childrenMap.get(node.record.id) || [];
+    countRoots(records) {
+        let ret = 0;
+        records.forEach(rec => {
+            if (rec.parentId == null) ret++;
         });
+        return ret;
+    }
 
-        return roots;
+    gatherDescendants(id, idSet) {
+        if (!idSet.has(id)) {
+            idSet.add(id);
+            const children = this.childrenMap.get(id);
+            if (children) {
+                children.forEach(child => this.gatherDescendants(child.id, idSet));
+            }
+        }
     }
 }

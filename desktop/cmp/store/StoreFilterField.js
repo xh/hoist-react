@@ -13,7 +13,7 @@ import {observable, action} from '@xh/hoist/mobx';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {BaseStore} from '@xh/hoist/data';
+import {Store} from '@xh/hoist/data';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
@@ -36,7 +36,7 @@ export class StoreFilterField extends Component {
          * Store that this control should filter. By default, all fields configured on the Store
          * will be used for matching. Do not configure this and `gridModel` on the same component.
          */
-        store: PT.instanceOf(BaseStore),
+        store: PT.instanceOf(Store),
 
         /**
          * GridModel whose Store this control should filter. When given a GridModel, this component

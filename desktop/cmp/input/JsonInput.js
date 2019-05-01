@@ -91,7 +91,6 @@ export class JsonInput extends HoistInput {
             }),
 
             className: this.getClassName(),
-            flexDirection: 'column',
 
             ...layoutProps,
             width: withDefault(width, 300),
