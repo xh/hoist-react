@@ -5,9 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './Field';
-export * from './Store';
-export * from './Record';
-export * from './RecordAction';
-export * from './StoreSelectionModel';
-export * from './UrlStore';
+import {Aggregator} from './Aggregator';
+
+export class NullAggregator extends Aggregator {
+
+    aggregate(records, fieldName) {
+        return null;
+    }
+}

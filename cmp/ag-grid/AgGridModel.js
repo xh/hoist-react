@@ -126,7 +126,7 @@ export class AgGridModel {
     getFirstSelectableRowNodeId() {
         let id = null;
         this.agApi.forEachNodeAfterFilterAndSort(node => {
-            if (!isNil(id) && node.data) {
+            if (isNil(id) && node.data) {
                 id = node.id;
             }
         });

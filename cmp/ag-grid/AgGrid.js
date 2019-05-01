@@ -85,12 +85,13 @@ export class AgGrid extends Component {
     navigateToNextCell = (agParams) => {
         if (XH.isMobile) return;
 
-        const {nextCellDef, previousCellDef, event, api} = agParams,
+        const {nextCellDef, previousCellDef, event} = agParams,
+            {agApi} = this.model,
             shiftKey = event.shiftKey,
             prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
             nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
-            prevNode = prevIndex != null ? api.getDisplayedRowAtIndex(prevIndex) : null,
-            nextNode = nextIndex != null ? api.getDisplayedRowAtIndex(nextIndex) : null,
+            prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
+            nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
             KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
 
