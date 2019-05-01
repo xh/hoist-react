@@ -135,14 +135,18 @@ export class Select extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    // Controlled value of the internal text input.
-    @observable inputValue = null;
-
-    // Prop flags that switch core behavior.
+    // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
     get multiMode() {return !!this.props.enableMulti}
-    get editableMode() {return withDefault(this.props.enableFilter, true) && !this.props.enableMulti}
+    get filterMode() {return withDefault(this.props.enableFilter, true)}
+
+    // Managed value for underlying text input under certain conditions
+    // This is a workaround for rs-select issue described in hoist-react #880
+    @observable inputValue = null;
+    get manageInputValue() {
+        return this.filterMode && !this.multiMode;
+    }
 
     constructor(props) {
         super(props);
@@ -192,7 +196,7 @@ export class Select extends HoistInput {
                 ref: this.reactSelectRef
             };
 
-        if (this.editableMode) {
+        if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
             rsProps.onInputChange = this.onInputChange;
             rsProps.escapeClearsValue = true;
@@ -204,7 +208,7 @@ export class Select extends HoistInput {
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
             rsProps.options = this.internalOptions;
-            rsProps.isSearchable = withDefault(props.enableFilter, true);
+            rsProps.isSearchable = this.filterMode;
         }
 
         if (this.creatableMode) {
@@ -234,7 +238,9 @@ export class Select extends HoistInput {
 
     @action
     onSelectChange = (opt) => {
-        this.inputValue = opt ? opt.label : null;
+        if (this.manageInputValue) {
+            this.inputValue = opt ? opt.label : null;
+        }
         this.noteValueChange(opt);
     };
 
@@ -243,17 +249,19 @@ export class Select extends HoistInput {
     //-------------------------
     @action
     onInputChange = (value, {action}) => {
-        if (action == 'input-change') {
-            this.inputValue = value;
-            if (!value) this.noteValueChange(null);
-        } else if (action == 'input-blur') {
-            this.inputValue = null;
+        if (this.manageInputValue) {
+            if (action == 'input-change') {
+                this.inputValue = value;
+                if (!value) this.noteValueChange(null);
+            } else if (action == 'input-blur') {
+                this.inputValue = null;
+            }
         }
     };
 
     @action
     onFocus = (ev) => {
-        if (this.editableMode) {
+        if (this.manageInputValue) {
             this.inputValue = this.renderValue ? this.renderValue.label : null;
         }
         if (this.props.onFocus) this.props.onFocus(ev);
