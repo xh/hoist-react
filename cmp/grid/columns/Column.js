@@ -70,8 +70,12 @@ export class Column {
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
      *      to call when producing a value for a file export.
      *      @see GridExportService
-     * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
+     * @param {ExportFormat|string} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
+     * @param {'date'|'datetime'|'int'|'double'|'longText'} [c.exportColType] - string to manually specify the
+     *      column's meta.type property for the Grid Export service. Describes how the value will be parse by
+     *      the server. Allows c.exportFormat string to be defined as a string not enumerated in @see ExportFormat
+     *      @see ExportGridService
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
      *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or

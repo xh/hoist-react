@@ -36,7 +36,7 @@ export class ActivityGridModel {
         sortBy: 'dateCreated|desc',
         columns: [
             {field: 'severity', width: 100},
-            {field: 'dateCreated', ...dateTimeCol},
+            {field: 'dateCreated', ...dateTimeCol, exportColType: 'datetime', exportFormat: 'yyyy-mm-dd hh:mm:ss'},
             {field: 'username', ...usernameCol},
             {field: 'category', width: 100},
             {field: 'device', width: 100},
