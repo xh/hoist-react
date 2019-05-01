@@ -103,6 +103,12 @@
     svg:first-child {
       margin-right: var(--xh-pad-px);
     }
+
+    button {
+      svg:first-child {
+        margin-right: 0;
+      }
+    }
   }
 
   .bp3-dialog-body {
