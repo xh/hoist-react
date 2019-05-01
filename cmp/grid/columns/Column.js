@@ -73,7 +73,7 @@ export class Column {
      * @param {ExportFormat|string} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
      * @param {'date'|'datetime'|'int'|'double'|'longText'} [c.exportColType] - string to manually specify the
-     *      column's meta.type property for the Grid Export service. Describes how the value will be parse by
+     *      column's meta.type property for the Grid Export service. Describes how the value will be parsed by
      *      the server. Allows c.exportFormat string to be defined as a string not enumerated in @see ExportFormat
      *      @see ExportGridService
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
@@ -118,6 +118,7 @@ export class Column {
         exportName,
         exportValue,
         exportFormat,
+        exportType,
         exportWidth,
         excludeFromExport,
         tooltip,
@@ -173,7 +174,8 @@ export class Column {
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
-        this.exportWidth = exportWidth || null;
+        this.exportType = withDefault(exportType, null);
+        this.exportWidth = withDefault(exportWidth, null);
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
