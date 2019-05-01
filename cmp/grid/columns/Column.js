@@ -72,7 +72,7 @@ export class Column {
      *      @see GridExportService
      * @param {ExportFormat|string} [c.exportFormat] - structured format string for Excel-based exports.
      *      @see ExportFormat
-     * @param {'date'|'datetime'|'int'|'double'|'longText'} [c.exportColType] - string to manually specify the
+     * @param {'date'|'datetime'|'int'|'double'|'longText'} [c.exportType] - string to manually specify the
      *      column's meta.type property for the Grid Export service. Describes how the value will be parsed by
      *      the server. Allows c.exportFormat string to be defined as a string not enumerated in @see ExportFormat
      *      @see ExportGridService

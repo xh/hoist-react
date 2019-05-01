@@ -110,10 +110,10 @@ export class GridExportService {
 
     getColumnMetadata(columns) {
         return columns.map(column => {
-            const {field, exportColType, exportFormat, exportWidth: width} = column;
+            const {field, exportType, exportFormat, exportWidth: width} = column;
             let type = null;
-            if (exportColType) {
-                type = exportColType;
+            if (exportType) {
+                type = exportType;
             } else {
                 if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
                 if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
@@ -159,7 +159,7 @@ export class GridExportService {
     }
 
     getCellData(record, column) {
-        const {field, exportValue, exportColType, exportFormat} = column;
+        const {field, exportValue, exportType, exportFormat} = column;
 
         // Modify value using exportValue
         let value = record[field];
@@ -174,8 +174,8 @@ export class GridExportService {
         if (isNil(value)) return null;
 
         // Enforce date formats expected by server
-        if (exportColType == 'date' || exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
-        if (exportColType == 'datetime' || exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
+        if (exportType == 'date' || exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
+        if (exportType == 'datetime' || exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
         return value.toString();
     }
