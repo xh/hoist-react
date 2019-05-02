@@ -40,14 +40,12 @@ export class Field {
     static singleAggregator = new SingleAggregator();
 
     /**
-     * Construct this object.
-     *
-     * @param name, string. Unique key describing this field.
-     * @param displayName, string. Descriptive name suitable for display to end users.
-     * @param aggregator, Aggregator, or alias for Hoist aggregators in aggregate package (e.g. 'MAX').
-     * @param isDimension, boolean. True to allow this field to be used for groupings and aggregations.
-     * @param isLeafDimension, boolean. True if any further groupings below this dimension would be derivative (have only one member).
-     * @param parentDimension, name of field that is a 'parent' dimension of this dimension. This marks this dimension as a
+     * @param {String} name - Unique key describing this field.
+     * @param {String} displayName - Descriptive name suitable for display to end users.
+     * @param {Aggregator} aggregator - or alias for Hoist aggregators in aggregate package (e.g. 'MAX').
+     * @param {boolean} isDimension - True to allow this field to be used for groupings and aggregations.
+     * @param {boolean} isLeafDimension - True if any further groupings below this dimension would be derivative (have only one member).
+     * @param {String} parentDimension - name of field that is a 'parent' dimension of this dimension. This marks this dimension as a
      *              sub-dimension of the parent dimension (e.g. 'asset group' and 'asset').  This will allow the Cube
      *              view to skip creating derivative nodes when a parent node has a single identical child node.
      **/

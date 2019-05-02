@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Record} from './Record';
+import {CubeRecord} from './CubeRecord';
 
-export class AggregateRecord extends Record {
+export class AggregateCubeRecord extends CubeRecord {
 
     isLeaf = false;
     dim = null;
