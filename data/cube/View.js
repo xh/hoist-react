@@ -8,11 +8,11 @@
 import {
     Query,
     Cube,
-    AggregateRecord,
-    Record,
+    AggregateCubeRecord,
+    CubeRecord,
     ValueFilter
 } from '@xh/hoist/data/cube';
-import {isEmpty, groupBy, forEach, clone} from 'lodash';
+import {isEmpty, groupBy, forEach, clone, pick, map} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -26,17 +26,16 @@ export class View {
     _query = null;
     _boundStore = null;
 
-    _records = [];   // top-level record(s)
-    _leafMap = new Map();   // all leaf records by id
-    _aggMap = new Map();    // all aggregate records by id
+    _records = [];          // top-level record(s)
+    _leaves = [];           // all leaf records by id
 
     /**
      * Create this object.
      *
-     * @param cube, source Cube for this view.
-     * @param query, Query to be used to construct this view (or config to create same).
-     * @param connect, boolean.  Should this view receive updates when its source Cube changes?
-     * @param boundStore, Store.  An optional store to bind to this view.
+     * @param {Cube} cube, source Cube for this view.
+     * @param {Query} query -  to be used to construct this view (or config to create same).
+     * @param {boolean} connect - Should this view receive updates when its source Cube changes?
+     * @param {Store} boundStore. - An optional store to bind to this view.
      *      If provided, this store will automatically be updated when this view changes.
      */
     constructor({cube, query, connect = false, boundStore = null}) {
@@ -59,7 +58,7 @@ export class View {
      * Main entry point.
      */
     async getDataAsync() {
-        return this.getRecordsAsData(this._records, true);
+        return this.getRecordsAsData(this._records);
     }
 
     getQuery() {
@@ -108,26 +107,23 @@ export class View {
     }
 
     getDimensionValues() {
-        const {_leafMap} = this,
-            fields = this._query,
+        const {_leaves} = this,
+            {fields} = this._query,
+            dims = pick(fields, f => f.isDimension),
             ret = [];
 
-        forEach(fields, f => {
-            if (f.isDimension) {
-                const vals = [];
-                _leafMap.forEach(rec => {
-                    const lVal = rec.get(f.name);
-                    if (lVal != null && !vals.includes(lVal)) {
-                        vals.push(lVal);
-                    }
-                });
+        forEach(dims, dim => {
+            const vals = new Set();
+            _leaves.forEach(rec => {
+                const val = rec.get(dim.name);
+                if (val != null) vals.add(val);
+            });
 
-                ret.push({
-                    name: f.name,
-                    displayName: f.displayName,
-                    values: vals
-                });
-            }
+            ret.push({
+                name: dim.name,
+                displayName: dim.displayName,
+                values: vals
+            });
         });
 
         return ret;
@@ -145,20 +141,20 @@ export class View {
     //------------------------
     loadRecordsFromCube() {
         const {_query, cube} = this,
-            {dimensions} = _query,
+            {dimensions, includeRoot, fields} = _query,
             {records} = cube,
             sourceRecords = Array.from(records.values());
 
-        this._records = null;
-        this._aggMap = new Map();
-        this._leafMap = new Map();
 
         // Create the new structure
-        const newLeaves = this.createLeaves(sourceRecords);
-        this._records = this.groupAndInsertLeaves(newLeaves, dimensions, [], []);
-        if (_query.includeRoot) {
-            this._records = [new AggregateRecord(_query.fields, this.getRootId(), this._records, null, 'Total')];
-        }
+        const newLeaves = this.createLeaves(sourceRecords),
+            newRecords =  this.groupAndInsertLeaves(newLeaves, dimensions);
+
+        this._leaves = newLeaves;
+        this._records = includeRoot ?
+            [new AggregateCubeRecord(fields, this.getRootId(), newRecords, null, 'Total')] :
+            newRecords;
+
 
         // Broadcast any changes
         this.loadBoundStore();
@@ -169,15 +165,9 @@ export class View {
         this._boundStore = null;
     }
 
-    /**
-     * Add new source records to this view.
-     *
-     * @param sourceRecords, records from underlying cube.
-     * @return Array, newly added leaves associated with inserted records.
-     */
+
     createLeaves(sourceRecords) {
-        const {_query, _leafMap} = this,
-            {filters, fields} = _query;
+        const {filters, fields} = this._query;
 
         // 0) Filter source records
         if (filters && filters.length) {
@@ -185,65 +175,41 @@ export class View {
         }
 
         // 1) Create and store cloned leaves.
-        const ret = sourceRecords.map(r => new Record(fields, r.data, r.id));
-        ret.forEach(r => _leafMap.set(r.id, r));
-
-        return ret;
+        return sourceRecords.map(r => new CubeRecord(fields, r.data, r.id));
     }
 
     /**
      * Incorporate a set of new leaf records, along a set of (remaining) dimensions.
      * This is called recursively, so that the lowest level grouping is applied first.
 
-     * @param leaves, new leaf records to be incorporated into the tree
-     * @param dimensions, remaining dimensions to group on
-     * @param aggsAdded, Array of added aggregates by this operation.  For population by this method.
-     * @param aggsToUpdate, Array of existing aggregates which will need to be updated as a result
-     *          of this operation.  For population by this method.
-     * @param parentId, id of the parent node these leaves are to be inserted at.
+     * @param {CubeRecord[]} leaves - new leaf records to be incorporated into the tree
+     * @param {String[]} dimensions - remaining dimensions to group on
+     * @param {int} parentId - id of the parent node these leaves are to be inserted at.
      *
-     * @return Array, records to be added at this level to accommodate the leaf insertion.
+     * @return {CubeRecord[]}, records to be added at this level to accommodate the leaf insertion.
      */
-    groupAndInsertLeaves(leaves, dimensions, aggsAdded, aggsToUpdate, parentId = this.getRootId()) {
+    groupAndInsertLeaves(leaves, dimensions, parentId = this.getRootId()) {
         if (!dimensions || isEmpty(dimensions)) return leaves;
 
-        const {_aggMap, _query} = this,
-            {fields} = _query,
+        const {fields} = this._query,
             dim = dimensions[0],
-            groups = groupBy(leaves, (it) => it.get(dim.name)),
-            ret = [];
+            groups = groupBy(leaves, (it) => it.get(dim.name));
 
-        forEach(groups, (groupLeaves, val) => {
+        return map(groups, (groupLeaves, val) => {
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
-
-            const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), aggsAdded, aggsToUpdate, id);
-            let rec = _aggMap.get(id);
-            if (rec) {
-                rec.children = rec.children.concat(newChildren);
-                newChildren.forEach(it => it.parent = rec);
-                aggsToUpdate.push(rec);
-            } else {
-                rec = new AggregateRecord(fields, id, newChildren, dim, val);
-                aggsAdded.push(rec);
-                _aggMap.set(id, rec);
-                ret.push(rec);
-            }
+            const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id);
+            return new AggregateCubeRecord(fields, id, newChildren, dim, val);
         });
-
-        return ret;
     }
 
     loadBoundStore() {
-        const {_records, _boundStore: store}  = this;
-
-        if (store) {
-            const data = this.getRecordsAsData(_records, true);
-            store.loadData(data);
+        const {_records, _boundStore} = this;
+        if (_boundStore) {
+            _boundStore.loadData(this.getRecordsAsData(_records));
         }
     }
 
-
-    getRecordsAsData(records, includeChildren) {
+    getRecordsAsData(records) {
         const {_query: q, cube: {_lockFn}} = this;
 
         if (!records.length || (!q.includeLeaves && records[0].isLeaf)) {
@@ -255,7 +221,7 @@ export class View {
                 dim = rec.dim,
                 children = rec.children;
 
-            if (includeChildren && children) {
+            if (children) {
                 // Potentially Lock children
                 if (_lockFn && _lockFn(rec)) {
                     data.locked = true;
@@ -272,7 +238,7 @@ export class View {
                 }
 
                 // 1) serialize to store data recursively
-                const childrenAsData = this.getRecordsAsData(children, includeChildren);
+                const childrenAsData = this.getRecordsAsData(children);
                 if (childrenAsData.length) {
                     data.children = childrenAsData;
                 }

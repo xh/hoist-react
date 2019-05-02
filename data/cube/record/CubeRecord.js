@@ -6,7 +6,7 @@
  */
 import {forEach} from 'lodash';
 
-export class Record {
+export class CubeRecord {
 
     fields = null;
     parent = null;

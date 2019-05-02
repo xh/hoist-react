@@ -20,7 +20,7 @@ export class SumStrictAggregator extends Aggregator {
     replace(records, currAgg, update) {
         const {oldVal, newVal} = update;
         if (currAgg == null || oldVal == null || newVal == null) {
-            return super.replace(records, currAgg, update); // TODO: what was callParent doing here?
+            return super.replace(records, currAgg, update); 
         }
         return currAgg - oldVal + newVal;
     }
