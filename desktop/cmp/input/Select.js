@@ -80,9 +80,6 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
-        /** Callback to execute on input focus */
-        onFocus: PT.func,
-
         /** True to show a "clear" button at the right of the control.  Defaults to false. */
         enableClear: PT.bool,
 
@@ -264,7 +261,7 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             this.inputValue = this.renderValue ? this.renderValue.label : null;
         }
-        if (this.props.onFocus) this.props.onFocus(ev);
+        this.noteFocused();
     };
 
     //-------------------------
