@@ -15,6 +15,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 
 import './Panel.scss';
 
@@ -57,7 +58,7 @@ export class Panel extends Component {
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
 
         /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
+        tbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -105,6 +106,15 @@ export class Panel extends Component {
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
+
+            console.log('`tbar instanceof Array`: ', tbar instanceof Array);
+
+            if (tbar instanceof Array) {
+                console.log('tbar WAS AN ARRAY!');
+                console.log( toolbar(tbar));
+
+            }
+
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
