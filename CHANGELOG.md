@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming Release
+
+### 🐞 Bug Fixes
+* `Select` will now let the user edit existing text in conditions where it is expected to be 
+  editable. #880  
+
 ## v22.0.0 - 2019-04-29
 
 ### 🎁 New Features
