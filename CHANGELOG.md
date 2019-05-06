@@ -9,7 +9,9 @@
 
 ### 🐞 Bug Fixes
 * `Select` will now let the user edit existing text in conditions where it is expected to be 
-  editable. #880  
+  editable. #880
+* The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
+  once again able to apply remote config values.
 
 ## v22.0.0 - 2019-04-29
 
