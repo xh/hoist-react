@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
@@ -41,7 +40,7 @@ export class VisitsChart extends Component {
     //-----------------------------
     renderToolbar() {
         const {model} = this;
-        return toolbar(
+        return [
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({bind: 'endDate'}),
@@ -52,7 +51,7 @@ export class VisitsChart extends Component {
                 width: 120
             }),
             refreshButton({model})
-        );
+        ];
     }
 
     dateInput(args) {
