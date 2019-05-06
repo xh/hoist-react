@@ -98,7 +98,7 @@ export class Panel extends Component {
                 panelHeader({title, icon, headerItems}),
                 parseToolbar(tbar),
                 vframe(castArray(children)),
-                parseToolbar(tbar),
+                parseToolbar(bbar),
                 maskElem
             ],
             ...rest,
