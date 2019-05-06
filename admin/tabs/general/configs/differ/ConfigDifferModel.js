@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {action, observable} from '@xh/hoist/mobx';
-import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, pick, remove, trimEnd} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {p} from '@xh/hoist/cmp/layout';
@@ -224,9 +224,11 @@ export class ConfigDifferModel  {
     }
 
     doApplyRemote(records) {
+        const recsForPost = records.map(rec => pick(rec, ['name', 'remoteValue']));
+
         XH.fetchJson({
             url: 'configDiffAdmin/applyRemoteValues',
-            params: {records: JSON.stringify(records)}
+            params: {records: JSON.stringify(recsForPost)}
         }).finally(() => {
             this.loadAsync();
             this.configModel.loadAsync();
