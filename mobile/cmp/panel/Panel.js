@@ -15,6 +15,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 
 import './Panel.scss';
+import {toolbar} from "@xh/hoist/desktop/cmp/toolbar";
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -26,7 +27,7 @@ export class Panel extends Component {
 
     static propTypes = {
         /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
+        bbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
@@ -46,7 +47,7 @@ export class Panel extends Component {
         scrollable: PT.bool,
 
         /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
+        tbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -77,6 +78,10 @@ export class Panel extends Component {
             layoutProps.flex = 'auto';
         }
 
+        const parseToolbar = (barSpec) => {
+            return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
+        };
+
         // 2) Mask is as provided, or a default simple mask.
         let maskElem = null;
         if (maskProp === true) {
@@ -91,9 +96,9 @@ export class Panel extends Component {
         return vbox({
             items: [
                 panelHeader({title, icon, headerItems}),
-                tbar || null,
+                parseToolbar(tbar),
                 vframe(castArray(children)),
-                bbar || null,
+                parseToolbar(tbar),
                 maskElem
             ],
             ...rest,
