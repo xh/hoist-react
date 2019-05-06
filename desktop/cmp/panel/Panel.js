@@ -37,9 +37,6 @@ export class Panel extends Component {
     static modelClass = PanelModel;
 
     static propTypes = {
-        /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
-
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
 
@@ -57,8 +54,17 @@ export class Panel extends Component {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
 
-        /** A toolbar to be docked at the top of the panel. */
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
         tbar: PT.oneOfType([PT.element, PT.array]),
+
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
+        bbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -107,20 +113,16 @@ export class Panel extends Component {
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
 
-            console.log('`tbar instanceof Array`: ', tbar instanceof Array);
-
-            if (tbar instanceof Array) {
-                console.log('tbar WAS AN ARRAY!');
-                console.log( toolbar(tbar));
-
-            }
+            const parseToolbar = (barSpec) => {
+                barSpec instanceof Array ?  toolbar(barSpec) : barSpec || null;
+            };
 
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
-                    tbar || null,
+                    parseToolbar(tbar),
                     ...(castArray(children)),
-                    bbar || null
+                    parseToolbar(bbar)
                 ]
             });
         }
