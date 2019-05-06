@@ -20,7 +20,7 @@ export class VersionBar extends Component {
     render() {
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion'),
-            isVisible = (XH.getUser().isHoistAdmin || env !== 'Production' || XH.getPref('xhForceEnvironmentFooter'));
+            isVisible = (env !== 'Production' || XH.getUser().isHoistAdmin || XH.getPref('xhForceEnvironmentFooter'));
 
         if (!isVisible) return null;
 
