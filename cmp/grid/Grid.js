@@ -343,24 +343,22 @@ export class Grid extends Component {
                 if (!api) return;
 
                 runInAction(() => {
-                    const now = Date.now();
+                    this.withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
+                        // Workaround for AG-2879.
+                        this.clearDataIfExpensiveDeletionPending(records, api);
 
-                    // Workaround for AG-2879.
-                    this.clearDataIfExpensiveDeletionPending(records, api);
+                        // Load updated data into the grid.
+                        api.setRowData(records);
 
-                    // Load updated data into the grid.
-                    api.setRowData(records);
+                        // Size columns to account for scrollbar show/hide due to row count change.
+                        api.sizeColumnsToFit();
 
-                    // Size columns to account for scrollbar show/hide due to row count change.
-                    api.sizeColumnsToFit();
-
-                    // Force grid to fully re-render cells. We are *not* relying on its default
-                    // cell-level change detection as this does not account for our current
-                    // renderer API (where renderers can reference other properties on the data
-                    // object). See https://github.com/exhi/hoist-react/issues/550.
-                    api.refreshCells({force: true});
-
-                    console.debug(`Loaded ${records.length} records into ag-Grid: ${Date.now() - now}ms`);
+                        // Force grid to fully re-render cells. We are *not* relying on its default
+                        // cell-level change detection as this does not account for our current
+                        // renderer API (where renderers can reference other properties on the data
+                        // object). See https://github.com/exhi/hoist-react/issues/550.
+                        api.refreshCells({force: true});
+                    });
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
@@ -498,10 +496,10 @@ export class Grid extends Component {
         // Heuristic -- we think slow deletions grow by order (D * (C + A))
         if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
             console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
-            const now = Date.now();
-            api.selectionController.reset();
-            api.clientSideRowModel.setRowData([]);
-            console.debug(`Pre-Cleared ${currCount} records from ag-Grid: ${Date.now() - now}ms`);
+            this.withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
+                api.selectionController.reset();
+                api.clientSideRowModel.setRowData([]);
+            });
         }
     }
 

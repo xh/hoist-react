@@ -8,7 +8,7 @@
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, EventSupport, ReactiveSupport, LogSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
@@ -44,6 +44,7 @@ import '../styles/XH.scss';
  */
 @EventSupport
 @ReactiveSupport
+@LogSupport
 class XHClass {
 
     _initCalled = false;
@@ -568,8 +569,13 @@ class XHClass {
     get acm() {return this.appContainerModel}
 
     async initServicesInternalAsync(svcs) {
-        const promises = svcs.map(it => it.initAsync()),
-            results = await allSettled(promises),
+        const promises = svcs.map(it => {
+            return this.withShortLog(`Initializing ${it.constructor.name}`, () => {
+                return it.initAsync();
+            });
+        });
+
+        const results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 
         if (errs.length > 0) {

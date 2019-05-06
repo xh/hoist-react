@@ -6,6 +6,11 @@
 * `Select` will now let the user edit existing text in conditions where it is expected to be 
   editable. #880  
 
+### 🎁 New Features
+* A new mixin `LogSupport` has been added to provide a terse syntax for adding log and debug messages 
+  that track the execution of specific blocks of code.  This mixin has been added to `@HoistService`,
+  `@HoistModel`, and `@HoistComponent`.
+
 ## v22.0.0 - 2019-04-29
 
 ### 🎁 New Features
