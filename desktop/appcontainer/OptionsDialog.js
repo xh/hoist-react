@@ -10,7 +10,6 @@ import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -68,7 +67,7 @@ export class OptionsDialog extends Component {
                             })
                         })
                     ),
-                    bbar: toolbar(
+                    bbar: [
                         restoreDefaultsButton(),
                         filler(),
                         button({
@@ -82,7 +81,7 @@ export class OptionsDialog extends Component {
                             intent: 'success',
                             onClick: () => model.saveAsync()
                         })
-                    )
+                    ]
                 })
             ]
         });
