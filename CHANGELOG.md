@@ -5,6 +5,7 @@
 ### 🎁 New Features
 * `Panel.tbar` and `Panel.bbar` now accept an array of Elements and will auto-generate a toolbar
   to contain them. 
+* Hoist Admins now always see the VersionBar in the footer.
 
 ### 🐞 Bug Fixes
 * `Select` will now let the user edit existing text in conditions where it is expected to be 
