@@ -6,5 +6,5 @@
  */
 
 
-export * from './AggregateRecord';
-export * from './Record';
+export * from './AggregateCubeRecord';
+export * from './CubeRecord';

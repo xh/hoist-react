@@ -7,7 +7,7 @@
 
 
 import {Field} from './Field';
-import {Record} from './record';
+import {CubeRecord} from './record';
 import {isString} from 'lodash';
 
 /**
@@ -31,8 +31,6 @@ export class Cube {
     static RECORD_ID_DELIMITER = '>>';
 
     /**
-     * Construct this object.
-     *
      * @param {Field[]} fields - array of Fields to be loaded in this cube.
      * @param {Object[]} [data] - array of raw data.
      * @param {Object} [info] - map of metadata associated with this data.
@@ -101,7 +99,7 @@ export class Cube {
     createRecord(raw) {
         const {_idSpec} = this;
         const id = isString(_idSpec) ? raw[_idSpec] : _idSpec(raw);
-        return new Record(this._fields, raw, id);
+        return new CubeRecord(this._fields, raw, id);
     }
 
     processRawData(rawData) {

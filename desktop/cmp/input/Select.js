@@ -132,13 +132,22 @@ export class Select extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    // Prop flags that switch core behavior.
+    // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
     get multiMode() {return !!this.props.enableMulti}
+    get filterMode() {return withDefault(this.props.enableFilter, true)}
+
+    // Managed value for underlying text input under certain conditions
+    // This is a workaround for rs-select issue described in hoist-react #880
+    @observable inputValue = null;
+    get manageInputValue() {
+        return this.filterMode && !this.multiMode;
+    }
 
     constructor(props) {
         super(props);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -184,12 +193,19 @@ export class Select extends HoistInput {
                 ref: this.reactSelectRef
             };
 
+        if (this.manageInputValue) {
+            rsProps.inputValue = this.inputValue || '';
+            rsProps.onInputChange = this.onInputChange;
+            rsProps.escapeClearsValue = true;
+        }
+
         if (this.asyncMode) {
             rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
             rsProps.loadingMessage = this.loadingMessageFn;
+            if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
             rsProps.options = this.internalOptions;
-            rsProps.isSearchable = withDefault(props.enableFilter, true);
+            rsProps.isSearchable = this.filterMode;
         }
 
         if (this.creatableMode) {
@@ -201,7 +217,6 @@ export class Select extends HoistInput {
             (this.creatableMode ? reactCreatableSelect : reactSelect);
 
         assign(rsProps, props.rsOptions);
-
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
@@ -218,12 +233,40 @@ export class Select extends HoistInput {
         });
     }
 
+    @action
+    onSelectChange = (opt) => {
+        if (this.manageInputValue) {
+            this.inputValue = opt ? opt.label : null;
+        }
+        this.noteValueChange(opt);
+    };
+
+    //-------------------------
+    // Text input handling
+    //-------------------------
+    @action
+    onInputChange = (value, {action}) => {
+        if (this.manageInputValue) {
+            if (action == 'input-change') {
+                this.inputValue = value;
+                if (!value) this.noteValueChange(null);
+            } else if (action == 'input-blur') {
+                this.inputValue = null;
+            }
+        }
+    };
+
+    @action
+    onFocus = (ev) => {
+        if (this.manageInputValue) {
+            this.inputValue = this.renderValue ? this.renderValue.label : null;
+        }
+        this.noteFocused();
+    };
+
     //-------------------------
     // Options / value handling
     //-------------------------
-    onSelectChange = (opt) => {
-        this.noteValueChange(opt);
-    }
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.

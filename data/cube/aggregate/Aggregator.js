@@ -15,9 +15,9 @@ export class Aggregator {
     /**
      * Adjust an aggregated value, by replacing one of its constituent components.
      *
-     * @param records, current records in aggregation.  Will never be empty.
-     * @param currAgg, current value of aggregation
-     * @param change, FieldChange
+     * @param {Record[]} records - current records in aggregation.  Will never be empty.
+     * @param {any} currAgg - current value of aggregation
+     * @param {Object} change - description of change
      *
      *
      * Sub-classes may use this method to provide efficient implementations for dynamic changes
