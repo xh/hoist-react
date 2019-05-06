@@ -114,7 +114,7 @@ export class Panel extends Component {
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
 
             const parseToolbar = (barSpec) => {
-                barSpec instanceof Array ?  toolbar(barSpec) : barSpec || null;
+                return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
 
             coreContents = vframe({
