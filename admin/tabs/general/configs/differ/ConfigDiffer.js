@@ -80,13 +80,13 @@ export class ConfigDiffer extends Component {
                     }
                 })
             }),
-            bbar: toolbar(
+            bbar: [
                 filler(),
                 button({
                     text: 'Close',
                     onClick: () => model.close()
                 })
-            )
+            ]
         });
     }
 }
