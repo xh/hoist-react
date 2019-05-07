@@ -47,6 +47,7 @@ export class AppSpec {
         isMobile,
         isSSO,
         checkAccess,
+        autoRefreshEnabled = true,
         trackAppLoad = true,
         idleDetectionEnabled = false,
         idleDialogClass = null,
@@ -74,6 +75,7 @@ export class AppSpec {
         this.isMobile = isMobile;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
+        this.autoRefreshEnabled = autoRefreshEnabled;
         this.trackAppLoad = trackAppLoad;
 
         this.idleDetectionEnabled = idleDetectionEnabled;

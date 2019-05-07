@@ -13,3 +13,4 @@ export * from './IdleService';
 export * from './LocalStorageService';
 export * from './PrefService';
 export * from './TrackService';
+export * from './AutoRefreshService';

@@ -15,6 +15,7 @@ import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {
+    AutoRefreshService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -74,6 +75,8 @@ class XHClass {
     // Hoist Core Services
     // Singleton instances of each service are created and installed within initAsync() below.
     //----------------------------------------------------------------------------------------------
+    /** @member {AutoRefreshService} */
+    autoRefreshService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -110,6 +113,7 @@ class XHClass {
 
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
+    get autoRefreshEnabled()    {return this.appSpec.autoRefreshEnabled && this.getConf('xhAutoRefreshEnabled')}
 
     //---------------------------
     // Models
@@ -511,6 +515,8 @@ class XHClass {
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
+
+            if (this.autoRefreshEnabled) await this.installServicesAsync(AutoRefreshService);
 
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
