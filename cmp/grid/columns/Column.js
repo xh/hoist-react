@@ -222,7 +222,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
+            ret.tooltip = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
@@ -337,7 +337,7 @@ export class Column {
 
 /**
  * @typedef {Object} CellContext
- * @property {Record} record - row-level data Record.
+ * @property {CubeRecord} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
  * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
@@ -359,7 +359,7 @@ export class Column {
 
 /**
  * @typedef {Object} TooltipMetadata
- * @property {Record} record - row-level data Record.
+ * @property {CubeRecord} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
  * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
  */
