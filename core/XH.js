@@ -340,6 +340,7 @@ class XHClass {
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
      * @param {string} [config.intent] - The Blueprint intent (desktop only)
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
+     * @param {element} [config.containerRef] - Parent component ref (defaults to document.body if undefined)
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);

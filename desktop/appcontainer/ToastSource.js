@@ -31,11 +31,11 @@ export class ToastSource {
     //------------------------------------
     displayPendingToasts(models) {
         models.forEach(model => {
-            let {wasShown, isOpen, icon, position, ...rest} = model;
+            let {wasShown, isOpen, icon, position, containerRef, ...rest} = model;
             if (wasShown || !isOpen) return;
 
             position = position || Position.BOTTOM_RIGHT;
-            this.getToaster(position).show({
+            this.getToaster(position, containerRef).show({
                 icon: this.getStyledIcon(icon),
                 onDismiss: () => model.dismiss(),
                 ...rest
@@ -53,13 +53,18 @@ export class ToastSource {
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param {string} [position] - see Blueprint Position enum for allowed values.
+     * @params {element} [containerRef] - see Blueprint 'container' parameter
      */
-    getToaster(position = Position.BOTTOM_RIGHT) {
-        const toasters = this._toasters;
+    getToaster(position = Position.BOTTOM_RIGHT, containerRef = null) {
+        const toasters = this._toasters,
+            [container, containerId] = containerRef ?
+                [containerRef.getDOMNode(), containerRef.xhId] :
+                [document.body, ''],
+            toasterId = position + containerId;
 
-        if (position in toasters) return toasters[position];
+        if (toasterId in toasters) return toasters[toasterId];
 
-        return toasters[position] = Toaster.create({position});
+        return toasters[toasterId] = Toaster.create({position}, container);
     }
 
     getStyledIcon(icon) {
