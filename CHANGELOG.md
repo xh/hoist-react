@@ -78,6 +78,8 @@
 * Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
   (This can happen during impersonation and is defended against in server-side code.) #675
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v21.0.2...v22.0.0)
+
 ## v21.0.2 - 2019-04-05
 
 ### 📚 Libraries
