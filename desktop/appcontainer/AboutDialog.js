@@ -11,7 +11,7 @@ import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {frame, filler} from '@xh/hoist/cmp/layout';
+import {vframe, filler} from '@xh/hoist/cmp/layout';
 
 import {AboutDialogModel} from '@xh/hoist/core/appcontainer/AboutDialogModel';
 import './AboutDialog.scss';
@@ -40,7 +40,7 @@ export class AboutDialog extends Component {
             title: `About ${XH.appName}`,
             style: {width: 450},
             items: [
-                frame({
+                vframe({
                     className: 'xh-about-dialog__inner',
                     item: model.getTable()
                 }),

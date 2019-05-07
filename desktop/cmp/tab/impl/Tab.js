@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {frame} from '@xh/hoist/cmp/layout';
+import {hframe} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
 import {TabModel} from '@xh/hoist/cmp/tab';
 
@@ -46,7 +46,7 @@ export class Tab extends Component {
 
         const contentElem = content.prototype.render ? elem(content, {flex: 1}) : content({flex: 1});
         
-        return frame({
+        return hframe({
             display: isActive ? 'flex' : 'none',
             className: this.getClassName(),
             item: refreshContextView({

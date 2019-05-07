@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {omit} from 'lodash';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
-import {frame} from '@xh/hoist/cmp/layout';
+import {box} from '@xh/hoist/cmp/layout';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
@@ -46,7 +46,7 @@ export class AgGrid extends Component {
         const {compact, rowBorders, stripeRows, showCellFocus, showHover} = this.model,
             {darkTheme, isMobile} = XH;
 
-        return frame({
+        return box({
             className: this.getClassName(
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',

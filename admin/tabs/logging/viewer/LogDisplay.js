@@ -8,7 +8,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
+import {vframe, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 
@@ -23,7 +23,7 @@ export class LogDisplay extends Component {
         const {rows, loadModel} = this.model;
         return panel({
             mask: loadModel,
-            item: frame({
+            item: vframe({
                 className: 'xh-log-display',
                 overflow: 'scroll',
                 items: table(tbody(...this.renderTableRows(rows)))

@@ -11,23 +11,10 @@ import './Layout.scss';
 import {box} from './Box';
 
 /**
- * A {@see Box} class that flexes to grow and stretch within its *own* parent via `flex:'auto'`.
- * Useful for creating space-filling nested layouts.
- *
- * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
+ * {@see Box} classes that flex to grow and stretch within its *own* parent via `flex:'auto'`.
+ * Useful for creating space-filling nested layouts. VFrame and HFrame variants support internal
+ * vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent
-@LayoutSupport
-export class Frame extends Component {
-    baseClassName = 'xh-frame';
-    render() {
-        return box({
-            ...this.props,
-            className: this.getClassName()
-        });
-    }
-}
-
 @HoistComponent
 @LayoutSupport
 export class VFrame extends Component {
@@ -52,6 +39,5 @@ export class HFrame extends Component {
     }
 }
 
-export const frame = elemFactory(Frame);
 export const vframe = elemFactory(VFrame);
 export const hframe = elemFactory(HFrame);
