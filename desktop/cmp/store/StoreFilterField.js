@@ -9,7 +9,7 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {debounce, escapeRegExp, isEmpty, intersection, without} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -78,7 +78,6 @@ export class StoreFilterField extends Component {
         width: PT.number
     };
 
-    @observable value = '';
     filter = null;
     applyFilterFn = null;
     baseClassName = 'xh-store-filter-field';
@@ -112,7 +111,7 @@ export class StoreFilterField extends Component {
         const {props} = this;
 
         return textInput({
-            value: this.value,
+            value: this.getActiveStore().filterText,
 
             leftIcon: Icon.filter(),
             enableClear: true,
@@ -132,7 +131,7 @@ export class StoreFilterField extends Component {
     //------------------------
     @action
     setValue(v, {applyImmediately}) {
-        this.value = v;
+        this.getActiveStore().setFilterText(v);
         this.regenerateFilter({applyImmediately});
     }
 
@@ -140,7 +139,7 @@ export class StoreFilterField extends Component {
         const {onFilterChange} = this.props,
             {applyFilterFn} = this,
             activeFields = this.getActiveFields(),
-            searchTerm = escapeRegExp(this.value);
+            searchTerm = escapeRegExp(this.getActiveStore().filterText);
 
         let filter = null;
         if (searchTerm && !isEmpty(activeFields)) {

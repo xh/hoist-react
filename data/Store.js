@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {observable, action} from '@xh/hoist/mobx';
+import {observable, action, bindable} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
 import {isString, castArray} from 'lodash';
@@ -31,6 +31,8 @@ export class Store {
 
     @observable.ref _all;
     @observable.ref _filtered;
+
+    @bindable filterText = null;
     _filter = null;
 
     /**
