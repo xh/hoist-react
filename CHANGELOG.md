@@ -13,6 +13,10 @@
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
 
+### 🎁 New Features
+* New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for adding 
+  debug messages that track the execution of specific blocks of code.  
+
 ## v22.0.0 - 2019-04-29
 
 ### 🎁 New Features
