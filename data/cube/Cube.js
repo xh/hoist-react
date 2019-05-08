@@ -31,13 +31,14 @@ export class Cube {
     static RECORD_ID_DELIMITER = '>>';
 
     /**
-     * @param {Field[]} fields - array of Fields to be loaded in this cube.
-     * @param {Object[]} [data] - array of raw data.
-     * @param {Object} [info] - map of metadata associated with this data.
-     * @param {(String|function)} [idSpec] - property representing unique id of loaded records.
-     * @param {boolean} [lockFn] - function to be applied to a node to determine if it should be "locked",
-     *      preventing drilldown into its children (optional).  If true returned for a node,
-     *      no drilldown will be allowed, and the row will be marked with a boolean "locked" property.
+     * @param {Object} c - Cube configuration.
+     * @param {Field[]} c.fields - array of Fields to be loaded in this cube.
+     * @param {Object[]} [c.data] - array of raw data.
+     * @param {Object} [c.info] - map of metadata associated with this data.
+     * @param {(String|function)} [c.idSpec] - property representing unique id of loaded records.
+     * @param {function} [c.lockFn] - function to be called for each node to determine if it should
+     *      be "locked", preventing drilldown into its children. If true returned for a node, no
+     *      drilldown will be allowed, and the row will be marked with a boolean "locked" property.
      */
     constructor({fields, lockFn, idSpec = 'id', data, info}) {
         this._idSpec = idSpec;
