@@ -26,7 +26,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
-import {ExecutionLogger} from '@xh/hoist/utils';
+import {ExecutionLogger} from '@xh/hoist/utils/js';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
