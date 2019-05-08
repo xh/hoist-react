@@ -9,7 +9,6 @@ import {HoistComponent} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
@@ -34,7 +33,7 @@ export class EhCachePanel extends Component {
     renderToolbar() {
         const {model} = this,
             {gridModel} = model;
-        return toolbar(
+        return [
             button({
                 icon: Icon.sync(),
                 text: 'Clear All',
@@ -44,6 +43,6 @@ export class EhCachePanel extends Component {
             storeCountLabel({gridModel, unit: 'cache'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
-        );
+        ];
     }
 }

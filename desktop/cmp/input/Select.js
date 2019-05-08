@@ -196,7 +196,9 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
             rsProps.onInputChange = this.onInputChange;
-            rsProps.escapeClearsValue = true;
+            if (this.inputValue == null) {
+                rsProps.filterOption = () => true;
+            }
         }
 
         if (this.asyncMode) {

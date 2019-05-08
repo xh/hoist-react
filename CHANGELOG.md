@@ -2,9 +2,16 @@
 
 ## Upcoming Release
 
+### 🎁 New Features
+* `Panel.tbar` and `Panel.bbar` now accept an array of Elements and will auto-generate a toolbar
+  to contain them. 
+* Hoist Admins now always see the VersionBar in the footer.
+
 ### 🐞 Bug Fixes
 * `Select` will now let the user edit existing text in conditions where it is expected to be 
-  editable. #880  
+  editable. #880
+* The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
+  once again able to apply remote config values.
 
 ### 🎁 New Features
 * A new mixin `LogSupport` has been added to provide a terse syntax for adding log and debug messages 
@@ -75,6 +82,8 @@
   changes to fields within a form. #1031
 * Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
   (This can happen during impersonation and is defended against in server-side code.) #675
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v21.0.2...v22.0.0)
 
 ## v21.0.2 - 2019-04-05
 
