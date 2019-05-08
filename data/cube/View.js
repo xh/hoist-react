@@ -31,7 +31,7 @@ export class View {
     /**
      * @param {Object} c - View configuration.
      * @param {Cube} c.cube - source Hoist Cube for this view.
-     * @param {Query} c.query - to be used to construct this View (or config to create same).
+     * @param {(Query|Object)} c.query - to be used to construct this View (or config to create).
      * @param {boolean} [c.connect] - true to update this View when cube source data changes.
      * @param {Store} [c.boundStore] - Store instance to bind to this View. If provided, this View
      *      will automatically load and update Store records as its data changes.
@@ -52,7 +52,6 @@ export class View {
     //--------------------
     /**
      * Return current state of view as a collection of anonymous json nodes.
-     * Main entry point.
      */
     async getDataAsync() {
         return this.getRecordsAsData(this._records);
