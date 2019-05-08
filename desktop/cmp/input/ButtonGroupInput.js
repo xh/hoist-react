@@ -11,6 +11,7 @@ import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
 import {ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import PT from 'prop-types';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -25,26 +26,37 @@ export class ButtonGroupInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        ...ButtonGroup.propTypes
+        ...ButtonGroup.propTypes,
+
+        /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+        enableClear: PT.bool
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {children, minimal, disabled, ...rest} = this.getNonLayoutProps(),
-            buttons = castArray(children).map(button => {
-                const {value} = button.props;
+        const {children, minimal, disabled, enableClear, ...rest} = this.getNonLayoutProps();
 
-                throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
-                throwIf(value == null, 'ButtonGroupInput child must declare a value');
+        const buttons = castArray(children).map(button => {
+            const {value} = button.props;
 
-                return React.cloneElement(button, {
-                    active: this.renderValue == value,
-                    minimal: withDefault(minimal, false),
-                    disabled: withDefault(disabled, false),
-                    onClick: () => this.noteValueChange(value)
-                });
+            throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
+            throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+
+            const active = (this.renderValue === value);
+            return React.cloneElement(button, {
+                active,
+                minimal: withDefault(minimal, false),
+                disabled: withDefault(disabled, false),
+                onClick: () => {
+                    if (enableClear) {
+                        this.noteValueChange(active ? null : value);
+                    } else {
+                        this.noteValueChange(value);
+                    }
+                }
             });
+        });
 
         return buttonGroup({
             items: buttons,
