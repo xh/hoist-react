@@ -11,4 +11,3 @@ export * from './StableIdSupport';
 export * from './XhIdSupport';
 export * from './ManagedSupport';
 export * from './LoadSupport';
-export * from './LogSupport';

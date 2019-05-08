@@ -11,7 +11,7 @@ import {isPlainObject} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
-import {ReactiveSupport, XhIdSupport, ManagedSupport, LogSupport} from './mixins';
+import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 import {loadSupportLinker}  from './impl/LoadSupportLinker';
 
@@ -27,7 +27,7 @@ import {loadSupportLinker}  from './impl/LoadSupportLinker';
 export function HoistComponent(C) {
     return applyMixin(C, {
         name: 'HoistComponent',
-        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport, LogSupport],
+        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**

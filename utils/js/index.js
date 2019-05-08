@@ -8,3 +8,4 @@ export * from './ClassUtils';
 export * from './HtmlUtils';
 export * from './LangUtils';
 export * from './Decorators';
+export * from './ActionLogger';
