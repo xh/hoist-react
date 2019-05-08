@@ -17,7 +17,7 @@ import {castArray} from 'lodash';
  * any case, the actual object returned by the tracked function will be returned directly to
  * the caller.
  */
-export class ActionLogger {
+export class ExecutionLogger {
 
     /**
      * Create an instance of this object.
@@ -27,7 +27,7 @@ export class ActionLogger {
      * @param {String} [c.label] - label to be used for this logger.  Will be defaulted from source, if provided.
      */
     static create({source, label} = {}) {
-        return new ActionLogger({source, label});
+        return new ExecutionLogger({source, label});
     }
 
     /**

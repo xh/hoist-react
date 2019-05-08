@@ -26,6 +26,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
+import {ExecutionLogger} from '@xh/hoist/utils';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -335,7 +336,8 @@ export class Grid extends Component {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
+            {agGridModel, store} = model,
+            log = ExecutionLogger.create({source: this});
 
         return {
             track: () => [agGridModel.agApi, store.records, store.lastUpdated],
@@ -343,7 +345,7 @@ export class Grid extends Component {
                 if (!api) return;
 
                 runInAction(() => {
-                    this.withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
+                    log.withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
                         // Workaround for AG-2879.
                         this.clearDataIfExpensiveDeletionPending(records, api);
 
