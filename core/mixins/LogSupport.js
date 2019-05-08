@@ -27,7 +27,7 @@ export function LogSupport(C) {
              * @returns {*} - value returned by fn
              */
             withLog(msgs, fn) {
-                return this.xhLoggedDo({level: 'log', full: true, msgs, fn});
+                return this.loggedDoAsync({level: 'log', full: true, msgs, fn});
             },
 
             /**
@@ -38,7 +38,7 @@ export function LogSupport(C) {
              * @returns {*} - value returned by fn
              */
             withShortLog(msgs, fn) {
-                return this.xhLoggedDo({level: 'log', full: false, msgs, fn});
+                return this.loggedDoAsync({level: 'log', full: false, msgs, fn});
             },
 
             /**
@@ -49,7 +49,7 @@ export function LogSupport(C) {
              * @returns {*} - value returned by fn
              */
             withDebug(msgs, fn) {
-                return this.xhLoggedDo({level: 'debug', full: true, msgs, fn});
+                return this.loggedDoAsyn({level: 'debug', full: true, msgs, fn});
             },
 
             /**
@@ -60,37 +60,37 @@ export function LogSupport(C) {
              * @returns {*} - value returned by fn
              */
             withShortDebug(msgs, fn) {
-                return this.xhLoggedDo({level: 'debug', full: false, msgs, fn});
+                return this.loggedDoAsync({level: 'debug', full: false, msgs, fn});
             },
             
             //----------------------------------
             // Implementation
             //----------------------------------
-            xhLoggedDo({level, full, msgs, fn}) {
+            async loggedDoAsync({level, full, msgs, fn}) {
 
                 msgs = castArray(msgs);
 
                 const start = Date.now(),
                     msg = msgs.join(' | ');
 
-                if (full) this.xhLogAtLevel(level, `${msg} | started`);
+                if (full) this.logAtLevel(level, `${msg} | started`);
 
                 let ret, elapsed;
                 try {
-                    ret = fn();
+                    ret = await fn();
                 } catch (e) {
                     elapsed = Date.now() - start;
-                    this.xhLogAtLevel(level, `${msg} | failed - ${e.message || e.name || 'Unknown error'} | ${elapsed}`);
+                    this.logAtLevel(level, `${msg} | failed - ${e.message || e.name || 'Unknown error'} | ${elapsed}`);
                     throw e;
                 }
 
                 elapsed = Date.now() - start;
-                this.xhLogAtLevel(level, `${msg} | completed | ${elapsed}`);
+                this.logAtLevel(level, `${msg} | completed | ${elapsed}`);
 
                 return ret;
             },
 
-            xhLogAtLevel(level, msg) {
+            logAtLevel(level, msg) {
                 console[level](`[${this.constructor.name}] ${msg}`);
             }
         }
