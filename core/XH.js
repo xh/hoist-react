@@ -12,7 +12,7 @@ import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
-import {throwIf, ExecutionLogger} from '@xh/hoist/utils/js';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 
 import {
     ConfigService,
@@ -568,11 +568,10 @@ class XHClass {
     get acm() {return this.appContainerModel}
 
     async initServicesInternalAsync(svcs) {
-        const log = ExecutionLogger.create({label: 'XH'});
         const promises = svcs.map(it => {
-            return log.withShortDebug(`Initializing ${it.constructor.name}`, () => {
+            return withShortDebug(`Initializing ${it.constructor.name}`, () => {
                 return it.initAsync();
-            });
+            }, 'XH');
         });
         
         const results = await allSettled(promises),

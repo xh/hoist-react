@@ -26,7 +26,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
-import {ExecutionLogger} from '@xh/hoist/utils/js';
+import {withShortDebug} from '@xh/hoist/utils/js';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -336,8 +336,7 @@ export class Grid extends Component {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model,
-            log = ExecutionLogger.create({source: this});
+            {agGridModel, store} = model;
 
         return {
             track: () => [agGridModel.agApi, store.records, store.lastUpdated],
@@ -345,7 +344,7 @@ export class Grid extends Component {
                 if (!api) return;
 
                 runInAction(() => {
-                    log.withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
+                    withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
                         // Workaround for AG-2879.
                         this.clearDataIfExpensiveDeletionPending(records, api);
 
@@ -360,7 +359,7 @@ export class Grid extends Component {
                         // renderer API (where renderers can reference other properties on the data
                         // object). See https://github.com/exhi/hoist-react/issues/550.
                         api.refreshCells({force: true});
-                    });
+                    }, this);
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
