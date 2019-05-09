@@ -55,6 +55,7 @@ export class OptionsDialog extends Component {
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
+            transitionName: 'none',
             item: [
                 panel({
                     mask: loadModel,
