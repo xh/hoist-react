@@ -51,7 +51,7 @@ export class QueryExecutor {
     }
 
     static groupAndInsertLeaves(query, leaves, dimensions, parentId) {
-        if (!dimensions || isEmpty(dimensions)) return leaves;
+        if (isEmpty(dimensions)) return leaves;
 
         const {fields} = query,
             dim = dimensions[0],

@@ -9,8 +9,9 @@ import {CubeRecord} from './CubeRecord';
 
 export class AggregateCubeRecord extends CubeRecord {
 
-    isLeaf = false;
+    /** @member {Field} */
     dim = null;
+    isLeaf = false;
 
     constructor(fields, id, children, dim, val) {
         super(fields);
