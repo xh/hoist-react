@@ -9,6 +9,7 @@
 * Hoist Admins now always see the VersionBar in the footer.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
   adding debug messages that track the execution of specific blocks of code.
+* `XH.toast()` now supports an optional `containerRef` argument that can be used for locating toast (desktop only). 
 
 ### 💥 Breaking Changes
 
