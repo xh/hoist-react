@@ -497,10 +497,10 @@ export class Grid extends Component {
         // Heuristic -- we think slow deletions grow by order (D * (C + A))
         if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
             console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
-            this.withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
+            withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
                 api.selectionController.reset();
                 api.clientSideRowModel.setRowData([]);
-            });
+            }, this);
         }
     }
 
