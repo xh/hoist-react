@@ -9,6 +9,8 @@
 * Hoist Admins now always see the VersionBar in the footer.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
   adding debug messages that track the execution of specific blocks of code.
+* `ButtonGroupInput` accepts a new `enableClear` prop that allows its buttons to be unselected by 
+  re-clicking on them.
 
 ### 💥 Breaking Changes
 
@@ -17,6 +19,7 @@
   app that require to to be fully reloaded should have this renamed config set to `true`.
   * The options dialog will now automatically trigger an app-wide data _refresh_ via
     `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+
 
 ### 🐞 Bug Fixes
 
