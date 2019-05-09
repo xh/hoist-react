@@ -1,21 +1,29 @@
 # Changelog
 
-## Upcoming Release
+## Upcoming Release - under development
 
 ### 🎁 New Features
-* `Panel.tbar` and `Panel.bbar` now accept an array of Elements and will auto-generate a toolbar
-  to contain them. 
+
+* `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
+  `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
 * Hoist Admins now always see the VersionBar in the footer.
+* New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
+  adding debug messages that track the execution of specific blocks of code.
+
+### 💥 Breaking Changes
+
+* The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
+  `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
+  app that require to to be fully reloaded should have this renamed config set to `true`.
+  * The options dialog will now automatically trigger an app-wide data _refresh_ via
+    `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
 
 ### 🐞 Bug Fixes
-* `Select` will now let the user edit existing text in conditions where it is expected to be 
+
+* `Select` will now let the user edit existing text in conditions where it is expected to be
   editable. #880
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
-
-### 🎁 New Features
-* New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for adding 
-  debug messages that track the execution of specific blocks of code.  
 
 ## v22.0.0 - 2019-04-29
 
@@ -68,10 +76,10 @@
   ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
   profile, or when admin impersonation is active. The service will automatically perform a one-time
   migration of existing local state from the old namespace to the new. #674
-* `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
-   play the role of placeholders when using conditional rendering, and skipping them was causing React to 
-   trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
-   unnecessary divergence with the behavior of JSX.
+* `elem` no longer skips `null` children in its calls to `React.createElement()`. These children may
+  play the role of placeholders when using conditional rendering, and skipping them was causing
+  React to trigger extra re-renders. This change further simplifies Hoist's element factory and
+  removes an unnecessary divergence with the behavior of JSX.
 
 
 ### 🐞 Bug Fixes

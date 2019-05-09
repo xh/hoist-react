@@ -11,13 +11,14 @@ import {isFunction} from 'lodash';
 
 
 /**
- * Options specification for global options dialog.
+ * Options specification for the app-wide options dialog.
  *
- * Option can automatically be bound to a preference.  Alternatively, you can provide valueGetter and
- * valueSetter functions if you don't want to bind the control directly to a preference, or need to do
- * pre-processing.
+ * Option can be sourced from / set to a preference via the `prefName` config. Alternatively,
+ * the `valueGetter` and `valueSetter` config functions allow for custom handling if required.
  *
- * Applications will typically specify AppOption configurations in HoistAppModel.getAppOptions()
+ * Apps will typically specify AppOption configurations in HoistAppModel.getAppOptions(). Implement
+ * this method and return one or more AppOption configs to enable the Options menu option in the
+ * primary AppBar menu.
  */
 export class AppOption {
 
@@ -27,7 +28,7 @@ export class AppOption {
     formField;
     valueGetter;
     valueSetter;
-    refreshRequired;
+    reloadRequired;
 
     /**
      * @param {Object} c - AppOption configuration.
@@ -37,7 +38,7 @@ export class AppOption {
      * @param {Object} [c.fieldModel] - config for FieldModel for the option.
      * @param {function} [c.valueGetter] - async function which returns the external value.
      * @param {function} [c.valueSetter] - async function which sets the external value. Receives (value).
-     * @param {boolean}  [c.refreshRequired] - true to refresh the app after changing this option.
+     * @param {boolean}  [c.reloadRequired] - true to reload the app after changing this option.
      */
     constructor({
         name,
@@ -46,7 +47,7 @@ export class AppOption {
         fieldModel,
         valueGetter,
         valueSetter,
-        refreshRequired = false
+        reloadRequired = false
     }) {
         
         warnIf(
@@ -65,7 +66,7 @@ export class AppOption {
         this.formField = formField;
         this.valueGetter = valueGetter;
         this.valueSetter = valueSetter;
-        this.refreshRequired = refreshRequired;
+        this.reloadRequired = reloadRequired;
     }
 
     async getValueAsync(name) {
