@@ -24,7 +24,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, loadModel, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, reloadRequired} = model;
 
         if (!isOpen) return null;
 
@@ -61,7 +61,7 @@ export class OptionsDialog extends Component {
                 button({
                     disabled: !formModel.isDirty,
                     text: 'Save',
-                    icon: requiresRefresh ? Icon.refresh() : Icon.check(),
+                    icon: reloadRequired ? Icon.refresh() : Icon.check(),
                     onClick: () => model.saveAsync()
                 })
             ]

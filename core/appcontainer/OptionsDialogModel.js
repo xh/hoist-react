@@ -50,9 +50,9 @@ export class OptionsDialogModel {
     }
 
     @computed
-    get requiresRefresh() {
+    get reloadRequired() {
         const {formModel} = this;
-        return formModel && this.options.some(o => formModel.fields[o.name].isDirty && o.refreshRequired);
+        return formModel && this.options.some(o => formModel.fields[o.name].isDirty && o.reloadRequired);
     }
 
     //-------------------
@@ -81,17 +81,21 @@ export class OptionsDialogModel {
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
-        const refresh = this.requiresRefresh;
+        const reloadApp = this.reloadRequired;
 
-        if (refresh) {
+        if (reloadApp) {
             this.loadModel.setMessage('Reloading app to apply changes...');
         }
 
         this.doSaveAsync()
-            .wait(refresh ? 1500 : 1)
+            .wait(reloadApp ? 1500 : 1)
             .then(() => {
                 this.hide();
-                if (refresh) XH.reloadApp();
+                if (reloadApp) {
+                    XH.reloadApp();
+                } else {
+                    XH.refreshAppAsync();
+                }
             })
             .linkTo(this.loadModel)
             .catchDefault();
