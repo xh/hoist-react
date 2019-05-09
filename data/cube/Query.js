@@ -7,30 +7,34 @@
 
 import {XH} from '@xh/hoist/core';
 import {ValueFilter} from '@xh/hoist/data/cube';
-import {pick, map} from 'lodash';
 
 /**
- *  Specification used to define the shape of data to be consumed from cube.
- *  This is the primary object used to define and alter a View.
+ *  Specification used to define the shape of the data returned by a Cube.
  */
 export class Query {
 
-    fields = null;           // Map of String (field name) -> Field
-    dimensions = null;       // list of Fields on which to group and aggregate
-    filters = null;          // list of Filters
-    includeRoot = false;     // Include a root aggregate in results
-    includeLeaves = false;   // Include leaves in results
-    cube = null;             // Associated cube
+    /** @member {Map} */
+    fields;
+    /** @member {Field[]} */
+    dimensions;
+    /** @member {ValueFilter[]} */
+    filters;
+    /** @member {boolean} */
+    includeRoot;
+    /** @member {boolean} */
+    includeLeaves;
+    /** @member {Cube} */
+    cube;
 
     /**
      * @param {Object} c - Query configuration.
-     * @param {Cube} c.cube - associated Cube. Required, but note that `View.setQuery()` will
-     *      install a reference to the View's cube on the query config automatically.
+     * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQuery()` will
+     *      install a reference to itself on the query config automatically.
      * @param {string[]} [c.fields] - field names. Default of null to include all available fields
      *      from the source Cube, or supply a subset to optimize aggregation performance.
      * @param {string[]} [c.dimensions] - field names to group on. Any fields provided must also be
      *      in fields config, above. Default of null will skip grouping.
-     * @param {Filter[]} [c.filters] - Filters (or configs for such) to be applied
+     * @param {(Filter[]|Object[])} [c.filters] - Filters (or configs for such) to be applied
      * @param {boolean} [c.includeRoot] - true to include a synthetic root node in the return with
      *      grand total aggregate values.
      * @param {boolean} [c.includeLeaves] - true to include leaf nodes in return.
@@ -47,7 +51,6 @@ export class Query {
         includeLeaves = false
     }) {
         this.cube = cube;
-
         this.fields = this.parseFields(fields);
         this.dimensions = this.parseDimensions(dimensions);
         this.filters = this.parseFilters(filters);
@@ -57,8 +60,8 @@ export class Query {
 
     clone(overrides) {
         const conf = {
-            dimensions: this.getDimensionNames(),
-            fields: this.getFieldNames(),
+            dimensions: this.dimensionNames,
+            fields: this.fieldNames,
             filters: this.filters,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -69,15 +72,18 @@ export class Query {
         return new Query(conf);
     }
 
-    getFieldNames() {
-        return map(this.fields, f => f.name);
+    /** @returns {string[]} */
+    get fieldNames() {
+        return Array.from(this.fields.keys());
     }
 
-    getDimensionNames() {
+    /** @returns {string[]} */
+    get dimensionNames() {
         const {dimensions} = this;
         return dimensions ? dimensions.map(f => f.name) : [];
     }
 
+    /** @returns {string} */
     filtersAsString() {
         const {filters} = this;
         let ret = 'root';
@@ -89,18 +95,26 @@ export class Query {
         return ret;
     }
 
-    //---------------------------
+
+    //------------------------
     // Implementation
-    //---------------------------
+    //------------------------
     parseFields(names) {
-        const {fields} = this.cube;
-        return names ? pick(fields, names)  :  fields;
+        const fields = this.cube.fields;
+        if (!names) return fields;
+
+        const ret = new Map();
+        fields.forEach((v, k) => {
+            if (names.includes(k)) ret.set(k, v);
+        });
+
+        return ret;
     }
 
     parseDimensions(names) {
         if (!names) return null;
         return names.map(name => {
-            const field = this.fields[name];
+            const field = this.fields.get(name);
             if (!field || !field.isDimension) {
                 throw XH.exception(`Dimension is not a field, or is not a field specified as dimension '${name}'`);
             }

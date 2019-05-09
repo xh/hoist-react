@@ -8,22 +8,17 @@
 
 import {Field} from './Field';
 import {CubeRecord} from './record';
+import {Query} from './Query';
+import {QueryExecutor} from './impl/QueryExecutor';
 import {isString} from 'lodash';
 
 /**
- * An object for grouping and aggregating data on multiple dimensions.
- *
- * Note that this object does not handle record removal, or dimension changes for
- * existing records.
- *
- * This API in intended primarily for data specification and loading.
- * See View for the main API for accessing data from this object.
+ * A container for grouping, aggregating, and filtering data on multiple dimensions.
  */
 export class Cube {
 
     _fields = null;
     _recordMap = null;
-    _connectedViews = null;
     _idSpec = null;
     _info = null;
     _lockFn = null;
@@ -32,7 +27,7 @@ export class Cube {
 
     /**
      * @param {Object} c - Cube configuration.
-     * @param {Field[]} c.fields - array of Fields to be loaded in this cube.
+     * @param {(Field[]|Object[])} c.fields - array of Fields / {@see Field} configs.
      * @param {Object[]} [c.data] - array of raw data.
      * @param {Object} [c.info] - map of metadata associated with this data.
      * @param {(String|function)} [c.idSpec] - property representing unique id of loaded records.
@@ -46,61 +41,66 @@ export class Cube {
         this._recordMap = this.processRawData(data || []);
         this._info = Object.freeze(info || {});
         this._lockFn = lockFn;
-        this._connectedViews = new Set();
     }
 
+    /** @returns {Map} - map of Fields supported by this Cube, by Field name. */
     get fields() {
         return this._fields;
     }
 
+    /** @returns {Field[]} */
+    get fieldList() {
+        return Array.from(this.fields.values());
+    }
+
+    /** @returns {string[]} */
+    get fieldNames() {
+        return Array.from(this.fields.keys());
+    }
+
+    /** @returns {Map} - map of CubeRecords loaded into this Cube, by record ID. */
     get records() {
         return this._recordMap;
     }
 
+    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
     get info() {
         return this._info;
     }
 
-    //---------------------
-    // Loading
-    //---------------------
-    loadData(rawData, info) {
+    /**
+     * Populate this cube with a new dataset.
+     * @param {Object[]} rawData - flat array of lowest/leaf level data rows.
+     * @param {Object} info - optional metadata to associate with this cube/dataset.
+     */
+    loadData(rawData, info = {}) {
         this._recordMap = this.processRawData(rawData);
         this._info = info;
-        this._connectedViews.forEach(it => it.noteCubeLoaded());
     }
 
-    //--------------------
-    // View management
-    //--------------------
-    connect(view) {
-        this._connectedViews.add(view);
+    /**
+     * Return grouped and filtered data.
+     *
+     * @param {Object} query - config for a {@see Query}.
+     * @returns {Object} - hierarchical representation of filtered and aggregated data, suitable
+     *      for passing directly to a Hoist Store.
+     */
+    executeQuery(query) {
+        query = new Query({...query, cube: this});
+        return QueryExecutor.getData(query);
     }
 
-    disconnect(view) {
-        this._connectedViews.delete(view);
-    }
-
-    isConnected(view) {
-        this._connectedViews.has(view);
-    }
 
     //---------------------
     // Implementation
     //---------------------
     processRawFields(raw) {
-        const ret = {};
+        const ret = new Map();
         raw.forEach(f => {
             const field = f instanceof Field ? f : new Field(f);
-            ret[field.name] = field;
+            ret.set(field.name, field);
         });
         return ret;
-    }
-
-    createRecord(raw) {
-        const {_idSpec} = this;
-        const id = isString(_idSpec) ? raw[_idSpec] : _idSpec(raw);
-        return new CubeRecord(this._fields, raw, id);
     }
 
     processRawData(rawData) {
@@ -110,5 +110,11 @@ export class Cube {
             ret.set(rec.id, rec);
         });
         return ret;
+    }
+
+    createRecord(raw) {
+        const {_idSpec} = this;
+        const id = isString(_idSpec) ? raw[_idSpec] : _idSpec(raw);
+        return new CubeRecord(this._fields, raw, id);
     }
 }
