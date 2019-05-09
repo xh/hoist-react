@@ -40,15 +40,19 @@ export class Field {
     static singleAggregator = new SingleAggregator();
 
     /**
-     * @param {String} name - Unique key describing this field.
-     * @param {String} displayName - Descriptive name suitable for display to end users.
-     * @param {Aggregator} aggregator - or alias for Hoist aggregators in aggregate package (e.g. 'MAX').
-     * @param {boolean} isDimension - True to allow this field to be used for groupings and aggregations.
-     * @param {boolean} isLeafDimension - True if any further groupings below this dimension would be derivative (have only one member).
-     * @param {String} parentDimension - name of field that is a 'parent' dimension of this dimension. This marks this dimension as a
-     *              sub-dimension of the parent dimension (e.g. 'asset group' and 'asset').  This will allow the Cube
-     *              view to skip creating derivative nodes when a parent node has a single identical child node.
-     **/
+     * @param {Object} c - Field configuration.
+     * @param {string} c.name - Unique key describing this field.
+     * @param {string} [c.displayName] - Descriptive name suitable for display to end users.
+     * @param {(string|Aggregator)} [c.aggregator] - instance of a Hoist Cube Aggregator (from the
+     *      aggregate package), or string alias for the same (e.g. 'MAX').
+     * @param {boolean} [c.isDimension] - true to allow this field to be used for grouping.
+     * @param {boolean} [c.isLeafDimension] - true if any further groupings below this dimension
+     *      would be derivative (have only one member).
+     * @param {string} [c.parentDimension] - name of field that is a 'parent' dimension of this
+     *      dimension. This marks this dimension as a sub-dimension of the parent dimension
+     *      (e.g. 'asset group' and 'asset').  This will allow the Cube view to skip creating
+     *      derivative nodes when a parent node has a single identical child node.
+     */
     constructor({
         name,
         displayName,

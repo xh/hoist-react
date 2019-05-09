@@ -43,7 +43,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, loadModel, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, reloadRequired} = model;
 
         if (!model.hasOptions) return null;
         if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
@@ -55,6 +55,7 @@ export class OptionsDialog extends Component {
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
+            transitionName: 'none',
             item: [
                 panel({
                     mask: loadModel,
@@ -76,8 +77,8 @@ export class OptionsDialog extends Component {
                         }),
                         button({
                             disabled: !formModel.isDirty,
-                            text: requiresRefresh ? 'Save & Reload' : 'Save',
-                            icon: requiresRefresh ? Icon.refresh() : Icon.check(),
+                            text: reloadRequired ? 'Save & Reload' : 'Save',
+                            icon: reloadRequired ? Icon.refresh() : Icon.check(),
                             intent: 'success',
                             onClick: () => model.saveAsync()
                         })

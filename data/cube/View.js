@@ -4,7 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
 import {
     Query,
     Cube,
@@ -26,17 +25,16 @@ export class View {
     _query = null;
     _boundStore = null;
 
-    _records = [];          // top-level record(s)
-    _leaves = [];           // all leaf records by id
+    _records = [];  // top-level record(s)
+    _leaves = [];   // all leaf records by id
 
     /**
-     * Create this object.
-     *
-     * @param {Cube} cube, source Cube for this view.
-     * @param {Query} query -  to be used to construct this view (or config to create same).
-     * @param {boolean} connect - Should this view receive updates when its source Cube changes?
-     * @param {Store} boundStore. - An optional store to bind to this view.
-     *      If provided, this store will automatically be updated when this view changes.
+     * @param {Object} c - View configuration.
+     * @param {Cube} c.cube - source Hoist Cube for this view.
+     * @param {(Query|Object)} c.query - to be used to construct this View (or config to create).
+     * @param {boolean} [c.connect] - true to update this View when cube source data changes.
+     * @param {Store} [c.boundStore] - Store instance to bind to this View. If provided, this View
+     *      will automatically load and update Store records as its data changes.
      */
     constructor({cube, query, connect = false, boundStore = null}) {
         this.cube = cube;
@@ -54,8 +52,6 @@ export class View {
     //--------------------
     /**
      * Return current state of view as a collection of anonymous json nodes.
-     *
-     * Main entry point.
      */
     async getDataAsync() {
         return this.getRecordsAsData(this._records);
@@ -145,7 +141,6 @@ export class View {
             {records} = cube,
             sourceRecords = Array.from(records.values());
 
-
         // Create the new structure
         const newLeaves = this.createLeaves(sourceRecords),
             newRecords =  this.groupAndInsertLeaves(newLeaves, dimensions);
@@ -154,7 +149,6 @@ export class View {
         this._records = includeRoot ?
             [new AggregateCubeRecord(fields, this.getRootId(), newRecords, null, 'Total')] :
             newRecords;
-
 
         // Broadcast any changes
         this.loadBoundStore();
@@ -181,11 +175,10 @@ export class View {
     /**
      * Incorporate a set of new leaf records, along a set of (remaining) dimensions.
      * This is called recursively, so that the lowest level grouping is applied first.
-
+     *
      * @param {CubeRecord[]} leaves - new leaf records to be incorporated into the tree
      * @param {String[]} dimensions - remaining dimensions to group on
      * @param {int} parentId - id of the parent node these leaves are to be inserted at.
-     *
      * @return {CubeRecord[]}, records to be added at this level to accommodate the leaf insertion.
      */
     groupAndInsertLeaves(leaves, dimensions, parentId = this.getRootId()) {

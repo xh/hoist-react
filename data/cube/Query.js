@@ -23,24 +23,28 @@ export class Query {
     cube = null;             // Associated cube
 
     /**
-     * @param {String[]} [fields] - field names. Default of null to include all available fields.
-     * @param {String[]} [dimensions] - field names to group on. All entries must be in fields, above.
-     *                    Default of null will skip grouping.
-     * @param {Filter[]} [filters] - Filters (or configs for such) to be applied
-     * @param {boolean} [includeRoot] - True to include a synthetic root node with global aggregates for this view.
-     * @param {boolean} [includeLeaves] - True to include leaf nodes in results.
-     * @param {Cube} cube - associated cube, required.
+     * @param {Object} c - Query configuration.
+     * @param {Cube} c.cube - associated Cube. Required, but note that `View.setQuery()` will
+     *      install a reference to the View's cube on the query config automatically.
+     * @param {string[]} [c.fields] - field names. Default of null to include all available fields
+     *      from the source Cube, or supply a subset to optimize aggregation performance.
+     * @param {string[]} [c.dimensions] - field names to group on. Any fields provided must also be
+     *      in fields config, above. Default of null will skip grouping.
+     * @param {Filter[]} [c.filters] - Filters (or configs for such) to be applied
+     * @param {boolean} [c.includeRoot] - true to include a synthetic root node in the return with
+     *      grand total aggregate values.
+     * @param {boolean} [c.includeLeaves] - true to include leaf nodes in return.
      *
-     * Note that if no dimensions are provided, either 'includeRoot', or 'includeLeaves' should be true.
-     * Otherwise no data will be returned by this view.
+     * Note that if no dimensions are provided, 'includeRoot' or 'includeLeaves' should be true.
+     * Otherwise no data will be returned by this view!
      */
     constructor({
+        cube,
         fields = null,
         dimensions = null,
         filters = null,
         includeRoot = false,
-        includeLeaves = false,
-        cube
+        includeLeaves = false
     }) {
         this.cube = cube;
 
