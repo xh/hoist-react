@@ -56,7 +56,7 @@ export class ToastSource {
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param {string} [position] - see Blueprint Position enum for allowed values.
-     * @params {Element} [containerRef] - see Blueprint 'container' parameter
+     * @params {Component} [containerRef] - Component to contain the toast.
      */
     getToaster(position, containerRef) {
         const toasters = this._toasters,
