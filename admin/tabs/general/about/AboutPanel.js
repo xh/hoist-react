@@ -18,7 +18,7 @@ export class AboutPanel extends Component {
 
     render() {
         return div({
-            className: 'xh-admin-about-panel',
+            className: 'xh-admin-about-panel xh-tiled-bg',
             items: [
                 h1(Icon.info(), 'About This Application'),
                 ...this.renderTables(),
