@@ -8,6 +8,8 @@
 
 import {Field} from './Field';
 import {CubeRecord} from './record';
+import {Query} from './Query';
+import {QueryExecutor} from './impl/QueryExecutor';
 import {isString} from 'lodash';
 
 /**
@@ -15,15 +17,11 @@ import {isString} from 'lodash';
  *
  * Note that this object does not handle record removal, or dimension changes for
  * existing records.
- *
- * This API in intended primarily for data specification and loading.
- * See View for the main API for accessing data from this object.
  */
 export class Cube {
 
     _fields = null;
     _recordMap = null;
-    _connectedViews = null;
     _idSpec = null;
     _info = null;
     _lockFn = null;
@@ -46,7 +44,6 @@ export class Cube {
         this._recordMap = this.processRawData(data || []);
         this._info = Object.freeze(info || {});
         this._lockFn = lockFn;
-        this._connectedViews = new Set();
     }
 
     get fields() {
@@ -67,22 +64,21 @@ export class Cube {
     loadData(rawData, info) {
         this._recordMap = this.processRawData(rawData);
         this._info = info;
-        this._connectedViews.forEach(it => it.noteCubeLoaded());
     }
 
-    //--------------------
-    // View management
-    //--------------------
-    connect(view) {
-        this._connectedViews.add(view);
-    }
-
-    disconnect(view) {
-        this._connectedViews.delete(view);
-    }
-
-    isConnected(view) {
-        this._connectedViews.has(view);
+    //---------------------------
+    // Querying
+    //---------------------------
+    /**
+     * Return grouped and filtered data.
+     *
+     * @param {Object} query - config for Query.
+     * @returns {Object} - hierarchichal representation of data.
+     *     suitable for passing directly to a Hoist Store.
+     */
+    executeQuery(query) {
+        query = new Query({...query, cube: this});
+        return QueryExecutor.getData(query);
     }
 
     //---------------------
