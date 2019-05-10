@@ -6,12 +6,14 @@
 
 * `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
   `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
-* Hoist Admins now always see the VersionBar in the footer.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
   adding debug messages that track the execution of specific blocks of code.
-* `XH.toast()` now supports an optional `containerRef` argument that can be used for locating toast (desktop only). 
-* `ButtonGroupInput` accepts a new `enableClear` prop that allows its buttons to be unselected by 
-  re-clicking on them.
+* `XH.toast()` now supports an optional `containerRef` argument that can be used for anchoring a
+  toast within another component (desktop only). Can be used to display more targeted toasts within
+  the relevant section of an application UI, as opposed to the edge of the screen.
+* `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
+  be unselected by pressing it again - this sets the value of the input as a whole to `null`.
+* Hoist Admins now always see the VersionBar in the footer.
 
 ### 💥 Breaking Changes
 
@@ -20,7 +22,6 @@
   app that require to to be fully reloaded should have this renamed config set to `true`.
   * The options dialog will now automatically trigger an app-wide data _refresh_ via
     `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
-
 
 ### 🐞 Bug Fixes
 
@@ -358,9 +359,10 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1175,9 +1177,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
