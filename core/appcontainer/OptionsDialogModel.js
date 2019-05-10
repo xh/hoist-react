@@ -88,7 +88,7 @@ export class OptionsDialogModel {
         }
 
         this.doSaveAsync()
-            .wait(reloadApp ? 1500 : 1)
+            .wait(1000)
             .then(() => {
                 this.hide();
                 if (reloadApp) {
