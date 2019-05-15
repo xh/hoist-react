@@ -7,60 +7,52 @@
 import {
     Cube,
     AggregateCubeRecord,
-    CubeRecord,
     ValueFilter
 } from '@xh/hoist/data/cube';
 import {isEmpty, groupBy, clone, map} from 'lodash';
-
+import {wait} from '@xh/hoist/promise';
 
 /**
  * @private
  */
 export class QueryExecutor {
 
-    static getData(query) {
-        const {dimensions, includeRoot, fields, cube} = query,
-            {records} = cube,
-            sourceRecords = Array.from(records.values()),
+    static async getDataAsync(query) {
+        const {dimensions, includeRoot, fields, cube, filters} = query,
+            cubeRecords = cube.records,
             rootId = query.filtersAsString();
 
-        // Create the new structure
-        let newLeaves = this.createLeaves(query, sourceRecords),
-            newRecords = this.groupAndInsertLeaves(query, newLeaves, dimensions, rootId);
+        const leaves = !isEmpty(filters) ?
+            cubeRecords.filter(rec => filters.every(f => f.matches(rec))) :
+            cubeRecords;
 
+        await wait(1);
+
+        let newRecords = this.groupAndInsertLeaves(query, leaves, dimensions, rootId, {});
         newRecords = includeRoot ?
             [new AggregateCubeRecord(fields, rootId, newRecords, null, 'Total')] :
             newRecords;
 
+        await wait(1);
         return this.getRecordsAsData(query, newRecords);
     }
 
     //-----------------
     // Implementation
     //-----------------
-    static createLeaves(query, sourceRecords) {
-        const {filters, fields} = query;
-
-        // 0) Filter source records
-        if (filters && filters.length) {
-            sourceRecords = sourceRecords.filter(rec => filters.every(f => f.matches(rec)));
-        }
-
-        // 1) Create and store cloned leaves.
-        return sourceRecords.map(r => new CubeRecord(fields, r.data, r.id));
-    }
-
-    static groupAndInsertLeaves(query, leaves, dimensions, parentId) {
+    static groupAndInsertLeaves(query, leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions)) return leaves;
 
         const {fields} = query,
             dim = dimensions[0],
             groups = groupBy(leaves, (it) => it.get(dim.name));
 
+        const childAppliedDimensions = {...dimensions};
         return map(groups, (groupLeaves, val) => {
+            childAppliedDimensions[dim] = val;
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
-            const newChildren = this.groupAndInsertLeaves(query, groupLeaves, dimensions.slice(1), id);
-            return new AggregateCubeRecord(fields, id, newChildren, dim, val);
+            const newChildren = this.groupAndInsertLeaves(query, groupLeaves, dimensions.slice(1), id, childAppliedDimensions);
+            return new AggregateCubeRecord(fields, id, newChildren, dim, val, appliedDimensions);
         });
     }
 
@@ -72,7 +64,7 @@ export class QueryExecutor {
         }
 
         return records.map(rec => {
-            let data = clone(rec.data),
+            let data = rec.isLeaf ? clone(rec.data) : rec.data,
                 dim = rec.dim,
                 children = rec.children;
 

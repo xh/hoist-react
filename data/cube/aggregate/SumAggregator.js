@@ -16,10 +16,4 @@ export class SumAggregator extends Aggregator {
             return ret;
         }, null);
     }
-
-    replace(records, currAgg, update) {
-        if (update.oldVal != null) currAgg -= update.oldVal;
-        if (update.newVal != null) currAgg += update.newVal;
-        return currAgg;
-    }
 }

@@ -18,11 +18,4 @@ export class MaxAggregator extends Aggregator {
             return ret;
         }, null);
     }
-
-    replace(records, currAgg, update) {
-        if (update.newVal >= currAgg) return update.newVal;
-        if (update.oldVal >= currAgg) return this.aggregate(records, update.field.name);
-
-        return currAgg;
-    }
 }

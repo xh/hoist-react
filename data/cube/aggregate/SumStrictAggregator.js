@@ -16,12 +16,4 @@ export class SumStrictAggregator extends Aggregator {
             return ret;
         }, 0);
     }
-
-    replace(records, currAgg, update) {
-        const {oldVal, newVal} = update;
-        if (currAgg == null || oldVal == null || newVal == null) {
-            return super.replace(records, currAgg, update); 
-        }
-        return currAgg - oldVal + newVal;
-    }
 }
