@@ -87,9 +87,7 @@ export class Cube {
      */
     async executeQueryAsync(query) {
         query = new Query({...query, cube: this});
-        const ret = QueryExecutor.getDataAsync(query);
-        console.log(ret);
-        return ret;
+        return QueryExecutor.getDataAsync(query);
     }
 
 
