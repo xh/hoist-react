@@ -40,8 +40,6 @@ export class Field {
     isLeafDimension;
     /** @member {string} */
     parentDimension;
-    /** @member {string[]} */
-    containingDimensions;
 
     static maxAggregator = new MaxAggregator();
     static minAggregator = new MinAggregator();
@@ -66,9 +64,6 @@ export class Field {
      *      dimension. This marks this dimension as a sub-dimension of the parent dimension
      *      (e.g. 'asset group' and 'asset').  This will allow the Cube view to skip creating
      *      derivative nodes when a parent node has a single identical child node.
-     * @param {string[]} [c.containingDimensions] - dimensions that fully contain this dimension, i.e.
-     *      all facts with a given value in this dimension, will have a single shared value in the
-     *      all the containingDimensions
      */
     constructor({
         name,
@@ -77,8 +72,7 @@ export class Field {
         aggregator = isDimension ? null : Field.uniqueAggregator,
         canAggregateFn =  null,
         isLeafDimension = false,
-        parentDimension = null,
-        containingDimensions = []
+        parentDimension = null
     }) {
         this.name = name;
         this.displayName = displayName || startCase(name);
@@ -91,7 +85,6 @@ export class Field {
         // Dimension specific
         this.isLeafDimension = isLeafDimension;
         this.parentDimension = parentDimension;
-        this.containingDimensions = containingDimensions;
     }
 
 

@@ -45,13 +45,14 @@ export class QueryExecutor {
 
         const {fields} = query,
             dim = dimensions[0],
-            groups = groupBy(leaves, (it) => it.get(dim.name));
+            dimName = dim.name,
+            groups = groupBy(leaves, (it) => it.get(dimName));
 
-        const childAppliedDimensions = {...dimensions};
+        appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
-            childAppliedDimensions[dim] = val;
-            const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dim.name, val);
-            const newChildren = this.groupAndInsertLeaves(query, groupLeaves, dimensions.slice(1), id, childAppliedDimensions);
+            appliedDimensions[dimName] = val;
+            const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
+            const newChildren = this.groupAndInsertLeaves(query, groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return new AggregateCubeRecord(fields, id, newChildren, dim, val, appliedDimensions);
         });
     }
