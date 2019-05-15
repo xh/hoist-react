@@ -12,9 +12,14 @@ import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {dateInput as bpDateInput} from '@xh/hoist/kit/blueprint';
+import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
+import {div} from '@xh/hoist/cmp/layout';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
 import {withDefault} from '@xh/hoist/utils/js';
+import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
@@ -22,6 +27,8 @@ import {HoistInput} from '@xh/hoist/cmp/input';
  *
  * By default this control emits dates with the time component cleared (set to midnight), but this
  * can be customized via the timePrecision prop to support editing of a date and time together.
+ *
+ * The calendar popover can be opened via the built-in button or up/down arrow keyboard shortcuts.
  */
 @HoistComponent
 @LayoutSupport
@@ -30,9 +37,6 @@ export class DateInput extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
         value: PT.instanceOf(Date),
-
-        /** True to commit on every change/keystroke, default false. */
-        commitOnChange: PT.bool,
 
         /** Props passed to ReactDayPicker component, as per DayPicker docs. */
         dayPickerProps: PT.object,
@@ -64,9 +68,6 @@ export class DateInput extends HoistInput {
             'auto'
         ]),
 
-        /** Element to display inline on the right side of the input */
-        rightElement: PT.element,
-
         /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
         showActionsBar: PT.bool,
 
@@ -83,82 +84,140 @@ export class DateInput extends HoistInput {
         timePrecision: PT.oneOf(['second', 'minute'])
     };
 
-    bpRef = new Ref();
-    popoverRef = new Ref();
+    @bindable popoverOpen = false;
 
+    popoverRef = new Ref();
     baseClassName = 'xh-date-input';
 
-    get commitOnChange() {
-        return withDefault(this.props.commitOnChange, false);
-    }
+    // Prop-backed convenience getters
+    get maxDate() {return this.props.maxDate || moment().add(100, 'years').toDate()}
+    get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
+            layoutProps = this.getLayoutProps();
 
-        return bpDateInput({
-            value: this.renderValue,
-            ref: this.bpRef.ref,
-
-            formatDate: this.formatDate,
-            parseDate: this.parseDate,
-
-            canClearSelection: false,   // just disables clearing when re-clicking same date
-            dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-            disabled: props.disabled,
-            inputProps: {
-                autoComplete: 'nope',
-                leftIcon: props.leftIcon,
-                tabIndex: props.tabIndex,
-
-                style: {
-                    ...props.style,
-                    ...layoutProps,
-                    width: withDefault(width, 150),
-                    textAlign: withDefault(props.textAlign, 'left')
-                },
-
-                onBlur: this.onBlur,
-                onFocus: this.onFocus,
-                onKeyDown: this.onKeyDown
-            },
-            // See Hoist #757. Blueprint setting arbitrary, narrower limits without these
-            maxDate: props.maxDate || moment().add(100, 'years').toDate(),
-            minDate: props.minDate || moment().subtract(100, 'years').toDate(),
-            placeholder: props.placeholder,
-            popoverProps: {
+        return div({
+            item: popover({
+                isOpen: this.popoverOpen && !this.props.disabled,
                 minimal: true,
                 usePortal: true,
-                popoverRef: this.popoverRef.ref,
+                enforceFocus: false,
                 position: withDefault(props.popoverPosition, 'auto'),
-                onClose: this.onPopoverWillClose
-            },
-            rightElement: props.rightElement,
-            showActionsBar: props.showActionsBar,
-            tabIndex: props.tabIndex,
-            timePickerProps: props.timePrecision ? props.timePickerProps : undefined,
-            timePrecision: props.timePrecision,
+                popoverRef: this.popoverRef.ref,
+                onClose: this.onPopoverClose,
 
-            className: this.getClassName(),
+                content: bpDatePicker({
+                    value: this.renderValue,
+                    onChange: this.onDatePickerChange,
+                    maxDate: this.maxDate,
+                    minDate: this.minDate,
+                    showActionsBar: props.showActionsBar,
+                    dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
+                    timePickerProps: props.timePrecision ? props.timePickerProps : undefined,
+                    timePrecision: props.timePrecision
+                }),
 
-            onChange: this.onChange
+                item: textInput({
+                    value: this.formatDate(this.renderValue),
+                    className: this.getClassName(),
+                    onCommit: this.onInputCommit,
+                    rightElement: button({
+                        icon: Icon.calendar(),
+                        tabIndex: -1, // Prevent focus on tab
+                        onClick: this.onPopoverBtnClick
+                    }),
+
+                    disabled: props.disabled,
+                    leftIcon: props.leftIcon,
+                    tabIndex: props.tabIndex,
+                    placeholder: props.placeholder,
+                    textAlign: props.textAlign,
+
+                    ...layoutProps
+                })
+            }),
+
+            onBlur: this.onBlur,
+            onFocus: this.onFocus,
+            onKeyDown: this.onKeyDown
         });
     }
 
-    // Custom blur handler to account for focus potentially living in either input or popover.
-    // We want to call noteBlurred when focus has left both. Extra long delay here working around
-    // some kind of transition that happens when you use popover buttons to navigate between months.
-    // Focus appears to flap to focus for a tick, then back to the popover.... For review....
+    /**
+     * Custom blur handler to account for focus potentially living in either input or popover.
+     * We want to call noteBlurred when focus has left both. Extra long delay here working around
+     * some kind of transition that happens when you use popover buttons to navigate between months.
+     * Focus appears to flap to focus for a tick, then back to the popover.... For review....
+     */
     onBlur = () => {
         wait(800).then(() => {
             const activeEl = document.activeElement,
                 popoverEl = this.popoverRef.value,
-                popoverHasFocus = popoverEl && popoverEl.contains(activeEl);
+                popoverHasFocus = popoverEl && popoverEl.contains(activeEl),
+                inputHasFocus = this.containsElement(activeEl);
 
-            if (!popoverHasFocus && !this.containsElement(activeEl)) {
+            if (!popoverHasFocus && !inputHasFocus) {
                 this.noteBlurred();
             }
         });
+    };
+
+    noteBlurred() {
+        this.setPopoverOpen(false);
+        super.noteBlurred();
+    }
+
+    onPopoverBtnClick = () => {
+        this.setPopoverOpen(!this.popoverOpen);
+    };
+
+    onKeyDown = (ev) => {
+        if (ev.key == 'Enter') {
+            this.doCommit();
+        }
+        if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
+            this.setPopoverOpen(true);
+        }
+    };
+
+    onPopoverClose = () => {
+        this.doCommit();
+    };
+    
+    onInputCommit = (value) => {
+        const date = this.parseDate(value);
+        this.onDateChange(date);
+    };
+
+    onDatePickerChange = (date, isUserChange) => {
+        if (!isUserChange) return;
+        this.onDateChange(date);
+    };
+
+    onDateChange = (date) => {
+        if (date) {
+            const {minDate, maxDate} = this;
+            if (minDate && date < minDate) date = minDate;
+            if (maxDate && date > maxDate) date = maxDate;
+            date = this.applyPrecision(date);
+        }
+
+        this.noteValueChange(date);
+        this.setPopoverOpen(false);
+    };
+
+    applyPrecision(date)  {
+        let {timePrecision} = this.props;
+        date = clone(date);
+        if (timePrecision == 'second') {
+            date.setMilliseconds(0);
+        } else if (timePrecision == 'minute') {
+            date.setSeconds(0, 0);
+        } else {
+            date.setHours(0, 0, 0, 0);
+        }
+        return date;
     }
 
     getFormat() {
@@ -173,58 +232,14 @@ export class DateInput extends HoistInput {
         return ret;
     }
 
-    formatDate = (date) => {
+    formatDate(date) {
         return fmtDate(date, {fmt: this.getFormat()});
     }
 
-    parseDate = (dateString) => {
+    parseDate(dateString) {
         // Handle 'invalid date'  as null.
         const ret = moment(dateString, this.getFormat()).toDate();
         return isNaN(ret) ? null : ret;
-    }
-
-    noteBlurred() {
-        this.forcePopoverClose();
-        super.noteBlurred();
-    }
-
-    onChange = (date, isUserChange) => {
-        if (!isUserChange) return;
-
-        if (date) {
-            const {minDate, maxDate} = this.props;
-            if (minDate && date < minDate) date = minDate;
-            if (maxDate && date > maxDate) date = maxDate;
-            date = this.applyPrecision(date);
-        }
-
-        this.noteValueChange(date);
-        this.forcePopoverClose();
-    };
-
-    onKeyDown = (ev) => {
-        if (ev.key == 'Enter') this.doCommit();
-    };
-
-    onPopoverWillClose = () => {
-        this.doCommit();
-    };
-
-    forcePopoverClose() {
-        this.bpRef.value.setState({isOpen: false});
-    }
-    
-    applyPrecision(date)  {
-        let {timePrecision} = this.props;
-        date = clone(date);
-        if (timePrecision == 'second') {
-            date.setMilliseconds(0);
-        } else if (timePrecision == 'minute') {
-            date.setSeconds(0, 0);
-        } else {
-            date.setHours(0, 0, 0, 0);
-        }
-        return date;
     }
 }
 export const dateInput = elemFactory(DateInput);

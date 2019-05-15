@@ -51,7 +51,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 
-import {DateInput} from '@blueprintjs/datetime';
+import {DatePicker} from '@blueprintjs/datetime';
 
 //---------------------
 // Re-exports
@@ -64,7 +64,7 @@ export {
     Card,
     Checkbox,
     ControlGroup,
-    DateInput,
+    DatePicker,
     Dialog,
     FileInput,
     FormGroup,
@@ -107,7 +107,7 @@ export const
     card = elemFactory(Card),
     controlGroup = elemFactory(ControlGroup),
     checkbox = elemFactory(Checkbox),
-    dateInput = elemFactory(DateInput),
+    datePicker = elemFactory(DatePicker),
     dialog = elemFactory(Dialog),
     fileInput = elemFactory(FileInput),
     formGroup = elemFactory(FormGroup),
