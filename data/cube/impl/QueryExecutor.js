@@ -29,7 +29,7 @@ export class QueryExecutor {
             newRecords = this.groupAndInsertLeaves(query, newLeaves, dimensions, rootId);
 
         newRecords = includeRoot ?
-            [new AggregateCubeRecord(fields, rootId, newRecords, null, 'Total')] :
+            [new AggregateCubeRecord(fields, rootId, newRecords, null, 'Total', {})] :
             newRecords;
 
         return this.getRecordsAsData(query, newRecords);
