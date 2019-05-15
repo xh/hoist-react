@@ -75,7 +75,7 @@ export class ClientErrorPanel extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'bottom',
-            width: 100,
+            width: 120,
             ...args
         });
     }

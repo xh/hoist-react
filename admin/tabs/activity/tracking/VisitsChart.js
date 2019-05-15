@@ -58,8 +58,7 @@ export class VisitsChart extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'top-left',
-            commitOnChange: true,
-            width: 100,
+            width: 120,
             ...args
         });
     }
