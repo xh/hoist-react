@@ -61,11 +61,6 @@ export class AgGridModel {
         });
     }
 
-    logStateDebugInfo() {
-        const state = this.getState();
-        console.log('Current State:', state);
-    }
-
     getState({excludeSort, excludeExpand, excludeFilter, excludeSideBarState} = {}) {
         const {agColumnApi} = this,
             pivotMode = agColumnApi.isPivotMode(),
