@@ -138,7 +138,7 @@ export class ConfigDifferModel  {
     }
 
     processFailedLoad() {
-        this.gridModel.store.loadData([]);
+        this.gridModel.store.removeAllRecords();
     }
 
     diffConfigs(localConfigs, remoteConfigs) {
