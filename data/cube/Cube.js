@@ -18,13 +18,13 @@ import {isString} from 'lodash';
 export class Cube {
 
     _fields = null;
-    _recordMap = null;
+    _records = null;
     _idSpec = null;
     _info = null;
     _lockFn = null;
 
     static RECORD_ID_DELIMITER = '>>';
-
+    
     /**
      * @param {Object} c - Cube configuration.
      * @param {(Field[]|Object[])} c.fields - array of Fields / {@see Field} configs.
@@ -38,7 +38,7 @@ export class Cube {
     constructor({fields, lockFn, idSpec = 'id', data, info}) {
         this._idSpec = idSpec;
         this._fields = this.processRawFields(fields);
-        this._recordMap = this.processRawData(data || []);
+        this._records = this.processRawData(data || []);
         this._info = Object.freeze(info || {});
         this._lockFn = lockFn;
     }
@@ -58,9 +58,9 @@ export class Cube {
         return Array.from(this.fields.keys());
     }
 
-    /** @returns {Map} - map of CubeRecords loaded into this Cube, by record ID. */
+    /** @returns {CubeRecord[]} - CubeRecords loaded into this Cube */
     get records() {
-        return this._recordMap;
+        return this._records;
     }
 
     /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
@@ -73,8 +73,8 @@ export class Cube {
      * @param {Object[]} rawData - flat array of lowest/leaf level data rows.
      * @param {Object} info - optional metadata to associate with this cube/dataset.
      */
-    loadData(rawData, info = {}) {
-        this._recordMap = this.processRawData(rawData);
+    async loadDataAsync(rawData, info = {}) {
+        this._records = this.processRawData(rawData);
         this._info = info;
     }
 
@@ -82,12 +82,12 @@ export class Cube {
      * Return grouped and filtered data.
      *
      * @param {Object} query - config for a {@see Query}.
-     * @returns {Object} - hierarchical representation of filtered and aggregated data, suitable
+     * @returns {Promise<Object>} - hierarchical representation of filtered and aggregated data, suitable
      *      for passing directly to a Hoist Store.
      */
-    executeQuery(query) {
+    async executeQueryAsync(query) {
         query = new Query({...query, cube: this});
-        return QueryExecutor.getData(query);
+        return QueryExecutor.getDataAsync(query);
     }
 
 
@@ -104,12 +104,7 @@ export class Cube {
     }
 
     processRawData(rawData) {
-        const ret = new Map();
-        rawData.forEach(raw => {
-            const rec = this.createRecord(raw);
-            ret.set(rec.id, rec);
-        });
-        return ret;
+        return rawData.map(raw => this.createRecord(raw));
     }
 
     createRecord(raw) {
