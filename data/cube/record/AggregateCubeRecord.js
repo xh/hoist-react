@@ -29,7 +29,7 @@ export class AggregateCubeRecord extends CubeRecord {
         this.eachField((field, name) => {
             if (field !== dim) {
                 const {aggregator, canAggregateFn} = field,
-                    canAgg = aggregator && (!canAggregateFn || canAggregateFn(name, val, appliedDimensions));
+                    canAgg = aggregator && (!canAggregateFn || canAggregateFn(dim.name, val, appliedDimensions));
 
                 data[name] = canAgg ? aggregator.aggregate(children, name) : null;
             }
