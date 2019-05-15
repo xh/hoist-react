@@ -96,8 +96,8 @@ export class Store {
         this.lastUpdated = Date.now();
     }
 
-    /** Clear all records from the store. */
-    removeAllRecords() {
+    /** Remove all records from the store. */
+    clear() {
         this.loadData([]);
     }
 
