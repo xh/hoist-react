@@ -41,6 +41,9 @@ export class DateInput extends HoistInput {
         /** Props passed to ReactDayPicker component, as per DayPicker docs. */
         dayPickerProps: PT.object,
 
+        /** Enable using the DatePicker popover */
+        enablePicker: PT.bool,
+
         /**
          * MomentJS format string for date display and parsing. Defaults to `YYYY-MM-DD HH:mm:ss`,
          * with default presence of time components determined by the timePrecision prop.
@@ -71,6 +74,9 @@ export class DateInput extends HoistInput {
         /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
         showActionsBar: PT.bool,
 
+        /** True to show the picker upon focusing the input. */
+        showPickerOnFocus: PT.bool,
+
         /** Alignment of entry text within control, default 'left'. */
         textAlign: PT.oneOf(['left', 'right']),
 
@@ -95,13 +101,15 @@ export class DateInput extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            layoutProps = this.getLayoutProps();
+            layoutProps = this.getLayoutProps(),
+            enablePicker = withDefault(props.enablePicker, true);
 
         return div({
             item: popover({
-                isOpen: this.popoverOpen && !this.props.disabled,
+                isOpen: enablePicker && this.popoverOpen && !this.props.disabled,
                 minimal: true,
                 usePortal: true,
+                autoFocus: false,
                 enforceFocus: false,
                 position: withDefault(props.popoverPosition, 'auto'),
                 popoverRef: this.popoverRef.ref,
@@ -123,6 +131,7 @@ export class DateInput extends HoistInput {
                     className: this.getClassName(),
                     onCommit: this.onInputCommit,
                     rightElement: button({
+                        omit: !enablePicker,
                         icon: Icon.calendar(),
                         tabIndex: -1, // Prevent focus on tab
                         onClick: this.onPopoverBtnClick
@@ -166,6 +175,11 @@ export class DateInput extends HoistInput {
     noteBlurred() {
         this.setPopoverOpen(false);
         super.noteBlurred();
+    }
+
+    noteFocused() {
+        if (this.props.showPickerOnFocus) this.setPopoverOpen(true);
+        super.noteFocused();
     }
 
     onPopoverBtnClick = () => {

@@ -13,6 +13,9 @@
   the relevant section of an application UI, as opposed to the edge of the screen.
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
+* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, that offer greater
+  control over when the calendar picker is shown. The new default behaviour is to not show the picker
+  on focus, instead showing it via a built-in button.
 * Hoist Admins now always see the VersionBar in the footer.
 
 ### 💥 Breaking Changes
