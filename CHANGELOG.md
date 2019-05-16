@@ -14,6 +14,8 @@
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
 * Hoist Admins now always see the VersionBar in the footer.
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+  performed.
 
 ### 💥 Breaking Changes
 
