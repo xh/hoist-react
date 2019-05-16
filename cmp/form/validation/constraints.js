@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {CALENDAR_DATE_FMT} from '@xh/hoist/format';
 import {isNil, isString, isArray} from 'lodash';
 import moment from 'moment';
 /**
@@ -98,5 +99,20 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 
         if (minMoment && minMoment.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
         if (maxMoment && maxMoment.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
+    };
+}
+
+/**
+ * Validate a CalendarDate against allowed min/max boundaries.
+ * @see dateIs
+ */
+export function calendarDateIs({min, max}) {
+    return ({value, displayName}) => {
+        if (isNil(value)) return null;
+
+        const valueAsDate = moment(value, CALENDAR_DATE_FMT).toDate(),
+            fn = dateIs({min, max, fmt: CALENDAR_DATE_FMT});
+
+        return fn({value: valueAsDate, displayName});
     };
 }

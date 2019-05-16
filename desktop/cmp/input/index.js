@@ -6,6 +6,7 @@
  */
 
 export * from './ButtonGroupInput';
+export * from './CalendarDateInput';
 export * from './Checkbox';
 export * from './DateInput';
 export * from './JsonInput';
