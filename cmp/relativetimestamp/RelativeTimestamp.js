@@ -7,7 +7,7 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory, managed} from '@xh/hoist/core';
+import {XH, HoistComponent, LayoutSupport, elemFactory, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {span} from '@xh/hoist/cmp/layout';
@@ -230,6 +230,6 @@ const getResult = opts => {
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
 
-    const fmtString = short ? SHORT_FORMAT_STRINGS[unit] : FORMAT_STRINGS[unit]
+    const fmtString = short ? SHORT_FORMAT_STRINGS[unit] : FORMAT_STRINGS[unit];
     return `${prefix}${fmtString.replace('%d', millis)} ${suffix}`;
 };
