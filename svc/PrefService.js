@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {debounce, isNil, isEqual, isEmpty, pickBy, map, cloneDeep, forEach} from 'lodash';
+import {debounce, isNil, isEqual, isEmpty, pickBy, cloneDeep, forEach} from 'lodash';
 import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
