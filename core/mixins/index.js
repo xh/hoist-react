@@ -4,7 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './EventSupport';
 export * from './LayoutSupport';
 export * from './ReactiveSupport';
 export * from './StableIdSupport';
