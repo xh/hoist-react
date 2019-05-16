@@ -31,8 +31,23 @@ const FORMAT_STRINGS = {
     years: '%d years'
 };
 
+const SHORT_FORMAT_STRINGS = {
+    seconds: '<1 min',
+    minute: '1 min',
+    minutes: '%d mins',
+    hour: '~1 hour',
+    hours: '~%d hours',
+    day: 'a day',
+    days: '%d days',
+    month: 'a month',
+    months: '%d months',
+    year: 'a year',
+    years: '%d years'
+};
+
 const defaultOptions = {
     allowFuture: false,
+    short: false, // Defaulted based on device in getRelativeTimestamp method
     futureSuffix: 'from now',
     pastSuffix: 'ago',
     nowString: null,
@@ -102,6 +117,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
+ * @param {boolean} [options.short] - Use shorter timestamp text
  * @param {string} [options.prefix] - Label preceding timestamp
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
@@ -110,6 +126,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */
 export const getRelativeTimestamp = (timestamp, options) => {
+    defaultOptions.short = XH.isMobile;
     const opts = Object.assign({timestamp}, defaultOptions, options);
 
     if (!timestamp) return opts.emptyResult;
@@ -205,13 +222,14 @@ const getPrefix  = opts => {
 };
 
 const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix} = opts;
+    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix, short} = opts;
     if (isInvalid) return '[???]';
 
     // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
     // then return the nowString if it's present, otherwise return the
     // default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
-    
-    return `${prefix}${FORMAT_STRINGS[unit].replace('%d', millis)} ${suffix}`;
+
+    const fmtString = short ? SHORT_FORMAT_STRINGS[unit] : FORMAT_STRINGS[unit]
+    return `${prefix}${fmtString.replace('%d', millis)} ${suffix}`;
 };
