@@ -20,8 +20,10 @@
 * The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
   `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
   app that require to to be fully reloaded should have this renamed config set to `true`.
-  * The options dialog will now automatically trigger an app-wide data _refresh_ via
-    `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+* The options dialog will now automatically trigger an app-wide data _refresh_ via
+`XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
+* The `EventSupport` mixin has been removed.  there are no known uses of it and it is in conflict with
+the overall reactive structure of the hoist-react API.
 
 ### 🐞 Bug Fixes
 

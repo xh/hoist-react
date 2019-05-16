@@ -8,7 +8,7 @@
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
@@ -42,7 +42,6 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@EventSupport
 @ReactiveSupport
 class XHClass {
 
@@ -188,7 +187,6 @@ class XHClass {
     setAppState(appState) {
         if (this.appState != appState) {
             this.appState = appState;
-            this.fireEvent('appStateChanged', {appState});
         }
     }
 

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {applyMixin} from '@xh/hoist/utils/js';
-import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
+import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 /**
  * Core decorator for Services in Hoist.
@@ -16,7 +16,7 @@ import {EventSupport, ReactiveSupport, XhIdSupport, ManagedSupport} from './mixi
 export function HoistService(C) {
     return applyMixin(C, {
         name: 'HoistService',
-        includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport],
+        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**

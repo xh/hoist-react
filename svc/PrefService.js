@@ -85,7 +85,6 @@ export class PrefService {
      *
      * @param {string} key
      * @param {*} value - the new value to save.
-     * @fires PrefService#prefChange - if the preference value was actually modified.
      */
     set(key, value) {
         this.validateBeforeSet(key, value);
@@ -96,7 +95,6 @@ export class PrefService {
         // Change local value to sanitized copy and fire.
         value = deepFreeze(cloneDeep(value));
         this._data[key].value = value;
-        this.fireEvent('prefChange', {key, value, oldValue});
 
         // Schedule serialization to storage
         this._updates[key] = value;
@@ -169,9 +167,6 @@ export class PrefService {
                 }
             });
         }
-
-        const evtData = map(updates, (value, key) => ({key, value}));
-        this.fireEvent('prefsPushed', {prefs: evtData});
     }
 
 
@@ -268,25 +263,4 @@ export class PrefService {
                 return false;
         }
     }
-
-    /**
-     * Fired when preference changed.
-     *
-     * @event PrefService#prefChange
-     * @type {Object}
-     * @property {string} key - preference key / identifier that was changed
-     * @property {*} value - the new, just-set value
-     * @property {*} oldValue - the prior value
-     */
-
-    /**
-     * Fired when a batch of preferences updates have been pushed to storage (either local, or server).
-     *
-     * @event PrefService#prefsPushed
-     * @type {Object}
-     * @property {Object[]} prefs - list of preferences that were pushed
-     * @property {string} prefs[].key - preference key / identifier that was changed
-     * @property {*} prefs[].value - the new, just-set value
-     */
-
 }
