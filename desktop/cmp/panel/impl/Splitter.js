@@ -32,7 +32,7 @@ export class Splitter extends Component {
                     className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
                     onClick: this.onClick,
-                    omit: !showSplitterCollapseButton && !collapsible
+                    omit: !showSplitterCollapseButton || !collapsible
                 })
             };
 

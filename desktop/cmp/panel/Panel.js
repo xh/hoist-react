@@ -140,9 +140,15 @@ export class Panel extends Component {
         }
 
         // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        let processedPanelHeader;
+        if (title || icon || headerItems) {
+            processedPanelHeader = panelHeader({title, icon, headerItems, model});
+        }
+
         const item = vbox({
+
             items: [
-                panelHeader({title, icon, headerItems, model}),
+                processedPanelHeader,
                 coreContents,
                 maskElem
             ],
