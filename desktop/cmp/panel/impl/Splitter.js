@@ -23,16 +23,16 @@ export class Splitter extends Component {
     static modelClass = PanelModel;
 
     render() {
-        const {vertical, showSplitterCollapseButton} = this.model;
+        const {vertical, showSplitterCollapseButton, collapsible} = this.model;
 
         const cmp = vertical ? hbox : vbox,
             cfg = {
-                className: `xh-resizable-collapser ${vertical ? 'vertical' : 'horizontal'}`,
+                className: `xh-resizable-splitter ${vertical ? 'vertical' : 'horizontal'}`,
                 item: button({
                     className: 'xh-resizable-collapser-btn',
                     icon: Icon[this.getChevron()](),
                     onClick: this.onClick,
-                    omit: !showSplitterCollapseButton
+                    omit: !showSplitterCollapseButton && !collapsible
                 })
             };
 

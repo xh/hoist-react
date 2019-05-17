@@ -1,22 +1,22 @@
-.xh-resizable-collapser {
+.xh-resizable-splitter {
     background-color: var(--xh-resizable-bg);
     justify-content: center;
     align-items: center;
 }
 
-.xh-resizable-collapser.vertical {
+.xh-resizable-splitter.vertical {
     height: var(--xh-resizable-size-px);
     border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 }
 
-.xh-resizable-collapser.horizontal {
+.xh-resizable-splitter.horizontal {
     width: var(--xh-resizable-size-px);
     border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 }
 
-.xh-resizable-collapser .xh-resizable-collapser-btn {
+.xh-resizable-splitter .xh-resizable-collapser-btn {
     color: var(--xh-resizable-button-icon-color) !important;
     background-color: var(--xh-resizable-button-bg);
     margin: 0;
@@ -24,12 +24,12 @@
     z-index: 10;
 }
 
-.xh-resizable-collapser.horizontal .xh-resizable-collapser-btn {
+.xh-resizable-splitter.horizontal .xh-resizable-collapser-btn {
     width: 10px;
     height: 70px;
 }
 
-.xh-resizable-collapser.vertical .xh-resizable-collapser-btn {
+.xh-resizable-splitter.vertical .xh-resizable-collapser-btn {
     width: 70px;
     height: 10px;
 }

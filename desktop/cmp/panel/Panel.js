@@ -151,6 +151,14 @@ export class Panel extends Component {
             className: this.getClassName()
         });
 
+        // yanas diagnostics
+        if (this.model) {
+            console.log('Panel.model.resizable: ', this.model.resizable);
+            console.log('Panel.model.collapsible: ', this.model.collapsible);
+            console.log('Panel.model.showSplitter: ', this.model.showSplitter);
+            console.log('Panel.model.showSplitterCollapseButton: ', this.model.showSplitterCollapseButton);
+        }
+
         // 5) Return, wrapped in resizable and its affordances if needed.
         return resizable || collapsible || showSplitter ?
             resizeContainer({item, model}) :
