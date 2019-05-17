@@ -17,14 +17,19 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the picker
   on focus, instead showing it via a built-in button.
 * Hoist Admins now always see the VersionBar in the footer.
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+  performed.
 
 ### 💥 Breaking Changes
 
 * The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
   `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
   app that require to to be fully reloaded should have this renamed config set to `true`.
-  * The options dialog will now automatically trigger an app-wide data _refresh_ via
-    `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+* The options dialog will now automatically trigger an app-wide data _refresh_ via
+  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
+* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict with
+  the overall reactive structure of the hoist-react API. If your app listens to the `appStateChanged`,
+  `prefChange` or `prefsPushed` events you will need to adjust accordingly.
 
 ### 🐞 Bug Fixes
 

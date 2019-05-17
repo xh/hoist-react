@@ -59,10 +59,13 @@ export class ValueFilter extends Filter {
         super();
         this.fieldName = fieldName;
         this.values = castArray(values);
-    }
 
-    matches(record) {
-        return this.values.includes(record.get(this.fieldName));
+        if (values.length == 1) {
+            const singleVal = values[0];
+            this.matches = (rec) => rec.get(fieldName) === singleVal;
+        } else {
+            this.matches = (rec) => values.includes(rec.get(fieldName));
+        }
     }
 
     toString() {
