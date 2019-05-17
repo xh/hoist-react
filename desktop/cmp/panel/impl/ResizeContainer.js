@@ -30,8 +30,8 @@ export class ResizeContainer extends Component {
             items = [this.renderChild()];
         
         if (showSplitter) {
-            const collapserCmp = splitter({model});
-            items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
+            const splitterCmp = splitter({model});
+            items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
         }
 
         if (!collapsed && resizable) {

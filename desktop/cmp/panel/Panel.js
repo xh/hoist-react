@@ -140,10 +140,9 @@ export class Panel extends Component {
         }
 
         // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
-        let processedPanelHeader;
-        if (title || icon || headerItems) {
-            processedPanelHeader = panelHeader({title, icon, headerItems, model});
-        }
+        const processedPanelHeader = (title || icon || headerItems) ?
+            panelHeader({title, icon, headerItems, model}) :
+            null;
 
         const item = vbox({
 
@@ -156,14 +155,6 @@ export class Panel extends Component {
             ...layoutProps,
             className: this.getClassName()
         });
-
-        // yanas diagnostics
-        if (this.model) {
-            console.log('Panel.model.resizable: ', this.model.resizable);
-            console.log('Panel.model.collapsible: ', this.model.collapsible);
-            console.log('Panel.model.showSplitter: ', this.model.showSplitter);
-            console.log('Panel.model.showSplitterCollapseButton: ', this.model.showSplitterCollapseButton);
-        }
 
         // 5) Return, wrapped in resizable and its affordances if needed.
         return resizable || collapsible || showSplitter ?
