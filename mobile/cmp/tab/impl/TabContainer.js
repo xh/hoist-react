@@ -31,7 +31,7 @@ export class TabContainer extends Component {
         super(props);
         throwIf(
             !['top', 'bottom', 'none'].includes(this.model.switcherPosition),
-            `Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'`
+            "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
         );
     }
 
