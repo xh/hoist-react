@@ -9,6 +9,8 @@ import {HoistModel} from '@xh/hoist/core';
 import {defaultTo, defaults} from 'lodash';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
 
+import './Toast.scss';
+
 /**
  *  Support for showing publishing Blueprint Toasts in an application.
  *
@@ -31,12 +33,13 @@ export class ToastSource {
     //------------------------------------
     displayPendingToasts(models) {
         models.forEach(model => {
-            let {wasShown, isOpen, icon, position, ...rest} = model;
+            let {wasShown, isOpen, icon, position, containerRef, ...rest} = model;
             if (wasShown || !isOpen) return;
 
             position = position || Position.BOTTOM_RIGHT;
-            this.getToaster(position).show({
+            this.getToaster(position, containerRef).show({
                 icon: this.getStyledIcon(icon),
+                className: 'xh-toast',
                 onDismiss: () => model.dismiss(),
                 ...rest
             });
@@ -53,13 +56,18 @@ export class ToastSource {
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param {string} [position] - see Blueprint Position enum for allowed values.
+     * @params {Component} [containerRef] - Component to contain the toast.
      */
-    getToaster(position = Position.BOTTOM_RIGHT) {
-        const toasters = this._toasters;
+    getToaster(position, containerRef) {
+        const toasters = this._toasters,
+            container = containerRef ? containerRef.getDOMNode() : document.body,
+            containerId = containerRef ? containerRef.xhId : 'viewport',
+            className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`,
+            toasterId = containerId + '--' + position;
 
-        if (position in toasters) return toasters[position];
+        if (toasterId in toasters) return toasters[toasterId];
 
-        return toasters[position] = Toaster.create({position});
+        return toasters[toasterId] = Toaster.create({position, className}, container);
     }
 
     getStyledIcon(icon) {

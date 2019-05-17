@@ -9,10 +9,11 @@ import {CubeRecord} from './CubeRecord';
 
 export class AggregateCubeRecord extends CubeRecord {
 
-    isLeaf = false;
+    /** @member {Field} */
     dim = null;
+    isLeaf = false;
 
-    constructor(fields, id, children, dim, val) {
+    constructor(fields, id, children, dim, val, appliedDimensions) {
         super(fields);
 
         const data = {id, cubeLabel: val};
@@ -25,14 +26,13 @@ export class AggregateCubeRecord extends CubeRecord {
         children.forEach(it => it.parent = this);
         this.children = children;
 
-        this.computeAggregates();
-    }
-
-    computeAggregates() {
         this.eachField((field, name) => {
-            if (field !== this.dim) {
-                const aggregator = field.aggregator;
-                this.data[name] = aggregator.aggregate(this.children, name);
+            if (field !== dim) {
+                const dimName = dim ? dim.name : 'Total',
+                    {aggregator, canAggregateFn} = field,
+                    canAgg = aggregator && (!canAggregateFn || canAggregateFn(dimName, val, appliedDimensions));
+
+                data[name] = canAgg ? aggregator.aggregate(children, name) : null;
             }
         });
     }

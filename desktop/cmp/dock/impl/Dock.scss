@@ -13,6 +13,7 @@
   pointer-events: none;
   align-items: flex-end;
   justify-content: flex-end;
+  z-index: 21;
 
   &--ltr {
     flex-direction: row-reverse !important;
@@ -34,7 +35,6 @@
 .xh-dock-view {
   flex: 0 0 auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-  z-index: 10;
   pointer-events: auto;
 
   &__header {
