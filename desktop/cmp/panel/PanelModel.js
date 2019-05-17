@@ -69,7 +69,7 @@ export class PanelModel {
         side,
         collapsedRenderMode = 'lazy',
         prefName = null,
-        showSplitter = true,
+        showSplitter = resizable || collapsible,
         showSplitterCollapseButton = true,
         showHeaderCollapseButton = true
     }) {
