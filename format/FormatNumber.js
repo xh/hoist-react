@@ -253,17 +253,20 @@ function fmtNumberElement(v, opts = {}) {
 function fmtNumberString(v, opts = {}) {
     const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
     let str = opts.str;
+    const strOriginal = str;
 
     if (withSignGlyph) {
-        str = signGlyph(v) + '&nbsp;' + str;
+        str = signGlyph(v) + '&nbsp;';
     }
 
     if (isString(prefix)) {
-        if (v < 0) {
-            console.log('v < 0; \n \n this is the str!: ', str);
+        if (strOriginal.startsWith('-') || strOriginal.startsWith('+')) {
+            str += (strOriginal[0] + '$' + strOriginal.substring(1));
         } else {
-            console.log('this is the str!: ', str);
+            str += ('$' + strOriginal);
         }
+    } else {
+        str += strOriginal;
     }
 
     if (isString(label)) {
