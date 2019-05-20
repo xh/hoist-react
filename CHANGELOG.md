@@ -16,6 +16,8 @@
 * Hoist Admins now always see the VersionBar in the footer.
 * `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
   performed.
+* `formatNumber` now accepts an optional `prefix` config that prepends immediately before the 
+  number, but after the sign (`+`, `-`).   
 
 ### 💥 Breaking Changes
 

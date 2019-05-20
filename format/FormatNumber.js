@@ -38,6 +38,7 @@ const UP_TICK = '▴',
  *      align vertically with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
  * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
+ * @param {string} [opts.prefix] - prefix to prepend to value (between the number and its sign).
  * @param {string} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - CSS class of label <span>,
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
