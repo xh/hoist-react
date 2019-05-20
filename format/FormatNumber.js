@@ -63,6 +63,7 @@ export function fmtNumber(v, {
     withPlusSign = false,
     withSignGlyph = false,
     label = null,
+    prefix = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
     tooltip = null,
@@ -80,7 +81,7 @@ export function fmtNumber(v, {
         str = '+' + str;
     }
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue};
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue, prefix};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -203,7 +204,7 @@ export function fmtNumberTooltip(v, {ledger = false} = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
+    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
 
     // CSS classes
     const cls = [];
@@ -219,6 +220,10 @@ function fmtNumberElement(v, opts = {}) {
     }
 
     items.push(str);
+
+    if (isString(prefix)) {
+        items.unshift(prefix);
+    }
 
     if (isString(label)) {
         items.push(labelCls ? fmtSpan(label, {className: labelCls, asElement: asElement}) : label);
@@ -242,11 +247,15 @@ function fmtNumberElement(v, opts = {}) {
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
     let str = opts.str;
 
     if (withSignGlyph) {
         str = signGlyph(v) + '&nbsp;' + str;
+    }
+
+    if (isString(prefix)) {
+        str = prefix + str;
     }
 
     if (isString(label)) {
