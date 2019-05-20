@@ -219,10 +219,14 @@ function fmtNumberElement(v, opts = {}) {
         items.push(signGlyph(v, asElement));
     }
 
-    items.push(str);
-
     if (isString(prefix)) {
-        items.unshift(prefix);
+        if (str.startsWith('-') || str.startsWith('+')) {
+            items.push(str[0], '$', str.substring(1));
+        } else {
+            items.push('$', str);
+        }
+    } else {
+        items.push(str);
     }
 
     if (isString(label)) {
@@ -255,7 +259,11 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (isString(prefix)) {
-        str = prefix + str;
+        if (v < 0) {
+            console.log('v < 0; \n \n this is the str!: ', str);
+        } else {
+            console.log('this is the str!: ', str);
+        }
     }
 
     if (isString(label)) {
