@@ -7,7 +7,9 @@ import {warnIf} from '../../utils/js';
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
  * ag-Grid API and Column API references for interacting with ag-Grid.
  *
- * Also provides a series of utility methods that are generally useful when managing grid state.
+ * Also provides a series of utility methods that are generally useful when managing grid state. This
+ * includes the ability to get and set the full state of the grid in a serializable form, allowing
+ * applications to save "views" of the grid.
  */
 @HoistModel
 export class AgGridModel {
@@ -61,45 +63,74 @@ export class AgGridModel {
         });
     }
 
-    getState({excludeSort, excludeExpand, excludeFilter, excludeSideBarState} = {}) {
-        const {agColumnApi} = this,
-            pivotMode = agColumnApi.isPivotMode(),
-            colState = this.getColumnState(),
+    /**
+     * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
+     * serializable form and can be later restored via setState.
+     *
+     * @param {Object} c - options for which state is retrieved.
+     * @param {boolean} c.excludeColumnState - true to exclude the column state
+     * @param {boolean} c.excludeSort - true to exclude the sort state
+     * @param {boolean} c.excludeExpand - true to exclude the expand state
+     * @param {boolean} c.excludeFilter - true to exclude the filter state
+     * @param {boolean} c.excludeMiscState - true to exclude any additional miscellaneous state
+     *
+     * @returns {AgGridState} - the current state of the grid
+     */
+    getState({excludeColumnState, excludeSort, excludeExpand, excludeFilter, excludeMiscState} = {}) {
+        const columnState = excludeColumnState ? undefined : this.getColumnState(),
             sortState = excludeSort ? undefined : this.getSortState(),
             expandState = excludeExpand ? undefined : this.getExpandState(),
             filterState = excludeFilter ? undefined : this.getFilterState(),
-            sideBarState = excludeSideBarState ? undefined : this.getSideBarState();
+            miscState = excludeMiscState ? undefined : this.getMiscState();
 
         return {
-            pivotMode,
-            colState,
+            columnState,
             sortState,
             expandState,
             filterState,
-            sideBarState
+            miscState
         };
     }
 
-    setState({pivotMode, colState, sortState, expandState, filterState, sideBarState}) {
-        const {agColumnApi} = this;
-
-        agColumnApi.setPivotMode(pivotMode);
-        this.setColumnState(colState);
-
+    /**
+     * Sets the current state of the grid. This method should generally only be used with an object
+     * returned by getState.
+     *
+     * Calls to this method should be made after the columns have been set in the grid.
+     *
+     * Some of the state may be data-dependent. Specifically the expandState and filterState. It is
+     * recommended that applications wait until the data has been loaded in the grid before setting
+     * the state if including those elements. This method can be called immediately after the data
+     * has been loaded via agApi.setRowData
+     *
+     * @param {AgGridState} state
+     */
+    setState(state) {
+        const {columnState, sortState, expandState, filterState, miscState} = state;
+        if (columnState) this.setColumnState(columnState);
         if (sortState) this.setSortState(sortState);
         if (expandState) this.setExpandState(expandState);
         if (filterState) this.setFilterState(filterState);
-        if (sideBarState) this.setSideBarState(sideBarState);
+        if (miscState) this.setMiscState(miscState);
     }
 
-    getSideBarState() {
+    /**
+     * @returns {AgGridMiscState}
+     */
+    getMiscState() {
         return {
             panelId: this.agApi.getOpenedToolPanel()
         };
     }
 
-    setSideBarState({panelId}) {
-        const {agApi} = this;
+    /**
+     * Sets the grid state which doesn't fit into the other buckets.
+     * @param {AgGridMiscState} miscState
+     */
+    setMiscState(miscState) {
+        const {agApi} = this,
+            {panelId} = miscState;
+
         if (isNil(panelId)) {
             agApi.closeToolPanel();
         } else {
@@ -107,19 +138,30 @@ export class AgGridModel {
         }
     }
 
+    /**
+     * @returns {Object[]} - current filter state of the grid. @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
+     */
     getFilterState() {
         const {agApi} = this;
         return agApi.getFilterModel();
     }
 
+    /**
+     * Sets the grid filter state. Note that this state may be data-dependent, depending on the types
+     * of filter being used.
+     *
+     * @param {Object[]} filterState
+     */
     setFilterState(filterState) {
         const {agApi} = this;
 
-        // TODO: Validate the filter state? Need to do more testing with what happens of the column is invalid
         agApi.setFilterModel(filterState);
         agApi.onFilterChanged();
     }
 
+    /**
+     * @returns {Object[]} - current sort state of the grid. @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
+     */
     getSortState() {
         const {agApi, agColumnApi} = this,
             sortModel = agApi.getSortModel(),
@@ -141,6 +183,10 @@ export class AgGridModel {
         return sortModel;
     }
 
+    /**
+     * Sets the grid sort state.
+     * @param {Object[]} sortState
+     */
     setSortState(sortState) {
         const sortModel = cloneDeep(sortState),
             {agApi, agColumnApi} = this,
@@ -158,48 +204,55 @@ export class AgGridModel {
                     if (col) {
                         sort.colId = col.colId;
                     } else {
-                        // TODO: What to do in this case? Exclude this sort?
                         console.warn(
                             'Could not find a secondary column to associate with the pivot column path',
                             sort.colId);
                     }
                 } else {
-                    // TODO: Should we just exclude this sort in this case? If not we need to deal with dupe col ids
                     sort.colId = last(sort.colId);
                 }
             }
         });
 
-        // TODO: Validate the sort model before setting
-        //       1. Remove invalid columns?
-        //       2. Remove duplicate column entries
-
         agApi.setSortModel(sortModel);
         agApi.onSortChanged();
     }
 
+    /**
+     * @returns {AgGridColumnState} - current column state of the grid, including pivot mode
+     */
     getColumnState() {
         const {agColumnApi} = this;
-        return agColumnApi.getColumnState();
+        return {
+            isPivot: agColumnApi.isPivotMode(),
+            columns: agColumnApi.getColumnState()
+        };
     }
 
+    /**
+     * Sets the columns state of the grid
+     * @param {AgGridColumnState} colState
+     */
     setColumnState(colState) {
         const {agColumnApi} = this,
-            isPivot = agColumnApi.isPivotMode(),
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
-                ...agColumnApi.getAllColumns().map(it => it.colId)];
+                ...agColumnApi.getAllColumns().map(it => it.colId)
+            ];
 
-        if (isPivot && colState.some(it => !isNil(it.pivotIndex) && it.pivotIndex >= 0)) {
+        let {isPivot, columns} = colState;
+        agColumnApi.setPivotMode(isPivot);
+
+        if (isPivot && columns.some(it => !isNil(it.pivotIndex) && it.pivotIndex >= 0)) {
             // Exclude the auto group column as this causes issues with ag-grid when in pivot mode
-            colState = colState.filter(it => it.colId !== AgGridModel.AUTO_GROUP_COL_ID);
+            columns = columns.filter(it => it.colId !== AgGridModel.AUTO_GROUP_COL_ID);
         }
 
         // Remove any invalid columns, ag-Grid does not like when when setting state with column ids
         // that it does not know about.
-        colState = colState.filter(it => validColIds.includes(it.colId));
+        columns = columns.filter(it => validColIds.includes(it.colId));
 
-        agColumnApi.setColumnState(colState);
+        agColumnApi.setColumnState(columns);
     }
 
     /**
@@ -294,3 +347,29 @@ export class AgGridModel {
         return [...column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
     }
 }
+
+/**
+ * @typedef {Object} AgGridColumnState
+ * @param {boolean} isPivot - true if pivot mode is enabled
+ * @param {Object[]} - state of each column in the grid. @see https://www.ag-grid.com/javascript-grid-column-definitions/#saving-and-restoring-column-state
+ */
+
+/**
+ * @typedef {Object} AgGridColumnSortState
+ * @param {string} colId
+ * @param {string} direction
+ */
+
+/**
+ * @typedef {Object} AgGridMiscState
+ * @param {string} panelId - identifier of the currently open tool panel in the side bar
+ */
+
+/**
+ * @typedef {Object} AgGridState
+ * @param {AgGridColumnState} [columnState]
+ * @param {AgGridColumnSortState[]} [sortState]
+ * @param {Object} [expandState]
+ * @param {Object[]} [filterState]
+ * @param {AgGridMiscState} [miscState]
+ */
