@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import moment from 'moment';
 
 export const
     MILLISECONDS = 1,
@@ -25,4 +26,18 @@ export function olderThan(t, millis) {
     return !t || t < Date.now() - millis;
 }
 
+/**
+ * Convert a Date string into a CalendarDate.
+ */
+export function toCalendarDate(d) {
+    return moment(d).format('YYYYMMDD');
+}
+
+/**
+ * Convert a CalendarDate string into a Date.
+ */
+export function parseCalendarDate(str) {
+    const ret = moment(str, 'YYYYMMDD').toDate();
+    return isNaN(ret) ? null : ret;
+}
 

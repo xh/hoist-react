@@ -15,8 +15,7 @@ import {fmtSpan} from './FormatMisc';
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
     TIME_FMT = 'h:mma',
-    MONTH_DAY_FMT = 'MMM D',
-    CALENDAR_DATE_FMT = 'YYYYMMDD';
+    MONTH_DAY_FMT = 'MMM D';
 
 const INVALID_DATE = moment(null).format();
 
@@ -65,13 +64,6 @@ export function fmtDateTime(v, opts = {}) {
 export function fmtTime(v, opts = {}) {
     if (isString(opts)) opts = {fmt: opts};
     defaults(opts, {fmt: TIME_FMT});
-    saveOriginal(v, opts);
-
-    return fmtDate(v, opts);
-}
-
-export function fmtCalendarDate(v, opts = {}) {
-    defaults(opts, {fmt: CALENDAR_DATE_FMT});
     saveOriginal(v, opts);
 
     return fmtDate(v, opts);

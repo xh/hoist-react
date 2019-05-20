@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {ExportFormat} from './ExportFormat';
-import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '@xh/hoist/format';
+import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer, fmtDate} from '@xh/hoist/format';
+import {parseCalendarDate} from '@xh/hoist/utils/datetime';
 
 const defaults = {align: 'right'};
 
@@ -39,5 +40,8 @@ export const compactDateCol = {
 
 export const calendarDateCol = {
     ...defaults,
-    width: 80
+    renderer: (v) => fmtDate(parseCalendarDate(v)),
+    exportValue: (v) => parseCalendarDate(v),
+    exportFormat: ExportFormat.DATE_FMT,
+    width: 100
 };

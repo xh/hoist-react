@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {CALENDAR_DATE_FMT} from '@xh/hoist/format';
+import {parseCalendarDate} from '@xh/hoist/utils/datetime';
 import {isNil, isString, isArray} from 'lodash';
 import moment from 'moment';
 /**
@@ -36,7 +36,6 @@ export const required = ({value, displayName}) => {
  * @returns ConstraintCb
  */
 export function lengthIs({min, max}) {
-
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -110,8 +109,8 @@ export function calendarDateIs({min, max}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
-        const valueAsDate = moment(value, CALENDAR_DATE_FMT).toDate(),
-            fn = dateIs({min, max, fmt: CALENDAR_DATE_FMT});
+        const valueAsDate = parseCalendarDate(value),
+            fn = dateIs({min, max});
 
         return fn({value: valueAsDate, displayName});
     };

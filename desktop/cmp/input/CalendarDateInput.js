@@ -7,7 +7,7 @@
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {CALENDAR_DATE_FMT, fmtCalendarDate} from '@xh/hoist/format';
+import {toCalendarDate, parseCalendarDate} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
 import {omit} from 'lodash';
 import moment from 'moment';
@@ -30,26 +30,22 @@ export class CalendarDateInput extends HoistInput {
 
     render() {
         // Warn if attempting to pass unsupported DateInput props
-        const {formatString, timePrecision, ...props} = this.props;
-        warnIf(formatString, 'formatString is not supported');
+        const {timePrecision, ...props} = this.props;
         warnIf(timePrecision, 'timePrecision is not supported');
 
         return dateInput({
             value: this.internalValue,
             onChange: this.onChange,
-            formatString: CALENDAR_DATE_FMT,
-            placeholder: CALENDAR_DATE_FMT,
             ...omit(props, ['value', 'model', 'bind'])
         });
     }
 
     toExternal(internal) {
-        return fmtCalendarDate(internal);
+        return toCalendarDate(internal);
     }
 
     toInternal(external) {
-        const ret = moment(external, CALENDAR_DATE_FMT).toDate();
-        return isNaN(ret) ? null : ret;
+        return parseCalendarDate(external);
     }
 
     onChange = (date) => {
