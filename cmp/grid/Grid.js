@@ -222,6 +222,7 @@ export class Grid extends Component {
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            rememberGroupStateWhenNewData: true,
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             }
