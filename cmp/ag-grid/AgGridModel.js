@@ -7,9 +7,9 @@ import {warnIf} from '../../utils/js';
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
  * ag-Grid API and Column API references for interacting with ag-Grid.
  *
- * Also provides a series of utility methods that are generally useful when managing grid state. This
- * includes the ability to get and set the full state of the grid in a serializable form, allowing
- * applications to save "views" of the grid.
+ * Also provides a series of utility methods that are generally useful when managing grid state.
+ * This includes the ability to get and set the full state of the grid in a serializable form,
+ * allowing applications to save "views" of the grid.
  */
 @HoistModel
 export class AgGridModel {
@@ -139,7 +139,8 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Object[]} - current filter state of the grid. @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
+     * @returns {Object[]} - current filter state of the grid.
+     *      @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
      */
     getFilterState() {
         const {agApi} = this;
@@ -147,8 +148,8 @@ export class AgGridModel {
     }
 
     /**
-     * Sets the grid filter state. Note that this state may be data-dependent, depending on the types
-     * of filter being used.
+     * Sets the grid filter state.
+     * Note that this state may be data-dependent, depending on the types of filter being used.
      *
      * @param {Object[]} filterState
      */
@@ -160,17 +161,19 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Object[]} - current sort state of the grid. @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
+     * @returns {Object[]} - current sort state of the grid.
+     *      @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
      */
     getSortState() {
         const {agApi, agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
+        let sortModel = agApi.getSortModel();
+
         // When we have pivot columns we need to make sure we store the path to the sorted column
         // using the pivot keys and value column id, instead of using the auto-generate secondary
         // column id as this could be different with different data or even with the same data based
-        // on the state of the grid when pivot mode was turned on
-        let sortModel = agApi.getSortModel();
+        // on the state of the grid when pivot mode was enabled.
         if (isPivot && !isEmpty(agColumnApi.getPivotColumns())) {
             // ag-Grid may have left sort state in the model from before pivot mode was activated,
             // which is not representative of the current grid state, so we need to remove any sorts
@@ -252,8 +255,7 @@ export class AgGridModel {
             columns = columns.filter(it => it.colId !== AgGridModel.AUTO_GROUP_COL_ID);
         }
 
-        // Remove any invalid columns, ag-Grid does not like when when setting state with column ids
-        // that it does not know about.
+        // Remove invalid columns. ag-Grid does not like calls to set state with unknown column IDs.
         columns = columns.filter(it => validColIds.includes(it.colId));
 
         agColumnApi.setColumnState(columns);
@@ -354,26 +356,27 @@ export class AgGridModel {
 
 /**
  * @typedef {Object} AgGridColumnState
- * @param {boolean} isPivot - true if pivot mode is enabled
- * @param {Object[]} - state of each column in the grid. @see https://www.ag-grid.com/javascript-grid-column-definitions/#saving-and-restoring-column-state
+ * @property {boolean} isPivot - true if pivot mode is enabled
+ * @property {Object[]} columns - state of each column in the grid
+ *      @see https://www.ag-grid.com/javascript-grid-column-definitions/#saving-and-restoring-column-state
  */
 
 /**
  * @typedef {Object} AgGridColumnSortState
- * @param {string} colId
- * @param {string} direction
+ * @property {string} colId
+ * @property {string} direction
  */
 
 /**
  * @typedef {Object} AgGridMiscState
- * @param {string} panelId - identifier of the currently open tool panel in the side bar
+ * @property {string} panelId - identifier of the currently open tool panel in the side bar
  */
 
 /**
  * @typedef {Object} AgGridState
- * @param {AgGridColumnState} [columnState]
- * @param {AgGridColumnSortState[]} [sortState]
- * @param {Object} [expandState]
- * @param {Object[]} [filterState]
- * @param {AgGridMiscState} [miscState]
+ * @property {AgGridColumnState} [columnState]
+ * @property {AgGridColumnSortState[]} [sortState]
+ * @property {Object} [expandState]
+ * @property {Object[]} [filterState]
+ * @property {AgGridMiscState} [miscState]
  */
