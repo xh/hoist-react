@@ -164,16 +164,20 @@ export class AgGridModel {
      */
     getSortState() {
         const {agApi, agColumnApi} = this,
-            sortModel = agApi.getSortModel(),
             isPivot = agColumnApi.isPivotMode();
 
         // When we have pivot columns we need to make sure we store the path to the sorted column
         // using the pivot keys and value column id, instead of using the auto-generate secondary
         // column id as this could be different with different data or even with the same data based
         // on the state of the grid when pivot mode was turned on
+        let sortModel = agApi.getSortModel();
         if (isPivot && !isEmpty(agColumnApi.getPivotColumns())) {
-            const secondaryCols = agColumnApi.getSecondaryColumns();
+            // ag-Grid may have left sort state in the model from before pivot mode was activated,
+            // which is not representative of the current grid state, so we need to remove any sorts
+            // on non-pivot columns
+            sortModel = sortModel.filter(it => it.colId.startsWith('pivot_'));
 
+            const secondaryCols = agColumnApi.getSecondaryColumns();
             sortModel.forEach(sort => {
                 const col = secondaryCols.find(it => it.colId === sort.colId);
                 sort.colId = this.getPivotColumnId(col);
