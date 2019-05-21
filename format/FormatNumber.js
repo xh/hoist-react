@@ -80,7 +80,7 @@ export function fmtNumber(v, {
 
     if (v > 0 && withPlusSign) {
         sign = '+';
-    } else if (v < 0) {
+    } else if (v < 0 && !ledger) {
         sign = '-';
     }
 
@@ -220,9 +220,7 @@ function fmtNumberElement(v, opts = {}) {
 
     if (withSignGlyph) {
         items.push(signGlyph(v, asElement));
-    }
-
-    if (sign && !withSignGlyph && !ledger) {
+    } else if (sign) {
         items.push(sign);
     }
 
@@ -258,10 +256,8 @@ function fmtNumberString(v, opts = {}) {
     let ret = '';
 
     if (withSignGlyph) {
-        ret = signGlyph(v) + '&nbsp;';
-    }
-
-    if (sign && !withSignGlyph && !ledger) {
+        ret += signGlyph(v) + '&nbsp;';
+    } else if (sign) {
         ret += sign;
     }
 
