@@ -63,8 +63,8 @@ export function fmtNumber(v, {
     forceLedgerAlign = true,
     withPlusSign = false,
     withSignGlyph = false,
-    label = null,
     prefix = null,
+    label = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
     tooltip = null,
@@ -77,12 +77,7 @@ export function fmtNumber(v, {
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad);
     let str = numbro(v).format(formatConfig);
 
-    if (ledger || withSignGlyph) str = str.replace('-', '');
-    if (withPlusSign && v > 0) {
-        str = '+' + str;
-    }
-
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue, prefix};
+    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -205,7 +200,8 @@ export function fmtNumberTooltip(v, {ledger = false} = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
+    const {ledger, forceLedgerAlign, withPlusSign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
+    let str = opts.str;
 
     // CSS classes
     const cls = [];
@@ -216,15 +212,24 @@ function fmtNumberElement(v, opts = {}) {
     const asElement = true,
         items = [];
 
+    // 1. format str according to later needs
+    if (ledger || withSignGlyph) {
+        str = str.replace('-', '');
+    } else if (withPlusSign && v > 0) {
+        str = '+' + str;
+    }
+
+
+    // 2. add prepends
     if (withSignGlyph) {
         items.push(signGlyph(v, asElement));
     }
 
     if (isString(prefix)) {
         if (str.startsWith('-') || str.startsWith('+')) {
-            items.push(str[0], '$', str.substring(1));
+            items.push(str[0], prefix, str.substring(1));
         } else {
-            items.push('$', str);
+            items.push(prefix, str);
         }
     } else {
         items.push(str);
