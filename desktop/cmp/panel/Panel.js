@@ -113,7 +113,6 @@ export class Panel extends Component {
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
-
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -145,7 +144,6 @@ export class Panel extends Component {
             null;
 
         const item = vbox({
-
             items: [
                 processedPanelHeader,
                 coreContents,
