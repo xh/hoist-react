@@ -103,15 +103,34 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 
 /**
  * Validate a CalendarDate against allowed min/max boundaries.
- * @see dateIs
+ *
+ * @param {Object} c
+ * @param {(string)} [c.min] - earliest allowed value for the date to be checked.
+ *      Supports CalendarDate strings and 'today'.
+ * @param {(string)} [c.max] - latest allowed value for the date to be checked.
+ *      Supports CalendarDate strings and 'today'.
+ * @param {string} [c.fmt] - custom date format to be used in validation message.
+ * @returns ConstraintCb
  */
-export function calendarDateIs({min, max}) {
+export function calendarDateIs({min, max, fmt}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
-        const valueAsDate = parseCalendarDate(value),
-            fn = dateIs({min, max});
+        let minDate = null;
+        if (min === 'today') {
+            minDate = moment().startOf('day');
+        } else if (min) {
+            minDate = parseCalendarDate(min);
+        }
 
-        return fn({value: valueAsDate, displayName});
+        let maxDate = null;
+        if (max === 'today') {
+            maxDate = moment().startOf('day');
+        } else if (max) {
+            maxDate = parseCalendarDate(max);
+        }
+
+        const fn = dateIs({min: minDate, max: maxDate, fmt});
+        return fn({value: parseCalendarDate(value), displayName});
     };
 }

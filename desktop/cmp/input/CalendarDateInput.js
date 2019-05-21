@@ -15,7 +15,7 @@ import moment from 'moment';
 import {DateInput, dateInput} from './DateInput';
 
 /**
- * A wrapper around DateInput, that publishes a CalendarDate string as its value.
+ * A DateInput that publishes a CalendarDate string as its value.
  */
 @HoistComponent
 @LayoutSupport
