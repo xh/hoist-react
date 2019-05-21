@@ -75,9 +75,16 @@ export function fmtNumber(v, {
     if (isInvalidInput(v)) return nullDisplay;
 
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad);
-    let str = numbro(v).format(formatConfig);
+    const str = numbro(v).format(formatConfig).replace('-', '');
+    let sign = null;
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
+    if (v > 0 && withPlusSign) {
+        sign = '+';
+    } else if (v < 0) {
+        sign = '-';
+    }
+
+    const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -200,8 +207,7 @@ export function fmtNumberTooltip(v, {ledger = false} = {}) {
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withPlusSign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
-    let str = opts.str;
+    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
 
     // CSS classes
     const cls = [];
@@ -212,28 +218,19 @@ function fmtNumberElement(v, opts = {}) {
     const asElement = true,
         items = [];
 
-    // 1. format str according to later needs
-    if (ledger || withSignGlyph) {
-        str = str.replace('-', '');
-    } else if (withPlusSign && v > 0) {
-        str = '+' + str;
-    }
-
-
-    // 2. add prepends
     if (withSignGlyph) {
         items.push(signGlyph(v, asElement));
     }
 
-    if (isString(prefix)) {
-        if (str.startsWith('-') || str.startsWith('+')) {
-            items.push(str[0], prefix, str.substring(1));
-        } else {
-            items.push(prefix, str);
-        }
-    } else {
-        items.push(str);
+    if (sign && !withSignGlyph && !ledger) {
+        items.push(sign);
     }
+
+    if (isString(prefix)) {
+        items.push(prefix);
+    }
+
+    items.push(str);
 
     if (isString(label)) {
         items.push(labelCls ? fmtSpan(label, {className: labelCls, asElement: asElement}) : label);
@@ -257,49 +254,48 @@ function fmtNumberElement(v, opts = {}) {
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
-    let str = opts.str;
-    const strOriginal = str;
+    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
+    let ret = '';
 
     if (withSignGlyph) {
-        str = signGlyph(v) + '&nbsp;';
+        ret = signGlyph(v) + '&nbsp;';
+    }
+
+    if (sign && !withSignGlyph && !ledger) {
+        ret += sign;
     }
 
     if (isString(prefix)) {
-        if (strOriginal.startsWith('-') || strOriginal.startsWith('+')) {
-            str += (strOriginal[0] + '$' + strOriginal.substring(1));
-        } else {
-            str += ('$' + strOriginal);
-        }
-    } else {
-        str += strOriginal;
+        ret += prefix;
     }
+
+    ret += str;
 
     if (isString(label)) {
         if (labelCls) {
-            str += fmtSpan(label, {className: labelCls});
+            ret += fmtSpan(label, {className: labelCls});
         } else {
-            str += label;
+            ret += label;
         }
     }
 
     if (ledger) {
         if (v < 0) {
-            str = '(' + str + ')';
+            ret = '(' + ret + ')';
         } else if (forceLedgerAlign) {
-            str += LEDGER_ALIGN_PLACEHOLDER;
+            ret += LEDGER_ALIGN_PLACEHOLDER;
         }
     }
 
     if (colorSpec) {
-        str = fmtSpan(str, {className: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {className: valueColor(v, colorSpec)});
     }
 
     if (tooltip) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
     }
 
-    return str;
+    return ret;
 }
 
 function signGlyph(v, asElement) {
