@@ -1,6 +1,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has} from 'lodash';
+import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
 import {warnIf, throwIf} from '../../utils/js';
 
 /**
@@ -67,28 +67,41 @@ export class AgGridModel {
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
      *
-     * @param {Object} c - options for which state is retrieved.
-     * @param {boolean} c.excludeColumnState - true to exclude the column state
-     * @param {boolean} c.excludeSort - true to exclude the sort state
-     * @param {boolean} c.excludeExpand - true to exclude the expand state
-     * @param {boolean} c.excludeFilter - true to exclude the filter state
-     * @param {boolean} c.excludeMiscState - true to exclude any additional miscellaneous state
+     * @param {Object} opts - options for which state is retrieved.
+     * @param {boolean} opts.excludeColumnState - true to exclude the column state
+     * @param {boolean} opts.excludeSort - true to exclude the sort state
+     * @param {boolean} opts.excludeExpand - true to exclude the expand state
+     * @param {boolean} opts.excludeFilter - true to exclude the filter state
+     * @param {boolean} opts.excludeMiscState - true to exclude any additional miscellaneous state
      *
      * @returns {AgGridState} - the current state of the grid
      */
-    getState({excludeColumnState, excludeSort, excludeExpand, excludeFilter, excludeMiscState} = {}) {
-        const columnState = excludeColumnState ? undefined : this.getColumnState(),
-            sortState = excludeSort ? undefined : this.getSortState(),
-            expandState = excludeExpand ? undefined : this.getExpandState(),
-            filterState = excludeFilter ? undefined : this.getFilterState(),
-            miscState = excludeMiscState ? undefined : this.getMiscState();
+    getState(opts = {}) {
+        const errors = {},
+            getStateChunk = (type) => {
+                if (opts[`exclude${startCase(type)}State`]) return undefined;
+
+                try {
+                    return this[`get${startCase(type)}State`]();
+                } catch (err) {
+                    console.warn(`Encountered errors retrieving ${type} state:`, err);
+                    errors[type] = err.toString();
+                }
+            };
+
+        const columnState = getStateChunk('column'),
+            sortState = getStateChunk('sort'),
+            expandState = getStateChunk('expand'),
+            filterState = getStateChunk('filter'),
+            miscState = getStateChunk('misc');
 
         return {
             columnState,
             sortState,
             expandState,
             filterState,
-            miscState
+            miscState,
+            errors: isEmpty(errors) ? undefined : errors
         };
     }
 
