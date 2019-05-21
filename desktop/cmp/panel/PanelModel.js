@@ -69,8 +69,8 @@ export class PanelModel {
         side,
         collapsedRenderMode = 'lazy',
         prefName = null,
-        showSplitter = true,
-        showSplitterCollapseButton = true,
+        showSplitter = resizable || collapsible,
+        showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true
     }) {
         throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelModel");

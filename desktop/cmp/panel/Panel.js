@@ -102,7 +102,8 @@ export class Panel extends Component {
             collapsible = false,
             collapsed = false,
             collapsedRenderMode = null,
-            vertical = false
+            vertical = false,
+            showSplitter = false
         } = model || {};
 
         if (collapsed) {
@@ -112,7 +113,6 @@ export class Panel extends Component {
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
-
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -139,9 +139,13 @@ export class Panel extends Component {
         }
 
         // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const processedPanelHeader = (title || icon || headerItems) ?
+            panelHeader({title, icon, headerItems, model}) :
+            null;
+
         const item = vbox({
             items: [
-                panelHeader({title, icon, headerItems, model}),
+                processedPanelHeader,
                 coreContents,
                 maskElem
             ],
@@ -151,7 +155,7 @@ export class Panel extends Component {
         });
 
         // 5) Return, wrapped in resizable and its affordances if needed.
-        return resizable || collapsible ?
+        return resizable || collapsible || showSplitter ?
             resizeContainer({item, model}) :
             item;
     }

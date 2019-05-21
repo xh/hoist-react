@@ -36,6 +36,8 @@
   editable. #880
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
+* A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
+* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header. 
 
 ## v22.0.0 - 2019-04-29
 
