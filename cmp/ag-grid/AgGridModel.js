@@ -1,7 +1,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {has, isNil, isEmpty, cloneDeep, isArray, last, isEqual} from 'lodash';
-import {warnIf} from '../../utils/js';
+import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has} from 'lodash';
+import {warnIf, throwIf} from '../../utils/js';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -269,12 +269,10 @@ export class AgGridModel {
         this.agApi.forEachNode(node => {
             if (!node.group) return;
 
-            const {field, key} = node;
-            if (!has(expandState, field)) {
-                expandState[field] = {};
+            if (node.expanded) {
+                const path = this.getGroupNodePath(node);
+                set(expandState, path, true);
             }
-
-            expandState[field][key] = node.expanded;
         });
 
         return expandState;
@@ -290,11 +288,9 @@ export class AgGridModel {
         agApi.forEachNode(node => {
             if (!node.group) return;
 
-            const {field, key} = node,
-                expanded = expandState[field] ? !!expandState[field][key] : false;
-
-            if (node.expanded !== expanded) {
-                node.expanded = expanded;
+            const path = this.getGroupNodePath(node);
+            if (has(expandState, path)) {
+                node.expanded = true;
                 wasChanged = true;
             }
         });
@@ -351,6 +347,23 @@ export class AgGridModel {
 
     getPivotColumnId(column) {
         return [...column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
+    }
+
+    getGroupNodePath(node) {
+        throwIf(!node.group, 'Cannot get the path for a non-group node!');
+
+        const buildNodePath = (node, path = []) => {
+            // ag-Grid will always have a root node with the id ROOT_NODE_ID in the node parent hierarchy
+            // so we need to make sure we don't consider it as part of the path here
+            if (node.parent && node.parent.id !== 'ROOT_NODE_ID') {
+                buildNodePath(node.parent, path);
+            }
+
+            path.push(node.key);
+            return path;
+        };
+
+        return buildNodePath(node);
     }
 }
 
