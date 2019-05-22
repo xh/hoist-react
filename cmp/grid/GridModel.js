@@ -78,6 +78,8 @@ export class GridModel {
     enableExport;
     /** @member {object} */
     exportOptions;
+    /** @member {string|boolean} */
+    rootSummary;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -112,6 +114,8 @@ export class GridModel {
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {string|boolean} [c.rootSummary] - location for a root summary / total row.
+     *      Valid values are true/'top', 'bottom', or false (default false)
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -142,6 +146,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
+        rootSummary = false,
         selModel,
         stateModel = null,
         emptyText = null,
@@ -163,6 +168,7 @@ export class GridModel {
         ...rest
     }) {
         this.treeMode = treeMode;
+        this.rootSummary = (rootSummary === true) ? 'top' : rootSummary;
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);

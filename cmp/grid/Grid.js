@@ -17,7 +17,9 @@ import {
     last,
     isEqual,
     map,
-    isFinite
+    isFinite,
+    pull,
+    startCase
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
@@ -332,17 +334,34 @@ export class Grid extends Component {
         return items;
     }
 
+    setRootSummaryRow(record) {
+        const {agGridModel, rootSummary} = this.model;
+        if (!rootSummary) return;
+
+        agGridModel.agApi[`setPinned${startCase(rootSummary)}RowData`]([record]);
+    }
+
     //------------------------
     // Reactions to model
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
+            {agGridModel, store, rootSummary} = model;
 
         return {
             track: () => [agGridModel.agApi, store.records, store.lastUpdated],
             run: ([api, records]) => {
                 if (!api) return;
+
+                // Set flag if data is hierarchical.
+                const isHierarchical = store.allRootCount != store.allCount;
+                if (isHierarchical && rootSummary && store.allRootCount === 1) {
+                    // Extract the root summary record from the list
+                    const rootSummaryRecord = store.allRootRecords[0];
+                    pull(records, rootSummaryRecord);
+
+                    this.setRootSummaryRow(rootSummaryRecord);
+                }
 
                 runInAction(() => {
                     withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
@@ -362,9 +381,6 @@ export class Grid extends Component {
                         api.refreshCells({force: true});
                     }, this);
 
-                    // Set flag if data is hierarchical.
-                    this._isHierarchical = store.allRootCount != store.allCount;
-                  
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
@@ -509,7 +525,12 @@ export class Grid extends Component {
     // Event Handlers on AG Grid.
     //------------------------
     getDataPath = (data) => {
-        return data.xhTreePath;
+        if (this.model.rootSummary) {
+            // Exclude the root node from the path
+            return data.xhTreePath.slice(1);
+        } else {
+            return data.xhTreePath;
+        }
     };
 
     onSelectionChanged = (ev) => {
