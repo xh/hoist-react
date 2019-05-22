@@ -222,6 +222,7 @@ export class Grid extends Component {
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             }
@@ -419,7 +420,7 @@ export class Grid extends Component {
             run: ([api]) => {
                 if (!api) return;
 
-                this.doWithPreservedState({expansion: true, filters: true}, () => {
+                this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
                 api.sizeColumnsToFit();
@@ -473,7 +474,7 @@ export class Grid extends Component {
                     };
                 });
 
-                this.doWithPreservedState({expansion: true}, () => {
+                this.doWithPreservedState({expansion: false}, () => {
                     colApi.setColumnState(colState);
                 });
                 api.sizeColumnsToFit();
