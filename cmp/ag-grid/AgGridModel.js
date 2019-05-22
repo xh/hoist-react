@@ -35,7 +35,7 @@ export class AgGridModel {
     @observable.ref agColumnApi = null;
 
     /**
-     * @param {Object} c - AgGridModel configuration.
+     * @param {Object} [c] - AgGridModel configuration.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
@@ -67,13 +67,12 @@ export class AgGridModel {
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
      *
-     * @param {Object} opts - options for which state is retrieved.
-     * @param {boolean} opts.excludeColumnState - true to exclude the column state
-     * @param {boolean} opts.excludeSort - true to exclude the sort state
-     * @param {boolean} opts.excludeExpand - true to exclude the expand state
-     * @param {boolean} opts.excludeFilter - true to exclude the filter state
-     * @param {boolean} opts.excludeMiscState - true to exclude any additional miscellaneous state
-     *
+     * @param {Object} [opts] - options for which state is retrieved.
+     * @param {boolean} [opts.excludeColumnState] - true to exclude the column state
+     * @param {boolean} [opts.excludeSort] - true to exclude the sort state
+     * @param {boolean} [opts.excludeExpand] - true to exclude the expand state
+     * @param {boolean} [opts.excludeFilter] - true to exclude the filter state
+     * @param {boolean} [opts.excludeMiscState] - true to exclude any additional miscellaneous state
      * @returns {AgGridState} - the current state of the grid
      */
     getState(opts = {}) {
