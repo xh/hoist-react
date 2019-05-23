@@ -24,27 +24,24 @@ import {wait} from '@xh/hoist/promise';
  *      If the loop completes before this interval has passed, no waits will be inserted.
  * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 1ms should be
  *      sufficient to allow an event loop cycle to run.
- * @param {string?} [opts.tag] - if provided, loop will debug log basic run info on completion.
+ * @param {string?} [opts.debug] - if provided, loop will debug log basic run info on completion.
  * @returns {Promise<void>}
  */
-export async function forEachAsync(array, fn, {waitAfter = 50, waitFor = 1, tag = null} = {}) {
-    let initialStart = Date.now(),
-        batchStart = Date.now(),
+export async function forEachAsync(array, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
+    const initialStart = Date.now();
+    let nextBreak = initialStart + waitAfter,
         waitCount = 0;
 
     for (let idx = 0; idx < array.length; idx++) {
-        if ((Date.now() - batchStart) > waitAfter) {
+        if (Date.now() > nextBreak) {
             await wait(waitFor);
-            batchStart = Date.now();
+            nextBreak = Date.now() + waitAfter;
             waitCount++;
         }
-
         fn(array[idx], idx, array);
     }
 
-    if (tag) {
-        console.debug(`${tag} | completed | ${waitCount} waits | ${Date.now() - initialStart}ms`);
-    }
+    writeDebug(debug, waitCount, initialStart);
 }
 
 /**
@@ -56,25 +53,30 @@ export async function forEachAsync(array, fn, {waitAfter = 50, waitFor = 1, tag 
  *      If the loop completes before this interval has passed, no waits will be inserted.
  * @param {number} [opts.waitFor] - wait time in ms for each pause. The default of 1ms should be
  *      sufficient to allow an event loop cycle to run.
- * @param {string?} [opts.tag] - if provided, loop will debug log basic run info on completion.
+ * @param {string?} [opts.debug] - if provided, loop will debug log basic run info on completion.
  * @returns {Promise<void>}
  */
-export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, tag = null} = {}) {
-    let initialStart = Date.now(),
-        batchStart = Date.now(),
+export async function whileAsync(conditionFn, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
+    const initialStart = Date.now();
+    let nextBreak = initialStart + waitAfter,
         waitCount = 0;
 
     while (conditionFn()) {
-        if ((Date.now() - batchStart) > waitAfter) {
+        if (Date.now() > nextBreak) {
             await wait(waitFor);
-            batchStart = Date.now();
+            nextBreak = Date.now() + waitAfter;
             waitCount++;
         }
-
         fn();
     }
+    writeDebug(debug, waitCount, initialStart);
+}
 
-    if (tag) {
-        console.debug(`${tag} | completed | ${waitCount} waits | ${Date.now() - initialStart}ms`);
+//------------------------------
+// Implementation
+//-------------------------------
+function writeDebug(debug, waitCount, initialStart) {
+    if (debug) {
+        console.debug(`${debug} | completed | ${waitCount} waits | ${Date.now() - initialStart}ms`);
     }
 }
