@@ -17,7 +17,9 @@
 * `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
   performed.
 * `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the 
-  number, but after the sign (`+`, `-`).   
+  number, but after the sign (`+`, `-`). 
+* New utility methods `forEachAsync()` and `whileAsync()` have been added to allow non-blocking
+execution of time-consuming loops.    
 
 ### 💥 Breaking Changes
 
