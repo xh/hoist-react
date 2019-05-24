@@ -52,6 +52,9 @@ export class Record {
         return this.store.getChildrenById(this.id, false);
     }
 
+    get isSummary() {
+        return this.id === 'summary';
+    }
 
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all

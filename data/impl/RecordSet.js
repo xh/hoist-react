@@ -25,11 +25,14 @@ export class RecordSet {
     _list;          // Lazy list of all records.
     _rootList;      // Lazy list of root records.
 
-    constructor(store, records = new Map()) {
+    summaryRecord;
+
+    constructor(store, records = new Map(), summaryRecord) {
         this.store = store;
         this.records = records;
         this.count = records.size;
         this.rootCount = this.countRoots(records);
+        this.summaryRecord = summaryRecord;
     }
 
     //----------------------------------------------------------
@@ -82,7 +85,7 @@ export class RecordSet {
 
     loadData(rawData) {
         const {records} = this,
-            newRecords = this.createRecords(rawData);
+            {records: newRecords, summaryRecord} = this.createRecords(rawData);
 
         if (records.size) {
             const newKeys = newRecords.keys();
@@ -96,11 +99,11 @@ export class RecordSet {
             }
         }
 
-        return new RecordSet(this.store, newRecords);
+        return new RecordSet(this.store, newRecords, summaryRecord);
     }
 
     updateData(rawData) {
-        const newRecords = this.createRecords(rawData),
+        const {records: newRecords, summaryRecord} = this.createRecords(rawData),
             existingRecords = new Map(this.records);
 
         newRecords.forEach((newRecord, id) => {
@@ -110,7 +113,7 @@ export class RecordSet {
             }
         });
 
-        return new RecordSet(this.store, existingRecords);
+        return new RecordSet(this.store, existingRecords, summaryRecord);
     }
 
     removeRecords(ids) {
@@ -123,8 +126,15 @@ export class RecordSet {
     // Implementation
     //------------------------
     createRecords(rawData) {
-        const ret = new Map();
-        rawData.forEach(raw => this.createRecord(raw, ret, null));
+        const ret = {
+            records: new Map()
+        };
+
+        rawData.forEach(raw => {
+            const rec = this.createRecord(raw, ret.records, null);
+            if (rec.isSummary) ret.summaryRecord = rec;
+        });
+
         return ret;
     }
 
@@ -137,15 +147,25 @@ export class RecordSet {
             throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
+        // Remove the summary root node from the hierarchy
+        if (parent && parent.isSummary) parent = null;
+
         const rec = new Record({data, raw, parent, store});
         throwIf(
             records.has(rec.id),
             `ID ${rec.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
         );
-        records.set(rec.id, rec);
+
+        // Summary record does not get added to the records map
+        if (!rec.isSummary) {
+            records.set(rec.id, rec);
+        }
+
         if (data.children) {
             data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
         }
+
+        return rec;
     }
 
     computeChildrenMap(records) {

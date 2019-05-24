@@ -17,9 +17,7 @@ import {
     last,
     isEqual,
     map,
-    isFinite,
-    pull,
-    startCase
+    isFinite
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
@@ -334,34 +332,17 @@ export class Grid extends Component {
         return items;
     }
 
-    setRootSummaryRow(record) {
-        const {agGridModel, rootSummary} = this.model;
-        if (!rootSummary) return;
-
-        agGridModel.agApi[`setPinned${startCase(rootSummary)}RowData`]([record]);
-    }
-
     //------------------------
     // Reactions to model
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store, rootSummary} = model;
+            {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
-
-                // Set flag if data is hierarchical.
-                const isHierarchical = store.allRootCount != store.allCount;
-                if (isHierarchical && rootSummary && store.allRootCount === 1) {
-                    // Extract the root summary record from the list
-                    const rootSummaryRecord = store.allRootRecords[0];
-                    pull(records, rootSummaryRecord);
-
-                    this.setRootSummaryRow(rootSummaryRecord);
-                }
 
                 runInAction(() => {
                     withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
@@ -370,6 +351,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
+                        this.updatePinnedRowData(records);
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -380,6 +362,9 @@ export class Grid extends Component {
                         // object). See https://github.com/exhi/hoist-react/issues/550.
                         api.refreshCells({force: true});
                     }, this);
+
+                    // Set flag if data is hierarchical.
+                    this._isHierarchical = store.allRootCount != store.allCount;
 
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
@@ -521,16 +506,35 @@ export class Grid extends Component {
         }
     }
 
+    // Checks whether there should be a summary pinned row in the grid
+    haveSummaryRow() {
+        const {store, showSummary} = this.model;
+        return showSummary && store.summaryRecord;
+    }
+
+    // Updates pinned top and bottom row data based on the model/store configuration and presence of
+    // a summary record in the store
+    updatePinnedRowData() {
+        const {model} = this,
+            {store, showSummary} = model,
+            {agApi} = model.agGridModel,
+            pinnedTopRecords = [],
+            pinnedBottomRecords = [];
+
+        if (this.haveSummaryRow()) {
+            const arr = showSummary === 'top' ? pinnedTopRecords : pinnedBottomRecords;
+            arr.push(store.summaryRecord);
+        }
+
+        agApi.setPinnedTopRowData(pinnedTopRecords);
+        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+    }
+
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
     getDataPath = (data) => {
-        if (this.model.rootSummary) {
-            // Exclude the root node from the path
-            return data.xhTreePath.slice(1);
-        } else {
-            return data.xhTreePath;
-        }
+        return data.xhTreePath;
     };
 
     onSelectionChanged = (ev) => {

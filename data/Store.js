@@ -171,6 +171,10 @@ export class Store {
         return this._all.rootList;
     }
 
+    get summaryRecord() {
+        return this._all.summaryRecord;
+    }
+
     /** Filter function to be applied. */
     get filter() {return this._filter}
     setFilter(filterFn) {
