@@ -111,10 +111,7 @@ export class FileChooser extends Component {
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) => {
-
-                        this.model.onDrop(accepted, rejected, enableMulti);
-                    }
+                    onDrop: (accepted, rejected) => this.model.onDrop(accepted, rejected, enableMulti)
                 }),
                 grid({
                     model: gridModel,
