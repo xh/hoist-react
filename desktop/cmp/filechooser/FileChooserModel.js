@@ -11,6 +11,7 @@ import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {find, last, without, uniqBy} from 'lodash';
 import filesize from 'filesize';
+import {isEmpty} from 'codemirror/src/util/misc';
 
 
 @HoistModel
@@ -95,10 +96,8 @@ export class FileChooserModel {
     // Implementation
     //------------------------
     onDrop(accepted, rejected, enableMulti) {
-        console.log('accepted: ', accepted)
-        console.log('rejected: ', rejected)
-        if (accepted.length) {
-            if (!enableMulti && this.files.length !== 0) this.removeAllFiles();
+        if (!isEmpty(accepted)) {
+            if (!enableMulti && !isEmpty(this.files)) this.removeAllFiles();
             this.addFiles(accepted);
         }
         this.setLastRejectedCount(rejected.length);
