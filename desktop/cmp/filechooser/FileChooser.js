@@ -43,6 +43,11 @@ export class FileChooser extends Component {
         /** True (default) to allow selection of more than one file. */
         enableMulti: PT.bool,
 
+        /**
+         * True to allow user to drop multiple files into the dropzone at once.  True also allows for selection of
+         * multiple files within the OS pop-up window.  Defaults to enableMulti. */
+        enableDropMulti: PT.bool,
+
         /** Maximum accepted file size in bytes. */
         maxSize: PT.number,
 
@@ -69,16 +74,18 @@ export class FileChooser extends Component {
     render() {
         const {model, props, fileNoun} = this,
             {gridModel, lastRejectedCount} = model,
+            {accept, maxSize, minSize} = props,
             enableMulti = withDefault(props.enableMulti, true),
+            enableDropMulti = withDefault(props.enableDropMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
 
         return hbox({
             items: [
                 dropzone({
-                    accept: props.accept,
-                    maxSize: props.maxSize,
-                    minSize: props.minSize,
-                    multiple: enableMulti,
+                    accept: accept,
+                    maxSize: maxSize,
+                    minSize: minSize,
+                    multiple: enableDropMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetText = isDragActive ?
@@ -105,15 +112,6 @@ export class FileChooser extends Component {
                         });
                     },
                     onDrop: (accepted, rejected) => {
-
-
-                        // YANAS PLAYGROUND
-                        console.log('these were accepted: ', accepted);
-                        console.log('these were rejected: ', rejected);
-                        console.log('this is the model: ', this.model);
-                        console.log('this is the status of multi: ', enableMulti);
-                        console.log('modesl files: ', this.model.files);
-                        console.log('models files length: ', this.model.files.length);
 
                         this.model.onDrop(accepted, rejected, enableMulti);
                     }
