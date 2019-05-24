@@ -115,11 +115,7 @@ export class FileChooser extends Component {
                         console.log('modesl files: ', this.model.files);
                         console.log('models files length: ', this.model.files.length);
 
-                        if (enableMulti || !enableMulti && this.model.files.length === 0) {
-                            this.model.onDrop(accepted, rejected);
-                        }
-
-
+                        this.model.onDrop(accepted, rejected, enableMulti);
                     }
                 }),
                 grid({

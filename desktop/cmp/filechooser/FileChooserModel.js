@@ -94,9 +94,16 @@ export class FileChooserModel {
     //------------------------
     // Implementation
     //------------------------
-    onDrop(accepted, rejected) {
+    onDrop(accepted, rejected, enableMulti) {
+        const {files} = this;
+
         if (accepted.length) {
-            this.addFiles(accepted);
+            if (enableMulti || !enableMulti && files.length === 0) {
+                this.addFiles(accepted);
+            } else if (!enableMulti && files.length > 0) {
+                this.removeAllFiles();
+                this.addFiles(accepted);
+            }
         }
         this.setLastRejectedCount(rejected.length);
     }
