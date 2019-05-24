@@ -102,13 +102,6 @@ export class FileChooserModel {
     //------------------------
     onDrop(accepted, rejected, enableMulti) {
         if (!isEmpty(accepted)) {
-            // if (!enableMulti && !isEmpty(this.files)) this.removeAllFiles();
-            // if (!enableMulti && accepted.length > 1) {
-            //     this.addFiles((accepted[0]));
-            // } else {
-            //     this.addFiles(accepted);
-            // }
-
             if (!enableMulti) {
                 this.setSingleFile(accepted[0]);
             } else {
