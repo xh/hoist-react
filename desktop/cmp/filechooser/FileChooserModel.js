@@ -98,7 +98,6 @@ export class FileChooserModel {
         if (accepted.length) {
             this.addFiles(accepted);
         }
-
         this.setLastRejectedCount(rejected.length);
     }
 

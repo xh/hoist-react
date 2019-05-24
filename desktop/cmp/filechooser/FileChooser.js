@@ -104,7 +104,23 @@ export class FileChooser extends Component {
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) => this.model.onDrop(accepted, rejected)
+                    onDrop: (accepted, rejected) => {
+
+
+                        // YANAS PLAYGROUND
+                        console.log('these were accepted: ', accepted);
+                        console.log('these were rejected: ', rejected);
+                        console.log('this is the model: ', this.model);
+                        console.log('this is the status of multi: ', enableMulti);
+                        console.log('modesl files: ', this.model.files);
+                        console.log('models files length: ', this.model.files.length);
+
+                        if (enableMulti || !enableMulti && this.model.files.length === 0) {
+                            this.model.onDrop(accepted, rejected);
+                        }
+
+
+                    }
                 }),
                 grid({
                     model: gridModel,
