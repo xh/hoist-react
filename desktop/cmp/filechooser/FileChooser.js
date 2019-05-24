@@ -46,7 +46,7 @@ export class FileChooser extends Component {
         /**
          * True to allow user to drop multiple files into the dropzone at once.  True also allows for selection of
          * multiple files within the OS pop-up window.  Defaults to enableMulti. */
-        enableDropMulti: PT.bool,
+        enableAddMulti: PT.bool,
 
         /** Maximum accepted file size in bytes. */
         maxSize: PT.number,
@@ -76,16 +76,16 @@ export class FileChooser extends Component {
             {gridModel, lastRejectedCount} = model,
             {accept, maxSize, minSize} = props,
             enableMulti = withDefault(props.enableMulti, true),
-            enableDropMulti = withDefault(props.enableDropMulti, enableMulti),
+            enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
 
         return hbox({
             items: [
                 dropzone({
-                    accept: accept,
-                    maxSize: maxSize,
-                    minSize: minSize,
-                    multiple: enableDropMulti,
+                    accept,
+                    maxSize,
+                    minSize,
+                    multiple: enableAddMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetText = isDragActive ?

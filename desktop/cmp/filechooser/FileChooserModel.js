@@ -95,6 +95,8 @@ export class FileChooserModel {
     // Implementation
     //------------------------
     onDrop(accepted, rejected, enableMulti) {
+        console.log('accepted: ', accepted)
+        console.log('rejected: ', rejected)
         if (accepted.length) {
             if (!enableMulti && this.files.length !== 0) this.removeAllFiles();
             this.addFiles(accepted);
