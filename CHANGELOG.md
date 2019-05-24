@@ -40,6 +40,10 @@ execution of time-consuming loops.
   once again able to apply remote config values.
 * A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
 * A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header. 
+* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a 
+  single upload.  Previous behavior (the ability to add multiple files to dropzone) is
+  now controlled by `enableAddMulti`
+
 
 ## v22.0.0 - 2019-04-29
 
