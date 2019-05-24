@@ -40,7 +40,7 @@ export class FileChooser extends Component {
         /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
         accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
 
-        /** True (default) to allow selection of more than one file. */
+        /** True (default) to allow multiple files in a single upload. */
         enableMulti: PT.bool,
 
         /**
