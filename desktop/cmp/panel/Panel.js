@@ -9,6 +9,7 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -51,6 +52,14 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
 
+        /**
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a ReactElement specifying a LoadingIndicator instance - or -
+         *   + a PendingTaskModel for a default LoadingIndicator w/spinner bound to that model - or -
+         *   + true for a simple default LoadingIndicator.
+         */
+        loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
 
@@ -80,6 +89,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
             children,
             model: modelProp,
             ...rest
@@ -138,7 +148,17 @@ export class Panel extends Component {
             maskElem = maskProp;
         }
 
-        // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        // 4) LoadingIndicator is as provided, or a default simple loadingIndicator.
+        let loadingIndicatorElem = null;
+        if (loadingIndicatorProp === true) {
+            loadingIndicatorElem = loadingIndicator({isDisplayed: true});
+        } else if (loadingIndicatorProp instanceof PendingTaskModel) {
+            loadingIndicatorElem = loadingIndicator({model: loadingIndicatorProp, spinner: true});
+        } else if (isReactElement(loadingIndicatorProp)) {
+            loadingIndicatorElem = loadingIndicatorProp;
+        }
+
+        // 5) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
             panelHeader({title, icon, headerItems, model}) :
             null;
@@ -147,7 +167,8 @@ export class Panel extends Component {
             items: [
                 processedPanelHeader,
                 coreContents,
-                maskElem
+                maskElem,
+                loadingIndicatorElem
             ],
             ...rest,
             ...layoutProps,
