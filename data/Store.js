@@ -171,6 +171,9 @@ export class Store {
         return this._all.rootList;
     }
 
+    /**
+     * @returns {Record|null} - the summary record, or null if no summary records exists in this store
+     */
     get summaryRecord() {
         return this._all.summaryRecord;
     }
