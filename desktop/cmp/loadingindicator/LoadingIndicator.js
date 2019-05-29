@@ -21,8 +21,7 @@ import './LoadingIndicator.scss';
 /**
  * LoadingIndicator with optional spinner and text - can be explicitly shown or bound to a PendingTaskModel.
  *
- * Note that the Panel component's `mask` prop provides a common and convenient method for masking
- * sections of the UI without needing to manually create or manage this component.
+ * Note that the Panel component's `loadingIndicator` prop provides a common and convenient way to put a loadingIndicator on a panel without needing to manually create or manage this component.
  */
 @HoistComponent
 export class LoadingIndicator extends Component {
