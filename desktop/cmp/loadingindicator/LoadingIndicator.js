@@ -7,10 +7,9 @@
 
 import PT from 'prop-types';
 import {Component} from 'react';
-import {truncate} from 'lodash';
 
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {box, filler, hbox} from '@xh/hoist/cmp/layout';
+import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {spinner} from '@xh/hoist/kit/blueprint';
@@ -60,7 +59,8 @@ export class LoadingIndicator extends Component {
     };
 
     baseClassName = 'xh-loading-indicator';
-    
+    spinnerSize = 25;
+
     render() {
         const {props} = this,
             {model} = props,
@@ -71,13 +71,14 @@ export class LoadingIndicator extends Component {
         const message = withDefault(props.message, model && model.message),
             showSpinner = withDefault(props.spinner, false),
             onClick = props.onClick,
-            hasMessageCls = message ? 'hasMessage' : null,
+            hasMessageCls = message ? 'has-message' : null,
+            hasSpinnerCls = showSpinner ? 'has-spinner' : null,
             corner = withDefault(props.corner, 'br');
 
         if (!showSpinner && !message) return null;
 
         return div({
-            className: this.getClassName(corner, hasMessageCls),
+            className: this.getClassName(corner, hasSpinnerCls, hasMessageCls),
             onClick,
             item: hbox(this.hBoxItems(corner))
         });
@@ -87,28 +88,27 @@ export class LoadingIndicator extends Component {
         const {props} = this,
             {model} = props,
             message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false),
-            messageMaxLength = withDefault(props.messageMaxLength, 40);
+            spinnerEl = spinner({size: this.spinnerSize}),
+            showSpinner = withDefault(props.spinner, false);
 
-        if (!message) return [spinner()];
+        if (!message) return [spinnerEl];
 
-        const msgBox = box({
-                className: 'xh-loading-indicator__message',
-                item: truncate(message, {length: messageMaxLength, separator: ' '})
-            }),
-            spinnerEl = showSpinner ? spinner() : null;
+        const msgBox = div({
+            className: `${this.baseClassName}__message`,
+            item: message
+        });
 
         switch (corner) {
             case 'tl':
             case 'bl': return [
-                spinnerEl,
+                showSpinner ? spinnerEl : null,
                 msgBox
             ];
             case 'tr':
             case 'br': return [
                 msgBox,
                 filler(),
-                spinnerEl
+                showSpinner ? spinnerEl : null
             ];
         }
     }
