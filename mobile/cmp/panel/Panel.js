@@ -10,6 +10,7 @@ import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -43,6 +44,14 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
 
+        /**
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a ReactElement specifying a LoadingIndicator instance - or -
+         *   + a PendingTaskModel for a default LoadingIndicator w/spinner bound to that model - or -
+         *   + true for a simple default LoadingIndicator.
+         */
+        loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
         /** Allow the panel to scroll vertically */
         scrollable: PT.bool,
 
@@ -63,6 +72,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
             scrollable,
             children,
             ...rest
@@ -92,14 +102,25 @@ export class Panel extends Component {
             maskElem = maskProp;
         }
 
-        // 3) Prepare combined layout with header above core.
+        // 3) LoadingIndicator is as provided, or a default simple loadingIndicator.
+        let loadingIndicatorElem = null;
+        if (loadingIndicatorProp === true) {
+            loadingIndicatorElem = loadingIndicator({isDisplayed: true});
+        } else if (loadingIndicatorProp instanceof PendingTaskModel) {
+            loadingIndicatorElem = loadingIndicator({model: loadingIndicatorProp, spinner: true});
+        } else if (isReactElement(loadingIndicatorProp)) {
+            loadingIndicatorElem = loadingIndicatorProp;
+        }
+
+        // 4) Prepare combined layout with header above core.
         return vbox({
             items: [
                 panelHeader({title, icon, headerItems}),
                 parseToolbar(tbar),
                 vframe(castArray(children)),
                 parseToolbar(bbar),
-                maskElem
+                maskElem,
+                loadingIndicatorElem
             ],
             ...rest,
             ...layoutProps,
