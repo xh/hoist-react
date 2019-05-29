@@ -37,21 +37,24 @@ export class AgGridModel {
     /**
      * @param {Object} [c] - AgGridModel configuration.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
-     * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.rowBorders] - true to render row borders.
+     * @param {boolean} [c.cellBorders] - true to render Excel-style cell borders.
+     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      */
     constructor({
         compact = false,
         showHover = false,
         rowBorders = false,
+        cellBorders = false,
         stripeRows = true,
         showCellFocus = false
     } = {}) {
         this.compact = compact;
         this.showHover = showHover;
         this.rowBorders = rowBorders;
+        this.cellBorders = cellBorders;
         this.stripeRows = stripeRows;
         this.showCellFocus = showCellFocus;
 

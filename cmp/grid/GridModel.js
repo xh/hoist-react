@@ -121,9 +121,10 @@ export class GridModel {
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
-     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.cellBorders] - true to render Excel-style cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -151,6 +152,7 @@ export class GridModel {
         compact = false,
         showHover = false,
         rowBorders = false,
+        cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
 
@@ -184,6 +186,7 @@ export class GridModel {
             showHover,
             rowBorders,
             stripeRows,
+            cellBorders,
             showCellFocus
         });
 
@@ -268,14 +271,17 @@ export class GridModel {
     get compact() { return this.agGridModel.compact}
     setCompact(compact) { this.agGridModel.setCompact(compact)}
 
+    get showHover() { return this.agGridModel.showHover }
+    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+
     get rowBorders() { return this.agGridModel.rowBorders }
     setRowBorders(rowBorders) { this.agGridModel.setRowBorders(rowBorders) }
 
     get stripeRows() { return this.agGridModel.stripeRows }
     setStripeRows(stripeRows) { this.agGridModel.setStripeRows(stripeRows) }
 
-    get showHover() { return this.agGridModel.showHover }
-    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+    get cellBorders() { return this.agGridModel.cellBorders }
+    setCellBorders(cellBorders) { this.agGridModel.setCellBorders(cellBorders) }
 
     get showCellFocus() { return this.agGridModel.showCellFocus }
     setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
