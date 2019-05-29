@@ -25,6 +25,8 @@ export class AgGridModel {
     /** @member {boolean} */
     @bindable stripeRows;
     /** @member {boolean} */
+    @bindable cellBorders;
+    /** @member {boolean} */
     @bindable showHover;
     /** @member {boolean} */
     @bindable showCellFocus;
