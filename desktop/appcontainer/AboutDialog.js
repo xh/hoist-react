@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -27,6 +28,10 @@ import './AboutDialog.scss';
 export class AboutDialog extends Component {
 
     static modelClass = AboutDialogModel;
+
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(AboutDialogModel), PT.object]).isRequired
+    };
 
     render() {
         const {model} = this;
