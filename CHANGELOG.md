@@ -1,15 +1,10 @@
 # Changelog
 
-## Upcoming Release - under development
+
+## v23.0.0 - 2019-05-30 
 
 ### 🎁 New Features
 * `GridModel` now accepts a config of `cellBorders`, similar to `rowBorders`
-
-
-## v23.0.0 - 2019-05-24 
-
-### 🎁 New Features
-
 * `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
   `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
