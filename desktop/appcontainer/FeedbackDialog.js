@@ -13,6 +13,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
+import PT from 'prop-types';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
@@ -24,6 +25,10 @@ import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogMod
 export class FeedbackDialog extends Component {
 
     static modelClass = FeedbackDialogModel;
+
+    static propTypes = {
+        model: PT.instanceOf(FeedbackDialogModel).isRequired
+    };
 
     render() {
         const {model} = this;
