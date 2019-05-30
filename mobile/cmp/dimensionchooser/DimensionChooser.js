@@ -34,7 +34,11 @@ export class DimensionChooser extends Component {
         buttonWidth: PT.number,
 
         /** Width in pixels of the popover menu itself. */
-        dialogWidth: PT.number
+        dialogWidth: PT.number,
+
+        /** Primary component model instance. */
+        // see desktop DimensionChooser concerns
+        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired
     };
 
     baseClassName = 'xh-dim-chooser';
