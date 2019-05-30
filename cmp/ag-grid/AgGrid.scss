@@ -114,11 +114,27 @@
     line-height: var(--xh-grid-line-height-px);
   }
 
+  // Cell borders
+  &--cell-borders {
+    .ag-cell {
+      border-right-color: var(--xh-grid-border-color) !important;
+    }
+    .ag-row {
+      border-color: var(--xh-grid-border-color);
+    }
+  }
+
+  &--no-cell-borders {
+    .ag-cell {
+      border-color: transparent;
+    }
+  }
+
   // Cell focus
   &--no-cell-focus {
     .ag-cell-focus {
       outline: 0 !important;
-      border-color: transparent !important;
+      border-color: transparent;
     }
   }
 
