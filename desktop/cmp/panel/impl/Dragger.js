@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import './Dragger.scss';
@@ -19,6 +20,11 @@ import {PanelModel} from '../PanelModel';
 export class Dragger extends Component {
 
     static modelClass = PanelModel;
+
+    // but if this is an implementation class... do we really need below?
+    static propTypes = {
+        model: PT.instanceOf(PanelModel).isRequired
+    };
 
     resizeState = null;
     startSize = null;
