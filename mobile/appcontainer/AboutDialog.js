@@ -12,6 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from '@xh/hoist/core/appcontainer/AboutDialogModel';
 
 import './AboutDialog.scss';
+import PT from 'prop-types';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
@@ -24,6 +25,10 @@ import './AboutDialog.scss';
 export class AboutDialog extends Component {
 
     static modelClass = AboutDialogModel;
+
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(AboutDialogModel), PT.object]).isRequired
+    };
 
     render() {
         const {model} = this;
