@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
@@ -36,6 +37,10 @@ export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
 
+    static propTypes = {
+        model: PT.instanceOf(ColChooserModel).isRequired
+    };
+
     render() {
         const {model} = this,
             {isOpen, gridModel, pinnedColumns, unpinnedColumns} = model;
@@ -49,7 +54,7 @@ export class ColChooser extends Component {
                     style: {maxHeight: 16},
                     modifier: 'quiet',
                     omit: !gridModel.stateModel,
-                    onClick: () => model.restoreDefaults()
+                    onClick: model.restoreDefaults
                 })
             ],
             icon: Icon.gridPanel(),
