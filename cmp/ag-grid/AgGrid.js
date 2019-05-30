@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {omit} from 'lodash';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -34,7 +35,11 @@ import './AgGrid.scss';
 @LayoutSupport
 export class AgGrid extends Component {
     baseClassName = 'xh-ag-grid';
-    modelClass = AgGridModel;
+    static modelClass = AgGridModel;
+
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(AgGridModel), PT.object]).isRequired
+    };
 
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
