@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/kit/blueprint';
@@ -24,6 +25,10 @@ import './Dock.scss';
 export class DockView extends Component {
 
     static modelClass = DockViewModel;
+
+    static propTypes = {
+        model: PT.instanceOf(DockViewModel).isRequired
+    };
 
     baseClassName = 'xh-dock-view';
 
