@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {omit} from 'lodash';
 import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
