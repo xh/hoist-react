@@ -139,7 +139,7 @@ export function getRelativeTimestamp(timestamp, options) {
         getSuffix,
         getResult
     )(opts);
-};
+}
 
 //----------------------------
 // Implementation
