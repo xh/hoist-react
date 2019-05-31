@@ -409,9 +409,13 @@ export class GridModel {
         this.applyColumnStateChanges(colStateChanges);
     }
 
-
-    // We debounce this method because ag-Grid will fire the selection changed event for each node
-    // that is being selected
+    /**
+     * Sync selectionModel state from the grid's current selection.
+     *
+     * We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+     * selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+     * This avoids a storm of events looping through the reaction when selecting in bulk.
+     */
     @debounced(0)
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel} = this;
