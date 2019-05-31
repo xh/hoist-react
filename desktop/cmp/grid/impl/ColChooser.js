@@ -34,7 +34,7 @@ export class ColChooser extends Component {
     static modelClass = ColChooserModel;
 
     static propTypes = {
-        model: PT.instanceOf(ColChooserModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(ColChooserModel), PT.object]).isRequired
     };
 
     render() {

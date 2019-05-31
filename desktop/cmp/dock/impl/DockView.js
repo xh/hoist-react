@@ -27,7 +27,7 @@ export class DockView extends Component {
     static modelClass = DockViewModel;
 
     static propTypes = {
-        model: PT.instanceOf(DockViewModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(DockViewModel), PT.object]).isRequired
     };
 
     baseClassName = 'xh-dock-view';

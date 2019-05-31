@@ -38,8 +38,6 @@ export class DimensionChooser extends Component {
         buttonWidth: PT.number,
 
         /** Primary component model instance. */
-        // yana: should we really allow devs to pass in a `PT.object`? Many functionality on
-        // this component depends on props on the DimensionChooserModel...
         model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */

@@ -6,13 +6,13 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from '@xh/hoist/core/appcontainer/AboutDialogModel';
 
 import './AboutDialog.scss';
-import PT from 'prop-types';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application

@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -13,7 +14,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
-import PT from 'prop-types';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
@@ -27,7 +27,7 @@ export class FeedbackDialog extends Component {
     static modelClass = FeedbackDialogModel;
 
     static propTypes = {
-        model: PT.instanceOf(FeedbackDialogModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(FeedbackDialogModel), PT.object]).isRequired
     };
 
     render() {

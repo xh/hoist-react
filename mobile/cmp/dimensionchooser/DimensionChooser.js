@@ -37,7 +37,6 @@ export class DimensionChooser extends Component {
         dialogWidth: PT.number,
 
         /** Primary component model instance. */
-        // see desktop DimensionChooser concerns
         model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired
     };
 

@@ -23,7 +23,7 @@ export class Dragger extends Component {
 
     // but if this is an implementation class... do we really need below?
     static propTypes = {
-        model: PT.instanceOf(PanelModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]).isRequired
     };
 
     resizeState = null;

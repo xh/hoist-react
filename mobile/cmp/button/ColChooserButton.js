@@ -23,7 +23,7 @@ export class ColChooserButton extends Component {
 
     static propTypes = {
         /** GridModel of the grid for which this button should show a chooser. */
-        model: PT.instanceOf(GridModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired
     };
 
     static modelClass = GridModel;

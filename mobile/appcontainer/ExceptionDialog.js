@@ -29,7 +29,7 @@ export class ExceptionDialog extends Component {
     static modelClass = ExceptionDialogModel;
 
     static propTypes = {
-        model: PT.instanceOf(ExceptionDialogModel).isRequired
+        model: PT.oneOfType([PT.instanceOf(ExceptionDialogModel), PT.object]).isRequired
     };
 
     render() {
