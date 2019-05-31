@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
-import {buttonGroup} from '@xh/hoist/mobile/cmp/button';
+import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {castArray} from 'lodash';
@@ -36,7 +36,7 @@ export class ButtonGroupInput extends HoistInput {
             buttons = castArray(children).map(button => {
                 const {value} = button.props;
 
-                throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
+                throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
                 throwIf(!value, 'ButtonGroupInput child must declare a value');
 
                 return React.cloneElement(button, {

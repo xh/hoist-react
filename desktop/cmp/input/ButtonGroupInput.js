@@ -8,7 +8,7 @@
 import React from 'react';
 import {castArray} from 'lodash';
 import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
-import {ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import PT from 'prop-types';
@@ -40,7 +40,7 @@ export class ButtonGroupInput extends HoistInput {
         const buttons = castArray(children).map(button => {
             const {value} = button.props;
 
-            throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
+            throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
             const active = (this.renderValue === value);

@@ -112,14 +112,13 @@ export const [Panel, panel] = hoistComponent(function Panel(props) {
         ],
         ...rest,
         ...layoutProps,
-        className: this.getClassName()
+        className
     });
 
     // 5) Return, wrapped in resizable and its affordances if needed.
     return resizable || collapsible || showSplitter ?
         resizeContainer({item, model}) :
         item;
-    }
 });
 
 Panel.propTypes = {
