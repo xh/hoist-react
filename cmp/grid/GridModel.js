@@ -13,7 +13,7 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -94,7 +94,7 @@ export class GridModel {
     /** @member {string[]} */
     @observable groupBy = null;
     /** @member {string|boolean} */
-    @observable showSummary = false;
+    @bindable showSummary = false;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -169,7 +169,7 @@ export class GridModel {
         ...rest
     }) {
         this.treeMode = treeMode;
-        this.setShowSummary(showSummary);
+        this.showSummary = showSummary;
 
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
@@ -387,14 +387,6 @@ export class GridModel {
         this.columns = columns;
         this.columnState = this.getLeafColumns()
             .map(({colId, width, hidden}) => ({colId, width, hidden}));
-    }
-
-    /**
-     * @param {string|boolean} showSummary - location for a summary row
-     */
-    @action
-    setShowSummary(showSummary) {
-        this.showSummary = (showSummary === true) ? 'top' : showSummary;
     }
 
     showColChooser() {

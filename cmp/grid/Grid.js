@@ -351,7 +351,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
-                        this.updatePinnedRowData(records);
+                        this.updatePinnedRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -506,12 +506,6 @@ export class Grid extends Component {
         }
     }
 
-    // Checks whether there should be a summary pinned row in the grid
-    haveSummaryRow() {
-        const {store, showSummary} = this.model;
-        return showSummary && store.summaryRecord;
-    }
-
     // Updates pinned top and bottom row data based on the model/store configuration and presence of
     // a summary record in the store
     updatePinnedRowData() {
@@ -521,8 +515,8 @@ export class Grid extends Component {
             pinnedTopRecords = [],
             pinnedBottomRecords = [];
 
-        if (this.haveSummaryRow()) {
-            const arr = showSummary === 'top' ? pinnedTopRecords : pinnedBottomRecords;
+        if (showSummary && store.summaryRecord) {
+            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
             arr.push(store.summaryRecord);
         }
 
