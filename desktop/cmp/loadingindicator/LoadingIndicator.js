@@ -51,7 +51,7 @@ export class LoadingIndicator extends Component {
         /** Click handler. **/
         onClick: PT.func,
 
-        /** True to display with an animated spinner. */
+        /** True (default) to display with an animated spinner. */
         spinner: PT.bool
 
     };
@@ -105,7 +105,7 @@ export class LoadingIndicator extends Component {
     }
 
     get showSpinner() {
-        return withDefault(this.props.spinner, false);
+        return withDefault(this.props.spinner, true);
     }
 
     get corner() {

@@ -45,20 +45,20 @@ export class Panel extends Component {
         icon: PT.element,
 
         /**
-         * Mask to render on this panel. Set to:
-         *   + a ReactElement specifying a Mask instance - or -
-         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
-         *   + true for a simple default mask.
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a PendingTaskModel for an indicator w/spinner bound to that model (most common), or
+         *   + a ReactElement specifying a LoadingIndicator instance, or
+         *   + true for a default LoadingIndicator.
          */
-        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+        loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
 
         /**
-         * Message to render unobtrusively on panel corner. Set to:
-         *   + a ReactElement specifying a LoadingIndicator instance - or -
-         *   + a PendingTaskModel for a default LoadingIndicator w/spinner bound to that model - or -
-         *   + true for a simple default LoadingIndicator.
+         * Mask to render on this panel. Set to:
+         *   + a PendingTaskModel for a mask w/spinner bound to that model (most common), or
+         *   + a ReactElement specifying a Mask instance - or -
+         *   + true for a default mask.
          */
-        loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+        mask: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
 
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
@@ -153,7 +153,7 @@ export class Panel extends Component {
         if (loadingIndicatorProp === true) {
             loadingIndicatorElem = loadingIndicator({isDisplayed: true});
         } else if (loadingIndicatorProp instanceof PendingTaskModel) {
-            loadingIndicatorElem = loadingIndicator({model: loadingIndicatorProp, spinner: true});
+            loadingIndicatorElem = loadingIndicator({model: loadingIndicatorProp});
         } else if (isReactElement(loadingIndicatorProp)) {
             loadingIndicatorElem = loadingIndicatorProp;
         }
