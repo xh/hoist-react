@@ -7,21 +7,24 @@
 
 import PT from 'prop-types';
 import {Component} from 'react';
-
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {filler, hbox} from '@xh/hoist/cmp/layout';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-
+import {truncate} from 'lodash';
 
 import './LoadingIndicator.scss';
 
+
 /**
- * LoadingIndicator with optional spinner and text - can be explicitly shown or bound to a PendingTaskModel.
+ * A minimal / unobtrusive LoadingIndicator displaying an optional spinner and/or message to signal
+ * that a longer-running operation is in progress, without using a modal Mask. Can be explicitly
+ * shown or bound to a PendingTaskModel.
  *
- * Note that the Panel component's `loadingIndicator` prop provides a common and convenient way to put a loadingIndicator on a panel without needing to manually create or manage this component.
+ * Note that the Panel component's `loadingIndicator` prop provides a common and convenient way to
+ * add an indicator to a Panel without needing to manually create or manage this component.
  */
 @HoistComponent
 export class LoadingIndicator extends Component {
@@ -30,65 +33,56 @@ export class LoadingIndicator extends Component {
 
     static propTypes = {
 
-        /** True to display mask. */
+        /** Position of the indicator relative to its containing component. */
+        corner: PT.oneOf(['tl', 'tr', 'bl', 'br']),
+
+        /** True to display the indicator. */
         isDisplayed: PT.bool,
 
-        /** Optional text to be displayed. */
+        /**  Max characters allowed in message, after which it will be elided. Default 30. */
+        maxMessageLength: PT.number,
+
+        /** Optional text to be displayed - can also be sourced from bound PendingTaskModel. */
         message: PT.string,
 
-        /** The max number of characters allowed in the message,
-         *  after which the message is truncated with an ellipsis
-         *  Default: 30
-         */
-        messageMaxLength: PT.number,
+        /** Optional model for reactively showing the indicator while tasks are pending. */
+        model: PT.instanceOf(PendingTaskModel),
 
-        /** True to display a spinning image.  Default false. */
-        spinner: PT.bool,
-
-        /** Click handler **/
+        /** Click handler. **/
         onClick: PT.func,
 
-        /** The panel corner in which the indicator will appear
-         *  tl
-         *  tr
-         *  bl
-         *  br (default)
-         */
-        corner: PT.string
+        /** True to display with an animated spinner. */
+        spinner: PT.bool
+
     };
 
     baseClassName = 'xh-loading-indicator';
-    spinnerSize = 25;
+    spinnerSize = 20;
 
     render() {
-        const {props} = this,
-            {model} = props,
+        const {props, model, message, showSpinner, corner} = this,
             isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
 
-        if (!isDisplayed) return null;
+        if (!isDisplayed || (!showSpinner && !message)) return null;
 
-        const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false),
-            onClick = props.onClick,
-            hasMessageCls = message ? 'has-message' : null,
-            hasSpinnerCls = showSpinner ? 'has-spinner' : null,
-            corner = withDefault(props.corner, 'br');
-
-        if (!showSpinner && !message) return null;
+        const hasMessageCls = message ? 'xh-loading-indicator--has-message' : null,
+            hasSpinnerCls = showSpinner ? 'xh-loading-indicator--has-spinner' : null,
+            cornerCls = `xh-loading-indicator--${corner}`;
 
         return div({
-            className: this.getClassName(corner, hasSpinnerCls, hasMessageCls),
-            onClick,
-            item: hbox(this.hBoxItems(corner))
+            className: this.getClassName(hasMessageCls, hasSpinnerCls, cornerCls),
+            onClick: props.onClick,
+            item: hbox(this.renderInnerItems())
         });
     }
 
-    hBoxItems(corner) {
-        const {props} = this,
-            {model} = props,
-            message = withDefault(props.message, model && model.message),
-            spinnerEl = spinner({size: this.spinnerSize}),
-            showSpinner = withDefault(props.spinner, false);
+
+    //------------------------
+    // Implementation
+    //------------------------
+    renderInnerItems() {
+        const {corner, message, showSpinner} = this,
+            spinnerEl = spinner({size: this.spinnerSize});
 
         if (!message) return [spinnerEl];
 
@@ -99,19 +93,24 @@ export class LoadingIndicator extends Component {
 
         switch (corner) {
             case 'tl':
-            case 'bl': return [
-                showSpinner ? spinnerEl : null,
-                msgBox
-            ];
+            case 'bl': return [showSpinner ? spinnerEl : null, msgBox];
             case 'tr':
-            case 'br': return [
-                msgBox,
-                filler(),
-                showSpinner ? spinnerEl : null
-            ];
+            case 'br': return [msgBox, showSpinner ? spinnerEl : null];
         }
     }
+
+    get message() {
+        const {maxMessageLength, message, model} = this.props;
+        return truncate(withDefault(message, model && model.message), {length: withDefault(maxMessageLength, 30)});
+    }
+
+    get showSpinner() {
+        return withDefault(this.props.spinner, false);
+    }
+
+    get corner() {
+        return withDefault(this.props.corner, 'br');
+    }
+
 }
 export const loadingIndicator = elemFactory(LoadingIndicator);
-
-
