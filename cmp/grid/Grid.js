@@ -364,7 +364,7 @@ export class Grid extends Component {
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
-                  
+
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
@@ -512,8 +512,8 @@ export class Grid extends Component {
         return data.xhTreePath;
     };
 
-    onSelectionChanged = (ev) => {
-        this.model.selModel.select(ev.api.getSelectedRows());
+    onSelectionChanged = () => {
+        this.model.noteAgSelectionStateChanged();
     };
 
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.
