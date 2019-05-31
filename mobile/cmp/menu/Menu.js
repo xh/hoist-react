@@ -28,7 +28,10 @@ export class Menu extends Component {
         width: PT.number,
 
         /** How to interpret the provided xPos when showing. */
-        align: PT.oneOf(['left', 'right'])
+        align: PT.oneOf(['left', 'right']),
+
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object])
     };
 
     render() {
