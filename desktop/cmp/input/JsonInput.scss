@@ -26,6 +26,7 @@
 
     .CodeMirror-scroll {
       flex: 1;
+      box-sizing: content-box !important;
     }
   }
 }

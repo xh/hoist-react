@@ -11,7 +11,6 @@ import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {select} from '@xh/hoist/desktop/cmp/input';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {identity} from 'lodash';
@@ -41,7 +40,7 @@ function renderContents(model) {
         {store} = gridModel;
 
     return panel({
-        tbar: toolbar(
+        tbar: [
             box(<b>Configuration Comparison</b>),
             filler(),
             box('Compare with:'),
@@ -60,7 +59,7 @@ function renderContents(model) {
                 disabled: !model.remoteHost,
                 onClick: () => model.loadAsync()
             })
-        ),
+        ],
         item: panel({
             mask: mask({
                 isDisplayed: !model.remoteHost || !store.count,
@@ -74,12 +73,12 @@ function renderContents(model) {
                 }
             })
         }),
-        bbar: toolbar(
+        bbar: [
             filler(),
             button({
                 text: 'Close',
                 onClick: () => model.close()
             })
-        )
+        ]
     });
 }

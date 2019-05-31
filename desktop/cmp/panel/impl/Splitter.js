@@ -11,23 +11,23 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {PanelModel} from '../PanelModel';
-import './Collapser.scss';
+import './Splitter.scss';
 
 /**
  * @private
  */
-export const [Collapser, collapser] = hoistComponent(props => {
+export const [Splitter, splitter] = hoistComponent(props => {
     const model = useProvidedModel(PanelModel, props),
-        {vertical, showSplitterCollapseButton} = model;
+        {vertical, showSplitterCollapseButton, collapsible} = model;
 
     const cmp = vertical ? hbox : vbox,
         cfg = {
-            className: `xh-resizable-collapser ${vertical ? 'vertical' : 'horizontal'}`,
+            className: `xh-resizable-splitter ${vertical ? 'vertical' : 'horizontal'}`,
             item: button({
                 className: 'xh-resizable-collapser-btn',
                 icon: Icon[getChevron(model)](),
                 onClick: () => model.toggleCollapsed(),
-                omit: !showSplitterCollapseButton
+                omit: !showSplitterCollapseButton || !collapsible
             })
         };
 

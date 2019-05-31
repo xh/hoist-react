@@ -10,7 +10,6 @@ import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -74,7 +73,7 @@ export const [LoginPanel, loginPanel] = hoistComponent(props => {
                     item: loginMessage
                 }) : null
             ],
-            bbar: toolbar(
+            bbar: [
                 filler(),
                 button({
                     text: 'Login',
@@ -83,7 +82,7 @@ export const [LoginPanel, loginPanel] = hoistComponent(props => {
                     disabled: !model.isValid,
                     onClick: () => model.submit()
                 })
-            )
+            ]
         })
     });
 });

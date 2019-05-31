@@ -8,7 +8,6 @@ import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
@@ -21,7 +20,7 @@ export const [EhCachePanel] = hoistComponent(() => {
 
     return panel({
         mask: model.loadModel,
-        tbar: toolbar(
+        tbar: [
             button({
                 icon: Icon.sync(),
                 text: 'Clear All',
@@ -31,7 +30,7 @@ export const [EhCachePanel] = hoistComponent(() => {
             storeCountLabel({gridModel, unit: 'cache'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
-        ),
+        ],
         item: grid({model: gridModel})
     });
 });

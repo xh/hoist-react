@@ -10,6 +10,8 @@ import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 
+import './ButtonGroup.scss';
+
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */

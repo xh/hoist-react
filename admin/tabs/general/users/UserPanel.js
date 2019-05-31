@@ -8,7 +8,7 @@ import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -20,7 +20,7 @@ export const [UserPanel] = hoistComponent(() => {
         {gridModel} = model;
     return panel({
         mask: model.loadModel,
-        tbar: toolbar(
+        tbar: [
             switchInput({
                 model,
                 bind: 'activeOnly',
@@ -36,7 +36,7 @@ export const [UserPanel] = hoistComponent(() => {
             storeCountLabel({gridModel, unit: 'user'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
-        ),
+        ],
         item: grid({model: gridModel})
     });
 });

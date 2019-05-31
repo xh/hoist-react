@@ -40,8 +40,13 @@ export class FileChooser extends Component {
         /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
         accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
 
-        /** True (default) to allow selection of more than one file. */
+        /** True (default) to allow multiple files in a single upload. */
         enableMulti: PT.bool,
+
+        /**
+         * True to allow user to drop multiple files into the dropzone at once.  True also allows for selection of
+         * multiple files within the OS pop-up window.  Defaults to enableMulti. */
+        enableAddMulti: PT.bool,
 
         /** Maximum accepted file size in bytes. */
         maxSize: PT.number,
@@ -69,16 +74,18 @@ export class FileChooser extends Component {
     render() {
         const {model, props, fileNoun} = this,
             {gridModel, lastRejectedCount} = model,
+            {accept, maxSize, minSize} = props,
             enableMulti = withDefault(props.enableMulti, true),
+            enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
         
         return hbox({
             items: [
                 dropzone({
-                    accept: props.accept,
-                    maxSize: props.maxSize,
-                    minSize: props.minSize,
-                    multiple: enableMulti,
+                    accept,
+                    maxSize,
+                    minSize,
+                    multiple: enableAddMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetText = isDragActive ?
@@ -104,7 +111,7 @@ export class FileChooser extends Component {
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) => this.model.onDrop(accepted, rejected)
+                    onDrop: (accepted, rejected) => this.model.onDrop(accepted, rejected, enableMulti)
                 }),
                 grid({
                     model: gridModel,

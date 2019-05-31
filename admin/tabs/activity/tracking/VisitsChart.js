@@ -7,7 +7,6 @@
 import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
@@ -30,7 +29,7 @@ export const [VisitsChart, visitsChart] = hoistComponent(() => {
 });
 
 function renderToolbar(model) {
-    return toolbar(
+    return [
         renderDateInput({model, bind: 'startDate'}),
         Icon.angleRight(),
         renderDateInput({model, bind: 'endDate'}),
@@ -41,7 +40,7 @@ function renderToolbar(model) {
             width: 120
         }),
         refreshButton({model})
-    );
+    ];
 }
 
 function renderDateInput(args) {

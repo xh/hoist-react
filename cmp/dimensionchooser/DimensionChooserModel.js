@@ -54,7 +54,7 @@ export class DimensionChooserModel {
      * @param {string} [c.historyPreference] - preference key used to persist the user's most
      *      recently selected groupings for easy re-selection.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
-     *      history (maintained automatically by the control oon a FIFO basis).
+     *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
      */
     constructor({
@@ -87,6 +87,7 @@ export class DimensionChooserModel {
         this.setActiveMode('history');
     }
 
+    @action
     showEditor() {
         this.pendingValue = this.value;
         this.setShowAddSelect(false);

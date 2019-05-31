@@ -96,6 +96,11 @@ export class Store {
         this.lastUpdated = Date.now();
     }
 
+    /** Remove all records from the store. */
+    clear() {
+        this.loadData([]);
+    }
+
     /**
      * Remove a record (and all its children, if any) from the store.
      * @param {(string[]|number[])} ids - IDs of the records to be removed.

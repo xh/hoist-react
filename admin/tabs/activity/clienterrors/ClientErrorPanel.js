@@ -9,7 +9,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
@@ -33,7 +33,7 @@ export const [ClientErrorPanel] = hoistComponent(() => {
 });
 
 function renderToolbar(model) {
-    return toolbar(
+    return [
         renderDateInput({model, bind: 'startDate'}),
         Icon.angleRight(),
         renderDateInput({model, bind: 'endDate'}),
@@ -58,7 +58,7 @@ function renderToolbar(model) {
         filler(),
         storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
         exportButton({gridModel: model.gridModel})
-    );
+    ];
 }
 
 function renderDateInput(args) {

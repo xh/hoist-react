@@ -10,7 +10,7 @@ import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getClassName} from '@xh/hoist/utils/react';
 
 import {dragger} from './Dragger';
-import {collapser} from './Collapser';
+import {splitter} from './Splitter';
 import {PanelModel} from '../PanelModel';
 
 /**
@@ -21,12 +21,12 @@ import {PanelModel} from '../PanelModel';
 export const [ResizeContainer, resizeContainer] = hoistComponent(props => {
     let model = useProvidedModel(PanelModel, props),
         className = getClassName('xh-resizable', props),
-        {collapsible, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+        {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
         items = [renderChild(model, Children.only(props.children))];
 
-    if (collapsible && showSplitter) {
-        const collapserCmp = collapser({model});
-        items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
+    if (showSplitter) {
+        const splitterCmp = splitter({model});
+        items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
     }
 
     if (!collapsed && resizable) {

@@ -6,6 +6,7 @@
  */
 import {HoistAppModel, managed} from '@xh/hoist/core';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import {ActivityTab} from './tabs/activity/ActivityTab';
 import {GeneralTab} from './tabs/general/GeneralTab';
@@ -87,11 +88,11 @@ export class AppModel {
 
     createTabs() {
         return [
-            {id: 'general', content: GeneralTab},
-            {id: 'activity', content: ActivityTab},
-            {id: 'logging', content: LoggingTab},
-            {id: 'monitor', content: MonitorTab},
-            {id: 'preferences', content: PreferencesTab}
+            {id: 'general', icon: Icon.info(), content: GeneralTab},
+            {id: 'activity', icon: Icon.chartBar(), content: ActivityTab},
+            {id: 'logging', icon: Icon.fileText(), content: LoggingTab},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: MonitorTab},
+            {id: 'preferences', icon: Icon.bookmark(), content: PreferencesTab}
         ];
     }
 }

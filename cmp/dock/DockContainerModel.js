@@ -26,17 +26,17 @@ export class DockContainerModel {
     direction;
 
     /**
-     * @param {Object} c - DockContainerModel configuration.
-     * @param {Object[]} c.views - DockViewModel configs to be displayed.
+     * @param {Object} [c] - DockContainerModel configuration.
+     * @param {Object[]} [c.views] - DockViewModel configs to be displayed.
      * @param {string} [c.direction] - direction in which docked views build up as they are added to
      *      the container. Valid values are 'ltr', 'rtl' - the default of 'rtl' causes the first
      *      view to be docked to the bottom right of the container with each subsequent view docked
      *      to the left of view before it.
      */
     constructor({
-        views,
+        views = [],
         direction = 'rtl'
-    }) {
+    } = {}) {
         views = views.filter(v => !v.omit);
 
         ensureUniqueBy(views, 'id');
