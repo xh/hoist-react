@@ -77,7 +77,6 @@ export class StoreSelectionModel {
             return this.store.getById(id, true);
         });
 
-        // Avoid trigger selection reactions unnecessarily by making sure the selected ids have actually changed
         if (isEqual(ids, this.ids)) {
             return;
         }
