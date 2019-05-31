@@ -37,6 +37,7 @@ import {
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 import {managed} from '../../core/mixins';
+import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -406,6 +407,15 @@ export class GridModel {
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
+    }
+
+    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    @debounced(0)
+    noteAgSelectionStateChanged() {
+        const {selModel, agGridModel} = this;
+        selModel.select(agGridModel.getSelectedRowNodeIds());
     }
 
     /**
