@@ -29,6 +29,9 @@ export class Mask extends Component {
 
     static propTypes = {
 
+        /** A model to which a mask is bound to.  Masks for as long as model remains loading. */
+        model: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.object]),
+
         /** True to display mask. */
         isDisplayed: PT.bool,
 
