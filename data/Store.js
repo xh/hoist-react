@@ -8,8 +8,9 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {isString, castArray} from 'lodash';
+import {isString, castArray, isEmpty} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import {Record} from './Record';
 
 /**
  * A managed and observable set of local, in-memory records.
@@ -29,9 +30,13 @@ export class Store {
      */
     @observable lastUpdated;
 
+    /** @member {Record|null} - record containing summary data. */
+    @observable.ref summaryRecord = null;
+
     @observable.ref _all;
     @observable.ref _filtered;
     _filter = null;
+    _treatRootAsSummary = false;
 
     /**
      * @param {Object} c - Store configuration.
@@ -45,13 +50,16 @@ export class Store {
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
      * @param {function} [c.filter] - filter function to be run.
+     * @param {boolean} [c.treatRootAsSummary] - true to treat the root node in hierarchical data as
+     *      the summary record.
      */
     constructor(
         {
             fields,
             idSpec = 'id',
             processRawData = null,
-            filter = null
+            filter = null,
+            treatRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
@@ -59,10 +67,11 @@ export class Store {
         this.idSpec = idSpec;
         this.processRawData = processRawData;
         this.lastUpdated = Date.now();
+        this._treatRootAsSummary = treatRootAsSummary;
     }
 
     /**
-     * Load new data into this store, replacing any/all pre-existing rows.
+     * Load new data into this store, replacing any/all pre-existing records.
      *
      * If raw data objects have a `children` property it will be expected to be an array
      * and its items will be recursively processed into child records.
@@ -74,12 +83,29 @@ export class Store {
      * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
      * that have not changed and do not need to be re-evaluated / re-rendered.
      *
+     * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
+     * created with the treatRootAsSummary flag set to true.
+     *
      * @param {Object[]} rawData
+     * @param {Object} rawSummaryData
      */
     @action
-    loadData(rawData) {
+    loadData(rawData, rawSummaryData) {
+        const {_treatRootAsSummary} = this;
+        throwIf(_treatRootAsSummary && rawSummaryData,
+            'Store is configured to treat the root node as summary data but rawSummaryData was provided to loadData!');
+
+        if (this.haveRootSummary(rawData)) {
+            rawSummaryData = rawData[0];
+            rawData = rawSummaryData.children;
+            delete rawSummaryData.children;
+        }
+
         this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
+
+        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData) : null;
+
         this.lastUpdated = Date.now();
     }
 
@@ -87,12 +113,32 @@ export class Store {
      * Add or update data in store. Existing records not matched by ID to rows in the update
      * dataset will be left in place.
      *
+     * Updated summary data can be provided via `rawSummaryData` or as the root data if the Store was
+     * created with the treatRootAsSummary flag set to true.
+     *
      * @param {Object[]} rawData
+     * @param {Object} rawSummaryData
      */
     @action
-    updateData(rawData) {
+    updateData(rawData, rawSummaryData) {
+        const {_treatRootAsSummary} = this;
+        throwIf(_treatRootAsSummary && rawSummaryData,
+            'Store is configured to treat the root node as summary data but rawSummaryData was provided to updateData!');
+
+        const {summaryRecord} = this;
+        if (this.haveRootSummary(rawData) && summaryRecord && summaryRecord.id === this.buildRecordId(rawData[0])) {
+            rawSummaryData = rawData[0];
+            rawData = rawSummaryData.children;
+            delete rawSummaryData.children;
+        }
+
         this._all = this._all.updateData(rawData);
         this.rebuildFiltered();
+
+        if (rawSummaryData) {
+            this.summaryRecord = this.createRecord(rawSummaryData);
+        }
+
         this.lastUpdated = Date.now();
     }
 
@@ -139,7 +185,7 @@ export class Store {
      * Records in this store, respecting any filter (if applied).
      * @return {Record[]}
      */
-    get records()           {
+    get records() {
         return this._filtered.list;
     }
 
@@ -147,7 +193,7 @@ export class Store {
      * All records in this store, unfiltered.
      * @return {Record[]}
      */
-    get allRecords()        {
+    get allRecords() {
         return this._all.list;
     }
 
@@ -157,7 +203,7 @@ export class Store {
      *
      * @return {Record[]}
      */
-    get rootRecords()           {
+    get rootRecords() {
         return this._filtered.rootList;
     }
 
@@ -167,15 +213,8 @@ export class Store {
      *
      * @return {Record[]}
      */
-    get allRootRecords()        {
+    get allRootRecords() {
         return this._all.rootList;
-    }
-
-    /**
-     * @returns {Record|null} - the summary record, or null if no summary records exists in this store
-     */
-    get summaryRecord() {
-        return this._all.summaryRecord;
     }
 
     /** Filter function to be applied. */
@@ -239,6 +278,37 @@ export class Store {
         return ret ? ret : [];
     }
 
+    /**
+     * Creates a Record from raw data.
+     *
+     * @param {Object} raw - raw data to create the record from
+     * @param {Record} [parent] - parent of this record
+     * @return {Record}
+     */
+    createRecord(raw, parent) {
+        const {processRawData} = this;
+
+        let data = raw;
+        if (processRawData) {
+            data = processRawData(raw);
+            throwIf(!data,
+                'processRawData should return an object. If writing/editing, be sure to return a clone!');
+        }
+
+        return new Record({data, raw, parent, store: this});
+    }
+
+    /**
+     * Builds a Record id given record data that has been processed by processRawData
+     *
+     * @param {Object} data
+     * @returns {*}
+     */
+    buildRecordId(data) {
+        const {idSpec} = this;
+        return isString(idSpec) ? data[idSpec] : idSpec(data);
+    }
+
     //--------------------
     // For Implementations
     //--------------------
@@ -270,5 +340,9 @@ export class Store {
             automatically for all records. See Store.idSpec for more info.`
         );
         return ret;
+    }
+
+    haveRootSummary(rawData) {
+        return this._treatRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children);
     }
 }

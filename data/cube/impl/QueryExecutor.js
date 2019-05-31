@@ -16,7 +16,7 @@ export class QueryExecutor {
     static async getDataAsync(query) {
         const {dimensions, includeRoot, fields, cube, filters} = query,
             cubeRecords = cube.records,
-            rootId = 'summary';
+            rootId = 'root';
 
         const leaves = !isEmpty(filters) ?
             cubeRecords.filter(rec => filters.every(f => f.matches(rec))) :
