@@ -409,6 +409,9 @@ export class GridModel {
         this.applyColumnStateChanges(colStateChanges);
     }
 
+
+    // We debounce this method because ag-Grid will fire the selection changed event for each node
+    // that is being selected
     @debounced(0)
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel} = this;
