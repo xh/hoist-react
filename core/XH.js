@@ -8,11 +8,11 @@
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 
 import {
     ConfigService,
@@ -42,7 +42,6 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@EventSupport
 @ReactiveSupport
 class XHClass {
 
@@ -188,7 +187,6 @@ class XHClass {
     setAppState(appState) {
         if (this.appState != appState) {
             this.appState = appState;
-            this.fireEvent('appStateChanged', {appState});
         }
     }
 
@@ -336,10 +334,12 @@ class XHClass {
      *
      * @param {Object} config - options for toast instance.
      * @param {string} config.message - the message to show in the toast.
-     * @param {element} [config.icon] - icon to be displayed
+     * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
      * @param {string} [config.intent] - The Blueprint intent (desktop only)
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
+     * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.  If null, the Toast
+     *      will appear at the edges of the document (desktop only).
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
@@ -568,8 +568,13 @@ class XHClass {
     get acm() {return this.appContainerModel}
 
     async initServicesInternalAsync(svcs) {
-        const promises = svcs.map(it => it.initAsync()),
-            results = await allSettled(promises),
+        const promises = svcs.map(it => {
+            return withShortDebug(`Initializing ${it.constructor.name}`, () => {
+                return it.initAsync();
+            }, 'XH');
+        });
+        
+        const results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 
         if (errs.length > 0) {

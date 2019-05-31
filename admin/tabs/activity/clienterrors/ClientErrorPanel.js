@@ -10,7 +10,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
@@ -40,7 +40,7 @@ export class ClientErrorPanel extends Component {
 
     renderToolbar() {
         const {model} = this;
-        return toolbar(
+        return [
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({bind: 'endDate'}),
@@ -65,7 +65,7 @@ export class ClientErrorPanel extends Component {
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
             exportButton({gridModel: model.gridModel})
-        );
+        ];
     }
 
     //-----------------------------

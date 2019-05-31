@@ -10,6 +10,8 @@ import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 
+import './ButtonGroup.scss';
+
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */

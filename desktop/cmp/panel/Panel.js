@@ -15,6 +15,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 
 import './Panel.scss';
 
@@ -36,9 +37,6 @@ export class Panel extends Component {
     static modelClass = PanelModel;
 
     static propTypes = {
-        /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
-
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
 
@@ -56,8 +54,17 @@ export class Panel extends Component {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
 
-        /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
+        tbar: PT.oneOfType([PT.element, PT.array]),
+
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
+        bbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -95,7 +102,8 @@ export class Panel extends Component {
             collapsible = false,
             collapsed = false,
             collapsedRenderMode = null,
-            vertical = false
+            vertical = false,
+            showSplitter = false
         } = model || {};
 
         if (collapsed) {
@@ -105,12 +113,16 @@ export class Panel extends Component {
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
+            const parseToolbar = (barSpec) => {
+                return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
+            };
+
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
-                    tbar || null,
+                    parseToolbar(tbar),
                     ...(castArray(children)),
-                    bbar || null
+                    parseToolbar(bbar)
                 ]
             });
         }
@@ -127,9 +139,13 @@ export class Panel extends Component {
         }
 
         // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const processedPanelHeader = (title || icon || headerItems) ?
+            panelHeader({title, icon, headerItems, model}) :
+            null;
+
         const item = vbox({
             items: [
-                panelHeader({title, icon, headerItems, model}),
+                processedPanelHeader,
                 coreContents,
                 maskElem
             ],
@@ -139,7 +155,7 @@ export class Panel extends Component {
         });
 
         // 5) Return, wrapped in resizable and its affordances if needed.
-        return resizable || collapsible ?
+        return resizable || collapsible || showSplitter ?
             resizeContainer({item, model}) :
             item;
     }

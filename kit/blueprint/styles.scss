@@ -100,7 +100,7 @@
       color: var(--xh-popup-title-text-color);
     }
 
-    svg:first-child {
+    > svg:first-child {
       margin-right: var(--xh-pad-px);
     }
   }

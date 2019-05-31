@@ -233,6 +233,9 @@ body {
   --xh-intent-danger: var(--intent-danger, var(--xh-red));
   --xh-intent-success: var(--intent-success, var(--xh-green));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
+
+  // Buttons
+  --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '100')});
 }
 
 
@@ -306,6 +309,9 @@ body.xh-dark {
   --xh-intent-danger: var(--intent-danger, var(--xh-red-muted));
   --xh-intent-success: var(--intent-success, var(--xh-green-muted));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
+
+  // Buttons
+  --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '600')});
 }
 
 

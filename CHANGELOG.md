@@ -1,5 +1,51 @@
 # Changelog
 
+
+## v23.0.0 - 2019-05-30 
+
+### 🎁 New Features
+* `GridModel` now accepts a config of `cellBorders`, similar to `rowBorders`
+* `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
+  `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
+* New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
+  adding debug messages that track the execution of specific blocks of code.
+* `XH.toast()` now supports an optional `containerRef` argument that can be used for anchoring a
+  toast within another component (desktop only). Can be used to display more targeted toasts within
+  the relevant section of an application UI, as opposed to the edge of the screen.
+* `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
+  be unselected by pressing it again - this sets the value of the input as a whole to `null`.
+* Hoist Admins now always see the VersionBar in the footer.
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+  performed.
+* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the 
+  number, but after the sign (`+`, `-`). 
+* New utility methods `forEachAsync()` and `whileAsync()` have been added to allow non-blocking
+execution of time-consuming loops.    
+
+### 💥 Breaking Changes
+
+* The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
+  `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
+  app that require to to be fully reloaded should have this renamed config set to `true`.
+* The options dialog will now automatically trigger an app-wide data _refresh_ via
+  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
+* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict with
+  the overall reactive structure of the hoist-react API. If your app listens to the `appStateChanged`,
+  `prefChange` or `prefsPushed` events you will need to adjust accordingly.
+
+### 🐞 Bug Fixes
+
+* `Select` will now let the user edit existing text in conditions where it is expected to be
+  editable. #880
+* The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
+  once again able to apply remote config values.
+* A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
+* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header. 
+* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a 
+  single upload.  Previous behavior (the ability to add multiple files to dropzone) is
+  now controlled by `enableAddMulti`.
+
+
 ## v22.0.0 - 2019-04-29
 
 ### 🎁 New Features
@@ -51,10 +97,10 @@
   ensuring that e.g. local prefs/grid state are not overwritten across multiple app users on one OS
   profile, or when admin impersonation is active. The service will automatically perform a one-time
   migration of existing local state from the old namespace to the new. #674
-* `elem` no longer skips `null` children in its calls to `React.createElement()`.  These children may
-   play the role of placeholders when using conditional rendering, and skipping them was causing React to 
-   trigger extra re-renders.  This change further simplifies Hoist's element factory and removes an
-   unnecessary divergence with the behavior of JSX.
+* `elem` no longer skips `null` children in its calls to `React.createElement()`. These children may
+  play the role of placeholders when using conditional rendering, and skipping them was causing
+  React to trigger extra re-renders. This change further simplifies Hoist's element factory and
+  removes an unnecessary divergence with the behavior of JSX.
 
 
 ### 🐞 Bug Fixes
@@ -64,6 +110,8 @@
   changes to fields within a form. #1031
 * Prompt for app refresh in (rare) case of mismatch between client and server-side session user.
   (This can happen during impersonation and is defended against in server-side code.) #675
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v21.0.2...v22.0.0)
 
 ## v21.0.2 - 2019-04-05
 
@@ -327,9 +375,10 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1144,9 +1193,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

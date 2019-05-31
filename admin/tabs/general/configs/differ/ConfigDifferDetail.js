@@ -10,7 +10,6 @@ import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -32,7 +31,7 @@ export class ConfigDifferDetail extends Component {
             onClose: () => model.close(),
             item: panel({
                 item: this.renderDiffTable(),
-                bbar: toolbar(
+                bbar: [
                     filler(),
                     button({
                         text: 'Cancel',
@@ -44,7 +43,7 @@ export class ConfigDifferDetail extends Component {
                         intent: 'primary',
                         onClick: () => model.confirmApplyRemote()
                     })
-                )
+                ]
             })
         });
     }

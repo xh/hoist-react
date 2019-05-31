@@ -11,6 +11,7 @@ import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {find, last, without, uniqBy} from 'lodash';
 import filesize from 'filesize';
+import {isEmpty} from 'codemirror/src/util/misc';
 
 
 @HoistModel
@@ -74,6 +75,11 @@ export class FileChooserModel {
         ], 'name');
     }
 
+    @action
+    setSingleFile(file) {
+        this.files = [file];
+    }
+
     /**
      * Remove a single file from the current selection.
      * @param {String} name - name of the file to remove.
@@ -94,11 +100,14 @@ export class FileChooserModel {
     //------------------------
     // Implementation
     //------------------------
-    onDrop(accepted, rejected) {
-        if (accepted.length) {
-            this.addFiles(accepted);
+    onDrop(accepted, rejected, enableMulti) {
+        if (!isEmpty(accepted)) {
+            if (!enableMulti) {
+                this.setSingleFile(accepted[0]);
+            } else {
+                this.addFiles(accepted);
+            }
         }
-
         this.setLastRejectedCount(rejected.length);
     }
 
