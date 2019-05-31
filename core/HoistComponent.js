@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import React from 'react'
+import React from 'react';
 import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
