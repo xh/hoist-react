@@ -37,10 +37,6 @@ export class AgGrid extends Component {
     baseClassName = 'xh-ag-grid';
     static modelClass = AgGridModel;
 
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(AgGridModel), PT.object]).isRequired
-    };
-
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
 
