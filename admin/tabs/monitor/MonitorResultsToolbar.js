@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {hbox, filler} from '@xh/hoist/cmp/layout';
 import {label} from '@xh/hoist/cmp/layout';
@@ -22,6 +23,11 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 export class MonitorResultsToolbar extends Component {
 
     modelClass = MonitorResultsModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(MonitorResultsModel), PT.object]).isRequired
+    };
 
     render() {
         const {passed, warned, failed, forceRunAllMonitors, lastRun} = this.model;
