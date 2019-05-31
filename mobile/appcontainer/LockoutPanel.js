@@ -6,12 +6,13 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {page} from '@xh/hoist/kit/onsen';
 import {div, vspacer} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
 
+import {button} from '@xh/hoist/mobile/cmp/button';
 import './LockoutPanel.scss';
 import {impersonationBar} from './ImpersonationBar';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
@@ -25,7 +26,12 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 export class LockoutPanel extends Component {
 
     static modelClass = AppContainerModel;
-    
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(AppContainerModel), PT.object]).isRequired
+    };
+
     render() {
         return page(
             impersonationBar({model: this.model.impersonationBarModel}),

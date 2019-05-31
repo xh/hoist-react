@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {text} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
@@ -15,7 +16,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
-
 import './LoginPanel.scss';
 
 /**
@@ -28,6 +28,11 @@ import './LoginPanel.scss';
 export class LoginPanel extends Component {
 
     static modelClass = LoginPanelModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(LoginPanelModel), PT.object]).isRequired
+    };
 
     render() {
         const {loginMessage} = XH.appSpec;
