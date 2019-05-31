@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {select} from '@xh/hoist/mobile/cmp/input';
@@ -25,6 +26,10 @@ import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBa
 export class ImpersonationBar extends Component {
 
     static modelClass = ImpersonationBarModel;
+
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(ImpersonationBarModel), PT.object]).isRequired
+    };
 
     render() {
         const {isOpen, targets} = this.model;
