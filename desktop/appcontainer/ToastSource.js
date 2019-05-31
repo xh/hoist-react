@@ -60,7 +60,9 @@ export class ToastSource {
      */
     getToaster(position, containerRef) {
         const toasters = this._toasters,
-            container = containerRef ? containerRef.getDOMNode() : document.body,
+            container = containerRef ?
+                (containerRef.getDOMNode ? containerRef.getDOMNode() : containerRef) :
+                document.body,
             containerId = containerRef ? containerRef.xhId : 'viewport',
             className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`,
             toasterId = containerId + '--' + position;

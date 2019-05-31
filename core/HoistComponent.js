@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
+import React from 'react'
 import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
@@ -19,7 +20,11 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
  * This function always applies the MobX 'observer' behavior to the new component, enabling MobX
  * powered reactivity and auto-re-rendering. See the hooks package for additional Hoist-provided
  * custom hooks that can (and should!) be used within function components to replicate the most
- * essential / relevant capabilities of the class-based HoistComponent decorator below.
+ * essential / relevant capabilities of the class-based HoistComponent decorator
+ *
+ * This function also automatically applies React.forwardRef to the passed render function, if needed,
+ * to create support for references.  If the function input contains two arguments, it is assumed to
+ * support forward references.
  *
  * @param {function} renderFn - function defining a React component.
  * @returns {Object[]} - Array containing the Component and an elemFactory for the Component.
@@ -27,7 +32,8 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
  * @see HoistComponent decorator for a ES6 class-based approach to defining a Component in Hoist.
  */
 export function hoistComponent(renderFn) {
-    const component = observer(renderFn);
+    const hasRef = renderFn.length >= 2,
+        component = observer(hasRef ? React.forwardRef(renderFn) : renderFn);
     return [component, elemFactory(component)];
 }
 

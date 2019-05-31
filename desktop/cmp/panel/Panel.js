@@ -17,6 +17,8 @@ import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import React from 'react'
+
 
 import './Panel.scss';
 
@@ -29,7 +31,7 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-export const [Panel, panel] = hoistComponent(function Panel(props) {
+export const [Panel, panel] = hoistComponent((props, ref) => {
     let model = useProvidedModel(PanelModel, props),
         [flags] = useState({wasDisplayed: true}),
         className = getClassName('xh-panel', props),
@@ -105,6 +107,7 @@ export const [Panel, panel] = hoistComponent(function Panel(props) {
         null;
 
     const item = vbox({
+        ref,
         items: [
             processedPanelHeader,
             coreContents,
