@@ -45,16 +45,6 @@ const SHORT_FORMAT_STRINGS = {
     years: '%d years'
 };
 
-const defaultOptions = {
-    allowFuture: false,
-    short: false, // Defaulted based on device in getRelativeTimestamp method
-    futureSuffix: 'from now',
-    pastSuffix: 'ago',
-    nowString: null,
-    nowEpsilon: 30,
-    emptyResult: ''
-};
-
 /**
  * A RelativeTimestamp component
  *
@@ -117,7 +107,7 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
- * @param {boolean} [options.short] - Use shorter timestamp text
+ * @param {boolean} [options.short] - Use shorter timestamp text, defaulted to true on mobile client
  * @param {string} [options.prefix] - Label preceding timestamp
  * @param {string} [options.futureSuffix] - Appended to future timestamps
  * @param {string} [options.pastSuffix] - Appended to past timestamps
@@ -125,9 +115,17 @@ export const relativeTimestamp = elemFactory(RelativeTimestamp);
  * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
  * @param {string} [options.emptyResult] - Returned when timestamp is undefined
  */
-export const getRelativeTimestamp = (timestamp, options) => {
-    defaultOptions.short = XH.isMobile;
-    const opts = Object.assign({timestamp}, defaultOptions, options);
+export function getRelativeTimestamp(timestamp, options) {
+    const defaultOptions = {
+            allowFuture: false,
+            short: XH.isMobile ? true : false,
+            futureSuffix: 'from now',
+            pastSuffix: 'ago',
+            nowString: null,
+            nowEpsilon: 30,
+            emptyResult: ''
+        },
+        opts = Object.assign({timestamp}, defaultOptions, options);
 
     if (!timestamp) return opts.emptyResult;
 
