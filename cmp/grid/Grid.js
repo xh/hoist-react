@@ -506,8 +506,6 @@ export class Grid extends Component {
         }
     }
 
-    // Updates pinned top and bottom row data based on the model/store configuration and presence of
-    // a summary record in the store
     updatePinnedRowData() {
         const {model} = this,
             {store, showSummary} = model,

@@ -30,13 +30,13 @@ export class Store {
      */
     @observable lastUpdated;
 
-    /** @member {Record|null} - record containing summary data. */
+    /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
 
     @observable.ref _all;
     @observable.ref _filtered;
     _filter = null;
-    _treatRootAsSummary = false;
+    _loadRootAsSummary = false;
 
     /**
      * @param {Object} c - Store configuration.
@@ -50,7 +50,7 @@ export class Store {
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
      * @param {function} [c.filter] - filter function to be run.
-     * @param {boolean} [c.treatRootAsSummary] - true to treat the root node in hierarchical data as
+     * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
     constructor(
@@ -59,7 +59,7 @@ export class Store {
             idSpec = 'id',
             processRawData = null,
             filter = null,
-            treatRootAsSummary = false
+            loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
@@ -67,7 +67,7 @@ export class Store {
         this.idSpec = idSpec;
         this.processRawData = processRawData;
         this.lastUpdated = Date.now();
-        this._treatRootAsSummary = treatRootAsSummary;
+        this._loadRootAsSummary = loadRootAsSummary;
     }
 
     /**
@@ -84,21 +84,21 @@ export class Store {
      * that have not changed and do not need to be re-evaluated / re-rendered.
      *
      * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
-     * created with the treatRootAsSummary flag set to true.
+     * created with the loadRootAsSummary flag set to true.
      *
      * @param {Object[]} rawData
-     * @param {Object} rawSummaryData
+     * @param {Object} [rawSummaryData]
      */
     @action
     loadData(rawData, rawSummaryData) {
-        const {_treatRootAsSummary} = this;
-        throwIf(_treatRootAsSummary && rawSummaryData,
-            'Store is configured to treat the root node as summary data but rawSummaryData was provided to loadData!');
+        throwIf(this._loadRootAsSummary && rawSummaryData,
+            'Cannot provide rawSummaryData to loadData when loadRootAsSummary is true.'
+        );
 
-        if (this.haveRootSummary(rawData)) {
-            rawSummaryData = rawData[0];
-            rawData = rawSummaryData.children;
-            delete rawSummaryData.children;
+        const rootSummary = this.getRootSummary(rawData);
+        if (rootSummary) {
+            rawData = rootSummary.children;
+            rawSummaryData = {...rootSummary, children: null};
         }
 
         this._all = this._all.loadData(rawData);
@@ -114,22 +114,22 @@ export class Store {
      * dataset will be left in place.
      *
      * Updated summary data can be provided via `rawSummaryData` or as the root data if the Store was
-     * created with the treatRootAsSummary flag set to true.
+     * created with the loadRootAsSummary flag set to true.
      *
      * @param {Object[]} rawData
-     * @param {Object} rawSummaryData
+     * @param {Object} [rawSummaryData]
      */
     @action
-    updateData(rawData, rawSummaryData) {
-        const {_treatRootAsSummary} = this;
-        throwIf(_treatRootAsSummary && rawSummaryData,
-            'Store is configured to treat the root node as summary data but rawSummaryData was provided to updateData!');
+    updateData(rawData, rawSummaryData = null) {
+        throwIf(this._loadRootAsSummary && rawSummaryData,
+            'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
+        );
 
-        const {summaryRecord} = this;
-        if (this.haveRootSummary(rawData) && summaryRecord && summaryRecord.id === this.buildRecordId(rawData[0])) {
-            rawSummaryData = rawData[0];
-            rawData = rawSummaryData.children;
-            delete rawSummaryData.children;
+        const oldSummary = this.summaryRecord,
+            newSummary = this.getRootSummary(rawData);
+        if (oldSummary && newSummary && summaryRecord.id === this.buildRecordId(newSummary)) {
+            rawData = newSummary.children;
+            rawSummaryData = {...newSummary, children: null};
         }
 
         this._all = this._all.updateData(rawData);
@@ -309,15 +309,16 @@ export class Store {
         return isString(idSpec) ? data[idSpec] : idSpec(data);
     }
 
+
+    /** Destroy this store, cleaning up any resources used. */
+    destroy() {}
+
     //--------------------
     // For Implementations
     //--------------------
     get defaultFieldClass() {
         return Field;
     }
-
-    /** Destroy this store, cleaning up any resources used. */
-    destroy() {}
 
     //------------------------
     // Private Implementation
@@ -342,7 +343,7 @@ export class Store {
         return ret;
     }
 
-    haveRootSummary(rawData) {
-        return this._treatRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children);
+    getRootSummary(rawData) {
+        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ? rawData[0] : null;
     }
 }

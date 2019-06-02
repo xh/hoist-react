@@ -4,7 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Cube, AggregateCubeRecord, ValueFilter} from '@xh/hoist/data/cube';
+import {
+    Cube,
+    AggregateCubeRecord,
+    ValueFilter
+} from '@xh/hoist/data/cube';
 import {isEmpty, groupBy, clone, map} from 'lodash';
 import {wait} from '@xh/hoist/promise';
 
@@ -16,7 +20,7 @@ export class QueryExecutor {
     static async getDataAsync(query) {
         const {dimensions, includeRoot, fields, cube, filters} = query,
             cubeRecords = cube.records,
-            rootId = 'root';
+            rootId = query.filtersAsString();
 
         const leaves = !isEmpty(filters) ?
             cubeRecords.filter(rec => filters.every(f => f.matches(rec))) :
