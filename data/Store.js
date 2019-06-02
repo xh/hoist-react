@@ -127,7 +127,7 @@ export class Store {
 
         const oldSummary = this.summaryRecord,
             newSummary = this.getRootSummary(rawData);
-        if (oldSummary && newSummary && summaryRecord.id === this.buildRecordId(newSummary)) {
+        if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
             rawData = newSummary.children;
             rawSummaryData = {...newSummary, children: null};
         }
