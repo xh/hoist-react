@@ -43,7 +43,7 @@ export class AgGrid extends Component {
         const layoutProps = this.getLayoutProps(),
             agGridProps = omit(this.getNonLayoutProps(), ['model', 'key']);
 
-        const {compact, rowBorders, stripeRows, showCellFocus, showHover} = this.model,
+        const {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = this.model,
             {darkTheme, isMobile} = XH;
 
         return frame({
@@ -52,6 +52,7 @@ export class AgGrid extends Component {
                 compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
+                cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
                 !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
