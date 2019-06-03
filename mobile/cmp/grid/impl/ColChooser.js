@@ -54,7 +54,7 @@ export class ColChooser extends Component {
                     style: {maxHeight: 16},
                     modifier: 'quiet',
                     omit: !gridModel.stateModel,
-                    onClick: model.restoreDefaults
+                    onClick: () => model.restoreDefaults()
                 })
             ],
             icon: Icon.gridPanel(),
