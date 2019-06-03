@@ -25,7 +25,7 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 export class LockoutPanel extends Component {
 
     static modelClass = AppContainerModel;
-
+    
     render() {
         return page(
             impersonationBar({model: this.model.impersonationBarModel}),

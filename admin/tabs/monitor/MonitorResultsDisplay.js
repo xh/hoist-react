@@ -17,7 +17,7 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 export class MonitorResultsDisplay extends Component {
 
     modelClass = MonitorResultsModel;
-
+    
     render() {
         return hbox({
             className: 'xh-monitor-status-display',

@@ -28,7 +28,7 @@ import './ExceptionDialog.scss';
 export class ExceptionDialog extends Component {
 
     static modelClass = ExceptionDialogModel;
-
+    
     render() {
         const {model} = this,
             {exception, options} = model;

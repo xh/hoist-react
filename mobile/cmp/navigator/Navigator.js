@@ -9,8 +9,8 @@ import {Component} from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
-
 import {NavigatorModel} from './NavigatorModel';
+
 import './Navigator.scss';
 
 /**
