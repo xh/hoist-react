@@ -64,7 +64,13 @@ export class ColChooser extends Component {
                     onDragEnd: this.onDragEnd,
                     item: droppable({
                         droppableId: 'column-list',
-                        item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
+                        item: (dndProps) => {
+                            return this.renderColumnList(unpinnedColumns, {
+                                isDraggable: true,
+                                ref: dndProps.innerRef,
+                                placeholder: dndProps.placeholder
+                            });
+                        }
                     })
                 })
             ],
@@ -102,13 +108,16 @@ export class ColChooser extends Component {
     // Implementation
     //------------------------
     renderColumnList(columns, props = {}) {
-        const {isDraggable, ...rest} = props;
+        const {isDraggable, placeholder, ...rest} = props;
 
         return div({
             className: 'xh-col-chooser-list',
-            items: columns.map((col, idx) => {
-                return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
-            }),
+            items: [
+                ...columns.map((col, idx) => {
+                    return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
+                }),
+                placeholder
+            ],
             ...rest
         });
     }

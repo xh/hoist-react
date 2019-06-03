@@ -31,6 +31,7 @@ export class Toast extends Component {
         return onsenToast({
             isOpen: true,
             className: cls,
+            style: {height: window.innerHeight + 'px'},
             items: [
                 icon,
                 span(message),

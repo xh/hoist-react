@@ -1,9 +1,19 @@
 # Changelog
 
-## Upcoming Release - under development
+
+## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+### 🎁 New Features
+* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for the data it contains.
+    The raw data for this record can be provided to `loadData() and updataData()` either via an explicit argument to 
+    these methods, or as the root node of the raw data provided (see `loadRootAsSummary`).
+* `GridModel` now supports a `showSummary` property which can be used to display its store's summaryRecord as either 
+    a pinned top or bottom row.
+
+## v23.0.0 - 2019-05-30 
 
 ### 🎁 New Features
 
+* `GridModel` now accepts a config of `cellBorders`, similar to `rowBorders`
 * `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
   `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
@@ -14,23 +24,23 @@
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
 * Hoist Admins now always see the VersionBar in the footer.
-* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be
   performed.
-* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the 
-  number, but after the sign (`+`, `-`). 
+* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the number,
+  but after the sign (`+`, `-`).
 * New utility methods `forEachAsync()` and `whileAsync()` have been added to allow non-blocking
-execution of time-consuming loops.    
+  execution of time-consuming loops.
 
 ### 💥 Breaking Changes
 
 * The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
   `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
-  app that require to to be fully reloaded should have this renamed config set to `true`.
+  app that require it to be fully reloaded should have this renamed config set to `true`.
 * The options dialog will now automatically trigger an app-wide data _refresh_ via
-  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
-* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict with
-  the overall reactive structure of the hoist-react API. If your app listens to the `appStateChanged`,
-  `prefChange` or `prefsPushed` events you will need to adjust accordingly.
+  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict
+  with the overall reactive structure of the hoist-react API. If your app listens to the
+  `appStateChanged`, `prefChange` or `prefsPushed` events you will need to adjust accordingly.
 
 ### 🐞 Bug Fixes
 
@@ -39,10 +49,10 @@ execution of time-consuming loops.
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
 * A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
-* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header. 
-* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a 
-  single upload.  Previous behavior (the ability to add multiple files to dropzone) is
-  now controlled by `enableAddMulti`.
+* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header.
+* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a
+  single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
+  by `enableAddMulti`.
 
 
 ## v22.0.0 - 2019-04-29
