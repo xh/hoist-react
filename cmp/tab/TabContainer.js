@@ -34,7 +34,7 @@ export class TabContainer extends Component {
 
     static propTypes = {
         model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired
-    }
+    };
     static modelClass = TabContainerModel;
 
     constructor(props) {
