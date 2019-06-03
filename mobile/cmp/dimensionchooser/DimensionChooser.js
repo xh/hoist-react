@@ -37,7 +37,7 @@ export class DimensionChooser extends Component {
         dialogWidth: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired
+        model: PT.instanceOf(DimensionChooserModel).isRequired
     };
 
     baseClassName = 'xh-dim-chooser';

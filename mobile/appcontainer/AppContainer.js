@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
@@ -52,10 +51,6 @@ installMobileImpls({
 export class AppContainer extends Component {
 
     static modelClass = AppContainerModel;
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(AppContainerModel), PT.object]).isRequired
-    };
 
     @observable.ref caughtException = null;
 
