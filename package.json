@@ -38,7 +38,7 @@
     "onsenui": "~2.10.8",
     "prop-types": "~15.7.2",
     "qs": "~6.7.0",
-    "react-beautiful-dnd": "~10.1.1",
+    "react-beautiful-dnd": "~11.0.3",
     "react-dropzone": "~10.1.4",
     "react-onsenui": "~1.11.2",
     "react-select": "~2.4.2",
