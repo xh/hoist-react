@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
+import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
@@ -38,7 +38,7 @@ export class ColChooser extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, gridModel, pinnedColumns, unpinnedColumns} = model;
+            {isOpen, gridModel, pinnedColumns, visibleColumns, hiddenColumns} = model;
 
         return dialogPanel({
             isOpen,
@@ -54,24 +54,55 @@ export class ColChooser extends Component {
             ],
             icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
-            scrollable: true,
             items: [
-                // 1) Render pinned columns in a static list
-                this.renderColumnList(pinnedColumns),
-
-                // 2) Render orderable columns in draggable is list
                 dragDropContext({
                     onDragEnd: this.onDragEnd,
-                    item: droppable({
-                        droppableId: 'column-list',
-                        item: (dndProps) => {
-                            return this.renderColumnList(unpinnedColumns, {
-                                isDraggable: true,
-                                ref: dndProps.innerRef,
-                                placeholder: dndProps.placeholder
-                            });
-                        }
-                    })
+                    items: [
+                        panel({
+                            icon: Icon.eye(),
+                            title: 'Displayed Columns',
+                            className: 'xh-col-chooser-section',
+                            scrollable: true,
+                            items: [
+                                // 1) Render pinned columns in a static list
+                                this.renderColumnList(pinnedColumns, {
+                                    className: 'pinned-columns'
+                                }),
+
+                                // 2) Render visible columns in draggable list
+                                droppable({
+                                    droppableId: 'visible-columns',
+                                    item: (dndProps) => {
+                                        return this.renderColumnList(visibleColumns, {
+                                            className: 'visible-columns',
+                                            isDraggable: true,
+                                            ref: dndProps.innerRef,
+                                            placeholder: dndProps.placeholder
+                                        });
+                                    }
+                                })
+                            ]
+                        }),
+
+                        // 3) Render hidden columns in draggable list
+                        panel({
+                            icon: Icon.eyeSlash(),
+                            title: 'Available Columns',
+                            className: 'xh-col-chooser-section',
+                            scrollable: true,
+                            item: droppable({
+                                droppableId: 'hidden-columns',
+                                item: (dndProps) => {
+                                    return this.renderColumnList(hiddenColumns, {
+                                        className: 'hidden-columns',
+                                        isDraggable: true,
+                                        ref: dndProps.innerRef,
+                                        placeholder: dndProps.placeholder
+                                    });
+                                }
+                            })
+                        })
+                    ]
                 })
             ],
             bbar: [
@@ -95,12 +126,21 @@ export class ColChooser extends Component {
     };
 
     onDragEnd = (result) => {
-        const {pinnedColumns} = this.model,
+        const {pinnedColumns, visibleColumns} = this.model,
             {draggableId, destination} = result;
 
-        if (!destination) return; // dropped outside the list
+        if (!destination) return; // dropped outside of a droppable list
 
-        const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
+        // Set hidden based on drop destination
+        const {droppableId} = destination,
+            hide = droppableId === 'hidden-columns';
+        this.model.setHidden(draggableId, hide);
+
+        // Set sort idx base on destination list idx.
+        // Overall list idx must account for previous sublist lengths.
+        let toIdx = destination.index;
+        if (destination.droppableId === 'visible-columns') toIdx += pinnedColumns.length;
+        if (destination.droppableId === 'hidden-columns') toIdx += pinnedColumns.length + visibleColumns.length;
         this.model.moveToIndex(draggableId, toIdx);
     };
 
@@ -108,10 +148,10 @@ export class ColChooser extends Component {
     // Implementation
     //------------------------
     renderColumnList(columns, props = {}) {
-        const {isDraggable, placeholder, ...rest} = props;
+        const {isDraggable, placeholder, className = '', ...rest} = props;
 
         return div({
-            className: 'xh-col-chooser-list',
+            className: `xh-col-chooser-list ${className}`,
             items: [
                 ...columns.map((col, idx) => {
                     return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
@@ -173,7 +213,7 @@ export class ColChooser extends Component {
                     icon: getButtonIcon(locked, hidden),
                     disabled: locked,
                     modifier: 'quiet',
-                    onClick: () => this.model.setHidden(colId, !hidden)
+                    onClick: () => this.model.onHideBtnClick(colId, !hidden)
                 })
             ],
             ...rest

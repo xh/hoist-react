@@ -24,12 +24,17 @@ export class ColChooserModel {
 
     @computed
     get pinnedColumns() {
-        return this.columns.filter(it => it.pinned);
+        return this.getPinned(this.columns);
     }
 
     @computed
-    get unpinnedColumns() {
-        return this.columns.filter(it => !it.pinned);
+    get visibleColumns() {
+        return this.getVisible(this.columns);
+    }
+
+    @computed
+    get hiddenColumns() {
+        return this.getHidden(this.columns);
     }
 
     /**
@@ -60,6 +65,15 @@ export class ColChooserModel {
         this.isOpen = false;
     }
 
+    onHideBtnClick(colId, hide) {
+        // When moving between lists, update idx to appear at the end of the destination sublist
+        let toIdx = this.pinnedColumns.length + this.visibleColumns.length;
+        if (hide) toIdx += this.hiddenColumns.length;
+
+        this.moveToIndex(colId, toIdx);
+        this.setHidden(colId, hide);
+    }
+
     setHidden(colId, hidden) {
         const columns = clone(this.columns),
             col = find(columns, {colId});
@@ -74,7 +88,7 @@ export class ColChooserModel {
         const columns = clone(this.columns),
             col = find(columns, {colId});
 
-        if (!col || col.locked || col.exclude) return;
+        if (!col || col.locked) return;
 
         const fromIdx = columns.indexOf(col);
         columns.splice(toIdx, 0, columns.splice(fromIdx, 1)[0]);
@@ -82,10 +96,19 @@ export class ColChooserModel {
     }
 
     commit() {
+        // Ensure excluded columns remain at their original sort idx
+        const excluded = this.columns.filter(it => it.exclude);
+        excluded.forEach(it => {
+            const {colId, originalIdx} = it;
+            this.moveToIndex(colId, originalIdx);
+        });
+
+        // Extract meaningful state changes
         const colChanges = this.columns.map(it => {
             const {colId, hidden} = it;
             return {colId, hidden};
         });
+
         this.gridModel.applyColumnStateChanges(colChanges);
     }
 
@@ -96,11 +119,12 @@ export class ColChooserModel {
         const {gridModel} = this,
             cols = gridModel.getLeafColumns();
 
-        const columns = gridModel.columnState.map(({colId}) => {
+        const columns = gridModel.columnState.map(({colId}, idx) => {
             const col = gridModel.findColumn(cols, colId),
                 visible = gridModel.isColumnVisible(colId);
 
             return {
+                originalIdx: idx,
                 colId: col.colId,
                 text: col.chooserName,
                 hidden: !visible,
@@ -110,6 +134,22 @@ export class ColChooserModel {
             };
         });
 
-        this.setColumns(columns);
+        this.setColumns([
+            ...this.getPinned(columns),
+            ...this.getVisible(columns),
+            ...this.getHidden(columns)
+        ]);
+    }
+
+    getPinned(cols) {
+        return cols.filter(it => it.pinned);
+    }
+
+    getVisible(cols) {
+        return cols.filter(it => !it.pinned && !it.hidden);
+    }
+
+    getHidden(cols) {
+        return cols.filter(it => !it.pinned && it.hidden);
     }
 }

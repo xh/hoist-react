@@ -9,10 +9,32 @@
     }
   }
 
+  .xh-col-chooser-section {
+    flex: 1 1 50% !important;
+
+    .xh-panel-header {
+      padding: var(--xh-pad-half-px) 0;
+      background-color: var(--xh-navbar-bg);
+      color: var(--xh-navbar-title-color);
+
+      .svg-inline--fa {
+        margin: 0;
+        width: 40px;
+      }
+
+      .xh-panel-header-title {
+        font-size: var(--xh-font-size-small-px);
+      }
+    }
+  }
+
   .xh-col-chooser-list {
     display: flex;
     flex-direction: column;
-    flex: none;
+
+    &.pinned-columns {
+      flex: none;
+    }
   }
 
   .xh-col-chooser-row {
