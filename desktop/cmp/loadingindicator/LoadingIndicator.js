@@ -100,8 +100,12 @@ export class LoadingIndicator extends Component {
     }
 
     get message() {
-        const {maxMessageLength, message, model} = this.props;
-        return truncate(withDefault(message, model && model.message), {length: withDefault(maxMessageLength, 30)});
+        const {message, model} = this.props;
+        return truncate(withDefault(message, model && model.message), {length: this.maxMessageLength});
+    }
+
+    get maxMessageLength() {
+        return withDefault(this.props.maxMessageLength, 30);
     }
 
     get showSpinner() {
