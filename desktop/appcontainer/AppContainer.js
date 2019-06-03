@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {observable, runInAction} from '@xh/hoist/mobx';
 import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
@@ -55,10 +54,6 @@ installDesktopImpls({
 export class AppContainer extends Component {
 
     static modelClass = AppContainerModel;
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(AppContainerModel), PT.object]).isRequired
-    };
 
     @observable.ref caughtException = null;
 
