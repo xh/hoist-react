@@ -48,9 +48,6 @@ export class LoadingIndicator extends Component {
         /** Optional model for reactively showing the indicator while tasks are pending. */
         model: PT.instanceOf(PendingTaskModel),
 
-        /** Click handler. **/
-        onClick: PT.func,
-
         /** True (default) to display with an animated spinner. */
         spinner: PT.bool
 
@@ -71,7 +68,6 @@ export class LoadingIndicator extends Component {
 
         return div({
             className: this.getClassName(hasMessageCls, hasSpinnerCls, cornerCls),
-            onClick: props.onClick,
             item: hbox(this.renderInnerItems())
         });
     }

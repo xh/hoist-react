@@ -39,10 +39,7 @@ export class Mask extends Component {
         spinner: PT.bool,
 
         /** True (default) to contain mask within its parent, false to fill the viewport. */
-        inline: PT.bool,
-
-        /** Click handler **/
-        onClick: PT.func
+        inline: PT.bool
     };
 
     baseClassName = 'xh-mask';
@@ -56,8 +53,7 @@ export class Mask extends Component {
 
         const message = withDefault(props.message, model && model.message),
             inline = withDefault(props.inline, true),
-            showSpinner = withDefault(props.spinner, false),
-            onClick = props.onClick;
+            showSpinner = withDefault(props.spinner, false);
 
         return overlay({
             className: this.getClassName(Classes.OVERLAY_SCROLL_CONTAINER),
@@ -68,7 +64,6 @@ export class Mask extends Component {
             enforceFocus: !inline,
             item: vbox({
                 className: 'xh-mask-body',
-                onClick,
                 items: [
                     showSpinner ? spinner() : null,
                     showSpinner ? vspacer(10) : null,
