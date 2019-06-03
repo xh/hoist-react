@@ -138,27 +138,7 @@ export class Panel extends Component {
         }
         if (!collapsed) this.wasDisplayed = true;
 
-        // 3) Mask is as provided, or a default simple mask.
-        let maskElem = null;
-        if (maskProp === true) {
-            maskElem = mask({isDisplayed: true});
-        } else if (maskProp instanceof PendingTaskModel) {
-            maskElem = mask({model: maskProp, spinner: true});
-        } else if (isReactElement(maskProp)) {
-            maskElem = maskProp;
-        }
-
-        // 4) LoadingIndicator is as provided, or a default simple loadingIndicator.
-        let loadingIndicatorElem = null;
-        if (loadingIndicatorProp === true) {
-            loadingIndicatorElem = loadingIndicator({isDisplayed: true});
-        } else if (loadingIndicatorProp instanceof PendingTaskModel) {
-            loadingIndicatorElem = loadingIndicator({model: loadingIndicatorProp});
-        } else if (isReactElement(loadingIndicatorProp)) {
-            loadingIndicatorElem = loadingIndicatorProp;
-        }
-
-        // 5) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
             panelHeader({title, icon, headerItems, model}) :
             null;
@@ -167,8 +147,8 @@ export class Panel extends Component {
             items: [
                 processedPanelHeader,
                 coreContents,
-                maskElem,
-                loadingIndicatorElem
+                this.parseLoadDecorator(maskProp, mask),
+                this.parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
             ...layoutProps,
@@ -180,5 +160,21 @@ export class Panel extends Component {
             resizeContainer({item, model}) :
             item;
     }
+
+    // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
+    parseLoadDecorator(prop, cmp) {
+        let ret = null;
+        if (prop === true) {
+            ret = cmp({isDisplayed: true});
+        } else if (prop instanceof PendingTaskModel) {
+            ret = cmp({model: prop, spinner: true});
+        } else if (isReactElement(prop)) {
+            ret = prop;
+        }
+
+        return ret;
+    }
+
 }
+
 export const panel = elemFactory(Panel);
