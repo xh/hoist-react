@@ -26,10 +26,6 @@ export class AboutDialog extends Component {
 
     static modelClass = AboutDialogModel;
 
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(AboutDialogModel), PT.object]).isRequired
-    };
-
     render() {
         const {model} = this;
         if (!model.isOpen) return null;
