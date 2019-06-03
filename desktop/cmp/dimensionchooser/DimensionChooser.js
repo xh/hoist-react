@@ -38,7 +38,7 @@ export class DimensionChooser extends Component {
         buttonWidth: PT.number,
 
         /** Primary component model instance. */
-        model: PT.instanceOf(DimensionChooserModel).isRequired,
+        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,

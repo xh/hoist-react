@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
@@ -35,6 +36,10 @@ import {ColChooserModel} from './ColChooserModel';
 export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
+
+    static propTypes = {
+        model: PT.oneOfType([PT.instanceOf(ColChooserModel), PT.object]).isRequired
+    };
 
     render() {
         const {model} = this,
