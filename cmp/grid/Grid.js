@@ -340,7 +340,7 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -351,6 +351,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
+                        this.updatePinnedRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -364,7 +365,7 @@ export class Grid extends Component {
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
-                  
+
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
@@ -505,6 +506,22 @@ export class Grid extends Component {
         }
     }
 
+    updatePinnedRowData() {
+        const {model} = this,
+            {store, showSummary} = model,
+            {agApi} = model.agGridModel,
+            pinnedTopRecords = [],
+            pinnedBottomRecords = [];
+
+        if (showSummary && store.summaryRecord) {
+            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
+            arr.push(store.summaryRecord);
+        }
+
+        agApi.setPinnedTopRowData(pinnedTopRecords);
+        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+    }
+
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
@@ -512,8 +529,8 @@ export class Grid extends Component {
         return data.xhTreePath;
     };
 
-    onSelectionChanged = (ev) => {
-        this.model.selModel.select(ev.api.getSelectedRows());
+    onSelectionChanged = () => {
+        this.model.noteAgSelectionStateChanged();
     };
 
     // Catches column re-ordering AND resizing via user drag-and-drop interaction.
