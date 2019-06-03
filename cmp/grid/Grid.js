@@ -340,7 +340,7 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -351,6 +351,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
+                        this.updatePinnedRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -503,6 +504,22 @@ export class Grid extends Component {
                 api.clientSideRowModel.setRowData([]);
             }, this);
         }
+    }
+
+    updatePinnedRowData() {
+        const {model} = this,
+            {store, showSummary} = model,
+            {agApi} = model.agGridModel,
+            pinnedTopRecords = [],
+            pinnedBottomRecords = [];
+
+        if (showSummary && store.summaryRecord) {
+            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
+            arr.push(store.summaryRecord);
+        }
+
+        agApi.setPinnedTopRowData(pinnedTopRecords);
+        agApi.setPinnedBottomRowData(pinnedBottomRecords);
     }
 
     //------------------------

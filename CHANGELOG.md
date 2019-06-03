@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+### 🎁 New Features
+* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for the data it contains.
+    The raw data for this record can be provided to `loadData() and updataData()` either via an explicit argument to 
+    these methods, or as the root node of the raw data provided (see `loadRootAsSummary`).
+* `GridModel` now supports a `showSummary` property which can be used to display its store's summaryRecord as either 
+    a pinned top or bottom row.
+
 ## v23.0.0 - 2019-05-30 
 
 ### 🎁 New Features
