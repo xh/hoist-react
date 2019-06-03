@@ -54,7 +54,6 @@ export class LoadingIndicator extends Component {
     };
 
     baseClassName = 'xh-loading-indicator';
-    spinnerSize = 20;
 
     render() {
         const {props, model, message, showSpinner, corner} = this,
