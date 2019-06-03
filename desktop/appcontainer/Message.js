@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -23,11 +22,6 @@ import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 export class Message extends Component {
 
     static modelClass = MessageModel;
-
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(MessageModel), PT.object]).isRequired
-    };
 
     render() {
         const model = this.model,

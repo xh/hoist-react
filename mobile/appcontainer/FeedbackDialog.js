@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
@@ -24,10 +23,6 @@ import './FeedbackDialog.scss';
 export class FeedbackDialog extends Component {
 
     static modelClass = FeedbackDialogModel;
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(FeedbackDialogModel), PT.object]).isRequired
-    };
 
     render() {
         const {model} = this;

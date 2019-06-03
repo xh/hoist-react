@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {DockContainerModel} from '@xh/hoist/cmp/dock';
@@ -23,9 +22,6 @@ import './Dock.scss';
 export class DockContainer extends Component {
 
     static modelClass = DockContainerModel;
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object]).isRequired
-    };
 
     baseClassName = 'xh-dock-container';
 

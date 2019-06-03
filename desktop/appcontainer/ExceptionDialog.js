@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
@@ -29,10 +28,6 @@ import './ExceptionDialog.scss';
 export class ExceptionDialog extends Component {
 
     static modelClass = ExceptionDialogModel;
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(ExceptionDialogModel), PT.object]).isRequired
-    };
 
     render() {
         const {model} = this,

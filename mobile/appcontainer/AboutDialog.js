@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';

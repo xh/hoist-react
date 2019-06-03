@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import PT from 'prop-types';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 import {headerCollapseButton} from './HeaderCollapseButton';
@@ -21,11 +20,6 @@ import {PanelModel} from '../PanelModel';
 export class PanelHeader extends Component {
 
     static modelClass = PanelModel;
-
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object])
-    };
 
     render() {
         let {title, icon, headerItems = []} = this.props,

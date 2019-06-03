@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';

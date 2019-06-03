@@ -6,7 +6,6 @@
  */
 
 import {Component} from 'react';
-import PT from 'prop-types';
 import {HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
@@ -29,10 +28,6 @@ import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBa
 export class ImpersonationBar extends Component {
 
     static modelClass = ImpersonationBarModel;
-
-    static propTypes = {
-        model: PT.oneOfType([PT.instanceOf(ImpersonationBarModel), PT.object]).isRequired
-    };
 
     @observable pendingTarget = null;
 
