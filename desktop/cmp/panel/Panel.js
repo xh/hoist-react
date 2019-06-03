@@ -161,6 +161,9 @@ export class Panel extends Component {
             item;
     }
 
+    //------------------------
+    // Implementation
+    //------------------------
     // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
     parseLoadDecorator(prop, cmp) {
         let ret = null;
