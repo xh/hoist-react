@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -43,15 +43,6 @@ export class ColChooser extends Component {
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
-            headerItems: [
-                button({
-                    icon: Icon.undo({size: 'sm'}),
-                    style: {maxHeight: 16},
-                    modifier: 'quiet',
-                    omit: !gridModel.stateModel,
-                    onClick: () => model.restoreDefaults()
-                })
-            ],
             icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
             items: [
@@ -59,13 +50,12 @@ export class ColChooser extends Component {
                     onDragEnd: this.onDragEnd,
                     items: [
                         panel({
-                            icon: Icon.eye(),
-                            title: 'Displayed Columns',
                             className: 'xh-col-chooser-section',
                             scrollable: true,
                             items: [
                                 // 1) Render pinned columns in a static list
                                 this.renderColumnList(pinnedColumns, {
+                                    isPinned: true,
                                     className: 'pinned-columns'
                                 }),
 
@@ -75,7 +65,6 @@ export class ColChooser extends Component {
                                     item: (dndProps) => {
                                         return this.renderColumnList(visibleColumns, {
                                             className: 'visible-columns',
-                                            isDraggable: true,
                                             ref: dndProps.innerRef,
                                             placeholder: dndProps.placeholder
                                         });
@@ -86,7 +75,6 @@ export class ColChooser extends Component {
 
                         // 3) Render hidden columns in draggable list
                         panel({
-                            icon: Icon.eyeSlash(),
                             title: 'Available Columns',
                             className: 'xh-col-chooser-section',
                             scrollable: true,
@@ -95,7 +83,6 @@ export class ColChooser extends Component {
                                 item: (dndProps) => {
                                     return this.renderColumnList(hiddenColumns, {
                                         className: 'hidden-columns',
-                                        isDraggable: true,
                                         ref: dndProps.innerRef,
                                         placeholder: dndProps.placeholder
                                     });
@@ -107,13 +94,20 @@ export class ColChooser extends Component {
             ],
             bbar: [
                 button({
-                    icon: Icon.x(),
-                    flex: 1,
+                    text: 'Reset',
+                    modifier: 'quiet',
+                    omit: !gridModel.stateModel,
+                    onClick: () => model.restoreDefaults()
+                }),
+                filler(),
+                button({
+                    text: 'Cancel',
+                    modifier: 'quiet',
                     onClick: () => model.close()
                 }),
                 button({
+                    text: 'Save',
                     icon: Icon.check(),
-                    flex: 1,
                     onClick: this.onOK
                 })
             ]
@@ -148,13 +142,13 @@ export class ColChooser extends Component {
     // Implementation
     //------------------------
     renderColumnList(columns, props = {}) {
-        const {isDraggable, placeholder, className = '', ...rest} = props;
+        const {isPinned, placeholder, className = '', ...rest} = props;
 
         return div({
             className: `xh-col-chooser-list ${className}`,
             items: [
                 ...columns.map((col, idx) => {
-                    return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
+                    return isPinned ? this.renderRow(col) : this.renderDraggableRow(col, idx);
                 }),
                 placeholder
             ],
@@ -173,7 +167,6 @@ export class ColChooser extends Component {
             index: idx,
             item: (dndProps, dndState) => {
                 return this.renderRow(col, {
-                    isDraggable: true,
                     isDragging: dndState.isDragging,
                     ref: dndProps.innerRef,
                     ...dndProps.dragHandleProps,
@@ -184,26 +177,27 @@ export class ColChooser extends Component {
     }
 
     renderRow(col, props = {}) {
-        const {colId, text, hidden, locked, exclude} = col,
-            {isDraggable, isDragging, ...rest} = props;
+        const {colId, text, pinned, hidden, locked, exclude} = col,
+            {isDragging, ...rest} = props;
 
         if (exclude) return;
 
         const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
-            if (hidden) return Icon.cross();
-            return Icon.check({className: 'xh-green'});
+            if (hidden) return Icon.add({className: 'xh-green'});
+            return Icon.cross();
         };
 
         return div({
             className: classNames(
                 'xh-col-chooser-row',
+                pinned ? 'xh-col-chooser-row-pinned' : null,
                 isDragging ? 'xh-col-chooser-row-dragging' : null
             ),
             items: [
                 div({
                     className: 'xh-col-chooser-row-grabber',
-                    item: isDraggable ? Icon.arrowsUpDown() : Icon.lock()
+                    item: pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'})
                 }),
                 div({
                     className: 'xh-col-chooser-row-text',
