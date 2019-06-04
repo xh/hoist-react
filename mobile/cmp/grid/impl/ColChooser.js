@@ -128,7 +128,7 @@ export class ColChooser extends Component {
     };
 
     onDragEnd = (result) => {
-        const {pinnedColumns, visibleColumns} = this.model,
+        const {columns, pinnedColumns} = this.model,
             {draggableId, destination} = result;
 
         if (!destination) return; // dropped outside of a droppable list
@@ -138,11 +138,15 @@ export class ColChooser extends Component {
             hide = droppableId === 'hidden-columns';
         this.model.setHidden(draggableId, hide);
 
-        // Set sort idx base on destination list idx.
-        // Overall list idx must account for previous sublist lengths.
-        let toIdx = destination.index;
-        if (destination.droppableId === 'visible-columns') toIdx += pinnedColumns.length;
-        if (destination.droppableId === 'hidden-columns') toIdx += pinnedColumns.length + visibleColumns.length;
+        // Move to correct idx within list of columns
+        let toIdx;
+        if (destination.droppableId === 'visible-columns') {
+            // Idx must account for pinned columns
+            toIdx = destination.index + pinnedColumns.length;
+        } else if (destination.droppableId === 'hidden-columns') {
+            // Insert at end of columns
+            toIdx = columns.length;
+        }
         this.model.moveToIndex(draggableId, toIdx);
     };
 

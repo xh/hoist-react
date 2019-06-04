@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, settable, bindable, computed, action} from '@xh/hoist/mobx';
-import {clone, find} from 'lodash';
+import {sortBy, clone, find} from 'lodash';
 
 /**
  * State management for the ColChooser component.
@@ -35,7 +35,7 @@ export class ColChooserModel {
 
     @computed
     get hiddenColumns() {
-        return this.getHidden(this.columns);
+        return sortBy(this.getHidden(this.columns), 'text');
     }
 
     /**
