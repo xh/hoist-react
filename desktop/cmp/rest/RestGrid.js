@@ -33,6 +33,9 @@ export class RestGrid extends Component {
          */
         agOptions: PT.object,
 
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]).isRequired,
+
         /** Optional components rendered adjacent to the top toolbar's action buttons */
         extraToolbarItems: PT.func,
 

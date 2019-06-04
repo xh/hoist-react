@@ -34,7 +34,7 @@ import './AgGrid.scss';
 @LayoutSupport
 export class AgGrid extends Component {
     baseClassName = 'xh-ag-grid';
-    modelClass = AgGridModel;
+    static modelClass = AgGridModel;
 
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}

@@ -147,10 +147,13 @@ body {
   --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
   --xh-form-field-margin-right: var(--form-field-margin-right, 0);
 
-  // Mask
+  // Mask + LoadingIndicator
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
+  --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
+  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
 
   // Navbar (top app toolbar)
   --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
@@ -275,10 +278,12 @@ body.xh-dark {
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
   --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
 
-  // Mask
+  // Mask + LoadingIndicator
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
+  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
 
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
