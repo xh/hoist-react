@@ -3,12 +3,13 @@
   --height: 20px;  // should match spinner height
 
   position: absolute;
-  border-color: var(--xh-tbar-border-color);
+  padding: var(--xh-pad-half-px);
+  font-size: var(--xh-font-size-small-px);
+  background-color: var(--xh-loading-indicator-bg);
+  color: var(--xh-loading-indicator-color);
+  border-color: var(--xh-loading-indicator-border-color);
   border-style: solid;
   border-width: 0;
-  padding: var(--xh-pad-half-px);
-  color: var(--xh-tbar-text-color);
-  background-color: var(--xh-bg-alt);
 
   &--tl {
     top: 0;
