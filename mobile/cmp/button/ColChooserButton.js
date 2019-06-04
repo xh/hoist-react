@@ -43,7 +43,7 @@ export class ColChooserButton extends Component {
 
     showChooser = () => {
         this.model.showColChooser({
-            enablePinFirstRow: withDefault(this.props.enablePinFirstRow, false)
+            enablePinFirstRow: withDefault(this.props.enablePinFirstRow, true)
         });
     }
 

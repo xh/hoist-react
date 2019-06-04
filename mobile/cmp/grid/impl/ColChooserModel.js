@@ -23,7 +23,7 @@ export class ColChooserModel {
     @bindable pinFirst;
 
     @observable isOpen = false;
-    @observable enablePinFirstRow = false;
+    @observable enablePinFirstRow = true;
 
     @computed
     get pinnedColumns() {
