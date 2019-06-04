@@ -217,6 +217,7 @@ export class Grid extends Component {
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: this.groupSortComparator,
@@ -560,6 +561,13 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+    };
+
+    // Catches column pinning by dragging
+    onColumnPinned = (ev) => {
+        if (ev.source === 'uiColumnDragged') {
+            this.model.noteAgColumnPinnedStateChange(ev.columnApi.getColumnState());
+        }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components

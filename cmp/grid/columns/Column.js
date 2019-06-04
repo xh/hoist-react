@@ -194,7 +194,6 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},

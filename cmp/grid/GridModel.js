@@ -401,12 +401,22 @@ export class GridModel {
         }
     }
 
+    noteAgColumnPinnedStateChange(agColState) {
+        // We replace pinned: null with pinned: false, to be clear
+        // we are intentionally unpinning
+        this.noteAgColumnStateChanged(agColState.map(it => {
+            it.pinned = it.pinned || false;
+            return it;
+        }));
+    }
+
     noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide}) => {
+        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
             const col = this.findColumn(this.columns, colId);
             if (!col) return null;
             return {
                 colId,
+                pinned,
                 hidden: hide,
                 width: col.flex ? undefined : width
             };
