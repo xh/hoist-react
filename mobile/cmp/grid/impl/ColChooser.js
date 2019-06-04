@@ -76,7 +76,8 @@ export class ColChooser extends Component {
                             bbar: toolbar({
                                 omit: !enablePinFirstRow,
                                 items: [
-                                    label('Pin first column:'),
+                                    label('Pin first column'),
+                                    filler(),
                                     switchInput({
                                         model: model,
                                         bind: 'pinFirst'
