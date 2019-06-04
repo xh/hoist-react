@@ -143,7 +143,7 @@ export class ColChooserModel {
                 hidden: !visible,
                 exclude: col.excludeFromChooser,
                 locked: visible && !col.hideable,
-                pinned: pinned
+                pinned: pinned && idx === 0
             };
         });
 
