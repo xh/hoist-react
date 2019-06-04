@@ -392,7 +392,7 @@ export class GridModel {
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
-            .map(({colId, width, hidden}) => ({colId, width, hidden}));
+            .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
     showColChooser() {
@@ -443,12 +443,13 @@ export class GridModel {
         throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
 
-        // 1) Update any width or visibility changes
+        // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
             const col = this.findColumn(columnState, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
+            if (!isNil(change.pinned)) col.pinned = change.pinned;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -494,6 +495,20 @@ export class GridModel {
     isColumnVisible(colId) {
         const state = this.getStateForColumn(colId);
         return state ? !state.hidden : false;
+    }
+
+    /**
+     * Determine if a leaf-level column is currently pinned.
+     *
+     * Call this method instead of inspecting the `pinned` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {string|boolean}
+     */
+    getColumnPinned(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? state.pinned : false;
     }
 
     /**
@@ -686,6 +701,7 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ * @property {string|boolean} [pinned] - 'left'|'right' if pinned, false if not
  */
 
 /**

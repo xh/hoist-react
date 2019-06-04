@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, settable, computed, action} from '@xh/hoist/mobx';
+import {observable, settable, bindable, computed, action} from '@xh/hoist/mobx';
 import {clone, find} from 'lodash';
 
 /**
@@ -20,6 +20,7 @@ export class ColChooserModel {
     gridModel = null;
 
     @settable @observable.ref columns = [];
+    @bindable pinFirst;
     @observable isOpen = false;
 
     @computed
@@ -43,6 +44,10 @@ export class ColChooserModel {
     constructor(gridModel) {
         this.gridModel = gridModel;
         this.addReaction({
+            track: () => this.pinFirst,
+            run: this.onUpdatePinned
+        });
+        this.addReaction({
             track: () => XH.routerState,
             run: this.close
         });
@@ -63,6 +68,13 @@ export class ColChooserModel {
     @action
     close() {
         this.isOpen = false;
+    }
+
+    onUpdatePinned() {
+        const columns = [...this.columns];
+        columns.forEach(it => it.pinned = false);
+        if (this.pinFirst) columns[0].pinned = 'left';
+        this.setColumns(columns);
     }
 
     onHideBtnClick(colId, hide) {
@@ -105,8 +117,8 @@ export class ColChooserModel {
 
         // Extract meaningful state changes
         const colChanges = this.columns.map(it => {
-            const {colId, hidden} = it;
-            return {colId, hidden};
+            const {colId, hidden, pinned} = it;
+            return {colId, hidden, pinned};
         });
 
         this.gridModel.applyColumnStateChanges(colChanges);
@@ -121,7 +133,8 @@ export class ColChooserModel {
 
         const columns = gridModel.columnState.map(({colId}, idx) => {
             const col = gridModel.findColumn(cols, colId),
-                visible = gridModel.isColumnVisible(colId);
+                visible = gridModel.isColumnVisible(colId),
+                pinned = gridModel.getColumnPinned(colId);
 
             return {
                 originalIdx: idx,
@@ -130,7 +143,7 @@ export class ColChooserModel {
                 hidden: !visible,
                 exclude: col.excludeFromChooser,
                 locked: visible && !col.hideable,
-                pinned: col.pinned
+                pinned: pinned
             };
         });
 
@@ -139,6 +152,8 @@ export class ColChooserModel {
             ...this.getVisible(columns),
             ...this.getHidden(columns)
         ]);
+
+        this.setPinFirst(this.getPinned(columns).length);
     }
 
     getPinned(cols) {

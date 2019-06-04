@@ -450,12 +450,17 @@ export class Grid extends Component {
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
+
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
+                            hadChanges = true;
+                        }
+                        if (agCol.pinned != col.pinned) {
+                            colApi.setColumnPinned(id, col.pinned);
                             hadChanges = true;
                         }
                     });
@@ -465,12 +470,13 @@ export class Grid extends Component {
 
                 // 2) Otherwise do an (expensive) full refresh of column state
                 // Merge our state onto the ag column state to get any state which we do not yet support
-                colState = colState.map(({colId, width, hidden}) => {
+                colState = colState.map(({colId, width, hidden, pinned}) => {
                     const agCol = agColState.find(c => c.colId === colId) || {};
                     return {
                         colId,
                         ...agCol,
                         width,
+                        pinned,
                         hide: hidden
                     };
                 });
