@@ -55,20 +55,29 @@ export class ColChooser extends Component {
                             className: 'xh-col-chooser-section',
                             scrollable: true,
                             items: [
-                                // 1) Render pinned columns in a static list
-                                this.renderColumnList(pinnedColumns, {
-                                    isPinned: true,
-                                    className: 'pinned-columns'
+                                // 1) Render pinned columns in an undraggable list
+                                droppable({
+                                    droppableId: 'pinned-columns',
+                                    item: (dndProps, snapshot) => {
+                                        return this.renderColumnList(pinnedColumns, {
+                                            className: 'pinned-columns',
+                                            ref: dndProps.innerRef,
+                                            placeholder: dndProps.placeholder,
+                                            isDraggingOver: snapshot.isDraggingOver
+                                        });
+                                    }
                                 }),
 
                                 // 2) Render visible columns in draggable list
                                 droppable({
                                     droppableId: 'visible-columns',
-                                    item: (dndProps) => {
+                                    item: (dndProps, snapshot) => {
                                         return this.renderColumnList(visibleColumns, {
                                             className: 'visible-columns',
                                             ref: dndProps.innerRef,
-                                            placeholder: dndProps.placeholder
+                                            placeholder: dndProps.placeholder,
+                                            isDraggingOver: snapshot.isDraggingOver,
+                                            draggableRows: true
                                         });
                                     }
                                 })
@@ -93,11 +102,13 @@ export class ColChooser extends Component {
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
-                                item: (dndProps) => {
+                                item: (dndProps, snapshot) => {
                                     return this.renderColumnList(hiddenColumns, {
                                         className: 'hidden-columns',
                                         ref: dndProps.innerRef,
-                                        placeholder: dndProps.placeholder
+                                        placeholder: dndProps.placeholder,
+                                        isDraggingOver: snapshot.isDraggingOver,
+                                        draggableRows: true
                                     });
                                 }
                             })
@@ -145,7 +156,10 @@ export class ColChooser extends Component {
 
         // Move to correct idx within list of columns
         let toIdx;
-        if (destination.droppableId === 'visible-columns') {
+        if (destination.droppableId === 'pinned-columns') {
+            // Insert first, replacing current pinned column
+            toIdx = 0;
+        } else if (destination.droppableId === 'visible-columns') {
             // Idx must account for pinned columns
             toIdx = destination.index + pinnedColumns.length;
         } else if (destination.droppableId === 'hidden-columns') {
@@ -153,19 +167,24 @@ export class ColChooser extends Component {
             toIdx = columns.length;
         }
         this.model.moveToIndex(draggableId, toIdx);
+        this.model.updatePinnedColumn();
     };
 
     //------------------------
     // Implementation
     //------------------------
     renderColumnList(columns, props = {}) {
-        const {isPinned, placeholder, className = '', ...rest} = props;
+        const {draggableRows, isDraggingOver, placeholder, className, ...rest} = props;
 
         return div({
-            className: `xh-col-chooser-list ${className}`,
+            className: classNames(
+                'xh-col-chooser-list',
+                isDraggingOver ? 'xh-col-chooser-list-over' : null,
+                className
+            ),
             items: [
                 ...columns.map((col, idx) => {
-                    return isPinned ? this.renderRow(col) : this.renderDraggableRow(col, idx);
+                    return draggableRows ? this.renderDraggableRow(col, idx) : this.renderRow(col);
                 }),
                 placeholder
             ],

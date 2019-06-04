@@ -6,6 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, settable, bindable, computed, action} from '@xh/hoist/mobx';
+import {warnIf} from '@xh/hoist/utils/js';
 import {sortBy, clone, find} from 'lodash';
 
 /**
@@ -47,7 +48,7 @@ export class ColChooserModel {
         this.gridModel = gridModel;
         this.addReaction({
             track: () => this.pinFirst,
-            run: this.onUpdatePinned
+            run: this.updatePinnedColumn
         });
         this.addReaction({
             track: () => XH.routerState,
@@ -73,10 +74,22 @@ export class ColChooserModel {
         this.isOpen = false;
     }
 
-    onUpdatePinned() {
+    updatePinnedColumn() {
         const columns = [...this.columns];
-        columns.forEach(it => it.pinned = false);
-        if (this.pinFirst) columns[0].pinned = 'left';
+
+        // Loop through and, if applicable, pin the first
+        // non-excluded visible column encountered
+        let shouldPinFirst = this.pinFirst;
+        columns.forEach(it => {
+            if (it.exclude) return;
+            if (!it.hidden && shouldPinFirst) {
+                it.pinned = 'left';
+                shouldPinFirst = false;
+            } else {
+                it.pinned = false;
+            }
+        });
+
         this.setColumns(columns);
     }
 
@@ -87,6 +100,7 @@ export class ColChooserModel {
 
         this.moveToIndex(colId, toIdx);
         this.setHidden(colId, hide);
+        this.updatePinnedColumn();
     }
 
     setHidden(colId, hidden) {
@@ -103,7 +117,7 @@ export class ColChooserModel {
         const columns = clone(this.columns),
             col = find(columns, {colId});
 
-        if (!col || col.locked) return;
+        if (!col || col.exclude) return;
 
         const fromIdx = columns.indexOf(col);
         columns.splice(toIdx, 0, columns.splice(fromIdx, 1)[0]);
@@ -139,6 +153,8 @@ export class ColChooserModel {
                 visible = gridModel.isColumnVisible(colId),
                 pinned = gridModel.getColumnPinned(colId);
 
+            warnIf(pinned && idx > 0, 'ColChooser only supports pinning the first column. Subsequent pinned columns will be ignored.');
+
             return {
                 originalIdx: idx,
                 colId: col.colId,
@@ -156,7 +172,7 @@ export class ColChooserModel {
             ...this.getHidden(columns)
         ]);
 
-        this.setPinFirst(this.getPinned(columns).length);
+        this.setPinFirst(!!this.getPinned(columns).length);
     }
 
     getPinned(cols) {
