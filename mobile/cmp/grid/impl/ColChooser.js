@@ -8,6 +8,7 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -39,7 +40,7 @@ export class ColChooser extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, gridModel, pinnedColumns, visibleColumns, hiddenColumns} = model;
+            {isOpen, gridModel, enablePinFirstRow, pinnedColumns, visibleColumns, hiddenColumns} = model;
 
         return dialogPanel({
             isOpen,
@@ -72,13 +73,16 @@ export class ColChooser extends Component {
                                     }
                                 })
                             ],
-                            bbar: [
-                                label('Pin first column:'),
-                                switchInput({
-                                    model: model,
-                                    bind: 'pinFirst'
-                                })
-                            ]
+                            bbar: toolbar({
+                                omit: !enablePinFirstRow,
+                                items: [
+                                    label('Pin first column:'),
+                                    switchInput({
+                                        model: model,
+                                        bind: 'pinFirst'
+                                    })
+                                ]
+                            })
                         }),
 
                         // 3) Render hidden columns in draggable list

@@ -395,9 +395,9 @@ export class GridModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
-    showColChooser() {
+    showColChooser(opts) {
         if (this.colChooserModel) {
-            this.colChooserModel.open();
+            this.colChooserModel.open(opts);
         }
     }
 

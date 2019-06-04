@@ -21,7 +21,9 @@ export class ColChooserModel {
 
     @settable @observable.ref columns = [];
     @bindable pinFirst;
+
     @observable isOpen = false;
+    @observable enablePinFirstRow = false;
 
     @computed
     get pinnedColumns() {
@@ -60,9 +62,10 @@ export class ColChooserModel {
     }
 
     @action
-    open() {
+    open({enablePinFirstRow}) {
         this.syncChooserData();
         this.isOpen = true;
+        this.enablePinFirstRow = enablePinFirstRow;
     }
 
     @action
