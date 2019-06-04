@@ -144,7 +144,7 @@ export class Store {
 
     /** Remove all records from the store. */
     clear() {
-        this.loadData([]);
+        this.loadData([], null);
     }
 
     /**
