@@ -95,6 +95,8 @@ body {
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
+  --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
+  --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
