@@ -76,6 +76,8 @@ export class GridModel {
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
+    enableColumnPinning;
+    /** @member {boolean} */
     enableExport;
     /** @member {object} */
     exportOptions;
@@ -131,6 +133,7 @@ export class GridModel {
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.enableColumnPinning] - true to allow the user to pin / unpin columns.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -162,6 +165,7 @@ export class GridModel {
         stripeRows = true,
         showCellFocus = false,
 
+        enableColumnPinning,
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
@@ -178,6 +182,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
+        this.enableColumnPinning = withDefault(enableColumnPinning, !XH.isMobile);
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
 
