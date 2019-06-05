@@ -37,7 +37,7 @@ export class RestGrid extends Component {
         model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]).isRequired,
 
         /** Optional components rendered adjacent to the top toolbar's action buttons */
-        extraToolbarItems: PT.func,
+        extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
 
         /**
          * Mask to render on this Component. Defaults to true, which renders a standard

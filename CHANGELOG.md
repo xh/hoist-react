@@ -16,6 +16,12 @@
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
 
+### 🐞 Bug Fixes
+
+* Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
+  when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
+  multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+
 ## v23.0.0 - 2019-05-30 
 
 ### 🎁 New Features
@@ -345,7 +351,6 @@
 * react `~16.7 -> ~16.8`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
-
 
 ## v19.0.1 - 2019-02-12
 

@@ -373,6 +373,11 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
+    }
+
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
