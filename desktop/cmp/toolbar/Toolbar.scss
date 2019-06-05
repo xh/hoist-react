@@ -17,6 +17,8 @@
   }
 
   &:not(&--vertical) {
+    min-height: var(--xh-tbar-min-size-px);
+
     // Selected via not-last to account for panels, which dock a header above the tbar.
     &:not(:last-child) {
       border-bottom: 1px solid var(--xh-tbar-border-color);
@@ -35,7 +37,7 @@
   }
 
   &--vertical {
-    width: 42px;
+    min-width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
     > *:not([class*='xh-no-pad']) {

@@ -94,7 +94,7 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
-    /** @member {string|boolean} */
+    /** @member {(string|boolean)} */
     @bindable showSummary = false;
 
     static defaultContextMenuTokens = [
@@ -115,9 +115,8 @@ export class GridModel {
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
-     * @param {string|boolean} [c.showSummary] - location for a summary / total row. Requires that
-     *      a summary Records exists in the store.
-     *      Valid values are true/'top', 'bottom', or false (default false).
+     * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
+     *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -372,6 +371,11 @@ export class GridModel {
     /** Load the underlying store. */
     loadData(...args) {
         return this.store.loadData(...args);
+    }
+
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
     }
 
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */

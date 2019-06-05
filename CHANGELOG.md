@@ -2,12 +2,25 @@
 
 
 ## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+
 ### 🎁 New Features
-* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for the data it contains.
-    The raw data for this record can be provided to `loadData() and updataData()` either via an explicit argument to 
-    these methods, or as the root node of the raw data provided (see `loadRootAsSummary`).
-* `GridModel` now supports a `showSummary` property which can be used to display its store's summaryRecord as either 
-    a pinned top or bottom row.
+
+* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
+  the data it contains. The raw data for this record can be provided to `loadData() and
+  updataData()` either via an explicit argument to these methods, or as the root node of the raw
+  data provided (see `loadRootAsSummary`).
+* `GridModel` now supports a `showSummary` property which can be used to display its store's
+  summaryRecord as either a pinned top or bottom row.
+* A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
+  modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
+  bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
+  an overlay docked to the corner of the parent Panel.
+
+### 🐞 Bug Fixes
+
+* Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
+  when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
+  multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
 
 ## v23.0.0 - 2019-05-30 
 
@@ -338,7 +351,6 @@
 * react `~16.7 -> ~16.8`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
-
 
 ## v19.0.1 - 2019-02-12
 

@@ -37,7 +37,7 @@ export class DimensionChooser extends Component {
         dialogWidth: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired
+        model: PT.instanceOf(DimensionChooserModel).isRequired
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -122,6 +122,7 @@ export class DimensionChooser extends Component {
         const historyItems = history.map((value, i) => {
             const labels = value.map(h => dimensions[h].label),
                 isActive = value === model.value;
+
             return button({
                 className: classNames('dim-history-btn',
                     isActive ? 'dim-history-btn--active' : null),
@@ -165,7 +166,7 @@ export class DimensionChooser extends Component {
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
 
         const children = pendingValue.map((dim, i) => {
-            const options = [dimensions[dim], ...model.dimOptionsForLevel(i)],
+            const options = model.dimOptionsForLevel(i, dim),
                 marginLeft = LEFT_PAD + (INDENT * i),
                 width = this.dialogWidth - marginLeft - X_BTN_WIDTH;
 

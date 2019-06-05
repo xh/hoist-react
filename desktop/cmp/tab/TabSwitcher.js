@@ -28,7 +28,7 @@ export class TabSwitcher extends Component {
 
     static propTypes = {
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired,
+        model: PT.instanceOf(TabContainerModel).isRequired,
 
         /** Relative position within the parent TabContainer. Defaults to 'top'. */
         orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])

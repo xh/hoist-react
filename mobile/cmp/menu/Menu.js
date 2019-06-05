@@ -31,7 +31,7 @@ export class Menu extends Component {
         align: PT.oneOf(['left', 'right']),
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object])
+        model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object]).isRequired
     };
 
     render() {

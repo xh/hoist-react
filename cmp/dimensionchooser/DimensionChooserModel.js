@@ -6,9 +6,21 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {cloneDeep, isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
-import {observable, action, bindable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    cloneDeep,
+    compact,
+    difference,
+    isArray,
+    isEmpty,
+    isEqual,
+    isString,
+    keys,
+    pullAllWith,
+    sortBy,
+    without
+} from 'lodash';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
@@ -139,12 +151,16 @@ export class DimensionChooserModel {
     }
 
     // Returns options passed to the select control at each level of the add menu.
-    dimOptionsForLevel(level) {
+    // Pass current value as second arg to ensure included - used when editing a level (vs. adding).
+    dimOptionsForLevel(level, currDimVal = null) {
         // Dimensions which do not appear in the add menu
         const remainingDims = difference(this.dimensionVals, this.pendingValue);
+
         // Dimensions subordinate to this one in the tree hierarchy
         const childDims = this.pendingValue.slice(level + 1) || [];
-        return [...remainingDims, ...childDims].map(it => this.dimensions[it]);
+
+        const ret = compact([...remainingDims, ...childDims, currDimVal]).map(it => this.dimensions[it]);
+        return sortBy(ret, 'label');
     }
 
 

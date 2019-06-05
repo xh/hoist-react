@@ -32,10 +32,11 @@ import {TabContainerModel} from './TabContainerModel';
 @HoistComponent
 export class TabContainer extends Component {
 
+    static modelClass = TabContainerModel;
+
     static propTypes = {
         model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired
     };
-    static modelClass = TabContainerModel;
 
     constructor(props) {
         super(props);
