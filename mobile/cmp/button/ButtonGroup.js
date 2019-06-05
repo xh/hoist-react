@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -27,7 +27,7 @@ export class ButtonGroup extends Component {
             buttons = castArray(children);
 
         buttons.forEach(button => {
-            throwIf(button.type.name !== 'Button', 'ButtonGroup child must be a Button.');
+            throwIf(button && button.type.name !== 'Button', 'ButtonGroup child must be a Button.');
         });
 
         return hbox({

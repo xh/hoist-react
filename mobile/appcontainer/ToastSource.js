@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {head} from 'lodash';
@@ -30,8 +30,9 @@ export class ToastSource extends Component {
 
         if (!next) return null;
 
-        if (!next.dismissFn) {
-            next.dismissFn = wait(next.timeout).then(() => next.dismiss());
+        if (!next.dismissIsPending) {
+            wait(next.timeout).then(() => next.dismiss());
+            next.dismissIsPending = true;
         }
         return toast({model: next, key: next.xhId});
     }

@@ -1,11 +1,23 @@
-.xh-radio-input.bp3-control.bp3-inline {
+.xh-radio-input {
+  .xh-radio-input-option.bp3-control.bp3-inline {
     margin-right: var(--xh-pad-double-px);
+  }
+
+  &.xh-input-invalid .xh-radio-input-option .bp3-control-indicator {
+    border: var(--xh-form-field-invalid-border);
+
+    &::before {
+      margin: -1px;
+    }
+  }
 }
 
-.xh-input-invalid .xh-radio-input .bp3-control-indicator {
-  border: var(--xh-form-field-invalid-border);
+// Toolbar specific style
+.xh-toolbar .xh-radio-input {
+  display: flex;
+  flex-direction: row;
 
-  &::before {
-    margin: -1px;
+  .xh-radio-input-option {
+    margin-right: var(--xh-pad-double-px);
   }
 }

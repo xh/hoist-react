@@ -1,5 +1,5 @@
 .xh-toolbar {
-  padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
+  padding: var(--xh-pad-half-px) var(--xh-pad-px);
   color: var(--xh-tbar-text-color);
   background-color: var(--xh-tbar-bg);
   width: 100%;
@@ -11,7 +11,7 @@
     white-space: nowrap;
     flex-shrink: 0;
 
-    &:not([class*='xh-no-pad']) {
+    &:not(:first-child):not([class*='xh-no-pad']) {
       margin-left: var(--xh-tbar-item-pad-px);
     }
   }

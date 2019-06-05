@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
@@ -145,17 +145,12 @@ export class FormModel {
     /** @member {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
-        return this.fields.some(m => m.isValidationPending);
+        return some(this.fields, m => m.isValidationPending);
     }
 
     /** @member {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
-    }
-
-    /** @member {boolean} - true if any fields are not valid. */
-    get isNotValid() {
-        return this.validationState == ValidationState.NotValid;
     }
 
     /** @member {String[]} - list of all validation errors for this form. */

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {isEmpty, isPlainObject, find, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -111,6 +111,7 @@ export class Select extends HoistInput {
                 noOptionsMessage: this.noOptionsMessageFn,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
+                menuShouldBlockScroll: XH.isMobile,
 
                 // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.

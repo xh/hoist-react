@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
-import {page, toolbar} from '@xh/hoist/kit/onsen';
-import {div, vframe, vbox} from '@xh/hoist/cmp/layout';
+import {page} from '@xh/hoist/mobile/cmp/page';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {div, vframe, vbox, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -32,15 +33,15 @@ export class LoginPanel extends Component {
             {model} = this;
 
         return page({
-            renderToolbar: () => toolbar(
-                div({
-                    className: 'center',
-                    item: XH.clientAppName
-                })
-            ),
+            className: 'xh-login',
             items: [
+                toolbar(
+                    filler(),
+                    XH.clientAppName,
+                    filler()
+                ),
                 vframe({
-                    className: 'xh-login',
+                    className: 'xh-login__body',
                     items: [
                         vbox({
                             className: 'xh-login__fields',

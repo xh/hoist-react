@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
@@ -25,13 +25,13 @@ export class Toast extends Component {
     static modelClass = ToastModel;
 
     render() {
-        const {icon, message, timeout, intent} = this.model,
+        const {icon, message, intent} = this.model,
             cls = `xh-toast xh-intent-${intent}`;
 
         return onsenToast({
             isOpen: true,
-            timeout: timeout,
             className: cls,
+            style: {height: window.innerHeight + 'px'},
             items: [
                 icon,
                 span(message),

@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children, Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './Dragger';
-import {collapser} from './Collapser';
+import {splitter} from './Splitter';
 import {PanelModel} from '../PanelModel';
 
 /**
@@ -26,12 +26,12 @@ export class ResizeContainer extends Component {
 
     render() {
         let {model} = this,
-            {collapsible, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+            {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [this.renderChild()];
         
-        if (collapsible && showSplitter) {
-            const collapserCmp = collapser({model});
-            items = (contentFirst ? [...items, collapserCmp] : [collapserCmp, ...items]);
+        if (showSplitter) {
+            const splitterCmp = splitter({model});
+            items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
         }
 
         if (!collapsed && resizable) {

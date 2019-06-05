@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistAppModel, managed} from '@xh/hoist/core';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import {ActivityTab} from './tabs/activity/ActivityTab';
 import {GeneralTab} from './tabs/general/GeneralTab';
@@ -28,7 +29,6 @@ export class AppModel {
             {
                 name: 'default',
                 path: '/admin',
-                forwardTo: 'default.general',
                 children: this.getTabRoutes()
             }
         ];
@@ -42,7 +42,6 @@ export class AppModel {
             {
                 name: 'general',
                 path: '/general',
-                forwardTo: 'default.general.about',
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
@@ -54,7 +53,6 @@ export class AppModel {
             {
                 name: 'logging',
                 path: '/logging',
-                forwardTo: 'default.logging.viewer',
                 children: [
                     {name: 'viewer', path: '/viewer'},
                     {name: 'levels', path: '/levels'}
@@ -63,7 +61,6 @@ export class AppModel {
             {
                 name: 'monitor',
                 path: '/monitor',
-                forwardTo: 'default.monitor.status',
                 children: [
                     {name: 'status', path: '/status'},
                     {name: 'editMonitors', path: '/editMonitors'}
@@ -72,7 +69,6 @@ export class AppModel {
             {
                 name: 'activity',
                 path: '/activity',
-                forwardTo: 'default.activity.tracking',
                 children: [
                     {name: 'tracking', path: '/tracking'},
                     {name: 'clientErrors', path: '/clientErrors'},
@@ -82,7 +78,6 @@ export class AppModel {
             {
                 name: 'preferences',
                 path: '/preferences',
-                forwardTo: 'default.preferences.prefs',
                 children: [
                     {name: 'prefs', path: '/prefs'},
                     {name: 'userPrefs', path: '/userPrefs'}
@@ -93,11 +88,11 @@ export class AppModel {
 
     createTabs() {
         return [
-            {id: 'general', content: GeneralTab},
-            {id: 'activity', content: ActivityTab},
-            {id: 'logging', content: LoggingTab},
-            {id: 'monitor', content: MonitorTab},
-            {id: 'preferences', content: PreferencesTab}
+            {id: 'general', icon: Icon.info(), content: GeneralTab},
+            {id: 'activity', icon: Icon.chartBar(), content: ActivityTab},
+            {id: 'logging', icon: Icon.fileText(), content: LoggingTab},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: MonitorTab},
+            {id: 'preferences', icon: Icon.bookmark(), content: PreferencesTab}
         ];
     }
 }

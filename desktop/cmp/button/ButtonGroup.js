@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
+
+import './ButtonGroup.scss';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.

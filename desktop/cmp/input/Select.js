@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import debouncePromise from 'debounce-promise';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -107,6 +108,11 @@ export class Select extends HoistInput {
         queryFn: PT.func,
 
         /**
+         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
+         */
+        queryBuffer: PT.number,
+
+        /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props
          * in the react-select API are guaranteed to be supported by this Hoist component,
          * and providing them directly can interfere with the implementation of this class.
@@ -126,13 +132,22 @@ export class Select extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    // Prop flags that switch core behavior.
+    // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
     get multiMode() {return !!this.props.enableMulti}
+    get filterMode() {return withDefault(this.props.enableFilter, true)}
+
+    // Managed value for underlying text input under certain conditions
+    // This is a workaround for rs-select issue described in hoist-react #880
+    @observable inputValue = null;
+    get manageInputValue() {
+        return this.filterMode && !this.multiMode;
+    }
 
     constructor(props) {
         super(props);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -178,12 +193,21 @@ export class Select extends HoistInput {
                 ref: this.reactSelectRef
             };
 
+        if (this.manageInputValue) {
+            rsProps.inputValue = this.inputValue || '';
+            rsProps.onInputChange = this.onInputChange;
+            if (this.inputValue == null) {
+                rsProps.filterOption = () => true;
+            }
+        }
+
         if (this.asyncMode) {
-            rsProps.loadOptions = this.doQueryAsync;
+            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
             rsProps.loadingMessage = this.loadingMessageFn;
+            if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
             rsProps.options = this.internalOptions;
-            rsProps.isSearchable = withDefault(props.enableFilter, true);
+            rsProps.isSearchable = this.filterMode;
         }
 
         if (this.creatableMode) {
@@ -195,12 +219,11 @@ export class Select extends HoistInput {
             (this.creatableMode ? reactCreatableSelect : reactSelect);
 
         assign(rsProps, props.rsOptions);
-
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
             onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keypress event
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
@@ -212,12 +235,40 @@ export class Select extends HoistInput {
         });
     }
 
+    @action
+    onSelectChange = (opt) => {
+        if (this.manageInputValue) {
+            this.inputValue = opt ? opt.label : null;
+        }
+        this.noteValueChange(opt);
+    };
+
+    //-------------------------
+    // Text input handling
+    //-------------------------
+    @action
+    onInputChange = (value, {action}) => {
+        if (this.manageInputValue) {
+            if (action == 'input-change') {
+                this.inputValue = value;
+                if (!value) this.noteValueChange(null);
+            } else if (action == 'input-blur') {
+                this.inputValue = null;
+            }
+        }
+    };
+
+    @action
+    onFocus = (ev) => {
+        if (this.manageInputValue) {
+            this.inputValue = this.renderValue ? this.renderValue.label : null;
+        }
+        this.noteFocused();
+    };
+
     //-------------------------
     // Options / value handling
     //-------------------------
-    onSelectChange = (opt) => {
-        this.noteValueChange(opt);
-    }
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import React from 'react';
@@ -43,7 +43,8 @@ export function elem(type, config = {}) {
     if (omit) return null;
 
     // 2) Read children from item[s] config.
-    const children = castArray(item || items).filter(c => c != null);
+    const itemConfig = item || items,
+        children = (itemConfig === undefined ? [] : castArray(itemConfig));
 
     // 3) Recapture API props that needed '$' prefix to avoid conflicts.
     ['$omit', '$item', '$items'].forEach(key => {

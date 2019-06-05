@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import ReactDOM from 'react-dom';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 
-import {elem, AppState, AppSpec, EventSupport, ReactiveSupport} from '@xh/hoist/core';
+import {elem, AppState, AppSpec, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
 import {never, wait, allSettled} from '@xh/hoist/promise';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 
 import {
     ConfigService,
@@ -42,17 +42,15 @@ import '../styles/XH.scss';
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-@EventSupport
 @ReactiveSupport
 class XHClass {
 
     _initCalled = false;
 
-    //------------------------------------------------------------------
-    // Metadata
-    // The values below are set via webpack.DefinePlugin at build time.
+    //----------------------------------------------------------------------------------------------
+    // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
-    //------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     appCode = xhAppCode;
 
@@ -71,9 +69,10 @@ class XHClass {
     /** Whether build is for local development */
     isDevelopmentMode = xhIsDevelopmentMode;
 
-    //---------------------------
-    // Hoist Services
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
+    // Hoist Core Services
+    // Singleton instances of each service are created and installed within initAsync() below.
+    //----------------------------------------------------------------------------------------------
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -86,14 +85,17 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {LocalStorageService} */
+    localStorageService;
     /** @member {PrefService} */
     prefService;
     /** @member {TrackService} */
     trackService;
 
-    //---------------------------
+    //----------------------------------------------------------------------------------------------
     // Aliased methods
-    //---------------------------
+    // Shortcuts to common core service methods and appSpec properties.
+    //----------------------------------------------------------------------------------------------
     track(opts)                 {return this.trackService.track(opts)}
     fetch(opts)                 {return this.fetchService.fetch(opts)}
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
@@ -108,15 +110,15 @@ class XHClass {
     get isMobile()              {return this.appSpec.isMobile}
     get clientAppName()         {return this.appSpec.clientAppName}
 
-    //-------------------------------
+    //---------------------------
     // Models
-    //-------------------------------
+    //---------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
     
-    //-----------------------------
+    //---------------------------
     // Other State
-    //-----------------------------
+    //---------------------------
     exceptionHandler = new ExceptionHandler();
 
     /** State of app - see AppState for valid values. */
@@ -185,7 +187,6 @@ class XHClass {
     setAppState(appState) {
         if (this.appState != appState) {
             this.appState = appState;
-            this.fireEvent('appStateChanged', {appState});
         }
     }
 
@@ -240,6 +241,11 @@ class XHClass {
     /** Toggle the theme between light and dark variants. */
     toggleTheme() {
         return this.acm.themeModel.toggleTheme();
+    }
+
+    /** Enable/disable the dark theme directly (useful for custom app option controls). */
+    setDarkTheme(value) {
+        return this.acm.themeModel.setDarkTheme(value);
     }
 
     /** Is the app currently rendering in dark theme? */
@@ -328,10 +334,12 @@ class XHClass {
      *
      * @param {Object} config - options for toast instance.
      * @param {string} config.message - the message to show in the toast.
-     * @param {element} [config.icon] - icon to be displayed
+     * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
      * @param {string} [config.intent] - The Blueprint intent (desktop only)
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
+     * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.  If null, the Toast
+     *      will appear at the edges of the document (desktop only).
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
@@ -439,12 +447,13 @@ class XHClass {
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh-app class to body element to power Hoist CSS selectors
-        document.body.classList.add('xh-app');
+        // Add xh-app and platform classes to body element to power Hoist CSS selectors.
+        const platformCls = XH.isMobile ? 'xh-mobile' : 'xh-desktop';
+        document.body.classList.add('xh-app', platformCls);
 
         try {
-            await this.installServicesAsync(FetchService, LocalStorageService);
-            await this.installServicesAsync(TrackService, IdleService, GridExportService);
+            await this.installServicesAsync(FetchService);
+            await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
             try {
@@ -488,7 +497,9 @@ class XHClass {
         this.setAppState(S.INITIALIZING);
         try {
             await this.installServicesAsync(IdentityService);
+            await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(IdleService, GridExportService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.
@@ -557,8 +568,13 @@ class XHClass {
     get acm() {return this.appContainerModel}
 
     async initServicesInternalAsync(svcs) {
-        const promises = svcs.map(it => it.initAsync()),
-            results = await allSettled(promises),
+        const promises = svcs.map(it => {
+            return withShortDebug(`Initializing ${it.constructor.name}`, () => {
+                return it.initAsync();
+            }, 'XH');
+        });
+        
+        const results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 
         if (errs.length > 0) {

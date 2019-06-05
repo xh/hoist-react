@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React, {Component} from 'react';
 import PT from 'prop-types';
-import {isArray, isUndefined, isDate, isFinite, isBoolean, kebabCase} from 'lodash';
+import {isArray, isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -68,7 +68,7 @@ export class FormField extends Component {
          * Label for form field. Defaults to Field displayName. Set to null to hide.
          * Can be defaulted from contained Form (specifically, to null to hide all labels).
          */
-        label: PT.string,
+        label: PT.node,
 
         /** Alignment of label text, default 'left'. */
         labelAlign: PT.oneOf(['left', 'right']),
@@ -138,6 +138,7 @@ export class FormField extends Component {
         const control = this.prepareChild({displayNotValid, errors, idAttr, leftErrorIcon, minimal, readonly});
 
         return box({
+            key: fieldModel ? fieldModel.xhId : null,
             items: [
                 labelEl({
                     omit: !label,
@@ -146,7 +147,8 @@ export class FormField extends Component {
                     htmlFor: clickableLabel ? idAttr : null,
                     style: {
                         textAlign: labelAlign,
-                        width: labelWidth
+                        width: labelWidth,
+                        minWidth: isNil(labelWidth) ? 80 : 0
                     }
                 }),
                 div({

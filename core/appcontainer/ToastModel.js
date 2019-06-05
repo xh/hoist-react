@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel} from '@xh/hoist/core';
@@ -24,6 +24,7 @@ export class ToastModel {
     timeout = null;
     intent = null;
     position = null;
+    containerRef = null;
 
     @observable isOpen = true;
 
@@ -32,13 +33,15 @@ export class ToastModel {
         icon = Icon.check(),
         timeout = 3 * SECONDS,
         intent = 'success',
-        position = null
+        position = null,
+        containerRef = null
     }) {
         this.message = message;
         this.icon = icon;
         this.timeout = timeout;
         this.intent = intent;
         this.position = position;
+        this.containerRef = containerRef;
     }
 
     @action

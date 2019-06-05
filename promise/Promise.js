@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -133,11 +133,12 @@ Object.assign(Promise.prototype, {
      * @see TrackService.track()
      *
      * @param {Object} [trackCfg] - valid options object for TrackService.track().
-     *      If null, no tracking will be performed (useful when trackCfg conditionally generated -
-     *      i.e. to suppress tracking for auto-refresh calls triggered by a Timer).
+     * @param {boolean} [trackCfg.omit] - optional to indicate when no tracking will be performed
+     *      (useful when trackCfg conditionally generated - i.e. to suppress tracking for
+     *      auto-refresh calls triggered by a Timer).
      */
     track(trackCfg) {
-        if (!trackCfg) return this;
+        if (!trackCfg || trackCfg.omit) return this;
 
         if (typeof trackCfg === 'string') {
             trackCfg = {message: trackCfg};

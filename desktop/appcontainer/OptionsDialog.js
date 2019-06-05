@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
 import {dialog, dialogBody, HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
@@ -10,8 +10,7 @@ import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {OptionsDialogModel} from '@xh/hoist/core/appcontainer/OptionsDialogModel';
@@ -44,7 +43,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, loadModel, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, reloadRequired} = model;
 
         if (!model.hasOptions) return null;
         if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
@@ -56,6 +55,7 @@ export class OptionsDialog extends Component {
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
+            transitionName: 'none',
             item: [
                 panel({
                     mask: loadModel,
@@ -68,12 +68,8 @@ export class OptionsDialog extends Component {
                             })
                         })
                     ),
-                    bbar: toolbar(
-                        button({
-                            disabled: !formModel.isDirty,
-                            text: 'Reset',
-                            onClick: () => formModel.reset()
-                        }),
+                    bbar: [
+                        restoreDefaultsButton(),
                         filler(),
                         button({
                             text: 'Cancel',
@@ -81,12 +77,12 @@ export class OptionsDialog extends Component {
                         }),
                         button({
                             disabled: !formModel.isDirty,
-                            text: requiresRefresh ? 'Save & Reload' : 'Save',
-                            icon: requiresRefresh ? Icon.refresh() : Icon.check(),
+                            text: reloadRequired ? 'Save & Reload' : 'Save',
+                            icon: reloadRequired ? Icon.refresh() : Icon.check(),
                             intent: 'success',
                             onClick: () => model.saveAsync()
                         })
-                    )
+                    ]
                 })
             ]
         });

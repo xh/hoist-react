@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {defaults, isFinite, isString, isFunction} from 'lodash';
@@ -38,6 +38,7 @@ const UP_TICK = '▴',
  *      align vertically with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
  * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
+ * @param {string} [opts.prefix] - prefix to prepend to value (between the number and its sign).
  * @param {string} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - CSS class of label <span>,
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
@@ -62,6 +63,7 @@ export function fmtNumber(v, {
     forceLedgerAlign = true,
     withPlusSign = false,
     withSignGlyph = false,
+    prefix = null,
     label = null,
     labelCls = 'xh-units-label',
     colorSpec = null,
@@ -73,14 +75,16 @@ export function fmtNumber(v, {
     if (isInvalidInput(v)) return nullDisplay;
 
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad);
-    let str = numbro(v).format(formatConfig);
+    const str = numbro(v).format(formatConfig).replace('-', '');
+    let sign = null;
 
-    if (ledger || withSignGlyph) str = str.replace('-', '');
-    if (withPlusSign && v > 0) {
-        str = '+' + str;
+    if (v > 0 && withPlusSign) {
+        sign = '+';
+    } else if (v < 0 && !ledger) {
+        sign = '-';
     }
 
-    const opts = {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, originalValue};
+    const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue};
     return asElement ? fmtNumberElement(v, opts) : fmtNumberString(v, opts);
 }
 
@@ -182,11 +186,28 @@ export function fmtPercent(v, opts = {}) {
     return fmtNumber(v, opts);
 }
 
+/**
+ * Render a minimally formatted, full precision number, suitable for use in tooltips.
+ * Only ledger opt is supported.
+ *
+ * @param {number} v - value to format.
+ * @param {Object} [opts]
+ * @param {boolean} [opts.ledger] - true to use ledger format.
+ */
+export function fmtNumberTooltip(v, {ledger = false} = {}) {
+    return fmtNumber(v, {
+        ledger,
+        forceLedgerAlign: false,
+        precision: MAX_NUMERIC_PRECISION,
+        zeroPad: false
+    });
+}
+
 //---------------
 // Implementation
 //---------------
 function fmtNumberElement(v, opts = {}) {
-    const {str, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
+    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
 
     // CSS classes
     const cls = [];
@@ -199,6 +220,12 @@ function fmtNumberElement(v, opts = {}) {
 
     if (withSignGlyph) {
         items.push(signGlyph(v, asElement));
+    } else if (sign) {
+        items.push(sign);
+    }
+
+    if (isString(prefix)) {
+        items.push(prefix);
     }
 
     items.push(str);
@@ -225,38 +252,46 @@ function fmtNumberElement(v, opts = {}) {
 }
 
 function fmtNumberString(v, opts = {}) {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip} = opts;
-    let str = opts.str;
+    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts;
+    let ret = '';
 
     if (withSignGlyph) {
-        str = signGlyph(v) + '&nbsp;' + str;
+        ret += signGlyph(v) + '&nbsp;';
+    } else if (sign) {
+        ret += sign;
     }
+
+    if (isString(prefix)) {
+        ret += prefix;
+    }
+
+    ret += str;
 
     if (isString(label)) {
         if (labelCls) {
-            str += fmtSpan(label, {className: labelCls});
+            ret += fmtSpan(label, {className: labelCls});
         } else {
-            str += label;
+            ret += label;
         }
     }
 
     if (ledger) {
         if (v < 0) {
-            str = '(' + str + ')';
+            ret = '(' + ret + ')';
         } else if (forceLedgerAlign) {
-            str += LEDGER_ALIGN_PLACEHOLDER;
+            ret += LEDGER_ALIGN_PLACEHOLDER;
         }
     }
 
     if (colorSpec) {
-        str = fmtSpan(str, {className: valueColor(v, colorSpec)});
+        ret = fmtSpan(ret, {className: valueColor(v, colorSpec)});
     }
 
     if (tooltip) {
-        str = fmtSpan(str, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts)});
     }
 
-    return str;
+    return ret;
 }
 
 function signGlyph(v, asElement) {
@@ -313,12 +348,7 @@ function isInvalidInput(v) {
 
 function processToolTip(tooltip, opts) {
     if (tooltip === true) {
-        return fmtNumber(opts.originalValue, {
-            ledger: opts.ledger,
-            forceLedgerAlign: false,
-            precision: MAX_NUMERIC_PRECISION,
-            zeroPad: false
-        });
+        return fmtNumberTooltip(opts.originalValue, opts);
     } else if (isFunction(tooltip)) {
         return tooltip(opts.originalValue);
     } else {

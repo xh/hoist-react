@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import React, {Component} from 'react';
@@ -18,7 +18,7 @@ export class AboutPanel extends Component {
 
     render() {
         return div({
-            className: 'xh-admin-about-panel',
+            className: 'xh-admin-about-panel xh-tiled-bg',
             items: [
                 h1(Icon.info(), 'About This Application'),
                 ...this.renderTables(),

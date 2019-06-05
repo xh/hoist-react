@@ -2,20 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
 
-import {fragment, div} from '@xh/hoist/cmp/layout';
+import {fragment, div, span, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import {size, isEmpty} from 'lodash';
+import classNames from 'classnames';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
@@ -47,7 +48,7 @@ export class DimensionChooser extends Component {
     }
 
     get buttonWidth() {
-        return withDefault(this.props.buttonWidth, undefined);
+        return withDefault(this.props.buttonWidth, 150);
     }
 
     render() {
@@ -57,7 +58,8 @@ export class DimensionChooser extends Component {
         return div(
             this.renderDialog(),
             button({
-                text: value.map(it => dimensions[it].label).join(' \u203a '),
+                className: 'xh-dim-button',
+                item: span(value.map(it => dimensions[it].label).join(' \u203a ')),
                 width: this.buttonWidth,
                 onClick: () => model.showMenu()
             })
@@ -69,12 +71,12 @@ export class DimensionChooser extends Component {
     //--------------------
     onDimChange = (dim, i) => {
         this.model.addPendingDim(dim, i);
-    }
+    };
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
         this.model.closeMenu();
-    }
+    };
 
     //---------------------------
     // Rendering dialog
@@ -86,6 +88,7 @@ export class DimensionChooser extends Component {
         return dialog({
             className: this.getClassName('xh-dim-dialog'),
             title: 'Group By',
+            icon: Icon.treeList(),
             isOpen: model.isMenuOpen,
             onCancel: () => model.commitPendingValueAndClose(),
             width: this.dialogWidth,
@@ -114,13 +117,18 @@ export class DimensionChooser extends Component {
             {history, dimensions} = model;
 
         const historyItems = history.map((value, i) => {
-            const labels = value.map(h => dimensions[h].label);
+            const labels = value.map(h => dimensions[h].label),
+                isActive = value === model.value;
             return button({
-                className: 'dim-history-btn',
-                title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
-                text: labels.join(' \u203a '),
+                className: classNames('dim-history-btn',
+                    isActive ? 'dim-history-btn--active' : null),
                 key: `dim-history-${i}`,
                 modifier: 'quiet',
+                items: [
+                    span(` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`),
+                    filler(),
+                    div({item: isActive ? Icon.check() : null, style: {width: 25}})
+                ],
                 onClick: () => {
                     this.onSetFromHistory(value);
                 }
@@ -135,13 +143,11 @@ export class DimensionChooser extends Component {
         return [
             button({
                 icon: Icon.x(),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.closeMenu()
             }),
             button({
                 icon: Icon.edit(),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.showEditor()
             })
@@ -221,13 +227,11 @@ export class DimensionChooser extends Component {
             button({
                 icon: Icon.arrowLeft(),
                 omit: isEmpty(model.history),
-                modifier: 'quiet',
                 flex: 1,
                 onClick: () => model.showHistory()
             }),
             button({
-                icon: Icon.check({className: 'xh-green'}),
-                modifier: 'quiet',
+                icon: Icon.check(),
                 flex: 1,
                 onClick: () => model.commitPendingValueAndClose()
             })

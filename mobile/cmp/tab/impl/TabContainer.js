@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -30,8 +30,8 @@ export class TabContainer extends Component {
     constructor(props) {
         super(props);
         throwIf(
-            !['top', 'bottom'].includes(this.model.switcherPosition),
-            'Mobile TabContainer only supports top and bottom tab switcher positions at this time.'
+            !['top', 'bottom', 'none'].includes(this.model.switcherPosition),
+            "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
         );
     }
 
@@ -45,7 +45,8 @@ export class TabContainer extends Component {
             position: switcherPosition,
             index: activeTab ? tabs.indexOf(activeTab) : 0,
             renderTabs: () => tabs.map(tabModel => this.renderTab(tabModel)),
-            onPreChange: (e) => model.activateTab(tabs[e.index].id)
+            onPreChange: (e) => model.activateTab(tabs[e.index].id),
+            visible: switcherPosition !== 'none'
         });
     }
 

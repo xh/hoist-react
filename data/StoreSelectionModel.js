@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel} from '@xh/hoist/core';
@@ -16,14 +16,16 @@ import {castArray, intersection, union} from 'lodash';
 @HoistModel
 export class StoreSelectionModel {
 
-    store = null;
-    mode = null;
+    /** @member {Store} */
+    store;
+    /** @member {string} */
+    mode;
 
     @observable.ref ids = [];
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
-     * @param {BaseStore} c.store - Store containing the data.
+     * @param {Store} c.store - Store containing the data.
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
@@ -102,3 +104,4 @@ export class StoreSelectionModel {
         };
     }
 }
+

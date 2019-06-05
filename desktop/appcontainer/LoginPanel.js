@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -11,7 +11,6 @@ import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -52,7 +51,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Username...',
                             autoFocus: true,
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
+                            onKeyDown: this.onKeyDown,
                             autoComplete: 'on',
                             width: null
                         }),
@@ -62,7 +61,7 @@ export class LoginPanel extends Component {
                             placeholder: 'Password...',
                             type: 'password',
                             commitOnChange: true,
-                            onKeyPress: this.onKeyPress,
+                            onKeyDown: this.onKeyDown,
                             autoComplete: 'on',
                             width: null
                         }),
@@ -77,7 +76,7 @@ export class LoginPanel extends Component {
                             item: loginMessage
                         }) : null
                     ],
-                    bbar: toolbar(
+                    bbar: [
                         filler(),
                         button({
                             text: 'Login',
@@ -86,7 +85,7 @@ export class LoginPanel extends Component {
                             disabled: !model.isValid,
                             onClick: this.onSubmit
                         })
-                    )
+                    ]
                 })
             ]
         });
@@ -96,7 +95,7 @@ export class LoginPanel extends Component {
         this.model.submit();
     };
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key === 'Enter') {
             this.onSubmit();
         }

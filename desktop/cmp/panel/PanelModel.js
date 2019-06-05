@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
@@ -69,8 +69,8 @@ export class PanelModel {
         side,
         collapsedRenderMode = 'lazy',
         prefName = null,
-        showSplitter = true,
-        showSplitterCollapseButton = true,
+        showSplitter = resizable || collapsible,
+        showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true
     }) {
         throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelModel");

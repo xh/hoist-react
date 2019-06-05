@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
 import {wait} from '@xh/hoist/promise';
@@ -120,7 +120,7 @@ export class DateInput extends HoistInput {
 
                 onBlur: this.onBlur,
                 onFocus: this.onFocus,
-                onKeyPress: this.onKeyPress
+                onKeyDown: this.onKeyDown
             },
             // See Hoist #757. Blueprint setting arbitrary, narrower limits without these
             maxDate: props.maxDate || moment().add(100, 'years').toDate(),
@@ -202,7 +202,7 @@ export class DateInput extends HoistInput {
         this.forcePopoverClose();
     };
 
-    onKeyPress = (ev) => {
+    onKeyDown = (ev) => {
         if (ev.key == 'Enter') this.doCommit();
     };
 

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 
@@ -83,7 +83,8 @@ export class TabModel {
     get refreshMode() {
         return this._refreshMode || this.containerModel.refreshMode;
     }
-    
+
+    @computed
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }

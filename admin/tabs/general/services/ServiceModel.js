@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
@@ -54,7 +54,8 @@ export class ServiceModel {
     }
 
     processRawData(r) {
-        r.provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
-        r.displayName = lowerFirst(r.name.replace('hoistCore', ''));
+        const provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
+        const displayName = lowerFirst(r.name.replace('hoistCore', ''));
+        return {provider, displayName, ...r};
     }
 }

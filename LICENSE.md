@@ -10,7 +10,7 @@ within, does not offer public support or a license at this time, makes no warran
 as to the functionality, correctness, or fitness of this software, and shall not be held liable for
 its use outside the scope of a structured consulting engagement.
 
-Copyright © 2018 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2019 Extremely Heavy Industries Inc. - all rights reserved
 
  ------------------------------------------
 

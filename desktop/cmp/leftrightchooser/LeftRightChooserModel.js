@@ -2,14 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2018 Extremely Heavy Industries Inc.
+ * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LocalStore} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {isNil} from 'lodash';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -122,14 +120,14 @@ export class LeftRightChooserModel {
             };
 
         this.leftModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             columns: [leftTextCol, groupCol]
         });
 
         this.rightModel = new GridModel({
-            store: new LocalStore({fields}),
+            store: {fields},
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             columns: [rightTextCol, groupCol]
@@ -174,21 +172,21 @@ export class LeftRightChooserModel {
 
     preprocessData(data) {
         return data
-            .filter(rec => !rec.exclude)
-            .map(raw => {
-                raw.group = raw.group || this._ungroupedName;
-                raw.side = raw.side || 'left';
-                raw.id = isNil(raw.id) ? XH.genId() : raw.id;
-                return raw;
+            .filter(r => !r.exclude)
+            .map(r => {
+                return {
+                    id: XH.genId(),
+                    group: this._ungroupedName,
+                    side: 'left',
+                    ...r
+                };
             });
     }
 
     moveRows(rows) {
         rows.forEach(rec => {
             if (rec.locked) return;
-
-            const rawRec = this._data.find(raw => raw === rec.raw);
-            rawRec.side = (rec.side === 'left' ? 'right' : 'left');
+            rec.raw.side = (rec.side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();
