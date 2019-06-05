@@ -79,6 +79,13 @@ export class StoreSelectionModel {
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
+    /** Select all filtered records. */
+    @action
+    selectAll() {
+        this.select(this.store.records);
+    }
+
+
     /** Clear the selection. */
     @action
     clear() {
