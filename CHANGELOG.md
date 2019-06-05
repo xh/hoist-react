@@ -352,7 +352,6 @@
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
 
-
 ## v19.0.1 - 2019-02-12
 
 ### 🐞 Bug Fixes
