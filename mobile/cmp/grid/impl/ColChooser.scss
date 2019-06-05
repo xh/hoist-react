@@ -32,19 +32,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-
-    &.pinned-columns {
-      flex: none;
-
-      // We use top padding and hide the placeholder to
-      // only allow inserting *before* the pinned column
-      &.xh-col-chooser-list-over {
-        padding-top: 35px;
-      }
-      & > div:not(.xh-col-chooser-row) {
-        display: none !important;
-      }
-    }
   }
 
   .xh-col-chooser-row {

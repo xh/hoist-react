@@ -27,11 +27,6 @@ export class ColChooserModel {
     @observable enablePinFirstRow = true;
 
     @computed
-    get pinnedColumns() {
-        return this.getPinned(this.columns);
-    }
-
-    @computed
     get visibleColumns() {
         return this.getVisible(this.columns);
     }
@@ -95,7 +90,7 @@ export class ColChooserModel {
 
     onHideBtnClick(colId, hide) {
         // When moving between lists, update idx to appear at the end of the destination sublist
-        let toIdx = this.pinnedColumns.length + this.visibleColumns.length;
+        let toIdx = this.visibleColumns.length;
         if (hide) toIdx += this.hiddenColumns.length;
 
         this.moveToIndex(colId, toIdx);
@@ -167,23 +162,18 @@ export class ColChooserModel {
         });
 
         this.setColumns([
-            ...this.getPinned(columns),
             ...this.getVisible(columns),
             ...this.getHidden(columns)
         ]);
 
-        this.setPinFirst(!!this.getPinned(columns).length);
-    }
-
-    getPinned(cols) {
-        return cols.filter(it => it.pinned);
+        this.setPinFirst(columns.length && columns[0].pinned);
     }
 
     getVisible(cols) {
-        return cols.filter(it => !it.pinned && !it.hidden);
+        return cols.filter(it => !it.hidden);
     }
 
     getHidden(cols) {
-        return cols.filter(it => !it.pinned && it.hidden);
+        return cols.filter(it => it.hidden);
     }
 }
