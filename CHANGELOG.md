@@ -330,11 +330,6 @@ execution of time-consuming loops.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
 
-
-### 🐞 Bug Fixes
-* `RestGrid`'s `extraToolbarItems` prop can take either a function or a string. Handles a console warning.
-
-
 ## v19.0.1 - 2019-02-12
 
 ### 🐞 Bug Fixes
