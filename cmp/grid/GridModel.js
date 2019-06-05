@@ -514,7 +514,7 @@ export class GridModel {
      * property is not updated with state changes.
      *
      * @param {String} colId
-     * @returns {string|boolean}
+     * @returns {(string|boolean)}
      */
     getColumnPinned(colId) {
         const state = this.getStateForColumn(colId);
@@ -711,7 +711,7 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
- * @property {string|boolean} [pinned] - 'left'|'right' if pinned, false if not
+ * @property {(string|boolean)} [pinned] - 'left'|'right' if pinned, false if not
  */
 
 /**
