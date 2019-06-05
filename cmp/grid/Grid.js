@@ -145,7 +145,7 @@ export class Grid extends Component {
     }
 
     render() {
-        const {model, props, agOptions, onKeyDown} = this,
+        const {model, agOptions, onKeyDown} = this,
             {treeMode, agGridModel} = model;
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
