@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {castArray, isEmpty} from 'lodash';
+import {castArray, isEmpty, isFunction} from 'lodash';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -27,9 +27,12 @@ export class RestGridToolbar extends Component {
 
     renderToolbarItems() {
         const {model} = this,
-            {unit, toolbarActions: actions, gridModel} = model,
-            extraItemsFn = this.props.extraToolbarItems,
-            extraItems = extraItemsFn ? castArray(extraItemsFn()) : [];
+            {unit, toolbarActions: actions, gridModel} = model;
+
+        let extraItems = this.props.extraToolbarItems;
+        if (isFunction(extraItems)) extraItems = extraItems();
+        extraItems = extraItems ? castArray(extraItems) : [];
+
 
         return [
             recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
