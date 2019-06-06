@@ -35,7 +35,9 @@ export class ColChooserModel {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
+            leftEmptyText: 'No more columns to add.',
             rightTitle: 'Displayed Columns',
+            rightEmptyText: 'No columns will be visible.',
             leftSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
