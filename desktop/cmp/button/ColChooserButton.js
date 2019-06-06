@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {div, vbox} from '@xh/hoist/cmp/layout';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import PT from 'prop-types';
@@ -53,18 +54,23 @@ export class ColChooserButton extends Component {
 
         return popover({
             position: withDefault(popoverPosition, 'auto'),
-            minimal: true,
             isOpen: colChooserModel.isPopoverOpen,
             target: button({
                 icon: withDefault(icon, Icon.gridPanel()),
                 title: withDefault(title, 'Choose grid columns...'),
                 ...rest
             }),
-            content: colChooser({
-                model: colChooserModel,
-                width: chooserWidth,
-                height: chooserHeight
-            }),
+            content: vbox(
+                div({
+                    className: 'xh-popover-title',
+                    item: 'Choose Columns'
+                }),
+                colChooser({
+                    model: colChooserModel,
+                    width: chooserWidth,
+                    height: chooserHeight
+                })
+            ),
             onInteraction: (willOpen) => {
                 if (willOpen) {
                     colChooserModel.openPopover();
