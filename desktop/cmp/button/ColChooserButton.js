@@ -4,13 +4,15 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
 import {Component} from 'react';
-import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import PT from 'prop-types';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
 
 
 /**
@@ -27,22 +29,50 @@ export class ColChooserButton extends Component {
         ...Button.propTypes,
 
         /** GridModel of the grid for which this button should show a chooser. */
-        gridModel: PT.instanceOf(GridModel).isRequired
+        gridModel: PT.instanceOf(GridModel).isRequired,
+
+        /** Position for chooser popover, as per Blueprint docs. */
+        popoverPosition: PT.oneOf([
+            'top-left', 'top', 'top-right',
+            'right-top', 'right', 'right-bottom',
+            'bottom-right', 'bottom', 'bottom-left',
+            'left-bottom', 'left', 'left-top',
+            'auto'
+        ]),
+
+        /** Width for the opened chooser */
+        chooserWidth: PT.number,
+
+        /** Height for the opened chooser */
+        chooserHeight: PT.number
     };
 
     render() {
-        const {icon, title, onClick, gridModel, ...rest} = this.props;
+        const {icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest} = this.props,
+            {colChooserModel} = gridModel;
 
-        return button({
-            icon: withDefault(icon, Icon.gridPanel()),
-            title: withDefault(title, 'Choose grid columns...'),
-            onClick: withDefault(onClick, this.showChooser),
-            ...rest
+        return popover({
+            position: withDefault(popoverPosition, 'auto'),
+            minimal: true,
+            isOpen: colChooserModel.isPopoverOpen,
+            target: button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                title: withDefault(title, 'Choose grid columns...'),
+                ...rest
+            }),
+            content: colChooser({
+                model: colChooserModel,
+                width: chooserWidth,
+                height: chooserHeight
+            }),
+            onInteraction: (willOpen) => {
+                if (willOpen) {
+                    colChooserModel.openPopover();
+                } else {
+                    colChooserModel.close();
+                }
+            }
         });
-    }
-
-    showChooser = () => {
-        this.props.gridModel.showColChooser();
     }
 
 }
