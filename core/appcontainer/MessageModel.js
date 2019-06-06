@@ -4,8 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {FormModel, required} from '@xh/hoist/cmp/form';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -19,6 +20,7 @@ export class MessageModel {
     title = null;
     icon = null;
     message = null;
+    input = null;
     confirmText = null;
     cancelText = null;
     confirmIntent = null;
@@ -32,10 +34,19 @@ export class MessageModel {
 
     @observable isOpen = true;
 
+    @managed
+    formModel = new FormModel({
+        fields: [{
+            name: 'value',
+            rules: [required]
+        }]
+    });
+
     constructor(config) {
-        this.message = config.message;
         this.title = config.title;
         this.icon = config.icon;
+        this.message = config.message;
+        this.input = config.input;
         this.confirmText = config.confirmText;
         this.cancelText = config.cancelText;
         this.confirmIntent = config.confirmIntent;
@@ -54,9 +65,13 @@ export class MessageModel {
 
     @action
     doConfirm() {
-        if (this.onConfirm) this.onConfirm();
-        this._resolver(true);
-        this.close();
+        if (this.input) {
+            this.doSubmitAsync();
+        } else {
+            if (this.onConfirm) this.onConfirm();
+            this._resolver(true);
+            this.close();
+        }
     }
 
     @action
@@ -69,6 +84,15 @@ export class MessageModel {
     //-----------------------
     // Implementation
     //-----------------------
+    async doSubmitAsync() {
+        await this.formModel.validateAsync();
+        if (!this.formModel.isValid) return;
+
+        if (this.onConfirm) this.onConfirm();
+        this._resolver(this.formModel.getData().value);
+        this.close();
+    }
+
     @action
     close() {
         this.isOpen = false;

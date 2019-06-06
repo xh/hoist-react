@@ -6,9 +6,14 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/mobile/cmp/form';
+import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
+
+import './Message.scss';
 import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
@@ -24,7 +29,7 @@ class Message extends Component {
     render() {
         const model = this.model,
             isOpen = model && model.isOpen,
-            {icon, title, message, cancelText, confirmText} = model,
+            {icon, title, message, input, formModel, cancelText, confirmText} = model,
             buttons = [];
 
         if (!isOpen) return null;
@@ -40,6 +45,7 @@ class Message extends Component {
         if (confirmText) {
             buttons.push(button({
                 text: confirmText,
+                disabled: input ? !formModel.isValid : false,
                 onClick: this.onConfirm
             }));
         }
@@ -53,13 +59,30 @@ class Message extends Component {
             icon,
             title,
             buttons,
-            content: message,
+            className: 'xh-message',
+            content: div(
+                div({omit: !message, className: 'xh-message-content', item: message}),
+                this.getInput()
+            ),
             onCancel: this.onCancel
         });
     }
 
-    onConfirm = () =>   {this.model.doConfirm()}
-    onCancel = () =>    {this.model.doCancel()}
+    getInput() {
+        const {input, formModel} = this.model;
+        if (!input) return null;
+        return form({
+            model: formModel,
+            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+            item: formField({
+                field: 'value',
+                item: input == true ? textInput({autoFocus: true}) : input
+            })
+        });
+    }
+
+    onConfirm = () =>   {this.model.doConfirm()};
+    onCancel = () =>    {this.model.doCancel()};
 
 }
 export const message = elemFactory(Message);

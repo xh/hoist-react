@@ -330,6 +330,17 @@ class XHClass {
     }
 
     /**
+     * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
+     * Can provide a custom input control with the input prop (true to use default TextInput).
+     *
+     * @param {Object} config - see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
+     */
+    prompt(config) {
+        return this.acm.messageSourceModel.prompt(config);
+    }
+
+    /**
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
      * @param {Object} config - options for toast instance.

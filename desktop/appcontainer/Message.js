@@ -8,9 +8,13 @@ import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
+import './Message.scss';
 import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
@@ -34,16 +38,33 @@ export class Message extends Component {
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
+            className: 'xh-message',
             items: [
-                dialogBody(model.message),
+                dialogBody(
+                    model.message,
+                    this.getInput()
+                ),
                 toolbar(this.getButtons())
             ],
             ...this.props
         });
     }
 
+    getInput() {
+        const {input, formModel} = this.model;
+        if (!input) return null;
+        return form({
+            model: formModel,
+            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+            item: formField({
+                field: 'value',
+                item: input == true ? textInput({autoFocus: true}) : input
+            })
+        });
+    }
+
     getButtons() {
-        const {confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
+        const {input, formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
         return [
             filler(),
             button({
@@ -55,12 +76,13 @@ export class Message extends Component {
             button({
                 text: confirmText,
                 intent: confirmIntent,
+                disabled: input ? !formModel.isValid : false,
                 onClick: this.onConfirm
             })
         ];
     }
 
-    onConfirm = () =>   {this.model.doConfirm()}
-    onCancel = () =>    {this.model.doCancel()}
+    onConfirm = () =>   {this.model.doConfirm()};
+    onCancel = () =>    {this.model.doCancel()};
 }
 export const message = elemFactory(Message);

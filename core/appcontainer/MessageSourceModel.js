@@ -39,6 +39,11 @@ export class MessageSourceModel {
         return this.message(config);
     }
 
+    prompt(config) {
+        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel', input: true});
+        return this.message(config);
+    }
+
     //-----------------------------------
     // Implementation
     //------------------------------------
