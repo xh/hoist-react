@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual, isNil, isString} from 'lodash';
+import {isEqual, isNil} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -52,6 +52,9 @@ export class Record {
         return this.store.getChildrenById(this.id, false);
     }
 
+    get isSummary() {
+        return this === this.store.summaryRecord;
+    }
 
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all
@@ -72,8 +75,7 @@ export class Record {
      * @param {Record} [c.parent] - parent record, if any.
      */
     constructor({data, raw, store, parent}) {
-        const {idSpec} = store,
-            id = isString(idSpec) ? data[idSpec] : idSpec(data);
+        const id = store.buildRecordId(data);
 
         throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 

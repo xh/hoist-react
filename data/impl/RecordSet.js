@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js/';
-import {Record} from '../Record';
+
+import {throwIf} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -122,29 +122,24 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
+
     createRecords(rawData) {
         const ret = new Map();
-        rawData.forEach(raw => this.createRecord(raw, ret, null));
+        rawData.forEach(raw => this.buildRecords(raw, ret, null));
         return ret;
     }
 
-    createRecord(raw, records, parent) {
-        const {store} = this;
-
-        let data = raw;
-        if (store.processRawData) {
-            data = store.processRawData(raw);
-            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
-        }
-
-        const rec = new Record({data, raw, parent, store});
+    buildRecords(raw, records, parent) {
+        const rec = this.store.createRecord(raw, parent);
         throwIf(
             records.has(rec.id),
             `ID ${rec.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
         );
+
         records.set(rec.id, rec);
-        if (data.children) {
-            data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
+
+        if (raw.children) {
+            raw.children.forEach(rawChild => this.buildRecords(rawChild, records, rec));
         }
     }
 
