@@ -15,6 +15,9 @@
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
+* The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
+  disruptive alternative to the modal dialog approach used previously. The chooser still appears in
+  a modal dialog on mobile and when opened from the desktop grid context menu.
 
 ### 🐞 Bug Fixes
 

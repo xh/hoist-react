@@ -14,19 +14,15 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
  */
 @HoistModel
 export class LeftRightChooserModel {
-    /**
-     * Grid Model for the left-hand side.
-     * @type GridModel
-     */
-    @managed
-    leftModel = null;
 
-    /**
-     * Grid Model for the right-hand side.
-     * @type GridModel
-     */
-    @managed
-    rightModel = null;
+    /** @type {GridModel} */
+    @managed leftModel;
+
+    /** @type {GridModel} */
+    @managed rightModel;
+
+    /** @type {function} */
+    onChange;
 
     hasDescription = false;
     leftGroupingEnabled = false;
@@ -69,6 +65,7 @@ export class LeftRightChooserModel {
     /**
      * @param {Object} c - LeftRightChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
+     * @param {function} [c.onChange] - callback for when items change sides
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
      * @param {?string} [c.leftTitle] - title of the left-side list.
      * @param {boolean} [c.leftSorted] - true to sort items on the left-side list.
@@ -83,6 +80,7 @@ export class LeftRightChooserModel {
      */
     constructor({
         data = [],
+        onChange,
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftSorted = false,
@@ -93,6 +91,7 @@ export class LeftRightChooserModel {
         rightGroupingEnabled = true,
         rightGroupingExpanded = true
     }) {
+        this.onChange = onChange;
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;
         this.rightGroupingEnabled = rightGroupingEnabled;
@@ -190,6 +189,7 @@ export class LeftRightChooserModel {
         });
 
         this.refreshStores();
+        if (this.onChange) this.onChange();
     }
 
     syncSelectionReaction() {

@@ -22,7 +22,11 @@ export class ColChooserModel {
     @managed
     lrModel = null;
 
+    // Show in dialog
     @observable isOpen = false;
+
+    // Show in popover
+    @observable isPopoverOpen = false;
 
     /**
      * @param {GridModel} gridModel - model for the grid to be managed.
@@ -33,7 +37,10 @@ export class ColChooserModel {
             leftTitle: 'Available Columns',
             rightTitle: 'Displayed Columns',
             leftSorted: true,
-            rightGroupingEnabled: false
+            rightGroupingEnabled: false,
+            onChange: () => {
+                if (this.isPopoverOpen) this.commit();
+            }
         });
     }
 
@@ -44,8 +51,15 @@ export class ColChooserModel {
     }
 
     @action
+    openPopover() {
+        this.syncChooserData();
+        this.isPopoverOpen = true;
+    }
+
+    @action
     close() {
         this.isOpen = false;
+        this.isPopoverOpen = false;
     }
 
     commit() {
