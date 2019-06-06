@@ -14,21 +14,16 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
  */
 @HoistModel
 export class LeftRightChooserModel {
-    /**
-     * Grid Model for the left-hand side.
-     * @type GridModel
-     */
-    @managed
-    leftModel = null;
 
-    /**
-     * Grid Model for the right-hand side.
-     * @type GridModel
-     */
-    @managed
-    rightModel = null;
+    /** @type {GridModel} */
+    @managed leftModel;
 
-    onChange = null;
+    /** @type {GridModel} */
+    @managed rightModel;
+
+    /** @type {function} */
+    onChange;
+
     hasDescription = false;
     leftGroupingEnabled = false;
     rightGroupingEnabled = false;
