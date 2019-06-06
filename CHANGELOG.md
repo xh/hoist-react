@@ -22,6 +22,10 @@
   when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
   multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
 
+### 📚 Libraries
+
+* react-select `~2.4 -> ~3.0`
+
 ## v23.0.0 - 2019-05-30 
 
 ### 🎁 New Features
