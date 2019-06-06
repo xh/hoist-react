@@ -13,7 +13,7 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -37,6 +37,7 @@ import {
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 import {managed} from '../../core/mixins';
+import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -93,6 +94,8 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
+    /** @member {(string|boolean)} */
+    @bindable showSummary = false;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -112,6 +115,8 @@ export class GridModel {
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
+     *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -121,9 +126,10 @@ export class GridModel {
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
      * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
-     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
@@ -142,6 +148,7 @@ export class GridModel {
         store,
         columns,
         treeMode = false,
+        showSummary = false,
         selModel,
         stateModel = null,
         emptyText = null,
@@ -151,6 +158,7 @@ export class GridModel {
         compact = false,
         showHover = false,
         rowBorders = false,
+        cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
 
@@ -163,6 +171,8 @@ export class GridModel {
         ...rest
     }) {
         this.treeMode = treeMode;
+        this.showSummary = showSummary;
+
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
@@ -184,6 +194,7 @@ export class GridModel {
             showHover,
             rowBorders,
             stripeRows,
+            cellBorders,
             showCellFocus
         });
 
@@ -268,14 +279,17 @@ export class GridModel {
     get compact() { return this.agGridModel.compact}
     setCompact(compact) { this.agGridModel.setCompact(compact)}
 
+    get showHover() { return this.agGridModel.showHover }
+    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+
     get rowBorders() { return this.agGridModel.rowBorders }
     setRowBorders(rowBorders) { this.agGridModel.setRowBorders(rowBorders) }
 
     get stripeRows() { return this.agGridModel.stripeRows }
     setStripeRows(stripeRows) { this.agGridModel.setStripeRows(stripeRows) }
 
-    get showHover() { return this.agGridModel.showHover }
-    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+    get cellBorders() { return this.agGridModel.cellBorders }
+    setCellBorders(cellBorders) { this.agGridModel.setCellBorders(cellBorders) }
 
     get showCellFocus() { return this.agGridModel.showCellFocus }
     setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
@@ -359,6 +373,11 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
+    }
+
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
@@ -400,6 +419,15 @@ export class GridModel {
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
+    }
+
+    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    @debounced(0)
+    noteAgSelectionStateChanged() {
+        const {selModel, agGridModel} = this;
+        selModel.select(agGridModel.getSelectedRowNodeIds());
     }
 
     /**

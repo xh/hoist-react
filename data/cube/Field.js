@@ -56,8 +56,8 @@ export class Field {
      * @param {boolean} [c.isDimension] - true to allow this field to be used for grouping.
      * @param {(string|Aggregator)} [c.aggregator] - instance of a Hoist Cube Aggregator (from the
      *      aggregate package), or string alias for the same (e.g. 'MAX').
-     * @para {CanAggregateFn} [c.canAggregateFn] - function to determine if aggregation
-     *      should be performed at any given level of a query result..
+     * @param {CanAggregateFn} [c.canAggregateFn] - function to determine if aggregation
+     *      should be performed at any given level of a query result.
      * @param {boolean} [c.isLeafDimension] - true if any further groupings below this dimension
      *      would be derivative (have only one member).
      * @param {string?} [c.parentDimension] - name of field that is a 'parent' dimension of this

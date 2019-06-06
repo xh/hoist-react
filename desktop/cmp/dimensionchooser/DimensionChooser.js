@@ -38,7 +38,7 @@ export class DimensionChooser extends Component {
         buttonWidth: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired,
+        model: PT.instanceOf(DimensionChooserModel).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,
@@ -84,12 +84,12 @@ export class DimensionChooser extends Component {
     //--------------------
     onDimChange = (dim, i) => {
         this.model.addPendingDim(dim, i);
-    }
+    };
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
         this.model.closeMenu();
-    }
+    };
 
     // Handle user clicks outside of the popover (which would by default close it).
     onInteraction = (nextOpenState, e) => {
@@ -220,7 +220,7 @@ export class DimensionChooser extends Component {
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
 
         let children = pendingValue.map((dim, i) => {
-            const options = model.dimOptionsForLevel(i),
+            const options = model.dimOptionsForLevel(i, dim),
                 marginLeft = LEFT_PAD + (INDENT * i),
                 width = this.popoverWidth - marginLeft - X_BTN_WIDTH;
 
@@ -229,7 +229,7 @@ export class DimensionChooser extends Component {
                 items: [
                     select({
                         options,
-                        value: dimensions[dim].label,
+                        value: dim,
                         disabled: isEmpty(options),
                         enableFilter: false,
                         width,

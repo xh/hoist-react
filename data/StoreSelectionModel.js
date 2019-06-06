@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, computed} from '@xh/hoist/mobx';
-import {castArray, intersection, union} from 'lodash';
+import {castArray, intersection, union, isEqual} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -67,7 +67,7 @@ export class StoreSelectionModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records);
-        if (this.mode == 'disabled')  return;
+        if (this.mode == 'disabled') return;
         if (this.mode == 'single' && records.length > 1) {
             records = [records[0]];
         }
@@ -76,6 +76,11 @@ export class StoreSelectionModel {
         }).filter(id => {
             return this.store.getById(id, true);
         });
+
+        if (isEqual(ids, this.ids)) {
+            return;
+        }
+
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
 
@@ -84,7 +89,6 @@ export class StoreSelectionModel {
     clear() {
         this.select([]);
     }
-
 
     //------------------------
     // Implementation

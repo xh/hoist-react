@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import PT from 'prop-types';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {NavigatorModel} from './NavigatorModel';
@@ -20,6 +21,11 @@ import './Navigator.scss';
 export class Navigator extends Component {
 
     static modelClass = NavigatorModel;
+
+    static propTypes = {
+        /** Primary component model instance. */
+        model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]).isRequired
+    };
 
     baseClassName = 'xh-navigator';
     
