@@ -87,7 +87,9 @@ export class StoreSelectionModel {
     /** Select all filtered records. */
     @action
     selectAll() {
-        this.select(this.store.records);
+        if (this.mode === 'multiple') {
+            this.select(this.store.records);
+        }
     }
 
 

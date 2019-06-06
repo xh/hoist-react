@@ -597,8 +597,9 @@ export class Grid extends Component {
     }
 
     onKeyDown = (evt) => {
-        if (evt.ctrlKey && evt.key == 'a') {
-            this.model.selModel.selectAll();
+        const {selModel} = this.model;
+        if ((evt.ctrlKey || evt.metaKey) && evt.key == 'a' && selModel.mode === 'multiple') {
+            selModel.selectAll();
             return;
         }
 
