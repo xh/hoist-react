@@ -15,6 +15,7 @@
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
+* Added `XH.prompt()`, which shows a popup which includes a HoistInput.
 
 ### 🐞 Bug Fixes
 
