@@ -41,7 +41,7 @@
     "react-beautiful-dnd": "~11.0.3",
     "react-dropzone": "~10.1.4",
     "react-onsenui": "~1.11.2",
-    "react-select": "~2.4.2",
+    "react-select": "^3.0.4",
     "react-transition-group": "~2.8.0",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
