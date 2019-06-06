@@ -25,7 +25,6 @@ export class ColChooserDialog extends Component {
             icon: Icon.gridPanel(),
             title: 'Choose Columns',
             className: 'xh-grid-column-chooser',
-            transitionName: 'none',
             isOpen: true,
             onClose: this.onClose,
             item: colChooser({model})
