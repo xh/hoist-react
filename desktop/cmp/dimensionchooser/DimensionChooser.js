@@ -139,6 +139,7 @@ export class DimensionChooser extends Component {
             target,
             isOpen: isMenuOpen,
             targetClassName: 'xh-dim-popover',
+            popoverClassName: 'xh-dim-chooser-popover xh-popup--framed',
             position: 'bottom',
             content: vbox({
                 width: this.popoverWidth,
@@ -330,7 +331,7 @@ export class DimensionChooser extends Component {
         if (!title) return null;
 
         return div({
-            className: 'xh-popover-title',
+            className: 'xh-popup__title',
             item: title
         });
     }
