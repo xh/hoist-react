@@ -17,7 +17,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
- * GridModel.enableColChooser config option.
+ * GridModel.colChooser config option.
  *
  * This component displays both available and currently visible columns in two left/right
  * grids, allowing users to toggle columns on and off within its associated grid.
