@@ -119,7 +119,7 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {isMenuOpen, activeMode, enableClear, value} = this.model,
+        const {isMenuOpen, activeMode} = this.model,
             styleAsInput = this.styleButtonAsInput,
             className = styleAsInput ? 'xh-dim-button xh-dim-button--as-input' : 'xh-dim-button';
 
