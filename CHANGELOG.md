@@ -18,6 +18,8 @@
 * The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
   disruptive alternative to the modal dialog approach used previously. The chooser still appears in
   a modal dialog on mobile and when opened from the desktop grid context menu.
+* `DimensionChooser` now better supports its 'empty' configuration with values of `null` or `[]`.
+   See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
 
 ### 🐞 Bug Fixes
 

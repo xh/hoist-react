@@ -63,7 +63,6 @@ export class DimensionChooserModel {
      *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
      *      dimension does not support any further sub-groupings.
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
-     *      If neither are specified, the first available dimension will be used as the value.
      * @param {string} [c.historyPreference] - preference key used to persist the user's most
      *      recently selected groupings for easy re-selection.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
@@ -82,19 +81,28 @@ export class DimensionChooserModel {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.historyPreference = historyPreference;
-
+        this.enableClear = enableClear;
+        
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
-
-        // Set control's initial value with priorities 1) prefService 2) initialValue prop 3) 1st item in dimensions prop
         this.history = this.loadHistory();
-        initialValue = withDefault(initialValue,  [this.dimensionVals[0]]);
+
+
+        // Set control's initial value with priorities
+        //  history -> initialValue -> 1st item or []
+        if (!this.validateValue(initialValue)) {
+            initialValue = enableClear || isEmpty(this.dimensionVals) ?  [] : [this.dimensionVals[0]];
+        }
+
         this.value = this.pendingValue = !isEmpty(this.history) ? this.history[0] : initialValue;
-        this.enableClear = enableClear;
     }
 
     @action
     setValue(value) {
+        if (!this.validateValue(value)) {
+            console.warn('Attempted to set DimChooser to invalid value: ' + value);
+            return;
+        }
         this.value = value;
         this.addToHistory(value);
     }
@@ -181,13 +189,11 @@ export class DimensionChooserModel {
         );
 
         const history = historyPreference ? cloneDeep(prefService.get(historyPreference)) : [];
-        return this.validateHistory(history);
+        return isEmpty(history) ? [] : history.filter(v => this.validateValue(v));
     }
 
-    validateHistory(history) {
-        return isEmpty(history) ?
-            [] :
-            history.filter(value => isArray(value) && value.every(h => this.dimensionVals.includes(h)));
+    validateValue(value) {
+        return value == null || (isArray(value) && value.every(h => this.dimensionVals.includes(h)));
     }
 
     addToHistory(value) {
