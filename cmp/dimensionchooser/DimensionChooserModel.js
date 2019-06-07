@@ -44,6 +44,7 @@ export class DimensionChooserModel {
     historyPreference = null;
     dimensions = null;
     dimensionVals = null;
+    enableClear = false;
 
     // Internal state
     history = null;
@@ -68,13 +69,15 @@ export class DimensionChooserModel {
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
+     * @param {boolean} [c.enableClear] - Support clearing the control by removing all dimensions?
      */
     constructor({
         dimensions,
         initialValue,
         historyPreference,
         maxHistoryLength = 5,
-        maxDepth = 4
+        maxDepth = 4,
+        enableClear = false
     }) {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
@@ -87,6 +90,7 @@ export class DimensionChooserModel {
         this.history = this.loadHistory();
         initialValue = withDefault(initialValue,  [this.dimensionVals[0]]);
         this.value = this.pendingValue = !isEmpty(this.history) ? this.history[0] : initialValue;
+        this.enableClear = enableClear;
     }
 
     @action

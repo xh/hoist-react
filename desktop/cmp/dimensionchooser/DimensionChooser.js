@@ -11,7 +11,7 @@ import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
 import {size, isEmpty} from 'lodash';
@@ -46,6 +46,9 @@ export class DimensionChooser extends Component {
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number,
 
+        /** Text to represent empty state (i.e. value = null or [])*/
+        emptyText: PT.string,
+
         /** True (default) to style target button as an input field - blends better in toolbars. */
         styleButtonAsInput: PT.bool
     };
@@ -71,6 +74,11 @@ export class DimensionChooser extends Component {
     get styleButtonAsInput() {
         return withDefault(this.props.styleButtonAsInput, true);
     }
+
+    get emptyText() {
+        return withDefault(this.props.emptyText, '[Ungrouped]');
+    }
+
 
     render() {
         return div({
@@ -111,7 +119,7 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {isMenuOpen, activeMode} = this.model,
+        const {isMenuOpen, activeMode, enableClear, value} = this.model,
             styleAsInput = this.styleButtonAsInput,
             className = styleAsInput ? 'xh-dim-button xh-dim-button--as-input' : 'xh-dim-button';
 
@@ -142,12 +150,16 @@ export class DimensionChooser extends Component {
 
     getButtonText() {
         const staticText = this.props.buttonText;
-        return staticText !== undefined ? staticText : this.getCurrDimensionLabels().join(' › ');
+        if (staticText != undefined) return staticText;
+        if (isEmpty(this.model.value)) return this.emptyText;
+            
+        return this.getCurrDimensionLabels().join(' › ');
     }
 
     getButtonTitle() {
         const staticTitle = this.props.buttonTitle;
         if (staticTitle != undefined) return staticTitle;
+        if (isEmpty(this.model.value)) return this.emptyText;
 
         const labels = this.getCurrDimensionLabels();
         return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
@@ -217,7 +229,7 @@ export class DimensionChooser extends Component {
     //--------------------
     renderSelectEditors() {
         const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
-            {pendingValue, dimensions, maxDepth, leafInPending} = model;
+            {pendingValue, dimensions, maxDepth, leafInPending, enableClear, showAddSelect} = model;
 
         let children = pendingValue.map((dim, i) => {
             const options = model.dimOptionsForLevel(i, dim),
@@ -240,12 +252,21 @@ export class DimensionChooser extends Component {
                         icon: Icon.x({className: 'xh-red'}),
                         maxWidth: X_BTN_WIDTH,
                         minWidth: X_BTN_WIDTH,
-                        disabled: pendingValue.length === 1,
+                        disabled: !enableClear && pendingValue.length === 1,
                         onClick: () => model.removePendingDim(dim)
                     })
                 ]
             });
         });
+
+        if (isEmpty(pendingValue) && !showAddSelect) {
+            children.push(
+                hbox({
+                    className: 'xh-dim-popover-row',
+                    items: [filler(), this.emptyText, filler()]
+                })
+            );
+        }
 
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) {
@@ -291,7 +312,7 @@ export class DimensionChooser extends Component {
             vertical: true,
             items: [
                 history.map((value, i) => {
-                    const labels = value.map(h => dimensions[h].label);
+                    const labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
                     return button({
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
