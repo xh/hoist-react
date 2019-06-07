@@ -18,6 +18,8 @@
 * The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
   disruptive alternative to the modal dialog approach used previously. The chooser still appears in
   a modal dialog on mobile and when opened from the desktop grid context menu.
+* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
+  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
   the Blueprint library). This should result in a snappier user experience, especially when working
   on remote / virtual workstations.

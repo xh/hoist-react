@@ -24,6 +24,11 @@
 
     .xh-dim-popover-row {
       margin-bottom: 2px;
+
+      &--empty {
+        margin: var(--xh-pad-px) 0;
+        color: var(--xh-text-color-muted);
+      }
     }
 
     .xh-button {
