@@ -26,8 +26,10 @@
       margin-bottom: 2px;
 
       &--empty {
-        margin: var(--xh-pad-px) 0;
+        height: 30px;
+        line-height: 30px;
         color: var(--xh-text-color-muted);
+        text-align: center;
       }
     }
 

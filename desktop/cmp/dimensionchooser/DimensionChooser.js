@@ -11,10 +11,10 @@ import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
-import {div, filler} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
-import {size, isEmpty} from 'lodash';
+import {defaults, size, isEmpty} from 'lodash';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
@@ -55,6 +55,13 @@ export class DimensionChooser extends Component {
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number,
 
+        /**
+         * Additional props passed directly to editor Select components. Use with care - not all
+         * props are supported and can easily conflict with this component's usage. Defaulted
+         * props for override include `menuPosition` and
+         */
+        selectProps: PT.object,
+
         /** True (default) to style target button as an input field - blends better in toolbars. */
         styleButtonAsInput: PT.bool
     };
@@ -85,6 +92,12 @@ export class DimensionChooser extends Component {
         return withDefault(this.props.emptyText, 'Ungrouped');
     }
 
+    get selectProps() {
+        return defaults(this.props.selectProps || {}, {
+            enableFilter: false,
+            menuPlacement: 'auto'
+        });
+    }
 
     render() {
         return div({
@@ -253,9 +266,9 @@ export class DimensionChooser extends Component {
                         options,
                         value: dim,
                         disabled: isEmpty(options),
-                        enableFilter: false,
                         width,
                         marginLeft,
+                        ...this.selectProps,
                         onChange: (newDim) => this.onDimChange(newDim, i)
                     }),
                     button({
@@ -269,11 +282,12 @@ export class DimensionChooser extends Component {
             });
         });
 
+        // Empty state - when add button shown, insert emptyText above button.
         if (isEmpty(pendingValue) && !showAddSelect) {
             children.push(
-                hbox({
+                div({
                     className: 'xh-dim-popover-row--empty',
-                    items: [filler(), this.emptyText, filler()]
+                    item: this.emptyText
                 })
             );
         }
@@ -283,6 +297,13 @@ export class DimensionChooser extends Component {
             children.push(this.renderAddButtonOrSelect());
         }
 
+        // Empty state - when select shown, insert placeholder below to avoid layout shifting.
+        if (isEmpty(pendingValue) && showAddSelect) {
+            children.push(
+                div({className: 'xh-dim-popover-row--empty'})
+            );
+        }
+
         return vbox({
             className: 'xh-dim-popover-selects',
             items: children
@@ -290,7 +311,7 @@ export class DimensionChooser extends Component {
     }
 
     renderAddButtonOrSelect() {
-        const {model, LEFT_PAD, INDENT, X_BTN_WIDTH} = this,
+        const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
             {pendingValue} = model,
             pendingCount = pendingValue.length,
             marginLeft = LEFT_PAD + (pendingCount * INDENT),
@@ -299,11 +320,11 @@ export class DimensionChooser extends Component {
         return model.showAddSelect ?
             select({
                 options: model.dimOptionsForLevel(pendingCount),
-                enableFilter: false,
                 autoFocus: true,
                 openMenuOnFocus: true,
                 width,
                 marginLeft,
+                ...this.selectProps,
                 onChange: (newDim) => this.onDimChange(newDim, pendingCount)
             }) :
             button({
