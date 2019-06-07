@@ -81,7 +81,7 @@ export class StoreFilterField extends Component {
         includeChildren: PT.bool,
 
         /** Should parents be included when a record passes (default true)*/
-        includeParents: PT.bool,
+        includeParents: PT.bool
     };
 
     @observable value = '';
