@@ -72,11 +72,13 @@ export class LeftRightChooserModel {
      * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
      * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
      *      groups initially collapsed.
+     * @param {?string} [c.leftEmptyText] - text to display if left grid has no rows.
      * @param {?string} [c.rightTitle] - title of the right-side list.
      * @param {boolean} [c.rightSorted] - true to sort items on the right-side list.
      * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
+     * @param {?string} [c.rightEmptyText] - text to display if right grid has no rows.
      */
     constructor({
         data = [],
@@ -86,10 +88,12 @@ export class LeftRightChooserModel {
         leftSorted = false,
         leftGroupingEnabled = true,
         leftGroupingExpanded = true,
+        leftEmptyText = null,
         rightTitle = 'Selected',
         rightSorted = false,
         rightGroupingEnabled = true,
-        rightGroupingExpanded = true
+        rightGroupingExpanded = true,
+        rightEmptyText = null
     }) {
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
@@ -122,6 +126,7 @@ export class LeftRightChooserModel {
             store: {fields},
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
+            emptyText: leftEmptyText,
             columns: [leftTextCol, groupCol]
         });
 
@@ -129,6 +134,7 @@ export class LeftRightChooserModel {
             store: {fields},
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
+            emptyText: rightEmptyText,
             columns: [rightTextCol, groupCol]
         });
 

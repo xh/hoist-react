@@ -20,6 +20,9 @@
   a modal dialog on mobile and when opened from the desktop grid context menu.
 * `DimensionChooser` now better supports its 'empty' configuration with values of `null` or `[]`.
    See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+* Transitions have been disabled by default on desktop Dialog and Popover components (both are from
+  the Blueprint library). This should result in a snappier user experience, especially when working
+  on remote / virtual workstations.
 
 ### 🐞 Bug Fixes
 
