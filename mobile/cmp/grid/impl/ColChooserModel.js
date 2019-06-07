@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, settable, bindable, action} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {sortBy, clone, find} from 'lodash';
 
 /**
@@ -18,13 +18,13 @@ import {sortBy, clone, find} from 'lodash';
 @HoistModel
 export class ColChooserModel {
 
-    gridModel = null;
+    gridModel;
+    enablePinFirstCol;
 
     @settable @observable.ref columns = [];
     @bindable pinFirst;
 
     @observable isOpen = false;
-    @observable enablePinFirstRow = true;
 
     get visibleColumns() {
         return this.getVisible(this.columns);
@@ -35,10 +35,14 @@ export class ColChooserModel {
     }
 
     /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
+     * @param {Object} c - ColChooserModel configuration.
+     * @param {GridModel} c.gridModel - model for the grid to be managed.
+     * @param {boolean} [c.enablePinFirstCol] - show toggle for pinning first column.
      */
-    constructor(gridModel) {
+    constructor({gridModel, enablePinFirstCol}) {
         this.gridModel = gridModel;
+        this.enablePinFirstCol = withDefault(enablePinFirstCol, true);
+
         this.addReaction({
             track: () => this.pinFirst,
             run: this.updatePinnedColumn
@@ -56,10 +60,9 @@ export class ColChooserModel {
     }
 
     @action
-    open({enablePinFirstRow}) {
+    open() {
         this.syncChooserData();
         this.isOpen = true;
-        this.enablePinFirstRow = enablePinFirstRow;
     }
 
     @action

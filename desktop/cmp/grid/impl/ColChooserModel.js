@@ -17,10 +17,8 @@ import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 @HoistModel
 export class ColChooserModel {
 
-    gridModel = null;
-
-    @managed
-    lrModel = null;
+    gridModel;
+    @managed lrModel;
 
     // Show in dialog
     @observable isOpen = false;
@@ -29,9 +27,10 @@ export class ColChooserModel {
     @observable isPopoverOpen = false;
 
     /**
-     * @param {GridModel} gridModel - model for the grid to be managed.
+     * @param {Object} c - ColChooserModel configuration.
+     * @param {GridModel} c.gridModel - model for the grid to be managed.
      */
-    constructor(gridModel) {
+    constructor({gridModel}) {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',

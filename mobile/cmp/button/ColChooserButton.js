@@ -23,16 +23,13 @@ export class ColChooserButton extends Component {
 
     static propTypes = {
         /** GridModel of the grid for which this button should show a chooser. */
-        model: PT.instanceOf(GridModel).isRequired,
-
-        /** Allow pinning the first row **/
-        enablePinFirstRow: PT.bool
+        model: PT.instanceOf(GridModel).isRequired
     };
 
     static modelClass = GridModel;
 
     render() {
-        const {icon, onClick, model, enablePinFirstRow, ...rest} = this.props;
+        const {icon, onClick, model, ...rest} = this.props;
 
         return button({
             icon: withDefault(icon, Icon.gridPanel()),
@@ -42,9 +39,7 @@ export class ColChooserButton extends Component {
     }
 
     showChooser = () => {
-        this.model.showColChooser({
-            enablePinFirstRow: withDefault(this.props.enablePinFirstRow, true)
-        });
+        this.model.showColChooser();
     }
 
 }

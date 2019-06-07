@@ -40,7 +40,7 @@ export class ColChooser extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, gridModel, enablePinFirstRow, visibleColumns, hiddenColumns} = model;
+            {isOpen, gridModel, enablePinFirstCol, visibleColumns, hiddenColumns} = model;
 
         return dialogPanel({
             isOpen,
@@ -67,7 +67,7 @@ export class ColChooser extends Component {
                                 })
                             ],
                             bbar: toolbar({
-                                omit: !enablePinFirstRow,
+                                omit: !enablePinFirstCol,
                                 items: [
                                     label('Pin first column'),
                                     filler(),

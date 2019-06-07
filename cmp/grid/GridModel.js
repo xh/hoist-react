@@ -135,6 +135,7 @@ export class GridModel {
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableDragToPin] - true to allow the user to pin / unpin columns by dragging.
+     * @param {(Object|boolean)} [c.colChooser] - config for ColChooserModel, or true to create default.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -165,11 +166,14 @@ export class GridModel {
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
-
         enableDragToPin,
+
+        colChooser,
         enableColChooser = false,
+
         enableExport = false,
         exportOptions = {},
+
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
@@ -204,7 +208,7 @@ export class GridModel {
             showCellFocus
         });
 
-        this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
+        this.colChooserModel = this.parseColChooserModel(colChooser, enableColChooser);
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
     }
@@ -406,9 +410,9 @@ export class GridModel {
             .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
-    showColChooser(opts) {
+    showColChooser() {
         if (this.colChooserModel) {
-            this.colChooserModel.open(opts);
+            this.colChooserModel.open();
         }
     }
 
@@ -653,6 +657,20 @@ export class GridModel {
             'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
     }
 
+    parseColChooserModel(colChooser, enableColChooser) {
+        // Deprecation warning can be removed later
+        warnIf(enableColChooser, '`enableColChooser` is deprecated. Instead use `colChooser`');
+        colChooser = withDefault(colChooser, enableColChooser);
+
+        const ChooserModel = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
+        if (isPlainObject(colChooser)) {
+            return this.markManaged(new ChooserModel(defaults(colChooser,
+                {gridModel: this})));
+        } else if (colChooser) {
+            return this.markManaged(new ChooserModel({gridModel: this}));
+        }
+    }
+
     parseSelModel(selModel) {
         selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
 
@@ -687,11 +705,6 @@ export class GridModel {
             this.markManaged(ret);
         }
         return ret;
-    }
-
-    createChooserModel() {
-        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
-        return this.markManaged(new Model(this));
     }
 
     defaultContextMenuFn = (agParams, gridModel) => {
