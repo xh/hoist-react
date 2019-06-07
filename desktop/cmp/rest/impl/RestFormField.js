@@ -59,6 +59,7 @@ export class RestFormField extends Component {
         switch (type) {
             case 'bool':
                 return this.renderBoolean(fieldModel);
+            case 'int':
             case 'number':
                 return numberInput();
             case 'json':

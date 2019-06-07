@@ -43,7 +43,8 @@ export function elem(type, config = {}) {
     if (omit) return null;
 
     // 2) Read children from item[s] config.
-    const children = castArray(item || items).filter(c => c != null);
+    const itemConfig = item || items,
+        children = (itemConfig === undefined ? [] : castArray(itemConfig));
 
     // 3) Recapture API props that needed '$' prefix to avoid conflicts.
     ['$omit', '$item', '$items'].forEach(key => {

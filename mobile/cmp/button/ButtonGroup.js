@@ -27,7 +27,7 @@ export class ButtonGroup extends Component {
             buttons = castArray(children);
 
         buttons.forEach(button => {
-            throwIf(button.type.name !== 'Button', 'ButtonGroup child must be a Button.');
+            throwIf(button && button.type.name !== 'Button', 'ButtonGroup child must be a Button.');
         });
 
         return hbox({

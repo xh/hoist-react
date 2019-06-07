@@ -6,11 +6,15 @@
  */
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
-import {BaseStore, LocalStore, StoreSelectionModel} from '@xh/hoist/data';
-import {ColChooserModel as DesktopColChooserModel, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {Store, StoreSelectionModel} from '@xh/hoist/data';
+import {
+    ColChooserModel as DesktopColChooserModel,
+    StoreContextMenu
+} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     cloneDeep,
@@ -32,7 +36,8 @@ import {
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-
+import {managed} from '../../core/mixins';
+import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -54,24 +59,29 @@ export class GridModel {
     //------------------------
     // Immutable public properties
     //------------------------
-    /** @member {BaseStore} */
-    store = null;
+    /** @member {Store} */
+    store;
     /** @member {StoreSelectionModel} */
-    selModel = null;
+    selModel;
     /** @member {boolean} */
-    treeMode = false;
+    treeMode;
     /** @member {GridStateModel} */
-    stateModel = null;
+    stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel = null;
+    colChooserModel;
     /** @member {function} */
-    rowClassFn = null;
-    /** @member {function} */
-    contextMenuFn = null;
+    rowClassFn;
+    /** @member {GridStoreContextMenuFn} */
+    contextMenuFn;
+    /** @member {GridGroupSortFn} */
+    groupSortFn;
     /** @member {boolean} */
-    enableExport = false;
+    enableExport;
     /** @member {object} */
-    exportOptions = null;
+    exportOptions;
+
+    /** @member {AgGridModel} */
+    @managed agGridModel;
 
     //------------------------
     // Observable API
@@ -84,12 +94,8 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
-    /** @member {boolean} */
-    @observable compact = false;
-    /** @member {GridApi} */
-    @observable.ref agApi = null;
-    /** @member {ColumnApi} */
-    @observable.ref agColumnApi = null;
+    /** @member {(string|boolean)} */
+    @bindable showSummary = false;
     /** @member {string} */
     @bindable copyCellValue;
 
@@ -106,20 +112,14 @@ export class GridModel {
         'colChooser'
     ];
 
-    defaultContextMenu = () => {
-        if (XH.isMobile) return null;
-        return new StoreContextMenu({
-            items: GridModel.defaultContextMenuTokens,
-            gridModel: this
-        });
-    };
-
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {(BaseStore|Object)} [c.store] - a Store instance, or a config with which to create a
-     *      default LocalStore. If not supplied, store fields will be inferred from columns config.
+     * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
+     *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
+     *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -128,39 +128,58 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.compact] - true to render the grid in compact mode.
+     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.rowBorders] - true to render row borders.
+     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {boolean} [c.cellBorders] - true to render cell borders.
+     * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
      * @param {object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
-     *      Should return a string or array of strings. Receives record data as param.
-     * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu (desktop only)
-     * @param {*} [c...rest] - additional data to store
-     *      @see StoreContextMenu
+     *      Called with record data, returns a string or array of strings.
+     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
+     *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     *      StoreContextMenu when the grid is right-clicked (desktop only).
+     * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
         store,
         columns,
         treeMode = false,
+        showSummary = false,
         selModel,
         stateModel = null,
         emptyText = null,
         sortBy = [],
         groupBy = null,
+
         compact = false,
+        showHover = false,
+        rowBorders = false,
+        cellBorders = false,
+        stripeRows = true,
+        showCellFocus = false,
+
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
         rowClassFn = null,
-        contextMenuFn = () => this.defaultContextMenu(),
+        groupSortFn,
+        contextMenuFn,
         ...rest
     }) {
         this.treeMode = treeMode;
+        this.showSummary = showSummary;
+
         this.emptyText = emptyText;
-        this.contextMenuFn = contextMenuFn;
         this.rowClassFn = rowClassFn;
+        this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
+        this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
@@ -172,7 +191,15 @@ export class GridModel {
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
-        this.setCompact(compact);
+
+        this.agGridModel = new AgGridModel({
+            compact,
+            showHover,
+            rowBorders,
+            stripeRows,
+            cellBorders,
+            showCellFocus
+        });
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
@@ -197,25 +224,29 @@ export class GridModel {
      * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(filename, type, params = {}) {
-        if (!this.agApi) return;
+        const {agApi} = this.agGridModel;
+        if (!agApi) return;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
-            this.agApi.exportDataAsExcel(params);
+            agApi.exportDataAsExcel(params);
         } else if (type === 'csv') {
-            this.agApi.exportDataAsCsv(params);
+            agApi.exportDataAsCsv(params);
         }
     }
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {agApi, selModel} = this;
-        if (agApi) {
-            const idx = (this.groupBy && !this.treeMode) ? 1 : 0,
-                first = agApi.getDisplayedRowAtIndex(idx);
-
-            if (first) selModel.select(first);
+        const {agGridModel, selModel} = this;
+        if (!agGridModel.agApi) {
+            console.warn('Called selectFirst before the grid was ready!');
+            return;
         }
+
+        // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
+        const id = agGridModel.getFirstSelectableRowNodeId();
+
+        if (id) selModel.select(id);
     }
 
     copyRows(includeHeaders = false) {
@@ -243,6 +274,11 @@ export class GridModel {
         return this.store.empty;
     }
 
+    /** Are any records currently selected? */
+    get hasSelection() {
+        return !this.selModel.isEmpty;
+    }
+
     /**
      * Shortcut to the currently selected records (observable).
      * @see StoreSelectionModel.records
@@ -260,15 +296,26 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
-    @action
-    setAgApi(agApi) {
-        this.agApi = agApi;
-    }
+    get agApi() {return this.agGridModel.agApi}
+    get agColumnApi() {return this.agGridModel.agColumnApi}
 
-    @action
-    setAgColumnApi(columnApi) {
-        this.agColumnApi = columnApi;
-    }
+    get compact() { return this.agGridModel.compact}
+    setCompact(compact) { this.agGridModel.setCompact(compact)}
+
+    get showHover() { return this.agGridModel.showHover }
+    setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
+
+    get rowBorders() { return this.agGridModel.rowBorders }
+    setRowBorders(rowBorders) { this.agGridModel.setRowBorders(rowBorders) }
+
+    get stripeRows() { return this.agGridModel.stripeRows }
+    setStripeRows(stripeRows) { this.agGridModel.setStripeRows(stripeRows) }
+
+    get cellBorders() { return this.agGridModel.cellBorders }
+    setCellBorders(cellBorders) { this.agGridModel.setCellBorders(cellBorders) }
+
+    get showCellFocus() { return this.agGridModel.showCellFocus }
+    setShowCellFocus(showCellFocus) { this.agGridModel.setShowCellFocus(showCellFocus) }
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
@@ -338,11 +385,6 @@ export class GridModel {
         this.sortBy = sorters;
     }
 
-    @action
-    setCompact(compact) {
-        this.compact = compact;
-    }
-
     /** Load the underlying store. */
     async doLoadAsync(loadSpec) {
         throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
@@ -352,6 +394,11 @@ export class GridModel {
     /** Load the underlying store. */
     loadData(...args) {
         return this.store.loadData(...args);
+    }
+
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
     }
 
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
@@ -395,6 +442,15 @@ export class GridModel {
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
+    }
+
+    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    @debounced(0)
+    noteAgSelectionStateChanged() {
+        const {selModel, agGridModel} = this;
+        selModel.select(agGridModel.getSelectedRowNodeIds());
     }
 
     /**
@@ -502,7 +558,6 @@ export class GridModel {
         return c.children ? new ColumnGroup(c, this) : new Column(c, this);
     }
 
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -537,22 +592,13 @@ export class GridModel {
 
         const {groupIds, colIds} = this.collectIds(cols);
 
-        const colsHaveDupes = colIds.length != uniq(colIds).length;
-        throwIf(colsHaveDupes, 'All colIds in column collection must be unique.');
-
-        const groupColsHaveDupes = groupIds.length != uniq(groupIds).length;
-        throwIf(groupColsHaveDupes, 'All groupIds in column collection must be unique.');
+        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
+        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
-        );
-
-        warnIf(
-            !cols.some(c => c.flex),
-            `No columns have flex set (flex=true). Consider making the last column a flex column, 
-            or adding an 'emptyFlexCol' at the end of your columns array.`
         );
     }
 
@@ -580,17 +626,19 @@ export class GridModel {
     parseStore(store) {
         store = withDefault(store, {});
 
-        if (store instanceof BaseStore) {
+        if (store instanceof Store) {
             return store;
         }
 
         if (isPlainObject(store)) {
-
             // Ensure store config has a complete set of fields for all configured columns.
             const fields = store.fields || [],
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
                 colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
+
+            // ID is always present on a Record, yet will never be listed within store.fields.
+            pull(missingFieldNames, 'id');
 
             if (missingFieldNames.length) {
                 store = {
@@ -599,10 +647,11 @@ export class GridModel {
                 };
             }
 
-            return this.markManaged(new LocalStore(store));
+            return this.markManaged(new Store(store));
         }
 
-        throw XH.exception('The GridModel.store config must be either a concrete instance of BaseStore or a config to create one.');
+        throw XH.exception(
+            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
     }
 
     parseSelModel(selModel) {
@@ -613,7 +662,8 @@ export class GridModel {
         }
 
         if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel(defaults(selModel, {store: this.store})));
+            return this.markManaged(new StoreSelectionModel(defaults(selModel,
+                {store: this.store})));
         }
 
         // Assume its just the mode...
@@ -644,6 +694,19 @@ export class GridModel {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
         return this.markManaged(new Model(this));
     }
+
+    defaultContextMenuFn = (agParams, gridModel) => {
+        if (XH.isMobile) return null;
+        return new StoreContextMenu({
+            items: GridModel.defaultContextMenuTokens,
+            gridModel
+        });
+    }
+
+    defaultGroupSortFn = (a, b) => {
+        return a < b ? -1 : (a > b ? 1 : 0);
+    }
+
 }
 
 /**
@@ -651,4 +714,23 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ */
+
+/**
+ * @callback GridGroupSortFn - comparator for custom grid group sorting, provided to GridModel.
+ * @param {*} groupAVal - first group value to be compared.
+ * @param {*} groupBVal - second group value to be compared.
+ * @param {string} groupField - field name being grouped at this level.
+ * @param {Object} metadata - additional metadata with raw ag-Grid group nodes.
+ * @param {GridModel} metadata.gridModel - controlling GridModel.
+ * @param {RowNode} metadata.nodeA - first raw ag-Grid row node.
+ * @param {RowNode} metadata.nodeB - second raw ag-Grid row node.
+ * @returns {number} - 0 if group values are equal, <0 if `a` sorts first, >0 if `b` sorts first.
+ */
+
+/**
+ * @callback GridStoreContextMenuFn - context menu factory function, provided to GridModel.
+ * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
+ * @param {GridModel} gridModel - controlling GridModel instance
+ * @returns {StoreContextMenu} - context menu to display, or null
  */

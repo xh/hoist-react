@@ -145,17 +145,12 @@ export class FormModel {
     /** @member {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
-        return this.fields.some(m => m.isValidationPending);
+        return some(this.fields, m => m.isValidationPending);
     }
 
     /** @member {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
-    }
-
-    /** @member {boolean} - true if any fields are not valid. */
-    get isNotValid() {
-        return this.validationState == ValidationState.NotValid;
     }
 
     /** @member {String[]} - list of all validation errors for this form. */

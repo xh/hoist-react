@@ -9,7 +9,9 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
@@ -26,7 +28,7 @@ export class Panel extends Component {
 
     static propTypes = {
         /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
+        bbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
@@ -42,11 +44,19 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
 
+        /**
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a ReactElement specifying a LoadingIndicator instance - or -
+         *   + a PendingTaskModel for a default LoadingIndicator w/spinner bound to that model - or -
+         *   + true for a simple default LoadingIndicator.
+         */
+        loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
         /** Allow the panel to scroll vertically */
         scrollable: PT.bool,
 
         /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
+        tbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -62,6 +72,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
             scrollable,
             children,
             ...rest
@@ -77,29 +88,42 @@ export class Panel extends Component {
             layoutProps.flex = 'auto';
         }
 
-        // 2) Mask is as provided, or a default simple mask.
-        let maskElem = null;
-        if (maskProp === true) {
-            maskElem = mask({isDisplayed: true});
-        } else if (maskProp instanceof PendingTaskModel) {
-            maskElem = mask({model: maskProp, spinner: true});
-        } else if (isReactElement(maskProp)) {
-            maskElem = maskProp;
-        }
+        const parseToolbar = (barSpec) => {
+            return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
+        };
 
-        // 3) Prepare combined layout with header above core.
+        // 1) Prepare combined layout with header above core.
         return vbox({
             items: [
                 panelHeader({title, icon, headerItems}),
-                tbar || null,
+                parseToolbar(tbar),
                 vframe(castArray(children)),
-                bbar || null,
-                maskElem
+                parseToolbar(bbar),
+                this.parseLoadDecorator(maskProp, mask),
+                this.parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
             ...layoutProps,
             className: this.getClassName(scrollable ? 'xh-panel-scrollable' : null)
         });
+    }
+
+
+    //------------------------
+    // Implementation
+    //------------------------
+    // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
+    parseLoadDecorator(prop, cmp) {
+        let ret = null;
+        if (prop === true) {
+            ret = cmp({isDisplayed: true});
+        } else if (prop instanceof PendingTaskModel) {
+            ret = cmp({model: prop, spinner: true});
+        } else if (isReactElement(prop)) {
+            ret = prop;
+        }
+
+        return ret;
     }
 }
 

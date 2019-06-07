@@ -8,9 +8,7 @@ import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 
@@ -45,6 +43,15 @@ export class ColChooser extends Component {
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
+            headerItems: [
+                button({
+                    icon: Icon.undo({size: 'sm'}),
+                    style: {maxHeight: 16},
+                    modifier: 'quiet',
+                    omit: !gridModel.stateModel,
+                    onClick: () => model.restoreDefaults()
+                })
+            ],
             icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
             scrollable: true,
@@ -57,30 +64,28 @@ export class ColChooser extends Component {
                     onDragEnd: this.onDragEnd,
                     item: droppable({
                         droppableId: 'column-list',
-                        item: (dndProps) => this.renderColumnList(unpinnedColumns, {isDraggable: true, ref: dndProps.innerRef})
+                        item: (dndProps) => {
+                            return this.renderColumnList(unpinnedColumns, {
+                                isDraggable: true,
+                                ref: dndProps.innerRef,
+                                placeholder: dndProps.placeholder
+                            });
+                        }
                     })
                 })
             ],
-            bbar: toolbar(
+            bbar: [
                 button({
-                    text: 'Reset',
-                    icon: Icon.undo(),
-                    modifier: 'quiet',
-                    omit: !gridModel.stateModel,
-                    onClick: () => model.restoreDefaults()
-                }),
-                filler(),
-                button({
-                    text: 'Cancel',
-                    modifier: 'quiet',
+                    icon: Icon.x(),
+                    flex: 1,
                     onClick: () => model.close()
                 }),
                 button({
-                    text: 'Save',
                     icon: Icon.check(),
+                    flex: 1,
                     onClick: this.onOK
                 })
-            )
+            ]
         });
     }
 
@@ -97,19 +102,22 @@ export class ColChooser extends Component {
 
         const toIdx = destination.index + pinnedColumns.length; // Account for pinned columns
         this.model.moveToIndex(draggableId, toIdx);
-    }
+    };
 
     //------------------------
     // Implementation
     //------------------------
     renderColumnList(columns, props = {}) {
-        const {isDraggable, ...rest} = props;
+        const {isDraggable, placeholder, ...rest} = props;
 
         return div({
             className: 'xh-col-chooser-list',
-            items: columns.map((col, idx) => {
-                return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
-            }),
+            items: [
+                ...columns.map((col, idx) => {
+                    return isDraggable ? this.renderDraggableRow(col, idx) : this.renderRow(col);
+                }),
+                placeholder
+            ],
             ...rest
         });
     }

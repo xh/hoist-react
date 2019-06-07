@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, computed} from '@xh/hoist/mobx';
-import {castArray, intersection, union} from 'lodash';
+import {castArray, intersection, union, isEqual} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -16,14 +16,16 @@ import {castArray, intersection, union} from 'lodash';
 @HoistModel
 export class StoreSelectionModel {
 
-    store = null;
-    mode = null;
+    /** @member {Store} */
+    store;
+    /** @member {string} */
+    mode;
 
     @observable.ref ids = [];
 
     /**
      * @param {Object} c - StoreSelectionModel configuration.
-     * @param {BaseStore} c.store - Store containing the data.
+     * @param {Store} c.store - Store containing the data.
      * @param {string} [c.mode] - one of ['single', 'multiple', 'disabled'].
      */
     constructor({store, mode = 'single'}) {
@@ -65,7 +67,7 @@ export class StoreSelectionModel {
     @action
     select(records, clearSelection = true) {
         records = castArray(records);
-        if (this.mode == 'disabled')  return;
+        if (this.mode == 'disabled') return;
         if (this.mode == 'single' && records.length > 1) {
             records = [records[0]];
         }
@@ -74,15 +76,28 @@ export class StoreSelectionModel {
         }).filter(id => {
             return this.store.getById(id, true);
         });
+
+        if (isEqual(ids, this.ids)) {
+            return;
+        }
+
         this.ids = clearSelection ? ids : union(this.ids, ids);
     }
+
+    /** Select all filtered records. */
+    @action
+    selectAll() {
+        if (this.mode === 'multiple') {
+            this.select(this.store.records);
+        }
+    }
+
 
     /** Clear the selection. */
     @action
     clear() {
         this.select([]);
     }
-
 
     //------------------------
     // Implementation
@@ -102,3 +117,4 @@ export class StoreSelectionModel {
         };
     }
 }
+

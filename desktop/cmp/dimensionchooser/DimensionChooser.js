@@ -28,17 +28,26 @@ export class DimensionChooser extends Component {
     static modelClass = DimensionChooserModel;
 
     static propTypes = {
-        /** Width in pixels of the target button (that triggers show of popover). */
+        /** Icon for target button. */
+        buttonIcon: PT.element,
+
+        /** Static text for target button, or null (default) to display current dimensions. */
+        buttonText: PT.node,
+
+        /** Width in pixels of the target button. */
         buttonWidth: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DimensionChooserModel), PT.object]).isRequired,
+        model: PT.instanceOf(DimensionChooserModel).isRequired,
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,
 
         /** Width in pixels of the popover menu itself. */
-        popoverWidth: PT.number
+        popoverWidth: PT.number,
+
+        /** True (default) to style target button as an input field - blends better in toolbars. */
+        styleButtonAsInput: PT.bool
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -55,6 +64,14 @@ export class DimensionChooser extends Component {
         return withDefault(this.props.buttonWidth, 220);
     }
 
+    get buttonIcon() {
+        return this.props.buttonIcon;
+    }
+
+    get styleButtonAsInput() {
+        return withDefault(this.props.styleButtonAsInput, true);
+    }
+
     render() {
         return div({
             className: this.getClassName(),
@@ -67,12 +84,12 @@ export class DimensionChooser extends Component {
     //--------------------
     onDimChange = (dim, i) => {
         this.model.addPendingDim(dim, i);
-    }
+    };
 
     onSetFromHistory = (value) => {
         this.model.setValue(value);
         this.model.closeMenu();
-    }
+    };
 
     // Handle user clicks outside of the popover (which would by default close it).
     onInteraction = (nextOpenState, e) => {
@@ -94,14 +111,17 @@ export class DimensionChooser extends Component {
     // Rendering top-level menus
     //---------------------------
     renderDimensionMenu() {
-        const {value, dimensions, isMenuOpen, activeMode} = this.model,
-            labels = value.map(it => dimensions[it].label);
+        const {isMenuOpen, activeMode} = this.model,
+            styleAsInput = this.styleButtonAsInput,
+            className = styleAsInput ? 'xh-dim-button xh-dim-button--as-input' : 'xh-dim-button';
 
         const target = button({
-            item: labels.join(' \u203a '),
-            title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
+            item: this.getButtonText(),
+            title: this.getButtonTitle(),
+            icon: this.buttonIcon,
             width: this.buttonWidth,
-            className: 'xh-dim-button',
+            className,
+            minimal: styleAsInput,
             onClick: () => this.model.showMenu()
         });
 
@@ -118,6 +138,24 @@ export class DimensionChooser extends Component {
             }),
             onInteraction: (nextOpenState, e) => this.onInteraction(nextOpenState, e)
         });
+    }
+
+    getButtonText() {
+        const staticText = this.props.buttonText;
+        return staticText !== undefined ? staticText : this.getCurrDimensionLabels().join(' › ');
+    }
+
+    getButtonTitle() {
+        const staticTitle = this.props.buttonTitle;
+        if (staticTitle != undefined) return staticTitle;
+
+        const labels = this.getCurrDimensionLabels();
+        return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
+    }
+
+    getCurrDimensionLabels() {
+        const {value, dimensions} = this.model;
+        return value.map(it => dimensions[it].label);
     }
 
     renderHistoryMenu() {
@@ -182,7 +220,7 @@ export class DimensionChooser extends Component {
             {pendingValue, dimensions, maxDepth, leafInPending} = model;
 
         let children = pendingValue.map((dim, i) => {
-            const options = model.dimOptionsForLevel(i),
+            const options = model.dimOptionsForLevel(i, dim),
                 marginLeft = LEFT_PAD + (INDENT * i),
                 width = this.popoverWidth - marginLeft - X_BTN_WIDTH;
 
@@ -191,7 +229,7 @@ export class DimensionChooser extends Component {
                 items: [
                     select({
                         options,
-                        value: dimensions[dim].label,
+                        value: dim,
                         disabled: isEmpty(options),
                         enableFilter: false,
                         width,
@@ -271,7 +309,7 @@ export class DimensionChooser extends Component {
         if (!title) return null;
 
         return div({
-            className: 'xh-dim-popover-title',
+            className: 'xh-popover-title',
             item: title
         });
     }

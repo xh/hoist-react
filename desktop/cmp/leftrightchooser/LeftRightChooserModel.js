@@ -8,26 +8,21 @@ import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {computed} from '@xh/hoist/mobx';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {isNil} from 'lodash';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
 @HoistModel
 export class LeftRightChooserModel {
-    /**
-     * Grid Model for the left-hand side.
-     * @type GridModel
-     */
-    @managed
-    leftModel = null;
 
-    /**
-     * Grid Model for the right-hand side.
-     * @type GridModel
-     */
-    @managed
-    rightModel = null;
+    /** @type {GridModel} */
+    @managed leftModel;
+
+    /** @type {GridModel} */
+    @managed rightModel;
+
+    /** @type {function} */
+    onChange;
 
     hasDescription = false;
     leftGroupingEnabled = false;
@@ -70,30 +65,37 @@ export class LeftRightChooserModel {
     /**
      * @param {Object} c - LeftRightChooserModel configuration.
      * @param {LeftRightChooserItemDef[]} c.data - source data for both lists, split by `side`.
+     * @param {function} [c.onChange] - callback for when items change sides
      * @param {string} [c.ungroupedName] - placeholder group value when an item has no group.
      * @param {?string} [c.leftTitle] - title of the left-side list.
      * @param {boolean} [c.leftSorted] - true to sort items on the left-side list.
      * @param {boolean} [c.leftGroupingEnabled] - true to enable grouping on the left-side list.
      * @param {boolean} [c.leftGroupingExpanded] - false to show a grouped left-side list with all
      *      groups initially collapsed.
+     * @param {?string} [c.leftEmptyText] - text to display if left grid has no rows.
      * @param {?string} [c.rightTitle] - title of the right-side list.
      * @param {boolean} [c.rightSorted] - true to sort items on the right-side list.
      * @param {boolean} [c.rightGroupingEnabled] - true to enable grouping on the right-side list.
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
+     * @param {?string} [c.rightEmptyText] - text to display if right grid has no rows.
      */
     constructor({
         data = [],
+        onChange,
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftSorted = false,
         leftGroupingEnabled = true,
         leftGroupingExpanded = true,
+        leftEmptyText = null,
         rightTitle = 'Selected',
         rightSorted = false,
         rightGroupingEnabled = true,
-        rightGroupingExpanded = true
+        rightGroupingExpanded = true,
+        rightEmptyText = null
     }) {
+        this.onChange = onChange;
         this._ungroupedName = ungroupedName;
         this.leftGroupingEnabled = leftGroupingEnabled;
         this.rightGroupingEnabled = rightGroupingEnabled;
@@ -124,6 +126,7 @@ export class LeftRightChooserModel {
             store: {fields},
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
+            emptyText: leftEmptyText,
             columns: [leftTextCol, groupCol]
         });
 
@@ -131,6 +134,7 @@ export class LeftRightChooserModel {
             store: {fields},
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
+            emptyText: rightEmptyText,
             columns: [rightTextCol, groupCol]
         });
 
@@ -173,24 +177,25 @@ export class LeftRightChooserModel {
 
     preprocessData(data) {
         return data
-            .filter(rec => !rec.exclude)
-            .map(raw => {
-                raw.group = raw.group || this._ungroupedName;
-                raw.side = raw.side || 'left';
-                raw.id = isNil(raw.id) ? XH.genId() : raw.id;
-                return raw;
+            .filter(r => !r.exclude)
+            .map(r => {
+                return {
+                    id: XH.genId(),
+                    group: this._ungroupedName,
+                    side: 'left',
+                    ...r
+                };
             });
     }
 
     moveRows(rows) {
         rows.forEach(rec => {
             if (rec.locked) return;
-
-            const rawRec = this._data.find(raw => raw === rec.raw);
-            rawRec.side = (rec.side === 'left' ? 'right' : 'left');
+            rec.raw.side = (rec.side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();
+        if (this.onChange) this.onChange();
     }
 
     syncSelectionReaction() {

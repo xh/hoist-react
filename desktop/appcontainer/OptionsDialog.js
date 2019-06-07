@@ -10,7 +10,6 @@ import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -44,7 +43,7 @@ export class OptionsDialog extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, loadModel, formModel, requiresRefresh} = model;
+            {isOpen, loadModel, formModel, reloadRequired} = model;
 
         if (!model.hasOptions) return null;
         if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
@@ -68,7 +67,7 @@ export class OptionsDialog extends Component {
                             })
                         })
                     ),
-                    bbar: toolbar(
+                    bbar: [
                         restoreDefaultsButton(),
                         filler(),
                         button({
@@ -77,12 +76,12 @@ export class OptionsDialog extends Component {
                         }),
                         button({
                             disabled: !formModel.isDirty,
-                            text: requiresRefresh ? 'Save & Reload' : 'Save',
-                            icon: requiresRefresh ? Icon.refresh() : Icon.check(),
+                            text: reloadRequired ? 'Save & Reload' : 'Save',
+                            icon: reloadRequired ? Icon.refresh() : Icon.check(),
                             intent: 'success',
                             onClick: () => model.saveAsync()
                         })
-                    )
+                    ]
                 })
             ]
         });

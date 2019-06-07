@@ -9,12 +9,14 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 
 import './Panel.scss';
 
@@ -36,9 +38,6 @@ export class Panel extends Component {
     static modelClass = PanelModel;
 
     static propTypes = {
-        /** A toolbar to be docked at the bottom of the panel. */
-        bbar: PT.element,
-
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
 
@@ -46,18 +45,35 @@ export class Panel extends Component {
         icon: PT.element,
 
         /**
-         * Mask to render on this panel. Set to:
-         *   + a ReactElement specifying a Mask instance - or -
-         *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
-         *   + true for a simple default mask.
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a PendingTaskModel for an indicator w/spinner bound to that model (most common), or
+         *   + a ReactElement specifying a LoadingIndicator instance, or
+         *   + true for a default LoadingIndicator.
          */
-        mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+        loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
+
+        /**
+         * Mask to render on this panel. Set to:
+         *   + a PendingTaskModel for a mask w/spinner bound to that model (most common), or
+         *   + a ReactElement specifying a Mask instance - or -
+         *   + true for a default mask.
+         */
+        mask: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
 
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),
 
-        /** A toolbar to be docked at the top of the panel. */
-        tbar: PT.element,
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
+        tbar: PT.oneOfType([PT.element, PT.array]),
+
+        /**
+         * A toolbar to be docked at the top of the panel.
+         * If specified as an array, items will be passed as children to a Toolbar component.
+         */
+        bbar: PT.oneOfType([PT.element, PT.array]),
 
         /** Title text added to the panel's header. */
         title: PT.oneOfType([PT.string, PT.node])
@@ -73,6 +89,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
             children,
             model: modelProp,
             ...rest
@@ -95,7 +112,8 @@ export class Panel extends Component {
             collapsible = false,
             collapsed = false,
             collapsedRenderMode = null,
-            vertical = false
+            vertical = false,
+            showSplitter = false
         } = model || {};
 
         if (collapsed) {
@@ -105,33 +123,32 @@ export class Panel extends Component {
 
         let coreContents = null;
         if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && this.wasDisplayed)) {
+            const parseToolbar = (barSpec) => {
+                return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
+            };
+
             coreContents = vframe({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
-                    tbar || null,
+                    parseToolbar(tbar),
                     ...(castArray(children)),
-                    bbar || null
+                    parseToolbar(bbar)
                 ]
             });
         }
         if (!collapsed) this.wasDisplayed = true;
 
-        // 3) Mask is as provided, or a default simple mask.
-        let maskElem = null;
-        if (maskProp === true) {
-            maskElem = mask({isDisplayed: true});
-        } else if (maskProp instanceof PendingTaskModel) {
-            maskElem = mask({model: maskProp, spinner: true});
-        } else if (isReactElement(maskProp)) {
-            maskElem = maskProp;
-        }
+        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const processedPanelHeader = (title || icon || headerItems) ?
+            panelHeader({title, icon, headerItems, model}) :
+            null;
 
-        // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const item = vbox({
             items: [
-                panelHeader({title, icon, headerItems, model}),
+                processedPanelHeader,
                 coreContents,
-                maskElem
+                this.parseLoadDecorator(maskProp, mask),
+                this.parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
             ...layoutProps,
@@ -139,9 +156,28 @@ export class Panel extends Component {
         });
 
         // 5) Return, wrapped in resizable and its affordances if needed.
-        return resizable || collapsible ?
+        return resizable || collapsible || showSplitter ?
             resizeContainer({item, model}) :
             item;
     }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
+    parseLoadDecorator(prop, cmp) {
+        let ret = null;
+        if (prop === true) {
+            ret = cmp({isDisplayed: true});
+        } else if (prop instanceof PendingTaskModel) {
+            ret = cmp({model: prop, spinner: true});
+        } else if (isReactElement(prop)) {
+            ret = prop;
+        }
+
+        return ret;
+    }
+
 }
+
 export const panel = elemFactory(Panel);

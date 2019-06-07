@@ -10,6 +10,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
 import {elemFactory} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
+import {toLower} from 'lodash';
 
 import {
     faAddressCard,
@@ -37,6 +38,7 @@ import {
     faBooks,
     faBox,
     faBoxFull,
+    faBreadSlice,
     faBriefcase,
     faBuilding,
     faCalculator,
@@ -65,6 +67,7 @@ import {
     faCommentDots,
     faCompressAlt,
     faCopy,
+    faCube,
     faDatabase,
     faDownload,
     faEdit,
@@ -90,6 +93,7 @@ import {
     faFolder,
     faGift,
     faGlobe,
+    faGraduationCap,
     faHandPaper,
     faHandshake,
     faHistory,
@@ -100,9 +104,11 @@ import {
     faLink,
     faLock,
     faLockOpen,
+    faMask,
     faMapMarkerAlt,
     faMinusCircle,
     faMoon,
+    faNewspaper,
     faPaperclip,
     faPause,
     faPauseCircle,
@@ -115,11 +121,15 @@ import {
     faRocket,
     faSave,
     faSearch,
+    faShieldAlt,
+    faShieldCheck,
     faSignIn,
     faSignOut,
     faSkull,
     faSlidersHSquare,
+    faSpinner,
     faStar,
+    faStethoscope,
     faStop,
     faStopCircle,
     faStream,
@@ -201,6 +211,7 @@ import {
     faCommentDots as faCommentDotsLight,
     faCompressAlt as faCompressAltLight,
     faCopy as faCopyLight,
+    faCube as faCubeLight,
     faDatabase as faDatabaseLight,
     faDownload as faDownloadLight,
     faEdit as faEditLight,
@@ -226,6 +237,7 @@ import {
     faFolder as faFolderLight,
     faGift as faGiftLight,
     faGlobe as faGlobeLight,
+    faGraduationCap as faGraduationCapLight,
     faHandPaper as faHandPaperLight,
     faHandshake as faHandshakeLight,
     faHistory as faHistoryLight,
@@ -236,9 +248,11 @@ import {
     faLink as faLinkLight,
     faLock as faLockLight,
     faLockOpen as faLockOpenLight,
+    faMask as faMaskLight,
     faMapMarkerAlt as faMapMarkerAltLight,
     faMinusCircle as faMinusCircleLight,
     faMoon as faMoonLight,
+    faNewspaper as faNewspaperLight,
     faPaperclip as faPaperclipLight,
     faPause as faPauseLight,
     faPauseCircle as faPauseCircleLight,
@@ -251,11 +265,15 @@ import {
     faRocket as faRocketLight,
     faSave as faSaveLight,
     faSearch as faSearchLight,
+    faShieldAlt as faShieldAltLight,
+    faShieldCheck as faShieldCheckLight,
     faSignIn as faSignInLight,
     faSignOut as faSignOutLight,
     faSkull as faSkullLight,
     faSlidersHSquare as faSlidersHSquareLight,
+    faSpinner as faSpinnerLight,
     faStar as faStarLight,
+    faStethoscope as faStethoscopeLight,
     faStop as faStopLight,
     faStopCircle as faStopCircleLight,
     faStream as faStreamLight,
@@ -270,6 +288,7 @@ import {
     faTimes as faTimesLight,
     faTimesCircle as faTimesCircleLight,
     faTimesHexagon as faTimesHexagonLight,
+    faBreadSlice as faBreadSliceLight,
     faToolbox as faToolboxLight,
     faUndo as faUndoLight,
     faUniversity as faUniversityLight,
@@ -337,6 +356,7 @@ import {
     faCommentDots as faCommentDotsSolid,
     faCompressAlt as faCompressAltSolid,
     faCopy as faCopySolid,
+    faCube as faCubeSolid,
     faDatabase as faDatabaseSolid,
     faDownload as faDownloadSolid,
     faEdit as faEditSolid,
@@ -362,6 +382,7 @@ import {
     faFolder as faFolderSolid,
     faGift as faGiftSolid,
     faGlobe as faGlobeSolid,
+    faGraduationCap as faGraduationCapSolid,
     faHandPaper as faHandPaperSolid,
     faHandshake as faHandshakeSolid,
     faHistory as faHistorySolid,
@@ -372,9 +393,11 @@ import {
     faLink as faLinkSolid,
     faLock as faLockSolid,
     faLockOpen as faLockOpenSolid,
+    faMask as faMaskSolid,
     faMapMarkerAlt as faMapMarkerAltSolid,
     faMinusCircle as faMinusCircleSolid,
     faMoon as faMoonSolid,
+    faNewspaper as faNewspaperSolid,
     faPaperclip as faPaperclipSolid,
     faPause as faPauseSolid,
     faPauseCircle as faPauseCircleSolid,
@@ -387,11 +410,15 @@ import {
     faRocket as faRocketSolid,
     faSave as faSaveSolid,
     faSearch as faSearchSolid,
+    faShieldAlt as faShieldAltSolid,
+    faShieldCheck as faShieldCheckSolid,
     faSignIn as faSignInSolid,
     faSignOut as faSignOutSolid,
     faSkull as faSkullSolid,
     faSlidersHSquare as faSlidersHSquareSolid,
+    faSpinner as faSpinnerSolid,
     faStar as faStarSolid,
+    faStethoscope as faStethoscopeSolid,
     faStop as faStopSolid,
     faStopCircle as faStopCircleSolid,
     faStream as faStreamSolid,
@@ -406,6 +433,7 @@ import {
     faTimes as faTimesSolid,
     faTimesCircle as faTimesCircleSolid,
     faTimesHexagon as faTimesHexagonSolid,
+    faBreadSlice as faBreadSliceSolid,
     faToolbox as faToolboxSolid,
     faUndo as faUndoSolid,
     faUniversity as faUniversitySolid,
@@ -475,6 +503,7 @@ library.add(
     faCommentDots, faCommentDotsLight, faCommentDotsSolid,
     faCompressAlt, faCompressAltLight, faCompressAltSolid,
     faCopy, faCopyLight, faCopySolid,
+    faCube, faCubeLight, faCubeSolid,
     faDatabase, faDatabaseLight, faDatabaseSolid,
     faDownload, faDownloadLight, faDownloadSolid,
     faEdit, faEditLight, faEditSolid,
@@ -500,6 +529,7 @@ library.add(
     faFolder, faFolderLight, faFolderSolid,
     faGift, faGiftLight, faGiftSolid,
     faGlobe, faGlobeLight, faGlobeSolid,
+    faGraduationCap, faGraduationCapLight, faGraduationCapSolid,
     faHandPaper, faHandPaperLight, faHandPaperSolid,
     faHandshake, faHandshakeLight, faHandshakeSolid,
     faHistory, faHistoryLight, faHistorySolid,
@@ -509,10 +539,12 @@ library.add(
     faInfoCircle, faInfoCircleLight, faInfoCircleSolid,
     faLink, faLinkLight, faLinkSolid,
     faLock, faLockLight, faLockSolid,
+    faMask, faMaskLight, faMaskSolid,
     faLockOpen, faLockOpenLight, faLockOpenSolid,
     faMapMarkerAlt, faMapMarkerAltLight, faMapMarkerAltSolid,
     faMinusCircle, faMinusCircleLight, faMinusCircleSolid,
     faMoon, faMoonLight, faMoonSolid,
+    faNewspaper, faNewspaperLight, faNewspaperSolid,
     faPaperclip, faPaperclipLight, faPaperclipSolid,
     faPause, faPauseLight, faPauseSolid,
     faPauseCircle, faPauseCircleLight, faPauseCircleSolid,
@@ -525,11 +557,15 @@ library.add(
     faRocket, faRocketLight, faRocketSolid,
     faSave, faSaveLight, faSaveSolid,
     faSearch, faSearchLight, faSearchSolid,
+    faShieldAlt, faShieldAltLight, faShieldAltSolid,
+    faShieldCheck, faShieldCheckLight, faShieldCheckSolid,
     faSignIn, faSignInLight, faSignInSolid,
     faSignOut, faSignOutLight, faSignOutSolid,
     faSkull, faSkullLight, faSkullSolid,
     faSlidersHSquare, faSlidersHSquareLight, faSlidersHSquareSolid,
+    faSpinner, faSpinnerLight, faSpinnerSolid,
     faStar, faStarLight, faStarSolid,
+    faStethoscope, faStethoscopeLight, faStethoscopeSolid,
     faStop, faStopLight, faStopSolid,
     faStopCircle, faStopCircleLight, faStopCircleSolid,
     faStream, faStreamLight, faStreamSolid,
@@ -544,6 +580,7 @@ library.add(
     faTimes, faTimesLight, faTimesSolid,
     faTimesCircle, faTimesCircleLight, faTimesCircleSolid,
     faTimesHexagon, faTimesHexagonLight, faTimesHexagonSolid,
+    faBreadSlice, faBreadSliceLight, faBreadSliceSolid,
     faToolbox, faToolboxLight, faToolboxSolid,
     faUndo, faUndoLight, faUndoSolid,
     faUniversity, faUniversityLight, faUniversitySolid,
@@ -620,8 +657,10 @@ export const Icon = {
     contact(p)          {return fa(p, 'address-card')},
     copy(p)             {return fa(p, 'copy')},
     cross(p)            {return fa(p, 'times')},
+    cube(p)             {return fa(p, 'cube')},
     database(p)         {return fa(p, 'database')},
     delete(p)           {return fa(p, 'minus-circle')},
+    detail(p)           {return fa(p, 'search')},
     diff(p)             {return fa(p, 'exchange')},
     disabled(p)         {return fa(p, 'ban')},
     download(p)         {return fa(p, 'download')},
@@ -655,11 +694,13 @@ export const Icon = {
     gridPanel(p)        {return fa(p, 'table')},
     hand(p)             {return fa(p, 'hand-paper')},
     handshake(p)        {return fa(p, 'handshake')},
+    health(p)           {return fa(p, 'stethoscope')},
     history(p)          {return fa(p, 'history')},
     home(p)             {return fa(p, 'home')},
     inbox(p)            {return fa(p, 'inbox')},
     info(p)             {return fa(p, 'info-circle')},
     institution(p)      {return fa(p, 'university')},
+    learn(p)            {return fa(p, 'graduation-cap')},
     link(p)             {return fa(p, 'link')},
     list(p)             {return fa(p, 'align-justify')},
     location(p)         {return fa(p, 'map-marker-alt')},
@@ -667,7 +708,9 @@ export const Icon = {
     login(p)            {return fa(p, 'sign-in')},
     logout(p)           {return fa(p, 'sign-out')},
     mail(p)             {return fa(p, 'envelope')},
+    mask(p)             {return fa(p, 'mask')},
     moon(p)             {return fa(p, 'moon')},
+    news(p)             {return fa(p, 'newspaper')},
     office(p)           {return fa(p, 'building')},
     openExternal(p)     {return fa(p, 'external-link')},
     options(p)          {return fa(p, 'sliders-h-square')},
@@ -686,6 +729,9 @@ export const Icon = {
     search(p)           {return fa(p, 'search')},
     settings(p)         {return fa(p, 'sliders-h-square')},
     skull(p)            {return fa(p, 'skull')},
+    shield(p)           {return fa(p, 'shield-alt')},
+    shieldCheck(p)      {return fa(p, 'shield-check')},
+    spinner(p)          {return fa(p, 'spinner')},
     stop(p)             {return fa(p, 'stop')},
     stopCircle(p)       {return fa(p, 'stop-circle')},
     sun(p)              {return fa(p, 'sun')},
@@ -694,6 +740,7 @@ export const Icon = {
     table(p)            {return fa(p, 'table')},
     thumbsDown(p)       {return fa(p, 'thumbs-down')},
     thumbsUp(p)         {return fa(p, 'thumbs-up')},
+    toast(p)            {return fa(p, 'bread-slice')},
     toolbox(p)          {return fa(p, 'toolbox')},
     treeList(p)         {return fa(p, 'stream')},
     undo(p)             {return fa(p, 'undo')},
@@ -734,7 +781,7 @@ export const convertIconToSvg = function(iconElem, opts) {
  * @return {Element}
  */
 export const fileIcon = function(extension) {
-    switch (extension) {
+    switch (toLower(extension)) {
         case 'png':
         case 'gif':
         case 'jpg':
@@ -743,12 +790,17 @@ export const fileIcon = function(extension) {
         case 'doc':
         case 'docx':
             return Icon.fileWord();
+        case 'csv':
+            return Icon.fileCsv();
         case 'xls':
         case 'xlsx':
             return Icon.fileExcel();
         case 'ppt':
         case 'pptx':
             return Icon.filePowerpoint();
+        case 'msg':
+        case 'eml':
+            return Icon.mail();
         case 'pdf':
             return Icon.filePdf();
         case 'txt':

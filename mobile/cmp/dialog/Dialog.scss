@@ -12,7 +12,7 @@
     color: var(--xh-title-text-color);
     border-bottom: var(--xh-border-solid);
     background-color: var(--xh-title-bg);
-    font-size: 14px;
+    font-size: var(--xh-title-font-size-px);
 
     svg {
       margin-right: var(--xh-pad-px);
@@ -26,9 +26,9 @@
 
   &__toolbar {
     display: flex;
-    padding: var(--xh-pad-px);
-    border-top: var(--xh-border-solid);
-    background-color: var(--xh-bg-alt);
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    border-top: 1px solid var(--xh-tbar-border-color);
+    background-color: var(--xh-tbar-bg);
 
     .xh-button:not(:last-of-type) {
       margin-right: var(--xh-pad-px);

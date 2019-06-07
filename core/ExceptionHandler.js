@@ -145,6 +145,12 @@ export class ExceptionHandler {
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Message');
         ret.message = ret.message || exception.message || exception.name || 'An unknown error occurred.';
 
+        if (this.sessionMismatch(exception)) {
+            ret.title = 'Session Mismatch';
+            ret.message = 'Your session may no longer be active, or no longer matches with the server. Please refresh.';
+            ret.requireReload = true;
+        }
+
         if (this.sessionExpired(exception)) {
             ret.title = 'Authentication Error';
             ret.message = 'Your session has expired. Please login.';
@@ -152,6 +158,10 @@ export class ExceptionHandler {
         }
 
         return ret;
+    }
+
+    sessionMismatch(exception) {
+        return exception && exception.name === 'SessionMismatchException';
     }
 
     sessionExpired(exception) {

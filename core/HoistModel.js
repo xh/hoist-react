@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {EventSupport, ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
+import {ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
 import {applyMixin} from '@xh/hoist/utils/js';
 
 
@@ -20,14 +20,14 @@ import {applyMixin} from '@xh/hoist/utils/js';
  *
  * For HoistModels that need to load/refresh data consider implementing LoadSupport.
  * This decorator will load data into the model when its component is first mounted, and will
- * register the model with the nearest ResfreshContextModel for subsequent refreshes.
+ * register the model with the nearest RefreshContextModel for subsequent refreshes.
  *
  * @see LoadSupport
  */
 export function HoistModel(C) {
     return applyMixin(C, {
         name: 'HoistModel',
-        includes: [ManagedSupport, EventSupport, ReactiveSupport, XhIdSupport]
+        includes: [ManagedSupport, ReactiveSupport, XhIdSupport]
     });
 }
 

@@ -1,0 +1,112 @@
+
+.xh-grid {
+  //------------------------
+  // Core Header Classes
+  //------------------------
+  .xh-grid-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 32px;
+    cursor: pointer;
+
+    span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    svg {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-grid-header-icon-color);
+    }
+
+    &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
+      opacity: 0.5;
+    }
+
+    .xh-grid-header-menu-icon {
+      cursor: pointer;
+    }
+  }
+
+  .xh-column-header-align-right .xh-grid-header {
+    text-align: right;
+  }
+
+  .xh-column-header-align-center .xh-grid-header {
+    text-align: center;
+  }
+
+  //------------------------
+  // Core Cell Classes
+  //------------------------
+
+  // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
+  .ag-cell.xh-align-center {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  //------------------------
+  // Trees and Grouping
+  //------------------------
+  &--hierarchical {
+    // Generate indentations for tree grids with hierarchical data.
+    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
+    $xh-tree-indent: 10px !default;
+    @for $i from 0 to 50 {
+      .ag-ltr .ag-row-group-indent-#{$i} {
+        padding-left: $i * $xh-tree-indent;
+      }
+    }
+
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 20px;
+    }
+
+    .ag-group-contracted + .ag-group-value:not(:empty) {
+      margin-left: 0;
+    }
+  }
+
+  // Suppress default indenting when grid is in tree mode but no root records have children.
+  &--flat {
+    .ag-ltr .ag-row-group-leaf-indent {
+      margin-left: 0;
+    }
+  }
+
+}
+
+//------------------------
+// Multi-field (mobile)
+//------------------------
+.xh-multifield-renderer {
+  line-height: var(--xh-grid-multifield-line-height-px);
+
+  .xh-multifield-renderer-row {
+    display: flex;
+
+    &.xh-multifield-renderer-top {
+      padding: 4px 0 0;
+      font-size: var(--xh-grid-multifield-top-font-size-px);
+    }
+    &.xh-multifield-renderer-bottom {
+      font-size: var(--xh-grid-multifield-bottom-font-size-px);
+      color: var(--xh-text-color-muted);
+    }
+
+    .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
+      margin: 0 2px 0 0;
+    }
+  }
+}
+
+.xh-align-right .xh-multifield-renderer .xh-multifield-renderer-row {
+  justify-content: flex-end;
+
+  .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
+    margin: 0 0 0 2px;
+  }
+}
