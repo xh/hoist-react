@@ -39,8 +39,7 @@ export class RestForm extends Component {
                 this.renderForm(),
                 this.renderToolbar(),
                 mask({model: model.loadModel, spinner: true})
-            ],
-            transitionName: 'none'
+            ]
         });
     }
 
