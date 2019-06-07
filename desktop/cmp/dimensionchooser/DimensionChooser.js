@@ -309,7 +309,7 @@ export class DimensionChooser extends Component {
         if (!title) return null;
 
         return div({
-            className: 'xh-dim-popover-title',
+            className: 'xh-popover-title',
             item: title
         });
     }

@@ -15,12 +15,23 @@
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
+* The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
+  disruptive alternative to the modal dialog approach used previously. The chooser still appears in
+  a modal dialog on mobile and when opened from the desktop grid context menu.
+* Transitions have been disabled by default on desktop Dialog and Popover components (both are from
+  the Blueprint library). This should result in a snappier user experience, especially when working
+  on remote / virtual workstations.
 
 ### 🐞 Bug Fixes
 
 * Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
   when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
   multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+
+### 📚 Libraries
+
+* react-select `~2.4 -> ~3.0`
+* mobx-react `5.4.4 -> ~6.0.3`
 
 ## v23.0.0 - 2019-05-30 
 

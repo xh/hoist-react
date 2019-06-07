@@ -145,9 +145,8 @@ export class Grid extends Component {
     }
 
     render() {
-        const {model, props, agOptions} = this,
-            {treeMode, agGridModel} = model,
-            {onKeyDown} = props;
+        const {model, agOptions, onKeyDown} = this,
+            {treeMode, agGridModel} = model;
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
@@ -611,6 +610,15 @@ export class Grid extends Component {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
 
+    onKeyDown = (evt) => {
+        const {selModel} = this.model;
+        if ((evt.ctrlKey || evt.metaKey) && evt.key == 'a' && selModel.mode === 'multiple') {
+            selModel.selectAll();
+            return;
+        }
+
+        if (this.props.onKeyDown) this.props.onKeyDown(evt);
+    }
 }
 
 export const grid = elemFactory(Grid);
