@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, settable, bindable, computed, action} from '@xh/hoist/mobx';
+import {observable, settable, bindable, action} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {sortBy, clone, find} from 'lodash';
 
@@ -26,12 +26,10 @@ export class ColChooserModel {
     @observable isOpen = false;
     @observable enablePinFirstRow = true;
 
-    @computed
     get visibleColumns() {
         return this.getVisible(this.columns);
     }
 
-    @computed
     get hiddenColumns() {
         return sortBy(this.getHidden(this.columns), 'text');
     }
@@ -81,7 +79,7 @@ export class ColChooserModel {
                 it.pinned = 'left';
                 shouldPinFirst = false;
             } else {
-                it.pinned = false;
+                it.pinned = null;
             }
         });
 

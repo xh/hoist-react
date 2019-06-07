@@ -539,7 +539,7 @@ export class Grid extends Component {
         this.model.noteAgSelectionStateChanged();
     };
 
-    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
+    // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     };
@@ -562,10 +562,10 @@ export class Grid extends Component {
         this.model.agGridModel.agApi.sizeColumnsToFit();
     };
 
-    // Catches column pinning by dragging
+    // Catches column pinning changes triggered from ag-grid ui components
     onColumnPinned = (ev) => {
-        if (ev.source === 'uiColumnDragged') {
-            this.model.noteAgColumnPinnedStateChange(ev.columnApi.getColumnState());
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };
 

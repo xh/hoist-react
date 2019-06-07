@@ -194,7 +194,7 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: !gridModel.enableColumnPinning,
+                lockPinned: !gridModel.enableDragToPin,
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
