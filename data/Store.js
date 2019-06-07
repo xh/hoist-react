@@ -217,8 +217,13 @@ export class Store {
         return this._all.rootList;
     }
 
-    /** Filter function to be applied. */
     get filter() {return this._filter}
+    /**
+     * Filter function to be applied.
+     * @param {Function} fn - function taking a Record, and returning a boolean.
+     * @param {boolean} [fn.includeParents] - true to include all parents of a passing record (default true)
+     * @param {boolean} [fn.includeChildren] - true to include all children of a passing record in filter (default false)
+     */
     setFilter(filterFn) {
         this._filter = filterFn;
         this.rebuildFiltered();

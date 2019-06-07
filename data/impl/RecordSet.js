@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '../../utils/js';
+import {throwIf, withDefault} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -63,19 +63,44 @@ export class RecordSet {
         if (!filter) return this;
 
         const passes = new Map(),
-            {records} = this;
+            isMarked = (rec) => passes.has(rec.id),
+            mark = (rec) => passes.set(rec.id, rec);
 
-        // A record that passes the filter also recursively passes all its parents.
-        const markPass = (rec) => {
-            if (passes.has(rec.id)) return;
-            passes.set(rec.id, rec);
-            const {parent} = rec;
-            if (parent) markPass(parent);
-        };
-
-        records.forEach(rec => {
-            if (filter(rec)) markPass(rec);
+        // Pass 1.  Mark all passing records, and potentially their children recursively.
+        // Any row already marked will already have all of its children marked, so check can be skipped
+        const includeChildren = withDefault(filter.includeChildren, false);
+        let markChildren;
+        if (includeChildren) {
+            const childrenMap = this.childrenMap;
+            markChildren = (rec) => {
+                const children = childrenMap.get(rec.id) || [];
+                children.forEach(c => {
+                    if (!isMarked(c)) {
+                        mark(c);
+                        markChildren(c);
+                    }
+                });
+            };
+        }
+        this.records.forEach(rec => {
+            if (!isMarked(rec) && filter(rec)) {
+                mark(rec);
+                if (includeChildren) markChildren(rec);
+            }
         });
+
+        // Pass 2) Walk up from any passing roots and make sure all parents are marked
+        const includeParents = withDefault(filter.includeParents, true);
+        if (includeParents) {
+            const markParents = (rec) => {
+                const {parent} = rec;
+                if (parent && !isMarked(parent)) {
+                    mark(parent);
+                    markParents(parent);
+                }
+            };
+            passes.forEach(rec => markParents(rec));
+        }
 
         return new RecordSet(this.store, passes);
     }

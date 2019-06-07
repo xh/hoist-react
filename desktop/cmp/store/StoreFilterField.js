@@ -75,7 +75,13 @@ export class StoreFilterField extends Component {
         placeholder: PT.string,
 
         /** Width of the input in pixels. */
-        width: PT.number
+        width: PT.number,
+
+        /** Should children be included when a record passes (default false) */
+        includeChildren: PT.bool,
+
+        /** Should parents be included when a record passes (default true)*/
+        includeParents: PT.bool,
     };
 
     @observable value = '';
@@ -137,8 +143,7 @@ export class StoreFilterField extends Component {
     }
 
     regenerateFilter({applyImmediately}) {
-        const {onFilterChange} = this.props,
-            {applyFilterFn} = this,
+        const {applyFilterFn, props} = this,
             activeFields = this.getActiveFields(),
             searchTerm = escapeRegExp(this.value);
 
@@ -151,8 +156,12 @@ export class StoreFilterField extends Component {
             });
         }
         this.filter = filter;
+        if (filter) {
+            filter.includeChildren = withDefault(props.includeChildren, false);
+            filter.includeParents = withDefault(props.includeParents, true);
+        }
 
-        if (onFilterChange) onFilterChange(filter);
+        if (props.onFilterChange) props.onFilterChange(filter);
 
         if (applyFilterFn) {
             if (applyImmediately) {
