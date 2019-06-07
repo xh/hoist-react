@@ -34,6 +34,12 @@ export class DimensionChooser extends Component {
         /** Static text for target button, or null (default) to display current dimensions. */
         buttonText: PT.node,
 
+        /**
+         * Prefix for button text - applied when value not-empty and static text not specified.
+         *      E.g. "Group by" to render "Group by Fund > Trader".
+         */
+        buttonValueTextPrefix: PT.node,
+
         /** Width in pixels of the target button. */
         buttonWidth: PT.number,
 
@@ -153,8 +159,11 @@ export class DimensionChooser extends Component {
         const staticText = this.props.buttonText;
         if (staticText != undefined) return staticText;
         if (isEmpty(this.model.value)) return this.emptyText;
-            
-        return this.getCurrDimensionLabels().join(' › ');
+
+        const prefix = this.props.buttonValueTextPrefix,
+            dimText = this.getCurrDimensionLabels().join(' › ');
+
+        return prefix ? `${prefix} ${dimText}` : dimText;
     }
 
     getButtonTitle() {
