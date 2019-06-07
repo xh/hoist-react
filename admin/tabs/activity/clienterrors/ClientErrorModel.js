@@ -26,7 +26,7 @@ export class ClientErrorModel {
     @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',
-        enableColChooser: true,
+        colChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         emptyText: 'No errors reported...',

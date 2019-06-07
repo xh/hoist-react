@@ -23,7 +23,7 @@ export class UserModel {
     @managed
     gridModel = new GridModel({
         stateModel: 'xhUserGrid',
-        enableColChooser: true,
+        colChooser: true,
         enableExport: true,
         store: {idSpec: 'username'},
         sortBy: 'username',

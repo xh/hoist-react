@@ -15,7 +15,7 @@ export class MonitorEditorPanel extends Component {
 
     model = new RestGridModel({
         stateModel: 'xhMonitorEditorGrid',
-        enableColChooser: true,
+        colChooser: true,
         enableExport: true,
         store: new RestStore({
             url: 'rest/monitorAdmin',

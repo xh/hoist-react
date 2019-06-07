@@ -29,7 +29,7 @@ export class ActivityGridModel {
     @managed
     gridModel = new GridModel({
         stateModel: 'xhActivityGrid',
-        enableColChooser: true,
+        colChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
         emptyText: 'No activity reported...',
