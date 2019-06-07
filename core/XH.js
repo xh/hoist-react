@@ -297,7 +297,7 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
-     * @param {HoistInput|boolean} [config.input] - input to be displayed, or true to use a default TextInput.
+     * @param {MessageInput|boolean} [config.input] - config for input to be displayed, or true to use default TextInput.
      * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
      * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
      * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).

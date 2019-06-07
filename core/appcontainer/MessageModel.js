@@ -7,6 +7,7 @@
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {FormModel, required} from '@xh/hoist/cmp/form';
+import {isPlainObject} from 'lodash';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -55,6 +56,13 @@ export class MessageModel {
         this.onCancel = config.onCancel;
         this.result = new Promise(resolve => this._resolver = resolve);
 
+        // Extract properties from input
+        if (isPlainObject(this.input)) {
+            const {value, rules} = this.input;
+            if (value) this.formModel.init({value});
+            if (rules) this.formModel.fields.value.setRules(rules);
+        }
+
         // Message modals are automatically dismissed on app route changes to avoid navigating the
         // app underneath the dialog in an unsettling way.
         this.addReaction({
@@ -102,3 +110,10 @@ export class MessageModel {
         this.close();
     }
 }
+
+/**
+ * @typedef {Object} MessageInput
+ * @property {HoistInput} [item] - HoistInput to use.
+ * @property {Rule[]} [rules] - validation constraints to apply.
+ * @property {*} [initialValue] - initial value for the input.
+ */

@@ -13,6 +13,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import './Message.scss';
 import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
@@ -58,7 +59,7 @@ export class Message extends Component {
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',
-                item: input == true ? textInput({autoFocus: true}) : input
+                item: withDefault(input.item, textInput({autoFocus: true}))
             })
         });
     }
