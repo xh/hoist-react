@@ -37,6 +37,9 @@ export class DimensionChooser extends Component {
         /** Width in pixels of the target button. */
         buttonWidth: PT.number,
 
+        /** Text to represent empty state (i.e. value = null or []) */
+        emptyText: PT.string,
+
         /** Primary component model instance. */
         model: PT.instanceOf(DimensionChooserModel).isRequired,
 
@@ -45,9 +48,6 @@ export class DimensionChooser extends Component {
 
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number,
-
-        /** Text to represent empty state (i.e. value = null or [])*/
-        emptyText: PT.string,
 
         /** True (default) to style target button as an input field - blends better in toolbars. */
         styleButtonAsInput: PT.bool
@@ -76,7 +76,7 @@ export class DimensionChooser extends Component {
     }
 
     get emptyText() {
-        return withDefault(this.props.emptyText, '[Ungrouped]');
+        return withDefault(this.props.emptyText, 'Ungrouped');
     }
 
 
@@ -262,7 +262,7 @@ export class DimensionChooser extends Component {
         if (isEmpty(pendingValue) && !showAddSelect) {
             children.push(
                 hbox({
-                    className: 'xh-dim-popover-row',
+                    className: 'xh-dim-popover-row--empty',
                     items: [filler(), this.emptyText, filler()]
                 })
             );

@@ -193,7 +193,13 @@ export class DimensionChooserModel {
     }
 
     validateValue(value) {
-        return value == null || (isArray(value) && value.every(h => this.dimensionVals.includes(h)));
+        return (
+            isArray(value) &&
+            (
+                (isEmpty(value) && this.enableClear) ||
+                (!isEmpty(value) && value.every(h => this.dimensionVals.includes(h)))
+            )
+        );
     }
 
     addToHistory(value) {
