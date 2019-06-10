@@ -86,11 +86,11 @@ export class AgGrid extends Component {
     navigateToNextCell = (agParams) => {
         if (XH.isMobile) return;
 
-        const {nextCellDef, previousCellDef, event} = agParams,
+        const {nextCellPosition, previousCellPosition, event} = agParams,
             {agApi} = this.model,
             shiftKey = event.shiftKey,
-            prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
-            nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
+            prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
+            nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
@@ -112,13 +112,13 @@ export class AgGrid extends Component {
                         }
                     }
                 }
-                return nextCellDef;
+                return nextCellPosition;
             case KEY_LEFT:
                 if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
-                return nextCellDef;
+                return nextCellPosition;
             case KEY_RIGHT:
                 if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
-                return nextCellDef;
+                return nextCellPosition;
             default:
         }
     };
