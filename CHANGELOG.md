@@ -30,8 +30,10 @@
 
 ### 📚 Libraries
 
-* react-select `~2.4 -> ~3.0`
-* mobx-react `5.4.4 -> ~6.0.3`
+* ag-grid `20.0 -> 21.0`
+* react-select `2.4 -> 3.0`
+* mobx-react `5.4 -> 6.0.3`
+* font-awesome `5.8 -> 5.9`
 
 ## v23.0.0 - 2019-05-30 
 
