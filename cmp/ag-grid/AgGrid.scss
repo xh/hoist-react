@@ -132,15 +132,15 @@
 
   // Cell focus
   &--no-cell-focus {
-    .ag-cell-focus {
-      outline: 0 !important;
-      border-color: transparent;
+    .ag-has-focus {
+      .ag-cell-focus:not(.ag-cell-range-selected) {
+        border-color: transparent;
+      }
     }
   }
 
   &--show-cell-focus {
     .ag-cell-focus {
-      outline: 0 !important;
       border-color: var(--xh-grid-cell-focus-border-color) !important;
     }
   }
