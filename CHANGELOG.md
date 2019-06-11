@@ -28,7 +28,7 @@
 
 
 ### 🎁 Breaking Changes
-*  The `StoreFilter.onFilterChange` callback will now be passed a `StoreFilter`, rather than a function.
+*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a function.
 
 
 ### 🐞 Bug Fixes
