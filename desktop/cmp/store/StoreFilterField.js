@@ -80,7 +80,7 @@ export class StoreFilterField extends Component {
         /** Should children be included when a record passes (default false) */
         includeChildren: PT.bool,
 
-        /** Should parents be included when a record passes (default true)*/
+        /** Should all ancestors be included when a record passes (default true)*/
         includeParents: PT.bool
     };
 

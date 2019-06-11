@@ -221,7 +221,7 @@ export class Store {
     /**
      * Filter function to be applied.
      * @param {Function} fn - function taking a Record, and returning a boolean.
-     * @param {boolean} [fn.includeParents] - true to include all parents of a passing record (default true)
+     * @param {boolean} [fn.includeParents] - true to include all ancestors of a passing record (default true)
      * @param {boolean} [fn.includeChildren] - true to include all children of a passing record in filter (default false)
      */
     setFilter(filterFn) {
