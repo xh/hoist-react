@@ -65,7 +65,7 @@ export class StoreFilterField extends Component {
         filterBuffer: PT.number,
 
         /**
-         * Callback to receive an updated filter function and options. Can be used in place of the `store` or
+         * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
          * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
@@ -77,7 +77,7 @@ export class StoreFilterField extends Component {
         /** Width of the input in pixels. */
         width: PT.number,
 
-        /** Options for passing to Store.setFilter() along with the generated filter. */
+        /** Fixed options for Filter to be generated. @see StoreFilter. */
         filterOptions: PT.object
     };
 
@@ -104,7 +104,7 @@ export class StoreFilterField extends Component {
             const {gridModel} = props;
             if (gridModel) {
                 this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy, this.props.filterOpts],
+                    track: () => [gridModel.columns, gridModel.groupBy, this.props.filterOptions],
                     run: () => this.regenerateFilter({applyImmediately: false})
                 });
             }
@@ -143,17 +143,17 @@ export class StoreFilterField extends Component {
             activeFields = this.getActiveFields(),
             searchTerm = escapeRegExp(this.value);
 
-        let filter = null;
+        let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
-            filter = (rec) => activeFields.some(f => {
+            fn = (rec) => activeFields.some(f => {
                 const fieldVal = rec[f];
                 return fieldVal && regex.test(fieldVal);
             });
         }
-        this.filter = filter;
+        this.filter = fn ? {...props.filterOptions, fn} : null;
 
-        if (props.onFilterChange) props.onFilterChange(filter, props.filterOptions);
+        if (props.onFilterChange) props.onFilterChange(this.filter);
 
         if (applyFilterFn) {
             if (applyImmediately) {
@@ -168,7 +168,7 @@ export class StoreFilterField extends Component {
     applyStoreFilter() {
         const store = this.getActiveStore();
         if (store) {
-            store.setFilter(this.filter, this.props.filterOptions);
+            store.setFilter(this.filter);
         }
     }
 

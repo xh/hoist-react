@@ -8,9 +8,10 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {isString, castArray, isEmpty} from 'lodash';
+import {isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Record} from './Record';
+import {StoreFilter} from './StoreFilter';
 
 /**
  * A managed and observable set of local, in-memory records.
@@ -36,7 +37,6 @@ export class Store {
     @observable.ref _all;
     @observable.ref _filtered;
     _filter = null;
-    _filterOptions = {includeChildren: false};
     _loadRootAsSummary = false;
 
     /**
@@ -50,8 +50,7 @@ export class Store {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
-     * @param {function} [c.filter] - filter function to be run.
-     * @param {object} [c.filterOptions] - options associated with this filter operation. See setFilter() for more details.
+     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for records, or specification for creating one.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
@@ -61,12 +60,11 @@ export class Store {
             idSpec = 'id',
             processRawData = null,
             filter = null,
-            filterOptions = false,
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
-        this.setFilter(filter, filterOptions);
+        this.setFilter(filter);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
         this.lastUpdated = Date.now();
@@ -221,19 +219,22 @@ export class Store {
     }
 
     /**
-     * Set filter function to be applied.
-     * @param {function} fn - function taking a Record, and returning a boolean.
-     * @param {object} options - options associated with this filter operation.
-     * @param {boolean} [options.includeChildren] - true to include all children of a passing record in filter (default false)
+     * Set filter to be applied.
+     * @param {(StoreFilter|Object|function)} [c.filter] - StoreFilter to be applied to records, or config or
+     *      function to be used to create one.
      */
-    setFilter(filterFn, {includeChildren = false} = {}) {
-        this._filter = filterFn;
-        this._filterOptions = {includeChildren};
+    setFilter(filter) {
+        if (isFunction(filter)) {
+            filter = new StoreFilter({fn: filter});
+        } else if (isPlainObject(filter)) {
+            filter = new StoreFilter(filter);
+        }
+
+        this._filter = filter;
         this.rebuildFiltered();
     }
 
     get filter() {return this._filter}
-    get filterOptions() {return this._filterOptions}
 
 
     /** Get the count of all records loaded into the store. */
@@ -337,7 +338,7 @@ export class Store {
     //------------------------
     @action
     rebuildFiltered() {
-        this._filtered = this._all.applyFilter(this.filter, this.filterOptions);
+        this._filtered = this._all.applyFilter(this.filter);
     }
 
     parseFields(fields) {
@@ -359,3 +360,5 @@ export class Store {
         return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ? rawData[0] : null;
     }
 }
+
+

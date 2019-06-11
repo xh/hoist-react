@@ -7,6 +7,7 @@
 
 export * from './Field';
 export * from './Store';
+export * from './StoreFilter';
 export * from './Record';
 export * from './RecordAction';
 export * from './StoreSelectionModel';

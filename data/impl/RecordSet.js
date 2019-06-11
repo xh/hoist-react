@@ -59,8 +59,9 @@ export class RecordSet {
     // Editing operations that spawn new recordsets.
     // Preserve all record references we can!
     //-----------------------------------------------
-    applyFilter(filter, {includeChildren}) {
+    applyFilter(filter) {
         if (!filter) return this;
+        const {fn, includeChildren} = filter;
 
         const passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
@@ -82,7 +83,7 @@ export class RecordSet {
             };
         }
         this.records.forEach(rec => {
-            if (!isMarked(rec) && filter(rec)) {
+            if (!isMarked(rec) && fn(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
             }
