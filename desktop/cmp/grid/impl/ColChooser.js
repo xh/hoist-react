@@ -15,6 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 
 import {ColChooserModel} from './ColChooserModel';
+
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
  * GridModel.colChooser config option.
@@ -33,40 +34,45 @@ export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
 
+    baseClassName = 'xh-col-chooser';
+
     render() {
         const {gridModel, lrModel, isPopoverOpen} = this.model,
             {width, height} = this.props;
 
-        return panel(
-            leftRightChooser({
-                model: lrModel,
-                width: withDefault(width, 500),
-                height: withDefault(height, 300)
-            }),
-            toolbar(
-                leftRightChooserFilter({model: lrModel, fields: ['text']}),
-                filler(),
-                button({
-                    text: 'Reset',
-                    icon: Icon.undo({className: 'xh-red'}),
-                    omit: !gridModel.stateModel,
-                    onClick: this.restoreDefaults
+        return panel({
+            items: [
+                leftRightChooser({
+                    model: lrModel,
+                    width: withDefault(width, 500),
+                    height: withDefault(height, 300)
                 }),
-                toolbarSep({
-                    omit: !gridModel.stateModel
-                }),
-                button({
-                    text: isPopoverOpen ? 'Close' : 'Cancel',
-                    onClick: this.onClose
-                }),
-                button({
-                    omit: isPopoverOpen,
-                    text: 'Save',
-                    icon: Icon.check({className: 'xh-green'}),
-                    onClick: this.onOK
-                })
-            )
-        );
+                toolbar(
+                    leftRightChooserFilter({model: lrModel, fields: ['text']}),
+                    filler(),
+                    button({
+                        text: 'Reset',
+                        icon: Icon.undo({className: 'xh-red'}),
+                        omit: !gridModel.stateModel,
+                        onClick: this.restoreDefaults
+                    }),
+                    toolbarSep({
+                        omit: !gridModel.stateModel
+                    }),
+                    button({
+                        text: isPopoverOpen ? 'Close' : 'Cancel',
+                        onClick: this.onClose
+                    }),
+                    button({
+                        omit: isPopoverOpen,
+                        text: 'Save',
+                        icon: Icon.check({className: 'xh-green'}),
+                        onClick: this.onOK
+                    })
+                )
+            ],
+            className: this.getClassName()
+        });
     }
 
     onClose = () => {this.model.close()};

@@ -346,7 +346,8 @@ export class Grid extends Component {
 
                 runInAction(() => {
                     withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
-                        // Workaround for AG-2879.
+                        // If we are going to delete the majority of the rows then ag-Grid is faster
+                        // if we first clear out the existing data before setting the new data
                         this.clearDataIfExpensiveDeletionPending(records, api);
 
                         // Load updated data into the grid.
@@ -489,7 +490,6 @@ export class Grid extends Component {
         };
     }
 
-    //  Workaround for n^2 deletion behavior in ag-Grid (AG-2879)
     clearDataIfExpensiveDeletionPending(newRecords, api) {
         let currCount = 0, deleteCount = 0, addCount = 0;
 
