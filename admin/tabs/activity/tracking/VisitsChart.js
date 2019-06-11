@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -44,11 +45,13 @@ export class VisitsChart extends Component {
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({bind: 'endDate'}),
+            toolbarSep(),
             textInput({
                 model,
                 bind: 'username',
                 placeholder: 'Username',
-                width: 120
+                enableClear: true,
+                width: 150
             }),
             refreshButton({model})
         ];

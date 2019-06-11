@@ -11,7 +11,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -41,26 +41,24 @@ export class ClientErrorPanel extends Component {
     renderToolbar() {
         const {model} = this;
         return [
+            button({
+                icon: Icon.caretLeft(),
+                onClick: () => model.adjustDates('subtract')
+            }),
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({bind: 'endDate'}),
-            buttonGroup(
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: () => model.adjustDates('subtract')
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: () => model.adjustDates('add')
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: () => model.adjustDates('subtract', true)
-                })
-            ),
+            button({
+                icon: Icon.caretRight(),
+                onClick: () => model.adjustDates('add')
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: () => model.adjustDates('subtract', true)
+            }),
             toolbarSep(),
-            this.textInput({bind: 'username', placeholder: 'User...'}),
-            this.textInput({bind: 'error', placeholder: 'Error...'}),
+            this.textInput({bind: 'username', placeholder: 'Username', enableClear: true}),
+            this.textInput({bind: 'error', placeholder: 'Error', enableClear: true}),
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'client error'}),
