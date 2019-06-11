@@ -119,30 +119,6 @@ export class ColChooser extends Component {
         });
     }
 
-    onOK = () => {
-        this.model.commit();
-        this.model.close();
-    };
-
-    onDragEnd = (result) => {
-        const {columns} = this.model,
-            {draggableId, destination} = result;
-
-        if (!destination) return; // dropped outside of a droppable list
-
-        // Set hidden based on drop destination
-        const {droppableId} = destination,
-            hide = droppableId === 'hidden-columns';
-
-        // Move to correct idx within list of columns
-        let toIdx = destination.index;
-        if (hide) toIdx = columns.length;
-
-        this.model.setHidden(draggableId, hide);
-        this.model.moveToIndex(draggableId, toIdx);
-        this.model.updatePinnedColumn();
-    };
-
     //------------------------
     // Implementation
     //------------------------
@@ -213,12 +189,51 @@ export class ColChooser extends Component {
                     icon: getButtonIcon(locked, hidden),
                     disabled: locked,
                     modifier: 'quiet',
-                    onClick: () => this.model.onHideBtnClick(colId, !hidden)
+                    onClick: () => this.onHiddenToggleClick(colId, !hidden)
                 })
             ],
             ...rest
         });
     }
+
+    onOK = () => {
+        this.model.commit();
+        this.model.close();
+    };
+
+    onDragEnd = (result) => {
+        const {model} = this,
+            {columns} = model,
+            {draggableId, destination} = result;
+
+        if (!destination) return; // dropped outside of a droppable list
+
+        // Set hidden based on drop destination
+        const {droppableId} = destination,
+            hide = droppableId === 'hidden-columns';
+
+        // Move to correct idx within list of columns
+        let toIdx = destination.index;
+        if (hide) toIdx = columns.length;
+
+        model.setHidden(draggableId, hide);
+        model.moveToIndex(draggableId, toIdx);
+        model.updatePinnedColumn();
+    };
+
+    onHiddenToggleClick = (colId, hide) => {
+        const {model} = this,
+            {visibleColumns, hiddenColumns} = model;
+
+        // When moving between lists, set idx to appear at the end of the destination sublist
+        let toIdx = visibleColumns.length;
+        if (hide) toIdx += hiddenColumns.length;
+
+        model.moveToIndex(colId, toIdx);
+        model.setHidden(colId, hide);
+        model.updatePinnedColumn();
+    };
+
 }
 
 export const colChooser = elemFactory(ColChooser);

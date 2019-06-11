@@ -89,16 +89,6 @@ export class ColChooserModel {
         this.setColumns(columns);
     }
 
-    onHideBtnClick(colId, hide) {
-        // When moving between lists, update idx to appear at the end of the destination sublist
-        let toIdx = this.visibleColumns.length;
-        if (hide) toIdx += this.hiddenColumns.length;
-
-        this.moveToIndex(colId, toIdx);
-        this.setHidden(colId, hide);
-        this.updatePinnedColumn();
-    }
-
     setHidden(colId, hidden) {
         const columns = clone(this.columns),
             col = find(columns, {colId});
