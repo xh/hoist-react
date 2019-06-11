@@ -36,6 +36,7 @@ export class Store {
     @observable.ref _all;
     @observable.ref _filtered;
     _filter = null;
+    _filterOptions = {includeChildren: false};
     _loadRootAsSummary = false;
 
     /**
@@ -50,6 +51,7 @@ export class Store {
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
      * @param {function} [c.filter] - filter function to be run.
+     * @param {object} [c.filterOptions] - options associated with this filter operation. See setFilter() for more details.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
@@ -59,11 +61,12 @@ export class Store {
             idSpec = 'id',
             processRawData = null,
             filter = null,
+            filterOptions = false,
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
-        this.setFilter(filter);
+        this.setFilter(filter, filterOptions);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
         this.lastUpdated = Date.now();
@@ -217,17 +220,21 @@ export class Store {
         return this._all.rootList;
     }
 
-    get filter() {return this._filter}
     /**
-     * Filter function to be applied.
-     * @param {Function} fn - function taking a Record, and returning a boolean.
-     * @param {boolean} [fn.includeParents] - true to include all ancestors of a passing record (default true)
-     * @param {boolean} [fn.includeChildren] - true to include all children of a passing record in filter (default false)
+     * Set filter function to be applied.
+     * @param {function} fn - function taking a Record, and returning a boolean.
+     * @param {object} options - options associated with this filter operation.
+     * @param {boolean} [options.includeChildren] - true to include all children of a passing record in filter (default false)
      */
-    setFilter(filterFn) {
+    setFilter(filterFn, {includeChildren = false} = {}) {
         this._filter = filterFn;
+        this._filterOptions = {includeChildren};
         this.rebuildFiltered();
     }
+
+    get filter() {return this._filter}
+    get filterOptions() {return this._filterOptions}
+
 
     /** Get the count of all records loaded into the store. */
     get allCount() {
@@ -330,7 +337,7 @@ export class Store {
     //------------------------
     @action
     rebuildFiltered() {
-        this._filtered = this._all.applyFilter(this.filter);
+        this._filtered = this._all.applyFilter(this.filter, this.filterOptions);
     }
 
     parseFields(fields) {

@@ -65,7 +65,7 @@ export class StoreFilterField extends Component {
         filterBuffer: PT.number,
 
         /**
-         * Callback to receive an updated filter function. Can be used in place of the `store` or
+         * Callback to receive an updated filter function and options. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
          * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
@@ -77,11 +77,8 @@ export class StoreFilterField extends Component {
         /** Width of the input in pixels. */
         width: PT.number,
 
-        /** Should children be included when a record passes (default false) */
-        includeChildren: PT.bool,
-
-        /** Should all ancestors be included when a record passes (default true)*/
-        includeParents: PT.bool
+        /** Options for passing to Store.setFilter() along with the generated filter. */
+        filterOptions: PT.object
     };
 
     @observable value = '';
@@ -107,7 +104,7 @@ export class StoreFilterField extends Component {
             const {gridModel} = props;
             if (gridModel) {
                 this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy],
+                    track: () => [gridModel.columns, gridModel.groupBy, this.props.filterOpts],
                     run: () => this.regenerateFilter({applyImmediately: false})
                 });
             }
@@ -116,7 +113,6 @@ export class StoreFilterField extends Component {
 
     render() {
         const {props} = this;
-
         return textInput({
             value: this.value,
 
@@ -156,12 +152,8 @@ export class StoreFilterField extends Component {
             });
         }
         this.filter = filter;
-        if (filter) {
-            filter.includeChildren = withDefault(props.includeChildren, false);
-            filter.includeParents = withDefault(props.includeParents, true);
-        }
 
-        if (props.onFilterChange) props.onFilterChange(filter);
+        if (props.onFilterChange) props.onFilterChange(filter, props.filterOptions);
 
         if (applyFilterFn) {
             if (applyImmediately) {
@@ -176,7 +168,7 @@ export class StoreFilterField extends Component {
     applyStoreFilter() {
         const store = this.getActiveStore();
         if (store) {
-            store.setFilter(this.filter);
+            store.setFilter(this.filter, this.props.filterOptions);
         }
     }
 

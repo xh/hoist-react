@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {throwIf, withDefault} from '../../utils/js';
+import {throwIf} from '../../utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -59,7 +59,7 @@ export class RecordSet {
     // Editing operations that spawn new recordsets.
     // Preserve all record references we can!
     //-----------------------------------------------
-    applyFilter(filter) {
+    applyFilter(filter, {includeChildren}) {
         if (!filter) return this;
 
         const passes = new Map(),
@@ -68,7 +68,6 @@ export class RecordSet {
 
         // Pass 1.  Mark all passing records, and potentially their children recursively.
         // Any row already marked will already have all of its children marked, so check can be skipped
-        const includeChildren = withDefault(filter.includeChildren, false);
         let markChildren;
         if (includeChildren) {
             const childrenMap = this.childrenMap;
@@ -90,17 +89,14 @@ export class RecordSet {
         });
 
         // Pass 2) Walk up from any passing roots and make sure all parents are marked
-        const includeParents = withDefault(filter.includeParents, true);
-        if (includeParents) {
-            const markParents = (rec) => {
-                const {parent} = rec;
-                if (parent && !isMarked(parent)) {
-                    mark(parent);
-                    markParents(parent);
-                }
-            };
-            passes.forEach(rec => markParents(rec));
-        }
+        const markParents = (rec) => {
+            const {parent} = rec;
+            if (parent && !isMarked(parent)) {
+                mark(parent);
+                markParents(parent);
+            }
+        };
+        passes.forEach(rec => markParents(rec));
 
         return new RecordSet(this.store, passes);
     }
