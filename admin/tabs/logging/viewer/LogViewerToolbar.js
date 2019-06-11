@@ -9,6 +9,8 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {label} from '@xh/hoist/cmp/layout';
 import {numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * @private
@@ -20,6 +22,16 @@ export class LogViewerToolbar extends Component {
         const {model} = this;
         return toolbar({
             items: [
+                button({
+                    icon: Icon.arrowLeft(),
+                    onClick: () => model.pageBackward(),
+                    disabled: model.tail
+                }),
+                button({
+                    icon: Icon.arrowRight(),
+                    onClick: () => model.pageForward(),
+                    disabled: model.tail
+                }),
                 label('Start line:'),
                 numberInput({
                     model,

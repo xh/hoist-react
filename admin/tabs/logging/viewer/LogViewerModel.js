@@ -109,6 +109,14 @@ export class LogViewerModel {
         };
     }
 
+    pageForward() {
+        this.setStartLine(this.startLine + this.maxLines);
+    }
+    
+    pageBackward() {
+        this.setStartLine(Math.max(this.startLine - this.maxLines, 0));
+    }
+    
     autoRefreshLines() {
         const {logDisplayModel, component, tail} = this;
 
