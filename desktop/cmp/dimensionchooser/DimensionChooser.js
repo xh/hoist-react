@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {div} from '@xh/hoist/cmp/layout';
 import {withDefault} from '@xh/hoist/utils/js';
 import {select, Select} from '@xh/hoist/desktop/cmp/input';
-import {size, isEmpty} from 'lodash';
+import {defaults, size, isEmpty} from 'lodash';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
@@ -34,8 +34,17 @@ export class DimensionChooser extends Component {
         /** Static text for target button, or null (default) to display current dimensions. */
         buttonText: PT.node,
 
+        /**
+         * Prefix for button text - applied when value not-empty and static text not specified.
+         *      E.g. "Group by" to render "Group by Fund > Trader".
+         */
+        buttonValueTextPrefix: PT.node,
+
         /** Width in pixels of the target button. */
         buttonWidth: PT.number,
+
+        /** Text to represent empty state (i.e. value = null or []) */
+        emptyText: PT.string,
 
         /** Primary component model instance. */
         model: PT.instanceOf(DimensionChooserModel).isRequired,
@@ -45,6 +54,13 @@ export class DimensionChooser extends Component {
 
         /** Width in pixels of the popover menu itself. */
         popoverWidth: PT.number,
+
+        /**
+         * Additional props passed directly to editor Select components. Use with care - not all
+         * props are supported and can easily conflict with this component's usage. Defaulted
+         * props for override include `menuPosition` and
+         */
+        selectProps: PT.object,
 
         /** True (default) to style target button as an input field - blends better in toolbars. */
         styleButtonAsInput: PT.bool
@@ -70,6 +86,17 @@ export class DimensionChooser extends Component {
 
     get styleButtonAsInput() {
         return withDefault(this.props.styleButtonAsInput, true);
+    }
+
+    get emptyText() {
+        return withDefault(this.props.emptyText, 'Ungrouped');
+    }
+
+    get selectProps() {
+        return defaults(this.props.selectProps || {}, {
+            enableFilter: false,
+            menuPlacement: 'auto'
+        });
     }
 
     render() {
@@ -131,6 +158,7 @@ export class DimensionChooser extends Component {
             target,
             isOpen: isMenuOpen,
             targetClassName: 'xh-dim-popover',
+            popoverClassName: 'xh-dim-chooser-popover xh-popup--framed',
             position: 'bottom',
             content: vbox({
                 width: this.popoverWidth,
@@ -142,12 +170,19 @@ export class DimensionChooser extends Component {
 
     getButtonText() {
         const staticText = this.props.buttonText;
-        return staticText !== undefined ? staticText : this.getCurrDimensionLabels().join(' › ');
+        if (staticText != undefined) return staticText;
+        if (isEmpty(this.model.value)) return this.emptyText;
+
+        const prefix = this.props.buttonValueTextPrefix,
+            dimText = this.getCurrDimensionLabels().join(' › ');
+
+        return prefix ? `${prefix} ${dimText}` : dimText;
     }
 
     getButtonTitle() {
         const staticTitle = this.props.buttonTitle;
         if (staticTitle != undefined) return staticTitle;
+        if (isEmpty(this.model.value)) return this.emptyText;
 
         const labels = this.getCurrDimensionLabels();
         return labels.map((it, i) => ' '.repeat(i) + (i ? '› ' : '') + it).join('\n');
@@ -217,7 +252,7 @@ export class DimensionChooser extends Component {
     //--------------------
     renderSelectEditors() {
         const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
-            {pendingValue, dimensions, maxDepth, leafInPending} = model;
+            {pendingValue, dimensions, maxDepth, leafInPending, enableClear, showAddSelect} = model;
 
         let children = pendingValue.map((dim, i) => {
             const options = model.dimOptionsForLevel(i, dim),
@@ -231,25 +266,42 @@ export class DimensionChooser extends Component {
                         options,
                         value: dim,
                         disabled: isEmpty(options),
-                        enableFilter: false,
                         width,
                         marginLeft,
+                        ...this.selectProps,
                         onChange: (newDim) => this.onDimChange(newDim, i)
                     }),
                     button({
                         icon: Icon.x({className: 'xh-red'}),
                         maxWidth: X_BTN_WIDTH,
                         minWidth: X_BTN_WIDTH,
-                        disabled: pendingValue.length === 1,
+                        disabled: !enableClear && pendingValue.length === 1,
                         onClick: () => model.removePendingDim(dim)
                     })
                 ]
             });
         });
 
+        // Empty state - when add button shown, insert emptyText above button.
+        if (isEmpty(pendingValue) && !showAddSelect) {
+            children.push(
+                div({
+                    className: 'xh-dim-popover-row--empty',
+                    item: this.emptyText
+                })
+            );
+        }
+
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) {
             children.push(this.renderAddButtonOrSelect());
+        }
+
+        // Empty state - when select shown, insert placeholder below to avoid layout shifting.
+        if (isEmpty(pendingValue) && showAddSelect) {
+            children.push(
+                div({className: 'xh-dim-popover-row--empty'})
+            );
         }
 
         return vbox({
@@ -259,7 +311,7 @@ export class DimensionChooser extends Component {
     }
 
     renderAddButtonOrSelect() {
-        const {model, LEFT_PAD, INDENT, X_BTN_WIDTH} = this,
+        const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
             {pendingValue} = model,
             pendingCount = pendingValue.length,
             marginLeft = LEFT_PAD + (pendingCount * INDENT),
@@ -268,11 +320,11 @@ export class DimensionChooser extends Component {
         return model.showAddSelect ?
             select({
                 options: model.dimOptionsForLevel(pendingCount),
-                enableFilter: false,
                 autoFocus: true,
                 openMenuOnFocus: true,
                 width,
                 marginLeft,
+                ...this.selectProps,
                 onChange: (newDim) => this.onDimChange(newDim, pendingCount)
             }) :
             button({
@@ -291,7 +343,7 @@ export class DimensionChooser extends Component {
             vertical: true,
             items: [
                 history.map((value, i) => {
-                    const labels = value.map(h => dimensions[h].label);
+                    const labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
                     return button({
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
@@ -309,7 +361,7 @@ export class DimensionChooser extends Component {
         if (!title) return null;
 
         return div({
-            className: 'xh-popover-title',
+            className: 'xh-popup__title',
             item: title
         });
     }

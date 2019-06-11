@@ -53,6 +53,7 @@ export class ColChooserButton extends Component {
             {colChooserModel} = gridModel;
 
         return popover({
+            popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
             target: button({
@@ -62,7 +63,7 @@ export class ColChooserButton extends Component {
             }),
             content: vbox(
                 div({
-                    className: 'xh-popover-title',
+                    className: 'xh-popup__title',
                     item: 'Choose Columns'
                 }),
                 colChooser({
