@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {XH} from '@xh/hoist/core';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -194,7 +195,7 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: !gridModel.enableDragToPin,
+                lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},

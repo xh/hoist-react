@@ -14,7 +14,7 @@ export class LogLevelPanel extends Component {
     
     model = new RestGridModel({
         stateModel: 'xhLogLevelGrid',
-        colChooser: true,
+        enableColChooser: true,
         enableExport: true,
         store: new RestStore({
             url: 'rest/logLevelAdmin',

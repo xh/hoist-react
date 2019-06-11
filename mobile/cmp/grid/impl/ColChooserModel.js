@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, settable, bindable, action} from '@xh/hoist/mobx';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {sortBy, clone, find} from 'lodash';
 
 /**
@@ -19,7 +19,6 @@ import {sortBy, clone, find} from 'lodash';
 export class ColChooserModel {
 
     gridModel;
-    enablePinFirstCol;
 
     @settable @observable.ref columns = [];
     @bindable pinFirst;
@@ -35,13 +34,10 @@ export class ColChooserModel {
     }
 
     /**
-     * @param {Object} c - ColChooserModel configuration.
-     * @param {GridModel} c.gridModel - model for the grid to be managed.
-     * @param {boolean} [c.enablePinFirstCol] - show toggle for pinning first column.
+     * @param {GridModel} gridModel - model for the grid to be managed.
      */
-    constructor({gridModel, enablePinFirstCol}) {
+    constructor(gridModel) {
         this.gridModel = gridModel;
-        this.enablePinFirstCol = withDefault(enablePinFirstCol, true);
 
         this.addReaction({
             track: () => this.pinFirst,

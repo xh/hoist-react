@@ -26,11 +26,6 @@
 * The mobile `ColChooser` has been significantly reworked. It now renders displayed and available
   columns as two lists, allowing drag and drop between to update the visibility and ordering.
   It also provides an easy affordance to toggle pinning the first column.
-  
-### 💥 Breaking Changes
-
-* `GridModel.enableColChooser` has been deprecated. Please migrate to using `GridModel.colChooser`
-  instead, which supports passing a `ColChooserModel` configuration as well as a boolean.
 
 ### 🐞 Bug Fixes
 

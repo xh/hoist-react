@@ -16,7 +16,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
  * A convenience button to trigger the display of a ColChooser for user selection,
  * discovery and reordering of available Grid columns.
  *
- * Requires the `GridModel.colChooser` config option to be set.
+ * Requires the `GridModel.enableColChooser` config option to be true.
  */
 @HoistComponent
 export class ColChooserButton extends Component {

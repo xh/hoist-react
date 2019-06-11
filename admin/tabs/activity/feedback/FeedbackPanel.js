@@ -16,7 +16,7 @@ export class FeedbackPanel extends Component {
 
     model = new RestGridModel({
         stateModel: 'xhFeedbackGrid',
-        colChooser: true,
+        enableColChooser: true,
         enableExport: true,
         emptyText: 'No feedback reported...',
         store: new RestStore({

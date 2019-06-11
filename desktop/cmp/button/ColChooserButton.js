@@ -21,7 +21,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires the `GridModel.colChooser` config option to be set.
+ * Requires the `GridModel.enableColChooser` config option to be true.
  */
 @HoistComponent
 export class ColChooserButton extends Component {

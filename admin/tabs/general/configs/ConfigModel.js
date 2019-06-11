@@ -24,7 +24,7 @@ export class ConfigModel {
     @managed
     gridModel = new RestGridModel({
         stateModel: 'xhConfigGrid',
-        colChooser: true,
+        enableColChooser: true,
         enableExport: true,
         store: new RestStore({
             url: 'rest/configAdmin',

@@ -21,7 +21,7 @@ import {ColChooserModel} from './ColChooserModel';
 
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
- * GridModel.colChooser config option.
+ * GridModel.enableColChooser config option.
  *
  * This component displays available columns in a list, with currently visible columns
  * identified by a checkmark icon to the right of the column name. Users can toggle column
@@ -40,7 +40,7 @@ export class ColChooser extends Component {
 
     render() {
         const {model} = this,
-            {isOpen, gridModel, enablePinFirstCol, visibleColumns, hiddenColumns} = model;
+            {isOpen, gridModel, visibleColumns, hiddenColumns} = model;
 
         return dialogPanel({
             isOpen,
@@ -67,7 +67,7 @@ export class ColChooser extends Component {
                                 })
                             ],
                             bbar: toolbar({
-                                omit: !enablePinFirstCol,
+                                omit: !gridModel.enableColumnPinning,
                                 items: [
                                     label('Pin first column'),
                                     filler(),

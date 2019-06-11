@@ -15,7 +15,7 @@ export class PreferencePanel extends Component {
 
     model = new RestGridModel({
         stateModel: 'xhPreferenceGrid',
-        colChooser: true,
+        enableColChooser: true,
         enableExport: true,
         store: new RestStore({
             url: 'rest/preferenceAdmin',

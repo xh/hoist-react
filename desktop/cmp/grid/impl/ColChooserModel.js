@@ -27,10 +27,9 @@ export class ColChooserModel {
     @observable isPopoverOpen = false;
 
     /**
-     * @param {Object} c - ColChooserModel configuration.
-     * @param {GridModel} c.gridModel - model for the grid to be managed.
+     * @param {GridModel} gridModel - model for the grid to be managed.
      */
-    constructor({gridModel}) {
+    constructor(gridModel) {
         this.gridModel = gridModel;
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',
