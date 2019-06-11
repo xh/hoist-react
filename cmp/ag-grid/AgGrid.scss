@@ -5,6 +5,15 @@
   height: auto !important;
 }
 
+.xh-mobile {
+  // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
+  // the top and bottom floating divs. On mobile we do not render scrollbars for the center viewport, so force hiding
+  // in the top and bottom floating divs.
+  .ag-floating-top, .ag-floating-bottom {
+    overflow-y: hidden !important;
+  }
+}
+
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
 .ag-theme-balham.xh-ag-grid, .ag-theme-balham-dark.xh-ag-grid {
   font-family: var(--xh-grid-font-family);
