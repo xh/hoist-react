@@ -8,9 +8,10 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {isString, castArray, isEmpty} from 'lodash';
+import {isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Record} from './Record';
+import {StoreFilter} from './StoreFilter';
 
 /**
  * A managed and observable set of local, in-memory records.
@@ -49,7 +50,7 @@ export class Store {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a record from that object.  This function should
      *      return a data object, taking care to clone the original object if edits are necessary.
-     * @param {function} [c.filter] - filter function to be run.
+     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for records, or specification for creating one.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
@@ -217,12 +218,24 @@ export class Store {
         return this._all.rootList;
     }
 
-    /** Filter function to be applied. */
-    get filter() {return this._filter}
-    setFilter(filterFn) {
-        this._filter = filterFn;
+    /**
+     * Set filter to be applied.
+     * @param {(StoreFilter|Object|function)} [c.filter] - StoreFilter to be applied to records, or config or
+     *      function to be used to create one.
+     */
+    setFilter(filter) {
+        if (isFunction(filter)) {
+            filter = new StoreFilter({fn: filter});
+        } else if (isPlainObject(filter)) {
+            filter = new StoreFilter(filter);
+        }
+
+        this._filter = filter;
         this.rebuildFiltered();
     }
+
+    get filter() {return this._filter}
+
 
     /** Get the count of all records loaded into the store. */
     get allCount() {
@@ -347,3 +360,5 @@ export class Store {
         return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ? rawData[0] : null;
     }
 }
+
+

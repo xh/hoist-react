@@ -5,6 +5,8 @@
 
 ### 🎁 New Features
 
+*  A `StoreFilter` object has been introduced to the data api.  This allows `Store` and `StoreFilterField`
+   to support the ability to conditionally include all children when filtering hierarchical data stores.  
 * `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
   the data it contains. The raw data for this record can be provided to `loadData() and
   updataData()` either via an explicit argument to these methods, or as the root node of the raw
@@ -23,6 +25,11 @@
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
   the Blueprint library). This should result in a snappier user experience, especially when working
   on remote / virtual workstations.
+
+
+### 🎁 Breaking Changes
+*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a function.
+
 
 ### 🐞 Bug Fixes
 
