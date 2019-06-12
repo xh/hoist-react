@@ -216,6 +216,7 @@ export class Grid extends Component {
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: this.groupSortComparator,
@@ -450,12 +451,17 @@ export class Grid extends Component {
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
+
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
+                            hadChanges = true;
+                        }
+                        if (agCol.pinned != col.pinned) {
+                            colApi.setColumnPinned(id, col.pinned);
                             hadChanges = true;
                         }
                     });
@@ -465,12 +471,13 @@ export class Grid extends Component {
 
                 // 2) Otherwise do an (expensive) full refresh of column state
                 // Merge our state onto the ag column state to get any state which we do not yet support
-                colState = colState.map(({colId, width, hidden}) => {
+                colState = colState.map(({colId, width, hidden, pinned}) => {
                     const agCol = agColState.find(c => c.colId === colId) || {};
                     return {
                         colId,
                         ...agCol,
                         width,
+                        pinned,
                         hide: hidden
                     };
                 });
@@ -532,7 +539,7 @@ export class Grid extends Component {
         this.model.noteAgSelectionStateChanged();
     };
 
-    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
+    // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     };
@@ -553,6 +560,13 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+    };
+
+    // Catches column pinning changes triggered from ag-grid ui components
+    onColumnPinned = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
