@@ -75,8 +75,7 @@ export class ActivityGrid extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'bottom',
-            width: 100,
-            commitOnChange: true,
+            width: 120,
             ...args
         });
     }
