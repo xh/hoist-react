@@ -7,10 +7,18 @@
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
+import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
 import './styles.scss';
 
-import {FocusStyleManager} from '@blueprintjs/core';
 FocusStyleManager.onlyShowFocusOnTabs();
+
+// Disable fade/scale-in transitions.
+// See also popover-related override in ./styles.scss.
+Dialog.defaultProps.transitionDuration = 0;
+Dialog.defaultProps.transitionName = 'none';
+Overlay.defaultProps.transitionDuration = 0;
+Overlay.defaultProps.transitionName = 'none';
+Popover.defaultProps.transitionDuration = 0;
 
 export {
     ContextMenu,

@@ -5,15 +5,17 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {dialog} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {ColChooserModel} from './ColChooserModel';
+
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
  * GridModel.enableColChooser config option.
@@ -32,20 +34,19 @@ export class ColChooser extends Component {
 
     static modelClass = ColChooserModel;
 
+    baseClassName = 'xh-col-chooser';
+
     render() {
-        const {isOpen, gridModel, lrModel} = this.model;
+        const {gridModel, lrModel, isPopoverOpen} = this.model,
+            {width, height} = this.props;
 
-        if (!isOpen) return null;
-
-        return dialog({
-            icon: Icon.gridPanel(),
-            title: 'Choose Columns',
-            className: 'xh-grid-column-chooser',
-            transitionName: 'none',
-            isOpen: true,
-            onClose: this.onClose,
+        return panel({
             items: [
-                leftRightChooser({model: lrModel, height: 300}),
+                leftRightChooser({
+                    model: lrModel,
+                    width: withDefault(width, 500),
+                    height: withDefault(height, 300)
+                }),
                 toolbar(
                     leftRightChooserFilter({model: lrModel, fields: ['text']}),
                     filler(),
@@ -59,16 +60,19 @@ export class ColChooser extends Component {
                         omit: !gridModel.stateModel
                     }),
                     button({
-                        text: 'Cancel',
+                        text: isPopoverOpen ? 'Close' : 'Cancel',
                         onClick: this.onClose
                     }),
                     button({
+                        omit: isPopoverOpen,
                         text: 'Save',
                         icon: Icon.check({className: 'xh-green'}),
                         onClick: this.onOK
                     })
                 )
-            ]});
+            ],
+            className: this.getClassName()
+        });
     }
 
     onClose = () => {this.model.close()};
@@ -76,7 +80,7 @@ export class ColChooser extends Component {
     onOK = () => {
         this.model.commit();
         this.onClose();
-    }
+    };
 
     restoreDefaults = () => {
         const {model} = this,
@@ -84,6 +88,7 @@ export class ColChooser extends Component {
 
         stateModel.resetStateAsync().then(() => {
             model.syncChooserData();
+            if (model.isPopoverOpen) model.commit();
         });
     }
 
