@@ -72,7 +72,7 @@ export class LogDisplayModel {
             })
             .then(response => {
                 if (!response.success) throw new Error(response.exception);
-                this.setRows(this.startLine ? response.content : response.content.reverse());
+                this.setRows(parent.startLine ? response.content : response.content.reverse());
             })
             .catch(e => {
                 // Show errors inline in the viewer vs. a modal alert or catchDefault().

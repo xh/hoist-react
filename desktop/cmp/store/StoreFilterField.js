@@ -65,7 +65,7 @@ export class StoreFilterField extends Component {
         filterBuffer: PT.number,
 
         /**
-         * Callback to receive an updated filter function. Can be used in place of the `store` or
+         * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
          * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
@@ -75,7 +75,10 @@ export class StoreFilterField extends Component {
         placeholder: PT.string,
 
         /** Width of the input in pixels. */
-        width: PT.number
+        width: PT.number,
+
+        /** Fixed options for Filter to be generated. @see StoreFilter. */
+        filterOptions: PT.object
     };
 
     @observable value = '';
@@ -101,7 +104,7 @@ export class StoreFilterField extends Component {
             const {gridModel} = props;
             if (gridModel) {
                 this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy],
+                    track: () => [gridModel.columns, gridModel.groupBy, this.props.filterOptions],
                     run: () => this.regenerateFilter({applyImmediately: false})
                 });
             }
@@ -110,7 +113,6 @@ export class StoreFilterField extends Component {
 
     render() {
         const {props} = this;
-
         return textInput({
             value: this.value,
 
@@ -137,22 +139,21 @@ export class StoreFilterField extends Component {
     }
 
     regenerateFilter({applyImmediately}) {
-        const {onFilterChange} = this.props,
-            {applyFilterFn} = this,
+        const {applyFilterFn, props} = this,
             activeFields = this.getActiveFields(),
             searchTerm = escapeRegExp(this.value);
 
-        let filter = null;
+        let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
-            filter = (rec) => activeFields.some(f => {
+            fn = (rec) => activeFields.some(f => {
                 const fieldVal = rec[f];
                 return fieldVal && regex.test(fieldVal);
             });
         }
-        this.filter = filter;
+        this.filter = fn ? {...props.filterOptions, fn} : null;
 
-        if (onFilterChange) onFilterChange(filter);
+        if (props.onFilterChange) props.onFilterChange(this.filter);
 
         if (applyFilterFn) {
             if (applyImmediately) {

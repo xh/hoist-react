@@ -25,6 +25,7 @@ import {
     isArray,
     isEmpty,
     isNil,
+    isUndefined,
     isPlainObject,
     isString,
     last,
@@ -75,6 +76,8 @@ export class GridModel {
     contextMenuFn;
     /** @member {GridGroupSortFn} */
     groupSortFn;
+    /** @member {boolean} */
+    enableColumnPinning;
     /** @member {boolean} */
     enableExport;
     /** @member {object} */
@@ -131,6 +134,8 @@ export class GridModel {
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
+     *      columns via UI affordances.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
@@ -162,9 +167,11 @@ export class GridModel {
         stripeRows = true,
         showCellFocus = false,
 
+        enableColumnPinning = true,
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
+
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
@@ -178,6 +185,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
+        this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
 
@@ -397,7 +405,7 @@ export class GridModel {
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
-            .map(({colId, width, hidden}) => ({colId, width, hidden}));
+            .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
     showColChooser() {
@@ -407,11 +415,12 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide}) => {
+        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
             const col = this.findColumn(this.columns, colId);
             if (!col) return null;
             return {
                 colId,
+                pinned,
                 hidden: hide,
                 width: col.flex ? undefined : width
             };
@@ -448,12 +457,13 @@ export class GridModel {
         throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
 
-        // 1) Update any width or visibility changes
+        // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
             const col = this.findColumn(columnState, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
+            if (!isUndefined(change.pinned)) col.pinned = change.pinned;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -499,6 +509,20 @@ export class GridModel {
     isColumnVisible(colId) {
         const state = this.getStateForColumn(colId);
         return state ? !state.hidden : false;
+    }
+
+    /**
+     * Determine if a leaf-level column is currently pinned.
+     *
+     * Call this method instead of inspecting the `pinned` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {string}
+     */
+    getColumnPinned(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? state.pinned : null;
     }
 
     /**
@@ -691,6 +715,7 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ * @property {string} [pinned] - 'left'|'right' if pinned, null if not
  */
 
 /**
