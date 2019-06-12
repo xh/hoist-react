@@ -110,17 +110,33 @@
     line-height: var(--xh-grid-line-height-px);
   }
 
+  // Cell borders
+  &--cell-borders {
+    .ag-cell {
+      border-right-color: var(--xh-grid-border-color) !important;
+    }
+    .ag-row {
+      border-color: var(--xh-grid-border-color);
+    }
+  }
+
+  &--no-cell-borders {
+    .ag-cell {
+      border-color: transparent;
+    }
+  }
+
   // Cell focus
   &--no-cell-focus {
-    .ag-cell-focus {
-      outline: 0 !important;
-      border-color: transparent !important;
+    .ag-has-focus {
+      .ag-cell-focus:not(.ag-cell-range-selected) {
+        border-color: transparent;
+      }
     }
   }
 
   &--show-cell-focus {
     .ag-cell-focus {
-      outline: 0 !important;
       border-color: var(--xh-grid-cell-focus-border-color) !important;
     }
   }
@@ -139,9 +155,14 @@
       font-size: var(--xh-grid-compact-font-size-px);
     }
 
-    .ag-cell, .ag-header-cell, .ag-header-group-cell {
+    .ag-cell {
       padding-left: var(--xh-grid-compact-cell-lr-pad-px);
       padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+    }
+
+    .ag-header-cell, .ag-header-group-cell {
+      padding-left: var(--xh-grid-compact-header-lr-pad-px);
+      padding-right: var(--xh-grid-compact-header-lr-pad-px);
     }
   }
 

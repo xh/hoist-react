@@ -11,6 +11,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {vframe, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 
 /**
  * @private
@@ -22,11 +23,15 @@ export class LogDisplay extends Component {
     render() {
         const {rows, loadModel} = this.model;
         return panel({
-            mask: loadModel,
             item: vframe({
                 className: 'xh-log-display',
                 overflow: 'scroll',
                 items: table(tbody(...this.renderTableRows(rows)))
+            }),
+            loadingIndicator: loadingIndicator({
+                model: loadModel,
+                message: 'Loading...',
+                spinner: false
             })
         });
     }

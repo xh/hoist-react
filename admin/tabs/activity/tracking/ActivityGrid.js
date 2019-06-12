@@ -11,7 +11,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {button, buttonGroup, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {storeCountLabel} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
@@ -41,29 +41,26 @@ export class ActivityGrid extends Component {
     renderToolbar() {
         const {model} = this;
         return [
+            button({
+                icon: Icon.caretLeft(),
+                onClick: () => model.adjustDates('subtract')
+            }),
             this.dateInput({bind: 'startDate'}),
             Icon.angleRight(),
             this.dateInput({bind: 'endDate'}),
-            buttonGroup(
-                button({
-                    icon: Icon.caretLeft(),
-                    onClick: () => model.adjustDates('subtract')
-                }),
-                button({
-                    icon: Icon.caretRight(),
-                    onClick: () => model.adjustDates('add')
-                }),
-                button({
-                    icon: Icon.arrowToRight(),
-                    onClick: () => model.adjustDates('subtract', true)
-                })
-            ),
+            button({
+                icon: Icon.caretRight(),
+                onClick: () => model.adjustDates('add')
+            }),
+            button({
+                icon: Icon.arrowToRight(),
+                onClick: () => model.adjustDates('subtract', true)
+            }),
             toolbarSep(),
-            this.textInput({bind: 'username', placeholder: 'User...'}),
-            this.textInput({bind: 'msg', placeholder: 'Msg...'}),
-            this.textInput({bind: 'category', placeholder: 'Category...'}),
-            this.textInput({bind: 'device', placeholder: 'Device...'}),
-            this.textInput({bind: 'browser', placeholder: 'Browser...'}),
+            this.textInput({bind: 'username', placeholder: 'Username', enableClear: true}),
+            this.textInput({bind: 'msg', placeholder: 'Message', enableClear: true}),
+            this.textInput({bind: 'category', placeholder: 'Category', enableClear: true}),
+            this.textInput({bind: 'browser', placeholder: 'Browser', enableClear: true}),
             refreshButton({model}),
             filler(),
             storeCountLabel({gridModel: model.gridModel, unit: 'log'}),
@@ -78,8 +75,7 @@ export class ActivityGrid extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'bottom',
-            width: 100,
-            commitOnChange: true,
+            width: 120,
             ...args
         });
     }

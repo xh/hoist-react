@@ -1,9 +1,57 @@
 # Changelog
 
-## Upcoming Release - under development
+
+## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
 
 ### 🎁 New Features
 
+*  A `StoreFilter` object has been introduced to the data api.  This allows `Store` and `StoreFilterField`
+   to support the ability to conditionally include all children when filtering hierarchical data stores.  
+* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
+  the data it contains. The raw data for this record can be provided to `loadData() and
+  updataData()` either via an explicit argument to these methods, or as the root node of the raw
+  data provided (see `loadRootAsSummary`).
+* `GridModel` now supports a `showSummary` property which can be used to display its store's
+  summaryRecord as either a pinned top or bottom row.
+* A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
+  modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
+  bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
+  an overlay docked to the corner of the parent Panel.
+* The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
+  disruptive alternative to the modal dialog approach used previously. The chooser still appears in
+  a modal dialog on mobile and when opened from the desktop grid context menu.
+* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
+  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+* Transitions have been disabled by default on desktop Dialog and Popover components (both are from
+  the Blueprint library). This should result in a snappier user experience, especially when working
+  on remote / virtual workstations.
+* The mobile `ColChooser` has been significantly reworked. It now renders displayed and available
+  columns as two lists, allowing drag and drop between to update the visibility and ordering.
+  It also provides an easy affordance to toggle pinning the first column.
+
+
+### 🎁 Breaking Changes
+*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a function.
+
+
+### 🐞 Bug Fixes
+
+* Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
+  when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
+  multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+
+### 📚 Libraries
+
+* ag-grid `20.0 -> 21.0`
+* react-select `2.4 -> 3.0`
+* mobx-react `5.4 -> 6.0.3`
+* font-awesome `5.8 -> 5.9`
+
+## v23.0.0 - 2019-05-30 
+
+### 🎁 New Features
+
+* `GridModel` now accepts a config of `cellBorders`, similar to `rowBorders`
 * `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
   `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
 * New functions `withDebug` and `withShortDebug` have been added to provide a terse syntax for
@@ -13,20 +61,27 @@
   the relevant section of an application UI, as opposed to the edge of the screen.
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
+* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, that offer greater
+  control over when the calendar picker is shown. The new default behaviour is to not show the picker
+  on focus, instead showing it via a built-in button.
 * Hoist Admins now always see the VersionBar in the footer.
-* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be
   performed.
+* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the number,
+  but after the sign (`+`, `-`).
+* New utility methods `forEachAsync()` and `whileAsync()` have been added to allow non-blocking
+  execution of time-consuming loops.
 
 ### 💥 Breaking Changes
 
 * The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
   `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
-  app that require to to be fully reloaded should have this renamed config set to `true`.
+  app that require it to be fully reloaded should have this renamed config set to `true`.
 * The options dialog will now automatically trigger an app-wide data _refresh_ via
-  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
-* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict with
-  the overall reactive structure of the hoist-react API. If your app listens to the `appStateChanged`,
-  `prefChange` or `prefsPushed` events you will need to adjust accordingly.
+  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict
+  with the overall reactive structure of the hoist-react API. If your app listens to the
+  `appStateChanged`, `prefChange` or `prefsPushed` events you will need to adjust accordingly.
 
 ### 🐞 Bug Fixes
 
@@ -34,6 +89,12 @@
   editable. #880
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
+* A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
+* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header.
+* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a
+  single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
+  by `enableAddMulti`.
+
 
 ## v22.0.0 - 2019-04-29
 
@@ -326,7 +387,6 @@
 * react `~16.7 -> ~16.8`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
-
 
 ## v19.0.1 - 2019-02-12
 

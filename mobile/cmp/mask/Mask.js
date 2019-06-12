@@ -33,10 +33,7 @@ export class Mask extends Component {
         message: PT.string,
 
         /** True (default) to display a spinning image. */
-        spinner: PT.bool,
-
-        /** Click handler **/
-        onClick: PT.func
+        spinner: PT.bool
     };
 
     baseClassName = 'xh-mask';
@@ -49,11 +46,8 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false),
-            onClick = props.onClick;
-
+            showSpinner = withDefault(props.spinner, false);
         return div({
-            onClick,
             className: this.getClassName(),
             item: vbox({
                 className: 'xh-mask-body',

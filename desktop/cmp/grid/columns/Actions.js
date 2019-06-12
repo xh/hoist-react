@@ -45,7 +45,7 @@ export const actionCol = {
     chooserName: 'Actions',
     excludeFromExport: true,
     renderer: (value, {record, column, agParams}) => {
-        if (agParams.node.group) return null;
+        if (agParams.node.group || (record && record.isSummary)) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
