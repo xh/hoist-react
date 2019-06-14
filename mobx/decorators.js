@@ -12,8 +12,7 @@ import {upperFirst} from 'lodash';
  * Decorator to add a simple MobX action of the form 'setPropName()' to a class.
  *
  * Applications that wish to add more complicated logic to their setter should define the setter
- * manually instead. If the setter is already defined, this call will be a no-op. (This supports
- * the use of the `@field` decorator in conjunction with a custom setter.)
+ * manually instead. If the setter is already defined, this call will be a no-op.
  *
  * Modelled after approach in https://github.com/farwayer/mobx-decorators.
  */
@@ -29,14 +28,22 @@ export function settable(target, property, descriptor) {
     return descriptor && {...descriptor, configurable: true};
 }
 
+
 /**
- * Decorator to mark a property as both @observable and @settable.
+ * Decorator to mark a property as @observable and also provide a simple MobX action of the
+ * form 'setPropName()'
  *
- * Especially useful for marking properties that are intended to be bound to HoistInput.
+ * This decorator is especially useful for creating observable properties that are intended to be
+ * bound to affordances that will both display and set the property.
  *
- * If either specific variants of observable or a custom setter are needed, use the @observable and
- * @settable decorators directly instead.
+ * Use @bindable.ref for a version of the function that will mark the property as observable by reference.
+ *      This will use the similarly named @observable.ref decorator in the core MobX api.
  */
 export function bindable(target, property, descriptor) {
     return settable(target, property, observable(target, property, descriptor));
 }
+bindable.ref = function(target, property, descriptor) {
+    return settable(target, property, observable.ref(target, property, descriptor));
+};
+
+

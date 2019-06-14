@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/react';
-import {observable,  settable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 
 /**
  * @private
@@ -18,9 +18,7 @@ export class LogDisplayModel {
     firstRow = new Ref();
     lastRow = new Ref();
 
-    @settable
-    @observable.ref
-    rows = [];
+    @bindable.ref rows = [];
 
     constructor(parent) {
         this.parent = parent;
