@@ -15,7 +15,7 @@ import {
     deleteAction
 } from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
 @LoadSupport
@@ -106,7 +106,7 @@ export class ConfigModel {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            {field: 'value'},
+            {field: 'value', formField: {item: textInput({type: 'password'})}},
             {field: 'clientVisible'},
             {field: 'note', formField: {item: textArea()}},
             {field: 'lastUpdated'},
