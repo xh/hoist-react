@@ -42,24 +42,25 @@ export class ActivityGrid extends Component {
         const {model} = this;
         return [
             button({
-                icon: Icon.caretLeft(),
+                icon: Icon.angleLeft(),
                 onClick: () => model.adjustDates('subtract')
             }),
             this.dateInput({bind: 'startDate'}),
-            Icon.angleRight(),
+            Icon.caretRight(),
             this.dateInput({bind: 'endDate'}),
             button({
-                icon: Icon.caretRight(),
+                icon: Icon.angleRight(),
                 onClick: () => model.adjustDates('add')
             }),
             button({
-                icon: Icon.arrowToRight(),
+                icon: Icon.angleDoubleRight(),
                 onClick: () => model.adjustDates('subtract', true)
             }),
             toolbarSep(),
             this.textInput({bind: 'username', placeholder: 'Username', enableClear: true}),
             this.textInput({bind: 'msg', placeholder: 'Message', enableClear: true}),
             this.textInput({bind: 'category', placeholder: 'Category', enableClear: true}),
+            this.textInput({bind: 'device', placeholder: 'Device', enableClear: true}),
             this.textInput({bind: 'browser', placeholder: 'Browser', enableClear: true}),
             refreshButton({model}),
             filler(),
