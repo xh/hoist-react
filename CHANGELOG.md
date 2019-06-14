@@ -28,6 +28,7 @@
 * The mobile `ColChooser` has been significantly reworked. It now renders displayed and available
   columns as two lists, allowing drag and drop between to update the visibility and ordering.
   It also provides an easy affordance to toggle pinning the first column.
+* Add new `@bindable.ref` variant of the `@bindable` decorator.
 
 
 ### 🎁 Breaking Changes
