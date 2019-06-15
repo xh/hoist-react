@@ -45,6 +45,7 @@
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
   the Blueprint library). This should result in a snappier user experience, especially when working
   on remote / virtual workstations.
+* Added new `@bindable.ref` variant of the `@bindable` decorator.
 
 ### 🎁 Breaking Changes
 
