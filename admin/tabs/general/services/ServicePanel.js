@@ -40,8 +40,9 @@ export class ServicePanel extends Component {
             {gridModel} = model;
         return [
             button({
-                icon: Icon.sync(),
-                text: 'Clear Caches',
+                icon: Icon.reset(),
+                text: 'Clear Selected',
+                intent: 'danger',
                 onClick: () => model.clearCaches(),
                 disabled: gridModel.selModel.isEmpty
             }),

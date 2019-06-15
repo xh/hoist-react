@@ -5,41 +5,63 @@
 
 ### 🎁 New Features
 
-*  A `StoreFilter` object has been introduced to the data api.  This allows `Store` and `StoreFilterField`
-   to support the ability to conditionally include all children when filtering hierarchical data stores.  
+#### Data
+
+* A `StoreFilter` object has been introduced to the data API. This allows `Store` and
+  `StoreFilterField` to support the ability to conditionally include all children when filtering
+  hierarchical data stores, and could support additional filtering customizations in the future.
 * `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
-  the data it contains. The raw data for this record can be provided to `loadData() and
-  updataData()` either via an explicit argument to these methods, or as the root node of the raw
-  data provided (see `loadRootAsSummary`).
-* `GridModel` now supports a `showSummary` property which can be used to display its store's
-  summaryRecord as either a pinned top or bottom row.
+  the data it contains. The raw data for this record can be provided to `loadData()` and
+  `updateData()` either via an explicit argument to these methods, or as the root node of the raw
+  data provided (see `Store.loadRootAsSummary`).
+
+#### Grid
+
+* `GridModel` now supports a `showSummary` config which can be used to display its store's
+  summaryRecord (see above) as either a pinned top or bottom row.
+* `GridModel` also adds a `enableColumnPinning` config to enable/disable user-driven pinning. On
+  desktop, if enabled, users can pin columns by dragging them to the left or right edges of the grid
+  (the default ag-Grid gesture). Column pinned state is now also captured and maintained by the
+  overall grid state system.
+* The desktop column chooser now options in a non-modal popover when triggered from the standard
+  `ColChooserButton` component. This offers a quicker and less disruptive alternative to the modal
+  dialog (which is still used when launched from the grid context menu). In this popover mode,
+  updates to columns are immediately reflected in the underlying grid.
+* The mobile `ColChooser` has been improved significantly. It now renders displayed and available
+  columns as two lists, allowing drag and drop between to update the visibility and ordering. It
+  also provides an easy option to toggle pinning the first column.
+* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
+  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+
+#### Other Features
+
 * A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
-* The desktop `ColChooserButton` now opens the column chooser in a non-modal popover, as a less
-  disruptive alternative to the modal dialog approach used previously. The chooser still appears in
-  a modal dialog on mobile and when opened from the desktop grid context menu.
-* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
-  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, offering greater
+  control over when the calendar picker is shown. The new default behaviour is to not show the
+  picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
   the Blueprint library). This should result in a snappier user experience, especially when working
   on remote / virtual workstations.
-* The mobile `ColChooser` has been significantly reworked. It now renders displayed and available
-  columns as two lists, allowing drag and drop between to update the visibility and ordering.
-  It also provides an easy affordance to toggle pinning the first column.
-* Add new `@bindable.ref` variant of the `@bindable` decorator.
-
+* Added new `@bindable.ref` variant of the `@bindable` decorator.
 
 ### 🎁 Breaking Changes
-*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a function.
 
+*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
+   function.
 
 ### 🐞 Bug Fixes
 
+* Performance for bulk grid selections has been greatly improved (#1157)
 * Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
   when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
   multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+* All Hoist Components that accept a `model` prop now have that properly documented in their
+  prop-types.
+* Admin Log Viewer no longer reverses its lines when not in tail mode.
+
 
 ### 📚 Libraries
 
@@ -48,7 +70,7 @@
 * mobx-react `5.4 -> 6.0.3`
 * font-awesome `5.8 -> 5.9`
 
-## v23.0.0 - 2019-05-30 
+## v23.0.0 - 2019-05-30
 
 ### 🎁 New Features
 
@@ -62,9 +84,6 @@
   the relevant section of an application UI, as opposed to the edge of the screen.
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
-* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, that offer greater
-  control over when the calendar picker is shown. The new default behaviour is to not show the picker
-  on focus, instead showing it via a built-in button.
 * Hoist Admins now always see the VersionBar in the footer.
 * `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be
   performed.

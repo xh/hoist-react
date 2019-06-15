@@ -9,6 +9,7 @@ import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
+import {trimEnd} from 'lodash';
 
 @HoistModel
 @LoadSupport
@@ -22,12 +23,18 @@ export class EhCacheModel {
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
             fields: ['name', 'heapSize', 'entries', 'status'],
-            idSpec: 'name'
+            idSpec: 'name',
+            processRawData: row => {
+                return {
+                    ...row,
+                    heapSize: parseFloat(trimEnd(row.heapSize, 'MB'))
+                };
+            }
         }),
         sortBy: 'name',
         columns: [
             {field: 'name', width: 360},
-            {field: 'heapSize', ...numberCol, headerName: 'Heap Size', width: 130},
+            {field: 'heapSize', ...numberCol, headerName: 'Heap Size (MB)', width: 130},
             {field: 'entries', ...numberCol, width: 120},
             {field: 'status', width: 120},
             {...emptyFlexCol}
