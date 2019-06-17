@@ -17,10 +17,8 @@ import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 @HoistModel
 export class ColChooserModel {
 
-    gridModel = null;
-
-    @managed
-    lrModel = null;
+    gridModel;
+    @managed lrModel;
 
     // Show in dialog
     @observable isOpen = false;
