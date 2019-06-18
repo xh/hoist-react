@@ -31,6 +31,7 @@ export class Record {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
+    /** @param {Record} parent */
     set parent(parent) {
         this.parentId = parent ? parent.id : null;
         this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];

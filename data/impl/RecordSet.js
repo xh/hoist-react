@@ -6,7 +6,6 @@
  */
 
 import {throwIf} from '../../utils/js';
-import {isEmpty} from 'lodash';
 
 /**
  * Internal container for Record management within a Store.
@@ -130,15 +129,13 @@ export class RecordSet {
             const currRecord = existingRecords.get(id);
 
             if (currRecord) {
-                throwIf(newRecord.parent && newRecord.parent.id !== newRecord.parent.id, 'Cannot change parents via updateData!');
+                throwIf(newRecord.parent && newRecord.parent.id !== newRecord.parent.id,
+                    'Cannot change parents via updateData!');
                 newRecord.parent = currRecord.parent;
             }
 
-            // We need to make sure we deal with any orphans as a result of this update
-            // If we have a currRecord, and it has children, then make sure that we remove all children
-            // which ARE NOT in the newRecords map
-            // TODO: This will cause us to create the children map if we haven't already, can we avoid this?
-            if (!isEmpty(currRecord.children)) {
+            const hasChildren = existingRecords.values().find(rec => rec.parentId === currRecord.id);
+            if (!hasChildren) {
                 const descendantIds = new Set();
                 this.gatherDescendants(currRecord.id, descendantIds);
                 descendantIds.forEach(id => {
@@ -155,13 +152,16 @@ export class RecordSet {
     }
 
     addData(rawData, parentId) {
-        const parent = this.records.get(parentId),
-            newRecords = this.createRecords(rawData, parent),
-            records = new Map([...this.records, ...newRecords]);
+        const {records} = this,
+            parent = records.get(parentId),
+            newRecords = this.createRecords(rawData, parent);
 
-        // TODO: Should we throw if any of the new records have the same id as existing records?
+        newRecords.forEach(rec => {
+            throwIf(records.has(rec.id),
+                `A Record with ID ${rec.id} already exists in the RecordSet.`);
+        });
 
-        return new RecordSet(this.store, records);
+        return new RecordSet(this.store, new Map([...records, ...newRecords]));
     }
 
     removeRecords(ids) {
