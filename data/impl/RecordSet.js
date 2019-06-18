@@ -134,8 +134,15 @@ export class RecordSet {
                 newRecord.parent = currRecord.parent;
             }
 
-            const hasChildren = existingRecords.values().find(rec => rec.parentId === currRecord.id);
-            if (!hasChildren) {
+            let hasChildren = false;
+            for (let rec of existingRecords.values()) {
+                if (rec.parentId == currRecord.id) {
+                    hasChildren = true;
+                    break;
+                }
+            }
+
+            if (hasChildren) {
                 const descendantIds = new Set();
                 this.gatherDescendants(currRecord.id, descendantIds);
                 descendantIds.forEach(id => {
