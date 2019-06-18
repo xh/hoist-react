@@ -14,6 +14,8 @@
   the data it contains. The raw data for this record can be provided to `loadData()` and
   `updateData()` either via an explicit argument to these methods, or as the root node of the raw
   data provided (see `Store.loadRootAsSummary`).
+* The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
+  its text value from an external model's observable.
 
 #### Grid
 
