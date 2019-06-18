@@ -6,6 +6,7 @@
  */
 
 import {throwIf} from '../../utils/js';
+import {isEmpty} from 'lodash';
 
 /**
  * Internal container for Record management within a Store.
@@ -127,6 +128,24 @@ export class RecordSet {
 
         newRecords.forEach((newRecord, id) => {
             const currRecord = existingRecords.get(id);
+
+            if (currRecord) {
+                throwIf(newRecord.parent && newRecord.parent.id !== newRecord.parent.id, 'Cannot change parents via updateData!');
+                newRecord.parent = currRecord.parent;
+            }
+
+            // We need to make sure we deal with any orphans as a result of this update
+            // If we have a currRecord, and it has children, then make sure that we remove all children
+            // which ARE NOT in the newRecords map
+            // TODO: This will cause us to create the children map if we haven't already, can we avoid this?
+            if (!isEmpty(currRecord.children)) {
+                const descendantIds = new Set();
+                this.gatherDescendants(currRecord.id, descendantIds);
+                descendantIds.forEach(id => {
+                    if (!newRecords.has(id)) existingRecords.delete(id);
+                });
+            }
+
             if (!currRecord || !currRecord.isEqual(newRecord)) {
                 existingRecords.set(id, newRecord);
             }
@@ -135,19 +154,29 @@ export class RecordSet {
         return new RecordSet(this.store, existingRecords);
     }
 
+    addData(rawData, parentId) {
+        const parent = this.records.get(parentId),
+            newRecords = this.createRecords(rawData, parent),
+            records = new Map([...this.records, ...newRecords]);
+
+        // TODO: Should we throw if any of the new records have the same id as existing records?
+
+        return new RecordSet(this.store, records);
+    }
+
     removeRecords(ids) {
         const removes = new Set();
         ids.forEach(id => this.gatherDescendants(id, removes));
-        return this.applyFilter(r => !removes.has(r.id));
+        return this.applyFilter({fn: r => !removes.has(r.id)});
     }
 
     //------------------------
     // Implementation
     //------------------------
 
-    createRecords(rawData) {
+    createRecords(rawData, parent = null) {
         const ret = new Map();
-        rawData.forEach(raw => this.buildRecords(raw, ret, null));
+        rawData.forEach(raw => this.buildRecords(raw, ret, parent));
         return ret;
     }
 
@@ -168,11 +197,11 @@ export class RecordSet {
     computeChildrenMap(records) {
         const ret = new Map();
         records.forEach(r => {
-            const {parentId} = r;
-            if (parentId) {
-                const children = ret.get(parentId);
+            const {parent} = r;
+            if (parent) {
+                const children = ret.get(parent.id);
                 if (!children) {
-                    ret.set(parentId, [r]);
+                    ret.set(parent.id, [r]);
                 } else {
                     children.push(r);
                 }

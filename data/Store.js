@@ -143,6 +143,13 @@ export class Store {
         this.lastUpdated = Date.now();
     }
 
+    @action
+    addData(rawData, parentRecord) {
+        this._all = this._all.addData(rawData, parentRecord ? parentRecord.id : null);
+        this.rebuildFiltered();
+        this.lastUpdated = Date.now();
+    }
+
     /** Remove all records from the store. */
     clear() {
         this.loadData([], null);
