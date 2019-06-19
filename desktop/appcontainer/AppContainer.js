@@ -30,7 +30,7 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 import {tabContainer} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {dockContainer} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
+import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 
 installDesktopImpls({

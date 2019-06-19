@@ -26,6 +26,7 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
+import {withShortDebug} from '@xh/hoist/utils/js';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -144,9 +145,8 @@ export class Grid extends Component {
     }
 
     render() {
-        const {model, props, agOptions} = this,
-            {treeMode, agGridModel} = model,
-            {onKeyDown} = props;
+        const {model, agOptions, onKeyDown} = this,
+            {treeMode, agGridModel} = model;
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
@@ -216,11 +216,13 @@ export class Grid extends Component {
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             }
@@ -338,33 +340,33 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
                 runInAction(() => {
-                    const now = Date.now();
+                    withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
+                        // If we are going to delete the majority of the rows then ag-Grid is faster
+                        // if we first clear out the existing data before setting the new data
+                        this.clearDataIfExpensiveDeletionPending(records, api);
 
-                    // Workaround for AG-2879.
-                    this.clearDataIfExpensiveDeletionPending(records, api);
+                        // Load updated data into the grid.
+                        api.setRowData(records);
+                        this.updatePinnedRowData();
 
-                    // Load updated data into the grid.
-                    api.setRowData(records);
+                        // Size columns to account for scrollbar show/hide due to row count change.
+                        api.sizeColumnsToFit();
 
-                    // Size columns to account for scrollbar show/hide due to row count change.
-                    api.sizeColumnsToFit();
-
-                    // Force grid to fully re-render cells. We are *not* relying on its default
-                    // cell-level change detection as this does not account for our current
-                    // renderer API (where renderers can reference other properties on the data
-                    // object). See https://github.com/exhi/hoist-react/issues/550.
-                    api.refreshCells({force: true});
-
-                    console.debug(`Loaded ${records.length} records into ag-Grid: ${Date.now() - now}ms`);
+                        // Force grid to fully re-render cells. We are *not* relying on its default
+                        // cell-level change detection as this does not account for our current
+                        // renderer API (where renderers can reference other properties on the data
+                        // object). See https://github.com/exhi/hoist-react/issues/550.
+                        api.refreshCells({force: true});
+                    }, this);
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
-                  
+
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
                 });
@@ -420,7 +422,7 @@ export class Grid extends Component {
             run: ([api]) => {
                 if (!api) return;
 
-                this.doWithPreservedState({expansion: true, filters: true}, () => {
+                this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
                 api.sizeColumnsToFit();
@@ -449,12 +451,17 @@ export class Grid extends Component {
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
+
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
+                            hadChanges = true;
+                        }
+                        if (agCol.pinned != col.pinned) {
+                            colApi.setColumnPinned(id, col.pinned);
                             hadChanges = true;
                         }
                     });
@@ -464,17 +471,18 @@ export class Grid extends Component {
 
                 // 2) Otherwise do an (expensive) full refresh of column state
                 // Merge our state onto the ag column state to get any state which we do not yet support
-                colState = colState.map(({colId, width, hidden}) => {
+                colState = colState.map(({colId, width, hidden, pinned}) => {
                     const agCol = agColState.find(c => c.colId === colId) || {};
                     return {
                         colId,
                         ...agCol,
                         width,
+                        pinned,
                         hide: hidden
                     };
                 });
 
-                this.doWithPreservedState({expansion: true}, () => {
+                this.doWithPreservedState({expansion: false}, () => {
                     colApi.setColumnState(colState);
                 });
                 api.sizeColumnsToFit();
@@ -482,7 +490,6 @@ export class Grid extends Component {
         };
     }
 
-    //  Workaround for n^2 deletion behavior in ag-Grid (AG-2879)
     clearDataIfExpensiveDeletionPending(newRecords, api) {
         let currCount = 0, deleteCount = 0, addCount = 0;
 
@@ -498,11 +505,27 @@ export class Grid extends Component {
         // Heuristic -- we think slow deletions grow by order (D * (C + A))
         if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
             console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
-            const now = Date.now();
-            api.selectionController.reset();
-            api.clientSideRowModel.setRowData([]);
-            console.debug(`Pre-Cleared ${currCount} records from ag-Grid: ${Date.now() - now}ms`);
+            withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
+                api.selectionController.reset();
+                api.clientSideRowModel.setRowData([]);
+            }, this);
         }
+    }
+
+    updatePinnedRowData() {
+        const {model} = this,
+            {store, showSummary} = model,
+            {agApi} = model.agGridModel,
+            pinnedTopRecords = [],
+            pinnedBottomRecords = [];
+
+        if (showSummary && store.summaryRecord) {
+            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
+            arr.push(store.summaryRecord);
+        }
+
+        agApi.setPinnedTopRowData(pinnedTopRecords);
+        agApi.setPinnedBottomRowData(pinnedBottomRecords);
     }
 
     //------------------------
@@ -512,11 +535,11 @@ export class Grid extends Component {
         return data.xhTreePath;
     };
 
-    onSelectionChanged = (ev) => {
-        this.model.selModel.select(ev.api.getSelectedRows());
+    onSelectionChanged = () => {
+        this.model.noteAgSelectionStateChanged();
     };
 
-    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
+    // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     };
@@ -537,6 +560,13 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+    };
+
+    // Catches column pinning changes triggered from ag-grid ui components
+    onColumnPinned = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
@@ -580,6 +610,15 @@ export class Grid extends Component {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
 
+    onKeyDown = (evt) => {
+        const {selModel} = this.model;
+        if ((evt.ctrlKey || evt.metaKey) && evt.key == 'a' && selModel.mode === 'multiple') {
+            selModel.selectAll();
+            return;
+        }
+
+        if (this.props.onKeyDown) this.props.onKeyDown(evt);
+    }
 }
 
 export const grid = elemFactory(Grid);

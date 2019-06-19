@@ -34,7 +34,7 @@ import './AgGrid.scss';
 @LayoutSupport
 export class AgGrid extends Component {
     baseClassName = 'xh-ag-grid';
-    modelClass = AgGridModel;
+    static modelClass = AgGridModel;
 
     static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
     static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
@@ -43,7 +43,7 @@ export class AgGrid extends Component {
         const layoutProps = this.getLayoutProps(),
             agGridProps = omit(this.getNonLayoutProps(), ['model', 'key']);
 
-        const {compact, rowBorders, stripeRows, showCellFocus, showHover} = this.model,
+        const {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = this.model,
             {darkTheme, isMobile} = XH;
 
         return frame({
@@ -52,6 +52,7 @@ export class AgGrid extends Component {
                 compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
+                cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
                 !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
@@ -85,11 +86,11 @@ export class AgGrid extends Component {
     navigateToNextCell = (agParams) => {
         if (XH.isMobile) return;
 
-        const {nextCellDef, previousCellDef, event} = agParams,
+        const {nextCellPosition, previousCellPosition, event} = agParams,
             {agApi} = this.model,
             shiftKey = event.shiftKey,
-            prevIndex = previousCellDef ? previousCellDef.rowIndex : null,
-            nextIndex = nextCellDef ? nextCellDef.rowIndex : null,
+            prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
+            nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
@@ -111,13 +112,13 @@ export class AgGrid extends Component {
                         }
                     }
                 }
-                return nextCellDef;
+                return nextCellPosition;
             case KEY_LEFT:
                 if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
-                return nextCellDef;
+                return nextCellPosition;
             case KEY_RIGHT:
                 if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
-                return nextCellDef;
+                return nextCellPosition;
             default:
         }
     };

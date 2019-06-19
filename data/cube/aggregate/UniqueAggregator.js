@@ -16,10 +16,4 @@ export class UniqueAggregator extends Aggregator {
         const val = records[0].get(fieldName);
         return records.every(it => it.get(fieldName) == val) ? val : null;
     }
-
-    replace(records, currAgg, update) {
-        if (records.length == 1) return update.newVal;
-
-        return update.newVal == currAgg ? currAgg : null;
-    }
 }

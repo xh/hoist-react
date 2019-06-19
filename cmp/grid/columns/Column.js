@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {XH} from '@xh/hoist/core';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -194,7 +195,7 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
+                lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
@@ -222,7 +223,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltip = isFunction(this.tooltip) ?
+            ret.tooltipValueGetter = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
@@ -337,7 +338,7 @@ export class Column {
 
 /**
  * @typedef {Object} CellContext
- * @property {CubeRecord} record - row-level data Record.
+ * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
  * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
@@ -359,7 +360,7 @@ export class Column {
 
 /**
  * @typedef {Object} TooltipMetadata
- * @property {CubeRecord} record - row-level data Record.
+ * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
  * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
  */

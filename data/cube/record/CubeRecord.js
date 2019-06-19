@@ -4,15 +4,18 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {forEach} from 'lodash';
 
 export class CubeRecord {
 
-    fields = null;
+    /** @member {Map} */
+    fields;
+    /** @member {CubeRecord} */
     parent = null;
+    /** @member {CubeRecord[]} */
     children = null;
+    /** @member {Object} */
     data = null;
-
+    /** @member {boolean} */
     isLeaf = true;
 
     constructor(fields, data, id) {
@@ -31,7 +34,7 @@ export class CubeRecord {
     get(fieldName)  {return this.data[fieldName]}
 
     eachField(fn) {
-        return forEach(this.fields, fn);
+        this.fields.forEach(fn);
     }
 }
 

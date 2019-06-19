@@ -34,7 +34,13 @@ export class DimensionChooser extends Component {
         buttonWidth: PT.number,
 
         /** Width in pixels of the popover menu itself. */
-        dialogWidth: PT.number
+        dialogWidth: PT.number,
+
+        /** Text to represent empty state (i.e. value = null or [])*/
+        emptyText: PT.string,
+
+        /** Primary component model instance. */
+        model: PT.instanceOf(DimensionChooserModel).isRequired
     };
 
     baseClassName = 'xh-dim-chooser';
@@ -51,15 +57,21 @@ export class DimensionChooser extends Component {
         return withDefault(this.props.buttonWidth, 150);
     }
 
+    get emptyText() {
+        return withDefault(this.props.emptyText, '[Ungrouped]');
+    }
+
     render() {
         const {model} = this,
             {value, dimensions} = model;
+
+        const labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
 
         return div(
             this.renderDialog(),
             button({
                 className: 'xh-dim-button',
-                item: span(value.map(it => dimensions[it].label).join(' \u203a ')),
+                item: span(labels.join(' \u203a ')),
                 width: this.buttonWidth,
                 onClick: () => model.showMenu()
             })
@@ -117,8 +129,9 @@ export class DimensionChooser extends Component {
             {history, dimensions} = model;
 
         const historyItems = history.map((value, i) => {
-            const labels = value.map(h => dimensions[h].label),
-                isActive = value === model.value;
+            const isActive = value === model.value,
+                labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
+
             return button({
                 className: classNames('dim-history-btn',
                     isActive ? 'dim-history-btn--active' : null),
@@ -159,10 +172,10 @@ export class DimensionChooser extends Component {
     //---------------------------
     renderSelectMenu() {
         const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
-            {pendingValue, dimensions, maxDepth, leafInPending} = model;
+            {showAddSelect, pendingValue, dimensions, maxDepth, leafInPending, enableClear} = model;
 
         const children = pendingValue.map((dim, i) => {
-            const options = [dimensions[dim], ...model.dimOptionsForLevel(i)],
+            const options = model.dimOptionsForLevel(i, dim),
                 marginLeft = LEFT_PAD + (INDENT * i),
                 width = this.dialogWidth - marginLeft - X_BTN_WIDTH;
 
@@ -178,7 +191,7 @@ export class DimensionChooser extends Component {
                     }),
                     button({
                         icon: Icon.x({className: 'xh-red'}),
-                        disabled: pendingValue.length === 1,
+                        disabled: !enableClear && pendingValue.length === 1,
                         modifier: 'quiet',
                         onClick: () => {
                             model.removePendingDim(dim);
@@ -188,6 +201,15 @@ export class DimensionChooser extends Component {
                 ]
             });
         });
+
+        if (isEmpty(pendingValue) && !showAddSelect) {
+            children.push(
+                div({
+                    className: 'xh-dim-dialog-select-row',
+                    items: [filler(), this.emptyText, filler()]
+                })
+            );
+        }
 
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) {

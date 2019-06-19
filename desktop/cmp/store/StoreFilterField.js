@@ -7,7 +7,16 @@
 
 import {Component} from 'react';
 import PT from 'prop-types';
-import {debounce, escapeRegExp, isEmpty, intersection, without} from 'lodash';
+import {
+    debounce,
+    escapeRegExp,
+    isEmpty,
+    isEqual,
+    intersection,
+    without,
+    upperFirst,
+    isFunction
+} from 'lodash';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -33,10 +42,24 @@ export class StoreFilterField extends Component {
 
     static propTypes = {
         /**
-         * Store that this control should filter. By default, all fields configured on the Store
-         * will be used for matching. Do not configure this and `gridModel` on the same component.
+         * Field on optional model to which this component should bind its value. Not required
+         * for filtering functionality (see `gridModel`, `onFilterChange`, and `store` props), but
+         * allows the value of this component to be controlled via an external model observable.
          */
-        store: PT.instanceOf(Store),
+        bind: PT.string,
+
+        /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
+        excludeFields: PT.arrayOf(PT.string),
+
+        /**
+         * Delay (in ms) to buffer filtering of the store after the value changes from user input.
+         * Default 200ms. Set to 0 to filter immediately on each keystroke. Applicable only when
+         * bound to a Store (directly or via a GridModel).
+         */
+        filterBuffer: PT.number,
+
+        /** Fixed options for Filter to be generated. @see StoreFilter. */
+        filterOptions: PT.object,
 
         /**
          * GridModel whose Store this control should filter. When given a GridModel, this component
@@ -54,18 +77,11 @@ export class StoreFilterField extends Component {
          */
         includeFields: PT.arrayOf(PT.string),
 
-        /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
-        excludeFields: PT.arrayOf(PT.string),
+        /** Optional model for value binding - see comments on the `bind` prop for details. */
+        model: PT.object,
 
         /**
-         * Delay (in ms) to buffer filtering of the store after the value changes from user input.
-         * Default 200ms. Set to 0 to filter immediately on each keystroke. Applicable only when
-         * bound to a Store (directly or via a GridModel).
-         */
-        filterBuffer: PT.number,
-
-        /**
-         * Callback to receive an updated filter function. Can be used in place of the `store` or
+         * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
          * `gridModel` prop when direct filtering of a bound store by this component is not desired.
          * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
          */
@@ -73,6 +89,12 @@ export class StoreFilterField extends Component {
 
         /** Text to display when the input is empty. */
         placeholder: PT.string,
+
+        /**
+         * Store that this control should filter. By default, all fields configured on the Store
+         * will be used for matching. Do not configure this and `gridModel` on the same component.
+         */
+        store: PT.instanceOf(Store),
 
         /** Width of the input in pixels. */
         width: PT.number
@@ -101,16 +123,24 @@ export class StoreFilterField extends Component {
             const {gridModel} = props;
             if (gridModel) {
                 this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy],
+                    track: () => [gridModel.columns, gridModel.groupBy, this.props.filterOptions],
                     run: () => this.regenerateFilter({applyImmediately: false})
                 });
             }
+        }
+
+        const {model, bind} = props;
+        if (model && bind) {
+            this.addReaction({
+                track: () => model[bind],
+                run: (boundVal) => this.setValue(boundVal),
+                fireImmediately: true
+            });
         }
     }
 
     render() {
         const {props} = this;
-
         return textInput({
             value: this.value,
 
@@ -131,28 +161,36 @@ export class StoreFilterField extends Component {
     // Implementation
     //------------------------
     @action
-    setValue(v, {applyImmediately}) {
+    setValue(v, {applyImmediately} = {}) {
+        if (isEqual(v, this.value)) return;
+
         this.value = v;
         this.regenerateFilter({applyImmediately});
+
+        const {bind, model} = this.props;
+        if (bind && model) {
+            const setterName = `set${upperFirst(bind)}`;
+            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
+            model[setterName](v);
+        }
     }
 
     regenerateFilter({applyImmediately}) {
-        const {onFilterChange} = this.props,
-            {applyFilterFn} = this,
+        const {applyFilterFn, props} = this,
             activeFields = this.getActiveFields(),
             searchTerm = escapeRegExp(this.value);
 
-        let filter = null;
+        let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
-            filter = (rec) => activeFields.some(f => {
+            fn = (rec) => activeFields.some(f => {
                 const fieldVal = rec[f];
                 return fieldVal && regex.test(fieldVal);
             });
         }
-        this.filter = filter;
+        this.filter = fn ? {...props.filterOptions, fn} : null;
 
-        if (onFilterChange) onFilterChange(filter);
+        if (props.onFilterChange) props.onFilterChange(this.filter);
 
         if (applyFilterFn) {
             if (applyImmediately) {
@@ -173,10 +211,6 @@ export class StoreFilterField extends Component {
 
     onValueChange = (v) => {
         this.setValue(v, {applyImmediately: false});
-    };
-
-    onClearClick = () => {
-        this.setValue('', {applyImmediately: true});
     };
 
     getActiveStore() {
