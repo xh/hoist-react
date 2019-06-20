@@ -48,6 +48,7 @@ export class ActivityGridModel {
                 field: 'elapsed',
                 headerName: 'Elapsed (ms)',
                 width: 130,
+                align: 'right',
                 renderer: numberRenderer({precision: 0})
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120}

@@ -35,8 +35,9 @@ export class EhCachePanel extends Component {
             {gridModel} = model;
         return [
             button({
-                icon: Icon.sync(),
+                icon: Icon.reset(),
                 text: 'Clear All',
+                intent: 'danger',
                 onClick: () => model.clearAll()
             }),
             filler(),

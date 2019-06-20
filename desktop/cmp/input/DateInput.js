@@ -114,6 +114,9 @@ export class DateInput extends HoistInput {
                 position: withDefault(props.popoverPosition, 'auto'),
                 popoverRef: this.popoverRef.ref,
                 onClose: this.onPopoverClose,
+                onInteraction: (nextOpenState) => {
+                    if (!nextOpenState) this.setPopoverOpen(false);
+                },
 
                 content: bpDatePicker({
                     value: this.renderValue,
@@ -189,6 +192,9 @@ export class DateInput extends HoistInput {
     onKeyDown = (ev) => {
         if (ev.key == 'Enter') {
             this.doCommit();
+        }
+        if (this.popoverOpen && ev.key == 'Escape') {
+            this.setPopoverOpen(false);
         }
         if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
             this.setPopoverOpen(true);

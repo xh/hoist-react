@@ -11,14 +11,17 @@
  */
 export class StoreFilter {
 
+    /** @type {function} */
     fn;
+
+    /** @type {boolean} */
     includeChildren;
 
     /**
      * @param {Object} config
      * @param {function} config.fn - function taking a record and returning a boolean.
-     * @param {boolean} [config.includeChildren] - true if all children of a passing record should also be considered
-     *      passing (default false)
+     * @param {boolean} [config.includeChildren] - true if all children of a passing record should
+     *      also be considered passing (default false).
      */
     constructor({fn, includeChildren = false}) {
         this.fn = fn;
