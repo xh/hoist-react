@@ -220,8 +220,8 @@ export class Store {
 
     /**
      * Set filter to be applied.
-     * @param {(StoreFilter|Object|function)} [c.filter] - StoreFilter to be applied to records, or config or
-     *      function to be used to create one.
+     * @param {(StoreFilter|Object|function)} filter - StoreFilter to be applied to records, or
+     *      config or function to be used to create one.
      */
     setFilter(filter) {
         if (isFunction(filter)) {
@@ -234,6 +234,7 @@ export class Store {
         this.rebuildFiltered();
     }
 
+    /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {return this._filter}
 
 

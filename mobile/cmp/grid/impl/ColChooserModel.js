@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, settable, bindable, action} from '@xh/hoist/mobx';
+import {observable, bindable, action} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {sortBy, clone, find} from 'lodash';
 
@@ -20,7 +20,7 @@ export class ColChooserModel {
 
     gridModel;
 
-    @settable @observable.ref columns = [];
+    @bindable.ref columns = [];
     @bindable pinFirst;
 
     @observable isOpen = false;
