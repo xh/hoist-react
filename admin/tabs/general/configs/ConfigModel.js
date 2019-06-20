@@ -15,7 +15,7 @@ import {
     deleteAction
 } from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
 @LoadSupport
