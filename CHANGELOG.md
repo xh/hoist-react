@@ -60,6 +60,9 @@
   covered by the Hoist implementation - rename their own service to avoid a naming conflict.
 * The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
   function.
+* `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
+  Input text may be clipped unless the component width is extended. Inputs with custom heights
+  should also be checked.
 
 ### 🐞 Bug Fixes
 
