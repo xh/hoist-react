@@ -13,17 +13,11 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {RestGridModel} from '../RestGridModel';
-import PT from 'prop-types';
 
 @HoistComponent
 export class RestGridToolbar extends Component {
 
     static modelClass = RestGridModel;
-
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]).isRequired
-    };
 
     render() {
         return toolbar(

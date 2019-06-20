@@ -46,6 +46,7 @@ export class Field {
         const {type, defaultValue} = this;
         if (val === undefined || val === null) val = defaultValue;
         if (val === null) return val;
+
         switch (type) {
             case 'auto':
             case 'json':
