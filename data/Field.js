@@ -25,7 +25,7 @@ export class Field {
     /**
      * @param {Object} c - Field configuration.
      * @param {string} c.name - unique key representing this field.
-     * @param {string} [c.type] - one of ['auto', 'string', 'int', 'number', 'bool', 'json', 'date']
+     * @param {string} [c.type] - one of ['auto', 'string', 'int', 'number', 'bool', 'json', 'pwd', 'date']
      *      Default 'auto' indicates no conversion.
      * @param {string} [c.label] - label for display, defaults to capitalized name.
      * @param {*} [c.defaultValue] - value to be used for records with a null, or non-existent value.
@@ -46,7 +46,6 @@ export class Field {
         const {type, defaultValue} = this;
         if (val === undefined || val === null) val = defaultValue;
         if (val === null) return val;
-
         switch (type) {
             case 'auto':
             case 'json':
@@ -57,6 +56,7 @@ export class Field {
                 return parseFloat(val);
             case 'bool':
                 return !!val;
+            case 'pwd':
             case 'string':
                 return val.toString();
             case 'date':

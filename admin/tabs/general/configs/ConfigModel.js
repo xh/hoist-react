@@ -106,7 +106,7 @@ export class ConfigModel {
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
-            {field: 'value', formField: {item: textInput({type: 'password'})}},
+            {field: 'value'},
             {field: 'clientVisible'},
             {field: 'note', formField: {item: textArea()}},
             {field: 'lastUpdated'},
