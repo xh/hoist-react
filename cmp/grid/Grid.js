@@ -145,9 +145,8 @@ export class Grid extends Component {
     }
 
     render() {
-        const {model, props, agOptions} = this,
-            {treeMode, agGridModel} = model,
-            {onKeyDown} = props;
+        const {model, agOptions, onKeyDown} = this,
+            {treeMode, agGridModel} = model;
 
         // Note that we intentionally do *not* render the agGridReact element below with either the data
         // or the columns. These two bits are the most volatile in our GridModel, and this causes
@@ -217,6 +216,7 @@ export class Grid extends Component {
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
+            onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
             defaultGroupSortComparator: this.groupSortComparator,
@@ -346,7 +346,8 @@ export class Grid extends Component {
 
                 runInAction(() => {
                     withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
-                        // Workaround for AG-2879.
+                        // If we are going to delete the majority of the rows then ag-Grid is faster
+                        // if we first clear out the existing data before setting the new data
                         this.clearDataIfExpensiveDeletionPending(records, api);
 
                         // Load updated data into the grid.
@@ -450,12 +451,17 @@ export class Grid extends Component {
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
+
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
                             hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
+                            hadChanges = true;
+                        }
+                        if (agCol.pinned != col.pinned) {
+                            colApi.setColumnPinned(id, col.pinned);
                             hadChanges = true;
                         }
                     });
@@ -465,12 +471,13 @@ export class Grid extends Component {
 
                 // 2) Otherwise do an (expensive) full refresh of column state
                 // Merge our state onto the ag column state to get any state which we do not yet support
-                colState = colState.map(({colId, width, hidden}) => {
+                colState = colState.map(({colId, width, hidden, pinned}) => {
                     const agCol = agColState.find(c => c.colId === colId) || {};
                     return {
                         colId,
                         ...agCol,
                         width,
+                        pinned,
                         hide: hidden
                     };
                 });
@@ -483,7 +490,6 @@ export class Grid extends Component {
         };
     }
 
-    //  Workaround for n^2 deletion behavior in ag-Grid (AG-2879)
     clearDataIfExpensiveDeletionPending(newRecords, api) {
         let currCount = 0, deleteCount = 0, addCount = 0;
 
@@ -533,7 +539,7 @@ export class Grid extends Component {
         this.model.noteAgSelectionStateChanged();
     };
 
-    // Catches column re-ordering AND resizing via user drag-and-drop interaction.
+    // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = (ev) => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     };
@@ -554,6 +560,13 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+    };
+
+    // Catches column pinning changes triggered from ag-grid ui components
+    onColumnPinned = (ev) => {
+        if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
+            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
@@ -597,6 +610,15 @@ export class Grid extends Component {
         return column.isTreeColumn ? node.data[column.field] : value;
     }
 
+    onKeyDown = (evt) => {
+        const {selModel} = this.model;
+        if ((evt.ctrlKey || evt.metaKey) && evt.key == 'a' && selModel.mode === 'multiple') {
+            selModel.selectAll();
+            return;
+        }
+
+        if (this.props.onKeyDown) this.props.onKeyDown(evt);
+    }
 }
 
 export const grid = elemFactory(Grid);

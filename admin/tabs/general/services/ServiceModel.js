@@ -50,7 +50,7 @@ export class ServiceModel {
     }
 
     async doLoadAsync(loadSpec) {
-        return this.gridModel.loadAsync(loadSpec);
+        return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
     processRawData(r) {

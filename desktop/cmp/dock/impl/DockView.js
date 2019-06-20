@@ -50,8 +50,6 @@ export class DockView extends Component {
             isOpen: true,
             onClose: () => this.onClose(),
             canOutsideClickClose: false,
-            transitionName: 'none',
-            transitionDuration: 0,
             items: [
                 this.renderHeader(),
                 this.renderBody()

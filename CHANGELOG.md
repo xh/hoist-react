@@ -5,24 +5,90 @@
 
 ### 🎁 New Features
 
+#### Data
+
+* A `StoreFilter` object has been introduced to the data API. This allows `Store` and
+  `StoreFilterField` to support the ability to conditionally include all children when filtering
+  hierarchical data stores, and could support additional filtering customizations in the future.
 * `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
-  the data it contains. The raw data for this record can be provided to `loadData() and
-  updataData()` either via an explicit argument to these methods, or as the root node of the raw
-  data provided (see `loadRootAsSummary`).
-* `GridModel` now supports a `showSummary` property which can be used to display its store's
-  summaryRecord as either a pinned top or bottom row.
+  the data it contains. The raw data for this record can be provided to `loadData()` and
+  `updateData()` either via an explicit argument to these methods, or as the root node of the raw
+  data provided (see `Store.loadRootAsSummary`).
+* The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
+  its text value from an external model's observable.
+
+#### Grid
+
+* `GridModel` now supports a `showSummary` config which can be used to display its store's
+  summaryRecord (see above) as either a pinned top or bottom row.
+* `GridModel` also adds a `enableColumnPinning` config to enable/disable user-driven pinning. On
+  desktop, if enabled, users can pin columns by dragging them to the left or right edges of the grid
+  (the default ag-Grid gesture). Column pinned state is now also captured and maintained by the
+  overall grid state system.
+* The desktop column chooser now options in a non-modal popover when triggered from the standard
+  `ColChooserButton` component. This offers a quicker and less disruptive alternative to the modal
+  dialog (which is still used when launched from the grid context menu). In this popover mode,
+  updates to columns are immediately reflected in the underlying grid.
+* The mobile `ColChooser` has been improved significantly. It now renders displayed and available
+  columns as two lists, allowing drag and drop between to update the visibility and ordering. It
+  also provides an easy option to toggle pinning the first column.
+* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
+  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+
+#### Other Features
+
+* Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
+  so enabled via a combination of soft-config and user preference. Auto-refresh relies on the use of
+  the root `RefreshContextModel` and model-level `LoadSupport`.
 * A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
   an overlay docked to the corner of the parent Panel.
+* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, offering greater
+  control over when the calendar picker is shown. The new default behaviour is to not show the
+  picker on focus, instead showing it via a built-in button.
+* Transitions have been disabled by default on desktop Dialog and Popover components (both are from
+  the Blueprint library). This should result in a snappier user experience, especially when working
+  on remote / virtual workstations.
+* Added new `@bindable.ref` variant of the `@bindable` decorator.
 
+### 🎁 Breaking Changes
+
+* Apps that defined and initialized their own `AutoRefreshService` service or functionality should
+  leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
+  name must either remove in favor of the new service or - if they have special requirements not
+  covered by the Hoist implementation - rename their own service to avoid a naming conflict.
+* The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
+  function.
+* `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
+  Applications explicitly setting width or height on this component should ensure that they are providing
+  enough space for it to display its contents without clipping.
 ### 🐞 Bug Fixes
 
+* Performance for bulk grid selections has been greatly improved (#1157)
 * Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
   when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
   multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+* All Hoist Components that accept a `model` prop now have that properly documented in their
+  prop-types.
+* Admin Log Viewer no longer reverses its lines when not in tail mode.
 
-## v23.0.0 - 2019-05-30 
+### ⚙️ Technical
+
+* The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
+  the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
+  `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
+  on a per-app basis.)
+
+### 📚 Libraries
+
+* ag-grid `20.0 -> 21.0`
+* react-select `2.4 -> 3.0`
+* mobx-react `5.4 -> 6.0.3`
+* font-awesome `5.8 -> 5.9`
+
+## v23.0.0 - 2019-05-30
 
 ### 🎁 New Features
 
