@@ -2,6 +2,7 @@ import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
+import {olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the
@@ -36,15 +37,16 @@ export class AutoRefreshService {
 
     get interval() {
         const conf = XH.getConf('xhAutoRefreshIntervals', {});
-        return conf[XH.clientAppCode] || -1;
+        return withDefault(conf[XH.clientAppCode], -1);
     }
 
-    initAsync() {
+    async initAsync() {
         this.initTime = Date.now();
 
         this.timer = Timer.create({
-            runFn: this.refreshIfIntervalExpired,
-            interval: ONE_SECOND
+            runFn: () => this.onTimerAsync(),
+            interval: ONE_SECOND,
+            delay: 5 * SECONDS
         });
     }
 
@@ -52,16 +54,17 @@ export class AutoRefreshService {
     //------------------------
     // Implementation
     //------------------------
-    refreshIfIntervalExpired = () => {
+    async onTimerAsync() {
         if (!this.enabled) return;
 
-        const {refreshContextModel} = XH,
-            // Note lastLoadRequested is undefined until RCM's first loadAsync() call.
-            lastLoaded = withDefault(refreshContextModel.lastLoadRequested, this.initTime);
+        // Base decision to load on when the context was last loaded -- this avoids extra refreshes if user
+        // also refreshing manually.  Note that lastLoadRequested undefined on the context until the first load.
+        const ctx = XH.refreshContextModel,
+            lastLoaded = withDefault(ctx.lastLoadRequested, this.initTime);
 
-        if ((Date.now() - lastLoaded) > (this.interval * SECONDS)) {
+        if (olderThan(lastLoaded, this.interval * SECONDS)) {
             console.debug('Triggering application auto-refresh.');
-            refreshContextModel.autoRefreshAsync();
+            await ctx.autoRefreshAsync();
         }
     }
 

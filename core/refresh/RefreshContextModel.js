@@ -24,7 +24,7 @@ import {HoistModel, LoadSupport}  from '@xh/hoist/core';
  *
  * HoistModels declared with the `@LoadSupport` decorator are the primary targets for the refresh
  * calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
- * RefreshContext (and the app-wide refresh context) when their HoistComponent is mounts.
+ * RefreshContext (and the app-wide refresh context) when their HoistComponent is mounted.
  *
  * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
  * must be internally created by the Component, either directly or from a config passed via props.)
