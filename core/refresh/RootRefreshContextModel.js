@@ -8,12 +8,13 @@ import {XH, loadAllAsync}  from '@xh/hoist/core';
 import {RefreshContextModel} from './RefreshContextModel';
 
 /**
- * Top-level refresh context model.
+ * Top-level refresh context model - triggers a full refresh of the app via a call to `loadAsync()`
+ * on the AppModel, followed by refreshes of any target models within the component hierarchy.
  *
- * This model will provide a full refresh of the app, including a phased refresh
- * of built-in hoist services, applications services, and displayed HoistModels, respectively.
+ * An instance of this object is installed and linked by the framework as `XH.refreshContextModel`
+ * and should *not* be created or managed by application code.
  *
- * An instance of this object is provided by the framework as `XH.refreshContextModel`.
+ * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
 @RefreshContextModel
 export class RootRefreshContextModel {

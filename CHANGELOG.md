@@ -37,6 +37,9 @@
 
 #### Other Features
 
+* Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
+  so enabled via a combination of soft-config and user preference. Auto-refresh relies on the use of
+  the root `RefreshContextModel` and model-level `LoadSupport`.
 * A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
@@ -51,8 +54,12 @@
 
 ### 🎁 Breaking Changes
 
-*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
-   function.
+* Apps that defined and initialized their own `AutoRefreshService` service or functionality should
+  leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
+  name must either remove in favor of the new service or - if they have special requirements not
+  covered by the Hoist implementation - rename their own service to avoid a naming conflict.
+* The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
+  function.
 
 ### 🐞 Bug Fixes
 
@@ -64,6 +71,13 @@
   prop-types.
 * Admin Log Viewer no longer reverses its lines when not in tail mode.
 
+### ⚙️ Technical
+
+* The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
+  the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
+  `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
+  on a per-app basis.)
 
 ### 📚 Libraries
 

@@ -111,8 +111,8 @@ class XHClass {
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     get isMobile()              {return this.appSpec.isMobile}
+    get clientAppCode()         {return this.appSpec.clientAppCode}
     get clientAppName()         {return this.appSpec.clientAppName}
-    get autoRefreshEnabled()    {return this.appSpec.autoRefreshEnabled && this.getConf('xhAutoRefreshEnabled')}
 
     //---------------------------
     // Models
@@ -176,7 +176,11 @@ class XHClass {
         await this.initServicesInternalAsync(svcs);
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
-            throwIf(this[name], `Service cannot be installed. Property '${name}' already exists on XH object.`);
+            throwIf(this[name], (
+                `Service cannot be installed: property '${name}' already exists on XH object, 
+                indicating duplicate/conflicting service names or an (unsupported) attempt to 
+                install the same service twice.`
+            ));
             this[name] = svc;
         });
     }
@@ -503,7 +507,7 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
-            await this.installServicesAsync(IdleService, GridExportService);
+            await this.installServicesAsync(AutoRefreshService, IdleService, GridExportService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.
@@ -515,8 +519,6 @@ class XHClass {
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
-
-            if (this.autoRefreshEnabled) await this.installServicesAsync(AutoRefreshService);
 
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
