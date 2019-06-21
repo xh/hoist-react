@@ -126,31 +126,36 @@ export class RecordSet {
             existingRecords = new Map(this.records);
 
         newRecords.forEach((newRecord, id) => {
-            const currRecord = existingRecords.get(id);
+            const existingRecord = existingRecords.get(id);
+            if (existingRecord) {
+                // Since the data we are updating may be from the middle of the hierarchy, we need to
+                // make sure that we copy the parent over for any existing records because we only
+                // include child information in raw data
+                newRecord.parent = existingRecord.parent;
 
-            if (currRecord) {
-                throwIf(newRecord.parent && newRecord.parent.id !== newRecord.parent.id,
-                    'Cannot change parents via updateData!');
-                newRecord.parent = currRecord.parent;
-            }
+                // When updating an existing record we also always update it's children, so we need
+                // to determine if the existing record has children. Avoiding calling Record.children
+                // here so we don't build the children map unnecessarily.
+                let hasChildren = false;
+                for (let rec of existingRecords.values()) {
+                    if (rec.parentId == existingRecord.id) {
+                        hasChildren = true;
+                        break;
+                    }
+                }
 
-            let hasChildren = false;
-            for (let rec of existingRecords.values()) {
-                if (rec.parentId == currRecord.id) {
-                    hasChildren = true;
-                    break;
+                // Any descendants of the existing record which are no longer descendants of the new
+                // record need to be removed
+                if (hasChildren) {
+                    const descendantIds = new Set();
+                    this.gatherDescendants(existingRecord.id, descendantIds);
+                    descendantIds.forEach(id => {
+                        if (!newRecords.has(id)) existingRecords.delete(id);
+                    });
                 }
             }
 
-            if (hasChildren) {
-                const descendantIds = new Set();
-                this.gatherDescendants(currRecord.id, descendantIds);
-                descendantIds.forEach(id => {
-                    if (!newRecords.has(id)) existingRecords.delete(id);
-                });
-            }
-
-            if (!currRecord || !currRecord.isEqual(newRecord)) {
+            if (!existingRecord || !existingRecord.isEqual(newRecord)) {
                 existingRecords.set(id, newRecord);
             }
         });
