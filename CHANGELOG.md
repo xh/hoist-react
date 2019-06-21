@@ -34,7 +34,9 @@
   also provides an easy option to toggle pinning the first column.
 * `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
   See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
-
+* `RestFormField` now supports a`field.type` of 'pwd': it renders a `textinput` of `type:"password"`
+  to mask sensitive inputs.
+  
 #### Other Features
 
 * Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
