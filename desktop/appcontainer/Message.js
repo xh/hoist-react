@@ -43,17 +43,17 @@ export class Message extends Component {
             items: [
                 dialogBody(
                     model.message,
-                    this.getInput()
+                    this.renderInput()
                 ),
-                toolbar(this.getButtons())
+                toolbar(this.renderButtons())
             ],
             ...this.props
         });
     }
 
-    getInput() {
-        const {input, formModel} = this.model;
-        if (!input) return null;
+    renderInput() {
+        const {formModel, input} = this.model;
+        if (!formModel) return null;
         return form({
             model: formModel,
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
@@ -64,26 +64,24 @@ export class Message extends Component {
         });
     }
 
-    getButtons() {
-        const {input, formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
+    renderButtons() {
+        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
         return [
             filler(),
             button({
                 text: cancelText,
                 omit: !cancelText,
                 intent: cancelIntent,
-                onClick: this.onCancel
+                onClick: () => this.model.doCancel()
             }),
             button({
                 text: confirmText,
                 intent: confirmIntent,
-                disabled: input ? !formModel.isValid : false,
-                onClick: this.onConfirm
+                disabled: formModel ? !formModel.isValid : false,
+                onClick: () => this.model.doConfirmAsync()
             })
         ];
     }
 
-    onConfirm = () =>   {this.model.doConfirm()};
-    onCancel = () =>    {this.model.doCancel()};
 }
 export const message = elemFactory(Message);

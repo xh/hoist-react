@@ -4,10 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {FormModel, required} from '@xh/hoist/cmp/form';
-import {isPlainObject} from 'lodash';
+import {FormModel} from '@xh/hoist/cmp/form';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -35,14 +34,6 @@ export class MessageModel {
 
     @observable isOpen = true;
 
-    @managed
-    formModel = new FormModel({
-        fields: [{
-            name: 'value',
-            rules: [required]
-        }]
-    });
-
     constructor(config) {
         this.title = config.title;
         this.icon = config.icon;
@@ -57,10 +48,16 @@ export class MessageModel {
         this.result = new Promise(resolve => this._resolver = resolve);
 
         // Extract properties from input
-        if (isPlainObject(this.input)) {
+        if (this.input) {
             const {value, rules} = this.input;
-            if (value) this.formModel.init({value});
-            if (rules) this.formModel.fields.value.setRules(rules);
+
+            this.formModel = this.markManaged(new FormModel({
+                fields: [{
+                    name: 'value',
+                    defaultValue: value,
+                    rules: rules
+                }]
+            }));
         }
 
         // Message modals are automatically dismissed on app route changes to avoid navigating the
@@ -72,14 +69,18 @@ export class MessageModel {
     }
 
     @action
-    doConfirm() {
-        if (this.input) {
-            this.doSubmitAsync();
-        } else {
-            if (this.onConfirm) this.onConfirm();
-            this._resolver(true);
-            this.close();
+    async doConfirmAsync() {
+        let resolvedVal = true;
+
+        if (this.formModel) {
+            await this.formModel.validateAsync();
+            if (!this.formModel.isValid) return;
+            resolvedVal = this.formModel.getData().value;
         }
+
+        if (this.onConfirm) this.onConfirm();
+        this._resolver(resolvedVal);
+        this.close();
     }
 
     @action
@@ -92,15 +93,6 @@ export class MessageModel {
     //-----------------------
     // Implementation
     //-----------------------
-    async doSubmitAsync() {
-        await this.formModel.validateAsync();
-        if (!this.formModel.isValid) return;
-
-        if (this.onConfirm) this.onConfirm();
-        this._resolver(this.formModel.getData().value);
-        this.close();
-    }
-
     @action
     close() {
         this.isOpen = false;

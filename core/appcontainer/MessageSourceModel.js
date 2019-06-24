@@ -40,7 +40,7 @@ export class MessageSourceModel {
     }
 
     prompt(config) {
-        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel', input: true});
+        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel', input: {}});
         return this.message(config);
     }
 

@@ -30,7 +30,7 @@ class Message extends Component {
     render() {
         const model = this.model,
             isOpen = model && model.isOpen,
-            {icon, title, message, input, formModel, cancelText, confirmText} = model,
+            {icon, title, message, formModel, cancelText, confirmText} = model,
             buttons = [];
 
         if (!isOpen) return null;
@@ -46,8 +46,8 @@ class Message extends Component {
         if (confirmText) {
             buttons.push(button({
                 text: confirmText,
-                disabled: input ? !formModel.isValid : false,
-                onClick: this.onConfirm
+                disabled: formModel ? !formModel.isValid : false,
+                onClick: () => this.model.doConfirmAsync()
             }));
         }
 
@@ -63,15 +63,15 @@ class Message extends Component {
             className: 'xh-message',
             content: div(
                 div({omit: !message, className: 'xh-message-content', item: message}),
-                this.getInput()
+                this.renderInput()
             ),
-            onCancel: this.onCancel
+            onCancel: () => this.model.doCancel()
         });
     }
 
-    getInput() {
-        const {input, formModel} = this.model;
-        if (!input) return null;
+    renderInput() {
+        const {formModel, input} = this.model;
+        if (!formModel) return null;
         return form({
             model: formModel,
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
@@ -81,9 +81,6 @@ class Message extends Component {
             })
         });
     }
-
-    onConfirm = () =>   {this.model.doConfirm()};
-    onCancel = () =>    {this.model.doCancel()};
 
 }
 export const message = elemFactory(Message);

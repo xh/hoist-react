@@ -138,11 +138,6 @@ export class BaseFieldModel {
         this.value = v;
     }
 
-    @action
-    setRules(rules) {
-        this.rules = this.processRuleSpecs(rules);
-    }
-
     /** @member {String[]} - all validation errors for this field and its sub-forms. */
     get allErrors() {
         return this.errors || [];
