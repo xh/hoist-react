@@ -118,7 +118,7 @@ export class ConfigModel {
     differModel = new ConfigDifferModel(this.gridModel);
 
     async doLoadAsync(loadSpec) {
-        return this.gridModel.loadAsync(loadSpec);
+        return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
     maskIfPwd(value, {record}) {

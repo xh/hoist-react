@@ -10,7 +10,6 @@ import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
 
-
 /**
  * Return the first defined argument - intended to allow for multiple levels of fallback values or
  * expressions when evaluating function parameters or configuration object properties.
@@ -99,7 +98,8 @@ export function warnIf(condition, message) {
  * @param {string} [exceptionMessage] - error to throw if empty.
  */
 export function ensureNotEmpty(obj, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage, 'The provided object or collection cannot be empty.');
+    exceptionMessage = withDefault(exceptionMessage,
+        'The provided object or collection cannot be empty.');
     throwIf(isEmpty(obj), exceptionMessage);
 }
 
@@ -110,7 +110,8 @@ export function ensureNotEmpty(obj, exceptionMessage) {
  * @param {string} [exceptionMessage] - error to throw if non-unique values found.
  */
 export function ensureUnique(arr, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage, 'All items in the provided array must be unique.');
+    exceptionMessage = withDefault(exceptionMessage,
+        'All items in the provided array must be unique.');
     throwIf(arr.length != uniq(arr).length, exceptionMessage);
 }
 
@@ -122,7 +123,8 @@ export function ensureUnique(arr, exceptionMessage) {
  * @param {string} [exceptionMessage] - error to throw if non-unique values found.
  */
 export function ensureUniqueBy(arr, uniqueKey, exceptionMessage) {
-    exceptionMessage = withDefault(exceptionMessage, `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`);
+    exceptionMessage = withDefault(exceptionMessage,
+        `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`);
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }
 
@@ -144,4 +146,17 @@ export function singularize(string) {
  */
 export function pluralize(string, count, includeCount) {
     return _inflection.pluralize(string, count, includeCount);
+}
+
+/**
+ * Remove when lodash adds Set/Map support
+ * @param {Set|Map} collection
+ * @param {function} fn
+ */
+export function findIn(collection, fn) {
+    for (let it of collection.values()) {
+        if (fn(it)) return it;
+    }
+
+    return null;
 }

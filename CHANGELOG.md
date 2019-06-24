@@ -1,9 +1,100 @@
 # Changelog
 
 
-## v23.0.0 - 2019-05-30 
+## v24.0.0 (2019-06-24)
 
 ### 🎁 New Features
+
+#### Data
+
+* A `StoreFilter` object has been introduced to the data API. This allows `Store` and
+  `StoreFilterField` to support the ability to conditionally include all children when filtering
+  hierarchical data stores, and could support additional filtering customizations in the future.
+* `Store` now provides a `summaryRecord` property which can be used to expose aggregated data for
+  the data it contains. The raw data for this record can be provided to `loadData()` and
+  `updateData()` either via an explicit argument to these methods, or as the root node of the raw
+  data provided (see `Store.loadRootAsSummary`).
+* The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
+  its text value from an external model's observable.
+* `pwd` is now a new supported type of `Field` in the `@xh/hoist/core/data` package.
+
+
+#### Grid
+
+* `GridModel` now supports a `showSummary` config which can be used to display its store's
+  summaryRecord (see above) as either a pinned top or bottom row.
+* `GridModel` also adds a `enableColumnPinning` config to enable/disable user-driven pinning. On
+  desktop, if enabled, users can pin columns by dragging them to the left or right edges of the grid
+  (the default ag-Grid gesture). Column pinned state is now also captured and maintained by the
+  overall grid state system.
+* The desktop column chooser now options in a non-modal popover when triggered from the standard
+  `ColChooserButton` component. This offers a quicker and less disruptive alternative to the modal
+  dialog (which is still used when launched from the grid context menu). In this popover mode,
+  updates to columns are immediately reflected in the underlying grid.
+* The mobile `ColChooser` has been improved significantly. It now renders displayed and available
+  columns as two lists, allowing drag and drop between to update the visibility and ordering. It
+  also provides an easy option to toggle pinning the first column.
+* `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
+  See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
+  
+#### Other Features
+
+* Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
+  so enabled via a combination of soft-config and user preference. Auto-refresh relies on the use of
+  the root `RefreshContextModel` and model-level `LoadSupport`.
+* A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
+  modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
+  bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
+  an overlay docked to the corner of the parent Panel.
+* `DateInput` adds support for new `enablePicker` and `showPickerOnFocus` props, offering greater
+  control over when the calendar picker is shown. The new default behaviour is to not show the
+  picker on focus, instead showing it via a built-in button.
+* Transitions have been disabled by default on desktop Dialog and Popover components (both are from
+  the Blueprint library). This should result in a snappier user experience, especially when working
+  on remote / virtual workstations.
+* Added new `@bindable.ref` variant of the `@bindable` decorator.
+
+### 🎁 Breaking Changes
+
+* Apps that defined and initialized their own `AutoRefreshService` service or functionality should
+  leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
+  name must either remove in favor of the new service or - if they have special requirements not
+  covered by the Hoist implementation - rename their own service to avoid a naming conflict.
+* The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
+  function.
+* `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
+  Applications explicitly setting width or height on this component should ensure that they are providing
+  enough space for it to display its contents without clipping.
+### 🐞 Bug Fixes
+
+* Performance for bulk grid selections has been greatly improved (#1157)
+* Toolbars now specify a minimum height (or width when vertical) to avoid shrinking unexpectedly
+  when they contain only labels or are entirely empty (but still desired to e.g. align UIs across
+  multiple panels). Customize if needed via the new `--xh-tbar-min-size` CSS var.
+* All Hoist Components that accept a `model` prop now have that properly documented in their
+  prop-types.
+* Admin Log Viewer no longer reverses its lines when not in tail mode.
+
+### ⚙️ Technical
+
+* The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
+  the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
+  `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
+  on a per-app basis.)
+
+### 📚 Libraries
+
+* ag-grid `20.0 -> 21.0`
+* react-select `2.4 -> 3.0`
+* mobx-react `5.4 -> 6.0.3`
+* font-awesome `5.8 -> 5.9`
+* react-beautiful-dnd `10.1.1 -> 11.0.4`
+
+## v23.0.0 - 2019-05-30
+
+### 🎁 New Features
+
 * `GridModel` now accepts a config of `cellBorders`, similar to `rowBorders`
 * `Panel.tbar` and `Panel.bbar` props now accept an array of Elements and will auto-generate a
   `Toolbar` to contain them, avoiding the need for the extra import of `toolbar()`.
@@ -15,23 +106,23 @@
 * `ButtonGroupInput` accepts a new `enableClear` prop that allows the active / depressed button to
   be unselected by pressing it again - this sets the value of the input as a whole to `null`.
 * Hoist Admins now always see the VersionBar in the footer.
-* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be 
+* `Promise.track` now accepts an optional `omit` config that indicates when no tracking will be
   performed.
-* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the 
-  number, but after the sign (`+`, `-`). 
+* `fmtNumber` now accepts an optional `prefix` config that prepends immediately before the number,
+  but after the sign (`+`, `-`).
 * New utility methods `forEachAsync()` and `whileAsync()` have been added to allow non-blocking
-execution of time-consuming loops.    
+  execution of time-consuming loops.
 
 ### 💥 Breaking Changes
 
 * The `AppOption.refreshRequired` config has been renamed to `reloadRequired` to better match the
   `XH.reloadApp()` method called to reload the entire app in the browser. Any options defined by an
-  app that require to to be fully reloaded should have this renamed config set to `true`.
+  app that require it to be fully reloaded should have this renamed config set to `true`.
 * The options dialog will now automatically trigger an app-wide data _refresh_ via
-  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.     
-* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict with
-  the overall reactive structure of the hoist-react API. If your app listens to the `appStateChanged`,
-  `prefChange` or `prefsPushed` events you will need to adjust accordingly.
+  `XH.refreshAppAsync()` if options have changed that don't require a _reload_.
+* The `EventSupport` mixin has been removed. There are no known uses of it and it is in conflict
+  with the overall reactive structure of the hoist-react API. If your app listens to the
+  `appStateChanged`, `prefChange` or `prefsPushed` events you will need to adjust accordingly.
 
 ### 🐞 Bug Fixes
 
@@ -40,10 +131,12 @@ execution of time-consuming loops.
 * The Admin "Config Differ" tool has been updated to reflect changes to `Record` made in v22. It is
   once again able to apply remote config values.
 * A `Panel` with configs `resizable: true, collapsible: false` now renders with a splitter.
-* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header. 
-* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a 
-  single upload.  Previous behavior (the ability to add multiple files to dropzone) is
-  now controlled by `enableAddMulti`.
+* A `Panel` with no `icon`, `title`, or `headerItems` will not render a blank header.
+* `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a
+  single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
+  by `enableAddMulti`.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v22.0.0...v23.0.0)
 
 
 ## v22.0.0 - 2019-04-29
@@ -329,7 +422,6 @@ execution of time-consuming loops.
 * react `~16.7 -> ~16.8`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v19.0.1...v20.0.0)
-
 
 ## v19.0.1 - 2019-02-12
 

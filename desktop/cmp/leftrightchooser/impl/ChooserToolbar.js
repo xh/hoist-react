@@ -24,7 +24,6 @@ export class ChooserToolbar extends Component {
             rightSel = model.rightModel.selModel;
 
         return toolbar({
-            width: 50,
             vertical: true,
             className: 'xh-lr-chooser__toolbar',
             items: [

@@ -12,15 +12,6 @@
   }
 }
 
-.xh-dim-popover-title {
-  padding: var(--xh-pad-half-px);
-  text-align: center;
-  text-transform: uppercase;
-  font-size: var(--xh-font-size-small-px);
-  background-color: var(--xh-popup-title-bg);
-  color: var(--xh-title-text-color);
-}
-
 .xh-dim-add-popover {
   background-color: var(--xh-grid-bg);
 
@@ -33,6 +24,13 @@
 
     .xh-dim-popover-row {
       margin-bottom: 2px;
+
+      &--empty {
+        height: 30px;
+        line-height: 30px;
+        color: var(--xh-text-color-muted);
+        text-align: center;
+      }
     }
 
     .xh-button {

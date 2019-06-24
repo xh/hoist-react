@@ -3,6 +3,10 @@
   //------------------------
   // Core Header Classes
   //------------------------
+  .ag-header-cell > .ag-react-container {
+    width: 100%;
+  }
+
   .xh-grid-header {
     display: flex;
     flex-direction: row;

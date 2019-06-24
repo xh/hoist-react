@@ -6,9 +6,21 @@
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
-import {cloneDeep, isString, isArray, difference, isEmpty, without, pullAllWith, isEqual, keys} from 'lodash';
-import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {action, bindable, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
+import {
+    cloneDeep,
+    compact,
+    difference,
+    isArray,
+    isEmpty,
+    isEqual,
+    isString,
+    keys,
+    pullAllWith,
+    sortBy,
+    without
+} from 'lodash';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
@@ -32,6 +44,7 @@ export class DimensionChooserModel {
     historyPreference = null;
     dimensions = null;
     dimensionVals = null;
+    enableClear = false;
 
     // Internal state
     history = null;
@@ -50,35 +63,46 @@ export class DimensionChooserModel {
      *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
      *      dimension does not support any further sub-groupings.
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
-     *      If neither are specified, the first available dimension will be used as the value.
      * @param {string} [c.historyPreference] - preference key used to persist the user's most
      *      recently selected groupings for easy re-selection.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
+     * @param {boolean} [c.enableClear] - Support clearing the control by removing all dimensions?
      */
     constructor({
         dimensions,
         initialValue,
         historyPreference,
         maxHistoryLength = 5,
-        maxDepth = 4
+        maxDepth = 4,
+        enableClear = false
     }) {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.historyPreference = historyPreference;
-
+        this.enableClear = enableClear;
+        
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
-
-        // Set control's initial value with priorities 1) prefService 2) initialValue prop 3) 1st item in dimensions prop
         this.history = this.loadHistory();
-        initialValue = withDefault(initialValue,  [this.dimensionVals[0]]);
+
+
+        // Set control's initial value with priorities
+        //  history -> initialValue -> 1st item or []
+        if (!this.validateValue(initialValue)) {
+            initialValue = enableClear || isEmpty(this.dimensionVals) ?  [] : [this.dimensionVals[0]];
+        }
+
         this.value = this.pendingValue = !isEmpty(this.history) ? this.history[0] : initialValue;
     }
 
     @action
     setValue(value) {
+        if (!this.validateValue(value)) {
+            console.warn('Attempted to set DimChooser to invalid value: ' + value);
+            return;
+        }
         this.value = value;
         this.addToHistory(value);
     }
@@ -139,12 +163,16 @@ export class DimensionChooserModel {
     }
 
     // Returns options passed to the select control at each level of the add menu.
-    dimOptionsForLevel(level) {
+    // Pass current value as second arg to ensure included - used when editing a level (vs. adding).
+    dimOptionsForLevel(level, currDimVal = null) {
         // Dimensions which do not appear in the add menu
         const remainingDims = difference(this.dimensionVals, this.pendingValue);
+
         // Dimensions subordinate to this one in the tree hierarchy
         const childDims = this.pendingValue.slice(level + 1) || [];
-        return [...remainingDims, ...childDims].map(it => this.dimensions[it]);
+
+        const ret = compact([...remainingDims, ...childDims, currDimVal]).map(it => this.dimensions[it]);
+        return sortBy(ret, 'label');
     }
 
 
@@ -161,13 +189,17 @@ export class DimensionChooserModel {
         );
 
         const history = historyPreference ? cloneDeep(prefService.get(historyPreference)) : [];
-        return this.validateHistory(history);
+        return isEmpty(history) ? [] : history.filter(v => this.validateValue(v));
     }
 
-    validateHistory(history) {
-        return isEmpty(history) ?
-            [] :
-            history.filter(value => isArray(value) && value.every(h => this.dimensionVals.includes(h)));
+    validateValue(value) {
+        return (
+            isArray(value) &&
+            (
+                (isEmpty(value) && this.enableClear) ||
+                (!isEmpty(value) && value.every(h => this.dimensionVals.includes(h)))
+            )
+        );
     }
 
     addToHistory(value) {

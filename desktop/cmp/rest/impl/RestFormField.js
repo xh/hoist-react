@@ -66,6 +66,9 @@ export class RestFormField extends Component {
                 return jsonInput();
             case 'date':
                 return dateInput();
+            case 'pwd':
+                // Key to force re-creation of DOM elements so Chrome stops suggesting passwords
+                return textInput({type: 'password', key: '_' + type});
             default:
                 return textInput();
         }

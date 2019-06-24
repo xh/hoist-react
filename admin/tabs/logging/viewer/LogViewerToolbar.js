@@ -42,7 +42,8 @@ export class LogViewerToolbar extends Component {
                     model,
                     bind: 'pattern',
                     placeholder: 'Search...',
-                    width: 150
+                    enableClear: true,
+                    width: 200
                 }),
                 toolbarSep(),
                 switchInput({

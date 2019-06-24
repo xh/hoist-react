@@ -4,8 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js/';
-import {Record} from '../Record';
+
+import {throwIf} from '../../utils/js';
+import {isEmpty} from 'lodash';
 
 /**
  * Internal container for Record management within a Store.
@@ -61,21 +62,43 @@ export class RecordSet {
     //-----------------------------------------------
     applyFilter(filter) {
         if (!filter) return this;
+        const {fn, includeChildren} = filter;
 
         const passes = new Map(),
-            {records} = this;
+            isMarked = (rec) => passes.has(rec.id),
+            mark = (rec) => passes.set(rec.id, rec);
 
-        // A record that passes the filter also recursively passes all its parents.
-        const markPass = (rec) => {
-            if (passes.has(rec.id)) return;
-            passes.set(rec.id, rec);
-            const {parent} = rec;
-            if (parent) markPass(parent);
-        };
-
-        records.forEach(rec => {
-            if (filter(rec)) markPass(rec);
+        // Pass 1.  Mark all passing records, and potentially their children recursively.
+        // Any row already marked will already have all of its children marked, so check can be skipped
+        let markChildren;
+        if (includeChildren) {
+            const childrenMap = this.childrenMap;
+            markChildren = (rec) => {
+                const children = childrenMap.get(rec.id) || [];
+                children.forEach(c => {
+                    if (!isMarked(c)) {
+                        mark(c);
+                        markChildren(c);
+                    }
+                });
+            };
+        }
+        this.records.forEach(rec => {
+            if (!isMarked(rec) && fn(rec)) {
+                mark(rec);
+                if (includeChildren) markChildren(rec);
+            }
         });
+
+        // Pass 2) Walk up from any passing roots and make sure all parents are marked
+        const markParents = (rec) => {
+            const {parent} = rec;
+            if (parent && !isMarked(parent)) {
+                mark(parent);
+                markParents(parent);
+            }
+        };
+        passes.forEach(rec => markParents(rec));
 
         return new RecordSet(this.store, passes);
     }
@@ -100,62 +123,111 @@ export class RecordSet {
     }
 
     updateData(rawData) {
-        const newRecords = this.createRecords(rawData),
-            existingRecords = new Map(this.records);
+        const updatedRecords = new Map(),
+            {store, records} = this,
+            updateRoots = [];
 
-        newRecords.forEach((newRecord, id) => {
-            const currRecord = existingRecords.get(id);
-            if (!currRecord || !currRecord.isEqual(newRecord)) {
-                existingRecords.set(id, newRecord);
+        // 1. When updating we need to first create records for the root data, and make sure we carry
+        //    the parent record forward if this new data matches an existing record. Then we can build
+        //    the descendent records with the confidence that their parent and tree paths will be correct
+        rawData.forEach(data => {
+            const rec = store.createRecord(data),
+                existingRecord = records.get(rec.id);
+
+            // Since our raw data does not include parent information, only children, we need to
+            // make sure that we copy the parent over from the existing record when updating
+            if (existingRecord) rec.parent = existingRecord.parent;
+
+            updatedRecords.set(rec.id, rec);
+            updateRoots.push(rec);
+            if (!isEmpty(data.children)) {
+                data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
             }
         });
 
-        return new RecordSet(this.store, existingRecords);
+        // 2. If this record set contains hierarchical data then we need to figure out which (if any)
+        //    existing records need to be removed from the record set as part of this update operation
+        const recordIdsToRemove = new Set(),
+            {childrenMap} = this;
+
+        if (childrenMap.size) {
+            updateRoots.forEach(rec => {
+                // When the existing record has descendents which are not part of the updated data
+                // they need to be removed from the record set
+                if (childrenMap.has(rec.id)) {
+                    const descendantIds = this.gatherDescendants(rec.id);
+                    descendantIds.forEach(id => {
+                        if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
+                    });
+                }
+            });
+        }
+
+        // 3. Build the new map of records
+        const newRecords = new Map(records);
+        updatedRecords.forEach((record, id) => {
+            const currRecord = records.get(id);
+            if (!currRecord || !currRecord.isEqual(record)) {
+                newRecords.set(id, record);
+            }
+        });
+
+        recordIdsToRemove.forEach(id => newRecords.delete(id));
+
+        return new RecordSet(store, newRecords);
+    }
+
+    addData(rawData, parentId) {
+        const {records} = this,
+            parent = records.get(parentId),
+            newRecords = this.createRecords(rawData, parent);
+
+        newRecords.forEach(rec => {
+            throwIf(records.has(rec.id),
+                `A Record with ID ${rec.id} already exists in the RecordSet.`);
+        });
+
+        return new RecordSet(this.store, new Map([...records, ...newRecords]));
     }
 
     removeRecords(ids) {
         const removes = new Set();
         ids.forEach(id => this.gatherDescendants(id, removes));
-        return this.applyFilter(r => !removes.has(r.id));
+        return this.applyFilter({fn: r => !removes.has(r.id)});
     }
 
     //------------------------
     // Implementation
     //------------------------
-    createRecords(rawData) {
+
+    createRecords(rawData, parent = null) {
         const ret = new Map();
-        rawData.forEach(raw => this.createRecord(raw, ret, null));
+        rawData.forEach(raw => this.buildRecords(raw, ret, parent));
         return ret;
     }
 
-    createRecord(raw, records, parent) {
-        const {store} = this;
-
-        let data = raw;
-        if (store.processRawData) {
-            data = store.processRawData(raw);
-            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
-        }
-
-        const rec = new Record({data, raw, parent, store});
+    buildRecords(raw, records, parent) {
+        const rec = this.store.createRecord(raw, parent);
         throwIf(
             records.has(rec.id),
             `ID ${rec.id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
         );
+
         records.set(rec.id, rec);
-        if (data.children) {
-            data.children.forEach(rawChild => this.createRecord(rawChild, records, rec));
+
+        if (raw.children) {
+            raw.children.forEach(rawChild => this.buildRecords(rawChild, records, rec));
         }
     }
 
     computeChildrenMap(records) {
         const ret = new Map();
         records.forEach(r => {
-            const {parentId} = r;
-            if (parentId) {
-                const children = ret.get(parentId);
+            const {parent} = r;
+            if (parent) {
+                const children = ret.get(parent.id);
                 if (!children) {
-                    ret.set(parentId, [r]);
+                    ret.set(parent.id, [r]);
                 } else {
                     children.push(r);
                 }
@@ -172,7 +244,7 @@ export class RecordSet {
         return ret;
     }
 
-    gatherDescendants(id, idSet) {
+    gatherDescendants(id, idSet = new Set()) {
         if (!idSet.has(id)) {
             idSet.add(id);
             const children = this.childrenMap.get(id);
@@ -180,5 +252,7 @@ export class RecordSet {
                 children.forEach(child => this.gatherDescendants(child.id, idSet));
             }
         }
+
+        return idSet;
     }
 }
