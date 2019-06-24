@@ -1,7 +1,7 @@
 # Changelog
 
 
-## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+## v24.0.0 (2019-06-24)
 
 ### 🎁 New Features
 
