@@ -111,8 +111,11 @@ export class Store {
     }
 
     /**
-     * Add or update data in store. Existing records not matched by ID to rows in the update
-     * dataset will be left in place.
+     * Add or update data in store. Existing sibling or ancestor records not matched by ID to rows
+     * in the update dataset will be left in place.
+     *
+     * When updating hierarchical data the entire branch will be updated with the provided data. Any
+     * children not included in the data will be removed from the store.
      *
      * Updated summary data can be provided via `rawSummaryData` or as the root data if the Store was
      * created with the loadRootAsSummary flag set to true.
@@ -140,6 +143,19 @@ export class Store {
             this.summaryRecord = this.createRecord(rawSummaryData);
         }
 
+        this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Add data to the store.
+     *
+     * @param {Object[]} rawData
+     * @param {Record} parentRecord
+     */
+    @action
+    addData(rawData, parentRecord) {
+        this._all = this._all.addData(rawData, parentRecord ? parentRecord.id : null);
+        this.rebuildFiltered();
         this.lastUpdated = Date.now();
     }
 
