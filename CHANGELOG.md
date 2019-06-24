@@ -133,6 +133,8 @@
   single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
   by `enableAddMulti`.
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v22.0.0...v23.0.0)
+
 
 ## v22.0.0 - 2019-04-29
 
