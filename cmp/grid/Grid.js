@@ -225,8 +225,7 @@ export class Grid extends Component {
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            },
-            onCellContextMenu: e => model.setCopyCellValue(e.value)
+            }
         };
 
         // Platform specific defaults
@@ -273,6 +272,8 @@ export class Grid extends Component {
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
+            colId = params.column ? params.column.colId : null,
+            column = isNil(colId) ? null : this.model.getColumn(colId),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
@@ -282,10 +283,10 @@ export class Grid extends Component {
 
         if (!record) selModel.clear();
 
-        return this.buildMenuItems(menu.items, record, selModel.records);
+        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
 
-    buildMenuItems(recordActions, record, selectedRecords) {
+    buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
         let items = [];
         recordActions.forEach(action => {
             if (action === '-') {
@@ -298,19 +299,21 @@ export class Grid extends Component {
                 return;
             }
 
-            const params = {
+            const actionParams = {
                 record,
                 selectedRecords,
-                gridModel: this.model
+                gridModel: this.model,
+                column,
+                agParams
             };
 
-            const displaySpec = action.getDisplaySpec(params);
+            const displaySpec = action.getDisplaySpec(actionParams);
             if (displaySpec.hidden) return;
 
             let childItems;
             if (!isEmpty(displaySpec.items)) {
                 const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
-                childItems = this.buildMenuItems(menu.items, record, selectedRecords);
+                childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
             }
 
             let icon = displaySpec.icon;
@@ -324,7 +327,7 @@ export class Grid extends Component {
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
-                action: () => action.call(params)
+                action: () => action.call(actionParams)
             });
         });
 

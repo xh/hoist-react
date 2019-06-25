@@ -8,6 +8,7 @@
 import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {copyToClipboard} from '@xh/hoist/kit/clipboard-copy';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -51,7 +52,7 @@ export class StoreContextMenu {
         if (!isEmpty(ret.items)) {
             ret.items = ret.items.map(it => this.buildRecordAction(it));
         }
-        return  ret;
+        return ret;
     }
 
     parseToken(token) {
@@ -60,19 +61,55 @@ export class StoreContextMenu {
         switch (token) {
             case 'copyRow':
                 return new RecordAction({
-                    text: gridModel ? gridModel.copyRowsButtonText : '',
+                    text: 'Copy Row',
                     icon: Icon.copy(),
                     hidden: !gridModel,
                     recordsRequired: true,
-                    actionFn: () => gridModel.copyRows()
+                    displayFn: ({selectedRecords}) => ({text: `Copy Row${selectedRecords.length > 1 ? 's' : ''}`}),
+                    actionFn: ({selectedRecords}) => {
+                        if (isEmpty(selectedRecords)) return;
+
+                        const val = gridModel.agGridModel.serializeRowNodes(
+                            selectedRecords.map(it => it.id),
+                            {
+                                includeHeaders: false,
+                                columnFilterFn: (col) => {
+                                    const gridCol = gridModel.getColumn(col.colId);
+                                    if (gridCol && gridCol.excludeFromExport) return false;
+
+                                    return true;
+                                }
+                            }
+                        );
+
+                        copyToClipboard(val);
+                    }
                 });
             case 'copyRowHeaders':
                 return new RecordAction({
-                    text: gridModel ? gridModel.copyRowsButtonText + ' w/ Headers' : '',
+                    text: 'Copy Row w/ Headers',
                     icon: Icon.copy(),
                     hidden: !gridModel,
                     recordsRequired: true,
-                    actionFn: () => gridModel.copyRows(true)
+                    displayFn: ({selectedRecords}) => ({text: `Copy Row${selectedRecords.length > 1 ? 's' : ''} w/ Headers`}),
+                    actionFn: ({selectedRecords}) => {
+                        if (isEmpty(selectedRecords)) return;
+
+                        const val = gridModel.agGridModel.serializeRowNodes(
+                            selectedRecords.map(it => it.id),
+                            {
+                                includeHeaders: true,
+                                columnFilterFn: (col) => {
+                                    const gridCol = gridModel.getColumn(col.colId);
+                                    if (gridCol && gridCol.excludeFromExport) return false;
+
+                                    return true;
+                                }
+                            }
+                        );
+
+                        copyToClipboard(val);
+                    }
                 });
             case 'copyCell':
                 return new RecordAction({
@@ -80,7 +117,9 @@ export class StoreContextMenu {
                     icon: Icon.copy(),
                     hidden: !gridModel,
                     recordsRequired: true,
-                    actionFn: () => gridModel.copyCell()
+                    actionFn: ({record, column}) => {
+                        if (record && column) copyToClipboard(record[column.field]);
+                    }
                 });
             case 'colChooser':
                 return new RecordAction({

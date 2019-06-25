@@ -99,8 +99,6 @@ export class GridModel {
     @observable groupBy = null;
     /** @member {(string|boolean)} */
     @bindable showSummary = false;
-    /** @member {string} */
-    @bindable copyCellValue;
 
     static defaultContextMenuTokens = [
         'copyRow',
@@ -255,26 +253,6 @@ export class GridModel {
         const id = agGridModel.getFirstSelectableRowNodeId();
 
         if (id) selModel.select(id);
-    }
-
-    copyRows(includeHeaders = false) {
-        const excludeColIds = ['emptyFlex', 'actions'],
-            columnKeys = this.columnState
-                .filter(it => !(it.hidden || excludeColIds.includes(it.colId)))
-                .map(it => it.colId);
-
-        this.agApi.copySelectedRowsToClipboard(includeHeaders, columnKeys);
-    }
-
-    copyCell() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.clipboardService.copyDataToClipboard(this.copyCellValue);
-        }
-    }
-
-    get copyRowsButtonText() {
-        return this.selection.length > 1 ? 'Copy Rows' : 'Copy Row';
     }
 
     /** Does the grid have any records to show? */
@@ -510,6 +488,15 @@ export class GridModel {
         }
 
         this.columnState = columnState;
+    }
+
+    /**
+     * @param colId - id of the Column to get
+     * @returns {Column} - The Column with the given colId, or null if no Column was found with
+     *      the given colId
+     */
+    getColumn(colId) {
+        return this.findColumn(this.columns, colId);
     }
 
     /**
