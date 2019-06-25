@@ -51,7 +51,7 @@ export class EhCacheModel {
     }
     
     async doLoadAsync(loadSpec) {
-        return this.gridModel.loadAsync(loadSpec);
+        return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 }
 

@@ -1,7 +1,9 @@
 # Changelog
 
+## v24.X.X - UNDER DEVELOPMENT
 
-## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+
+## v24.0.0 (2019-06-24)
 
 ### 🎁 New Features
 
@@ -14,6 +16,10 @@
   the data it contains. The raw data for this record can be provided to `loadData()` and
   `updateData()` either via an explicit argument to these methods, or as the root node of the raw
   data provided (see `Store.loadRootAsSummary`).
+* The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
+  its text value from an external model's observable.
+* `pwd` is now a new supported type of `Field` in the `@xh/hoist/core/data` package.
+
 
 #### Grid
 
@@ -32,9 +38,12 @@
   also provides an easy option to toggle pinning the first column.
 * `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
   See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
-
+  
 #### Other Features
 
+* Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
+  so enabled via a combination of soft-config and user preference. Auto-refresh relies on the use of
+  the root `RefreshContextModel` and model-level `LoadSupport`.
 * A new `LoadingIndicator` component is available as a more minimal / unobtrusive alternative to a
   modal mask. Typically configured via a new `Panel.loadingIndicator` prop, the indicator can be
   bound to a `PendingTaskModel` and will automatically show/hide a spinner and/or custom message in
@@ -49,9 +58,15 @@
 
 ### 🎁 Breaking Changes
 
-*  The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
-   function.
-
+* Apps that defined and initialized their own `AutoRefreshService` service or functionality should
+  leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
+  name must either remove in favor of the new service or - if they have special requirements not
+  covered by the Hoist implementation - rename their own service to avoid a naming conflict.
+* The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
+  function.
+* `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
+  Applications explicitly setting width or height on this component should ensure that they are providing
+  enough space for it to display its contents without clipping.
 ### 🐞 Bug Fixes
 
 * Performance for bulk grid selections has been greatly improved (#1157)
@@ -62,6 +77,13 @@
   prop-types.
 * Admin Log Viewer no longer reverses its lines when not in tail mode.
 
+### ⚙️ Technical
+
+* The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
+  the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
+  `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
+  on a per-app basis.)
 
 ### 📚 Libraries
 
@@ -69,6 +91,7 @@
 * react-select `2.4 -> 3.0`
 * mobx-react `5.4 -> 6.0.3`
 * font-awesome `5.8 -> 5.9`
+* react-beautiful-dnd `10.1.1 -> 11.0.4`
 
 ## v23.0.0 - 2019-05-30
 
@@ -114,6 +137,8 @@
 * `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a
   single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
   by `enableAddMulti`.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v22.0.0...v23.0.0)
 
 
 ## v22.0.0 - 2019-04-29

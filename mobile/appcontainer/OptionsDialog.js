@@ -14,6 +14,8 @@ import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {button} from '@xh/hoist/mobile/cmp/button';
 
+import './OptionsDialog.scss';
+
 /**
  * Display Options dialog
  *

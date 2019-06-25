@@ -11,12 +11,23 @@ import {HoistModel, LoadSupport}  from '@xh/hoist/core';
 
 
 /**
- * A model that can manage refreshing sections of the application, where "refreshing" refers to
- * app-specific actions to load and display updated data. Calling `refreshAsync()` on this model
- * will cause it to trigger a refresh on all linked models within the graphical hierarchy it contains.
+ * A model to manage refreshing sections of the application, where "refreshing" refers to app-
+ * specific actions to load and display updated data. Calling `refreshAsync()` on this model will
+ * refresh all linked models underneath its corresponding component hierarchy.
  *
- * A global instance of this interface is provided by the framework as `XH.refreshContextModel`.
- * Apps can create additional sub-contexts using a RefreshContextView paired with this object.
+ * An instance of this class is provided by the framework as `XH.refreshContextModel` and
+ * installed at the top level of the application's component hierarchy, allowing for an "app-wide"
+ * refresh trigger via `XH.refreshAppAsync()`.
+ *
+ * Apps can create additional sub-contexts using a `RefreshContextView` paired with this model if
+ * they need to coordinate refreshes within a more targeted sections of their UI.
+ *
+ * HoistModels declared with the `@LoadSupport` decorator are the primary targets for the refresh
+ * calls made by this class. LoadSupport-enabled models are auto-linked to the nearest
+ * RefreshContext (and the app-wide refresh context) when their HoistComponent is mounted.
+ *
+ * (Note that models must be "owned" by their Component to be auto-linked in this way - meaning they
+ * must be internally created by the Component, either directly or from a config passed via props.)
  *
  * Note that TabContainer automatically establishes separate refresh contexts for its tabs and uses
  * these to implement efficient refresh handling of inactive and not-yet-rendered tabs. See the
@@ -65,7 +76,6 @@ export function RefreshContextModel(C) {
 
             /**
              * Unregister a target from this model.
-             *
              * @param {Object} target
              */
             unregister(target) {
