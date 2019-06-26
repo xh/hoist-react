@@ -2,6 +2,12 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
+### 🐞 Bug Fixes
+
+* The `Select` component now properly shows all options when the pick-list is re-shown after a
+  change without first blurring the control. (Previously this interaction edge case would only show
+  the option matching the current input value.) #1198
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.15 -> 3.16`
