@@ -1,9 +1,16 @@
 # Changelog
 
-## v24.X.X - UNDER DEVELOPMENT
+## v25.0.0-SNAPSHOT - under development
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.15 -> 3.16`
+* @blueprintjs/datetime `3.9 -> 3.10`
+* codemirror `5.47 -> 5.48`
+* mobx `6.0 -> 6.1`
 
 
-## v24.0.0 (2019-06-24)
+## v24.0.0 - 2019-06-24
 
 ### 🎁 New Features
 
@@ -19,7 +26,6 @@
 * The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
   its text value from an external model's observable.
 * `pwd` is now a new supported type of `Field` in the `@xh/hoist/core/data` package.
-
 
 #### Grid
 
@@ -67,6 +73,7 @@
 * `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
   Applications explicitly setting width or height on this component should ensure that they are providing
   enough space for it to display its contents without clipping.
+
 ### 🐞 Bug Fixes
 
 * Performance for bulk grid selections has been greatly improved (#1157)
@@ -92,6 +99,8 @@
 * mobx-react `5.4 -> 6.0.3`
 * font-awesome `5.8 -> 5.9`
 * react-beautiful-dnd `10.1.1 -> 11.0.4`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v23.0.0...v24.0.0)
 
 ## v23.0.0 - 2019-05-30
 
