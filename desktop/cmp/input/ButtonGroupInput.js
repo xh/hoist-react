@@ -38,6 +38,8 @@ export class ButtonGroupInput extends HoistInput {
         const {children, minimal, disabled, enableClear, ...rest} = this.getNonLayoutProps();
 
         const buttons = castArray(children).map(button => {
+            if (!button) return null;
+
             const {value} = button.props;
 
             throwIf(button.type.name !== 'Button', 'ButtonGroupInput child must be a Button.');
