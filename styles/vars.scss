@@ -195,7 +195,7 @@ body {
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
   --xh-resizable-border-width: var(--resizable-border-width, 1);
   --xh-resizable-border-width-px: calc(var(--xh-resizable-border-width) * 1px);
-  --xh-resizable-button-bg: var(--resizable-button-bg, transparent);
+  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(0, 0, 0, 0.05));
   --xh-resizable-button-icon-color: var(--resizable-button-icon-color, var(--xh-blue-gray));
   --xh-resizable-size: var(--resizable-size, 8);
   --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
@@ -296,6 +296,7 @@ body.xh-dark {
   // Resizable splitter
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
+  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(255, 255, 255, 0.08));
   --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
 
   // Scrollbars (customized for webkit)
