@@ -304,22 +304,17 @@ export class GridModel {
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
-     * This method is no-op if provided any ids without a corresponding column.
+     * This method will clear grid grouping if provided any ids without a corresponding column.
      * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
     setGroupBy(colIds) {
-        if (!colIds) {
-            this.groupBy = [];
-            return;
-        }
-
-        colIds = castArray(colIds);
+        colIds = isNil(colIds) ? [] : castArray(colIds);
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn('groupBy colId not found in grid columns', invalidColIds);
-            return;
+            console.warn('Unknown colId specified in groupBy - grid will not be grouped.', invalidColIds);
+            colIds = [];
         }
 
         this.groupBy = colIds;
