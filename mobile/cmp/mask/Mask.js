@@ -46,8 +46,11 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false);
+            showSpinner = withDefault(props.spinner, false),
+            onClick = props.onClick;
+
         return div({
+            onClick,
             className: this.getClassName(),
             item: vbox({
                 className: 'xh-mask-body',
