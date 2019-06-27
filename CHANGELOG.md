@@ -2,6 +2,14 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* `DateInput.enableClear` prop added to support built-in button to null-out a date input's value.
+
+### ✨ Style
+
+* Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.15 -> 3.16`
@@ -9,6 +17,7 @@
 * codemirror `5.47 -> 5.48`
 * mobx `6.0 -> 6.1`
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.0.0...develop)
 
 ## v24.0.0 - 2019-06-24
 
