@@ -113,7 +113,8 @@ export class DateInput extends HoistInput {
             layoutProps = this.getLayoutProps(),
             enablePicker = withDefault(props.enablePicker, true),
             enableClear = withDefault(props.enableClear, false),
-            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker));
+            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
+            isOpen = enablePicker && this.popoverOpen && !props.disabled;
 
         warnIf(
             (props.enableClear || props.enablePicker) && props.rightElement,
@@ -122,7 +123,7 @@ export class DateInput extends HoistInput {
 
         return div({
             item: popover({
-                isOpen: enablePicker && this.popoverOpen && !this.props.disabled,
+                isOpen,
                 minimal: true,
                 usePortal: true,
                 autoFocus: false,
@@ -209,13 +210,16 @@ export class DateInput extends HoistInput {
     };
 
     noteBlurred() {
-        this.setPopoverOpen(false);
         super.noteBlurred();
+        this.setPopoverOpen(false);
     }
 
     noteFocused() {
-        if (this.props.showPickerOnFocus) this.setPopoverOpen(true);
         super.noteFocused();
+        if (this.props.showPickerOnFocus) {
+            // Delay is necessary to account for 'focus flipping' issue described above onBlur
+            wait(200).then(() => this.setPopoverOpen(true));
+        }
     }
 
     onClearBtnClick = () => {
