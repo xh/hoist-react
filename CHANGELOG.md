@@ -2,11 +2,23 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* `DateInput.enableClear` prop added to support built-in button to null-out a date input's value.
+
 ### 🐞 Bug Fixes
 
 * The `Select` component now properly shows all options when the pick-list is re-shown after a
   change without first blurring the control. (Previously this interaction edge case would only show
   the option matching the current input value.) #1198
+* Mobile mask component `onClick` callback prop restored - required to dismiss mobile menus when not
+  tapping a menu option.
+
+### ✨ Style
+
+* Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
+* The mobile app menu button has been moved to the right side of the top appBar, consistent with its
+  placement in desktop apps.
 
 ### 📚 Libraries
 
@@ -15,6 +27,7 @@
 * codemirror `5.47 -> 5.48`
 * mobx `6.0 -> 6.1`
 
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.0.0...develop)
 
 ## v24.0.0 - 2019-06-24
 

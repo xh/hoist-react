@@ -15,10 +15,10 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
 import {div} from '@xh/hoist/cmp/layout';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
-import {withDefault} from '@xh/hoist/utils/js';
+import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
@@ -44,6 +44,9 @@ export class DateInput extends HoistInput {
         /** Enable using the DatePicker popover */
         enablePicker: PT.bool,
 
+        /** True to show a "clear" button aligned to the right of the control. default false */
+        enableClear: PT.bool,
+
         /**
          * MomentJS format string for date display and parsing. Defaults to `YYYY-MM-DD HH:mm:ss`,
          * with default presence of time components determined by the timePrecision prop.
@@ -52,6 +55,12 @@ export class DateInput extends HoistInput {
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
+
+        /**
+         * Element to display inline on the right side of the input. Note if provided, this will
+         * take the place of the (default) calendar-picker button and (optional) clear button.
+         */
+        rightElement: PT.element,
 
         /** Maximum (inclusive) valid date. */
         maxDate: PT.instanceOf(Date),
@@ -102,11 +111,19 @@ export class DateInput extends HoistInput {
     render() {
         const props = this.getNonLayoutProps(),
             layoutProps = this.getLayoutProps(),
-            enablePicker = withDefault(props.enablePicker, true);
+            enablePicker = withDefault(props.enablePicker, true),
+            enableClear = withDefault(props.enableClear, false),
+            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
+            isOpen = enablePicker && this.popoverOpen && !props.disabled;
+
+        warnIf(
+            (props.enableClear || props.enablePicker) && props.rightElement,
+            'Cannot specify enableClear or enablePicker along with custom rightElement - built-in clear/picker button will not be shown.'
+        );
 
         return div({
             item: popover({
-                isOpen: enablePicker && this.popoverOpen && !this.props.disabled,
+                isOpen,
                 minimal: true,
                 usePortal: true,
                 autoFocus: false,
@@ -133,12 +150,7 @@ export class DateInput extends HoistInput {
                     value: this.formatDate(this.renderValue),
                     className: this.getClassName(),
                     onCommit: this.onInputCommit,
-                    rightElement: button({
-                        omit: !enablePicker,
-                        icon: Icon.calendar(),
-                        tabIndex: -1, // Prevent focus on tab
-                        onClick: this.onPopoverBtnClick
-                    }),
+                    rightElement,
 
                     disabled: props.disabled,
                     leftIcon: props.leftIcon,
@@ -153,6 +165,28 @@ export class DateInput extends HoistInput {
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
+        });
+    }
+
+    renderButtons(enableClear, enablePicker) {
+        if (!enableClear && !enablePicker) return null;
+
+        return buttonGroup({
+            padding: 0,
+            items: [
+                button({
+                    omit: !enableClear,
+                    icon: Icon.cross(),
+                    tabIndex: -1, // Prevent focus on tab
+                    onClick: this.onClearBtnClick
+                }),
+                button({
+                    omit: !enablePicker,
+                    icon: Icon.calendar(),
+                    tabIndex: -1, // Prevent focus on tab
+                    onClick: this.onPopoverBtnClick
+                })
+            ]
         });
     }
 
@@ -176,14 +210,22 @@ export class DateInput extends HoistInput {
     };
 
     noteBlurred() {
-        this.setPopoverOpen(false);
         super.noteBlurred();
+        this.setPopoverOpen(false);
     }
 
     noteFocused() {
-        if (this.props.showPickerOnFocus) this.setPopoverOpen(true);
         super.noteFocused();
+        if (this.props.showPickerOnFocus) {
+            // Delay is necessary to account for 'focus flipping' issue described above onBlur
+            wait(200).then(() => this.setPopoverOpen(true));
+        }
     }
+
+    onClearBtnClick = () => {
+        this.noteValueChange(null);
+        this.doCommit();
+    };
 
     onPopoverBtnClick = () => {
         this.setPopoverOpen(!this.popoverOpen);
@@ -204,7 +246,7 @@ export class DateInput extends HoistInput {
     onPopoverClose = () => {
         this.doCommit();
     };
-    
+
     onInputCommit = (value) => {
         const date = this.parseDate(value);
         this.onDateChange(date);
@@ -227,7 +269,7 @@ export class DateInput extends HoistInput {
         this.setPopoverOpen(false);
     };
 
-    applyPrecision(date)  {
+    applyPrecision(date) {
         let {timePrecision} = this.props;
         date = clone(date);
         if (timePrecision == 'second') {
@@ -262,4 +304,5 @@ export class DateInput extends HoistInput {
         return isNaN(ret) ? null : ret;
     }
 }
+
 export const dateInput = elemFactory(DateInput);

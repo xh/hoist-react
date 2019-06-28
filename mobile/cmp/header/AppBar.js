@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {button, navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
 import './AppBar.scss';
 
@@ -26,7 +26,7 @@ import './AppBar.scss';
 export class AppBar extends Component {
 
     static propTypes = {
-        /** Icon to display as the app menu icon, displayed to the left of the title. */
+        /** App icon to display to the left of the title. */
         icon: PT.element,
 
         /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
@@ -92,14 +92,17 @@ export class AppBar extends Component {
                             model: navigatorModel,
                             ...backButtonProps
                         }),
-                        menuButton({
-                            icon: icon,
-                            omit: hideAppMenuButton || !appMenuModel,
-                            model: appMenuModel,
-                            ...appMenuButtonProps
-                        }),
                         ...leftItems || []
                     ]
+                }),
+                button({
+                    icon: icon,
+                    omit: !icon,
+                    onClick: () => {
+                        if (XH.routerModel.hasRoute('default')) {
+                            XH.navigate('default');
+                        }
+                    }
                 }),
                 div({
                     className: 'xh-appbar-title',
@@ -113,6 +116,11 @@ export class AppBar extends Component {
                             omit: hideRefreshButton,
                             disabled: navigatorModel.disableAppRefreshButton,
                             ...refreshButtonProps
+                        }),
+                        menuButton({
+                            omit: hideAppMenuButton || !appMenuModel,
+                            model: appMenuModel,
+                            ...appMenuButtonProps
                         })
                     ]
                 })
