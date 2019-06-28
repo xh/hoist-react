@@ -6,6 +6,11 @@
 
 * `DateInput.enableClear` prop added to support built-in button to null-out a date input's value.
 
+### 🐞 Bug Fixes
+
+* Mobile mask component `onClick` callback prop restored - required to dismiss mobile menus when not
+  tapping a menu option.
+
 ### ✨ Style
 
 * Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
