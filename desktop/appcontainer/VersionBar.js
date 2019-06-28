@@ -19,20 +19,9 @@ export class VersionBar extends Component {
 
     render() {
         const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            isVisible = (() => {
-                switch (XH.getPref('xhShowVersionBarFooter')) {
-                    case 'always':
-                        return true;
-                    case 'never':
-                        return false;
-                    case 'auto':
-                    default:
-                        return (env !== 'Production' || XH.getUser().isHoistAdmin);
-                }
-            })();
+            version = XH.getEnv('clientVersion');
 
-        if (!isVisible) return null;
+        if (!this.isShowing()) return null;
 
         return box({
             justifyContent: 'center',
@@ -45,9 +34,23 @@ export class VersionBar extends Component {
             ]
         });
     }
-
+    
     showAbout() {
         XH.showAboutDialog();
+    }
+    
+    // private bees knees below this line.  Buzz off!
+    
+    isShowing() {
+        switch (XH.getPref('xhShowVersionBarFooter')) {
+            case 'always':
+                return true;
+            case 'never':
+                return false;
+            case 'auto':
+            default:
+                return (this.env !== 'Production' || XH.getUser().isHoistAdmin);
+        }
     }
 }
 export const versionBar = elemFactory(VersionBar);
