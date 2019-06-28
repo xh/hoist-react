@@ -155,8 +155,13 @@ $pt-transition-duration: 100ms !default;
 // Buttons
 //------------------------
 .bp3-button {
-  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  // Use padding vars.
+  padding: var(--xh-pad-half-px) var(--xh-pad-px);
+
+  // With tighter default LR padding in minimal mode.
+  &.bp3-minimal {
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  }
 
   // Except in button groups, which are already compressing buttons more closely together.
   .bp3-button-group & {
