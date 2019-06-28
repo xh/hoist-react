@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {wait} from '@xh/hoist/promise';
 import PT from 'prop-types';
 import moment from 'moment';
 import {assign, clone} from 'lodash';
@@ -132,7 +131,11 @@ export class DateInput extends HoistInput {
                 popoverRef: this.popoverRef.ref,
                 onClose: this.onPopoverClose,
                 onInteraction: (nextOpenState) => {
-                    if (!nextOpenState) this.setPopoverOpen(false);
+                    if (this.props.showPickerOnFocus) {
+                        this.setPopoverOpen(nextOpenState);
+                    } else if (!nextOpenState) {
+                        this.setPopoverOpen(false);
+                    }
                 },
 
                 content: bpDatePicker({
@@ -192,43 +195,28 @@ export class DateInput extends HoistInput {
 
     /**
      * Custom blur handler to account for focus potentially living in either input or popover.
-     * We want to call noteBlurred when focus has left both. Extra long delay here working around
-     * some kind of transition that happens when you use popover buttons to navigate between months.
-     * Focus appears to flap to focus for a tick, then back to the popover.... For review....
+     * We want to call noteBlurred when focus has left both.
      */
     onBlur = () => {
-        wait(800).then(() => {
-            const activeEl = document.activeElement,
-                popoverEl = this.popoverRef.value,
-                popoverHasFocus = popoverEl && popoverEl.contains(activeEl),
-                inputHasFocus = this.containsElement(activeEl);
+        const activeEl = document.activeElement,
+            popoverEl = this.popoverRef.value,
+            popoverHasFocus = popoverEl && popoverEl.contains(activeEl),
+            inputHasFocus = this.containsElement(activeEl);
 
-            if (!popoverHasFocus && !inputHasFocus) {
-                this.noteBlurred();
-            }
-        });
+        if (!popoverHasFocus && !inputHasFocus) {
+            this.noteBlurred();
+        }
     };
 
-    noteBlurred() {
-        super.noteBlurred();
-        this.setPopoverOpen(false);
-    }
-
-    noteFocused() {
-        super.noteFocused();
-        if (this.props.showPickerOnFocus) {
-            // Delay is necessary to account for 'focus flipping' issue described above onBlur
-            wait(200).then(() => this.setPopoverOpen(true));
-        }
-    }
-
-    onClearBtnClick = () => {
+    onClearBtnClick = (ev) => {
         this.noteValueChange(null);
         this.doCommit();
+        ev.stopPropagation();
     };
 
-    onPopoverBtnClick = () => {
+    onPopoverBtnClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
+        ev.stopPropagation();
     };
 
     onKeyDown = (ev) => {
