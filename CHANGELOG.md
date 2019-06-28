@@ -9,6 +9,8 @@
 ### ✨ Style
 
 * Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
+* The mobile app menu button has been moved to the right side of the top appBar, consistent with its
+  placement in desktop apps.
 
 ### 📚 Libraries
 
