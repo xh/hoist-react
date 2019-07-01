@@ -2,6 +2,10 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
+TBD
+
+## v24.1.0 - 2019-07-01
+
 ### 🎁 New Features
 
 * `DateInput.enableClear` prop added to support built-in button to null-out a date input's value.
@@ -13,6 +17,8 @@
   the option matching the current input value.) #1198
 * Mobile mask component `onClick` callback prop restored - required to dismiss mobile menus when not
   tapping a menu option.
+* When checking for a possible expired session within `XH.handleException()`, prompt for app login
+  only for Ajax requests made to relative URLs (not e.g. remote APIs accessed via CORS). #1189
 
 ### ✨ Style
 
@@ -27,7 +33,7 @@
 * codemirror `5.47 -> 5.48`
 * mobx `6.0 -> 6.1`
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v24.0.0...develop)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.0.0...v24.1.0)
 
 ## v24.0.0 - 2019-06-24
 
