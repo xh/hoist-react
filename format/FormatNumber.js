@@ -173,7 +173,7 @@ export function fmtPrice(v, opts = {}) {
 }
 
 /**
- * Render a number as a percent. Expects a value to be multiplied by 100 to calculated the percentage.
+ * Render a number as a percent. Value will be multiplied by 100 to calculated the percentage.
  * This behavior purposefully matches Microsoft Excel's percentage formatting.
  *
  * @param {number} v - value to format.
