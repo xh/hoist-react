@@ -4,6 +4,14 @@
 
 TBD
 
+## v24.1.1 - 2019-07-01
+
+### 🐞 Bug Fixes
+
+* Mobile column chooser internal layout/sizing fixed when used in certain secure mobile browsers.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.0...v24.1.1)
+
 ## v24.1.0 - 2019-07-01
 
 ### 🎁 New Features
