@@ -467,7 +467,7 @@ class XHClass {
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
-                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+                throw `UI Server is unavailable - please contact support. (${e.message})`;
             }
 
             this.setAppState(S.PRE_AUTH);
