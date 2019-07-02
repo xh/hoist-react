@@ -18,10 +18,10 @@ import './VersionBar.scss';
 export class VersionBar extends Component {
 
     render() {
+        if (!this.isShowing()) return null;
+
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion');
-
-        if (!this.isShowing()) return null;
 
         return box({
             justifyContent: 'center',
