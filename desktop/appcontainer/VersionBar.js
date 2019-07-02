@@ -39,10 +39,12 @@ export class VersionBar extends Component {
         XH.showAboutDialog();
     }
     
-    // private bees knees below this line.  Buzz off!
+    //----------------------
+    // Implementation
+    //----------------------
     
     isShowing() {
-        switch (XH.getPref('xhShowVersionBarFooter')) {
+        switch (XH.getPref('xhShowVersionBar')) {
             case 'always':
                 return true;
             case 'never':
