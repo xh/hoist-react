@@ -16,11 +16,13 @@ import './VersionBar.scss';
  */
 @HoistComponent
 export class VersionBar extends Component {
-
+    
+    env = XH.getEnv('appEnvironment');
+    
     render() {
         if (!this.isShowing()) return null;
-
-        const env = XH.getEnv('appEnvironment'),
+        
+        const {env} = this,
             version = XH.getEnv('clientVersion');
 
         return box({
@@ -44,7 +46,7 @@ export class VersionBar extends Component {
     //----------------------
     
     isShowing() {
-        switch (XH.getPref('xhShowVersionBar')) {
+        switch (XH.getPref('xhShowVersionBar', 'auto')) {
             case 'always':
                 return true;
             case 'never':

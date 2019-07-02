@@ -20,13 +20,13 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 export class VersionBar extends Component {
 
     static modelClass = AppContainerModel;
+    env = XH.getEnv('appEnvironment');
 
     render() {
-        const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            isVisible = (env !== 'Production' || XH.getUser().isHoistAdmin || XH.getPref('xhForceEnvironmentFooter'));
-
-        if (!isVisible) return null;
+        if (!this.isShowing()) return null;
+        
+        const {env} = this,
+            version = XH.getEnv('clientVersion');
 
         return box({
             justifyContent: 'center',
@@ -47,5 +47,22 @@ export class VersionBar extends Component {
     onInfoClick = () => {
         XH.showAboutDialog();
     }
+    
+    //----------------------
+    // Implementation
+    //----------------------
+    
+    isShowing() {
+        switch (XH.getPref('xhShowVersionBar', 'auto')) {
+            case 'always':
+                return true;
+            case 'never':
+                return false;
+            case 'auto':
+            default:
+                return (this.env !== 'Production' || XH.getUser().isHoistAdmin);
+        }
+    }
+    
 }
 export const versionBar = elemFactory(VersionBar);

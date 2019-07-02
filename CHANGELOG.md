@@ -7,8 +7,8 @@
 ### 🎁 New Features
 
 * A new preference `xhShowVersionBar` has been added to allow more fine-grained control of when the
-Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
-toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
+  Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
+  toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
  
 ## v24.1.1 - 2019-07-01
 
