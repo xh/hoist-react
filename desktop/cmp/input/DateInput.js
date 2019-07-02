@@ -69,7 +69,9 @@ export class DateInput extends HoistInput {
         /** Minimum (inclusive) valid date. */
         minDate: PT.instanceOf(Date),
 
-        /** Disables direct editing displayed date in test box, forces user to pick date from date pick pop over */
+        /** Disables direct editing of displayed date in text box,
+         * forces user to pick date from date pick pop over
+         */
         pickerOnlyMode: PT.bool,
 
         /** Text to display when control is empty. */
