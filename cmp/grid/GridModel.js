@@ -20,6 +20,7 @@ import {
     cloneDeep,
     compact,
     defaults,
+    defaultsDeep,
     find,
     findLast,
     isArray,
@@ -115,6 +116,8 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {Object} [c.defaultCol] = Column configs to be set on all columns.  If a Column has
+     *          a config of the same name, it will be prioritized over what is passed here.  (specificity wins)
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
@@ -152,6 +155,7 @@ export class GridModel {
     constructor({
         store,
         columns,
+        defaultCol,
         treeMode = false,
         showSummary = false,
         selModel,
@@ -191,6 +195,7 @@ export class GridModel {
 
         Object.assign(this, rest);
 
+        this.defaultCol = withDefault(defaultCol, {});
         this.setColumns(columns);
         this.store = this.parseStore(store);
 
@@ -393,7 +398,7 @@ export class GridModel {
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
         );
-
+        
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
@@ -551,7 +556,7 @@ export class GridModel {
     }
 
     buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
+        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.defaultCol), this);
     }
 
     //-----------------------
