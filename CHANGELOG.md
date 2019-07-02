@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 
+* A new preference `xhShowVersionBar` has been added to allow more fine-grained control of when the
+  Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
+  toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
+ 
 * The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
   This is consistent with the behavior of Excel's percentage formatting.  
 
