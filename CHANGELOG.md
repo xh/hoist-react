@@ -2,7 +2,16 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
-TBD
+### 🎁 New Features
+
+* The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
+  This is consistent with the behavior of Excel's percentage formatting.  
+
+### 🎁 Breaking Changes
+
+* Applications that have been using fmtPercent or fmtPercentRenderer methods should adjust to
+  their new behavior. Columns that were previously using `exportValue: v => v/100` as as workaround 
+  to the previous renderer behavior should remove this line of code.
 
 ## v24.1.1 - 2019-07-01
 
