@@ -10,7 +10,7 @@
 ### 🎁 Breaking Changes
 
 * Applications that have been using fmtPercent or fmtPercentRenderer methods should adjust to
-  their new behavior. Columns that were previously using `exportValue: v => v/100` as as workaround 
+  their new behavior. Columns that were previously using `exportValue: v => v/100` as a workaround 
   to the previous renderer behavior should remove this line of code.
 
 ## v24.1.1 - 2019-07-01
