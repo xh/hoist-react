@@ -20,12 +20,11 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 export class VersionBar extends Component {
 
     static modelClass = AppContainerModel;
-    env = XH.getEnv('appEnvironment');
 
     render() {
         if (!this.isShowing()) return null;
         
-        const {env} = this,
+        const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion');
 
         return box({
@@ -53,6 +52,8 @@ export class VersionBar extends Component {
     //----------------------
     
     isShowing() {
+        const env = XH.getEnv('appEnvironment');
+        
         switch (XH.getPref('xhShowVersionBar', 'auto')) {
             case 'always':
                 return true;
@@ -60,7 +61,7 @@ export class VersionBar extends Component {
                 return false;
             case 'auto':
             default:
-                return (this.env !== 'Production' || XH.getUser().isHoistAdmin);
+                return (env !== 'Production' || XH.getUser().isHoistAdmin);
         }
     }
     
