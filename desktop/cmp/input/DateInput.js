@@ -21,6 +21,8 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
+import './DateInput.scss';
+
 /**
  * A Calendar Control for choosing a Date.
  *
@@ -66,6 +68,9 @@ export class DateInput extends HoistInput {
 
         /** Minimum (inclusive) valid date. */
         minDate: PT.instanceOf(Date),
+
+        /** Disables direct editing displayed date in test box, forces user to pick date from date pick pop over */
+        pickerOnlyMode: PT.bool,
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
@@ -155,7 +160,7 @@ export class DateInput extends HoistInput {
                     onCommit: this.onInputCommit,
                     rightElement,
 
-                    disabled: props.disabled,
+                    disabled: props.disabled || props.pickerOnlyMode,
                     leftIcon: props.leftIcon,
                     tabIndex: props.tabIndex,
                     placeholder: props.placeholder,
@@ -174,17 +179,21 @@ export class DateInput extends HoistInput {
     renderButtons(enableClear, enablePicker) {
         if (!enableClear && !enablePicker) return null;
 
+        const {pickerOnlyMode} = this.props;
+
         return buttonGroup({
             padding: 0,
             items: [
                 button({
                     omit: !enableClear,
+                    className: pickerOnlyMode ? 'picker-only-mode-btn' : '',
                     icon: Icon.cross(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onClearBtnClick
                 }),
                 button({
                     omit: !enablePicker,
+                    className: pickerOnlyMode ? 'picker-only-mode-btn' : '',
                     icon: Icon.calendar(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onPopoverBtnClick
