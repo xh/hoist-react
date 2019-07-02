@@ -44,7 +44,7 @@ export class VersionBar extends Component {
     //----------------------
     
     isShowing() {
-        switch (XH.getPref('xhShowVersionBar')) {
+        switch (XH.getPref('xhShowVersionBar', 'auto')) {
             case 'always':
                 return true;
             case 'never':
