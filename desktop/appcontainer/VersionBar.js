@@ -16,10 +16,10 @@ import './VersionBar.scss';
  */
 @HoistComponent
 export class VersionBar extends Component {
-
+    
     render() {
         if (!this.isShowing()) return null;
-
+        
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion');
 
@@ -44,6 +44,8 @@ export class VersionBar extends Component {
     //----------------------
     
     isShowing() {
+        const env = XH.getEnv('appEnvironment');
+        
         switch (XH.getPref('xhShowVersionBar', 'auto')) {
             case 'always':
                 return true;
@@ -51,7 +53,7 @@ export class VersionBar extends Component {
                 return false;
             case 'auto':
             default:
-                return (this.env !== 'Production' || XH.getUser().isHoistAdmin);
+                return (env !== 'Production' || XH.getUser().isHoistAdmin);
         }
     }
 }
