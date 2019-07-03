@@ -10,6 +10,10 @@
 Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
 toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
  
+### 📚 Libraries
+
+* "react-transition-group": `2.8.0 ->  4.2.1`
+ 
 ## v24.1.1 - 2019-07-01
 
 ### 🐞 Bug Fixes
