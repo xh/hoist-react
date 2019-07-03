@@ -42,10 +42,13 @@ export class DateInput extends HoistInput {
         /** Props passed to ReactDayPicker component, as per DayPicker docs. */
         dayPickerProps: PT.object,
 
-        /** Enable using the DatePicker popover */
+        /** Enable using the DatePicker popover. Default true. */
         enablePicker: PT.bool,
 
-        /** True to show a "clear" button aligned to the right of the control. default false */
+        /** Enable using the text control to enter date as text. Default true. */
+        enableTextInput: PT.bool,
+
+        /** True to show a "clear" button aligned to the right of the control. Default false. */
         enableClear: PT.bool,
 
         /**
@@ -68,11 +71,6 @@ export class DateInput extends HoistInput {
 
         /** Minimum (inclusive) valid date. */
         minDate: PT.instanceOf(Date),
-
-        /** Disables direct editing of displayed date in text box,
-         * forces user to pick date from date pick pop over
-         */
-        pickerOnlyMode: PT.bool,
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
@@ -118,8 +116,9 @@ export class DateInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             layoutProps = this.getLayoutProps(),
             enablePicker = withDefault(props.enablePicker, true),
+            enableTextInput = withDefault(props.enableTextInput, true),
             enableClear = withDefault(props.enableClear, false),
-            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
+            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker, enableTextInput)),
             isOpen = enablePicker && this.popoverOpen && !props.disabled;
 
         warnIf(
@@ -162,7 +161,7 @@ export class DateInput extends HoistInput {
                     onCommit: this.onInputCommit,
                     rightElement,
 
-                    disabled: props.disabled || props.pickerOnlyMode,
+                    disabled: props.disabled || !enableTextInput,
                     leftIcon: props.leftIcon,
                     tabIndex: props.tabIndex,
                     placeholder: props.placeholder,
@@ -178,24 +177,22 @@ export class DateInput extends HoistInput {
         });
     }
 
-    renderButtons(enableClear, enablePicker) {
+    renderButtons(enableClear, enablePicker, enableTextInput) {
         if (!enableClear && !enablePicker) return null;
-
-        const {pickerOnlyMode} = this.props;
 
         return buttonGroup({
             padding: 0,
             items: [
                 button({
                     omit: !enableClear,
-                    className: pickerOnlyMode ? 'picker-only-mode-btn' : '',
+                    className: !enableTextInput ? 'text-input-disabled-btn' : '',
                     icon: Icon.cross(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onClearBtnClick
                 }),
                 button({
                     omit: !enablePicker,
-                    className: pickerOnlyMode ? 'picker-only-mode-btn' : '',
+                    className: !enableTextInput ? 'text-input-disabled-btn' : '',
                     icon: Icon.calendar(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onPopoverBtnClick
