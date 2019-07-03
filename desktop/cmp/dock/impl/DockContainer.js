@@ -26,12 +26,17 @@ export class DockContainer extends Component {
     baseClassName = 'xh-dock-container';
 
     render() {
-        const {direction} = this.model;
+        const {direction} = this.model,
+            {compactHeaders} = this.props;
 
         return hbox({
             className: this.getClassName(`xh-dock-container--${direction}`),
             items: this.model.views.map(model => {
-                return dockView({key: model.xhId, model});
+                return dockView({
+                    key: model.xhId,
+                    model,
+                    compactHeader: compactHeaders
+                });
             }),
             ...this.getLayoutProps()
         });
