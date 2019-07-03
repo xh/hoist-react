@@ -2,14 +2,15 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
-## TBD 
-
 ### 🎁 New Features
 
-* A new preference `xhShowVersionBar` has been added to allow more fine-grained control of when the
-  Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
-  toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
- 
+* Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
+  version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
+  the footer to Hoist Admins while including it for non-admins *only* in non-production
+  environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
+
 ## v24.1.1 - 2019-07-01
 
 ### 🐞 Bug Fixes
@@ -83,7 +84,7 @@
   also provides an easy option to toggle pinning the first column.
 * `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
   See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
-  
+
 #### Other Features
 
 * Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
@@ -110,8 +111,8 @@
 * The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
   function.
 * `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
-  Applications explicitly setting width or height on this component should ensure that they are providing
-  enough space for it to display its contents without clipping.
+  Applications explicitly setting width or height on this component should ensure that they are
+  providing enough space for it to display its contents without clipping.
 
 ### 🐞 Bug Fixes
 
@@ -128,8 +129,8 @@
 * The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
   the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
   `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
-  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
-  on a per-app basis.)
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals on a
+  per-app basis.)
 
 ### 📚 Libraries
 
@@ -517,10 +518,9 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1335,9 +1335,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
