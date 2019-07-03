@@ -11,7 +11,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {isFunction, isNil, isString, uniq} from 'lodash';
+import {flatMap, isArray, isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -28,22 +28,24 @@ export class GridExportService {
      * @param {(string|function)} [options.filename] - name for the exported file, or a closure to generate.
      *      Do not include the file extension - that will be appended based on the specified type.
      * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {boolean} [options.includeHiddenCols] - include hidden grid columns in the export.
+     * @param {string|array} [options.columns] - columns to export can be 'ALL', 'VISIBLE' (default) or list of colIds.
+     *      List can contain 'ALL' and 'VISIBLE' along with colIds.
      */
     async exportAsync(gridModel, {
         filename = 'export',
         type = 'excelTable',
-        includeHiddenCols = false
+        columns = 'VISIBLE'
     } = {}) {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
+        throwIf(!isArray(columns) && !['ALL', 'VISIBLE'].includes(columns), 'Columns must be "ALL", "VISIBLE" or an array of column ids');
 
         if (isFunction(filename)) filename = filename(gridModel);
 
-        const columns = this.getExportableColumns(gridModel, includeHiddenCols),
+        const exportColumns = this.getExportableColumns(gridModel, columns),
             records = gridModel.store.rootRecords,
-            meta = this.getColumnMetadata(columns),
+            meta = this.getColumnMetadata(exportColumns),
             rows = [];
 
         if (records.length === 0) {
@@ -51,12 +53,12 @@ export class GridExportService {
             return;
         }
 
-        rows.push(this.getHeaderRow(columns, type));
-        rows.push(...this.getRecordRowsRecursive(gridModel, records, columns, 0));
+        rows.push(this.getHeaderRow(exportColumns, type));
+        rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        if (rows.length * columns.length > 3000) {
+        if (rows.length * exportColumns.length > 3000) {
             XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
@@ -97,15 +99,25 @@ export class GridExportService {
     //-----------------------
     // Implementation
     //-----------------------
-    getExportableColumns(gridModel, includeHiddenColumns) {
-        return gridModel
-            .getLeafColumns()
-            .filter(col => {
-                return (
-                    !col.excludeFromExport &&
-                    (includeHiddenColumns || gridModel.isColumnVisible(col.colId))
-                );
-            });
+    getExportableColumns(gridModel, columns) {
+        if (isString(columns)) {
+            return gridModel
+                .getLeafColumns()
+                .filter(col => {
+                    return (
+                        !col.excludeFromExport &&
+                        (columns === 'ALL' || gridModel.isColumnVisible(col.colId))
+                    );
+                });
+        }
+        return flatMap(columns, (colId) => {
+            if (colId === 'VISIBLE' || colId === 'ALL') {
+                return this.getExportableColumns(gridModel, colId);
+            }
+            return gridModel
+                .getLeafColumns()
+                .find(col => {return colId === col.colId});
+        });
     }
 
     getColumnMetadata(columns) {

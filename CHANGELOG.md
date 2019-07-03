@@ -9,7 +9,13 @@
 * A new preference `xhShowVersionBar` has been added to allow more fine-grained control of when the
   Hoist version bar is showing.  By default it is 'auto', preserving the current behavior of *not* showing the
   toolbar to production non-admins.  It can alternatively be set to 'always' or 'never' on a per-user basis.
- 
+* The `GridModel.columns` configuration option has replaced `GridModel.includeHiddenCols`. `columns` to export can be 
+  'ALL', 'VISIBLE' (default) or a list of colIds. The list can contain 'ALL' and 'VISIBLE' along with colIds.
+
+### 🎁 Breaking Changes
+
+* `GridModel.columns` has replaced `GridModel.includeHiddenCols`. Replace `includeHiddenCols`=true with `columns`='ALL'.
+
 ## v24.1.1 - 2019-07-01
 
 ### 🐞 Bug Fixes
