@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
+  and space efficient styling for headers in these components.
 * Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
   version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
   the footer to Hoist Admins while including it for non-admins *only* in non-production
