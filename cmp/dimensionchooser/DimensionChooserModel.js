@@ -7,7 +7,7 @@
 
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {warnIf, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
@@ -249,6 +249,8 @@ export class DimensionChooserModel {
     // Preference handling
     //-------------------------
     getPref() {
+        warnIf(this.historyPreference, 'Dimension Chooser "historyPreference" has been deprecated and will be ignored. Use "preference" instead.');
+
         const {preference} = this;
         if (!preference) return null;
 
