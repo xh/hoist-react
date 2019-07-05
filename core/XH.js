@@ -468,9 +468,9 @@ class XHClass {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
                 throw this.exception({
-                    message: 'UI Server is unavailable - please contact support.',
-                    detail: `${e.message}`,
-                    url: `${window.location.href}`
+                    name: 'UI Server is unavailable',
+                    message: `UI Server is unavailable at ${XH.baseUrl}`,
+                    detail: e.message
                 });
             }
 
