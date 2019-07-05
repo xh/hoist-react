@@ -49,7 +49,8 @@ export function LoadSupport(C) {
              *
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
-            async loadAsync(loadSpec = {}) {
+            async loadAsync(loadSpec) {
+                if (!loadSpec) loadSpec = {};
 
                 this.lastLoadRequested = new Date();
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
