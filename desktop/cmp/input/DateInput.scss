@@ -1,3 +1,12 @@
-.text-input-disabled-btn {
-  background-color: var(--xh-bg) !important;
+.picker-only-input {
+
+  input {
+    color: var(--xh-input-text-color) !important;
+    background: var(--xhinput-bg) !important;
+  }
+
+  button {
+    background-color: var(--xh-bg) !important;
+  }
+
 }

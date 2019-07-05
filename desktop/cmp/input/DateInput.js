@@ -118,7 +118,8 @@ export class DateInput extends HoistInput {
             enablePicker = withDefault(props.enablePicker, true),
             enableTextInput = withDefault(props.enableTextInput, true),
             enableClear = withDefault(props.enableClear, false),
-            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker, enableTextInput)),
+            isPickerOnlyMode = !enableTextInput && !props.disabled,
+            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
             isOpen = enablePicker && this.popoverOpen && !props.disabled;
 
         warnIf(
@@ -157,7 +158,7 @@ export class DateInput extends HoistInput {
 
                 item: textInput({
                     value: this.formatDate(this.renderValue),
-                    className: this.getClassName(),
+                    className: this.getClassName(isPickerOnlyMode ? 'picker-only-input' : null),
                     onCommit: this.onInputCommit,
                     rightElement,
 
@@ -177,7 +178,7 @@ export class DateInput extends HoistInput {
         });
     }
 
-    renderButtons(enableClear, enablePicker, enableTextInput) {
+    renderButtons(enableClear, enablePicker) {
         if (!enableClear && !enablePicker) return null;
 
         return buttonGroup({
@@ -185,14 +186,12 @@ export class DateInput extends HoistInput {
             items: [
                 button({
                     omit: !enableClear,
-                    className: !enableTextInput ? 'text-input-disabled-btn' : '',
                     icon: Icon.cross(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onClearBtnClick
                 }),
                 button({
                     omit: !enablePicker,
-                    className: !enableTextInput ? 'text-input-disabled-btn' : '',
                     icon: Icon.calendar(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onPopoverBtnClick
