@@ -102,8 +102,9 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the
   picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
-  the Blueprint library). This should result in a snappier user experience, especially when working
-  on remote / virtual workstations.
+  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user 
+  experience, especially when working on remote / virtual workstations.  Any in-app customizations 
+  to disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 
 ### 🎁 Breaking Changes
