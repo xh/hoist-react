@@ -179,22 +179,22 @@ export class DateInput extends HoistInput {
     }
 
     renderButtons(enableClear, enablePicker) {
-        if (!enableClear && !enablePicker) return null;
+        const isClearable = (this.internalValue !== null);
 
         return buttonGroup({
             padding: 0,
             items: [
                 button({
-                    omit: !enableClear,
+                    omit: !enableClear || !isClearable,
                     icon: Icon.cross(),
                     tabIndex: -1, // Prevent focus on tab
                     onClick: this.onClearBtnClick
                 }),
                 button({
-                    omit: !enablePicker,
+                    className: enablePicker ? '' : 'disabled-picker-icon',
                     icon: Icon.calendar(),
                     tabIndex: -1, // Prevent focus on tab
-                    onClick: this.onPopoverBtnClick
+                    onClick: enablePicker ? this.onPopoverBtnClick : null
                 })
             ]
         });
