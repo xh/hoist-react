@@ -107,7 +107,7 @@
   to disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 
-### 🎁 Breaking Changes
+### 💥 Breaking Changes
 
 * Apps that defined and initialized their own `AutoRefreshService` service or functionality should
   leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
