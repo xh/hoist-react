@@ -11,7 +11,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {flatMap, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -25,11 +25,13 @@ export class GridExportService {
      *
      * @param {GridModel} gridModel - GridModel to export.
      * @param {Object} [options] - Export options.
-     * @param {(string|function)} [options.filename] - name for the exported file, or a closure to generate.
+     * @param {(string|function)} [options.filename] - name for export file, or closure to generate.
      *      Do not include the file extension - that will be appended based on the specified type.
      * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {string|array} [options.columns] - columns to export can be 'ALL', 'VISIBLE' (default) or list of colIds.
-     *      List can contain 'ALL' and 'VISIBLE' along with colIds.
+     * @param {(string|string[])} [options.columns] - columns to include in export. Supports tokens
+     *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+     *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
+     *      enumerated columns).
      */
     async exportAsync(gridModel, {
         filename = 'export',
@@ -39,7 +41,7 @@ export class GridExportService {
         throwIf(!gridModel, 'GridModel required for export');
         throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
         throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
-        throwIf(!isArray(columns) && !['ALL', 'VISIBLE'].includes(columns), 'Columns must be "ALL", "VISIBLE" or an array of column ids');
+        throwIf(!isArray(columns) && !['ALL', 'VISIBLE'].includes(columns), 'Invalid columns config - must be "ALL", "VISIBLE" or an array of colIds');
 
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -100,24 +102,23 @@ export class GridExportService {
     // Implementation
     //-----------------------
     getExportableColumns(gridModel, columns) {
-        if (isString(columns)) {
-            return gridModel
-                .getLeafColumns()
-                .filter(col => {
-                    return (
-                        !col.excludeFromExport &&
-                        (columns === 'ALL' || gridModel.isColumnVisible(col.colId))
-                    );
-                });
-        }
-        return flatMap(columns, (colId) => {
-            if (colId === 'VISIBLE' || colId === 'ALL') {
-                return this.getExportableColumns(gridModel, colId);
-            }
-            return gridModel
-                .getLeafColumns()
-                .find(col => {return colId === col.colId});
-        });
+        const toExport = castArray(columns),
+            includeAll = toExport.includes('ALL'),
+            includeViz = toExport.includes('VISIBLE');
+
+        return gridModel
+            .getLeafColumns()
+            .filter(col => {
+                const {colId, excludeFromExport} = col;
+                return (
+                    !excludeFromExport &&
+                    (
+                        includeAll ||
+                        toExport.includes(colId) ||
+                        (includeViz && gridModel.isColumnVisible(colId))
+                    )
+                );
+            });
     }
 
     getColumnMetadata(columns) {
@@ -144,7 +145,7 @@ export class GridExportService {
             ret = [];
 
         records = [...records];
-        
+
         [...sortBy].reverse().forEach(it => {
             const compFn = it.comparator.bind(it),
                 direction = it.sort === 'desc' ? -1 : 1;
