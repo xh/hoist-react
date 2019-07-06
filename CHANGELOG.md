@@ -4,18 +4,15 @@
 
 ### 🎁 New Features
 
+* A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
+  The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
+  list of specific colIds to include in an export.
+  * To avoid immediate breaking changes, GridModel will log a warning on any remaining usages of
+    `includeHiddenCols` but auto-set to `columns: 'ALL'` to maintain the same behavior.
 * Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
   version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
   the footer to Hoist Admins while including it for non-admins *only* in non-production
   environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
-* The `exportOptions.columns` option on `GridModel` has replaced `includeHiddenCols` as the
-  configuration to control which columns are included in a grid export. The new config supports
-  special strings 'VISIBLE' (default), 'ALL', and/or a list of specific colIds to include.
-
-### 💥 Breaking Changes
-
-* `GridModel` `exportOptions.columns` has replaced `includeHiddenCols`. Replace
-  `includeHiddenCols`=true with `columns`='ALL'.
 
 ### 📚 Libraries
 
