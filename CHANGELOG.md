@@ -11,7 +11,10 @@
 
 ### 📚 Libraries
 
-* "react-transition-group": `2.8.0 ->  4.2.1`
+* @blueprintjs/core `3.16 -> 3.17`
+* @blueprintjs/datetime `3.10 -> 3.11`
+* mobx `5.10 -> 5.11`
+* react-transition-group `2.8 -> 4.2`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
 
