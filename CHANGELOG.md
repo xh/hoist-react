@@ -4,6 +4,11 @@
 
 ### 🎁 New Features
 
+* A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
+  The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
+  list of specific colIds to include in an export.
+  * To avoid immediate breaking changes, GridModel will log a warning on any remaining usages of
+    `includeHiddenCols` but auto-set to `columns: 'ALL'` to maintain the same behavior.
 * Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
   version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
   the footer to Hoist Admins while including it for non-admins *only* in non-production
@@ -105,9 +110,9 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the
   picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
-  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user 
-  experience, especially when working on remote / virtual workstations.  Any in-app customizations 
-  to disable or remove transitions can now be removed in favor of this toolkit-wide change.
+  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user
+  experience, especially when working on remote / virtual workstations. Any in-app customizations to
+  disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 
 ### 💥 Breaking Changes
