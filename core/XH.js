@@ -470,7 +470,7 @@ class XHClass {
             } catch (e) {
                 throw this.exception({
                     name: 'App Server Unavailable',
-                    message: `Client cannot reach the grails app server at the following location: ${XH.baseUrl}\ping`,
+                    message: `Client cannot reach the grails app server at the following location: ${XH.baseUrl}ping`,
                     detail: e.message
                 });
             }
