@@ -11,8 +11,8 @@
     "lint": "yarn run eslint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.16.2",
-    "@blueprintjs/datetime": "~3.10.0",
+    "@blueprintjs/core": "~3.17.1",
+    "@blueprintjs/datetime": "~3.11.0",
     "@fortawesome/fontawesome-pro": "~5.9.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.17",
     "@fortawesome/pro-light-svg-icons": "~5.9.0",
@@ -31,7 +31,7 @@
     "highcharts": "~7.1.1",
     "lodash": "~4.17.11",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.10.1",
+    "mobx": "~5.11.0",
     "mobx-react": "~6.1.1",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",

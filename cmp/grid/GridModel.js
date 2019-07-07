@@ -140,7 +140,7 @@ export class GridModel {
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
-     * @param {object} [c.exportOptions] - default options used in exportAsync().
+     * @param {Object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
@@ -187,6 +187,12 @@ export class GridModel {
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
+
+        // Deprecation warning added as of 24.2 - remove in future major version.
+        if (exportOptions.includeHiddenCols) {
+            console.warn("GridModel exportOptions.includeHiddenCols no longer supported - replace with {columns: 'ALL'}.");
+            exportOptions.columns = 'ALL';
+        }
         this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
