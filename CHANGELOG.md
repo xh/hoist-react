@@ -18,7 +18,6 @@
   
 * `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
   both value and history to the same preference (existing history preferences will be handled).
-  Also adds new `persistValue` and `persistHistory` props to control this behaviour.
 
 ### 📚 Libraries
 

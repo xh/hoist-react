@@ -43,8 +43,6 @@ export class DimensionChooserModel {
     maxHistoryLength = null;
     maxDepth = null;
     preference = null;
-    persistValue = true;
-    persistHistory = true;
     dimensions = null;
     dimensionVals = null;
     enableClear = false;
@@ -68,8 +66,6 @@ export class DimensionChooserModel {
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
      * @param {string} [c.preference] - preference key used to persist the user's last value
      *      and most recently selected groupings for easy re-selection.
-     * @param {boolean} [c.persistValue] - persist last value to preference.
-     * @param {boolean} [c.persistHistory] - persist history to preference.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
@@ -79,8 +75,6 @@ export class DimensionChooserModel {
         dimensions,
         initialValue,
         preference,
-        persistValue = true,
-        persistHistory = true,
         maxHistoryLength = 5,
         maxDepth = 4,
         enableClear = false
@@ -88,10 +82,7 @@ export class DimensionChooserModel {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
-
         this.preference = preference;
-        this.persistValue = preference && persistValue;
-        this.persistHistory = preference && persistHistory;
         
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
@@ -264,12 +255,11 @@ export class DimensionChooserModel {
     }
 
     setPref() {
-        const {preference, value, persistValue, history, persistHistory} = this;
+        const {preference, value, history} = this;
         if (!preference || !XH.prefService.hasKey(preference)) return;
 
-        const data = {};
-        if (persistValue) data.value = value;
-        if (persistHistory) data.history = history;
+        const data = {value};
+        if (history.length) data.history = history;
 
         if (!isEmpty(data)) XH.setPref(preference, data);
     }
