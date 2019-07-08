@@ -4,6 +4,11 @@
 
 ### 🎁 New Features
 
+* A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
+  The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
+  list of specific colIds to include in an export.
+  * To avoid immediate breaking changes, GridModel will log a warning on any remaining usages of
+    `includeHiddenCols` but auto-set to `columns: 'ALL'` to maintain the same behavior.
 * Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
   version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
   the footer to Hoist Admins while including it for non-admins *only* in non-production
@@ -17,7 +22,10 @@
 
 ### 📚 Libraries
 
-* "react-transition-group": `2.8.0 ->  4.2.1`
+* @blueprintjs/core `3.16 -> 3.17`
+* @blueprintjs/datetime `3.10 -> 3.11`
+* mobx `5.10 -> 5.11`
+* react-transition-group `2.8 -> 4.2`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
 
@@ -108,11 +116,12 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the
   picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
-  the Blueprint library). This should result in a snappier user experience, especially when working
-  on remote / virtual workstations.
+  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user
+  experience, especially when working on remote / virtual workstations. Any in-app customizations to
+  disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 
-### 🎁 Breaking Changes
+### 💥 Breaking Changes
 
 * Apps that defined and initialized their own `AutoRefreshService` service or functionality should
   leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
