@@ -2,7 +2,19 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
-* TBD
+### 🎁 New Features
+
+* The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
+  This is consistent with the behavior of Excel's percentage formatting.  
+
+### 🎁 Breaking Changes
+
+* Applications that have been using fmtPercent or fmtPercentRenderer methods should adjust to
+  their new behavior. Columns that were previously using `exportValue: v => v/100` as a workaround 
+  to the previous renderer behavior should remove this line of code.
+  
+* `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
+  both value and history to the same preference (existing history preferences will be handled).
 
 ## v24.2.0 - 2019-07-08
 
@@ -24,11 +36,6 @@
   version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
   the footer to Hoist Admins while including it for non-admins *only* in non-production
   environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
-
-### 💥 Breaking Changes
-  
-* `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
-  both value and history to the same preference (existing history preferences will be handled).
 
 ### 📚 Libraries
 
