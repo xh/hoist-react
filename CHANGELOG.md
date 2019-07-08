@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* `GridModel` accepts a new `colDefaults` configuration.
 * New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
   and space efficient styling for headers in these components.
   * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
