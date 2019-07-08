@@ -5,7 +5,29 @@
 ### 🎁 New Features
 
 * `GridModel` accepts a new `colDefaults` configuration.
+* New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
+  and space efficient styling for headers in these components.
+  * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
+    apps that were targeting these internal selectors would need to adjust. See
+    desktop/cmp/panel/impl/PanelHeader.scss for the relevant updates.
+* A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
+  The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
+  list of specific colIds to include in an export.
+  * To avoid immediate breaking changes, GridModel will log a warning on any remaining usages of
+    `includeHiddenCols` but auto-set to `columns: 'ALL'` to maintain the same behavior.
+* Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
+  version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
+  the footer to Hoist Admins while including it for non-admins *only* in non-production
+  environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.16 -> 3.17`
+* @blueprintjs/datetime `3.10 -> 3.11`
+* mobx `5.10 -> 5.11`
+* react-transition-group `2.8 -> 4.2`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
 
 ## v24.1.1 - 2019-07-01
 
@@ -80,7 +102,7 @@
   also provides an easy option to toggle pinning the first column.
 * `DimensionChooser` now supports an optional empty / ungrouped configuration with a value of `[]`.
   See `DimensionChooserModel.enableClear` and `DimensionChooser.emptyText`.
-  
+
 #### Other Features
 
 * Core `AutoRefreshService` added to trigger an app-wide data refresh on a configurable interval, if
@@ -94,11 +116,12 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the
   picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
-  the Blueprint library). This should result in a snappier user experience, especially when working
-  on remote / virtual workstations.
+  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user
+  experience, especially when working on remote / virtual workstations. Any in-app customizations to
+  disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 
-### 🎁 Breaking Changes
+### 💥 Breaking Changes
 
 * Apps that defined and initialized their own `AutoRefreshService` service or functionality should
   leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
@@ -107,8 +130,8 @@
 * The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
   function.
 * `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
-  Applications explicitly setting width or height on this component should ensure that they are providing
-  enough space for it to display its contents without clipping.
+  Applications explicitly setting width or height on this component should ensure that they are
+  providing enough space for it to display its contents without clipping.
 
 ### 🐞 Bug Fixes
 
@@ -125,8 +148,8 @@
 * The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
   the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
   `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
-  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
-  on a per-app basis.)
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals on a
+  per-app basis.)
 
 ### 📚 Libraries
 
@@ -514,10 +537,9 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1332,9 +1354,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
