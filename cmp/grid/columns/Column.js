@@ -348,14 +348,6 @@ export class Column {
  */
 
 /**
- * @typedef {Object} CellContext
- * @property {Record} record - row-level data Record.
- * @property {Column} column - column for the cell being rendered.
- * @property {GridModel} gridModel - gridModel for the grid.
- * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
- */
-
-/**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
