@@ -232,8 +232,13 @@ body {
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
   --xh-title-height: var(--title-height, 36);
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
-  --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
+  --xh-title-pad: var(--title-pad, var(--xh-pad-half));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
+
+  --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));
+  --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
+  --xh-title-compact-height: var(--title-compact-height, 28);
+  --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   // Blueprint intents
   --xh-intent-primary: var(--intent-primary, var(--xh-blue-dark));

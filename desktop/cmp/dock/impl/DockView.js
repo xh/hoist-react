@@ -58,10 +58,11 @@ export class DockView extends Component {
     }
 
     renderHeader() {
-        const {icon, title, collapsed, docked, allowClose, allowDialog} = this.model;
+        const {icon, title, collapsed, docked, allowClose, allowDialog} = this.model,
+            {compactHeader} = this.props;
 
         return hbox({
-            className: 'xh-dock-view__header',
+            className: `xh-dock-view__header ${compactHeader ? 'xh-dock-view__header--compact' : ''}`,
             items: [
                 span({
                     omit: !icon,

@@ -11,8 +11,8 @@
     "lint": "yarn run eslint ."
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.16.2",
-    "@blueprintjs/datetime": "~3.10.0",
+    "@blueprintjs/core": "~3.17.1",
+    "@blueprintjs/datetime": "~3.11.0",
     "@fortawesome/fontawesome-pro": "~5.9.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.17",
     "@fortawesome/pro-light-svg-icons": "~5.9.0",
@@ -31,7 +31,7 @@
     "highcharts": "~7.1.1",
     "lodash": "~4.17.11",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.10.1",
+    "mobx": "~5.11.0",
     "mobx-react": "~6.1.1",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",
@@ -42,7 +42,7 @@
     "react-dropzone": "~10.1.4",
     "react-onsenui": "~1.11.2",
     "react-select": "^3.0.4",
-    "react-transition-group": "~2.8.0",
+    "react-transition-group": "~4.2.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
     "rsvp": "~4.8.4",

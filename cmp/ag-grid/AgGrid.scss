@@ -214,11 +214,6 @@
     border-right: 1px solid transparent;
   }
 
-  // Full-width grouped rows appear slightly misaligned (standard mode only)
-  &--standard .ag-row.ag-row-group.ag-full-width-row {
-    padding-top: 2px;
-  }
-
   // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
   // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
   // want to override and restore borders.

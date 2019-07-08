@@ -21,20 +21,26 @@ export class PanelHeader extends Component {
 
     static modelClass = PanelModel;
 
+    baseClassName = 'xh-panel-header';
+
     render() {
-        let {title, icon, headerItems = []} = this.props,
+        let {title, icon, compact, headerItems = []} = this.props,
             {collapsed, vertical, side, showHeaderCollapseButton} = this.model || {};
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
+        const titleCls = 'xh-panel-header__title',
+            sideCls = `xh-panel-header--${side}`,
+            compactCls = compact ? 'xh-panel-header--compact' : null;
+
         if (!collapsed || vertical) {
             return hbox({
-                className: 'xh-panel-header',
+                className: this.getClassName(compactCls),
                 items: [
                     icon || null,
                     title ?
                         box({
-                            className: 'xh-panel-header-title',
+                            className: titleCls,
                             flex: 1,
                             item: title
                         }) :
@@ -45,17 +51,17 @@ export class PanelHeader extends Component {
                 onDoubleClick: this.onDblClick
             });
         } else {
-            // For Compressed vertical layout, skip header items.
+            // For vertical layout, skip header items.
             const isLeft = side === 'left';
             return vbox({
-                className: `xh-panel-header xh-panel-header-${side}`,
+                className: this.getClassName(sideCls, compactCls),
                 flex: 1,
                 items: [
                     isLeft ? filler() : this.renderHeaderCollapseButton(),
                     icon || null,
                     title ?
                         box({
-                            className: 'xh-panel-header-title',
+                            className: titleCls,
                             item: title
                         }) :
                         null,
