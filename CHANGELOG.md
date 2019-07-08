@@ -2,9 +2,14 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
+* TBD
+
+## v24.2.0 - 2019-07-08
+
 ### 🎁 New Features
 
-* `GridModel` accepts a new `colDefaults` configuration.
+* `GridModel` accepts a new `colDefaults` configuration. Defaults provided via this object will be
+  merged (deeply) into all column configs as they are instantiated.
 * New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
   and space efficient styling for headers in these components.
   * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
