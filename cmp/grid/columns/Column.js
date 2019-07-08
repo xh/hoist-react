@@ -314,6 +314,8 @@ export class Column {
                 sortCfg = find(gridModel.sortBy, {colId}),
                 {sort, abs} = sortCfg;
 
+            console.log(abs)
+            
             return this.comparator(valueA, valueB, sort, abs, params);
         };
 
@@ -333,16 +335,26 @@ export class Column {
 
 /**
  * @callback Column~comparatorFn - sort comparator function for a grid column.
- * @param {*} valueA -
- * @param {*} valueB -
- * @param {Record} recordA -
- * @param {Record} recordB -
- * @param {Object} c
- * @param {Column} c.column
- * @param {GridModel} c.gridModel
- * @param {Object} c.agParams
- * @param {RowNode} c.agParams.rowNodeA
- * @param {RowNode} c.agParams.rowNodeB
+ * @param {*} valueA - cell data valueA to be compared
+ * @param {*} valueB - cell data valueB to be compared
+ * @param {string} sort - either 'asc' or 'desc'
+ * @param {boolean} abs - true to sort by absolute value
+ * @param {Object} params - extra parameters devs might need
+ * @param {Record} p.recordA - data Record for valueA (aka a row in the grid)
+ * @param {Record} p.recordB - data Record for valueB (aka a row in the grid)
+ * @param {Column} p.column - column for the cell being rendered
+ * @param {GridModel} p.gridModel - gridModel for the grid
+ * @param {function} p.defaultComparator - default comparator function
+ * @param {Object} p.rowNodeA - row node provided by ag-grid
+ * @param {Object} p.rowNodeB - row node provided by ag-grid
+ */
+
+/**
+ * @typedef {Object} CellContext
+ * @property {Record} record - row-level data Record.
+ * @property {Column} column - column for the cell being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
+ * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
  */
 
 /**

@@ -2,7 +2,7 @@
 
 ## v25.0.0-SNAPSHOT - under development
 
-* TBD
+* `Column` accepts a new `comparator` callback.
 
 ## v24.2.0 - 2019-07-08
 
