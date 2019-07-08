@@ -4,8 +4,7 @@
 
 ### 🎁 New Features
 
-* `Grid` accepts a `defaultCol` config that is applied to all columns unless the individual
-  column specifies otherwise.  (specificity wins)
+* `GridModel` accepts a new `colDefaults` configuration.
 
 
 ## v24.1.1 - 2019-07-01
