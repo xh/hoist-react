@@ -116,7 +116,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {Object} [c.colDefaults] = Column configs to be set on all columns.  Merges deeply.
+     * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
