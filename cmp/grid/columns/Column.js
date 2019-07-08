@@ -313,8 +313,6 @@ export class Column {
                 },
                 sortCfg = find(gridModel.sortBy, {colId}),
                 {sort, abs} = sortCfg;
-
-            console.log(abs)
             
             return this.comparator(valueA, valueB, sort, abs, params);
         };
