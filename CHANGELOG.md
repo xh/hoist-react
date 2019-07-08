@@ -4,6 +4,11 @@
 
 ### 🎁 New Features
 
+* New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
+  and space efficient styling for headers in these components.
+  * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
+    apps that were targeting these internal selectors would need to adjust. See
+    desktop/cmp/panel/impl/PanelHeader.scss for the relevant updates.
 * A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
   The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
   list of specific colIds to include in an export.
