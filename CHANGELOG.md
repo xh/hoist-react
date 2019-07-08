@@ -25,6 +25,11 @@
   the footer to Hoist Admins while including it for non-admins *only* in non-production
   environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
 
+### 💥 Breaking Changes
+  
+* `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
+  both value and history to the same preference (existing history preferences will be handled).
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.16 -> 3.17`
