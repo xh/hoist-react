@@ -49,6 +49,7 @@ export class Column {
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
+     * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -101,6 +102,7 @@ export class Column {
         flex,
         rowHeight,
         absSort,
+        comparator,
         resizable,
         movable,
         sortable,
@@ -150,6 +152,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
+        this.comparator = withDefault(comparator, this.defaultComparator);
 
         this.resizable = withDefault(resizable, true);
         this.movable = withDefault(movable, true);
@@ -293,7 +296,26 @@ export class Column {
         }
 
         // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-        ret.comparator = this.comparator;
+        ret.comparator = (valueA, valueB, rowNodeA, rowNodeB) => {
+            const recordA = rowNodeA.data,
+                recordB = rowNodeB.data,
+                {gridModel, colId} = this,
+                params = {
+                    recordA,
+                    recordB,
+                    column: this,
+                    gridModel,
+                    defaultComparator: () => this.defaultComparator(valueA, valueB),
+                    agParams: {
+                        rowNodeA,
+                        rowNodeB
+                    }
+                },
+                sortCfg = find(gridModel.sortBy, {colId}),
+                {sort, abs} = sortCfg;
+
+            return this.comparator(valueA, valueB, sort, abs, params);
+        };
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
@@ -302,12 +324,26 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-    comparator = (v1, v2) => {
+    defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
 
 }
+
+/**
+ * @callback Column~comparatorFn - sort comparator function for a grid column.
+ * @param {*} valueA -
+ * @param {*} valueB -
+ * @param {Record} recordA -
+ * @param {Record} recordB -
+ * @param {Object} c
+ * @param {Column} c.column
+ * @param {GridModel} c.gridModel
+ * @param {Object} c.agParams
+ * @param {RowNode} c.agParams.rowNodeA
+ * @param {RowNode} c.agParams.rowNodeB
+ */
 
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.
