@@ -468,10 +468,9 @@ class XHClass {
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
-                const loc = window.location,
-                    pingURL = XH.isDevelopmentMode ?
-                        `${XH.baseUrl}ping` :
-                        `${loc.protocol}//${loc.host}${XH.baseUrl}ping`;
+                const pingURL = XH.isDevelopmentMode ?
+                    `${XH.baseUrl}ping` :
+                    `${window.location.origin}${XH.baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
