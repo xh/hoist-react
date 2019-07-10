@@ -315,7 +315,7 @@ export class Column {
                         recordB,
                         column: this,
                         gridModel,
-                        defaultComparator: (userValueA, userValueB) => this.defaultComparator(userValueA, userValueB),
+                        defaultComparator: (a, b) => this.defaultComparator(a, b),
                         agRowNodeA,
                         agRowNodeB
                     };
