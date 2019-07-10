@@ -68,7 +68,7 @@ export class ActivityGridModel {
     constructor() {
         this.addReaction({
             track: () => this.getParams(),
-            run: this.loadAsync,
+            run: () => this.loadAsync(),
             equals: comparer.structural
         });
     }

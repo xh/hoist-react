@@ -1,24 +1,11 @@
 Hoist P/R Checklist
 -------------------
-* Up to date with develop branch?
-	- [ ] Yes
-* Ready for review?
-	- [ ] Yes
-	- [ ] No - WIP label applied to PR
-* CHANGELOG entry?
-	- [ ] Yes
-	- [ ] N/A - trivial or implementation changes only
-* Breaking change?
-	- [ ] Yes - breaking-change label applied to PR, noted in CHANGELOG
-	- [ ] No - no public APIs modified
-* Docs updated?
-	- [ ] Yes - doc comments and/or prop-types updated
-	- [ ] N/A - no related docs require changing
-* Mobile support?
-	- [ ] Yes - mobile-specific support or changes included
-		- [ ] Tested on a real device
-	- [ ] No - mobile support not required or desired at this time
-	- [ ] N/A - change not platform specific
-* Toolbox branch / PR?
-	- [ ] Yes - [provide branch or PR link]
-	- [ ] N/A - trivial change or nothing to update / demo in TBox
+Review and check off the below. Items that do not apply should be checked to indicate they have been considered. If unclear if a step is relevant, please leave unchecked and note in comments.
+
+- [ ] Up to date with `develop` branch as of last change.
+- [ ] Ready for review (or add `wip` label).
+- [ ] Added CHANGELOG entry (or N/A)
+- [ ] Checked for breaking changes (add `breaking-change` label + CHANGELOG if so, or N/A)
+- [ ] Updated doc comments / prop-types (or N/A)
+- [ ] Reviewed and tested on Mobile (or N/A)
+- [ ] Created Toolbox branch / PR (link provided here, or N/A)

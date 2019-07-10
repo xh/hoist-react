@@ -468,9 +468,13 @@ class XHClass {
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
+                const pingURL = XH.isDevelopmentMode ?
+                    `${XH.baseUrl}ping` :
+                    `${window.location.origin}${XH.baseUrl}ping`;
+
                 throw this.exception({
-                    name: 'App Server Unavailable',
-                    message: `Client cannot reach the grails app server at the following location: ${XH.baseUrl}ping`,
+                    name: 'UI Server Unavailable',
+                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
                     detail: e.message
                 });
             }
