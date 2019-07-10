@@ -105,7 +105,8 @@ export class MessageModel {
 
 /**
  * @typedef {Object} MessageInput
- * @property {Element} [item] - the react element to render; should be a HoistInput.
+ * @property {Element} [item] - the react element to render; should be a HoistInput, defaults to a platform
+ *      appropriate TextInput.
  * @property {Rule[]} [rules] - validation constraints to apply.
  * @property {*} [initialValue] - initial value for the input.
  */
