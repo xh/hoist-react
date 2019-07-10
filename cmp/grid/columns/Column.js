@@ -296,7 +296,7 @@ export class Column {
         }
     
         // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-        if (this.comparator) {
+        if (this.comparator === undefined) {
             ret.comparator = this.defaultComparator;
             
         } else {
@@ -304,8 +304,9 @@ export class Column {
                 // we're inside the custom comparator to be passed to agGrid!
                 
                 // gathering up data Hoist devs might want:
-                const {gridModel, sortCfg} = this,
-                    {sortDir, abs} = sortCfg,
+                const {gridModel, colId} = this,
+                    sortCfg = find(gridModel.sortBy, {colId}),
+                    {abs, sort} = sortCfg,
                     recordA = agRowNodeA.data,
                     recordB = agRowNodeB.data,
                     params = {
@@ -318,7 +319,7 @@ export class Column {
                         agRowNodeB
                     };
         
-                return this.comparator(valueA, valueB, sortDir, abs, params);
+                return this.comparator(valueA, valueB, sort, abs, params);
             };
         }
 
