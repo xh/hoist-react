@@ -300,7 +300,7 @@ export class Column {
             ret.comparator = this.defaultComparator;
             
         } else {
-            ret.comparator = (valueA, valueB, agRowNodeA, agRowNodeB) => {
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
                 // we're inside the custom comparator to be passed to agGrid!
                 
                 // gathering up data Hoist devs might want:
@@ -308,16 +308,16 @@ export class Column {
                     sortCfg = find(gridModel.sortBy, {colId}),
                     sortDir = sortCfg.sort,
                     abs = sortCfg.abs,
-                    recordA = agRowNodeA.data,
-                    recordB = agRowNodeB.data,
+                    recordA = agNodeA.data,
+                    recordB = agNodeB.data,
                     params = {
                         recordA,
                         recordB,
                         column: this,
                         gridModel,
                         defaultComparator: (a, b) => this.defaultComparator(a, b),
-                        agRowNodeA,
-                        agRowNodeB
+                        agNodeA,
+                        agNodeB
                     };
         
                 return this.comparator(valueA, valueB, sortDir, abs, params);
@@ -345,13 +345,14 @@ export class Column {
  * @param {string} sortDir - either 'asc' or 'desc'
  * @param {boolean} abs - true to sort by absolute value
  * @param {Object} params - extra parameters devs might want
- * @param {Record} params.recordA - data Record for valueA (aka a row in the grid)
- * @param {Record} params.recordB - data Record for valueB (aka a row in the grid)
+ * @param {Record} params.recordA - data Record for valueA
+ * @param {Record} params.recordB - data Record for valueB
+ * @param {Object} params.agNodeA - row node provided by ag-grid
+ * @param {Object} params.agNodeB - row node provided by ag-grid
  * @param {Column} params.column - column for the cell being rendered
  * @param {GridModel} params.gridModel - gridModel for the grid
- * @param {function} params.defaultComparator - default comparator function
- * @param {Object} params.agRowNodeA - row node provided by ag-grid
- * @param {Object} params.agRowNodeB - row node provided by ag-grid
+ * @param {function} params.defaultComparator - default comparator provided by Hoist for this column.
+ *          accepts two arguments: (a, b)
  */
 
 /**
