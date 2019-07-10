@@ -306,7 +306,8 @@ export class Column {
                 // gathering up data Hoist devs might want:
                 const {gridModel, colId} = this,
                     sortCfg = find(gridModel.sortBy, {colId}),
-                    {abs, sort} = sortCfg,
+                    sortDir = sortCfg.sort,
+                    abs = sortCfg.abs,
                     recordA = agRowNodeA.data,
                     recordB = agRowNodeB.data,
                     params = {
@@ -319,7 +320,7 @@ export class Column {
                         agRowNodeB
                     };
         
-                return this.comparator(valueA, valueB, sort, abs, params);
+                return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }
 
