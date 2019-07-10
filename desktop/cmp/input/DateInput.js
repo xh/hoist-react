@@ -243,6 +243,10 @@ export class DateInput extends HoistInput {
     onDatePickerChange = (date, isUserChange) => {
         if (!isUserChange) return;
         this.onDateChange(date);
+
+        // If no time component, selecting a date in the picker is most likely a "click and done"
+        // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
+        // however, the picker is used to adjust multiple fields and should stay visible.
         if (!this.props.timePrecision) {
             this.setPopoverOpen(false);
         }
