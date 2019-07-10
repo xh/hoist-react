@@ -49,6 +49,7 @@ export class Column {
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
+     * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -101,6 +102,7 @@ export class Column {
         flex,
         rowHeight,
         absSort,
+        comparator,
         resizable,
         movable,
         sortable,
@@ -150,6 +152,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
+        this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
         this.movable = withDefault(movable, true);
@@ -291,9 +294,35 @@ export class Column {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
         }
-
+    
         // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-        ret.comparator = this.comparator;
+        if (this.comparator === undefined) {
+            ret.comparator = this.defaultComparator;
+            
+        } else {
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
+                // we're inside the custom comparator to be passed to agGrid!
+                
+                // gathering up data Hoist devs might want:
+                const {gridModel, colId} = this,
+                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortDir = sortCfg.sort,
+                    abs = sortCfg.abs,
+                    recordA = agNodeA.data,
+                    recordB = agNodeB.data,
+                    params = {
+                        recordA,
+                        recordB,
+                        column: this,
+                        gridModel,
+                        defaultComparator: (a, b) => this.defaultComparator(a, b),
+                        agNodeA,
+                        agNodeB
+                    };
+        
+                return this.comparator(valueA, valueB, sortDir, abs, params);
+            };
+        }
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
@@ -302,12 +331,29 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-    comparator = (v1, v2) => {
+    defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
 
 }
+
+/**
+ * @callback Column~comparatorFn - sort comparator function for a grid column.
+ * @param {*} valueA - cell data valueA to be compared
+ * @param {*} valueB - cell data valueB to be compared
+ * @param {string} sortDir - either 'asc' or 'desc'
+ * @param {boolean} abs - true to sort by absolute value
+ * @param {Object} params - extra parameters devs might want
+ * @param {Record} params.recordA - data Record for valueA
+ * @param {Record} params.recordB - data Record for valueB
+ * @param {Object} params.agNodeA - row node provided by ag-grid
+ * @param {Object} params.agNodeB - row node provided by ag-grid
+ * @param {Column} params.column - column for the cell being rendered
+ * @param {GridModel} params.gridModel - gridModel for the grid
+ * @param {function} params.defaultComparator - default comparator provided by Hoist for this column.
+ *          accepts two arguments: (a, b)
+ */
 
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.

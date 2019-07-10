@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* `Column` accepts a new `comparator` callback.
+
 * The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
   This is consistent with the behavior of Excel's percentage formatting.  
 
