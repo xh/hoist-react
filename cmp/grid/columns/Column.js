@@ -152,7 +152,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
-        this.comparator = withDefault(comparator, this.defaultComparator);
+        this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
         this.movable = withDefault(movable, true);
@@ -294,28 +294,33 @@ export class Column {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
         }
-
+    
         // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-        ret.comparator = (valueA, valueB, rowNodeA, rowNodeB) => {
-            const recordA = rowNodeA.data,
-                recordB = rowNodeB.data,
-                {gridModel, colId} = this,
-                params = {
-                    recordA,
-                    recordB,
-                    column: this,
-                    gridModel,
-                    defaultComparator: () => this.defaultComparator(valueA, valueB),
-                    agParams: {
-                        rowNodeA,
-                        rowNodeB
-                    }
-                },
-                sortCfg = find(gridModel.sortBy, {colId}),
-                {sort, abs} = sortCfg;
+        if (this.comparator) {
+            ret.comparator = this.defaultComparator;
             
-            return this.comparator(valueA, valueB, sort, abs, params);
-        };
+        } else {
+            ret.comparator = (valueA, valueB, agRowNodeA, agRowNodeB) => {
+                // we're inside the custom comparator to be passed to agGrid!
+                
+                // gathering up data Hoist devs might want:
+                const {gridModel, sortCfg} = this,
+                    {sortDir, abs} = sortCfg,
+                    recordA = agRowNodeA.data,
+                    recordB = agRowNodeB.data,
+                    params = {
+                        recordA,
+                        recordB,
+                        column: this,
+                        gridModel,
+                        defaultComparator: (userValueA, userValueB) => this.defaultComparator(userValueA, userValueB),
+                        agRowNodeA,
+                        agRowNodeB
+                    };
+        
+                return this.comparator(valueA, valueB, sortDir, abs, params);
+            };
+        }
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
@@ -335,16 +340,16 @@ export class Column {
  * @callback Column~comparatorFn - sort comparator function for a grid column.
  * @param {*} valueA - cell data valueA to be compared
  * @param {*} valueB - cell data valueB to be compared
- * @param {string} sort - either 'asc' or 'desc'
+ * @param {string} sortDir - either 'asc' or 'desc'
  * @param {boolean} abs - true to sort by absolute value
- * @param {Object} params - extra parameters devs might need
- * @param {Record} p.recordA - data Record for valueA (aka a row in the grid)
- * @param {Record} p.recordB - data Record for valueB (aka a row in the grid)
- * @param {Column} p.column - column for the cell being rendered
- * @param {GridModel} p.gridModel - gridModel for the grid
- * @param {function} p.defaultComparator - default comparator function
- * @param {Object} p.rowNodeA - row node provided by ag-grid
- * @param {Object} p.rowNodeB - row node provided by ag-grid
+ * @param {Object} params - extra parameters devs might want
+ * @param {Record} params.recordA - data Record for valueA (aka a row in the grid)
+ * @param {Record} params.recordB - data Record for valueB (aka a row in the grid)
+ * @param {Column} params.column - column for the cell being rendered
+ * @param {GridModel} params.gridModel - gridModel for the grid
+ * @param {function} params.defaultComparator - default comparator function
+ * @param {Object} params.agRowNodeA - row node provided by ag-grid
+ * @param {Object} params.agRowNodeB - row node provided by ag-grid
  */
 
 /**
