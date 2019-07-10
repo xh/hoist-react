@@ -4,19 +4,20 @@
 
 ### 🎁 New Features
 
-* `Column` accepts a new `comparator` callback.
+* `Column` accepts a new `comparator` callback to customize how column cell values are sorted by the
+  grid.
+* Added `XH.prompt()` to show a simple message popup with a built-in, configurable HoistInput. When
+  submitted by the user, its callback or resolved promise will include the input's value.
 
-* The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
-  This is consistent with the behavior of Excel's percentage formatting.  
+### 💥 Breaking Changes
 
-### 🎁 Breaking Changes
-
-* Applications that have been using fmtPercent or fmtPercentRenderer methods should adjust to
-  their new behavior. Columns that were previously using `exportValue: v => v/100` as a workaround 
+* The `fmtPercent` and `fmtPercentRenderer` methods will now multiply provided value by 100. This is
+  consistent with the behavior of Excel's percentage formatting and matches the expectations of
+  `ExportFormat.PCT`. Columns that were previously using `exportValue: v => v/100` as a workaround
   to the previous renderer behavior should remove this line of code.
-  
-* `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
-  both value and history to the same preference (existing history preferences will be handled).
+* `DimensionChooserModel`'s `historyPreference` config has been renamed `preference`. It now
+  supports saving both value and history to the same preference (existing history preferences will
+  be handled).
 
 ## v24.2.0 - 2019-07-08
 
@@ -139,7 +140,6 @@
   experience, especially when working on remote / virtual workstations. Any in-app customizations to
   disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
-* Added `XH.prompt()`, which shows a popup which includes a HoistInput.
 
 ### 💥 Breaking Changes
 
