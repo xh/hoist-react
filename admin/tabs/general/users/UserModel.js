@@ -39,7 +39,7 @@ export class UserModel {
     constructor() {
         this.addReaction({
             track: () => [this.activeOnly, this.withRolesOnly],
-            run: this.loadAsync
+            run: () => this.loadAsync()
         });
     }
 

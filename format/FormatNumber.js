@@ -173,7 +173,8 @@ export function fmtPrice(v, opts = {}) {
 }
 
 /**
- * Render a number as a percent
+ * Render a number as a percent. Value will be multiplied by 100 to calculated the percentage.
+ * This behavior purposefully matches Microsoft Excel's percentage formatting.
  *
  * @param {number} v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
@@ -183,7 +184,7 @@ export function fmtPercent(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {precision: 2, label: '%', labelCls: null});
-    return fmtNumber(v, opts);
+    return fmtNumber(v * 100, opts);
 }
 
 /**

@@ -1,7 +1,91 @@
 # Changelog
 
+## v25.0.0-SNAPSHOT - under development
 
-## v24.0.0-SNAPSHOT - UNDER DEVELOPMENT
+### 🎁 New Features
+
+* The fmtPercent and fmtPercentRenderer methods will multiply provided value by 100. 
+  This is consistent with the behavior of Excel's percentage formatting.  
+
+### 🎁 Breaking Changes
+
+* Applications that have been using fmtPercent or fmtPercentRenderer methods should adjust to
+  their new behavior. Columns that were previously using `exportValue: v => v/100` as a workaround 
+  to the previous renderer behavior should remove this line of code.
+  
+* `DimensionChooserModel`'s `historyPreference` has been renamed `preference`. It now supports saving 
+  both value and history to the same preference (existing history preferences will be handled).
+
+## v24.2.0 - 2019-07-08
+
+### 🎁 New Features
+
+* `GridModel` accepts a new `colDefaults` configuration. Defaults provided via this object will be
+  merged (deeply) into all column configs as they are instantiated.
+* New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
+  and space efficient styling for headers in these components.
+  * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
+    apps that were targeting these internal selectors would need to adjust. See
+    desktop/cmp/panel/impl/PanelHeader.scss for the relevant updates.
+* A new `exportOptions.columns` option on `GridModel` replaces `exportOptions.includeHiddenCols`.
+  The updated and more flexible config supports special strings 'VISIBLE' (default), 'ALL', and/or a
+  list of specific colIds to include in an export.
+  * To avoid immediate breaking changes, GridModel will log a warning on any remaining usages of
+    `includeHiddenCols` but auto-set to `columns: 'ALL'` to maintain the same behavior.
+* Added new preference `xhShowVersionBar` to allow more fine-grained control of when the Hoist
+  version bar is showing. It defaults to `auto`, preserving the current behavior of always showing
+  the footer to Hoist Admins while including it for non-admins *only* in non-production
+  environments. The pref can alternatively be set to 'always' or 'never' on a per-user basis.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.16 -> 3.17`
+* @blueprintjs/datetime `3.10 -> 3.11`
+* mobx `5.10 -> 5.11`
+* react-transition-group `2.8 -> 4.2`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
+
+## v24.1.1 - 2019-07-01
+
+### 🐞 Bug Fixes
+
+* Mobile column chooser internal layout/sizing fixed when used in certain secure mobile browsers.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.0...v24.1.1)
+
+## v24.1.0 - 2019-07-01
+
+### 🎁 New Features
+
+* `DateInput.enableClear` prop added to support built-in button to null-out a date input's value.
+
+### 🐞 Bug Fixes
+
+* The `Select` component now properly shows all options when the pick-list is re-shown after a
+  change without first blurring the control. (Previously this interaction edge case would only show
+  the option matching the current input value.) #1198
+* Mobile mask component `onClick` callback prop restored - required to dismiss mobile menus when not
+  tapping a menu option.
+* When checking for a possible expired session within `XH.handleException()`, prompt for app login
+  only for Ajax requests made to relative URLs (not e.g. remote APIs accessed via CORS). #1189
+
+### ✨ Style
+
+* Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
+* The mobile app menu button has been moved to the right side of the top appBar, consistent with its
+  placement in desktop apps.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.15 -> 3.16`
+* @blueprintjs/datetime `3.9 -> 3.10`
+* codemirror `5.47 -> 5.48`
+* mobx `6.0 -> 6.1`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.0.0...v24.1.0)
+
+## v24.0.0 - 2019-06-24
 
 ### 🎁 New Features
 
@@ -16,6 +100,7 @@
   data provided (see `Store.loadRootAsSummary`).
 * The `StoreFilterField` component accepts new optional `model` and `bind` props to allow control of
   its text value from an external model's observable.
+* `pwd` is now a new supported type of `Field` in the `@xh/hoist/core/data` package.
 
 #### Grid
 
@@ -48,12 +133,13 @@
   control over when the calendar picker is shown. The new default behaviour is to not show the
   picker on focus, instead showing it via a built-in button.
 * Transitions have been disabled by default on desktop Dialog and Popover components (both are from
-  the Blueprint library). This should result in a snappier user experience, especially when working
-  on remote / virtual workstations.
+  the Blueprint library) and on the Hoist Mask component. This should result in a snappier user
+  experience, especially when working on remote / virtual workstations. Any in-app customizations to
+  disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
 * Added `XH.prompt()`, which shows a popup which includes a HoistInput.
 
-### 🎁 Breaking Changes
+### 💥 Breaking Changes
 
 * Apps that defined and initialized their own `AutoRefreshService` service or functionality should
   leverage the new Hoist service if possible. Apps with a pre-existing custom service of the same
@@ -62,8 +148,9 @@
 * The `StoreFilterField.onFilterChange` callback will now be passed a `StoreFilter`, rather than a
   function.
 * `DateInput` now has a calendar button on the right side of the input which is 22 pixels square.
-  Applications explicitly setting width or height on this component should ensure that they are providing
-  enough space for it to display its contents without clipping.
+  Applications explicitly setting width or height on this component should ensure that they are
+  providing enough space for it to display its contents without clipping.
+
 ### 🐞 Bug Fixes
 
 * Performance for bulk grid selections has been greatly improved (#1157)
@@ -79,8 +166,8 @@
 * The `AppSpec` config passed to `XH.renderApp()` now supports a `clientAppCode` value to compliment
   the existing `clientAppName`. Both values are now optional and defaulted from the project-wide
   `appCode` and `appName` values set via the project's Webpack config. (Note that `clientAppCode` is
-  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals
-  on a per-app basis.)
+  referenced by the new `AutoRefreshService` to support configurable auto-refresh intervals on a
+  per-app basis.)
 
 ### 📚 Libraries
 
@@ -88,6 +175,9 @@
 * react-select `2.4 -> 3.0`
 * mobx-react `5.4 -> 6.0.3`
 * font-awesome `5.8 -> 5.9`
+* react-beautiful-dnd `10.1.1 -> 11.0.4`
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v23.0.0...v24.0.0)
 
 ## v23.0.0 - 2019-05-30
 
@@ -133,6 +223,8 @@
 * `FileChooser.enableMulti` now behaves as one might expect -- true to allow multiple files in a
   single upload. Previous behavior (the ability to add multiple files to dropzone) is now controlled
   by `enableAddMulti`.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v22.0.0...v23.0.0)
 
 
 ## v22.0.0 - 2019-04-29
@@ -463,10 +555,9 @@
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
-  `agOptions.enableFilter` have been removed. You can replicate their effects by using
-  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
-  with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
+  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
+  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -1281,9 +1372,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
-    model config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
+    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
+    config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
