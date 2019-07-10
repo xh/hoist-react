@@ -123,7 +123,7 @@ export class AppContainer extends Component {
         return menu({
             model: model,
             width: 260,
-            align: 'left'
+            align: 'right'
         });
     }
 }

@@ -32,6 +32,9 @@ export class Mask extends Component {
         /** Text to be displayed under the loading spinner image */
         message: PT.string,
 
+        /** Callback when mask is tapped, relayed to underlying div element. */
+        onClick: PT.func,
+
         /** True (default) to display a spinning image. */
         spinner: PT.bool
     };
@@ -46,8 +49,11 @@ export class Mask extends Component {
         if (!isDisplayed) return null;
 
         const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false);
+            showSpinner = withDefault(props.spinner, false),
+            onClick = props.onClick;
+
         return div({
+            onClick,
             className: this.getClassName(),
             item: vbox({
                 className: 'xh-mask-body',

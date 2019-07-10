@@ -6,6 +6,7 @@
  */
 
 import {throwIf} from '../../utils/js';
+import {isEmpty} from 'lodash';
 
 /**
  * Internal container for Record management within a Store.
@@ -122,32 +123,86 @@ export class RecordSet {
     }
 
     updateData(rawData) {
-        const newRecords = this.createRecords(rawData),
-            existingRecords = new Map(this.records);
+        const updatedRecords = new Map(),
+            {store, records} = this,
+            updateRoots = [];
 
-        newRecords.forEach((newRecord, id) => {
-            const currRecord = existingRecords.get(id);
-            if (!currRecord || !currRecord.isEqual(newRecord)) {
-                existingRecords.set(id, newRecord);
+        // 1. When updating we need to first create records for the root data, and make sure we carry
+        //    the parent record forward if this new data matches an existing record. Then we can build
+        //    the descendent records with the confidence that their parent and tree paths will be correct
+        rawData.forEach(data => {
+            const rec = store.createRecord(data),
+                existingRecord = records.get(rec.id);
+
+            // Since our raw data does not include parent information, only children, we need to
+            // make sure that we copy the parent over from the existing record when updating
+            if (existingRecord) rec.parent = existingRecord.parent;
+
+            updatedRecords.set(rec.id, rec);
+            updateRoots.push(rec);
+            if (!isEmpty(data.children)) {
+                data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
             }
         });
 
-        return new RecordSet(this.store, existingRecords);
+        // 2. If this record set contains hierarchical data then we need to figure out which (if any)
+        //    existing records need to be removed from the record set as part of this update operation
+        const recordIdsToRemove = new Set(),
+            {childrenMap} = this;
+
+        if (childrenMap.size) {
+            updateRoots.forEach(rec => {
+                // When the existing record has descendents which are not part of the updated data
+                // they need to be removed from the record set
+                if (childrenMap.has(rec.id)) {
+                    const descendantIds = this.gatherDescendants(rec.id);
+                    descendantIds.forEach(id => {
+                        if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
+                    });
+                }
+            });
+        }
+
+        // 3. Build the new map of records
+        const newRecords = new Map(records);
+        updatedRecords.forEach((record, id) => {
+            const currRecord = records.get(id);
+            if (!currRecord || !currRecord.isEqual(record)) {
+                newRecords.set(id, record);
+            }
+        });
+
+        recordIdsToRemove.forEach(id => newRecords.delete(id));
+
+        return new RecordSet(store, newRecords);
+    }
+
+    addData(rawData, parentId) {
+        const {records} = this,
+            parent = records.get(parentId),
+            newRecords = this.createRecords(rawData, parent);
+
+        newRecords.forEach(rec => {
+            throwIf(records.has(rec.id),
+                `A Record with ID ${rec.id} already exists in the RecordSet.`);
+        });
+
+        return new RecordSet(this.store, new Map([...records, ...newRecords]));
     }
 
     removeRecords(ids) {
         const removes = new Set();
         ids.forEach(id => this.gatherDescendants(id, removes));
-        return this.applyFilter(r => !removes.has(r.id));
+        return this.applyFilter({fn: r => !removes.has(r.id)});
     }
 
     //------------------------
     // Implementation
     //------------------------
 
-    createRecords(rawData) {
+    createRecords(rawData, parent = null) {
         const ret = new Map();
-        rawData.forEach(raw => this.buildRecords(raw, ret, null));
+        rawData.forEach(raw => this.buildRecords(raw, ret, parent));
         return ret;
     }
 
@@ -168,11 +223,11 @@ export class RecordSet {
     computeChildrenMap(records) {
         const ret = new Map();
         records.forEach(r => {
-            const {parentId} = r;
-            if (parentId) {
-                const children = ret.get(parentId);
+            const {parent} = r;
+            if (parent) {
+                const children = ret.get(parent.id);
                 if (!children) {
-                    ret.set(parentId, [r]);
+                    ret.set(parent.id, [r]);
                 } else {
                     children.push(r);
                 }
@@ -189,7 +244,7 @@ export class RecordSet {
         return ret;
     }
 
-    gatherDescendants(id, idSet) {
+    gatherDescendants(id, idSet = new Set()) {
         if (!idSet.has(id)) {
             idSet.add(id);
             const children = this.childrenMap.get(id);
@@ -197,5 +252,7 @@ export class RecordSet {
                 children.forEach(child => this.gatherDescendants(child.id, idSet));
             }
         }
+
+        return idSet;
     }
 }

@@ -478,10 +478,19 @@ class XHClass {
             await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
-                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+                const pingURL = XH.isDevelopmentMode ?
+                    `${XH.baseUrl}ping` :
+                    `${window.location.origin}${XH.baseUrl}ping`;
+
+                throw this.exception({
+                    name: 'UI Server Unavailable',
+                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
+                    detail: e.message
+                });
             }
 
             this.setAppState(S.PRE_AUTH);
