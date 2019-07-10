@@ -139,6 +139,7 @@
   experience, especially when working on remote / virtual workstations. Any in-app customizations to
   disable or remove transitions can now be removed in favor of this toolkit-wide change.
 * Added new `@bindable.ref` variant of the `@bindable` decorator.
+* Added `XH.prompt()`, which shows a popup which includes a HoistInput.
 
 ### 💥 Breaking Changes
 

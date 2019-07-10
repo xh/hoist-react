@@ -305,13 +305,16 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
+     * @param {MessageInput} [config.input] - config for input to be displayed.
      * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
      * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
      * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
      * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
+     *
      * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {
         return this.acm.messageSourceModel.message(config);
@@ -335,6 +338,17 @@ class XHClass {
      */
     confirm(config) {
         return this.acm.messageSourceModel.confirm(config);
+    }
+
+    /**
+     * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
+     * Applications may also provide a custom HoistInput.
+     *
+     * @param {Object} config - see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
+     */
+    prompt(config) {
+        return this.acm.messageSourceModel.prompt(config);
     }
 
     /**
