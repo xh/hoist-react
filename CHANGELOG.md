@@ -8,6 +8,8 @@
   grid.
 * Added `XH.prompt()` to show a simple message popup with a built-in, configurable HoistInput. When
   submitted by the user, its callback or resolved promise will include the input's value.
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel` - outputs
+  both overall record count and current selection count in a configurable way.
 
 ### 💥 Breaking Changes
 
