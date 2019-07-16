@@ -1,6 +1,13 @@
 # Changelog
 
-## v25.0.0-SNAPSHOT - under development
+## v26.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel` - outputs
+  both overall record count and current selection count in a configurable way.
+
+## v25.0.0 - 2019-07-16
 
 ### 🎁 New Features
 
@@ -8,8 +15,8 @@
   grid.
 * Added `XH.prompt()` to show a simple message popup with a built-in, configurable HoistInput. When
   submitted by the user, its callback or resolved promise will include the input's value.
-* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel` - outputs
-  both overall record count and current selection count in a configurable way.
+* `Select` accepts a new `selectOnFocus` prop. The behaviour is analogous to the `selectOnFocus`
+  prop already in `TextInput`, `TextArea` and `NumberInput`.
 
 ### 💥 Breaking Changes
 
