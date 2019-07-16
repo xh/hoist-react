@@ -14,6 +14,7 @@ import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {
     reactSelect,
     reactCreatableSelect,
@@ -119,6 +120,9 @@ export class Select extends HoistInput {
          * and providing them directly can interfere with the implementation of this class.
          */
         rsOptions: PT.object,
+
+        /** True to select contents when control receives focus. */
+        selectOnFocus: PT.bool,
 
         /** Field on provided options for sourcing each option's value (default `value`). */
         valueField: PT.string
@@ -273,6 +277,11 @@ export class Select extends HoistInput {
     onFocus = (ev) => {
         if (this.manageInputValue) {
             this.inputValue = this.renderValue ? this.renderValue.label : null;
+        }
+        if (this.props.selectOnFocus) {
+            // The wait here is necessary to due to a re-render of the internal input component.
+            ev.persist();
+            wait(1).then(() => ev.target.select());
         }
         this.noteFocused();
     };
