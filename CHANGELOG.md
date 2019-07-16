@@ -25,6 +25,8 @@
 
 * `GridModel` accepts a new `colDefaults` configuration. Defaults provided via this object will be
   merged (deeply) into all column configs as they are instantiated.
+* `Select` accepts a new `selectOnFocus` prop. The behaviour is analogous to the `selectOnFocus`
+  prop already in `TextInput`, `TextArea` and `NumberInput`.
 * New `Panel.compactHeader` and `DockContainer.compactHeaders` props added to enable more compact
   and space efficient styling for headers in these components.
   * ⚠️ Note that as part of this change, internal panel header CSS class names changed slightly -
