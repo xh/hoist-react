@@ -1,6 +1,10 @@
 # Changelog
 
-## v25.0.0-SNAPSHOT - under development
+## v26.0.0-SNAPSHOT - under development
+
+* TBD
+
+## v25.0.0 - 2019-07-16
 
 ### 🎁 New Features
 
