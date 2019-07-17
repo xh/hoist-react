@@ -2,7 +2,10 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-* TBD
+### 🎁 New Features
+
+* `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
+  now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
 
 ## v25.0.0 - 2019-07-16
 
