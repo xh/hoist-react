@@ -179,7 +179,10 @@ export class DateInput extends HoistInput {
     }
 
     renderButtons(enableClear, enablePicker) {
-        const isClearable = (this.internalValue !== null);
+        const props = this.getNonLayoutProps(),
+            enableTextInput = withDefault(props.enableTextInput, true),
+            isClearable = (this.internalValue !== null),
+            isPickerOnlyMode = !enableTextInput && !props.disabled;
 
         return buttonGroup({
             padding: 0,
@@ -193,7 +196,7 @@ export class DateInput extends HoistInput {
                 button({
                     className: enablePicker ? '' : 'disabled-picker-icon',
                     icon: Icon.calendar(),
-                    tabIndex: -1, // Prevent focus on tab
+                    tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
                     onClick: enablePicker ? this.onPopoverBtnClick : null
                 })
             ]
