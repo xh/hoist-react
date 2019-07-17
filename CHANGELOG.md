@@ -17,7 +17,7 @@
 
 ### 💥 Breaking Changes
 
-* The `fmtPercent` and `fmtPercentRenderer` methods will now multiply provided value by 100. This is
+* The `percentRenderer`, `fmtPercent` and `fmtPercentRenderer` methods will now multiply provided value by 100. This is
   consistent with the behavior of Excel's percentage formatting and matches the expectations of
   `ExportFormat.PCT`. Columns that were previously using `exportValue: v => v/100` as a workaround
   to the previous renderer behavior should remove this line of code.
