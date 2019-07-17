@@ -152,7 +152,7 @@ export class DateInput extends HoistInput {
                     minDate: this.minDate,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-                    timePickerProps: props.timePrecision ? props.timePickerProps : undefined,
+                    timePickerProps: props.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined,
                     timePrecision: props.timePrecision
                 }),
 
@@ -253,6 +253,13 @@ export class DateInput extends HoistInput {
     onDatePickerChange = (date, isUserChange) => {
         if (!isUserChange) return;
         this.onDateChange(date);
+
+        // If no time component, selecting a date in the picker is most likely a "click and done"
+        // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
+        // however, the picker is used to adjust multiple fields and should stay visible.
+        if (!this.props.timePrecision) {
+            this.setPopoverOpen(false);
+        }
     };
 
     onDateChange = (date) => {
@@ -262,9 +269,7 @@ export class DateInput extends HoistInput {
             if (maxDate && date > maxDate) date = maxDate;
             date = this.applyPrecision(date);
         }
-
         this.noteValueChange(date);
-        this.setPopoverOpen(false);
     };
 
     applyPrecision(date) {

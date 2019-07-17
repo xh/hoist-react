@@ -8,9 +8,14 @@ import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
 
+import './Message.scss';
 import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
@@ -34,33 +39,49 @@ export class Message extends Component {
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
+            className: 'xh-message',
             items: [
-                dialogBody(model.message),
-                toolbar(this.getButtons())
+                dialogBody(
+                    model.message,
+                    this.renderInput()
+                ),
+                toolbar(this.renderButtons())
             ],
             ...this.props
         });
     }
 
-    getButtons() {
-        const {confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
+    renderInput() {
+        const {formModel, input} = this.model;
+        if (!formModel) return null;
+        return form({
+            model: formModel,
+            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+            item: formField({
+                field: 'value',
+                item: withDefault(input.item, textInput({autoFocus: true}))
+            })
+        });
+    }
+
+    renderButtons() {
+        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
         return [
             filler(),
             button({
                 text: cancelText,
                 omit: !cancelText,
                 intent: cancelIntent,
-                onClick: this.onCancel
+                onClick: () => this.model.doCancel()
             }),
             button({
                 text: confirmText,
                 intent: confirmIntent,
-                onClick: this.onConfirm
+                disabled: formModel ? !formModel.isValid : false,
+                onClick: () => this.model.doConfirmAsync()
             })
         ];
     }
 
-    onConfirm = () =>   {this.model.doConfirm()}
-    onCancel = () =>    {this.model.doCancel()}
 }
 export const message = elemFactory(Message);

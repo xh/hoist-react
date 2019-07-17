@@ -109,6 +109,10 @@ export class DataViewModel {
     // Implementation
     //------------------------
     valueGetter = (params) => {
+        // Return a basic stringified version of all raw record values to ensure a change to any one
+        // triggers an ag-grid cell refresh. String meant to be generally sane if value ends up
+        // being copied-to-clipboard or exported from the underlying gridModel, but in practice not
+        // expected to be used directly.
         const realData = omit(params.data.raw, 'id');
         return Object.values(realData).join('\r');
     };
