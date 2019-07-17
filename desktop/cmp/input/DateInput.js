@@ -172,6 +172,7 @@ export class DateInput extends HoistInput {
                 })
             }),
 
+            onClick: !enableTextInput ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -197,7 +198,7 @@ export class DateInput extends HoistInput {
                     className: enablePicker ? '' : 'disabled-picker-icon',
                     icon: Icon.calendar(),
                     tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
-                    onClick: enablePicker ? this.onPopoverBtnClick : null
+                    onClick: enablePicker ? this.onOpenPopoverClick : null
                 })
             ]
         });
@@ -224,7 +225,7 @@ export class DateInput extends HoistInput {
         ev.stopPropagation();
     };
 
-    onPopoverBtnClick = (ev) => {
+    onOpenPopoverClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
         ev.stopPropagation();
     };
