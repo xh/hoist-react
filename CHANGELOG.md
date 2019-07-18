@@ -2,7 +2,11 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-* TBD
+### 🎁 New Features
+
+* DateInput supports a new 'enabledTextInput' prop. When this property is set to false, DateInput 
+  will be entirely driven by the provided datepicker. Additionally, DateInput styles have been
+  improved for its various modes to more clearly convey its functionality.
 
 ## v25.0.0 - 2019-07-16
 
