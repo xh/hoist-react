@@ -189,7 +189,7 @@ export class DateInput extends HoistInput {
             padding: 0,
             items: [
                 button({
-                    omit: !enableClear || !isClearable,
+                    omit: !enableClear || !isClearable || props.disabled,
                     icon: Icon.cross(),
                     tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
                     onClick: this.onClearBtnClick
