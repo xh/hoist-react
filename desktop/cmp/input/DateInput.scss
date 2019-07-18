@@ -11,9 +11,6 @@
       cursor: pointer !important;
     }
 
-    .xh-date-input__picker-icon:hover {
-      background-color: transparent !important;
-    }
   }
 
   // Style picker icon in input-only mode
@@ -26,6 +23,10 @@
   &.xh-input-disabled:not(.xh-date-input--picker-only) {
     button {
       cursor: not-allowed;
+    }
+
+    .xh-date-input__picker-icon:hover {
+      background-color: transparent !important;
     }
   }
 }
