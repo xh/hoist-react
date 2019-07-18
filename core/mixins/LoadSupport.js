@@ -5,10 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {applyMixin, warnIf} from '@xh/hoist/utils/js';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {allSettled} from '@xh/hoist/promise';
-import {isPlainObject, isNil} from 'lodash';
+import {isPlainObject} from 'lodash';
 
 /**
  * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
@@ -51,8 +51,8 @@ export function LoadSupport(C) {
              * @param {LoadSpec} [loadSpec] - Metadata about the underlying request
              */
             async loadAsync(loadSpec = {}) {
-                warnIf(
-                    (!isNil(loadSpec) && !isPlainObject(loadSpec)),
+                throwIf(
+                    !isPlainObject(loadSpec),
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
