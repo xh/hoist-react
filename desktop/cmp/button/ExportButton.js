@@ -11,7 +11,7 @@ import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
+import {warnIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
@@ -31,12 +31,24 @@ export class ExportButton extends Component {
         exportOptions: PT.object
     };
 
+    constructor(props) {
+        const {gridModel} = props;
+
+        warnIf(
+            (gridModel && !gridModel.enableExport),
+            'ExportButton bound to GridModel with enableExport != true - exports will not work.'
+        );
+
+        super(props);
+    }
+
     render() {
-        const {icon, title, onClick, gridModel, exportOptions, ...rest} = this.props;
+        const {icon, title, onClick, gridModel, exportOptions, disabled, ...rest} = this.props;
         return button({
             icon: withDefault(icon, Icon.download()),
             title: withDefault(title, 'Export'),
             onClick: withDefault(onClick, this.exportGridData),
+            disabled: withDefault(disabled, gridModel && gridModel.empty),
             ...rest
         });
     }
