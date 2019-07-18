@@ -2,7 +2,12 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-* TBD
+### ⚙️ Technical
+
+* Classes decorated with `@LoadSupport` will now throw an exception out of their provided
+  `loadAsync()` method if called with a parameter that's not a plain object (i.e. param is clearly
+  not a `LoadSpec`). Note this might be a breaking change, in so far as it introduces additional
+  validation around this pre-existing API requirement.
 
 ## v25.0.0 - 2019-07-16
 
