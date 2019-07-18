@@ -20,6 +20,7 @@ import {Ref} from '@xh/hoist/utils/react';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import classNames from 'classnames';
 
 import './DateInput.scss';
 
@@ -158,7 +159,7 @@ export class DateInput extends HoistInput {
 
                 item: textInput({
                     value: this.formatDate(this.renderValue),
-                    className: this.getClassName(isPickerOnlyMode ? 'picker-only-input' : null),
+                    className: this.getClassName(isPickerOnlyMode ? 'xh-date-input--picker-only' : null),
                     onCommit: this.onInputCommit,
                     rightElement,
 
@@ -182,20 +183,21 @@ export class DateInput extends HoistInput {
     renderButtons(enableClear, enablePicker) {
         const props = this.getNonLayoutProps(),
             enableTextInput = withDefault(props.enableTextInput, true),
-            isClearable = (this.internalValue !== null),
+            isClearable = this.internalValue !== null,
             isPickerOnlyMode = !enableTextInput && !props.disabled;
 
         return buttonGroup({
             padding: 0,
             items: [
                 button({
+                    className: 'xh-date-input__clear-icon',
                     omit: !enableClear || !isClearable || props.disabled,
                     icon: Icon.cross(),
                     tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
                     onClick: this.onClearBtnClick
                 }),
                 button({
-                    className: enablePicker ? '' : 'disabled-picker-icon',
+                    className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
                     onClick: enablePicker ? this.onOpenPopoverClick : null
