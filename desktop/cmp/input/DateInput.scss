@@ -3,25 +3,36 @@
   input {
     color: var(--xh-input-text-color) !important;
     background-color: var(--xh-input-bg) !important;
+    cursor: pointer !important;
   }
 
-  button {
-    &:not(:hover) {
-      background-color: rgba(0,0,0,0) !important;
-    }
+  .bp3-input-group.bp3-disabled {
+    cursor: pointer !important;
   }
+
+  //button {
+  //  &:not(:hover) {
+  //    background-color: rgba(0,0,0,0) !important;
+  //  }
+  //}
 }
+
 
 .xh-input-disabled:not(.picker-only-input) {
   button {
-      background-color: rgba(0,0,0,0) !important;
       cursor: not-allowed;
+  }
+}
+
+.xh-input-disabled {
+  button:hover {
+    background-color: rgba(0,0,0,0) !important;
   }
 }
 
 .disabled-picker-icon {
   &:hover {
     background-color: var(--xh-input-bg) !important;
-    cursor: auto;
+    cursor: not-allowed;
   }
 }
