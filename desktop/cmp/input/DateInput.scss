@@ -17,7 +17,7 @@
   }
 
   // Style picker icon in input-only mode
-  .xh-date-input__picker-icon--disabled:hover {
+  &__picker-icon--disabled:hover {
     background-color: transparent !important;
     cursor: not-allowed;
   }
