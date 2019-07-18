@@ -52,7 +52,7 @@ export function LoadSupport(C) {
              */
             async loadAsync(loadSpec = {}) {
                 throwIf(
-                    (!isPlainObject(loadSpec)),
+                    !isPlainObject(loadSpec),
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
