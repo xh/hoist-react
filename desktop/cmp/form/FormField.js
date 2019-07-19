@@ -117,7 +117,7 @@ export class FormField extends Component {
             errors = fieldModel ? fieldModel.errors : [],
             inputId = this.props.children.props.id,
             idAttr = inputId ? inputId : this.stableId(),
-            requiredStr = isRequired ? span(' *') : null;
+            requiredStr = (isRequired && !readonly) ? span(' *') : null;
 
         // Display related props
         const inline = this.getDefaultedProp('inline', false),
