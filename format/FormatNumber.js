@@ -8,7 +8,6 @@
 import {defaults, isFinite, isString, isFunction} from 'lodash';
 import numbro from 'numbro';
 
-import {Exception} from '@xh/hoist/exception';
 import {span} from '@xh/hoist/cmp/layout';
 
 import {createRenderer, saveOriginal} from './FormatUtils';
