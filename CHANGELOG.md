@@ -6,6 +6,8 @@
 
 * `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
   now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
+* `JsonInput` includes buttons for toggling showing in a full-screen dialog window. Also added a
+  convenience button to auto-format `JsonInput's` content.
 
 ### ⚙️ Technical
 
