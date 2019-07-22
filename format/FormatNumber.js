@@ -304,23 +304,24 @@ function signGlyph(v, asElement) {
 function valueColor(v, colorSpec) {
     if (!isFinite(v)) return '';
 
-    const defaultColors = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
-    colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
+    const defaultColors = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'},
+        safeColorSpec = typeof colorSpec === 'object' ? {...colorSpec} : defaultColors;
 
-    if (!colorSpec.pos && !colorSpec.neg && !colorSpec.neutral) {
-        throw Exception.create('Invalid color spec: ' + colorSpec);
+    if (!safeColorSpec.pos && !safeColorSpec.neg && !safeColorSpec.neutral) {
+        console.warn('Invalid color spec. No valid keys provided. Valid keys are: pos, neg, and neutral.');
+        console.warn(safeColorSpec);
     }
 
-    defaults(colorSpec, {
+    defaults(safeColorSpec, {
         pos: '',
         neg: '',
         neutral: ''
     });
 
-    if (v < 0) return colorSpec.neg;
-    if (v > 0) return colorSpec.pos;
+    if (v < 0) return safeColorSpec.neg;
+    if (v > 0) return safeColorSpec.pos;
 
-    return colorSpec.neutral;
+    return safeColorSpec.neutral;
 }
 
 function buildFormatConfig(v, precision, zeroPad) {
