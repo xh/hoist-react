@@ -34,7 +34,7 @@
     position: absolute !important;
     top: 0;
     right: 6px;
-    z-index: 3;
+    z-index: 3; // render above code-mirror content to enable click
 
     .xh-button {
       padding: 0;
