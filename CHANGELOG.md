@@ -11,13 +11,20 @@
   will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
   improved for its various modes to more clearly convey its functionality.
 
-
 ### ⚙️ Technical
 
 * Classes decorated with `@LoadSupport` will now throw an exception out of their provided
   `loadAsync()` method if called with a parameter that's not a plain object (i.e. param is clearly
   not a `LoadSpec`). Note this might be a breaking change, in so far as it introduces additional
   validation around this pre-existing API requirement.
+
+### 🐞 Bug Fixes
+
+* `RestFormModel` now submits dirty fields only when editing a record, as intended. Fixes #1245.
+
+### 📚 Libraries
+
+* mobx `5.11 -> 5.13`
 
 ## v25.0.0 - 2019-07-16
 

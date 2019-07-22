@@ -31,7 +31,7 @@
     "highcharts": "~7.1.1",
     "lodash": "~4.17.14",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.11.0",
+    "mobx": "~5.13.0",
     "mobx-react": "~6.1.1",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",
