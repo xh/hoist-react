@@ -30,6 +30,7 @@ export class StoreContextMenu {
      *      @see {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items|ag-Grid Docs}
      *
      *      Hoist tokens, all of which require a GridModel:
+     *          `copyCell` - copy cell value to clipboard.
      *          `colChooser` - display column chooser for a grid.
      *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.

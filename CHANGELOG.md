@@ -6,6 +6,7 @@
 
 * `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
   now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
 
 ### ⚙️ Technical
 
