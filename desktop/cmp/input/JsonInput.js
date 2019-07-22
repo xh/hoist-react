@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {box, hbox} from '@xh/hoist/cmp/layout';
+import {fragment, box, hbox} from '@xh/hoist/cmp/layout';
 import {textArea, dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -93,31 +93,33 @@ export class JsonInput extends HoistInput {
     baseClassName = 'xh-json-input';
 
     render() {
-        return this.fullScreen ? this.renderFullscreen() : this.renderInline();
+        const {width, height, ...layoutProps} = this.getLayoutProps(),
+            props = {
+                ...layoutProps,
+                width: withDefault(width, 300),
+                height: withDefault(height, 100)
+            };
+
+        return this.fullScreen ? this.renderFullscreen(props) : this.renderInput(props);
     }
 
-    renderFullscreen() {
-        return dialog({
-            className: 'xh-json-input--dialog',
-            isOpen: true,
-            canOutsideClickClose: true,
-            item: this.renderInput({flex: 1}),
-            onClose: () => this.setFullScreen(false)
-        });
-    }
-
-    renderInline() {
-        const {width, height, ...layoutProps} = this.getLayoutProps();
-        return this.renderInput({
-            ...layoutProps,
-            width: withDefault(width, 300),
-            height: withDefault(height, 100)
-        });
+    renderFullscreen(props) {
+        return fragment(
+            dialog({
+                className: 'xh-json-input--dialog',
+                isOpen: true,
+                canOutsideClickClose: true,
+                item: this.renderInput({flex: 1}),
+                onClose: () => this.setFullScreen(false)
+            }),
+            box({
+                className: 'xh-json-input--placeholder',
+                ...props
+            })
+        );
     }
 
     renderInput(props) {
-        const {fullScreen, showActionButtons} = this;
-
         return box({
             items: [
                 textArea({
@@ -125,22 +127,7 @@ export class JsonInput extends HoistInput {
                     ref: this.manageJsonEditor,
                     onChange: this.onChange
                 }),
-                hbox({
-                    omit: !showActionButtons || !this.hasFocus,
-                    className: 'xh-json-input__action-buttons',
-                    items: [
-                        button({
-                            icon: Icon.code(),
-                            title: 'Auto-format',
-                            onClick: () => this.onAutoFormat()
-                        }),
-                        button({
-                            icon: fullScreen ? Icon.collapse() : Icon.expand(),
-                            title: fullScreen ? 'Exit full screen' : 'Full screen',
-                            onClick: () => this.setFullScreen(!fullScreen)
-                        })
-                    ]
-                })
+                this.renderActionButtons()
             ],
 
             className: this.getClassName(),
@@ -148,6 +135,26 @@ export class JsonInput extends HoistInput {
             onFocus: this.onFocus,
 
             ...props
+        });
+    }
+
+    renderActionButtons() {
+        if (!this.showActionButtons || !this.hasFocus) return null;
+        const {fullScreen} = this;
+        return hbox({
+            className: 'xh-json-input__action-buttons',
+            items: [
+                button({
+                    icon: Icon.code(),
+                    title: 'Auto-format',
+                    onClick: () => this.onAutoFormat()
+                }),
+                button({
+                    icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                    title: fullScreen ? 'Exit full screen' : 'Full screen',
+                    onClick: () => this.setFullScreen(!fullScreen)
+                })
+            ]
         });
     }
 
