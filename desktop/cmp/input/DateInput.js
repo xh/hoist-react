@@ -173,7 +173,7 @@ export class DateInput extends HoistInput {
                 })
             }),
 
-            onClick: !enableTextInput ? this.onOpenPopoverClick : null,
+            onClick: isPickerOnlyMode ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -200,7 +200,7 @@ export class DateInput extends HoistInput {
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
-                    onClick: enablePicker ? this.onOpenPopoverClick : null
+                    onClick: enablePicker && !props.disabled ? this.onOpenPopoverClick : null
                 })
             ]
         });
