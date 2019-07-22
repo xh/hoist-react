@@ -119,7 +119,6 @@ export class DateInput extends HoistInput {
             enablePicker = withDefault(props.enablePicker, true),
             enableTextInput = withDefault(props.enableTextInput, true),
             enableClear = withDefault(props.enableClear, false),
-            isPickerOnlyMode = !enableTextInput && !props.disabled,
             rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
             isOpen = enablePicker && this.popoverOpen && !props.disabled;
 
@@ -159,7 +158,7 @@ export class DateInput extends HoistInput {
 
                 item: textInput({
                     value: this.formatDate(this.renderValue),
-                    className: this.getClassName(isPickerOnlyMode ? 'xh-date-input--picker-only' : null),
+                    className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
                     onCommit: this.onInputCommit,
                     rightElement,
 
@@ -173,7 +172,7 @@ export class DateInput extends HoistInput {
                 })
             }),
 
-            onClick: isPickerOnlyMode ? this.onOpenPopoverClick : null,
+            onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -182,25 +181,25 @@ export class DateInput extends HoistInput {
 
     renderButtons(enableClear, enablePicker) {
         const props = this.getNonLayoutProps(),
+            disabled = withDefault(props.disabled, false),
             enableTextInput = withDefault(props.enableTextInput, true),
-            isClearable = this.internalValue !== null,
-            isPickerOnlyMode = !enableTextInput && !props.disabled;
+            isClearable = this.internalValue !== null;
 
         return buttonGroup({
             padding: 0,
             items: [
                 button({
                     className: 'xh-date-input__clear-icon',
-                    omit: !enableClear || !isClearable || props.disabled,
+                    omit: !enableClear || !isClearable || disabled,
                     icon: Icon.cross(),
-                    tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
+                    tabIndex: -1,
                     onClick: this.onClearBtnClick
                 }),
                 button({
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
-                    tabIndex: isPickerOnlyMode ? undefined : -1, // Prevent focus on tab, unless in pickerOnly mode
-                    onClick: enablePicker && !props.disabled ? this.onOpenPopoverClick : null
+                    tabIndex: enableTextInput && !disabled ? -1 : undefined,
+                    onClick: enablePicker && !disabled ? this.onOpenPopoverClick : null
                 })
             ]
         });
