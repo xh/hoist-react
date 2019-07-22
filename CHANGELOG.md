@@ -9,6 +9,10 @@
 * `JsonInput` includes buttons for toggling showing in a full-screen dialog window. Also added a
   convenience button to auto-format `JsonInput's` content.
 
+* `DateInput` supports a new `enableTextInput` prop. When this property is set to false, `DateInput` 
+  will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
+  improved for its various modes to more clearly convey its functionality.
+
 ### ⚙️ Technical
 
 * Classes decorated with `@LoadSupport` will now throw an exception out of their provided
