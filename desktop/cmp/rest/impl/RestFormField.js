@@ -75,11 +75,17 @@ export class RestFormField extends Component {
     }
 
     renderBoolean(fieldModel) {
-        return fieldModel.isRequired && fieldModel.value != null ?
+        // Favor switch, when we are not in a tri-state situation w/null
+        // Otherwise, use a clearly nullable select.
+
+        const {isRequired, value, initialValue} = fieldModel,
+            useSwitch = isRequired && value != null && initialValue != null;
+        
+        return useSwitch ?
             switchInput() :
             this.renderSelect({
                 options: [true, false],
-                enableClear: !fieldModel.isRequired,
+                enableClear: !isRequired,
                 enableCreate: false
             });
     }
