@@ -350,45 +350,6 @@ export class AgGridModel {
         return id;
     }
 
-    serializeRowNodes(
-        ids,
-        {
-            includeHeaders = false,
-            visibleColumnsOnly = true,
-            columnFilterFn = () => true,
-            rowDelimiter = '\r\n',
-            valueDelimiter = '\t'
-        } = {}
-    ) {
-        const {agApi, agColumnApi} = this,
-            columns = agColumnApi.getAllGridColumns()
-                .filter(it => (!visibleColumnsOnly || visibleColumnsOnly && it.isVisible()) && columnFilterFn(it));
-
-        let ret = '';
-        if (includeHeaders) {
-            columns.forEach((col, colIdx) => {
-                if (colIdx > 0) ret += valueDelimiter;
-                ret += agColumnApi.getDisplayNameForColumn(col);
-            });
-
-            ret += rowDelimiter;
-        }
-
-        ids.forEach((id, rowNodeIdx) => {
-            if (rowNodeIdx > 0) ret += rowDelimiter;
-
-            const rowNode = agApi.getRowNode(id);
-            columns.forEach((col, colIdx) => {
-                if (colIdx > 0) ret += valueDelimiter;
-
-                const val = agApi.getValue(col.colId, rowNode);
-                ret += isNil(val) ? '' : val;
-            });
-        });
-
-        return ret;
-    }
-
     //------------------------
     // Implementation
     //------------------------

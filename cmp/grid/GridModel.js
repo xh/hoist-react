@@ -102,8 +102,8 @@ export class GridModel {
     @bindable showSummary = false;
 
     static defaultContextMenuTokens = [
-        'copyRow',
-        'copyRowHeaders',
+        'copy',
+        'copyWithHeaders',
         'copyCell',
         '-',
         'expandCollapseAll',

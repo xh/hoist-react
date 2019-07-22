@@ -193,12 +193,13 @@ export class Grid extends Component {
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
-                    {classes: ['group-header-icon-expanded', 'fa-fw']}
+                    {classes: ['group-header-icon-expanded']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.angleRight(),
-                    {classes: ['group-header-icon-contracted', 'fa-fw']}
-                )
+                    {classes: ['group-header-icon-contracted']}
+                ),
+                clipboardCopy: convertIconToSvg(Icon.copy())
             },
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,

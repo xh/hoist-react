@@ -59,58 +59,6 @@ export class StoreContextMenu {
         const {gridModel} = this;
 
         switch (token) {
-            case 'copyRow':
-                return new RecordAction({
-                    text: 'Copy Row',
-                    icon: Icon.copy(),
-                    hidden: !gridModel,
-                    recordsRequired: true,
-                    displayFn: ({selectedRecords}) => ({text: `Copy Row${selectedRecords.length > 1 ? 's' : ''}`}),
-                    actionFn: ({selectedRecords}) => {
-                        if (isEmpty(selectedRecords)) return;
-
-                        const val = gridModel.agGridModel.serializeRowNodes(
-                            selectedRecords.map(it => it.id),
-                            {
-                                includeHeaders: false,
-                                columnFilterFn: (col) => {
-                                    const gridCol = gridModel.getColumn(col.colId);
-                                    if (gridCol && gridCol.excludeFromExport) return false;
-
-                                    return true;
-                                }
-                            }
-                        );
-
-                        copyToClipboard(val);
-                    }
-                });
-            case 'copyRowHeaders':
-                return new RecordAction({
-                    text: 'Copy Row w/ Headers',
-                    icon: Icon.copy(),
-                    hidden: !gridModel,
-                    recordsRequired: true,
-                    displayFn: ({selectedRecords}) => ({text: `Copy Row${selectedRecords.length > 1 ? 's' : ''} w/ Headers`}),
-                    actionFn: ({selectedRecords}) => {
-                        if (isEmpty(selectedRecords)) return;
-
-                        const val = gridModel.agGridModel.serializeRowNodes(
-                            selectedRecords.map(it => it.id),
-                            {
-                                includeHeaders: true,
-                                columnFilterFn: (col) => {
-                                    const gridCol = gridModel.getColumn(col.colId);
-                                    if (gridCol && gridCol.excludeFromExport) return false;
-
-                                    return true;
-                                }
-                            }
-                        );
-
-                        copyToClipboard(val);
-                    }
-                });
             case 'copyCell':
                 return new RecordAction({
                     text: 'Copy Cell',
