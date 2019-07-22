@@ -197,7 +197,7 @@ export class DateInput extends HoistInput {
                 button({
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
-                    tabIndex: enableTextInput && !disabled ? -1 : undefined,
+                    tabIndex: enableTextInput || disabled ? -1 : undefined,
                     onClick: enablePicker && !disabled ? this.onOpenPopoverClick : null
                 })
             ]
