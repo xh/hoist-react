@@ -127,6 +127,7 @@ export class TextInput extends HoistInput {
         return button({
             icon: Icon.cross(),
             omit: disabled,
+            tabIndex: -1,
             minimal: true,
             onClick: () => {
                 this.noteValueChange(null);
