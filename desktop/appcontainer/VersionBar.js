@@ -16,13 +16,12 @@ import './VersionBar.scss';
  */
 @HoistComponent
 export class VersionBar extends Component {
-
+    
     render() {
+        if (!this.isShowing()) return null;
+        
         const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            isVisible = (env !== 'Production' || XH.getUser().isHoistAdmin || XH.getPref('xhForceEnvironmentFooter'));
-
-        if (!isVisible) return null;
+            version = XH.getEnv('clientVersion');
 
         return box({
             justifyContent: 'center',
@@ -35,9 +34,27 @@ export class VersionBar extends Component {
             ]
         });
     }
-
+    
     showAbout() {
         XH.showAboutDialog();
+    }
+    
+    //----------------------
+    // Implementation
+    //----------------------
+    
+    isShowing() {
+        const env = XH.getEnv('appEnvironment');
+        
+        switch (XH.getPref('xhShowVersionBar', 'auto')) {
+            case 'always':
+                return true;
+            case 'never':
+                return false;
+            case 'auto':
+            default:
+                return (env !== 'Production' || XH.getUser().isHoistAdmin);
+        }
     }
 }
 export const versionBar = elemFactory(VersionBar);

@@ -47,8 +47,9 @@ export class ColChooser extends Component {
             title: 'Choose Columns',
             icon: Icon.gridPanel(),
             className: 'xh-col-chooser',
-            items: [
-                dragDropContext({
+            item: div({
+                className: 'xh-col-chooser-internal',
+                item: dragDropContext({
                     onDragEnd: this.onDragEnd,
                     items: [
                         panel({
@@ -96,7 +97,7 @@ export class ColChooser extends Component {
                         })
                     ]
                 })
-            ],
+            }),
             bbar: [
                 button({
                     text: 'Reset',

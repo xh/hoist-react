@@ -20,6 +20,7 @@ import {
     cloneDeep,
     compact,
     defaults,
+    defaultsDeep,
     find,
     findLast,
     isArray,
@@ -116,6 +117,7 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
@@ -141,7 +143,7 @@ export class GridModel {
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
-     * @param {object} [c.exportOptions] - default options used in exportAsync().
+     * @param {Object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
@@ -153,6 +155,7 @@ export class GridModel {
     constructor({
         store,
         columns,
+        colDefaults = {},
         treeMode = false,
         showSummary = false,
         selModel,
@@ -188,10 +191,17 @@ export class GridModel {
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
+
+        // Deprecation warning added as of 24.2 - remove in future major version.
+        if (exportOptions.includeHiddenCols) {
+            console.warn("GridModel exportOptions.includeHiddenCols no longer supported - replace with {columns: 'ALL'}.");
+            exportOptions.columns = 'ALL';
+        }
         this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
 
+        this.colDefaults = colDefaults;
         this.setColumns(columns);
         this.store = this.parseStore(store);
 
@@ -305,22 +315,17 @@ export class GridModel {
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
-     * This method is no-op if provided any ids without a corresponding column.
+     * This method will clear grid grouping if provided any ids without a corresponding column.
      * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
     setGroupBy(colIds) {
-        if (!colIds) {
-            this.groupBy = [];
-            return;
-        }
-
-        colIds = castArray(colIds);
+        colIds = isNil(colIds) ? [] : castArray(colIds);
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn('groupBy colId not found in grid columns', invalidColIds);
-            return;
+            console.warn('Unknown colId specified in groupBy - grid will not be grouped.', invalidColIds);
+            colIds = [];
         }
 
         this.groupBy = colIds;
@@ -399,7 +404,7 @@ export class GridModel {
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
         );
-
+        
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
@@ -566,7 +571,7 @@ export class GridModel {
     }
 
     buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
+        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
     }
 
     //-----------------------

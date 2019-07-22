@@ -161,11 +161,17 @@ export class ExceptionHandler {
     }
 
     sessionMismatch(exception) {
-        return exception && exception.name === 'SessionMismatchException';
+        return exception.name === 'SessionMismatchException';
     }
 
+    // Detect an expired server session for special messaging, but only for requests back to the
+    // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
     sessionExpired(exception) {
-        return exception && exception.httpStatus === 401;
+        const {httpStatus, fetchOptions} = exception,
+            url = fetchOptions ? fetchOptions.url : null,
+            relativeRequest = url && !url.startsWith('http');
+
+        return relativeRequest && httpStatus === 401;
     }
 
     cleanStack(exception) {

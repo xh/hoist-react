@@ -155,8 +155,13 @@ $pt-transition-duration: 100ms !default;
 // Buttons
 //------------------------
 .bp3-button {
-  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  // Use padding vars.
+  padding: var(--xh-pad-half-px) var(--xh-pad-px);
+
+  // With tighter default LR padding in minimal mode.
+  &.bp3-minimal {
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  }
 
   // Except in button groups, which are already compressing buttons more closely together.
   .bp3-button-group & {
@@ -248,18 +253,33 @@ $pt-transition-duration: 100ms !default;
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.bp3-input-group svg:not(.bp3-icon) {
-  position: absolute;
-  top: 0;
-  line-height: 1;
-  font-size: var(--xh-font-size-large-px);
-  font-weight: 400;
-  font-style: normal;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  z-index: 1;
-  margin: 7px;
-  color: var(--xh-text-color-muted);
+.bp3-input-group {
+  svg:not(.bp3-icon) {
+    position: absolute;
+    top: 0;
+    line-height: 1;
+    font-size: var(--xh-font-size-large-px);
+    font-weight: 400;
+    font-style: normal;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    z-index: 1;
+    margin: 7px;
+    color: var(--xh-text-color-muted);
+  }
+
+  .bp3-button-group {
+    margin-right: 3px;
+
+    .bp3-button {
+      margin-right: 0;
+      margin-left: 0;
+    }
+
+    svg:not(.bp3-icon) {
+      margin-top: 4px;
+    }
+  }
 }
 
 // Avoid misaligned rightIcon within inputs.
