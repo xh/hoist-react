@@ -7,15 +7,12 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {assign, castArray, clone, merge} from 'lodash';
-import Highcharts from 'highcharts/highstock';
-import highchartsExporting from 'highcharts/modules/exporting';
-import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
-import highchartsExportData from 'highcharts/modules/export-data';
+import {Highcharts, highchartsExporting, highchartsOfflineExporting, highchartsExportData} from '@xh/hoist/kit/highcharts';
 
-import { XH, elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
-import { div, box } from '@xh/hoist/cmp/layout';
-import { Ref } from '@xh/hoist/utils/react';
-import { resizeSensor } from '@xh/hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {div, box} from '@xh/hoist/cmp/layout';
+import {Ref} from '@xh/hoist/utils/react';
+import {resizeSensor} from '@xh/hoist/kit/blueprint';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';

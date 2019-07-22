@@ -7,24 +7,23 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 
-
 /**
- * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ * Todo
  */
 @HoistModel
-export class ChartModel {
+export class TreeMapModel {
 
     @bindable.ref config = {};
-    @bindable.ref series = [];
+    @bindable.ref data = [];
 
     /**
      * @param {Object} c - ChartModel configuration.
      * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
-     * @param {Object[]} c.series - Data series to be displayed.
+     * @param {Object[]} c.data - Data to be displayed.
      */
-    constructor({config, series = []} = {}) {
+    constructor({config, data = []} = {}) {
         this.config = config;
-        this.series = series;
+        this.data = data;
     }
 }

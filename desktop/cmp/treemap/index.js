@@ -5,5 +5,5 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './Chart';
-export * from './ChartModel';
+export * from './TreeMap';
+export * from './TreeMapModel';
