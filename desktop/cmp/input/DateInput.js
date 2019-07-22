@@ -114,18 +114,19 @@ export class DateInput extends HoistInput {
     get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
 
     render() {
-        const props = this.getNonLayoutProps(),
-            layoutProps = this.getLayoutProps(),
-            enablePicker = withDefault(props.enablePicker, true),
-            enableTextInput = withDefault(props.enableTextInput, true),
-            enableClear = withDefault(props.enableClear, false),
-            rightElement = withDefault(props.rightElement, this.renderButtons(enableClear, enablePicker)),
-            isOpen = enablePicker && this.popoverOpen && !props.disabled;
+        const props = this.getNonLayoutProps();
 
         warnIf(
             (props.enableClear || props.enablePicker) && props.rightElement,
             'Cannot specify enableClear or enablePicker along with custom rightElement - built-in clear/picker button will not be shown.'
         );
+
+        const layoutProps = this.getLayoutProps(),
+            enablePicker = withDefault(props.enablePicker, true),
+            enableTextInput = withDefault(props.enableTextInput, true),
+            enableClear = withDefault(props.enableClear, false),
+            rightElement = withDefault(props.rightElement, this.renderButtons(enablePicker, enableTextInput, enableClear)),
+            isOpen = enablePicker && this.popoverOpen && !props.disabled;
 
         return div({
             item: popover({
@@ -179,10 +180,8 @@ export class DateInput extends HoistInput {
         });
     }
 
-    renderButtons(enableClear, enablePicker) {
-        const props = this.getNonLayoutProps(),
-            disabled = withDefault(props.disabled, false),
-            enableTextInput = withDefault(props.enableTextInput, true),
+    renderButtons(enablePicker, enableTextInput, enableClear) {
+        const {disabled} = this.getNonLayoutProps(),
             isClearable = this.internalValue !== null;
 
         return buttonGroup({
