@@ -29,6 +29,25 @@
       box-sizing: content-box !important;
     }
   }
+
+  &__action-buttons {
+    position: absolute !important;
+    top: 0;
+    right: 6px;
+    z-index: 3;
+
+    .xh-button {
+      padding: 0;
+      min-width: 22px;
+      min-height: 22px;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  &--dialog {
+    width: 90vw;
+    height: 90vh;
+  }
 }
 
 .xh-form-field-inline .xh-json-input {
