@@ -12,6 +12,12 @@
 * `DateInput` supports a new `enableTextInput` prop. When this property is set to false, `DateInput` 
   will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
   improved for its various modes to more clearly convey its functionality.
+  
+  #### Other Features
+  
+* The requirements for the `colorSpec` option passed to Hoist number formatters have been relaxed to
+  allow partial definitions such that, for example, only negative values can receive the css class 
+  specified, without having to account for positive value styling.
 
 ### ⚙️ Technical
 
