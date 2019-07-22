@@ -15,8 +15,8 @@
   
   #### Other Features
   
-* The requirements for the `colorSpec` option passed to Hoist number formatters have been relaxed to
-  allow partial definitions such that, for example, only negative values can receive the css class 
+* Requirements for the `colorSpec` option passed to Hoist number formatters have been relaxed to
+  allow partial definitions such that, for example, only negative values may receive the CSS class 
   specified, without having to account for positive value styling.
 
 ### ⚙️ Technical
