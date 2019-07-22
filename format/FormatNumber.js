@@ -43,6 +43,7 @@ const UP_TICK = '▴',
  * @param {string} [opts.labelCls] - CSS class of label <span>,
  * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
  *      True for red/green/grey defaults, or object of the form {pos: color, neg: color, neutral: color}.
+ *      When passing an object, values should be CSS classes to be applied to the wrapping span.
  * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
  *      minimally formatted original value, or a function to generate a custom tooltip string.
  * @param {boolean} [opts.asElement] - return a React element rather than a HTML string
@@ -306,9 +307,15 @@ function valueColor(v, colorSpec) {
     const defaultColors = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
     colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
 
-    if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {
+    if (!colorSpec.pos && !colorSpec.neg && !colorSpec.neutral) {
         throw Exception.create('Invalid color spec: ' + colorSpec);
     }
+
+    defaults(colorSpec, {
+        pos: '',
+        neg: '',
+        neutral: ''
+    });
 
     if (v < 0) return colorSpec.neg;
     if (v > 0) return colorSpec.pos;
