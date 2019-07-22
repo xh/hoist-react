@@ -6,6 +6,8 @@
 
 * `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
   now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
+* `JsonInput` includes buttons for toggling showing in a full-screen dialog window. Also added a
+  convenience button to auto-format `JsonInput's` content.
 
 * `DateInput` supports a new `enableTextInput` prop. When this property is set to false, `DateInput` 
   will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
