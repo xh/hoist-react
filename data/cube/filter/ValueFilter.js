@@ -49,7 +49,7 @@ export class ValueFilter extends Filter {
 
         forEach(byName, (fieldFilters, fieldName) => {
             const fieldVals = uniq(flattenDeep(map(fieldFilters, 'values')));
-            ret.push(new ValueFilter(fieldName, fieldVals));
+            ret.push(new ValueFilter(fieldName, fieldVals)); // maybe we need it to be filterFn so we can do this and go filterFns.some(it => it(val))
         });
 
         return ret;
@@ -62,22 +62,14 @@ export class ValueFilter extends Filter {
         super();
         this.fieldName = fieldName;
         this.values = castArray(values);
-        // ave fn as local?
+        // save fn as local prop?
 
-        if (values.length == 1) {
-            const singleVal = values[0];
-            this.matches = (rec) => {
-                const val = rec.get(fieldName);
-                if (val === singleVal) return true;
-                return filterFn(val);
-            };
-        } else {
-            this.matches = (rec) => {
-                const val = rec.get(fieldName);
-                if (values.includes(val)) return true;
-                return filterFn(val);
-            };
-        }
+        this.matches = (rec) => {
+            const val = rec.get(fieldName);
+            if (values.includes(val)) return true;
+            if (filterFn) return filterFn(val);
+            return false;
+        };
     }
 
     toString() {
