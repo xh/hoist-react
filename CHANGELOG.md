@@ -1,16 +1,16 @@
 # Changelog
 
-## v26.0.0-SNAPSHOT - under development
+## v25.1.0 - 2019-07-23
 
 ### 🎁 New Features
 
-* `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
-  now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
 * `JsonInput` includes buttons for toggling showing in a full-screen dialog window. Also added a
   convenience button to auto-format `JsonInput's` content.
 * `DateInput` supports a new `enableTextInput` prop. When this property is set to false, `DateInput`
   will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
   improved for its various modes to more clearly convey its functionality.
+* `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
+  now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
 
 ### ⚙️ Technical
 
@@ -24,11 +24,15 @@
 
 ### 🐞 Bug Fixes
 
-* `RestFormModel` now submits dirty fields only when editing a record, as intended. Fixes #1245.
+* `RestFormModel` now submits dirty fields only when editing a record, as intended (#1245).
+* `FormField` will no longer override the disabled prop of its child input if true (#1262).
 
 ### 📚 Libraries
 
 * mobx `5.11 -> 5.13`
+* Misc. patch-level updates
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.0.0...v25.1.0)
 
 ## v25.0.0 - 2019-07-16
 
@@ -50,6 +54,8 @@
 * `DimensionChooserModel`'s `historyPreference` config has been renamed `preference`. It now
   supports saving both value and history to the same preference (existing history preferences will
   be handled).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.2.0...v25.0.0)
 
 ## v24.2.0 - 2019-07-08
 
@@ -79,7 +85,7 @@
 * mobx `5.10 -> 5.11`
 * react-transition-group `2.8 -> 4.2`
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...v24.2.0)
 
 ## v24.1.1 - 2019-07-01
 
