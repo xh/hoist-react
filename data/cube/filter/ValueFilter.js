@@ -55,16 +55,28 @@ export class ValueFilter extends Filter {
         return ret;
     }
 
-    constructor(fieldName, values) {
+    // This should be the core of it, I don't yet understand at the trappings here, but this should produce the desired results
+    // TODO: should provided values trump fn?  I think yes, if we want to use both,
+    // TODO: or we could enforce 'you may provide values OR a filterFn but not both'
+    constructor(fieldName, values, filterFn) {
         super();
         this.fieldName = fieldName;
         this.values = castArray(values);
+        // ave fn as local?
 
         if (values.length == 1) {
             const singleVal = values[0];
-            this.matches = (rec) => rec.get(fieldName) === singleVal;
+            this.matches = (rec) => {
+                const val = rec.get(fieldName);
+                if (val === singleVal) return true;
+                return filterFn(val);
+            };
         } else {
-            this.matches = (rec) => values.includes(rec.get(fieldName));
+            this.matches = (rec) => {
+                const val = rec.get(fieldName);
+                if (values.includes(val)) return true;
+                return filterFn(val);
+            };
         }
     }
 

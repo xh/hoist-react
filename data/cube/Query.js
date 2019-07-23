@@ -124,6 +124,6 @@ export class Query {
 
     parseFilters(filters) {
         if (!filters) return null;
-        return filters.map(f => f instanceof ValueFilter ? f : new ValueFilter(f.name, f.values));
+        return filters.map(f => f instanceof ValueFilter ? f : new ValueFilter(f.name, f.values, f.filterFn));
     }
 }
