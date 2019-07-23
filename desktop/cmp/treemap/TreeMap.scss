@@ -1,0 +1,26 @@
+.xh-treemap-tooltip {
+  color: var(--xh-text-color);
+  border: var(--xh-border-solid);
+
+  &__label {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg-alt);
+  }
+
+  &__row {
+    display: flex;
+    background: var(--xh-bg);
+    border-top: var(--xh-border-solid);
+    font-size: var(--xh-font-size-small-px);
+
+    & > div {
+      padding: var(--xh-pad-half-px);
+
+      &:first-of-type {
+        flex: 1;
+        padding-right: var(--xh-pad-px);
+        font-weight: bold;
+      }
+    }
+  }
+}

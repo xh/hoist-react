@@ -12,8 +12,13 @@ import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
-import {assign, merge} from 'lodash';
+import {fmtNumber} from '@xh/hoist/format';
+import {assign, merge, clone} from 'lodash';
 
+import {LightTheme} from './theme/Light';
+import {DarkTheme} from './theme/Dark';
+
+import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
 highchartsExporting(Highcharts);
@@ -36,7 +41,7 @@ export class TreeMap extends Component {
 
     static modelClass = TreeMapModel;
 
-    baseClassName = 'xh-tree-map';
+    baseClassName = 'xh-treemap';
 
     _chartElem = new Ref();
     _chart = null;
@@ -104,11 +109,10 @@ export class TreeMap extends Component {
     //----------------------
     getMergedConfig() {
         const defaultConf = this.getDefaultConfig(),
+            themeConf = this.getThemeConfig(),
             propsConf = this.getModelConfig();
 
-        const ret = merge(defaultConf, propsConf);
-        console.log(ret);
-        return ret;
+        return merge(defaultConf, themeConf, propsConf);
     }
 
     getDefaultConfig() {
@@ -126,37 +130,65 @@ export class TreeMap extends Component {
         };
 
         return {
-            chart: {},
+            chart: {margin: false},
             credits: false,
             title: false,
+            legend: {enabled: false},
             exporting
         };
     }
 
+    getThemeConfig() {
+        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+    }
+
     getModelConfig() {
+        const {config, data, algorithm, tooltip} = this.model,
+            {defaultTooltip} = this;
+
         return {
-            ...this.model.config,
+            ...config,
+            tooltip: {
+                enabled: !!tooltip,
+                useHTML: true,
+                padding: 0,
+                shape: 'square',
+                shadow: false,
+                pointFormatter: function() {
+                    if (!tooltip) return;
+                    const {record} = this;
+                    return tooltip == true ? defaultTooltip(record) : tooltip(record);
+                }
+            },
             series: [{
+                data,
                 type: 'treemap',
-                layoutAlgorithm: 'squarified',
-                alternateStartingDirection: true,
-                levels: [{
-                    level: 1,
-                    layoutAlgorithm: 'squarified',
-                    dataLabels: {
-                        enabled: true,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        style: {
-                            fontSize: '15px',
-                            fontWeight: 'bold'
-                        }
-                    }
-                }],
-                data: this.model.data
+                animation: false,
+                layoutAlgorithm: algorithm
             }]
         };
     }
+
+    defaultTooltip = (record) => {
+        const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
+            value = record[valueField],
+            name = record[labelField],
+            heat = record[heatField];
+
+        return `
+            <div class="xh-treemap-tooltip">
+                <div class="xh-treemap-tooltip__label">${name}</div>
+                <div class="xh-treemap-tooltip__row">
+                    <div>${valueFieldLabel || valueField}:</div>
+                    <div>${fmtNumber(value)}</div>
+                </div>
+                <div class="xh-treemap-tooltip__row">
+                    <div>${heatFieldLabel || heatField}:</div>
+                    <div>${fmtNumber(heat)}</div>
+                </div>
+            </div>
+        `;
+    };
 }
 
 export const treeMap = elemFactory(TreeMap);
