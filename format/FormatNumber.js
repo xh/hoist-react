@@ -5,14 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {defaults, isFinite, isString, isFunction} from 'lodash';
+import {span} from '@xh/hoist/cmp/layout';
+import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
 
-import {Exception} from '@xh/hoist/exception';
-import {span} from '@xh/hoist/cmp/layout';
-
-import {createRenderer, saveOriginal} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
+import {createRenderer, saveOriginal} from './FormatUtils';
 
 const THOUSAND = 1000,
     MILLION  = 1000000,
@@ -22,7 +20,8 @@ const THOUSAND = 1000,
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
-    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'});
+    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
+    DEFAULT_COLOR_SPEC = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
 
 /**
  * Standard number formatting for Hoist
@@ -38,11 +37,11 @@ const UP_TICK = '▴',
  *      align vertically with negative ledgers in columns.
  * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
  * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
- * @param {string} [opts.prefix] - prefix to prepend to value (between the number and its sign).
- * @param {string} [opts.label] - label to append to value.
+ * @param {string?} [opts.prefix] - prefix to prepend to value (between the number and its sign).
+ * @param {string?} [opts.label] - label to append to value.
  * @param {string} [opts.labelCls] - CSS class of label <span>,
- * @param {(boolean|Object)} [opts.colorSpec] - show in colored <span>, based on sign of value.
- *      True for red/green/grey defaults, or object of the form {pos: color, neg: color, neutral: color}.
+ * @param {(boolean|fmtNumber~ColorSpec)} [opts.colorSpec] - color output based on the sign of the
+ *      value. True to use red/green/grey defaults, or provide an object with alternate CSS classes.
  * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
  *      minimally formatted original value, or a function to generate a custom tooltip string.
  * @param {boolean} [opts.asElement] - return a React element rather than a HTML string
@@ -66,7 +65,7 @@ export function fmtNumber(v, {
     prefix = null,
     label = null,
     labelCls = 'xh-units-label',
-    colorSpec = null,
+    colorSpec = false,
     tooltip = null,
     asElement = false,
     originalValue = v
@@ -301,18 +300,11 @@ function signGlyph(v, asElement) {
 }
 
 function valueColor(v, colorSpec) {
-    if (!isFinite(v)) return '';
+    if (!isFinite(v) || !colorSpec) return '';
 
-    const defaultColors = {pos: 'xh-green', neg: 'xh-red', neutral: 'xh-gray'};
-    colorSpec = typeof colorSpec === 'object' ? colorSpec : defaultColors;
-
-    if (!colorSpec.pos || !colorSpec.neg || !colorSpec.neutral) {
-        throw Exception.create('Invalid color spec: ' + colorSpec);
-    }
-
+    colorSpec = isPlainObject(colorSpec) ? colorSpec : DEFAULT_COLOR_SPEC;
     if (v < 0) return colorSpec.neg;
     if (v > 0) return colorSpec.pos;
-
     return colorSpec.neutral;
 }
 
@@ -369,4 +361,11 @@ export const numberRenderer = createRenderer(fmtNumber),
  * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
  * @param {number} originalValue - number to be formatted.
  * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @typedef fmtNumber~ColorSpec - config for pos/neg/neutral color classes.
+ * @property {string} [pos] - CSS color class to wrap around values > 0.
+ * @property {string} [neg] - CSS class to wrap around values < 0.
+ * @property {string} [neutral] - CSS class to wrap around zero values.
  */
