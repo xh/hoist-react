@@ -1,5 +1,11 @@
 # Changelog
 
+## v26.0.0-SNAPSHOT - under development
+
+TBD
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...develop)
+
 ## v25.1.0 - 2019-07-23
 
 ### 🎁 New Features
