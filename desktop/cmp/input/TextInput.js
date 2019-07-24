@@ -123,8 +123,11 @@ export class TextInput extends HoistInput {
     }
 
     renderClearButton() {
+        const {disabled} = this.getNonLayoutProps();
         return button({
             icon: Icon.cross(),
+            omit: disabled,
+            tabIndex: -1,
             minimal: true,
             onClick: () => {
                 this.noteValueChange(null);
