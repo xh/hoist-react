@@ -69,6 +69,16 @@ export class AgGridModel {
     }
 
     /**
+     * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
+     */
+    // Intentionally not using @computed here because these api references may be updated if the grid
+    // is re-rendered, and @computed would not fire reactions since the return value would not have
+    // changed
+    get isReady() {
+        return !isNil(this.agApi) && !isNil(this.agColumnApi);
+    }
+
+    /**
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
      *
@@ -81,6 +91,8 @@ export class AgGridModel {
      * @returns {AgGridState} - the current state of the grid
      */
     getState(opts = {}) {
+        this.throwIfNotReady();
+
         const errors = {},
             getStateChunk = (type) => {
                 if (opts[`exclude${startCase(type)}State`]) return undefined;
@@ -123,6 +135,8 @@ export class AgGridModel {
      * @param {AgGridState} state
      */
     setState(state) {
+        this.throwIfNotReady();
+
         const {columnState, sortState, expandState, filterState, miscState} = state;
         if (columnState) this.setColumnState(columnState);
         if (sortState) this.setSortState(sortState);
@@ -135,6 +149,8 @@ export class AgGridModel {
      * @returns {AgGridMiscState}
      */
     getMiscState() {
+        this.throwIfNotReady();
+
         return {
             panelId: this.agApi.getOpenedToolPanel()
         };
@@ -145,6 +161,8 @@ export class AgGridModel {
      * @param {AgGridMiscState} miscState
      */
     setMiscState(miscState) {
+        this.throwIfNotReady();
+
         const {agApi} = this,
             {panelId} = miscState;
 
@@ -160,6 +178,8 @@ export class AgGridModel {
      *      @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
      */
     getFilterState() {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         return agApi.getFilterModel();
     }
@@ -171,6 +191,8 @@ export class AgGridModel {
      * @param {Object[]} filterState
      */
     setFilterState(filterState) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
 
         agApi.setFilterModel(filterState);
@@ -182,6 +204,8 @@ export class AgGridModel {
      *      @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
      */
     getSortState() {
+        this.throwIfNotReady();
+
         const {agApi, agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
@@ -212,6 +236,8 @@ export class AgGridModel {
      * @param {Object[]} sortState
      */
     setSortState(sortState) {
+        this.throwIfNotReady();
+
         const sortModel = cloneDeep(sortState),
             {agApi, agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode(),
@@ -246,6 +272,8 @@ export class AgGridModel {
      * @returns {AgGridColumnState} - current column state of the grid, including pivot mode
      */
     getColumnState() {
+        this.throwIfNotReady();
+
         const {agColumnApi} = this;
         return {
             isPivot: agColumnApi.isPivotMode(),
@@ -258,6 +286,8 @@ export class AgGridModel {
      * @param {AgGridColumnState} colState
      */
     setColumnState(colState) {
+        this.throwIfNotReady();
+
         const {agColumnApi} = this,
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
@@ -282,6 +312,8 @@ export class AgGridModel {
      * @returns {Object} - the current row expansion state of the grid in a serializable form
      */
     getExpandState() {
+        this.throwIfNotReady();
+
         const expandState = {};
         this.agApi.forEachNode(node => {
             if (!node.group) return;
@@ -300,6 +332,8 @@ export class AgGridModel {
      * @param {Object} expandState - grid expand state retrieved via getExpandState()
      */
     setExpandState(expandState) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         let wasChanged = false;
         agApi.forEachNode(node => {
@@ -319,6 +353,8 @@ export class AgGridModel {
 
     /** @returns {(string[]|number[])} - list of selected row node ids */
     getSelectedRowNodeIds() {
+        this.throwIfNotReady();
+
         return this.agApi.getSelectedRows().map(it => it.id);
     }
 
@@ -328,6 +364,8 @@ export class AgGridModel {
      * @param ids {(string[]|number[])} - row node ids to mark as selected
      */
     setSelectedRowNodeIds(ids) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         agApi.deselectAll();
         ids.forEach(id => {
@@ -341,6 +379,8 @@ export class AgGridModel {
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {
+        this.throwIfNotReady();
+
         let id = null;
         this.agApi.forEachNodeAfterFilterAndSort(node => {
             if (isNil(id) && node.data) {
@@ -381,6 +421,10 @@ export class AgGridModel {
         };
 
         return buildNodePath(node);
+    }
+
+    throwIfNotReady() {
+        throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting to query or mutate AgGrid state!');
     }
 }
 
