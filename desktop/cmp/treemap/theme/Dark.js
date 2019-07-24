@@ -5,8 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Highcharts} from '@xh/hoist/kit/highcharts';
-
 /**
  * @private
  */
@@ -14,8 +12,10 @@ export const DarkTheme = {
     // Default colors
     colorAxis: {
         minColor: '#1F232B',
-        maxColor: Highcharts.getOptions().colors[0]
+        maxColor: '#009E0A'
     },
+
+    selectionColor: '#03A9F4',
 
     chart: {
         backgroundColor: '#1F232B',

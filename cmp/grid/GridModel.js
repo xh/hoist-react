@@ -100,6 +100,8 @@ export class GridModel {
     @observable groupBy = null;
     /** @member {(string|boolean)} */
     @bindable showSummary = false;
+    /** @member {string[]} */
+    @observable.ref expandedTreeNodes = [];
 
     static defaultContextMenuTokens = [
         'copy',
@@ -336,6 +338,7 @@ export class GridModel {
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
+            this.noteAgTreeStateChange();
         }
     }
 
@@ -345,7 +348,32 @@ export class GridModel {
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();
+            this.noteAgTreeStateChange();
         }
+    }
+
+    /** Toggle expanded state of a node by id in grouped or tree grid */
+    toggleExpanded(id) {
+        const node = this.getRowNode(id);
+        if (!node) return;
+        node.setExpanded(!node.expanded);
+        this.noteAgTreeStateChange();
+    }
+
+    /** Expand a node by id in grouped or tree grid */
+    expandNode(id) {
+        const node = this.getRowNode(id);
+        if (!node) return;
+        node.setExpanded(true);
+        this.noteAgTreeStateChange();
+    }
+
+    /** Collapse a node by id in grouped or tree grid */
+    collapseNode(id) {
+        const node = this.getRowNode(id);
+        if (!node) return;
+        node.setExpanded(false);
+        this.noteAgTreeStateChange();
     }
 
     /**
@@ -442,6 +470,19 @@ export class GridModel {
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel} = this;
         selModel.select(agGridModel.getSelectedRowNodeIds());
+    }
+
+    @action
+    noteAgTreeStateChange() {
+        const {treeMode, agApi} = this;
+        if (!agApi || !treeMode) return;
+        const expandedTreeNodes = [];
+        agApi.forEachNode(node => {
+            if (node.expanded) {
+                expandedTreeNodes.push(node.id);
+            }
+        });
+        this.expandedTreeNodes = expandedTreeNodes;
     }
 
     /**
@@ -617,6 +658,11 @@ export class GridModel {
             }
         });
         return {groupIds, colIds};
+    }
+
+    getRowNode(id) {
+        if (!this.agApi) return;
+        return this.agApi.getRowNode(id);
     }
 
     formatValuesForExport(params) {

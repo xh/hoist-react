@@ -560,6 +560,7 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+        if (this.model.treeMode) this.model.noteAgTreeStateChange();
     };
 
     // Catches column pinning changes triggered from ag-grid ui components

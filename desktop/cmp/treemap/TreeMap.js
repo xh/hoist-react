@@ -13,7 +13,7 @@ import {div, box} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {assign, merge, clone} from 'lodash';
+import {assign, merge, clone, debounce} from 'lodash';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -45,6 +45,32 @@ export class TreeMap extends Component {
 
     _chartElem = new Ref();
     _chart = null;
+
+    get data() {
+        // If not bound to a grid, simply use model data
+        const {data, gridModel} = this.model;
+        if (!gridModel) return data;
+
+        // If bound to a grid, mixin selected state from GridModel
+        const selectedIds = gridModel.selModel.ids,
+            {selectionColor} = XH.darkTheme ? DarkTheme : LightTheme;
+
+        return data.map(it => {
+            const selected = selectedIds.includes(it.id);
+            return {
+                ...it,
+                selected,
+                color: selected ? selectionColor : undefined
+            };
+        });
+    }
+
+    constructor(props) {
+        super(props);
+        // Detect double-clicks vs single-clicks
+        this._clickCount = 0;
+        this._debouncedClickHandler = debounce(this.clickHandler, 500);
+    }
 
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
@@ -143,8 +169,8 @@ export class TreeMap extends Component {
     }
 
     getModelConfig() {
-        const {config, data, algorithm, tooltip} = this.model,
-            {defaultTooltip} = this;
+        const {config, algorithm, tooltip} = this.model,
+            {data, defaultTooltip} = this;
 
         return {
             ...config,
@@ -164,11 +190,34 @@ export class TreeMap extends Component {
                 data,
                 type: 'treemap',
                 animation: false,
-                layoutAlgorithm: algorithm
+                layoutAlgorithm: algorithm,
+                events: {click: this.onClick}
             }]
         };
     }
 
+    //----------------------
+    // Click handling
+    //----------------------
+    onClick = (e) => {
+        this._clickCount++;
+        this._debouncedClickHandler(e.point.record, e);
+        if (this._clickCount >= 2) this._debouncedClickHandler.flush();
+    };
+
+    clickHandler(record, e) {
+        const {onClick, onDoubleClick} = this.model;
+        if (onClick && this._clickCount === 1) {
+            onClick(record, e);
+        } else if (onDoubleClick && this._clickCount === 2) {
+            onDoubleClick(record, e);
+        }
+        this._clickCount = 0;
+    }
+
+    //----------------------
+    // Tooltip
+    //----------------------
     defaultTooltip = (record) => {
         const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
             value = record[valueField],

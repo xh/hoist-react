@@ -5,8 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Highcharts} from '@xh/hoist/kit/highcharts';
-
 /**
  * @private
  */
@@ -14,6 +12,8 @@ export const LightTheme = {
     // Default colors
     colorAxis: {
         minColor: '#FFF',
-        maxColor: Highcharts.getOptions().colors[0]
-    }
+        maxColor: '#388E3C'
+    },
+
+    selectionColor: '#90CAF9'
 };
