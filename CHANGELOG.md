@@ -2,7 +2,11 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-TBD
+### 🎁 New Features
+
+* `RecordAction` supports a new `secondaryText` property. When used for a Grid context menu item,
+  this text appears on the right side of the menu item, usually used for displaying the shortcut
+  key associated with an action. 
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...develop)
 
