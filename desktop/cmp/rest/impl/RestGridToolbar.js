@@ -4,14 +4,15 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {castArray, isEmpty, isFunction} from 'lodash';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {castArray, isEmpty, isFunction} from 'lodash';
+import {Component} from 'react';
 import {RestGridModel} from '../RestGridModel';
 
 @HoistComponent
@@ -33,13 +34,12 @@ export class RestGridToolbar extends Component {
         if (isFunction(extraItems)) extraItems = extraItems();
         extraItems = extraItems ? castArray(extraItems) : [];
 
-
         return [
             recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),
-            storeCountLabel({gridModel, unit}),
+            gridCountLabel({gridModel, unit}),
             storeFilterField({gridModel, includeFields: model.filterFields}),
             exportButton({gridModel})
         ];

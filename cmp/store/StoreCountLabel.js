@@ -5,12 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {GridModel} from '@xh/hoist/cmp/grid';
 import {box} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
-import {pluralize, singularize, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {Component} from 'react';
 
@@ -25,11 +24,8 @@ export class StoreCountLabel extends Component {
 
     static propTypes = {
 
-        /** Store to which this component should bind. Specify this or 'gridModel'. */
+        /** Store to which this component should bind. */
         store: PT.instanceOf(Store),
-
-        /** GridModel to which this component should bind. Specify this or 'store'. */
-        gridModel: PT.instanceOf(GridModel),
 
         /**
          * True to count nested child records.
@@ -47,21 +43,14 @@ export class StoreCountLabel extends Component {
     constructor(props) {
         super(props);
 
-        throwIf(props.gridModel && props.store, "Cannot specify both 'gridModel' and 'store' props.");
-
-        const unit = props.unit || this.defaultUnit;
+        const unit = withDefault(props.unit, this.defaultUnit);
         this._oneUnit = singularize(unit);
         this._manyUnits = pluralize(unit);
     }
 
-    get store() {
-        const {gridModel, store} = this.props;
-        return store || (gridModel && gridModel.store);
-    }
+    get store() {return this.props.store}
 
     render() {
-        if (!this.store) return null;
-
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),

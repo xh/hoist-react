@@ -49,22 +49,15 @@ export class GridCountLabel extends Component {
     constructor(props) {
         super(props);
 
-        const unit = props.unit || this.defaultUnit;
+        const unit = withDefault(props.unit, this.defaultUnit);
         this._oneUnit = singularize(unit);
         this._manyUnits = pluralize(unit);
     }
 
-    get store() {
-        return this.gridModel.store;
-    }
-
-    get gridModel() {
-        return this.props.gridModel;
-    }
+    get gridModel() {return this.props.gridModel}
+    get store() {return this.gridModel.store}
 
     render() {
-        if (!this.store) return null;
-
         return box({
             ...this.getLayoutProps(),
             className: this.getClassName(),

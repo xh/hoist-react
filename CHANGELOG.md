@@ -4,8 +4,14 @@
 
 ### 🎁 New Features
 
-* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel` - outputs
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
+
+### 💥 Breaking Changes
+
+* `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
+  `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
+  to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...develop)
 
