@@ -8,6 +8,13 @@
   this text appears on the right side of the menu item, usually used for displaying the shortcut
   key associated with an action. 
 
+### ⚙️ Technical
+
+* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state
+  are called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods
+  to verify the grid is fully initialized.
+
 [Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...develop)
 
 ## v25.1.0 - 2019-07-23
