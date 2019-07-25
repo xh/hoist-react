@@ -2,8 +2,32 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
+* TBD
+
+## v25.2.0 - 2019-07-25
+
 ### 🎁 New Features
 
+* `RecordAction` supports a new `secondaryText` property. When used for a Grid context menu item,
+  this text appears on the right side of the menu item, usually used for displaying the shortcut key
+  associated with an action.
+
+### 🐞 Bug Fixes
+
+* Fixed issue with loopy behavior when using `Select.selectOnFocus` and changing focus
+  simultaneously with keyboard and mouse.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...v25.2.0)
+
+## v25.1.0 - 2019-07-23
+
+### 🎁 New Features
+
+* `JsonInput` includes buttons for toggling showing in a full-screen dialog window. Also added a
+  convenience button to auto-format `JsonInput's` content.
+* `DateInput` supports a new `enableTextInput` prop. When this property is set to false, `DateInput`
+  will be entirely driven by the provided date picker. Additionally, `DateInput` styles have been
+  improved for its various modes to more clearly convey its functionality.
 * `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
   now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
 * `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
@@ -14,14 +38,21 @@
   `loadAsync()` method if called with a parameter that's not a plain object (i.e. param is clearly
   not a `LoadSpec`). Note this might be a breaking change, in so far as it introduces additional
   validation around this pre-existing API requirement.
+* Requirements for the `colorSpec` option passed to Hoist number formatters have been relaxed to
+  allow partial definitions such that, for example, only negative values may receive the CSS class
+  specified, without having to account for positive value styling.
 
 ### 🐞 Bug Fixes
 
-* `RestFormModel` now submits dirty fields only when editing a record, as intended. Fixes #1245.
+* `RestFormModel` now submits dirty fields only when editing a record, as intended (#1245).
+* `FormField` will no longer override the disabled prop of its child input if true (#1262).
 
 ### 📚 Libraries
 
 * mobx `5.11 -> 5.13`
+* Misc. patch-level updates
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.0.0...v25.1.0)
 
 ## v25.0.0 - 2019-07-16
 
@@ -43,6 +74,8 @@
 * `DimensionChooserModel`'s `historyPreference` config has been renamed `preference`. It now
   supports saving both value and history to the same preference (existing history preferences will
   be handled).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.2.0...v25.0.0)
 
 ## v24.2.0 - 2019-07-08
 
@@ -72,7 +105,7 @@
 * mobx `5.10 -> 5.11`
 * react-transition-group `2.8 -> 4.2`
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...develop)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v24.1.1...v24.2.0)
 
 ## v24.1.1 - 2019-07-01
 

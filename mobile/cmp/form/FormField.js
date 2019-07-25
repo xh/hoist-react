@@ -188,23 +188,24 @@ export class FormField extends Component {
         const {fieldModel} = this,
             layoutProps = this.getLayoutProps(),
             item = this.props.children,
+            {props} = item,
             {propTypes} = item.type;
 
         const overrides = {
             model: fieldModel,
             bind: 'value',
-            disabled: fieldModel && fieldModel.disabled
+            disabled: props.disabled || (fieldModel && fieldModel.disabled)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
         // the item should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
         if (this.hasSize && this.childIsSizeable) {
-            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
+            if (isUndefined(props.width) && isUndefined(props.flex)) {
                 overrides.width = null;
             }
 
-            if (isUndefined(item.props.height) && layoutProps.height) {
+            if (isUndefined(props.height) && layoutProps.height) {
                 overrides.height = null;
                 overrides.flex = 1;
             }

@@ -228,12 +228,13 @@ export class FormField extends Component {
     prepareChild({displayNotValid, leftErrorIcon, idAttr, errors, minimal, readonly}) {
         const {fieldModel} = this,
             item = this.props.children,
+            {props} = item,
             {propTypes} = item.type;
 
         const overrides = {
             model: fieldModel,
             bind: 'value',
-            disabled: fieldModel && fieldModel.disabled,
+            disabled: props.disabled || (fieldModel && fieldModel.disabled),
             id: idAttr
         };
 
@@ -241,12 +242,12 @@ export class FormField extends Component {
         // the input should fill the available size of the FormField.
         // Note: We explicitly set width / height to null to override defaults.
         if (this.childIsSizeable) {
-            if (isUndefined(item.props.width) && isUndefined(item.props.flex)) {
+            if (isUndefined(props.width) && isUndefined(props.flex)) {
                 overrides.width = null;
                 overrides.flex = 1;
             }
 
-            if (isUndefined(item.props.height)) {
+            if (isUndefined(props.height)) {
                 overrides.height = null;
             }
         }

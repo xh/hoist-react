@@ -24,6 +24,7 @@ import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
 export class RecordAction {
 
     text;
+    secondaryText;
     icon;
     intent;
     tooltip;
@@ -37,6 +38,7 @@ export class RecordAction {
     /**
      * @param {Object} c - RecordAction configuration.
      * @param {string} [c.text] - label to be displayed.
+     * @param {string} [c.secondaryText] - additional label to be displayed, usually in a minimal fashion.
      * @param {Object} [c.icon] - icon to be displayed.
      * @param {string} [c.intent] - intent to be used for rendering the action.
      * @param {string} [c.tooltip] - tooltip to display when hovering over the action.
@@ -54,6 +56,7 @@ export class RecordAction {
      */
     constructor({
         text,
+        secondaryText,
         icon = null,
         intent,
         tooltip,
@@ -65,6 +68,7 @@ export class RecordAction {
         recordsRequired = false
     }) {
         this.text = text;
+        this.secondaryText = secondaryText;
         this.icon = icon;
         this.intent = intent;
         this.tooltip = tooltip;
@@ -95,6 +99,7 @@ export class RecordAction {
         const defaultDisplay = {
             icon: this.icon,
             text: this.text,
+            secondaryText: this.secondaryText,
             intent: this.intent,
             tooltip: this.tooltip,
             items: this.items,

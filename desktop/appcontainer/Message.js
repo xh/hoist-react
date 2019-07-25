@@ -27,6 +27,7 @@ import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 export class Message extends Component {
 
     static modelClass = MessageModel;
+    baseClassName = 'xh-message';
 
     render() {
         const model = this.model,
@@ -39,7 +40,7 @@ export class Message extends Component {
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
-            className: 'xh-message',
+            className: this.getClassName(),
             items: [
                 dialogBody(
                     model.message,

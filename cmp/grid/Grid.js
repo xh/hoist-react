@@ -324,6 +324,7 @@ export class Grid extends Component {
 
             items.push({
                 name: displaySpec.text,
+                shortcut: displaySpec.secondaryText,
                 icon,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
