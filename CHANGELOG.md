@@ -8,6 +8,11 @@
   this text appears on the right side of the menu item, usually used for displaying the shortcut
   key associated with an action. 
 
+
+### 🐞 Bug Fixes
+* Fixed issue with loopy behavior when using `Select.selectOnFocus` and changing focus simultaneously 
+with keyboard and mouse.
+     
 [Commit Log](https://github.com/exhi/hoist-react/compare/v25.1.0...develop)
 
 ## v25.1.0 - 2019-07-23
