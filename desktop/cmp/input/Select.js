@@ -274,17 +274,24 @@ export class Select extends HoistInput {
     };
 
     @action
-    onFocus = (ev) => {
+    noteFocused() {
         if (this.manageInputValue) {
-            this.inputValue = this.renderValue ? this.renderValue.label : null;
+            const {renderValue} = this;
+            this.inputValue = renderValue ? renderValue.label : null;
         }
         if (this.props.selectOnFocus) {
-            // The wait here is necessary to due to a re-render of the internal input component.
-            ev.persist();
-            wait(1).then(() => ev.target.select());
+            wait(1).then(() => {
+                // Delay to allow re-render. For safety, only select if still focused!
+                const rsRef = this.reactSelectRef.current,
+                    inputElem = rsRef ? rsRef.select.inputRef : null;
+                if (this.hasFocus && inputElem && document.activeElement == inputElem) {
+                    inputElem.select();
+                }
+            });
         }
-        this.noteFocused();
-    };
+        super.noteFocused();
+    }
+
 
     //-------------------------
     // Options / value handling
