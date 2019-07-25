@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, maxBy, minBy} from 'lodash';
 
 /**
  * Todo
@@ -31,6 +31,8 @@ export class TreeMapModel {
     /** @member {string} */
     heatFieldLabel;
     /** @member {function} */
+    filter;
+    /** @member {function} */
     onClick;
     /** @member {function} */
     onDoubleClick;
@@ -48,7 +50,7 @@ export class TreeMapModel {
     @observable.ref data = [];
 
     /**
-     * @param {Object} c - ChartModel configuration.
+     * @param {Object} c - TreeMapModel configuration.
      * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {Object[]} c.data - Raw data to be displayed.
@@ -58,6 +60,7 @@ export class TreeMapModel {
      * @param {string} c.heatField - Record field to use to determine node color.
      * @param {string} [c.valueFieldLabel] - Label for valueField to render in the default tooltip.
      * @param {string} [c.heatFieldLabel] - Label for heatField to render in the default tooltip.
+     * @parma {function} [c.filter] - A filter function used when processing data. Receives (record), returns boolean.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record, e).
      *      If not provided, by default will select a record when using a GridModel.
      * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked. Receives (record, e).
@@ -75,6 +78,7 @@ export class TreeMapModel {
         heatField = 'value',
         valueFieldLabel,
         heatFieldLabel,
+        filter,
         onClick,
         onDoubleClick,
         algorithm = 'squarified',
@@ -89,6 +93,7 @@ export class TreeMapModel {
         this.heatField = heatField;
         this.valueFieldLabel = valueFieldLabel;
         this.heatFieldLabel = heatFieldLabel;
+        this.filter = filter;
         this.tooltip = tooltip;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
@@ -110,13 +115,18 @@ export class TreeMapModel {
 
     @action
     setData(rawData) {
-        this.data = this.processDataRecursive(rawData);
+        this.data = this.processData(rawData);
     }
 
     //-------------------------
     // Data
     //-------------------------
-    processDataRecursive(rawData, parentId = null, ret = []) {
+    processData(rawData) {
+        const ret = this.processRecordsRecursive(rawData);
+        return this.normaliseColorValues(ret);
+    }
+
+    processRecordsRecursive(rawData, parentId = null, ret = []) {
         const {gridModel, labelField, valueField, heatField} = this,
             expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null;
 
@@ -131,17 +141,22 @@ export class TreeMapModel {
             throwIf(isNil(value), `TreeMap valueField '${valueField}' not found for record ${id}`);
             throwIf(isNil(colorValue), `TreeMap heatField '${heatField}' not found for record ${id}`);
 
+            // Todo: Check record passes filter. Include children?
+            if (this.filter && !this.filter(record)) {
+                return;
+            }
+
             // Create TreeMapRecord
             const item = {
                 id,
                 record,
                 name,
-                value: Math.abs(value),
-                colorValue: Math.abs(colorValue)
+                colorValue,
+                value: Math.abs(value)
             };
 
             if (children && expandedTreeNodes.includes(id)) {
-                this.processDataRecursive(children, id, ret);
+                this.processRecordsRecursive(children, id, ret);
             }
 
             if (parentId) {
@@ -152,6 +167,34 @@ export class TreeMapModel {
         });
 
         return ret;
+    }
+
+    normaliseColorValues(data) {
+        if (!data.length) return;
+
+        const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
+            maxNegHeat = Math.min(minBy(data, 'colorValue').colorValue, 0);
+
+        data.forEach(it => {
+            if (it.colorValue > 0) {
+                // Normalize between 0.5-1
+                const norm = this.normalize(it.colorValue, 0, maxPosHeat);
+                it.colorValue = (norm / 2) + 0.5;
+            } else if (it.colorValue < 0) {
+                // Normalize between 0-0.5
+                const norm = this.normalize(Math.abs(it.colorValue), Math.abs(maxNegHeat), 0);
+                it.colorValue = (norm / 2);
+            } else {
+                it.colorValue = 0.5; // Exactly zero
+            }
+        });
+
+        return data;
+    }
+
+    normalize(value, min, max) {
+        // Return value between 0-1
+        return (value - min) / (max - min);
     }
 
     //----------------------

@@ -11,9 +11,13 @@
 export const LightTheme = {
     // Default colors
     colorAxis: {
-        minColor: '#FFF',
-        maxColor: '#388E3C'
+        min: 0,
+        max: 1,
+        stops: [
+            [0, '#B71C1C'], // Max negative
+            [0.5, '#FFFFFF'], // Zero
+            [1, '#388E3C'] // Max positive
+        ]
     },
-
     selectionColor: '#90CAF9'
 };

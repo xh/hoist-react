@@ -7,3 +7,5 @@
 
 export * from './TreeMap';
 export * from './TreeMapModel';
+export * from './SplitTreeMap';
+export * from './SplitTreeMapModel';

@@ -11,12 +11,17 @@
 export const DarkTheme = {
     // Default colors
     colorAxis: {
-        minColor: '#1F232B',
-        maxColor: '#009E0A'
+        min: 0,
+        max: 1,
+        stops: [
+            [0, '#D50000'], // Max negative
+            [0.5, '#1F232B'], // Zero
+            [1, '#009E0A'] // Max positive
+        ]
     },
-
     selectionColor: '#03A9F4',
 
+    // Theme
     chart: {
         backgroundColor: '#1F232B',
         plotBorderColor: '#606063'
