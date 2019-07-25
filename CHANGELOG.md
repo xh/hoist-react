@@ -2,7 +2,9 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-* TBD
+### 🎁 New Features
+
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
 
 ## v25.2.0 - 2019-07-25
 
@@ -30,7 +32,6 @@
   improved for its various modes to more clearly convey its functionality.
 * `ExportButton` will auto-disable itself if bound to an empty `GridModel`. This helper button will
   now also throw a console warning (to alert the developer) if `gridModel.enableExport != true`.
-* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
 
 ### ⚙️ Technical
 
