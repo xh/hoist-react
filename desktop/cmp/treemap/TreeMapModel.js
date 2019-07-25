@@ -126,9 +126,10 @@ export class TreeMapModel {
         return this.normaliseColorValues(ret);
     }
 
-    processRecordsRecursive(rawData, parentId = null, ret = []) {
+    processRecordsRecursive(rawData, parentId = null) {
         const {gridModel, labelField, valueField, heatField} = this,
-            expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null;
+            expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null,
+            ret = [];
 
         rawData.forEach(record => {
             const {id, children} = record,
@@ -141,13 +142,8 @@ export class TreeMapModel {
             throwIf(isNil(value), `TreeMap valueField '${valueField}' not found for record ${id}`);
             throwIf(isNil(colorValue), `TreeMap heatField '${heatField}' not found for record ${id}`);
 
-            // Todo: Check record passes filter. Include children?
-            if (this.filter && !this.filter(record)) {
-                return;
-            }
-
             // Create TreeMapRecord
-            const item = {
+            const treeRec = {
                 id,
                 record,
                 name,
@@ -155,22 +151,29 @@ export class TreeMapModel {
                 value: Math.abs(value)
             };
 
+            if (parentId) treeRec.parent = parentId;
+
+            // Process children
+            let childTreeRecs = [];
             if (children && expandedTreeNodes.includes(id)) {
-                this.processRecordsRecursive(children, id, ret);
+                childTreeRecs = this.processRecordsRecursive(children, id, ret);
             }
 
-            if (parentId) {
-                item.parent = parentId;
+            // Include record and its children if:
+            // a) There is no filter
+            // b) There is a filter and the record passes it
+            // c) There is a filter and any of its children passes it
+            if (!this.filter || this.filter(record) || childTreeRecs.length) {
+                ret.push(treeRec);
+                ret.push(...childTreeRecs);
             }
-
-            ret.push(item);
         });
 
         return ret;
     }
 
     normaliseColorValues(data) {
-        if (!data.length) return;
+        if (!data.length) return [];
 
         const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
             maxNegHeat = Math.min(minBy(data, 'colorValue').colorValue, 0);

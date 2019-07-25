@@ -42,12 +42,20 @@ export class SplitTreeMapModel {
 
     @computed
     get posRootTotal() {
-        return sumBy(this.posModel.data, it => it.parent ? 0 : it.value);
+        return sumBy(this.posModel.data, it => {
+            // Only include root records that pass the filter
+            if (it.parent || !this.filter(it.record)) return 0;
+            return it.value;
+        });
     }
 
     @computed
     get negRootTotal() {
-        return sumBy(this.negModel.data, it => it.parent ? 0 : it.value);
+        return sumBy(this.negModel.data, it => {
+            // Only include root records that don't pass the filter
+            if (it.parent || this.filter(it.record)) return 0;
+            return it.value;
+        });
     }
 
     /**
