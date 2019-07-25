@@ -2,7 +2,16 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
-* TBD
+### 🎁 New Features
+
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
+  both overall record count and current selection count in a configurable way.
+
+### 💥 Breaking Changes
+
+* `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
+  `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
+  to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
 
 ## v25.2.0 - 2019-07-25
 
