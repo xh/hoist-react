@@ -5,14 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/general/websocket/WebSocketModel';
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
 import {HoistComponent} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Component} from 'react';
 
@@ -37,7 +37,7 @@ export class WebSocketPanel extends Component {
                 filler(),
                 relativeTimestamp({timestamp: model.lastRefresh}),
                 toolbarSep(),
-                storeCountLabel({gridModel, unit: 'client'}),
+                gridCountLabel({gridModel, unit: 'client'}),
                 toolbarSep(),
                 storeFilterField({gridModel}),
                 exportButton({gridModel})
