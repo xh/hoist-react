@@ -12,18 +12,27 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {find, pull} from 'lodash';
 
 /**
- * Establishes and maintains a websocket connection to the Hoist server, if enabled via appSpec.
+ * Establishes and maintains a websocket connection to the Hoist server, if enabled via `AppSpec`.
  *
- * Callers can register a callback to subscribe to incoming messages by topic and can send messages
- * back to the server on the same channel. Once a connection is established, this service exposes a
- * `channelKey` property that is unique to this user and client app instance. This key can be used
- * in application-specific requests to the server to identify this client connection. The server
- * can then push messages as requested - e.g. when a particular query or dataset is updated.
+ * Once a connection is established, this service exposes a `channelKey` property that is unique to
+ * this user and client app instance. This key can be used in application-specific requests to the
+ * server to identify this unique client app instance / connection. The server can then push
+ * messages as requested - e.g. when a particular query or dataset of interest is updated.
  *
- * Note requires the server-side application to be configured to listen to inbound websocket
- * connections. See WebSocketService.groovy in hoist-core for additional documentation.
+ * Callers can register a callback via `subscribe()` to receive incoming messages on a requested
+ * topic. The {@see WebSocketSubscription} returned from `subscribe()` can be used to later
+ * `unsubscribe()` if updates are no longer desired. `HoistModel` and `HoistComponent` callers are
+ * encouraged to save a reference to their subscription via a {@see managed} property to have
+ * callbacks unsubscribed automatically when the component/model is unmounted/destroyed.
  *
- * {@see WebSocketIndicator} - a simple component for visually displaying connection status.
+ * This service also provides a `sendMessage()` method to push messages back to the server over the
+ * same socket, although this is a relatively uncommon usage and is specifically *not* recommended
+ * over plain-old Ajax requests.
+ *
+ * Note this service requires the server-side application to be configured to listen to inbound
+ * websocket connections. See `WebSocketService.groovy` in hoist-core for additional documentation.
+ *
+ * Also {@see WebSocketIndicator}, a simple component for visually displaying connection status.
  */
 @HoistService
 export class WebSocketService {
@@ -99,7 +108,7 @@ export class WebSocketService {
     /**
      * Cancel a subscription for a given topic/handler.
      *
-     * @param {WebSocketSubscription} subscription - the object returned by subscribe() when the
+     * @param {WebSocketSubscription} subscription - the object returned by `subscribe()` when the
      *      subscription was initially established.
      */
     unsubscribe(subscription) {
@@ -253,7 +262,7 @@ export class WebSocketService {
 }
 
 /**
- * Wrapper class to encapsulate a subscription to websocket messages on a topic for a given handler.
+ * Wrapper class to encapsulate and manage a subscription to messages for a given topic + handler.
  * Returned from `WebSocketService.subscribe()` and used to `unsubscribe()`.
  */
 class WebSocketSubscription {
@@ -263,6 +272,10 @@ class WebSocketSubscription {
     constructor(topic, fn) {
         this.topic = topic;
         this.fn = fn;
+    }
+
+    destroy() {
+        XH.webSocketService.unsubscribe(this);
     }
 }
 
