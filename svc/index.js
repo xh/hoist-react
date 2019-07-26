@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+export * from './AutoRefreshService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './FetchService';
@@ -13,4 +14,4 @@ export * from './IdleService';
 export * from './LocalStorageService';
 export * from './PrefService';
 export * from './TrackService';
-export * from './AutoRefreshService';
+export * from './WebSocketService';
