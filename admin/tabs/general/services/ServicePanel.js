@@ -6,11 +6,11 @@
  */
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
@@ -47,7 +47,7 @@ export class ServicePanel extends Component {
                 disabled: gridModel.selModel.isEmpty
             }),
             filler(),
-            storeCountLabel({gridModel, unit: 'service'}),
+            gridCountLabel({gridModel, unit: 'service'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
         ];
