@@ -191,6 +191,13 @@ export class TreeMap extends Component {
                 type: 'treemap',
                 animation: false,
                 layoutAlgorithm: algorithm,
+                dataLabels: {
+                    enabled: true,
+                    allowOverlap: false,
+                    align: 'left',
+                    verticalAlign: 'top',
+                    style: {fontSize: '10px'}
+                },
                 events: {click: this.onClick}
             }]
         };
@@ -225,13 +232,13 @@ export class TreeMap extends Component {
             heat = record[heatField];
 
         return `
-            <div class="xh-treemap-tooltip">
-                <div class="xh-treemap-tooltip__label">${name}</div>
-                <div class="xh-treemap-tooltip__row">
+            <div class='xh-treemap-tooltip'>
+                <div class='xh-treemap-tooltip__label'>${name}</div>
+                <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel || valueField}:</div>
                     <div>${fmtNumber(value)}</div>
                 </div>
-                <div class="xh-treemap-tooltip__row" ${valueField == heatField ? 'style="display:none"' : ''}>
+                <div class='xh-treemap-tooltip__row' ${valueField == heatField ? 'style="display:none"' : ''}>
                     <div>${heatFieldLabel || heatField}:</div>
                     <div>${fmtNumber(heat)}</div>
                 </div>
