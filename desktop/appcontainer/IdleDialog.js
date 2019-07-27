@@ -26,20 +26,18 @@ export const [IdleDialog, idleDialog] = hoistComponent(props => {
         model: {
             title: `${XH.clientAppName} is sleeping`,
             icon: Icon.moon(),
-            message: div({
-                items: [
-                    img({
-                        src: idleImage,
-                        width: 300,
-                        height: 180
-                    }),
-                    p('This application is sleeping due to inactivity.'),
-                    p('Please click below to reload it.')
-                ]
-            }),
+            message: div(
+                img({
+                    src: idleImage,
+                    width: 300,
+                    height: 180
+                }),
+                p('This application is sleeping due to inactivity.'),
+                p('Please click below to reload it.')
+            ),
             confirmIntent: 'primary',
             confirmText: 'I\'m back',
-            onConfirm: this.props.onReactivate
+            onConfirm: props.onReactivate
         },
         className: 'xh-idle-dialog'
     });

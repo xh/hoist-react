@@ -7,6 +7,7 @@
 import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 import {headerCollapseButton} from './HeaderCollapseButton';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './PanelHeader.scss';
 import {PanelModel} from '../PanelModel';
@@ -32,7 +33,7 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
 
     if (!collapsed || vertical) {
         return hbox({
-            className: this.getClassName(compactCls),
+            className: getClassName(compactCls),
             items: [
                 icon || null,
                 title ?
@@ -43,15 +44,15 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
                     }) :
                     filler(),
                 ...(!collapsed ? headerItems : []),
-                this.renderHeaderCollapseButton()
+                renderHeaderCollapseButton(model)
             ],
-            onDoubleClick: onDoubleClick
+            onDoubleClick
         });
     } else {
         // For vertical layout, skip header items.
         const isLeft = side === 'left';
         return vbox({
-            className: this.getClassName(sideCls, compactCls),
+            className: getClassName(sideCls, compactCls),
             flex: 1,
             items: [
                 isLeft ? filler() : renderHeaderCollapseButton(model),
@@ -64,7 +65,7 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
                     null,
                 !isLeft ? filler() : renderHeaderCollapseButton(model)
             ],
-            onDoubleClick: this.onDblClick
+            onDoubleClick
         });
     }
 });

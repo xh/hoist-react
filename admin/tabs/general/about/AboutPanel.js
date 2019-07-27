@@ -61,7 +61,7 @@ function renderTables() {
                 row('React', svc.get('reactVersion')),
                 row('ag-Grid', svc.get('agGridVersion')),
                 row('Blueprint Core', svc.get('blueprintCoreVersion')),
-                row('MobX', svc.get('mobxVersion')),
+                row('MobX', svc.get('mobxVersion'))
             )
         })
     ];

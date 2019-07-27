@@ -14,8 +14,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid';
 
-
-
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of
  * available Grid columns. For use by applications when a button is desired in addition to the
