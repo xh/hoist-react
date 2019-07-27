@@ -33,7 +33,7 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
 
     if (!collapsed || vertical) {
         return hbox({
-            className: getClassName(compactCls),
+            className: getClassName(compactCls, props),
             items: [
                 icon || null,
                 title ?
@@ -52,7 +52,7 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
         // For vertical layout, skip header items.
         const isLeft = side === 'left';
         return vbox({
-            className: getClassName(sideCls, compactCls),
+            className: getClassName(sideCls, props, compactCls),
             flex: 1,
             items: [
                 isLeft ? filler() : renderHeaderCollapseButton(model),
