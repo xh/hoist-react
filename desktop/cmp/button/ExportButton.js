@@ -32,7 +32,7 @@ export const [ExportButton, exportButton] = hoistComponent(
         return button({
             icon: withDefault(icon, Icon.download()),
             title: withDefault(title, 'Export'),
-            onClick: withDefault(onClick, exportGridData(gridModel, exportOptions)),
+            onClick: withDefault(onClick, () => exportGridData(gridModel, exportOptions)),
             disabled: withDefault(disabled, gridModel && gridModel.empty),
             ...rest
         });

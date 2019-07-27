@@ -27,13 +27,14 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
         if (model && model.collapsible) model.toggleCollapsed();
     };
 
-    const titleCls = 'xh-panel-header__title',
+    const baseCls = 'xh-panel-header',
+        titleCls = 'xh-panel-header__title',
         sideCls = `xh-panel-header--${side}`,
         compactCls = compact ? 'xh-panel-header--compact' : null;
 
     if (!collapsed || vertical) {
         return hbox({
-            className: getClassName(compactCls, props),
+            className: getClassName(baseCls, props, compactCls),
             items: [
                 icon || null,
                 title ?
@@ -52,7 +53,7 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
         // For vertical layout, skip header items.
         const isLeft = side === 'left';
         return vbox({
-            className: getClassName(sideCls, props, compactCls),
+            className: getClassName(baseCls, props, sideCls, compactCls),
             flex: 1,
             items: [
                 isLeft ? filler() : renderHeaderCollapseButton(model),
