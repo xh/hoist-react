@@ -15,6 +15,7 @@ import {never, wait, allSettled} from '@xh/hoist/promise';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 
 import {
+    AutoRefreshService,
     ConfigService,
     EnvironmentService,
     FetchService,
@@ -73,6 +74,8 @@ class XHClass {
     // Hoist Core Services
     // Singleton instances of each service are created and installed within initAsync() below.
     //----------------------------------------------------------------------------------------------
+    /** @member {AutoRefreshService} */
+    autoRefreshService;
     /** @member {ConfigService} */
     configService;
     /** @member {EnvironmentService} */
@@ -108,6 +111,7 @@ class XHClass {
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     get isMobile()              {return this.appSpec.isMobile}
+    get clientAppCode()         {return this.appSpec.clientAppCode}
     get clientAppName()         {return this.appSpec.clientAppName}
 
     //---------------------------
@@ -172,7 +176,11 @@ class XHClass {
         await this.initServicesInternalAsync(svcs);
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
-            throwIf(this[name], `Service cannot be installed. Property '${name}' already exists on XH object.`);
+            throwIf(this[name], (
+                `Service cannot be installed: property '${name}' already exists on XH object, 
+                indicating duplicate/conflicting service names or an (unsupported) attempt to 
+                install the same service twice.`
+            ));
             this[name] = svc;
         });
     }
@@ -297,13 +305,16 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
+     * @param {MessageInput} [config.input] - config for input to be displayed.
      * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
      * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
      * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
      * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
+     *
      * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {
         return this.acm.messageSourceModel.message(config);
@@ -327,6 +338,17 @@ class XHClass {
      */
     confirm(config) {
         return this.acm.messageSourceModel.confirm(config);
+    }
+
+    /**
+     * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
+     * Applications may also provide a custom HoistInput.
+     *
+     * @param {Object} config - see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
+     */
+    prompt(config) {
+        return this.acm.messageSourceModel.prompt(config);
     }
 
     /**
@@ -456,10 +478,19 @@ class XHClass {
             await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
-                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+                const pingURL = XH.isDevelopmentMode ?
+                    `${XH.baseUrl}ping` :
+                    `${window.location.origin}${XH.baseUrl}ping`;
+
+                throw this.exception({
+                    name: 'UI Server Unavailable',
+                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
+                    detail: e.message
+                });
             }
 
             this.setAppState(S.PRE_AUTH);
@@ -499,7 +530,7 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
-            await this.installServicesAsync(IdleService, GridExportService);
+            await this.installServicesAsync(AutoRefreshService, IdleService, GridExportService);
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

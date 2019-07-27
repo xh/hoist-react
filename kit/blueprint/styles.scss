@@ -1,3 +1,6 @@
+@import '~@blueprintjs/core/src/common/react-transition';
+
+
 //------------------------
 // NavBar
 //------------------------
@@ -80,8 +83,9 @@
   margin-right: var(--xh-pad-half-px);
 }
 
+
 //------------------------
-// Dialog + Masking
+// Dialogs, Popovers, Masking
 //------------------------
 .bp3-dialog {
   padding-bottom: 0;
@@ -114,6 +118,24 @@
   background-color: var(--xh-mask-bg);
 }
 
+// Squelch popover scale transition - unlike Dialog with its `transitionName` prop, Popover
+// does not appear to provide a way to turn off its transition without also losing the (often
+// desirable) arrow pointing to its target. Variables below required for the include to function.
+$pt-transition-ease: cubic-bezier(0.4, 1, 0.75, 0.9) !default;
+$pt-transition-ease-bounce: cubic-bezier(0.54, 1.12, 0.38, 1.11) !default;
+$pt-transition-duration: 100ms !default;
+
+// This override is taken from the popover source SCSS - there it is scoped under the minimal class.
+// https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
+.bp3-popover {
+  @include react-transition(
+      "bp3-popover",
+      (transform: scale(1) scale(1)),  // this is what prevents any scaling from occuring
+      $duration: 0,
+      $after: "> &"
+  );
+}
+
 
 //------------------------
 // Menus
@@ -133,8 +155,13 @@
 // Buttons
 //------------------------
 .bp3-button {
-  // Use padding vars, tighter default LR padding (driven in part by our minimal mode default).
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  // Use padding vars.
+  padding: var(--xh-pad-half-px) var(--xh-pad-px);
+
+  // With tighter default LR padding in minimal mode.
+  &.bp3-minimal {
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+  }
 
   // Except in button groups, which are already compressing buttons more closely together.
   .bp3-button-group & {
@@ -172,6 +199,7 @@
   }
 }
 
+
 //------------------------
 // Toasts
 //------------------------
@@ -195,6 +223,7 @@
     word-break: break-word;
   }
 }
+
 
 //------------------------
 // Forms + Inputs
@@ -224,18 +253,33 @@
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.bp3-input-group svg:not(.bp3-icon) {
-  position: absolute;
-  top: 0;
-  line-height: 1;
-  font-size: var(--xh-font-size-large-px);
-  font-weight: 400;
-  font-style: normal;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  z-index: 1;
-  margin: 7px;
-  color: var(--xh-text-color-muted);
+.bp3-input-group {
+  svg:not(.bp3-icon) {
+    position: absolute;
+    top: 0;
+    line-height: 1;
+    font-size: var(--xh-font-size-large-px);
+    font-weight: 400;
+    font-style: normal;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    z-index: 1;
+    margin: 7px;
+    color: var(--xh-text-color-muted);
+  }
+
+  .bp3-button-group {
+    margin-right: 3px;
+
+    .bp3-button {
+      margin-right: 0;
+      margin-left: 0;
+    }
+
+    svg:not(.bp3-icon) {
+      margin-top: 4px;
+    }
+  }
 }
 
 // Avoid misaligned rightIcon within inputs.

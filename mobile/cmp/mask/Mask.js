@@ -32,11 +32,11 @@ export class Mask extends Component {
         /** Text to be displayed under the loading spinner image */
         message: PT.string,
 
-        /** True (default) to display a spinning image. */
-        spinner: PT.bool,
+        /** Callback when mask is tapped, relayed to underlying div element. */
+        onClick: PT.func,
 
-        /** Click handler **/
-        onClick: PT.func
+        /** True (default) to display a spinning image. */
+        spinner: PT.bool
     };
 
     baseClassName = 'xh-mask';

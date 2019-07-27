@@ -6,9 +6,9 @@
  */
 import {elemFactory} from '@xh/hoist/core';
 import Select from 'react-select';
-import AsyncSelect from 'react-select/lib/Async';
-import AsyncCreatable from 'react-select/lib/AsyncCreatable';
-import Creatable from 'react-select/lib/Creatable';
+import AsyncSelect from 'react-select/async';
+import AsyncCreatable from 'react-select/async-creatable';
+import Creatable from 'react-select/creatable';
 
 export {
     Select,

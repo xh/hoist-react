@@ -6,11 +6,11 @@
  */
 
 import {hoistComponent, useLocalModel} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
@@ -22,13 +22,14 @@ export const [ServicePanel] = hoistComponent(() => {
         mask: model.loadModel,
         tbar: [
             button({
-                icon: Icon.sync(),
-                text: 'Clear Caches',
+                icon: Icon.reset(),
+                text: 'Clear Selected',
+                intent: 'danger',
                 onClick: () => model.clearCaches(),
                 disabled: gridModel.selModel.isEmpty
             }),
             filler(),
-            storeCountLabel({gridModel, unit: 'service'}),
+            gridCountLabel({gridModel, unit: 'service'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
         ],

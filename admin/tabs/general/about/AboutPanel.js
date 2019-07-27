@@ -52,11 +52,16 @@ function renderTables() {
         h2(Icon.books(), 'Framework Versions'),
         table({
             item: tbody(
+                <tr><th colSpan={2} style={{textAlign: 'left'}}>Server</th></tr>,
                 row('Hoist Core', svc.get('hoistCoreVersion')),
+                row('Grails', svc.get('grailsVersion')),
+                row('Java', svc.get('javaVersion')),
+                <tr><th colSpan={2} style={{textAlign: 'left'}}>Client</th></tr>,
                 row('Hoist React', hrVersion),
                 row('React', svc.get('reactVersion')),
-                row('Grails', svc.get('grailsVersion')),
-                row('Java', svc.get('javaVersion'))
+                row('ag-Grid', svc.get('agGridVersion')),
+                row('Blueprint Core', svc.get('blueprintCoreVersion')),
+                row('MobX', svc.get('mobxVersion')),
             )
         })
     ];

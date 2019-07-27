@@ -13,11 +13,11 @@ import './VersionBar.scss';
  * @private
  */
 export const [VersionBar, versionBar] = hoistComponent(() => {
-    const env = XH.getEnv('appEnvironment'),
-        version = XH.getEnv('clientVersion'),
-        isVisible = (env !== 'Production' || XH.getUser().isHoistAdmin || XH.getPref('xhForceEnvironmentFooter'));
 
-    if (!isVisible) return null;
+    if (!isShowing()) return null;
+
+    const env = XH.getEnv('appEnvironment'),
+        version = XH.getEnv('clientVersion');
 
     return box({
         justifyContent: 'center',
@@ -32,3 +32,21 @@ export const [VersionBar, versionBar] = hoistComponent(() => {
         ]
     });
 });
+
+
+//----------------------
+// Implementation
+//----------------------
+function isShowing() {
+    const env = XH.getEnv('appEnvironment');
+
+    switch (XH.getPref('xhShowVersionBar', 'auto')) {
+        case 'always':
+            return true;
+        case 'never':
+            return false;
+        case 'auto':
+        default:
+            return (env !== 'Production' || XH.getUser().isHoistAdmin);
+    }
+}

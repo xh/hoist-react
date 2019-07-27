@@ -95,6 +95,8 @@ body {
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
+  --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
+  --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
@@ -147,10 +149,13 @@ body {
   --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
   --xh-form-field-margin-right: var(--form-field-margin-right, 0);
 
-  // Mask
+  // Mask + LoadingIndicator
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
+  --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
+  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
 
   // Navbar (top app toolbar)
   --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
@@ -190,7 +195,7 @@ body {
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
   --xh-resizable-border-width: var(--resizable-border-width, 1);
   --xh-resizable-border-width-px: calc(var(--xh-resizable-border-width) * 1px);
-  --xh-resizable-button-bg: var(--resizable-button-bg, transparent);
+  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(0, 0, 0, 0.05));
   --xh-resizable-button-icon-color: var(--resizable-button-icon-color, var(--xh-blue-gray));
   --xh-resizable-size: var(--resizable-size, 8);
   --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
@@ -208,6 +213,8 @@ body {
   --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
   --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
   --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
+  --xh-tbar-min-size: var(--tbar-min-size, 41);
+  --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
   --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
   --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
@@ -225,8 +232,13 @@ body {
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
   --xh-title-height: var(--title-height, 36);
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
-  --xh-title-pad: var(--title-pad, calc(var(--xh-pad) * 0.8));
+  --xh-title-pad: var(--title-pad, var(--xh-pad-half));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
+
+  --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));
+  --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
+  --xh-title-compact-height: var(--title-compact-height, 28);
+  --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   // Blueprint intents
   --xh-intent-primary: var(--intent-primary, var(--xh-blue-dark));
@@ -275,10 +287,12 @@ body.xh-dark {
   --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
   --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
 
-  // Mask
+  // Mask + LoadingIndicator
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
+  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
 
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
@@ -287,6 +301,7 @@ body.xh-dark {
   // Resizable splitter
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
+  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(255, 255, 255, 0.08));
   --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
 
   // Scrollbars (customized for webkit)
@@ -345,6 +360,9 @@ body.xh-mobile {
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
   --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
   --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
+
+  // Mask
+  --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
 }
 
 body.xh-mobile.xh-dark {

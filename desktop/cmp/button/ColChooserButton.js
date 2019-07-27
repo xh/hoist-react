@@ -9,6 +9,11 @@ import PT from 'prop-types';
 import {hoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {div, vbox} from '@xh/hoist/cmp/layout';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid';
+
 
 
 /**
@@ -19,12 +24,36 @@ import {button, Button} from './Button';
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
 export const [ColChooserButton, colChooserButton] = hoistComponent(
-    ({gridModel, ...buttonProps}) => {
-        return button({
-            icon: Icon.gridPanel(),
-            title: 'Choose grid columns...',
-            onClick: () => gridModel.showColChooser(),
-            ...buttonProps
+    ({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) => {
+        const {colChooserModel} = gridModel;
+
+        return popover({
+            popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
+            position: withDefault(popoverPosition, 'auto'),
+            isOpen: colChooserModel.isPopoverOpen,
+            target: button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                title: withDefault(title, 'Choose grid columns...'),
+                ...rest
+            }),
+            content: vbox(
+                div({
+                    className: 'xh-popup__title',
+                    item: 'Choose Columns'
+                }),
+                colChooser({
+                    model: colChooserModel,
+                    width: chooserWidth,
+                    height: chooserHeight
+                })
+            ),
+            onInteraction: (willOpen) => {
+                if (willOpen) {
+                    colChooserModel.openPopover();
+                } else {
+                    colChooserModel.close();
+                }
+            }
         });
     });
 
@@ -32,5 +61,20 @@ ColChooserButton.propTypes = {
     ...Button.propTypes,
 
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel: PT.instanceOf(GridModel).isRequired
+    gridModel: PT.instanceOf(GridModel).isRequired,
+
+    /** Position for chooser popover, as per Blueprint docs. */
+    popoverPosition: PT.oneOf([
+        'top-left', 'top', 'top-right',
+        'right-top', 'right', 'right-bottom',
+        'bottom-right', 'bottom', 'bottom-left',
+        'left-bottom', 'left', 'left-top',
+        'auto'
+    ]),
+
+    /** Width for the opened chooser */
+    chooserWidth: PT.number,
+
+    /** Height for the opened chooser */
+    chooserHeight: PT.number
 };

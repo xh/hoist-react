@@ -6,6 +6,7 @@
  */
 
 export * from './impl/ColChooser';
+export * from './impl/ColChooserDialog';
 export * from './impl/ColChooserModel';
 export * from './columns';
 

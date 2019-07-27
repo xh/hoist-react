@@ -14,12 +14,14 @@ import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 import {
     reactSelect,
     reactCreatableSelect,
     reactAsyncSelect,
     reactAsyncCreatableSelect
 } from '@xh/hoist/kit/react-select';
+import {createFilter} from 'react-select';
 
 import './Select.scss';
 
@@ -119,6 +121,9 @@ export class Select extends HoistInput {
          */
         rsOptions: PT.object,
 
+        /** True to select contents when control receives focus. */
+        selectOnFocus: PT.bool,
+
         /** Field on provided options for sourcing each option's value (default `value`). */
         valueField: PT.string
     };
@@ -143,6 +148,15 @@ export class Select extends HoistInput {
     @observable inputValue = null;
     get manageInputValue() {
         return this.filterMode && !this.multiMode;
+    }
+
+    // Custom local option filtering to leverage default filter fn w/change to show all options if
+    // input has not been changed since last select (i.e. user has not typed).
+    // Applied only when manageInputValue if true.
+    _inputChangedSinceSelect = false;
+    _defaultLocalFilterFn = createFilter();
+    _localFilterFn = (opt, inputVal) => {
+        return !this.inputValue || !this._inputChangedSinceSelect || this._defaultLocalFilterFn(opt, inputVal);
     }
 
     constructor(props) {
@@ -196,9 +210,7 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
             rsProps.onInputChange = this.onInputChange;
-            if (this.inputValue == null) {
-                rsProps.filterOption = () => true;
-            }
+            rsProps.filterOption = this._localFilterFn;
         }
 
         if (this.asyncMode) {
@@ -239,6 +251,7 @@ export class Select extends HoistInput {
     onSelectChange = (opt) => {
         if (this.manageInputValue) {
             this.inputValue = opt ? opt.label : null;
+            this._inputChangedSinceSelect = false;
         }
         this.noteValueChange(opt);
     };
@@ -251,20 +264,34 @@ export class Select extends HoistInput {
         if (this.manageInputValue) {
             if (action == 'input-change') {
                 this.inputValue = value;
+                this._inputChangedSinceSelect = true;
                 if (!value) this.noteValueChange(null);
             } else if (action == 'input-blur') {
                 this.inputValue = null;
+                this._inputChangedSinceSelect = false;
             }
         }
     };
 
     @action
-    onFocus = (ev) => {
+    noteFocused() {
         if (this.manageInputValue) {
-            this.inputValue = this.renderValue ? this.renderValue.label : null;
+            const {renderValue} = this;
+            this.inputValue = renderValue ? renderValue.label : null;
         }
-        this.noteFocused();
-    };
+        if (this.props.selectOnFocus) {
+            wait(1).then(() => {
+                // Delay to allow re-render. For safety, only select if still focused!
+                const rsRef = this.reactSelectRef.current,
+                    inputElem = rsRef ? rsRef.select.inputRef : null;
+                if (this.hasFocus && inputElem && document.activeElement == inputElem) {
+                    inputElem.select();
+                }
+            });
+        }
+        super.noteFocused();
+    }
+
 
     //-------------------------
     // Options / value handling

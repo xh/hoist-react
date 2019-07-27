@@ -10,6 +10,7 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistComponent, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {isReactElement, getClassName} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
@@ -41,8 +42,10 @@ export const [Panel, panel] = hoistComponent(function Panel(props, ref) {
         bbar,
         title,
         icon,
+        compactHeader,
         headerItems,
         mask: maskProp,
+        loadingIndicator: loadingIndicatorProp,
         children,
         model: modelProp,
         ...rest
@@ -90,40 +93,48 @@ export const [Panel, panel] = hoistComponent(function Panel(props, ref) {
     }
     if (!collapsed) flags.wasDisplayed = true;
 
-    // 3) Mask is as provided, or a default simple mask.
-    let maskElem = null;
-    if (maskProp === true) {
-        maskElem = mask({isDisplayed: true});
-    } else if (maskProp instanceof PendingTaskModel) {
-        maskElem = mask({model: maskProp, spinner: true});
-    } else if (isReactElement(maskProp)) {
-        maskElem = maskProp;
-    }
-
-    // 4) Prepare combined layout with header above core.  This is what layout props are trampolined to
+    // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
     const processedPanelHeader = (title || icon || headerItems) ?
-        panelHeader({title, icon, headerItems, model}) :
+        panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
         null;
 
     const item = vbox({
-        ref,
         items: [
             processedPanelHeader,
             coreContents,
-            maskElem
+            parseLoadDecorator(maskProp, mask),
+            parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
         ],
         ...rest,
         ...layoutProps,
         className
     });
 
-    // 5) Return, wrapped in resizable and its affordances if needed.
+    // 4) Return, wrapped in resizable and its affordances if needed.
     return resizable || collapsible || showSplitter ?
         resizeContainer({item, model}) :
         item;
 });
 
+// LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
+function parseLoadDecorator(prop, cmp) {
+    let ret = null;
+    if (prop === true) {
+        ret = cmp({isDisplayed: true});
+    } else if (prop instanceof PendingTaskModel) {
+        ret = cmp({model: prop, spinner: true});
+    } else if (isReactElement(prop)) {
+        ret = prop;
+    }
+
+    return ret;
+}
+
+
 Panel.propTypes = {
+    /** True to style panel header (if displayed) with reduced padding and font-size. */
+    compactHeader: PT.bool,
+
     /** Items to be added to the right-side of the panel's header. */
     headerItems: PT.node,
 
@@ -131,12 +142,20 @@ Panel.propTypes = {
     icon: PT.element,
 
     /**
-     * Mask to render on this panel. Set to:
-     *   + a ReactElement specifying a Mask instance - or -
-     *   + a PendingTaskModel for a default loading mask w/spinner bound to that model - or -
-     *   + true for a simple default mask.
+     * Message to render unobtrusively on panel corner. Set to:
+     *   + a PendingTaskModel for an indicator w/spinner bound to that model (most common), or
+     *   + a ReactElement specifying a LoadingIndicator instance, or
+     *   + true for a default LoadingIndicator.
      */
-    mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+    loadingIndicator: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
+
+    /**
+     * Mask to render on this panel. Set to:
+     *   + a PendingTaskModel for a mask w/spinner bound to that model (most common), or
+     *   + a ReactElement specifying a Mask instance - or -
+     *   + true for a default mask.
+     */
+    mask: PT.oneOfType([PT.instanceOf(PendingTaskModel), PT.element, PT.bool]),
 
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(PanelModel), PT.object]),

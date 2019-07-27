@@ -30,8 +30,7 @@ export const [Mask, mask] = hoistComponent(function Mask(props) {
 
     const message = withDefault(props.message, model && model.message),
         inline = withDefault(props.inline, true),
-        showSpinner = withDefault(props.spinner, false),
-        onClick = props.onClick;
+        showSpinner = withDefault(props.spinner, false);
 
     return overlay({
         className,
@@ -42,7 +41,6 @@ export const [Mask, mask] = hoistComponent(function Mask(props) {
         enforceFocus: !inline,
         item: vbox({
             className: 'xh-mask-body',
-            onClick,
             items: [
                 showSpinner ? spinner() : null,
                 showSpinner ? vspacer(10) : null,

@@ -35,7 +35,6 @@ export const required = ({value, displayName}) => {
  * @returns ConstraintCb
  */
 export function lengthIs({min, max}) {
-
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 

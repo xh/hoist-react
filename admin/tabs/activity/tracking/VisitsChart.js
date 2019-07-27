@@ -11,6 +11,8 @@ import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+
 
 export const [VisitsChart, visitsChart] = hoistComponent(() => {
     const model = useLocalModel(VisitsChartModel);
@@ -33,11 +35,13 @@ function renderToolbar(model) {
         renderDateInput({model, bind: 'startDate'}),
         Icon.angleRight(),
         renderDateInput({model, bind: 'endDate'}),
+        toolbarSep(),
         textInput({
             model,
             bind: 'username',
             placeholder: 'Username',
-            width: 120
+            enableClear: true,
+            width: 150
         }),
         refreshButton({model})
     ];
@@ -46,8 +50,7 @@ function renderToolbar(model) {
 function renderDateInput(args) {
     return dateInput({
         popoverPosition: 'top-left',
-        commitOnChange: true,
-        width: 100,
+        width: 120,
         ...args
     });
 }

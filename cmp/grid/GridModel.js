@@ -13,18 +13,20 @@ import {
     StoreContextMenu
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
     cloneDeep,
     compact,
     defaults,
+    defaultsDeep,
     find,
     findLast,
     isArray,
     isEmpty,
     isNil,
+    isUndefined,
     isPlainObject,
     isString,
     last,
@@ -37,6 +39,7 @@ import {
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 import {managed} from '../../core/mixins';
+import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -75,6 +78,8 @@ export class GridModel {
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
+    enableColumnPinning;
+    /** @member {boolean} */
     enableExport;
     /** @member {object} */
     exportOptions;
@@ -93,6 +98,8 @@ export class GridModel {
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
+    /** @member {(string|boolean)} */
+    @bindable showSummary = false;
 
     static defaultContextMenuTokens = [
         'copy',
@@ -109,9 +116,12 @@ export class GridModel {
     /**
      * @param {Object} c - GridModel configuration.
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
+     * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
      *      Store. If not supplied, store fields will be inferred from columns config.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
+     * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
+     *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
@@ -126,11 +136,13 @@ export class GridModel {
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
+     * @param {boolean} [c.enableColumnPinning] - true to allow the user to manually pin / unpin
+     *      columns via UI affordances.
      * @param {boolean} [c.enableColChooser] - true to setup support for column chooser UI and
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
-     * @param {object} [c.exportOptions] - default options used in exportAsync().
+     * @param {Object} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
@@ -142,7 +154,9 @@ export class GridModel {
     constructor({
         store,
         columns,
+        colDefaults = {},
         treeMode = false,
+        showSummary = false,
         selModel,
         stateModel = null,
         emptyText = null,
@@ -156,25 +170,37 @@ export class GridModel {
         stripeRows = true,
         showCellFocus = false,
 
+        enableColumnPinning = true,
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
+
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
         ...rest
     }) {
         this.treeMode = treeMode;
+        this.showSummary = showSummary;
+
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
 
+        this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
+
+        // Deprecation warning added as of 24.2 - remove in future major version.
+        if (exportOptions.includeHiddenCols) {
+            console.warn("GridModel exportOptions.includeHiddenCols no longer supported - replace with {columns: 'ALL'}.");
+            exportOptions.columns = 'ALL';
+        }
         this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
 
+        this.colDefaults = colDefaults;
         this.setColumns(columns);
         this.store = this.parseStore(store);
 
@@ -288,22 +314,17 @@ export class GridModel {
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
-     * This method is no-op if provided any ids without a corresponding column.
+     * This method will clear grid grouping if provided any ids without a corresponding column.
      * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
      */
     @action
     setGroupBy(colIds) {
-        if (!colIds) {
-            this.groupBy = [];
-            return;
-        }
-
-        colIds = castArray(colIds);
+        colIds = isNil(colIds) ? [] : castArray(colIds);
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn('groupBy colId not found in grid columns', invalidColIds);
-            return;
+            console.warn('Unknown colId specified in groupBy - grid will not be grouped.', invalidColIds);
+            colIds = [];
         }
 
         this.groupBy = colIds;
@@ -365,6 +386,11 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
+    }
+
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
@@ -377,14 +403,14 @@ export class GridModel {
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
         );
-
+        
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
-            .map(({colId, width, hidden}) => ({colId, width, hidden}));
+            .map(({colId, width, hidden, pinned}) => ({colId, width, hidden, pinned}));
     }
 
     showColChooser() {
@@ -394,11 +420,12 @@ export class GridModel {
     }
 
     noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide}) => {
+        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
             const col = this.findColumn(this.columns, colId);
             if (!col) return null;
             return {
                 colId,
+                pinned,
                 hidden: hide,
                 width: col.flex ? undefined : width
             };
@@ -406,6 +433,15 @@ export class GridModel {
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
+    }
+
+    // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
+    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
+    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    @debounced(0)
+    noteAgSelectionStateChanged() {
+        const {selModel, agGridModel} = this;
+        selModel.select(agGridModel.getSelectedRowNodeIds());
     }
 
     /**
@@ -426,12 +462,13 @@ export class GridModel {
         throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
             'Invalid columns detected in column changes!');
 
-        // 1) Update any width or visibility changes
+        // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
             const col = this.findColumn(columnState, change.colId);
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
+            if (!isUndefined(change.pinned)) col.pinned = change.pinned;
         });
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
@@ -480,6 +517,20 @@ export class GridModel {
     }
 
     /**
+     * Determine if a leaf-level column is currently pinned.
+     *
+     * Call this method instead of inspecting the `pinned` property on the Column itself, as that
+     * property is not updated with state changes.
+     *
+     * @param {String} colId
+     * @returns {string}
+     */
+    getColumnPinned(colId) {
+        const state = this.getStateForColumn(colId);
+        return state ? state.pinned : null;
+    }
+
+    /**
      * Return matching leaf-level Column or ColumnState object from the provided collection for the
      * given colId, if any. Used as a utility function to find both types of objects.
      */
@@ -510,7 +561,7 @@ export class GridModel {
     }
 
     buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(c, this);
+        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
     }
 
     //-----------------------
@@ -669,6 +720,7 @@ export class GridModel {
  * @property {string} colId - unique identifier of the column
  * @property {number} [width] - new width to set for the column
  * @property {boolean} [hidden] - visibility of the column
+ * @property {string} [pinned] - 'left'|'right' if pinned, null if not
  */
 
 /**

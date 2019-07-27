@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {Ref} from '@xh/hoist/utils/react';
-import {observable,  settable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 
 /**
  * @private
@@ -18,9 +18,7 @@ export class LogDisplayModel {
     firstRow = new Ref();
     lastRow = new Ref();
 
-    @settable
-    @observable.ref
-    rows = [];
+    @bindable.ref rows = [];
 
     constructor(parent) {
         this.parent = parent;
@@ -72,7 +70,7 @@ export class LogDisplayModel {
             })
             .then(response => {
                 if (!response.success) throw new Error(response.exception);
-                this.setRows(this.startLine ? response.content : response.content.reverse());
+                this.setRows(parent.startLine ? response.content : response.content.reverse());
             })
             .catch(e => {
                 // Show errors inline in the viewer vs. a modal alert or catchDefault().

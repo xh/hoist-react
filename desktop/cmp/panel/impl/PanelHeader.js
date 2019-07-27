@@ -17,7 +17,7 @@ import {PanelModel} from '../PanelModel';
  */
 export const [PanelHeader, panelHeader] = hoistComponent(props => {
     const model = useProvidedModel(PanelModel, props),
-        {title, icon, headerItems = []} = props,
+        {title, icon, compact, headerItems = []} = props,
         {collapsed, vertical, side, showHeaderCollapseButton} = model || {};
 
     if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
@@ -26,41 +26,45 @@ export const [PanelHeader, panelHeader] = hoistComponent(props => {
         if (model && model.collapsible) model.toggleCollapsed();
     };
 
+    const titleCls = 'xh-panel-header__title',
+        sideCls = `xh-panel-header--${side}`,
+        compactCls = compact ? 'xh-panel-header--compact' : null;
+
     if (!collapsed || vertical) {
         return hbox({
-            className: 'xh-panel-header',
+            className: this.getClassName(compactCls),
             items: [
                 icon || null,
                 title ?
                     box({
-                        className: 'xh-panel-header-title',
+                        className: titleCls,
                         flex: 1,
                         item: title
                     }) :
                     filler(),
                 ...(!collapsed ? headerItems : []),
-                renderHeaderCollapseButton(model)
+                this.renderHeaderCollapseButton()
             ],
-            onDoubleClick
+            onDoubleClick: onDoubleClick
         });
     } else {
-        // For Compressed vertical layout, skip header items.
+        // For vertical layout, skip header items.
         const isLeft = side === 'left';
         return vbox({
-            className: `xh-panel-header xh-panel-header-${side}`,
+            className: this.getClassName(sideCls, compactCls),
             flex: 1,
             items: [
                 isLeft ? filler() : renderHeaderCollapseButton(model),
                 icon || null,
                 title ?
                     box({
-                        className: 'xh-panel-header-title',
+                        className: titleCls,
                         item: title
                     }) :
                     null,
                 !isLeft ? filler() : renderHeaderCollapseButton(model)
             ],
-            onDoubleClick
+            onDoubleClick: this.onDblClick
         });
     }
 });

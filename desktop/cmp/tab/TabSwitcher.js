@@ -48,6 +48,9 @@ export const [TabSwitcher, tabSwitcher] = hoistComponent(function TabSwitcher(pr
 });
 
 TabSwitcher.propTypes = {
+    /** Primary component model instance. */
+    model: PT.instanceOf(TabContainerModel).isRequired,
+
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
 };

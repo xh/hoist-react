@@ -5,11 +5,11 @@
 * Copyright © 2019 Extremely Heavy Industries Inc.
 */
 import {hoistComponent, useLocalModel} from '@xh/hoist/core';
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {storeCountLabel, storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
@@ -22,12 +22,13 @@ export const [EhCachePanel] = hoistComponent(() => {
         mask: model.loadModel,
         tbar: [
             button({
-                icon: Icon.sync(),
+                icon: Icon.reset(),
                 text: 'Clear All',
+                intent: 'danger',
                 onClick: () => model.clearAll()
             }),
             filler(),
-            storeCountLabel({gridModel, unit: 'cache'}),
+            gridCountLabel({gridModel, unit: 'cache'}),
             storeFilterField({gridModel}),
             exportButton({gridModel})
         ],

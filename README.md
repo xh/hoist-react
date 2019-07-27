@@ -184,7 +184,7 @@ add their particular functionality, behaviors, and methods to the decorated clas
 | `HoistModel.js`     | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
 | `HoistComponent.js` | Mixin for adding core Component support.                               | [⚛️](core/HoistComponent.js) |
 | `HoistService.js`   | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistAppModel.js`  | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistApp.js)    |
+| `HoistAppModel.js`  | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistAppModel.js)    |
 | `XH.js`             | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
 | `ClassUtils.js`     | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
 

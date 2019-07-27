@@ -11,7 +11,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
-
 /**
  * A Toolbar for the LeftRightChooser.
  * @private

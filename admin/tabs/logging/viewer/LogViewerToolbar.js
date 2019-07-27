@@ -39,6 +39,7 @@ export const [LogViewerToolbar, logViewerToolbar] = hoistComponent(props => {
             model,
             bind: 'pattern',
             placeholder: 'Search...',
+            enableClear: true,
             width: 150
         }),
         toolbarSep(),

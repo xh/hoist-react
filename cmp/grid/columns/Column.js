@@ -6,6 +6,7 @@
  */
 
 import {Component} from 'react';
+import {XH} from '@xh/hoist/core';
 import {castArray, startCase, isFunction, clone, find} from 'lodash';
 import {ExportFormat} from './ExportFormat';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -48,6 +49,7 @@ export class Column {
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
+     * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
      * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
@@ -100,6 +102,7 @@ export class Column {
         flex,
         rowHeight,
         absSort,
+        comparator,
         resizable,
         movable,
         sortable,
@@ -149,6 +152,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
+        this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
         this.movable = withDefault(movable, true);
@@ -194,7 +198,7 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: true, // Block user-driven pinning/unpinning - https://github.com/exhi/hoist-react/issues/687
+                lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
@@ -222,7 +226,7 @@ export class Column {
         }
 
         if (this.tooltip) {
-            ret.tooltip = isFunction(this.tooltip) ?
+            ret.tooltipValueGetter = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
                     {record: agParams.data, column: this, agParams}) :
                 ({value}) => value;
@@ -290,9 +294,32 @@ export class Column {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
         }
-
-        // Delegate comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-        ret.comparator = this.comparator;
+    
+        if (this.comparator === undefined) {
+            // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
+            ret.comparator = this.defaultComparator;
+        } else {
+            // ...or process custom comparator with the Hoist-defined comparatorFn API.
+            ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
+                const {gridModel, colId} = this,
+                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortDir = sortCfg.sort,
+                    abs = sortCfg.abs,
+                    recordA = agNodeA.data,
+                    recordB = agNodeB.data,
+                    params = {
+                        recordA,
+                        recordB,
+                        column: this,
+                        gridModel,
+                        defaultComparator: (a, b) => this.defaultComparator(a, b),
+                        agNodeA,
+                        agNodeB
+                    };
+        
+                return this.comparator(valueA, valueB, sortDir, abs, params);
+            };
+        }
 
         // Finally, apply explicit app requests.  The customer is always right....
         return {...ret, ...this.agOptions};
@@ -301,12 +328,29 @@ export class Column {
     //--------------------
     // Implementation
     //--------------------
-    comparator = (v1, v2) => {
+    defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
 
 }
+
+/**
+ * @callback Column~comparatorFn - sort comparator function for a grid column.
+ * @param {*} valueA - cell data valueA to be compared
+ * @param {*} valueB - cell data valueB to be compared
+ * @param {string} sortDir - either 'asc' or 'desc'
+ * @param {boolean} abs - true to sort by absolute value
+ * @param {Object} params - extra parameters devs might want
+ * @param {Record} params.recordA - data Record for valueA
+ * @param {Record} params.recordB - data Record for valueB
+ * @param {Object} params.agNodeA - row node provided by ag-grid
+ * @param {Object} params.agNodeB - row node provided by ag-grid
+ * @param {Column} params.column - column for the cell being rendered
+ * @param {GridModel} params.gridModel - gridModel for the grid
+ * @param {function} params.defaultComparator - default comparator provided by Hoist for this column.
+ *          accepts two arguments: (a, b)
+ */
 
 /**
  * @callback Column~rendererFn - normalized renderer function for a grid cell.

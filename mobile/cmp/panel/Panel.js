@@ -10,7 +10,8 @@ import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
@@ -43,6 +44,14 @@ export class Panel extends Component {
          */
         mask: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
 
+        /**
+         * Message to render unobtrusively on panel corner. Set to:
+         *   + a ReactElement specifying a LoadingIndicator instance - or -
+         *   + a PendingTaskModel for a default LoadingIndicator w/spinner bound to that model - or -
+         *   + true for a simple default LoadingIndicator.
+         */
+        loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(PendingTaskModel), PT.bool]),
+
         /** Allow the panel to scroll vertically */
         scrollable: PT.bool,
 
@@ -63,6 +72,7 @@ export class Panel extends Component {
             icon,
             headerItems,
             mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
             scrollable,
             children,
             ...rest
@@ -82,29 +92,38 @@ export class Panel extends Component {
             return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
         };
 
-        // 2) Mask is as provided, or a default simple mask.
-        let maskElem = null;
-        if (maskProp === true) {
-            maskElem = mask({isDisplayed: true});
-        } else if (maskProp instanceof PendingTaskModel) {
-            maskElem = mask({model: maskProp, spinner: true});
-        } else if (isReactElement(maskProp)) {
-            maskElem = maskProp;
-        }
-
-        // 3) Prepare combined layout with header above core.
+        // 1) Prepare combined layout with header above core.
         return vbox({
             items: [
                 panelHeader({title, icon, headerItems}),
                 parseToolbar(tbar),
                 vframe(castArray(children)),
                 parseToolbar(bbar),
-                maskElem
+                this.parseLoadDecorator(maskProp, mask),
+                this.parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
             ...layoutProps,
             className: this.getClassName(scrollable ? 'xh-panel-scrollable' : null)
         });
+    }
+
+
+    //------------------------
+    // Implementation
+    //------------------------
+    // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
+    parseLoadDecorator(prop, cmp) {
+        let ret = null;
+        if (prop === true) {
+            ret = cmp({isDisplayed: true});
+        } else if (prop instanceof PendingTaskModel) {
+            ret = cmp({model: prop, spinner: true});
+        } else if (isReactElement(prop)) {
+            ret = prop;
+        }
+
+        return ret;
     }
 }
 

@@ -5,9 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistComponent, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {message} from './Message';
+import {div, img, p} from '@xh/hoist/cmp/layout';
+import './IdleDialog.scss';
+import idleImage from './IdleDialogImage.png';
+
 
 /**
  * Default display of application suspension.
@@ -20,11 +24,23 @@ import {message} from './Message';
 export const [IdleDialog, idleDialog] = hoistComponent(props => {
     return message({
         model: {
-            title: 'Application Sleeping',
+            title: `${XH.clientAppName} is sleeping`,
             icon: Icon.moon(),
-            message: 'This application is sleeping due to inactivity. Please click below to reload it.',
-            confirmText: 'Reload',
-            onConfirm: props.onReactivate
-        }
+            message: div({
+                items: [
+                    img({
+                        src: idleImage,
+                        width: 300,
+                        height: 180
+                    }),
+                    p('This application is sleeping due to inactivity.'),
+                    p('Please click below to reload it.')
+                ]
+            }),
+            confirmIntent: 'primary',
+            confirmText: 'I\'m back',
+            onConfirm: this.props.onReactivate
+        },
+        className: 'xh-idle-dialog'
     });
 });
