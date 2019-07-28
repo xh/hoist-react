@@ -8,7 +8,6 @@ import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {observable, computed, action} from '@xh/hoist/mobx';
-import {allSettled} from '@xh/hoist/promise';
 import {assign} from 'lodash';
 
 import {AppOption} from './AppOption';
@@ -74,7 +73,7 @@ export class OptionsDialogModel {
         const promises = this.options.map(option => {
             return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
         });
-        await allSettled(promises).linkTo(this.loadModel);
+        await Promise.allSettled(promises).linkTo(this.loadModel);
     }
 
     async saveAsync() {
@@ -106,7 +105,7 @@ export class OptionsDialogModel {
         const promises = this.options.map(option => {
             return option.setValueAsync(option.name, formModel.values[option.name]);
         });
-        await allSettled(promises);
+        await Promise.allSettled(promises);
         return XH.prefService.pushPendingAsync();
     }
 }

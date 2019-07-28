@@ -7,7 +7,6 @@
 import {XH} from '@xh/hoist/core';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {allSettled} from '@xh/hoist/promise';
 import {isPlainObject} from 'lodash';
 
 /**
@@ -115,9 +114,9 @@ export function LoadSupport(C) {
  */
 export async function loadAllAsync(objs, loadSpec) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),
-        ret = await allSettled(promises);
+        ret = await Promise.allSettled(promises);
 
-    ret.filter(it => it.state === 'rejected')
+    ret.filter(it => it.status === 'rejected')
         .forEach(err => console.error('Failed to Load Object', err.reason));
 
     return ret;

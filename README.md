@@ -115,7 +115,6 @@ as such have been extended in a few key ways. See [`Promise.js`](promise/Promise
 documentation comments and implementations of Promise-related utilities and direct extensions to the
 Promise prototype, including:
 
-+ `allSettled` - for coordinating multiple promises
 + `catchDefault` - to add standardized exception handling and alerting to a Promise chain, including
   a configurable and end-user-focused error dialog to display an exception message with support for
   disclosing any stack trace and/or reporting user-supplied notes back to the server.

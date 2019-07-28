@@ -6,7 +6,6 @@
  */
 
 import {HoistModel, XH, LoadSupport, managed} from '@xh/hoist/core';
-import {allSettled} from '@xh/hoist/promise';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
@@ -57,7 +56,7 @@ export class UserModel {
             loadSpec
         });
 
-        return allSettled([
+        return Promise.allSettled([
             userLoad, rolesLoad
         ]).then(results => {
             let users = results[0].value,

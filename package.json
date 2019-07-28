@@ -45,8 +45,8 @@
     "react-transition-group": "~4.2.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "rsvp": "~4.8.4",
-    "store2": "~2.7.0"
+    "store2": "~2.7.0",
+    "core-js": "^3.1.4"
   },
   "peerDependencies": {
     "react": "~16.8.0",

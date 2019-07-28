@@ -11,7 +11,7 @@ import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {elem, AppState, AppSpec, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {observable, action} from '@xh/hoist/mobx';
-import {never, wait, allSettled} from '@xh/hoist/promise';
+import {never, wait} from '@xh/hoist/promise';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 
 import {
@@ -610,8 +610,8 @@ class XHClass {
             }, 'XH');
         });
         
-        const results = await allSettled(promises),
-            errs = results.filter(it => it.state === 'rejected');
+        const results = await Promise.allSettled(promises),
+            errs = results.filter(it => it.status === 'rejected');
 
         if (errs.length > 0) {
             // Enhance entire result col w/class name, we care about errs only
