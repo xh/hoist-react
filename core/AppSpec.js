@@ -18,6 +18,14 @@ export class AppSpec {
     /**
      * @param {Object} c - object containing app specifications.
      *
+     * @param {string} [c.clientAppCode] - short code for this particular JS client application.
+     *      Will default to the `appCode` specified within the project's Webpack config, but can be
+     *      set to a more specific value (e.g. 'myAppMobile') to identify the client app in common
+     *      code or configs.
+     * @param {string} [c.clientAppName] - display name for this particular JS client application.
+     *      As with `clientAppCode` above, this will default to the global `appName` specified by
+     *      the project's Webpack config, but can be set here to a more specific value (e.g.
+     *      'MyApp Mobile').
      * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
      * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
      * @param {Class} c.containerClass - Container component to be used to host this application.
@@ -28,16 +36,10 @@ export class AppSpec {
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
      *      be able to access the UI.
-     * @param {string} [c.clientAppCode] - short code for this particular JS client application.
-     *      Will default to the `appCode` specified within the project's Webpack config, but can be
-     *      set to a more specific value (e.g. 'myAppMobile') to identify the client app in common
-     *      code or configs.
-     * @param {string} [c.clientAppName] - display name for this particular JS client application.
-     *      As with `clientAppCode` above, this will default to the global `appName` specified by
-     *      the project's Webpack config, but can be set here to a more specific value (e.g.
-     *      'MyApp Mobile').
      * @param {boolean} [c.trackAppLoad] - true (default) to write a track log statement after the
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
+     * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
+     *      establish a connection and initiate a heartbeat..
      * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
      * @param {Class} [c.idleDialogClass] - Component class used to indicate App has been suspended.
      *      The component will receive a single prop -- onReactivate -- a callback called when user
@@ -46,15 +48,16 @@ export class AppSpec {
      * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
     constructor({
+        clientAppCode = XH.appCode,
+        clientAppName = XH.appName,
         modelClass,
         componentClass,
         containerClass,
         isMobile,
         isSSO,
         checkAccess,
-        clientAppCode = XH.appCode,
-        clientAppName = XH.appName,
         trackAppLoad = true,
+        webSocketsEnabled = false,
         idleDetectionEnabled = false,
         idleDialogClass = null,
         loginMessage = null,
@@ -73,6 +76,9 @@ export class AppSpec {
 
         throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
 
+        this.clientAppCode = clientAppCode;
+        this.clientAppName = clientAppName;
+
         this.modelClass = modelClass;
         this.componentClass = componentClass;
         this.containerClass = containerClass;
@@ -81,9 +87,7 @@ export class AppSpec {
         this.checkAccess = checkAccess;
         this.trackAppLoad = trackAppLoad;
 
-        this.clientAppCode = clientAppCode;
-        this.clientAppName = clientAppName;
-
+        this.webSocketsEnabled = webSocketsEnabled;
         this.idleDetectionEnabled = idleDetectionEnabled;
         this.idleDialogClass = idleDialogClass;
         this.loginMessage = loginMessage;

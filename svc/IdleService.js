@@ -66,6 +66,7 @@ export class IdleService {
         if (XH.appState != AppState.SUSPENDED) {
             XH.setAppState(AppState.SUSPENDED);
             this.destroyAppListeners();
+            XH.webSocketService.shutdown();
             Timer.cancelAll();
         }
     }

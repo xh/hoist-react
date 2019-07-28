@@ -54,7 +54,7 @@ export class MessageModel {
             this.formModel = this.markManaged(new FormModel({
                 fields: [{
                     name: 'value',
-                    defaultValue: value,
+                    initialValue: value,
                     rules: rules
                 }]
             }));
