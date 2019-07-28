@@ -24,7 +24,8 @@ import {
     IdleService,
     LocalStorageService,
     PrefService,
-    TrackService
+    TrackService,
+    WebSocketService
 } from '@xh/hoist/svc';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
@@ -94,6 +95,8 @@ class XHClass {
     prefService;
     /** @member {TrackService} */
     trackService;
+    /** @member {WebSocketService} */
+    webSocketService;
 
     //----------------------------------------------------------------------------------------------
     // Aliased methods
@@ -530,7 +533,9 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
-            await this.installServicesAsync(AutoRefreshService, IdleService, GridExportService);
+            await this.installServicesAsync(
+                AutoRefreshService, IdleService, GridExportService, WebSocketService
+            );
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

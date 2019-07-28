@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
@@ -52,7 +53,8 @@ export class AboutDialogModel {
                 row('Hoist React', svc.get('hoistReactVersion')),
                 row('Build', svc.get('clientBuild')),
                 row('User Agent', window.navigator.userAgent),
-                ...configRows
+                ...configRows,
+                row('WebSockets', webSocketIndicator())
             )
         });
     }

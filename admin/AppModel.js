@@ -47,7 +47,8 @@ export class AppModel {
                     {name: 'config', path: '/config'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
-                    {name: 'users', path: '/users'}
+                    {name: 'users', path: '/users'},
+                    {name: 'webSockets', path: '/webSockets'}
                 ]
             },
             {
