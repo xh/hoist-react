@@ -4,11 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {AppState, HoistService, XH} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {throwIf} from '@xh/hoist/utils/js';
 import {find, pull} from 'lodash';
 
 /**
@@ -62,25 +63,12 @@ export class WebSocketService {
     async initAsync() {
         if (!this.enabled) return;
 
-        try {
-            this.connect();
-        } catch (e) {
-            console.error('Failure initializing webSocketService', e);
-        }
+        this.connect();
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
             interval: 10 * SECONDS,
             delay: 10 * SECONDS
-        });
-
-        this.addReaction({
-            track: () => XH.appState,
-            run: (appState) => {
-                if (appState == AppState.SUSPENDED) {
-                    this.shutdown();
-                }
-            }
         });
     }
 
@@ -121,9 +109,8 @@ export class WebSocketService {
      * @param {WebSocketMessage} message
      */
     sendMessage(message) {
-        if (!this.isSocketConnected()) {
-            throw new XH.exception('Unable to send message via websocket - not connected.');
-        }
+        this.updateConnectedStatus();
+        throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
         this._socket.send(JSON.stringify(message));
         this.maybeLogMessage('Sent message', message);
@@ -134,29 +121,44 @@ export class WebSocketService {
     // Implementation
     //------------------------
     connect() {
-        const socket = new WebSocket(this.buildWebSocketUrl());
-        socket.onopen = () => this.onOpen();
-        socket.onclose = () => this.onClose();
-        socket.onerror = (e) => this.onError(e);
-        socket.onmessage = (data) => this.onMessage(data);
+        try {
+            // Create new socket and wire up events.  Be sure to ignore obsolete sockets
+            const s = new WebSocket(this.buildWebSocketUrl());
+            s.onopen = () => {if (s === this._socket) this.onOpen();};
+            s.onclose = () => {if (s === this._socket) this.onClose();};
+            s.onerror = (e) => {if (s === this._socket) this.onError(e);};
+            s.onmessage = (data) => {if (s === this._socket) this.onMessage(data);};
+            this._socket = s;
+        } catch (e) {
+            console.error('Failure creating WebSocket in WebSocketService', e);
+        }
 
-        this._socket = socket;
+        this.updateConnectedStatus();
+    }
+
+    disconnect() {
+        if (this._socket) {
+            this._socket.close();
+            this._socket = null;
+        }
+        this.updateConnectedStatus();
     }
 
     heartbeatOrReconnect() {
-        if (this.isSocketConnected()) {
+        this.updateConnectedStatus();
+        if (this.connected) {
             this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
         } else {
-            console.warn('WebSocket unexpectedly disconnected - attempting to reconnect.');
+            console.warn('Heartbeat found websocket not connected - attempting to reconnect.');
+            this.disconnect();
             this.connect();
         }
     }
 
     shutdown() {
         if (this._timer) this._timer.cancel();
-        this._socket.close();
+        this.disconnect();
     }
-
 
     //------------------------
     // Socket events impl
@@ -181,15 +183,15 @@ export class WebSocketService {
             const msg = JSON.parse(rawMsg.data),
                 {topic, data} = msg;
 
-            if (topic == this.REG_SUCCESS_TOPIC) {
+            if (topic === this.REG_SUCCESS_TOPIC) {
                 this.channelKey = data.channelKey;
-            } else if (topic == this.TEST_MSG_TOPIC) {
+            } else if (topic === this.TEST_MSG_TOPIC) {
                 this.showTestMessageAlert(data);
             }
 
             this.updateLastMessageTime();
             this.maybeLogMessage('Received message', rawMsg);
-            this.notifySubscribersAsync(msg);
+            this.notifySubscribers(msg);
         } catch (e) {
             console.error('Error decoding websocket message', rawMsg, e);
         }
@@ -200,7 +202,7 @@ export class WebSocketService {
     //------------------------
     // Subscription impl
     //------------------------
-    async notifySubscribersAsync(message) {
+    notifySubscribers(message) {
         const subs = this.getSubsForTopic(message.topic);
 
         subs.forEach(sub => {
@@ -231,11 +233,7 @@ export class WebSocketService {
 
     @action
     updateConnectedStatus() {
-        this.connected = this.isSocketConnected();
-    }
-
-    isSocketConnected() {
-        return this._socket && this._socket.readyState == WebSocket.OPEN;
+        this.connected = (this._socket && this._socket.readyState == WebSocket.OPEN);
     }
 
     buildWebSocketUrl() {
