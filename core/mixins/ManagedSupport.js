@@ -48,10 +48,9 @@ export function ManagedSupport(C) {
 }
 
 /**
- * Decorator to make a property "managed".  Managed properties are assumed to hold objects that
- * are created by the refrencing object and should be destroyed when the referencing object is destroyed.
- *
- * See @ManagedSupport.
+ * Decorator to make a property "managed". Managed properties are designed to hold objects that
+ * are created by the referencing object and that implement a `destroy()` method to be called
+ * via {@see ManagedSupport} when the referencing object is destroyed.
  */
 export function managed(target, property, descriptor) {
     target._xhManagedProperties = target._xhManaged || [];
