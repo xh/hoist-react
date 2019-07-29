@@ -45,13 +45,13 @@ export class TreeMapModel {
     // Observable API
     //------------------------
     /** @member {Object} */
-    @bindable.ref config = {};
+    @bindable.ref highchartsConfig = {};
     /** @member {TreeMapRecord[]} */
     @observable.ref data = [];
 
     /**
      * @param {Object} c - TreeMapModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
+     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {Object[]} c.data - Raw data to be displayed.
      * @param {GridModel} [c.gridModel] - Optional GridModel to bind to.
@@ -70,7 +70,7 @@ export class TreeMapModel {
      *      tooltipFn which returns a string output of the node's value.
      */
     constructor({
-        config,
+        highchartsConfig,
         data = [],
         gridModel,
         labelField = 'name',
@@ -84,7 +84,7 @@ export class TreeMapModel {
         algorithm = 'squarified',
         tooltip = true
     } = {}) {
-        this.config = config;
+        this.highchartsConfig = highchartsConfig;
         this.data = data;
         this.gridModel = gridModel;
 

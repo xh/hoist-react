@@ -23,86 +23,86 @@ export class SplitTreeMapModel {
     /** @member {GridModel} */
     gridModel;
     /** @member {function} */
-    regionFilter;
+    mapFilter;
     /** @member {function} */
-    regionTitleFn;
+    mapTitleFn;
     /** @member {Object} */
     treeMapModelConfig;
     /** @member {string} */
     orientation;
 
     /** @member {TreeMapModel} */
-    @managed primaryRegionModel;
+    @managed primaryMapModel;
     /** @member {TreeMapModel} */
-    @managed secondaryRegionModel;
+    @managed secondaryMapModel;
 
     //------------------------
     // Observable API
     //------------------------
     /** @member {Object} */
-    @bindable.ref config = {};
+    @bindable.ref highchartsConfig = {};
 
     @computed
-    get primaryRegionTotal() {
-        return sumBy(this.primaryRegionModel.data, it => {
+    get primaryMapTotal() {
+        return sumBy(this.primaryMapModel.data, it => {
             // Only include root records that pass the filter
-            if (it.parent || !this.regionFilter(it.record)) return 0;
+            if (it.parent || !this.mapFilter(it.record)) return 0;
             return it.value;
         });
     }
 
     @computed
-    get secondaryRegionTotal() {
-        return sumBy(this.secondaryRegionModel.data, it => {
+    get secondaryMapTotal() {
+        return sumBy(this.secondaryMapModel.data, it => {
             // Only include root records that don't pass the filter
-            if (it.parent || this.regionFilter(it.record)) return 0;
+            if (it.parent || this.mapFilter(it.record)) return 0;
             return it.value;
         });
     }
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`, which should be set via dedicated config.
+     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
+     *      any Highcharts opts other than `series`.
      * @param {GridModel} c.gridModel - Optional GridModel to bind to.
-     * @param {function} c.regionFilter - A filter function used when processing data. Receives (record), returns boolean.
+     * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
-     * @param {function} [c.regionTitleFn] - Function to render region titles. Receives region name ['primary', 'secondary'] and SplitTreeMapModel.
+     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and SplitTreeMapModel.
      * @param {Object} [c.treeMapModelConfig] - config to be passed to underlying TreeMapModels
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      */
     constructor({
-        config,
+        highchartsConfig,
         gridModel,
-        regionFilter,
-        regionTitleFn,
+        mapFilter,
+        mapTitleFn,
         treeMapModelConfig,
         orientation = 'vertical'
     } = {}) {
         throwIf(isNil(gridModel), 'SplitTreeMap requires a GridModel.');
-        throwIf(!isFunction(regionFilter), 'SplitTreeMap requires a region filter function.');
+        throwIf(!isFunction(mapFilter), 'SplitTreeMap requires a map filter function.');
 
-        this.config = config;
+        this.highchartsConfig = highchartsConfig;
         this.gridModel = gridModel;
-        this.regionFilter = regionFilter;
-        this.regionTitleFn = regionTitleFn;
+        this.mapFilter = mapFilter;
+        this.mapTitleFn = mapTitleFn;
         this.treeMapModelConfig = treeMapModelConfig;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
         // Create child TreeMaps
-        this.primaryRegionModel = new TreeMapModel({
+        this.primaryMapModel = new TreeMapModel({
             ...this.treeMapModelConfig,
             gridModel,
-            config,
-            filter: (rec) => regionFilter(rec)
+            highchartsConfig,
+            filter: (rec) => mapFilter(rec)
         });
-        this.secondaryRegionModel = new TreeMapModel({
+        this.secondaryMapModel = new TreeMapModel({
             ...this.treeMapModelConfig,
             gridModel,
-            config,
-            filter: (rec) => !regionFilter(rec)
+            highchartsConfig,
+            filter: (rec) => !mapFilter(rec)
         });
     }
 

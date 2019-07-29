@@ -169,11 +169,11 @@ export class TreeMap extends Component {
     }
 
     getModelConfig() {
-        const {config, algorithm, tooltip} = this.model,
+        const {highchartsConfig, algorithm, tooltip} = this.model,
             {data, defaultTooltip} = this;
 
         return {
-            ...config,
+            ...highchartsConfig,
             tooltip: {
                 enabled: !!tooltip,
                 useHTML: true,

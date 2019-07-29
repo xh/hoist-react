@@ -32,11 +32,11 @@ export class SplitTreeMap extends Component {
     render() {
         const {model} = this,
             {
-                primaryRegionModel,
-                secondaryRegionModel,
-                primaryRegionTotal,
-                secondaryRegionTotal,
-                regionTitleFn,
+                primaryMapModel,
+                primaryMapTotal,
+                secondaryMapModel,
+                secondaryMapTotal,
+                mapTitleFn,
                 orientation
             } = model,
             container = orientation === 'horizontal' ? hframe : vframe;
@@ -45,16 +45,16 @@ export class SplitTreeMap extends Component {
             className: this.getClassName(),
             items: [
                 panel({
-                    title: regionTitleFn ? regionTitleFn('primary', model) : undefined,
+                    title: mapTitleFn ? mapTitleFn('primary', model) : undefined,
                     compactHeader: true,
-                    flex: primaryRegionTotal,
-                    item: treeMap({model: primaryRegionModel})
+                    flex: primaryMapTotal,
+                    item: treeMap({model: primaryMapModel})
                 }),
                 panel({
-                    title: regionTitleFn ? regionTitleFn('secondary', model) : undefined,
+                    title: mapTitleFn ? mapTitleFn('secondary', model) : undefined,
                     compactHeader: true,
-                    flex: secondaryRegionTotal,
-                    item: treeMap({model: secondaryRegionModel})
+                    flex: secondaryMapTotal,
+                    item: treeMap({model: secondaryMapModel})
                 })
             ],
             ...this.getLayoutProps()

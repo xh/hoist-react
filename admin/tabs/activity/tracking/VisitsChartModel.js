@@ -21,7 +21,7 @@ export class VisitsChartModel {
     
     @managed
     chartModel = new ChartModel({
-        config: {
+        highchartsConfig: {
             chart: {type: 'column'},
             plotOptions: {
                 column: {animation: false}
