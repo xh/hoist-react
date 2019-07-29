@@ -15,7 +15,7 @@
   * The service will monitor the socket connection with a regular heartbeat and attempt to
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
-  
+
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
 
@@ -24,12 +24,11 @@
 * `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
+* The `allSettled` function in `@xh/promise` has been removed. Applications using this method should
+  use the ECMA standard (stage-2) `Promise.allSettled` instead. This method is now fully available
+  in Hoist via bundled polyfills. Note that the standard method returns objects of the form
+  `{status: [rejected|fulfilled], ...}`, rather than `{state: [rejected|fulfilled], ...}`.
 
-* The `allSettled` function in `@xh/promise` has been removed. Applications using this method 
-should use the ECMA standard (stage-2) `Promise.allSettled` instead.  This method is now fully
-available in Hoist via standard polyfill.  Note that the standard method returns objects of the form 
-`{status: [rejected|fufilled], ...}`, rather than `{state: [rejected|fufilled], ...}`.
-  
 ### 📚 Libraries
 
 * ag-Grid `21.0.1 -> 21.1.0`
