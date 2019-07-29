@@ -196,7 +196,7 @@ export class TreeMap extends Component {
                     allowOverlap: false,
                     align: 'left',
                     verticalAlign: 'top',
-                    style: {fontSize: '10px'}
+                    style: {textOutline: 'none'}
                 },
                 events: {click: this.onClick}
             }]
