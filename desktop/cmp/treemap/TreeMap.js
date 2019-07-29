@@ -13,6 +13,7 @@ import {div, box} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
+import {forEachAsync} from '@xh/hoist/utils/async';
 import {assign, merge, clone, debounce} from 'lodash';
 
 import {LightTheme} from './theme/Light';
@@ -70,6 +71,7 @@ export class TreeMap extends Component {
         }
 
         this.renderHighChart();
+        this.updateLabelVisibilityAsync();
 
         // Inner div required to be the ref for the chart element
         return resizeSensor({
@@ -108,6 +110,7 @@ export class TreeMap extends Component {
     resizeChart(e) {
         const {width, height} = e[0].contentRect;
         this._chart.setSize(width, height, false);
+        this.updateLabelVisibilityAsync();
     }
 
     destroy() {
@@ -186,7 +189,7 @@ export class TreeMap extends Component {
                     allowOverlap: false,
                     align: 'left',
                     verticalAlign: 'top',
-                    style: {textOutline: 'none'}
+                    style: {textOutline: 'none', visibility: 'hidden'}
                 },
                 events: {click: this.onClick}
             }]
@@ -221,6 +224,27 @@ export class TreeMap extends Component {
         this._chart.series[0].data.forEach(node => {
             node.select(selectedIds.includes(node.id), true);
         });
+    }
+
+    //----------------------
+    // Labels
+    //----------------------
+    async updateLabelVisibilityAsync() {
+        if (!this._chart) return;
+
+        // Show / hide labels by comparing label size to node size
+        await forEachAsync(this._chart.series[0].data, node => {
+            if (node.dataLabel) {
+                const buffer = 10,
+                    tooSmallWidth = (node.dataLabel.width + buffer) > node.graphic.element.width.baseVal.value,
+                    tooSmallHeight = (node.dataLabel.height + buffer) > node.graphic.element.height.baseVal.value,
+                    style = tooSmallWidth || tooSmallHeight ? {visibility: 'hidden'} : {visibility: 'visible'};
+
+                node.update({dataLabels: {style}}, false, false);
+            }
+        });
+
+        this._chart.redraw();
     }
 
     //----------------------
