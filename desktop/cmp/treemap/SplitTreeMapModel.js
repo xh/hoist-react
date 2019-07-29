@@ -26,8 +26,6 @@ export class SplitTreeMapModel {
     mapFilter;
     /** @member {function} */
     mapTitleFn;
-    /** @member {Object} */
-    treeMapModelConfig;
     /** @member {string} */
     orientation;
 
@@ -62,47 +60,41 @@ export class SplitTreeMapModel {
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
-     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`.
      * @param {GridModel} c.gridModel - Optional GridModel to bind to.
      * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
      * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and SplitTreeMapModel.
-     * @param {Object} [c.treeMapModelConfig] - config to be passed to underlying TreeMapModels
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
+     *
+     * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.
      */
     constructor({
-        highchartsConfig,
         gridModel,
         mapFilter,
         mapTitleFn,
-        treeMapModelConfig,
-        orientation = 'vertical'
+        orientation = 'vertical',
+        ...rest
     } = {}) {
         throwIf(isNil(gridModel), 'SplitTreeMap requires a GridModel.');
         throwIf(!isFunction(mapFilter), 'SplitTreeMap requires a map filter function.');
 
-        this.highchartsConfig = highchartsConfig;
         this.gridModel = gridModel;
         this.mapFilter = mapFilter;
         this.mapTitleFn = mapTitleFn;
-        this.treeMapModelConfig = treeMapModelConfig;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
         // Create child TreeMaps
         this.primaryMapModel = new TreeMapModel({
-            ...this.treeMapModelConfig,
             gridModel,
-            highchartsConfig,
-            filter: (rec) => mapFilter(rec)
+            filter: (rec) => mapFilter(rec),
+            ...rest
         });
         this.secondaryMapModel = new TreeMapModel({
-            ...this.treeMapModelConfig,
             gridModel,
-            highchartsConfig,
-            filter: (rec) => !mapFilter(rec)
+            filter: (rec) => !mapFilter(rec),
+            ...rest
         });
     }
 
