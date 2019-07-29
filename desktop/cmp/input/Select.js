@@ -285,9 +285,9 @@ export class Select extends HoistInput {
                 const rsRef = this.reactSelectRef.current;
                 if (!rsRef) return;
 
-                const selectCls = rsRef.select.constructor.name == 'Creatable' ? rsRef.select.select : rsRef.select,
+                const selectCls = rsRef.select.constructor.name == 'Select' ? rsRef.select : rsRef.select.select,
                     inputElem = selectCls.inputRef;
-                    
+
                 if (this.hasFocus && inputElem && document.activeElement == inputElem) {
                     inputElem.select();
                 }
