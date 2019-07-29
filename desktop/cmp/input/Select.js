@@ -282,8 +282,12 @@ export class Select extends HoistInput {
         if (this.props.selectOnFocus) {
             wait(1).then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
-                const rsRef = this.reactSelectRef.current,
-                    inputElem = rsRef ? rsRef.select.inputRef : null;
+                const rsRef = this.reactSelectRef.current;
+                if (!rsRef) return;
+
+                const selectCls = rsRef.select.constructor.name == 'Creatable' ? rsRef.select.select : rsRef.select,
+                    inputElem = selectCls.inputRef;
+                    
                 if (this.hasFocus && inputElem && document.activeElement == inputElem) {
                     inputElem.select();
                 }
