@@ -99,10 +99,7 @@ export class TreeMapModel {
         this.onClick = withDefault(onClick, this.defaultOnClick);
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
 
-        if (!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm)) {
-            console.warn(`Algorithm ${algorithm} not recognised. Defaulting to 'squarified'.`);
-            algorithm = 'squarified';
-        }
+        throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
         this.algorithm = algorithm;
 
         if (this.gridModel) {

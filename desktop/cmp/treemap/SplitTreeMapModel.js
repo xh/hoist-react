@@ -23,16 +23,16 @@ export class SplitTreeMapModel {
     /** @member {GridModel} */
     gridModel;
     /** @member {function} */
-    filter;
+    regionFilter;
     /** @member {Object} */
     treeMapModelConfig;
     /** @member {string} */
     orientation;
 
     /** @member {TreeMapModel} */
-    @managed posModel;
+    @managed primaryRegionModel;
     /** @member {TreeMapModel} */
-    @managed negModel;
+    @managed secondaryRegionModel;
 
     //------------------------
     // Observable API
@@ -41,19 +41,19 @@ export class SplitTreeMapModel {
     @bindable.ref config = {};
 
     @computed
-    get posRootTotal() {
-        return sumBy(this.posModel.data, it => {
+    get primaryRegionTotal() {
+        return sumBy(this.primaryRegionModel.data, it => {
             // Only include root records that pass the filter
-            if (it.parent || !this.filter(it.record)) return 0;
+            if (it.parent || !this.regionFilter(it.record)) return 0;
             return it.value;
         });
     }
 
     @computed
-    get negRootTotal() {
-        return sumBy(this.negModel.data, it => {
+    get secondaryRegionTotal() {
+        return sumBy(this.secondaryRegionModel.data, it => {
             // Only include root records that don't pass the filter
-            if (it.parent || this.filter(it.record)) return 0;
+            if (it.parent || this.regionFilter(it.record)) return 0;
             return it.value;
         });
     }
@@ -63,44 +63,41 @@ export class SplitTreeMapModel {
      * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {GridModel} c.gridModel - Optional GridModel to bind to.
-     * @param {function} c.filter - A filter function used when processing data. Receives (record), returns boolean.
-     *      Records that pass the filter will be placed into the positive TreeMap, and the rest into the negative TreeMap.
+     * @param {function} c.regionFilter - A filter function used when processing data. Receives (record), returns boolean.
+     *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
      * @param {Object} [c.treeMapModelConfig] - config to be passed to underlying TreeMapModels
-     * @param {string} [c.orientation] - Display positive values above ('vertical') or to the right ('horizontal') of negative values.
+     * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      */
     constructor({
         config,
         gridModel,
-        filter,
+        regionFilter,
         treeMapModelConfig,
         orientation = 'vertical'
     } = {}) {
         throwIf(isNil(gridModel), 'SplitTreeMap requires a GridModel.');
-        throwIf(!isFunction(filter), 'SplitTreeMap requires a filter function.');
+        throwIf(!isFunction(regionFilter), 'SplitTreeMap requires a region filter function.');
 
         this.config = config;
         this.gridModel = gridModel;
-        this.filter = filter;
+        this.regionFilter = regionFilter;
         this.treeMapModelConfig = treeMapModelConfig;
 
-        if (!['vertical', 'horizontal'].includes(orientation)) {
-            console.warn(`Orientation ${orientation} not recognised. Defaulting to 'vertical'.`);
-            orientation = 'vertical';
-        }
+        throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
         // Create child TreeMaps
-        this.posModel = new TreeMapModel({
+        this.primaryRegionModel = new TreeMapModel({
             ...this.treeMapModelConfig,
             gridModel,
             config,
-            filter: (rec) => filter(rec)
+            filter: (rec) => regionFilter(rec)
         });
-        this.negModel = new TreeMapModel({
+        this.secondaryRegionModel = new TreeMapModel({
             ...this.treeMapModelConfig,
             gridModel,
             config,
-            filter: (rec) => !filter(rec)
+            filter: (rec) => !regionFilter(rec)
         });
     }
 

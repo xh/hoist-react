@@ -24,8 +24,8 @@ export class SplitTreeMap extends Component {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired,
 
-        /** Function to render section titles. Receives section total, and section ['positive', 'negative']. */
-        titleRenderer: PT.func
+        /** Function to render region titles. Receives region total, and region name ['primary', 'secondary']. */
+        regionTitleRenderer: PT.func
     };
 
     static modelClass = SplitTreeMapModel;
@@ -33,24 +33,24 @@ export class SplitTreeMap extends Component {
     baseClassName = 'xh-split-treemap';
 
     render() {
-        const {posModel, negModel, orientation, posRootTotal, negRootTotal} = this.model,
-            {titleRenderer} = this.props,
+        const {primaryRegionModel, secondaryRegionModel, primaryRegionTotal, secondaryRegionTotal, orientation} = this.model,
+            {regionTitleRenderer} = this.props,
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             className: this.getClassName(),
             items: [
                 panel({
-                    title: titleRenderer ? titleRenderer(posRootTotal, 'positive') : undefined,
+                    title: regionTitleRenderer ? regionTitleRenderer(primaryRegionTotal, 'primary') : undefined,
                     compactHeader: true,
-                    flex: posRootTotal,
-                    item: treeMap({model: posModel})
+                    flex: primaryRegionTotal,
+                    item: treeMap({model: primaryRegionModel})
                 }),
                 panel({
-                    title: titleRenderer ? titleRenderer(negRootTotal, 'negative') : undefined,
+                    title: regionTitleRenderer ? regionTitleRenderer(secondaryRegionTotal, 'secondary') : undefined,
                     compactHeader: true,
-                    flex: negRootTotal,
-                    item: treeMap({model: negModel})
+                    flex: secondaryRegionTotal,
+                    item: treeMap({model: secondaryRegionModel})
                 })
             ],
             ...this.getLayoutProps()
