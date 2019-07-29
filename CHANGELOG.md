@@ -28,9 +28,16 @@
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
 
+* The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
+independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
+is an artifact from the removed `clipboard` library).
+
+
 ### 📚 Libraries
 
 * ag-Grid `21.0.1 -> 21.1.0`
+
+* The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
 ## v25.2.0 - 2019-07-25
 

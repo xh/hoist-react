@@ -8,7 +8,7 @@
 import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {copyToClipboard} from '@xh/hoist/kit/clipboard-copy';
+import copy from 'clipboard-copy';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -67,7 +67,7 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
-                        if (record && column) copyToClipboard(record[column.field]);
+                        if (record && column) copy(record[column.field]);
                     }
                 });
             case 'colChooser':

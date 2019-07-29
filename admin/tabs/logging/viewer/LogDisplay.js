@@ -59,12 +59,12 @@ export class LogDisplay extends Component {
                 icon: Icon.list(),
                 disabled: (currentRow == null),
                 successMessage: 'Log line copied to the clipboard.',
-                clipboardSpec: {text: () => rows[currentRow].join(': ')}
+                getCopyText: () => rows[currentRow].join(': ')
             }),
             clipboardMenuItem({
                 text: 'Copy All Lines',
                 successMessage: 'Log lines copied to the clipboard.',
-                clipboardSpec: {text: () => rows.map(row => row.join(': ')).join('\n')}
+                getCopyText: () => rows.map(row => row.join(': ')).join('\n')
             })
         ];
     }

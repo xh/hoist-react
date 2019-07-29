@@ -80,7 +80,7 @@ export class ExceptionDialogDetails extends Component {
                         omit: !clientUserKnown
                     }),
                     clipboardButton({
-                        clipboardSpec: {text: () => this.errorStr},
+                        getCopyText: () => this.errorStr,
                         successMessage: 'Error details copied to clipboard.'
                     }),
                     dismissButton({model})
