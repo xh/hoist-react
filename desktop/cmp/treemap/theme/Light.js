@@ -18,6 +18,5 @@ export const LightTheme = {
             [0.5, '#FFFFFF'], // Zero
             [1, '#388E3C'] // Max positive
         ]
-    },
-    selectionColor: '#90CAF9'
+    }
 };

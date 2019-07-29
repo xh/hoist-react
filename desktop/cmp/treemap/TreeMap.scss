@@ -4,6 +4,19 @@
     font-size: var(--xh-font-size-small-px) !important;
     font-weight: normal !important;
   }
+
+  rect.highcharts-point {
+    outline-style: solid;
+    outline-width: 1px;
+    outline-offset: -1px;
+    outline-color: var(--xh-bg);
+
+    &.highcharts-point-select {
+      outline-width: 3px;
+      outline-offset: -3px;
+      outline-color: var(--xh-blue-light);
+    }
+  }
 }
 
 .xh-treemap-tooltip {

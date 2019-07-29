@@ -110,6 +110,11 @@ export class TreeMapModel {
         }
     }
 
+    get selectedIds() {
+        if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
+        return this.gridModel.selModel.ids;
+    }
+
     @action
     setData(rawData) {
         this.data = this.processData(rawData);

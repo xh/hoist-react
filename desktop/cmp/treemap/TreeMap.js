@@ -46,30 +46,19 @@ export class TreeMap extends Component {
     _chartElem = new Ref();
     _chart = null;
 
-    get data() {
-        // If not bound to a grid, simply use model data
-        const {data, gridModel} = this.model;
-        if (!gridModel) return data;
-
-        // If bound to a grid, mixin selected state from GridModel
-        const selectedIds = gridModel.selModel.ids,
-            {selectionColor} = XH.darkTheme ? DarkTheme : LightTheme;
-
-        return data.map(it => {
-            const selected = selectedIds.includes(it.id);
-            return {
-                ...it,
-                selected,
-                color: selected ? selectionColor : undefined
-            };
-        });
-    }
-
     constructor(props) {
         super(props);
+
         // Detect double-clicks vs single-clicks
         this._clickCount = 0;
         this._debouncedClickHandler = debounce(this.clickHandler, 500);
+
+        // Sync selection
+        this.addReaction({
+            track: () => [this.model.selectedIds, this.getMergedConfig()],
+            run: () => this.syncSelection(),
+            delay: 1 // Must wait for chart re-render on data / config change
+        });
     }
 
     render() {
@@ -169,8 +158,8 @@ export class TreeMap extends Component {
     }
 
     getModelConfig() {
-        const {highchartsConfig, algorithm, tooltip} = this.model,
-            {data, defaultTooltip} = this;
+        const {data, highchartsConfig, algorithm, tooltip} = this.model,
+            {defaultTooltip} = this;
 
         return {
             ...highchartsConfig,
@@ -191,6 +180,7 @@ export class TreeMap extends Component {
                 type: 'treemap',
                 animation: false,
                 layoutAlgorithm: algorithm,
+                borderWidth: 0,
                 dataLabels: {
                     enabled: true,
                     allowOverlap: false,
@@ -220,6 +210,17 @@ export class TreeMap extends Component {
             onDoubleClick(record, e);
         }
         this._clickCount = 0;
+    }
+
+    //----------------------
+    // Selection handling
+    //----------------------
+    syncSelection() {
+        if (!this._chart) return;
+        const {selectedIds} = this.model;
+        this._chart.series[0].data.forEach(node => {
+            node.select(selectedIds.includes(node.id), true);
+        });
     }
 
     //----------------------
