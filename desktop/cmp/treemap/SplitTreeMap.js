@@ -22,10 +22,7 @@ export class SplitTreeMap extends Component {
 
     static propTypes = {
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired,
-
-        /** Function to render region titles. Receives region total, and region name ['primary', 'secondary']. */
-        regionTitleRenderer: PT.func
+        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired
     };
 
     static modelClass = SplitTreeMapModel;
@@ -33,21 +30,28 @@ export class SplitTreeMap extends Component {
     baseClassName = 'xh-split-treemap';
 
     render() {
-        const {primaryRegionModel, secondaryRegionModel, primaryRegionTotal, secondaryRegionTotal, orientation} = this.model,
-            {regionTitleRenderer} = this.props,
+        const {model} = this,
+            {
+                primaryRegionModel,
+                secondaryRegionModel,
+                primaryRegionTotal,
+                secondaryRegionTotal,
+                regionTitleFn,
+                orientation
+            } = model,
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             className: this.getClassName(),
             items: [
                 panel({
-                    title: regionTitleRenderer ? regionTitleRenderer(primaryRegionTotal, 'primary') : undefined,
+                    title: regionTitleFn ? regionTitleFn('primary', model) : undefined,
                     compactHeader: true,
                     flex: primaryRegionTotal,
                     item: treeMap({model: primaryRegionModel})
                 }),
                 panel({
-                    title: regionTitleRenderer ? regionTitleRenderer(secondaryRegionTotal, 'secondary') : undefined,
+                    title: regionTitleFn ? regionTitleFn('secondary', model) : undefined,
                     compactHeader: true,
                     flex: secondaryRegionTotal,
                     item: treeMap({model: secondaryRegionModel})

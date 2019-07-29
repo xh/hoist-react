@@ -24,6 +24,8 @@ export class SplitTreeMapModel {
     gridModel;
     /** @member {function} */
     regionFilter;
+    /** @member {function} */
+    regionTitleFn;
     /** @member {Object} */
     treeMapModelConfig;
     /** @member {string} */
@@ -65,6 +67,7 @@ export class SplitTreeMapModel {
      * @param {GridModel} c.gridModel - Optional GridModel to bind to.
      * @param {function} c.regionFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
+     * @param {function} [c.regionTitleFn] - Function to render region titles. Receives region name ['primary', 'secondary'] and SplitTreeMapModel.
      * @param {Object} [c.treeMapModelConfig] - config to be passed to underlying TreeMapModels
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      */
@@ -72,6 +75,7 @@ export class SplitTreeMapModel {
         config,
         gridModel,
         regionFilter,
+        regionTitleFn,
         treeMapModelConfig,
         orientation = 'vertical'
     } = {}) {
@@ -81,6 +85,7 @@ export class SplitTreeMapModel {
         this.config = config;
         this.gridModel = gridModel;
         this.regionFilter = regionFilter;
+        this.regionTitleFn = regionTitleFn;
         this.treeMapModelConfig = treeMapModelConfig;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
