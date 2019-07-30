@@ -30,6 +30,8 @@ export class TreeMapModel {
     valueFieldLabel;
     /** @member {string} */
     heatFieldLabel;
+    /** @member {number} */
+    maxDepth;
     /** @member {function} */
     filter;
     /** @member {function} */
@@ -60,6 +62,7 @@ export class TreeMapModel {
      * @param {string} c.heatField - Record field to use to determine node color.
      * @param {string} [c.valueFieldLabel] - Label for valueField to render in the default tooltip.
      * @param {string} [c.heatFieldLabel] - Label for heatField to render in the default tooltip.
+     * @param {number} [c.maxDepth] - Maximum tree depth to render.
      * @parma {function} [c.filter] - A filter function used when processing data. Receives (record), returns boolean.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record, e).
      *      If not provided, by default will select a record when using a GridModel.
@@ -78,6 +81,7 @@ export class TreeMapModel {
         heatField = 'value',
         valueFieldLabel,
         heatFieldLabel,
+        maxDepth,
         filter,
         onClick,
         onDoubleClick,
@@ -93,6 +97,7 @@ export class TreeMapModel {
         this.heatField = heatField;
         this.valueFieldLabel = valueFieldLabel;
         this.heatFieldLabel = heatFieldLabel;
+        this.maxDepth = maxDepth;
         this.filter = filter;
         this.tooltip = tooltip;
 
@@ -128,8 +133,8 @@ export class TreeMapModel {
         return this.normaliseColorValues(ret);
     }
 
-    processRecordsRecursive(rawData, parentId = null) {
-        const {gridModel, labelField, valueField, heatField} = this,
+    processRecordsRecursive(rawData, parentId = null, depth = 1) {
+        const {gridModel, labelField, valueField, heatField, maxDepth} = this,
             expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null,
             ret = [];
 
@@ -155,10 +160,13 @@ export class TreeMapModel {
 
             if (parentId) treeRec.parent = parentId;
 
-            // Process children
+            // Process children if:
+            // a) There are children
+            // b) This node is expanded
+            // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && expandedTreeNodes.includes(id)) {
-                childTreeRecs = this.processRecordsRecursive(children, id, ret);
+            if (children && expandedTreeNodes.includes(id) && (!maxDepth || depth < maxDepth)) {
+                childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
             // Include record and its children if:

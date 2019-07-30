@@ -14,6 +14,7 @@ import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {Cube} from '@xh/hoist/data/cube';
 import {assign, merge, clone, debounce} from 'lodash';
 
 import {LightTheme} from './theme/Light';
@@ -220,9 +221,25 @@ export class TreeMap extends Component {
     //----------------------
     syncSelection() {
         if (!this._chart) return;
-        const {selectedIds} = this.model;
+
+        const {selectedIds, maxDepth, gridModel} = this.model;
+        let toSelect = [...selectedIds];
+
+        // Fallback to parent node if selection exceeds max depth
+        if (maxDepth && gridModel && gridModel.treeMode) {
+            toSelect = selectedIds.map(id => {
+                const delim = Cube.RECORD_ID_DELIMITER,
+                    parts = id.split(delim),
+                    idDepth = parts.filter(p => p !== 'root').length,
+                    toRemove = idDepth - maxDepth;
+
+                return toRemove < 1 ? id : parts.slice(0, -toRemove).join(delim);
+            });
+        }
+
+        // Update selection in chart
         this._chart.series[0].data.forEach(node => {
-            node.select(selectedIds.includes(node.id), true);
+            node.select(toSelect.includes(node.id), true);
         });
     }
 
