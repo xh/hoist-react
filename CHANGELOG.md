@@ -33,6 +33,13 @@ independent.  Specify a single `getCopyText` function rather than the `clipboard
 is an artifact from the removed `clipboard` library).
 
 
+### ⚙️ Technical
+
+* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state
+  are called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods
+  to verify the grid is fully initialized.
+  
 ### 📚 Libraries
 
 * ag-Grid `21.0.1 -> 21.1.0`
