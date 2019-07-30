@@ -30,7 +30,12 @@ highchartsTree(Highcharts);
 highchartsHeatmap(Highcharts);
 
 /**
- * Todo
+ * Component for rendering a TreeMap.
+ *
+ * It is a managed wrapper around a Highcharts TreeMap visualization, which renders
+ * records from a Store and optionally binds to a GridModel.
+ *
+ * @see TreeMapModel
  */
 @HoistComponent
 @LayoutSupport

@@ -12,7 +12,14 @@ import {isFunction, sumBy} from 'lodash';
 import {TreeMapModel} from './TreeMapModel';
 
 /**
- * Todo
+ * Core Model for a SplitTreeMap.
+ *
+ * Binds to a Store (or GridModel) and splits the data into two managed child TreeMaps.
+ * Users should specify a `mapFilter` function to control how records are divided
+ * across the two TreeMaps.
+ *
+ * Additionally, accepts and passes along all settings for TreeMapModel.
+ * @see TreeMapModel
  */
 @HoistModel
 export class SplitTreeMapModel {

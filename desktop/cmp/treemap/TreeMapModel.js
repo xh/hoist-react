@@ -10,7 +10,16 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isNil, maxBy, minBy} from 'lodash';
 
 /**
- * Todo
+ * Core Model for a TreeMap.
+ *
+ * You should specify the TreeMap's data store, in addition to which Record fields should be
+ * mapped to label (a node's display name), value (a node's size), and heat (a node's color).
+ *
+ * Can also (optionally) be bound to a GridModel. This will enable selection syncing and
+ * expand / collapse syncing for GridModels in `treeMode`.
+ *
+ * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
+ * @see Dark and Light themes for examples.
  */
 @HoistModel
 export class TreeMapModel {
