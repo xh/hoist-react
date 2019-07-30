@@ -392,14 +392,14 @@ export class AgGridModel {
     //------------------------
     @action
     handleGridReady({api, columnApi}) {
-        console.warn('AgGridModel Initializing!');
+        console.debug('AgGridModel Initializing!');
         this.agApi = api;
         this.agColumnApi = columnApi;
     }
 
     @action
     handleGridUnmount() {
-        console.warn('AgGridModel Uninitializing!');
+        console.debug('AgGridModel Uninitializing!');
         this.agApi = null;
         this.agColumnApi = null;
     }
