@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
-import {FocusStyleManager} from '@blueprintjs/core';
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
@@ -32,7 +31,6 @@ export class Message extends Component {
     baseClassName = 'xh-message';
 
     render() {
-        FocusStyleManager.alwaysShowFocus();
 
         const model = this.model,
             isOpen = model && model.isOpen;
@@ -57,7 +55,7 @@ export class Message extends Component {
     }
 
     renderInput() {
-        const {formModel, input, confirmAutoFocus} = this.model;
+        const {formModel, input, autoFocus} = this.model;
         if (!formModel) return null;
         return form({
             model: formModel,
@@ -65,34 +63,33 @@ export class Message extends Component {
             item: formField({
                 field: 'value',
                 item: withDefault(input.item, textInput({
-                    autoFocus: confirmAutoFocus ? false : true
+                    autoFocus:  autoFocus == 'input' ? true : false
                 }))
             })
         });
     }
 
     renderButtons() {
-        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent, confirmAutoFocus} = this.model;
+        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent, autoFocus} = this.model;
         return [
             filler(),
             button({
                 text: cancelText,
                 omit: !cancelText,
                 intent: cancelIntent,
+                autoFocus:  autoFocus == 'cancel' ? true : false,
                 onClick: () => this.model.doCancel()
             }),
             button({
                 text: confirmText,
                 intent: confirmIntent,
                 disabled: formModel ? !formModel.isValid : false,
-                autoFocus: confirmAutoFocus,
+                autoFocus:  autoFocus == 'confirm' ? true : false,
+                // minimal: false,
                 onClick: () => this.model.doConfirmAsync()
             })
         ];
     }
 
-    destroy() {
-        FocusStyleManager.onlyShowFocusOnTabs();
-    }
 }
 export const message = elemFactory(Message);

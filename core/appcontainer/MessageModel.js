@@ -24,10 +24,10 @@ export class MessageModel {
     confirmText = null;
     cancelText = null;
     confirmIntent = null;
-    confirmAutoFocus = null;
     cancelIntent = null;
     onConfirm = null;
     onCancel = null;
+    autoFocus = 'input';  // allowed values: 'input', 'cancel', 'confirm'
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result = null;
@@ -43,10 +43,10 @@ export class MessageModel {
         this.confirmText = config.confirmText;
         this.cancelText = config.cancelText;
         this.confirmIntent = config.confirmIntent;
-        this.confirmAutoFocus = config.confirmAutoFocus;
         this.cancelIntent = config.cancelIntent;
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;
+        this.autoFocus = config.autoFocus ? config.autoFocus : this.autoFocus;
         this.result = new Promise(resolve => this._resolver = resolve);
 
         // Extract properties from input
