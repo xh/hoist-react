@@ -23,84 +23,78 @@ export class SplitTreeMapModel {
     /** @member {GridModel} */
     gridModel;
     /** @member {function} */
-    filter;
-    /** @member {Object} */
-    treeMapModelConfig;
+    mapFilter;
+    /** @member {function} */
+    mapTitleFn;
     /** @member {string} */
     orientation;
 
     /** @member {TreeMapModel} */
-    @managed posModel;
+    @managed primaryMapModel;
     /** @member {TreeMapModel} */
-    @managed negModel;
+    @managed secondaryMapModel;
 
     //------------------------
     // Observable API
     //------------------------
     /** @member {Object} */
-    @bindable.ref config = {};
+    @bindable.ref highchartsConfig = {};
 
     @computed
-    get posRootTotal() {
-        return sumBy(this.posModel.data, it => {
+    get primaryMapTotal() {
+        return sumBy(this.primaryMapModel.data, it => {
             // Only include root records that pass the filter
-            if (it.parent || !this.filter(it.record)) return 0;
+            if (it.parent || !this.mapFilter(it.record)) return 0;
             return it.value;
         });
     }
 
     @computed
-    get negRootTotal() {
-        return sumBy(this.negModel.data, it => {
+    get secondaryMapTotal() {
+        return sumBy(this.secondaryMapModel.data, it => {
             // Only include root records that don't pass the filter
-            if (it.parent || this.filter(it.record)) return 0;
+            if (it.parent || this.mapFilter(it.record)) return 0;
             return it.value;
         });
     }
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {GridModel} c.gridModel - Optional GridModel to bind to.
-     * @param {function} c.filter - A filter function used when processing data. Receives (record), returns boolean.
-     *      Records that pass the filter will be placed into the positive TreeMap, and the rest into the negative TreeMap.
-     * @param {Object} [c.treeMapModelConfig] - config to be passed to underlying TreeMapModels
-     * @param {string} [c.orientation] - Display positive values above ('vertical') or to the right ('horizontal') of negative values.
+     * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
+     *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
+     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and SplitTreeMapModel.
+     * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
+     *
+     * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.
      */
     constructor({
-        config,
         gridModel,
-        filter,
-        treeMapModelConfig,
-        orientation = 'vertical'
+        mapFilter,
+        mapTitleFn,
+        orientation = 'vertical',
+        ...rest
     } = {}) {
         throwIf(isNil(gridModel), 'SplitTreeMap requires a GridModel.');
-        throwIf(!isFunction(filter), 'SplitTreeMap requires a filter function.');
+        throwIf(!isFunction(mapFilter), 'SplitTreeMap requires a map filter function.');
 
-        this.config = config;
         this.gridModel = gridModel;
-        this.filter = filter;
-        this.treeMapModelConfig = treeMapModelConfig;
+        this.mapFilter = mapFilter;
+        this.mapTitleFn = mapTitleFn;
 
-        if (!['vertical', 'horizontal'].includes(orientation)) {
-            console.warn(`Orientation ${orientation} not recognised. Defaulting to 'vertical'.`);
-            orientation = 'vertical';
-        }
+        throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
         this.orientation = orientation;
 
         // Create child TreeMaps
-        this.posModel = new TreeMapModel({
-            ...this.treeMapModelConfig,
+        this.primaryMapModel = new TreeMapModel({
             gridModel,
-            config,
-            filter: (rec) => filter(rec)
+            filter: (rec) => mapFilter(rec),
+            ...rest
         });
-        this.negModel = new TreeMapModel({
-            ...this.treeMapModelConfig,
+        this.secondaryMapModel = new TreeMapModel({
             gridModel,
-            config,
-            filter: (rec) => !filter(rec)
+            filter: (rec) => !mapFilter(rec),
+            ...rest
         });
     }
 

@@ -13,6 +13,8 @@ import {div, box} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
+import {forEachAsync} from '@xh/hoist/utils/async';
+import {Cube} from '@xh/hoist/data/cube';
 import {assign, merge, clone, debounce} from 'lodash';
 
 import {LightTheme} from './theme/Light';
@@ -46,30 +48,19 @@ export class TreeMap extends Component {
     _chartElem = new Ref();
     _chart = null;
 
-    get data() {
-        // If not bound to a grid, simply use model data
-        const {data, gridModel} = this.model;
-        if (!gridModel) return data;
-
-        // If bound to a grid, mixin selected state from GridModel
-        const selectedIds = gridModel.selModel.ids,
-            {selectionColor} = XH.darkTheme ? DarkTheme : LightTheme;
-
-        return data.map(it => {
-            const selected = selectedIds.includes(it.id);
-            return {
-                ...it,
-                selected,
-                color: selected ? selectionColor : undefined
-            };
-        });
-    }
-
     constructor(props) {
         super(props);
+
         // Detect double-clicks vs single-clicks
         this._clickCount = 0;
         this._debouncedClickHandler = debounce(this.clickHandler, 500);
+
+        // Sync selection
+        this.addReaction({
+            track: () => [this.model.selectedIds, this.getMergedConfig()],
+            run: () => this.syncSelection(),
+            delay: 1 // Must wait for chart re-render on data / config change
+        });
     }
 
     render() {
@@ -81,6 +72,7 @@ export class TreeMap extends Component {
         }
 
         this.renderHighChart();
+        this.updateLabelVisibilityAsync();
 
         // Inner div required to be the ref for the chart element
         return resizeSensor({
@@ -119,6 +111,7 @@ export class TreeMap extends Component {
     resizeChart(e) {
         const {width, height} = e[0].contentRect;
         this._chart.setSize(width, height, false);
+        this.updateLabelVisibilityAsync();
     }
 
     destroy() {
@@ -169,11 +162,11 @@ export class TreeMap extends Component {
     }
 
     getModelConfig() {
-        const {config, algorithm, tooltip} = this.model,
-            {data, defaultTooltip} = this;
+        const {data, highchartsConfig, algorithm, tooltip} = this.model,
+            {defaultTooltip} = this;
 
         return {
-            ...config,
+            ...highchartsConfig,
             tooltip: {
                 enabled: !!tooltip,
                 useHTML: true,
@@ -191,6 +184,14 @@ export class TreeMap extends Component {
                 type: 'treemap',
                 animation: false,
                 layoutAlgorithm: algorithm,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    allowOverlap: false,
+                    align: 'left',
+                    verticalAlign: 'top',
+                    style: {textOutline: 'none', visibility: 'hidden'}
+                },
                 events: {click: this.onClick}
             }]
         };
@@ -216,6 +217,54 @@ export class TreeMap extends Component {
     }
 
     //----------------------
+    // Selection handling
+    //----------------------
+    syncSelection() {
+        if (!this._chart) return;
+
+        const {selectedIds, maxDepth, gridModel} = this.model;
+        let toSelect = [...selectedIds];
+
+        // Fallback to parent node if selection exceeds max depth
+        if (maxDepth && gridModel && gridModel.treeMode) {
+            toSelect = selectedIds.map(id => {
+                const delim = Cube.RECORD_ID_DELIMITER,
+                    parts = id.split(delim),
+                    idDepth = parts.filter(p => p !== 'root').length,
+                    toRemove = idDepth - maxDepth;
+
+                return toRemove < 1 ? id : parts.slice(0, -toRemove).join(delim);
+            });
+        }
+
+        // Update selection in chart
+        this._chart.series[0].data.forEach(node => {
+            node.select(toSelect.includes(node.id), true);
+        });
+    }
+
+    //----------------------
+    // Labels
+    //----------------------
+    async updateLabelVisibilityAsync() {
+        if (!this._chart) return;
+
+        // Show / hide labels by comparing label size to node size
+        await forEachAsync(this._chart.series[0].data, node => {
+            if (node.dataLabel) {
+                const buffer = 10,
+                    tooSmallWidth = (node.dataLabel.width + buffer) > node.graphic.element.width.baseVal.value,
+                    tooSmallHeight = (node.dataLabel.height + buffer) > node.graphic.element.height.baseVal.value,
+                    style = tooSmallWidth || tooSmallHeight ? {visibility: 'hidden'} : {visibility: 'visible'};
+
+                node.update({dataLabels: {style}}, false, false);
+            }
+        });
+
+        this._chart.redraw();
+    }
+
+    //----------------------
     // Tooltip
     //----------------------
     defaultTooltip = (record) => {
@@ -225,13 +274,13 @@ export class TreeMap extends Component {
             heat = record[heatField];
 
         return `
-            <div class="xh-treemap-tooltip">
-                <div class="xh-treemap-tooltip__label">${name}</div>
-                <div class="xh-treemap-tooltip__row">
+            <div class='xh-treemap-tooltip'>
+                <div class='xh-treemap-tooltip__label'>${name}</div>
+                <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel || valueField}:</div>
                     <div>${fmtNumber(value)}</div>
                 </div>
-                <div class="xh-treemap-tooltip__row" ${valueField == heatField ? 'style="display:none"' : ''}>
+                <div class='xh-treemap-tooltip__row' ${valueField == heatField ? 'style="display:none"' : ''}>
                     <div>${heatFieldLabel || heatField}:</div>
                     <div>${fmtNumber(heat)}</div>
                 </div>

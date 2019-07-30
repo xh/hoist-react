@@ -30,6 +30,8 @@ export class TreeMapModel {
     valueFieldLabel;
     /** @member {string} */
     heatFieldLabel;
+    /** @member {number} */
+    maxDepth;
     /** @member {function} */
     filter;
     /** @member {function} */
@@ -45,13 +47,13 @@ export class TreeMapModel {
     // Observable API
     //------------------------
     /** @member {Object} */
-    @bindable.ref config = {};
+    @bindable.ref highchartsConfig = {};
     /** @member {TreeMapRecord[]} */
     @observable.ref data = [];
 
     /**
      * @param {Object} c - TreeMapModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
+     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {Object[]} c.data - Raw data to be displayed.
      * @param {GridModel} [c.gridModel] - Optional GridModel to bind to.
@@ -60,6 +62,7 @@ export class TreeMapModel {
      * @param {string} c.heatField - Record field to use to determine node color.
      * @param {string} [c.valueFieldLabel] - Label for valueField to render in the default tooltip.
      * @param {string} [c.heatFieldLabel] - Label for heatField to render in the default tooltip.
+     * @param {number} [c.maxDepth] - Maximum tree depth to render.
      * @parma {function} [c.filter] - A filter function used when processing data. Receives (record), returns boolean.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record, e).
      *      If not provided, by default will select a record when using a GridModel.
@@ -70,7 +73,7 @@ export class TreeMapModel {
      *      tooltipFn which returns a string output of the node's value.
      */
     constructor({
-        config,
+        highchartsConfig,
         data = [],
         gridModel,
         labelField = 'name',
@@ -78,13 +81,14 @@ export class TreeMapModel {
         heatField = 'value',
         valueFieldLabel,
         heatFieldLabel,
+        maxDepth,
         filter,
         onClick,
         onDoubleClick,
         algorithm = 'squarified',
         tooltip = true
     } = {}) {
-        this.config = config;
+        this.highchartsConfig = highchartsConfig;
         this.data = data;
         this.gridModel = gridModel;
 
@@ -93,16 +97,14 @@ export class TreeMapModel {
         this.heatField = heatField;
         this.valueFieldLabel = valueFieldLabel;
         this.heatFieldLabel = heatFieldLabel;
+        this.maxDepth = maxDepth;
         this.filter = filter;
         this.tooltip = tooltip;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
 
-        if (!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm)) {
-            console.warn(`Algorithm ${algorithm} not recognised. Defaulting to 'squarified'.`);
-            algorithm = 'squarified';
-        }
+        throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
         this.algorithm = algorithm;
 
         if (this.gridModel) {
@@ -111,6 +113,11 @@ export class TreeMapModel {
                 run: ([data]) => this.setData(data)
             });
         }
+    }
+
+    get selectedIds() {
+        if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
+        return this.gridModel.selModel.ids;
     }
 
     @action
@@ -126,8 +133,8 @@ export class TreeMapModel {
         return this.normaliseColorValues(ret);
     }
 
-    processRecordsRecursive(rawData, parentId = null) {
-        const {gridModel, labelField, valueField, heatField} = this,
+    processRecordsRecursive(rawData, parentId = null, depth = 1) {
+        const {gridModel, labelField, valueField, heatField, maxDepth} = this,
             expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null,
             ret = [];
 
@@ -153,10 +160,13 @@ export class TreeMapModel {
 
             if (parentId) treeRec.parent = parentId;
 
-            // Process children
+            // Process children if:
+            // a) There are children
+            // b) This node is expanded
+            // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && expandedTreeNodes.includes(id)) {
-                childTreeRecs = this.processRecordsRecursive(children, id, ret);
+            if (children && expandedTreeNodes.includes(id) && (!maxDepth || depth < maxDepth)) {
+                childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
             // Include record and its children if:

@@ -22,10 +22,7 @@ export class SplitTreeMap extends Component {
 
     static propTypes = {
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired,
-
-        /** Function to render section titles. Receives section total, and section ['positive', 'negative']. */
-        titleRenderer: PT.func
+        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired
     };
 
     static modelClass = SplitTreeMapModel;
@@ -33,24 +30,31 @@ export class SplitTreeMap extends Component {
     baseClassName = 'xh-split-treemap';
 
     render() {
-        const {posModel, negModel, orientation, posRootTotal, negRootTotal} = this.model,
-            {titleRenderer} = this.props,
+        const {model} = this,
+            {
+                primaryMapModel,
+                primaryMapTotal,
+                secondaryMapModel,
+                secondaryMapTotal,
+                mapTitleFn,
+                orientation
+            } = model,
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             className: this.getClassName(),
             items: [
                 panel({
-                    title: titleRenderer ? titleRenderer(posRootTotal, 'positive') : undefined,
+                    title: mapTitleFn ? mapTitleFn('primary', model) : undefined,
                     compactHeader: true,
-                    flex: posRootTotal,
-                    item: treeMap({model: posModel})
+                    flex: primaryMapTotal,
+                    item: treeMap({model: primaryMapModel})
                 }),
                 panel({
-                    title: titleRenderer ? titleRenderer(negRootTotal, 'negative') : undefined,
+                    title: mapTitleFn ? mapTitleFn('secondary', model) : undefined,
                     compactHeader: true,
-                    flex: negRootTotal,
-                    item: treeMap({model: negModel})
+                    flex: secondaryMapTotal,
+                    item: treeMap({model: secondaryMapModel})
                 })
             ],
             ...this.getLayoutProps()

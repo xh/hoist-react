@@ -14,17 +14,23 @@ import {bindable} from '@xh/hoist/mobx';
 @HoistModel
 export class ChartModel {
 
-    @bindable.ref config = {};
+    @bindable.ref highchartsConfig = {};
     @bindable.ref series = [];
 
     /**
      * @param {Object} c - ChartModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
+     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {Object[]} c.series - Data series to be displayed.
      */
-    constructor({config, series = []} = {}) {
-        this.config = config;
+    constructor({highchartsConfig, series = [], config} = {}) {
+        // Deprecation warning to avoid breaking change
+        if (config) {
+            console.warn('ChartModel "config" has been deprecated. Please use "highchartsConfig" instead.');
+            highchartsConfig = config;
+        }
+
+        this.highchartsConfig = highchartsConfig;
         this.series = series;
     }
 }

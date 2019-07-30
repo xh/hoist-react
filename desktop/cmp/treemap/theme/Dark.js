@@ -19,7 +19,6 @@ export const DarkTheme = {
             [1, '#009E0A'] // Max positive
         ]
     },
-    selectionColor: '#03A9F4',
 
     // Theme
     chart: {

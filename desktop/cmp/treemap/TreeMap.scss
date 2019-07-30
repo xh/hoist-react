@@ -1,3 +1,24 @@
+.xh-treemap {
+  text {
+    font-family: var(--xh-font-family) !important;
+    font-size: var(--xh-font-size-small-px) !important;
+    font-weight: normal !important;
+  }
+
+  rect.highcharts-point {
+    outline-style: solid;
+    outline-width: 1px;
+    outline-offset: -1px;
+    outline-color: var(--xh-bg);
+
+    &.highcharts-point-select {
+      outline-width: 3px;
+      outline-offset: -3px;
+      outline-color: var(--xh-blue-light);
+    }
+  }
+}
+
 .xh-treemap-tooltip {
   color: var(--xh-text-color);
   border: var(--xh-border-solid);
@@ -5,6 +26,7 @@
   &__label {
     padding: var(--xh-pad-half-px);
     background: var(--xh-bg-alt);
+    font-size: var(--xh-font-size-small-px);
   }
 
   &__row {
