@@ -59,7 +59,7 @@ export class ClientErrorDetail extends Component {
             toolbar(
                 filler(),
                 clipboardButton({
-                    clipboardSpec: {text: this.getErrorStr},
+                    getCopyText: this.getErrorStr,
                     successMessage: 'Error details copied to clipboard.'
                 }),
                 button({
