@@ -638,11 +638,6 @@ export class GridModel {
         return {groupIds, colIds};
     }
 
-    getRowNode(id) {
-        if (!this.agApi) return;
-        return this.agApi.getRowNode(id);
-    }
-
     formatValuesForExport(params) {
         const value = params.value,
             fmt = params.column.colDef.valueFormatter;
