@@ -24,6 +24,7 @@ export class MessageModel {
     confirmText = null;
     cancelText = null;
     confirmIntent = null;
+    confirmAutoFocus = null;
     cancelIntent = null;
     onConfirm = null;
     onCancel = null;
@@ -42,6 +43,7 @@ export class MessageModel {
         this.confirmText = config.confirmText;
         this.cancelText = config.cancelText;
         this.confirmIntent = config.confirmIntent;
+        this.confirmAutoFocus = config.confirmAutoFocus;
         this.cancelIntent = config.cancelIntent;
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;

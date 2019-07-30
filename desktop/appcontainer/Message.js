@@ -5,6 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {FocusStyleManager} from '@blueprintjs/core';
+
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -30,6 +32,8 @@ export class Message extends Component {
     baseClassName = 'xh-message';
 
     render() {
+        FocusStyleManager.alwaysShowFocus();
+
         const model = this.model,
             isOpen = model && model.isOpen;
 
@@ -53,20 +57,22 @@ export class Message extends Component {
     }
 
     renderInput() {
-        const {formModel, input} = this.model;
+        const {formModel, input, confirmAutoFocus} = this.model;
         if (!formModel) return null;
         return form({
             model: formModel,
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',
-                item: withDefault(input.item, textInput({autoFocus: true}))
+                item: withDefault(input.item, textInput({
+                    autoFocus: confirmAutoFocus ? false : true
+                }))
             })
         });
     }
 
     renderButtons() {
-        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
+        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent, confirmAutoFocus} = this.model;
         return [
             filler(),
             button({
@@ -79,10 +85,14 @@ export class Message extends Component {
                 text: confirmText,
                 intent: confirmIntent,
                 disabled: formModel ? !formModel.isValid : false,
+                autoFocus: confirmAutoFocus,
                 onClick: () => this.model.doConfirmAsync()
             })
         ];
     }
 
+    destroy() {
+        FocusStyleManager.onlyShowFocusOnTabs();
+    }
 }
 export const message = elemFactory(Message);
