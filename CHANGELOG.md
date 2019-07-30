@@ -2,12 +2,38 @@
 
 ## v26.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* **WebSocket support** has been added in the form of `XH.webSocketService` to establish and
+  maintain a managed websocket connection with the Hoist UI server. This is implemented on the
+  client via the native `WebSocket` object supported by modern browsers and relies on the
+  corresponding service and management endpoints added to Hoist Core v6.1.
+  * Apps must declare `webSocketsEnabled: true` in their `AppSpec` configuration to enable this
+    overall functionality on the client.
+  * Apps can then subscribe via the new service to updates on a requested topic and will receive any
+    inbound messages for that topic via a callback.
+  * The service will monitor the socket connection with a regular heartbeat and attempt to
+    re-establish if dropped.
+  * A new admin console snap-in provides an overview of connected websocket clients.
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
+  both overall record count and current selection count in a configurable way.
+
+### 💥 Breaking Changes
+
+* `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
+  `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
+  to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
+
 ### ⚙️ Technical
 
 * `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state
   are called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
   Applications can check the new `isReady` property on `AgGridModel` before calling such methods
   to verify the grid is fully initialized.
+  
+### 📚 Libraries
+
+* ag-Grid `21.0.1 -> 21.1.0`
 
 ## v25.2.0 - 2019-07-25
 
