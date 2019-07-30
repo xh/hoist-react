@@ -14,7 +14,9 @@ import {treeMap} from './TreeMap';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 
 /**
- * Todo
+ * A component which divides data across two TreeMaps.
+ *
+ * @see SplitTreeMapModel
  */
 @HoistComponent
 @LayoutSupport

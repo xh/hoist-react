@@ -5,12 +5,21 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isNil, maxBy, minBy} from 'lodash';
 
 /**
- * Todo
+ * Core Model for a TreeMap.
+ *
+ * You should specify the TreeMap's data store, in addition to which Record fields should be
+ * mapped to label (a node's display name), value (a node's size), and heat (a node's color).
+ *
+ * Can also (optionally) be bound to a GridModel. This will enable selection syncing and
+ * expand / collapse syncing for GridModels in `treeMode`.
+ *
+ * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
+ * @see Dark and Light themes for examples.
  */
 @HoistModel
 export class TreeMapModel {
@@ -18,6 +27,8 @@ export class TreeMapModel {
     //------------------------
     // Immutable public properties
     //------------------------
+    /** @member {Store} */
+    store;
     /** @member {GridModel} */
     gridModel;
     /** @member {string} */
@@ -53,10 +64,10 @@ export class TreeMapModel {
 
     /**
      * @param {Object} c - TreeMapModel configuration.
-     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`, which should be set via dedicated config.
-     * @param {Object[]} c.data - Raw data to be displayed.
+     * @param {Store} [c.store] - A store containing records to be displayed.
      * @param {GridModel} [c.gridModel] - Optional GridModel to bind to.
+     * @param {Object} [c.highchartsConfig] - Highcharts configuration object for the managed chart. May include
+     *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {string} c.labelField - Record field to use to determine node label.
      * @param {string} c.valueField - Record field to use to determine node size.
      * @param {string} c.heatField - Record field to use to determine node color.
@@ -73,9 +84,9 @@ export class TreeMapModel {
      *      tooltipFn which returns a string output of the node's value.
      */
     constructor({
-        highchartsConfig,
-        data = [],
+        store,
         gridModel,
+        highchartsConfig,
         labelField = 'name',
         valueField = 'value',
         heatField = 'value',
@@ -88,10 +99,11 @@ export class TreeMapModel {
         algorithm = 'squarified',
         tooltip = true
     } = {}) {
-        this.highchartsConfig = highchartsConfig;
-        this.data = data;
         this.gridModel = gridModel;
+        this.store = store ? store : gridModel ? gridModel.store : null;
+        throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');
 
+        this.highchartsConfig = highchartsConfig;
         this.labelField = labelField;
         this.valueField = valueField;
         this.heatField = heatField;
@@ -107,12 +119,10 @@ export class TreeMapModel {
         throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
         this.algorithm = algorithm;
 
-        if (this.gridModel) {
-            this.addReaction({
-                track: () => [gridModel.store.rootRecords, gridModel.expandedTreeNodes],
-                run: ([data]) => this.setData(data)
-            });
-        }
+        this.addReaction({
+            track: () => [this.store.rootRecords, this.expandState],
+            run: ([rawData]) => this.data = this.processData(rawData)
+        });
     }
 
     get selectedIds() {
@@ -120,9 +130,9 @@ export class TreeMapModel {
         return this.gridModel.selModel.ids;
     }
 
-    @action
-    setData(rawData) {
-        this.data = this.processData(rawData);
+    get expandState() {
+        if (!this.gridModel) return {};
+        return this.gridModel.expandState;
     }
 
     //-------------------------
@@ -134,8 +144,7 @@ export class TreeMapModel {
     }
 
     processRecordsRecursive(rawData, parentId = null, depth = 1) {
-        const {gridModel, labelField, valueField, heatField, maxDepth} = this,
-            expandedTreeNodes = gridModel ? gridModel.expandedTreeNodes : null,
+        const {labelField, valueField, heatField, maxDepth} = this,
             ret = [];
 
         rawData.forEach(record => {
@@ -165,7 +174,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && expandedTreeNodes.includes(id) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.expandState[id] && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -224,9 +233,21 @@ export class TreeMapModel {
         selModel.select(record, !multiSelect);
     };
 
-    defaultOnDoubleClick = (record, e) => {
-        if (!this.gridModel || !this.gridModel.treeMode) return;
-        this.gridModel.toggleExpanded(record.id);
+    defaultOnDoubleClick = (record) => {
+        if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
+
+        // Toggle expand state of node
+        const {id} = record,
+            expandState = {...this.expandState};
+
+        if (expandState[id]) {
+            delete expandState[id];
+        } else {
+            expandState[id] = true;
+        }
+
+        this.gridModel.agGridModel.setExpandState(expandState);
+        this.gridModel.noteAgExpandStateChange();
     };
 
 }

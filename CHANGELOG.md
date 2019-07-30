@@ -16,6 +16,9 @@
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
 
+* New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a TreeMap.
+  Supports optional binding to a GridModel, which syncs selection and expand / collapse state.
+
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
 

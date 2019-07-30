@@ -284,7 +284,7 @@ export class AgGridModel {
     getExpandState() {
         const expandState = {};
         this.agApi.forEachNode(node => {
-            if (!node.group) return;
+            if (!node.allChildrenCount) return;
 
             if (node.expanded) {
                 const path = this.getGroupNodePath(node);
@@ -303,7 +303,7 @@ export class AgGridModel {
         const {agApi} = this;
         let wasChanged = false;
         agApi.forEachNode(node => {
-            if (!node.group) return;
+            if (!node.allChildrenCount) return;
 
             const path = this.getGroupNodePath(node);
             if (has(expandState, path)) {
@@ -367,7 +367,7 @@ export class AgGridModel {
     }
 
     getGroupNodePath(node) {
-        throwIf(!node.group, 'Cannot get the path for a non-group node!');
+        throwIf(!node.allChildrenCount, 'Cannot get the path for a non-group node!');
 
         const buildNodePath = (node, path = []) => {
             // ag-Grid will always have a root node with the id ROOT_NODE_ID in the node parent hierarchy

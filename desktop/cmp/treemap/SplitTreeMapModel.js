@@ -7,12 +7,19 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isFunction, sumBy} from 'lodash';
+import {isFunction, sumBy} from 'lodash';
 
 import {TreeMapModel} from './TreeMapModel';
 
 /**
- * Todo
+ * Core Model for a SplitTreeMap.
+ *
+ * Binds to a Store (or GridModel) and splits the data into two managed child TreeMaps.
+ * Users should specify a `mapFilter` function to control how records are divided
+ * across the two TreeMaps.
+ *
+ * Additionally, accepts and passes along all settings for TreeMapModel.
+ * @see TreeMapModel
  */
 @HoistModel
 export class SplitTreeMapModel {
@@ -20,8 +27,6 @@ export class SplitTreeMapModel {
     //------------------------
     // Immutable public properties
     //------------------------
-    /** @member {GridModel} */
-    gridModel;
     /** @member {function} */
     mapFilter;
     /** @member {function} */
@@ -60,7 +65,6 @@ export class SplitTreeMapModel {
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
-     * @param {GridModel} c.gridModel - Optional GridModel to bind to.
      * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
      * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and SplitTreeMapModel.
@@ -69,16 +73,12 @@ export class SplitTreeMapModel {
      * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.
      */
     constructor({
-        gridModel,
         mapFilter,
         mapTitleFn,
         orientation = 'vertical',
         ...rest
     } = {}) {
-        throwIf(isNil(gridModel), 'SplitTreeMap requires a GridModel.');
         throwIf(!isFunction(mapFilter), 'SplitTreeMap requires a map filter function.');
-
-        this.gridModel = gridModel;
         this.mapFilter = mapFilter;
         this.mapTitleFn = mapTitleFn;
 
@@ -87,14 +87,12 @@ export class SplitTreeMapModel {
 
         // Create child TreeMaps
         this.primaryMapModel = new TreeMapModel({
-            gridModel,
-            filter: (rec) => mapFilter(rec),
-            ...rest
+            ...rest,
+            filter: (rec) => mapFilter(rec)
         });
         this.secondaryMapModel = new TreeMapModel({
-            gridModel,
-            filter: (rec) => !mapFilter(rec),
-            ...rest
+            ...rest,
+            filter: (rec) => !mapFilter(rec)
         });
     }
 
