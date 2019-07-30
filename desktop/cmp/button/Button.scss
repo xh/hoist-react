@@ -1,0 +1,9 @@
+.xh-button--autofocus-enabled {
+    &:focus {
+        // when autofocus is true on a button, 
+        // this will override BP's disabling of focus outline
+        // that occurs when BP's FocusStyleManager.onlyShowFocusOnTabs is active.
+        outline: var(--xh-focus-outline) !important;
+        outline-offset: var(--xh-focus-outline-offset-px) !important;
+    }
+}

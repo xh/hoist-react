@@ -10,6 +10,9 @@ import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 
+import './Button.scss';
+
+
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
  * and adds LayoutSupport for top-level sizing and margin/padding props.
@@ -26,18 +29,21 @@ export class Button extends Component {
         onClick: PT.func,
         style: PT.object,
         text: PT.string,
-        title: PT.string
+        title: PT.string,
+        autoFocus: PT.bool
     };
 
     baseClassName = 'xh-button';
 
     render() {
-        const {icon, text, onClick, minimal = true, style, ...rest} = this.getNonLayoutProps();
+        const {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = this.getNonLayoutProps(),
+            autoFocusClassName = autoFocus ? ' xh-button--autofocus-enabled' : '';
         return bpButton({
             icon,
             minimal,
             onClick,
             text,
+            autoFocus,
 
             style: {
                 ...style,
@@ -45,7 +51,7 @@ export class Button extends Component {
             },
 
             ...rest,
-            className: this.getClassName(minimal ? 'xh-button--minimal' : '')
+            className: this.getClassName(minimal ? `xh-button--minimal${autoFocusClassName}` : autoFocusClassName)
         });
     }
 
