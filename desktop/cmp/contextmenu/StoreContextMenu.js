@@ -8,6 +8,7 @@
 import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import copy from 'clipboard-copy';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -29,6 +30,7 @@ export class StoreContextMenu {
      *      @see {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items|ag-Grid Docs}
      *
      *      Hoist tokens, all of which require a GridModel:
+     *          `copyCell` - copy cell value to clipboard.
      *          `colChooser` - display column chooser for a grid.
      *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
      *          `export` - export grid data to excel via Hoist's server-side export capabilities.
@@ -51,13 +53,23 @@ export class StoreContextMenu {
         if (!isEmpty(ret.items)) {
             ret.items = ret.items.map(it => this.buildRecordAction(it));
         }
-        return  ret;
+        return ret;
     }
 
     parseToken(token) {
-        const gridModel = this.gridModel;
+        const {gridModel} = this;
 
         switch (token) {
+            case 'copyCell':
+                return new RecordAction({
+                    text: 'Copy Cell',
+                    icon: Icon.copy(),
+                    hidden: !gridModel,
+                    recordsRequired: true,
+                    actionFn: ({record, column}) => {
+                        if (record && column) copy(record[column.field]);
+                    }
+                });
             case 'colChooser':
                 return new RecordAction({
                     text: 'Columns...',

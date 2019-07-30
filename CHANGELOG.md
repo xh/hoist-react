@@ -15,8 +15,12 @@
   * The service will monitor the socket connection with a regular heartbeat and attempt to
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
+
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
+
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
+
 
 ### 💥 Breaking Changes
 
@@ -24,9 +28,16 @@
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
 
+* The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
+independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
+is an artifact from the removed `clipboard` library).
+
+
 ### 📚 Libraries
 
 * ag-Grid `21.0.1 -> 21.1.0`
+
+* The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
 ## v25.2.0 - 2019-07-25
 
