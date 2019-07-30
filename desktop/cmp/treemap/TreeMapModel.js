@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isNil, maxBy, minBy} from 'lodash';
+import {isNil, isObject, maxBy, minBy, forOwn} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -120,7 +120,7 @@ export class TreeMapModel {
         this.algorithm = algorithm;
 
         this.addReaction({
-            track: () => [this.store.rootRecords, this.expandState],
+            track: () => [this.store.rootRecords, this.expandedIds],
             run: ([rawData]) => this.data = this.processData(rawData)
         });
     }
@@ -130,9 +130,19 @@ export class TreeMapModel {
         return this.gridModel.selModel.ids;
     }
 
-    get expandState() {
-        if (!this.gridModel) return {};
-        return this.gridModel.expandState;
+    get expandedIds() {
+        if (!this.gridModel) return [];
+
+        // Recursively extract object keys into array of ids
+        const ret = [],
+            getIds = (v, k) => {
+                ret.push(k);
+                if (isObject(v)) forOwn(v, getIds);
+            };
+
+        forOwn(this.gridModel.expandState, getIds);
+
+        return ret;
     }
 
     //-------------------------
@@ -174,7 +184,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.expandState[id] && (!maxDepth || depth < maxDepth)) {
+            if (children && this.expandedIds.includes(id) && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -238,7 +248,7 @@ export class TreeMapModel {
 
         // Toggle expand state of node
         const {id} = record,
-            expandState = {...this.expandState};
+            expandState = {...this.gridModel.expandState};
 
         if (expandState[id]) {
             delete expandState[id];
