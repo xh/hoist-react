@@ -1,7 +1,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
-import {warnIf, throwIf} from '../../utils/js';
+import {throwIf} from '../../utils/js';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -71,11 +71,8 @@ export class AgGridModel {
     /**
      * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
      */
-    // Intentionally not using @computed here because these api references may be updated if the grid
-    // is re-rendered, and @computed would not fire reactions since the return value would not have
-    // changed
     get isReady() {
-        return !isNil(this.agApi) && !isNil(this.agColumnApi);
+        return !isNil(this.agApi);
     }
 
     /**
@@ -394,12 +391,17 @@ export class AgGridModel {
     // Implementation
     //------------------------
     @action
-    init({api, columnApi}) {
-        warnIf(!isNil(this.agApi),
-            'AgGridModel is being re-initialized! AgGrid component must have been re-rendered!');
-
+    handleGridReady({api, columnApi}) {
+        console.warn('AgGridModel Initializing!');
         this.agApi = api;
         this.agColumnApi = columnApi;
+    }
+
+    @action
+    handleGridUnmount() {
+        console.warn('AgGridModel Uninitializing!');
+        this.agApi = null;
+        this.agColumnApi = null;
     }
 
     getPivotColumnId(column) {
@@ -424,7 +426,7 @@ export class AgGridModel {
     }
 
     throwIfNotReady() {
-        throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting to query or mutate AgGrid state!');
+        throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting this operation!');
     }
 }
 
