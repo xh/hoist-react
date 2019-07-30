@@ -111,7 +111,7 @@ export class TreeMapModel {
         this.algorithm = algorithm;
 
         this.addReaction({
-            track: () => [this.store.rootRecords, this.expandedIds],
+            track: () => [this.store.rootRecords, this.expandState],
             run: ([rawData]) => this.data = this.processData(rawData)
         });
     }
@@ -121,9 +121,9 @@ export class TreeMapModel {
         return this.gridModel.selModel.ids;
     }
 
-    get expandedIds() {
-        if (!this.gridModel) return [];
-        return this.gridModel.expandedTreeNodes;
+    get expandState() {
+        if (!this.gridModel) return {};
+        return this.gridModel.expandState;
     }
 
     //-------------------------
@@ -165,7 +165,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.expandedIds.includes(id) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.expandState[id] && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -224,9 +224,21 @@ export class TreeMapModel {
         selModel.select(record, !multiSelect);
     };
 
-    defaultOnDoubleClick = (record, e) => {
-        if (!this.gridModel || !this.gridModel.treeMode) return;
-        this.gridModel.toggleExpanded(record.id);
+    defaultOnDoubleClick = (record) => {
+        if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
+
+        // Toggle expand state of node
+        const {id} = record,
+            expandState = {...this.expandState};
+
+        if (expandState[id]) {
+            delete expandState[id];
+        } else {
+            expandState[id] = true;
+        }
+
+        this.gridModel.agGridModel.setExpandState(expandState);
+        this.gridModel.noteAgExpandStateChange();
     };
 
 }

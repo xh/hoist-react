@@ -94,14 +94,14 @@ export class GridModel {
     @observable.ref columns = [];
     /** @member {ColumnState[]} */
     @observable.ref columnState = [];
+    /** @member {Object} */
+    @observable.ref expandState = {};
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
     @observable groupBy = null;
     /** @member {(string|boolean)} */
     @bindable showSummary = false;
-    /** @member {string[]} */
-    @observable.ref expandedTreeNodes = [];
 
     static defaultContextMenuTokens = [
         'copy',
@@ -339,7 +339,7 @@ export class GridModel {
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
-            this.noteAgTreeStateChange();
+            this.noteAgExpandStateChange();
         }
     }
 
@@ -349,32 +349,8 @@ export class GridModel {
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();
-            this.noteAgTreeStateChange();
+            this.noteAgExpandStateChange();
         }
-    }
-
-    /** Toggle expanded state of a node by id in grouped or tree grid */
-    toggleExpanded(id) {
-        const node = this.getRowNode(id);
-        if (!node) return;
-        node.setExpanded(!node.expanded);
-        this.noteAgTreeStateChange();
-    }
-
-    /** Expand a node by id in grouped or tree grid */
-    expandNode(id) {
-        const node = this.getRowNode(id);
-        if (!node) return;
-        node.setExpanded(true);
-        this.noteAgTreeStateChange();
-    }
-
-    /** Collapse a node by id in grouped or tree grid */
-    collapseNode(id) {
-        const node = this.getRowNode(id);
-        if (!node) return;
-        node.setExpanded(false);
-        this.noteAgTreeStateChange();
     }
 
     /**
@@ -474,16 +450,8 @@ export class GridModel {
     }
 
     @action
-    noteAgTreeStateChange() {
-        const {treeMode, agApi} = this;
-        if (!agApi || !treeMode) return;
-        const expandedTreeNodes = [];
-        agApi.forEachNode(node => {
-            if (node.expanded) {
-                expandedTreeNodes.push(node.id);
-            }
-        });
-        this.expandedTreeNodes = expandedTreeNodes;
+    noteAgExpandStateChange() {
+        this.expandState = this.agGridModel.getExpandState();
     }
 
     /**
