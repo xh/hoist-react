@@ -72,8 +72,12 @@ export class AgGrid extends Component {
         });
     }
 
+    componentWillUnmount() {
+        if (this.model) this.model.handleGridUnmount();
+    }
+
     onGridReady = (agParams) => {
-        this.model.init(agParams);
+        this.model.handleGridReady(agParams);
         if (this.props.onGridReady) {
             this.props.onGridReady(agParams);
         }
