@@ -81,7 +81,7 @@ export class TreeMap extends Component {
 
         // Inner div required to be the ref for the chart element
         return resizeSensor({
-            onResize: (e) => this.resizeChart(e),
+            onResize: debounce((e) => this.resizeChart(e), 500),
             item: box({
                 ...layoutProps,
                 className: this.getClassName(),
@@ -114,6 +114,7 @@ export class TreeMap extends Component {
     }
 
     resizeChart(e) {
+        console.log('RESIZING CHART');
         const {width, height} = e[0].contentRect;
         this._chart.setSize(width, height, false);
         this.updateLabelVisibilityAsync();
