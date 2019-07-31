@@ -9,3 +9,5 @@ Review and check off the below. Items that do not apply should be checked to ind
 - [ ] Updated doc comments / prop-types (or N/A)
 - [ ] Reviewed and tested on Mobile (or N/A)
 - [ ] Created Toolbox branch / PR (link provided here, or N/A)
+
+> **Pull request reviewers:** when merging this P/R, please consider using a *squash commit* to collapse multiple intermediate commits into a single commit representing the overall feature change. This helps keep the commit log clean and easy to scan across releases.
