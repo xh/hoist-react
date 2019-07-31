@@ -7,7 +7,8 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isNil, isObject, maxBy, minBy, forOwn} from 'lodash';
+import {Cube} from '@xh/hoist/data/cube';
+import {isNil, isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -120,7 +121,7 @@ export class TreeMapModel {
         this.algorithm = algorithm;
 
         this.addReaction({
-            track: () => [this.store.rootRecords, this.expandedIds],
+            track: () => [this.store.rootRecords, this.expandState],
             run: ([rawData]) => this.data = this.processData(rawData)
         });
     }
@@ -130,19 +131,9 @@ export class TreeMapModel {
         return this.gridModel.selModel.ids;
     }
 
-    get expandedIds() {
-        if (!this.gridModel) return [];
-
-        // Recursively extract object keys into array of ids
-        const ret = [],
-            getIds = (v, k) => {
-                ret.push(k);
-                if (isObject(v)) forOwn(v, getIds);
-            };
-
-        forOwn(this.gridModel.expandState, getIds);
-
-        return ret;
+    get expandState() {
+        if (!this.gridModel || !this.gridModel.treeMode) return {};
+        return this.gridModel.expandState;
     }
 
     //-------------------------
@@ -184,7 +175,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.expandedIds.includes(id) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.nodeIsExpanded(id) && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -230,6 +221,43 @@ export class TreeMapModel {
     }
 
     //----------------------
+    // Expand / Collapse
+    //----------------------
+    nodeIsExpanded(id) {
+        if (isEmpty(this.expandState)) return false;
+        const path = this.getNodePath(id);
+        return get(this.expandState, path, false);
+    }
+
+    toggleNodeExpanded(id) {
+        const {gridModel} = this,
+            expandState = {...gridModel.expandState},
+            path = this.getNodePath(id);
+
+        if (get(expandState, path)) {
+            unset(expandState, path);
+        } else {
+            set(expandState, path, true);
+        }
+
+        gridModel.agGridModel.setExpandState(expandState);
+        gridModel.noteAgExpandStateChange();
+    }
+
+    getNodePath(id) {
+        const delim = Cube.RECORD_ID_DELIMITER,
+            parts = id.split(delim),
+            path = [];
+
+        // Build property path array from cube id
+        for (let i = 2; i <= parts.length; i++) {
+            path.push(parts.slice(0, i).join(delim));
+        }
+
+        return path;
+    }
+
+    //----------------------
     // Click handling
     //----------------------
     defaultOnClick = (record, e) => {
@@ -245,19 +273,7 @@ export class TreeMapModel {
 
     defaultOnDoubleClick = (record) => {
         if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
-
-        // Toggle expand state of node
-        const {id} = record,
-            expandState = {...this.gridModel.expandState};
-
-        if (expandState[id]) {
-            delete expandState[id];
-        } else {
-            expandState[id] = true;
-        }
-
-        this.gridModel.agGridModel.setExpandState(expandState);
-        this.gridModel.noteAgExpandStateChange();
+        this.toggleNodeExpanded(record.id);
     };
 
 }

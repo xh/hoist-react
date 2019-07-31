@@ -316,6 +316,13 @@ export class AgGridModel {
             if (!node.allChildrenCount) return;
 
             if (node.expanded) {
+                // Iterate up parents, ensuring each is also expanded
+                let parent = node.parent;
+                while (parent && parent.id !== 'ROOT_NODE_ID') {
+                    if (!parent.expanded) return;
+                    parent = parent.parent;
+                }
+
                 const path = this.getGroupNodePath(node);
                 set(expandState, path, true);
             }
