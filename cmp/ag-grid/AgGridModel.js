@@ -1,7 +1,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
-import {warnIf, throwIf} from '../../utils/js';
+import {throwIf} from '../../utils/js';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -69,6 +69,13 @@ export class AgGridModel {
     }
 
     /**
+     * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
+     */
+    get isReady() {
+        return !isNil(this.agApi);
+    }
+
+    /**
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
      *
@@ -81,6 +88,8 @@ export class AgGridModel {
      * @returns {AgGridState} - the current state of the grid
      */
     getState(opts = {}) {
+        this.throwIfNotReady();
+
         const errors = {},
             getStateChunk = (type) => {
                 if (opts[`exclude${startCase(type)}State`]) return undefined;
@@ -123,6 +132,8 @@ export class AgGridModel {
      * @param {AgGridState} state
      */
     setState(state) {
+        this.throwIfNotReady();
+
         const {columnState, sortState, expandState, filterState, miscState} = state;
         if (columnState) this.setColumnState(columnState);
         if (sortState) this.setSortState(sortState);
@@ -135,6 +146,8 @@ export class AgGridModel {
      * @returns {AgGridMiscState}
      */
     getMiscState() {
+        this.throwIfNotReady();
+
         return {
             panelId: this.agApi.getOpenedToolPanel()
         };
@@ -145,6 +158,8 @@ export class AgGridModel {
      * @param {AgGridMiscState} miscState
      */
     setMiscState(miscState) {
+        this.throwIfNotReady();
+
         const {agApi} = this,
             {panelId} = miscState;
 
@@ -160,6 +175,8 @@ export class AgGridModel {
      *      @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
      */
     getFilterState() {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         return agApi.getFilterModel();
     }
@@ -171,6 +188,8 @@ export class AgGridModel {
      * @param {Object[]} filterState
      */
     setFilterState(filterState) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
 
         agApi.setFilterModel(filterState);
@@ -182,6 +201,8 @@ export class AgGridModel {
      *      @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
      */
     getSortState() {
+        this.throwIfNotReady();
+
         const {agApi, agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
@@ -212,6 +233,8 @@ export class AgGridModel {
      * @param {Object[]} sortState
      */
     setSortState(sortState) {
+        this.throwIfNotReady();
+
         const sortModel = cloneDeep(sortState),
             {agApi, agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode(),
@@ -246,6 +269,8 @@ export class AgGridModel {
      * @returns {AgGridColumnState} - current column state of the grid, including pivot mode
      */
     getColumnState() {
+        this.throwIfNotReady();
+
         const {agColumnApi} = this;
         return {
             isPivot: agColumnApi.isPivotMode(),
@@ -258,6 +283,8 @@ export class AgGridModel {
      * @param {AgGridColumnState} colState
      */
     setColumnState(colState) {
+        this.throwIfNotReady();
+
         const {agColumnApi} = this,
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
@@ -282,11 +309,20 @@ export class AgGridModel {
      * @returns {Object} - the current row expansion state of the grid in a serializable form
      */
     getExpandState() {
+        this.throwIfNotReady();
+
         const expandState = {};
         this.agApi.forEachNode(node => {
             if (!node.allChildrenCount) return;
 
             if (node.expanded) {
+                // Iterate up parents, ensuring each is also expanded
+                let parent = node.parent;
+                while (parent && parent.id !== 'ROOT_NODE_ID') {
+                    if (!parent.expanded) return;
+                    parent = parent.parent;
+                }
+
                 const path = this.getGroupNodePath(node);
                 set(expandState, path, true);
             }
@@ -300,6 +336,8 @@ export class AgGridModel {
      * @param {Object} expandState - grid expand state retrieved via getExpandState()
      */
     setExpandState(expandState) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         let wasChanged = false;
         agApi.forEachNode(node => {
@@ -319,6 +357,8 @@ export class AgGridModel {
 
     /** @returns {(string[]|number[])} - list of selected row node ids */
     getSelectedRowNodeIds() {
+        this.throwIfNotReady();
+
         return this.agApi.getSelectedRows().map(it => it.id);
     }
 
@@ -328,6 +368,8 @@ export class AgGridModel {
      * @param ids {(string[]|number[])} - row node ids to mark as selected
      */
     setSelectedRowNodeIds(ids) {
+        this.throwIfNotReady();
+
         const {agApi} = this;
         agApi.deselectAll();
         ids.forEach(id => {
@@ -341,6 +383,8 @@ export class AgGridModel {
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {
+        this.throwIfNotReady();
+
         let id = null;
         this.agApi.forEachNodeAfterFilterAndSort(node => {
             if (isNil(id) && node.data) {
@@ -354,12 +398,17 @@ export class AgGridModel {
     // Implementation
     //------------------------
     @action
-    init({api, columnApi}) {
-        warnIf(!isNil(this.agApi),
-            'AgGridModel is being re-initialized! AgGrid component must have been re-rendered!');
-
+    handleGridReady({api, columnApi}) {
+        console.debug('AgGridModel Initializing!');
         this.agApi = api;
         this.agColumnApi = columnApi;
+    }
+
+    @action
+    handleGridUnmount() {
+        console.debug('AgGridModel Uninitializing!');
+        this.agApi = null;
+        this.agColumnApi = null;
     }
 
     getPivotColumnId(column) {
@@ -381,6 +430,10 @@ export class AgGridModel {
         };
 
         return buildNodePath(node);
+    }
+
+    throwIfNotReady() {
+        throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting this operation!');
     }
 }
 
