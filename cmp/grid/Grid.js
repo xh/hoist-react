@@ -368,6 +368,9 @@ export class Grid extends Component {
                         // renderer API (where renderers can reference other properties on the data
                         // object). See https://github.com/exhi/hoist-react/issues/550.
                         api.refreshCells({force: true});
+
+                        // Clear out any stale expand state
+                        model.noteAgExpandStateChange();
                     }, this);
 
                     // Set flag if data is hierarchical.
