@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {defaults} from 'lodash';
+import {defaultsDeep} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel, managed} from '@xh/hoist/core';
 
@@ -30,17 +30,17 @@ export class MessageSourceModel {
     }
 
     alert(config) {
-        config = defaults({}, config, {confirmText: 'OK'});
+        config = defaultsDeep({}, config, {confirmProps: {text: 'OK'}});
         return this.message(config);
     }
 
     confirm(config) {
-        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
+        config = defaultsDeep({}, config, {confirmProps: {text: 'OK'}, cancelProps: {text: 'Cancel'}});
         return this.message(config);
     }
 
     prompt(config) {
-        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel', input: {}});
+        config = defaultsDeep({}, config, {confirmProps: {text: 'OK'}, cancelProps: {text: 'Cancel'}, input: {}});
         return this.message(config);
     }
 

@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Component} from 'react';
+import {defaults} from 'lodash';
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
@@ -55,39 +56,44 @@ export class Message extends Component {
     }
 
     renderInput() {
-        const {formModel, input, autoFocus} = this.model;
+        const {formModel, input} = this.model;
         if (!formModel) return null;
         return form({
             model: formModel,
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',
-                item: withDefault(input.item, textInput({
-                    autoFocus:  autoFocus == 'input'
-                }))
+                item: withDefault(input.item, textInput({autoFocus: true}))
             })
         });
     }
 
     renderButtons() {
-        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent, autoFocus} = this.model;
+        const {formModel, confirmProps, cancelProps, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
         return [
             filler(),
-            button({
-                text: cancelText,
-                omit: !cancelText,
-                intent: cancelIntent,
-                autoFocus:  autoFocus == 'cancel',
-                onClick: () => this.model.doCancel()
-            }),
-            button({
-                text: confirmText,
-                intent: confirmIntent,
-                disabled: formModel ? !formModel.isValid : false,
-                autoFocus:  autoFocus == 'confirm',
-                minimal: false,
-                onClick: () => this.model.doConfirmAsync()
-            })
+            button(
+                defaults(
+                    cancelProps, 
+                    {
+                        text: cancelText,
+                        omit: !cancelProps.text,
+                        intent: cancelIntent,
+                        onClick: () => this.model.doCancel()
+                    }
+                )
+            ),
+            button(
+                defaults(
+                    confirmProps, 
+                    {
+                        text: confirmText,
+                        intent: confirmIntent,
+                        disabled: formModel ? !formModel.isValid : false,
+                        onClick: () => this.model.doConfirmAsync()
+                    }
+                )
+            )
         ];
     }
 

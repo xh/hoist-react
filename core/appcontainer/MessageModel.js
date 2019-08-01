@@ -7,6 +7,7 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -21,13 +22,14 @@ export class MessageModel {
     icon = null;
     message = null;
     input = null;
+    confirmProps = {};
+    cancelProps = {};
     confirmText = null;
     cancelText = null;
     confirmIntent = null;
     cancelIntent = null;
     onConfirm = null;
     onCancel = null;
-    autoFocus = 'input';  // allowed values: 'input', 'cancel', 'confirm'
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
     result = null;
@@ -36,17 +38,31 @@ export class MessageModel {
     @observable isOpen = true;
 
     constructor(config) {
+        warnIf(
+            (
+                config.confirmText || 
+            config.confirmIntent ||
+            config.cancelText ||
+            config.cancelIntent
+            )
+            , 
+            `Message config properties "confirmText", "confirmIntent", "cancelText", and "cancelIntent" are scheduled for deprecation in release 27.
+              Please pass in button configs using "confirmProps" and "cancelProps" instead.`
+        );
+
+
         this.title = config.title;
         this.icon = config.icon;
         this.message = config.message;
         this.input = config.input;
+        this.confirmProps = config.confirmProps || {};
+        this.cancelProps = config.cancelProps || {};
         this.confirmText = config.confirmText;
         this.cancelText = config.cancelText;
         this.confirmIntent = config.confirmIntent;
         this.cancelIntent = config.cancelIntent;
         this.onConfirm = config.onConfirm;
         this.onCancel = config.onCancel;
-        this.autoFocus = config.autoFocus ? config.autoFocus : this.autoFocus;
         this.result = new Promise(resolve => this._resolver = resolve);
 
         // Extract properties from input
