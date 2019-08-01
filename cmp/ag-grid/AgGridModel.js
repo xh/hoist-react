@@ -387,6 +387,22 @@ export class AgGridModel {
         return id;
     }
 
+    /**
+     * @returns {Array} - row data pinned to the top of the grid
+     */
+    getPinnedTopRowData() {
+        this.throwIfNotReady();
+        return this.getPinnedRowData('Top');
+    }
+
+    /**
+     * @returns {Array} - row data pinned to the bottom of the grid
+     */
+    getPinnedBottomRowData() {
+        this.throwIfNotReady();
+        return this.getPinnedRowData('Bottom');
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -402,6 +418,19 @@ export class AgGridModel {
         console.debug('AgGridModel Uninitializing!');
         this.agApi = null;
         this.agColumnApi = null;
+    }
+
+    getPinnedRowData(side) {
+        const {agApi} = this,
+            count = agApi[`getPinned${side}RowCount`](),
+            ret = [];
+
+        for (let i = 0; i < count; ++i) {
+            ret.push(agApi[`getPinned${side}Row`](i).data);
+        }
+
+        return ret;
+
     }
 
     getPivotColumnId(column) {

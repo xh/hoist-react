@@ -105,7 +105,7 @@ export class Store {
         this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
 
-        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData) : null;
+        this.summaryRecord = rawSummaryData ? this.createSummaryRecord(rawSummaryData) : null;
 
         this.lastUpdated = Date.now();
     }
@@ -129,7 +129,6 @@ export class Store {
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
-        let didUpdate = false;
         if (!isEmpty(rawData)) {
             const oldSummary = this.summaryRecord,
                 newSummary = this.getRootSummary(rawData);
@@ -140,16 +139,12 @@ export class Store {
 
             this._all = this._all.updateData(rawData);
             this.rebuildFiltered();
-
-            didUpdate = true;
+            this.lastUpdated = Date.now();
         }
 
         if (rawSummaryData) {
-            this.summaryRecord = this.createRecord(rawSummaryData);
-            didUpdate = true;
+            this.summaryRecord = this.createSummaryRecord(rawSummaryData);
         }
-
-        if (didUpdate) this.lastUpdated = Date.now();
     }
 
     /**
@@ -381,6 +376,12 @@ export class Store {
         return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ?
             rawData[0] :
             null;
+    }
+
+    createSummaryRecord(rawData) {
+        const rec = this.createRecord(rawData);
+        rec.xhIsSummary = true;
+        return rec;
     }
 }
 

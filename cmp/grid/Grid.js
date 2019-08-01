@@ -140,6 +140,7 @@ export class Grid extends Component {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
+        this.addReaction(this.summaryReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
     }
@@ -341,12 +342,25 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
+    summaryReaction() {
+        const {model} = this,
+            {agGridModel, store} = model;
+
+        return {
+            track: () => [agGridModel.agApi, store.summaryRecord, model.showSummary],
+            run: ([api]) => {
+                if (!api) return;
+                this.updatePinnedSummaryRowData();
+            }
+        };
+    }
+
     dataReaction() {
         const {model} = this,
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -358,7 +372,6 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
-                        this.updatePinnedRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -518,20 +531,24 @@ export class Grid extends Component {
         }
     }
 
-    updatePinnedRowData() {
+    updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary} = model,
-            {agApi} = model.agGridModel,
-            pinnedTopRecords = [],
-            pinnedBottomRecords = [];
+            {store, showSummary, agGridModel} = model,
+            {agApi} = agGridModel,
+            filterSummaryFn = (data) => !data.xhIsSummary,
+            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
+            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
         if (showSummary && store.summaryRecord) {
-            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
-            arr.push(store.summaryRecord);
+            if (showSummary === 'bottom') {
+                pinnedBottomRowData.push(store.summaryRecord);
+            } else {
+                pinnedTopRowData.splice(0, 0, store.summaryRecord);
+            }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRecords);
-        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+        agApi.setPinnedTopRowData(pinnedTopRowData);
+        agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
 
     //------------------------
