@@ -21,7 +21,6 @@
 
 * `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
 
-
 ### 💥 Breaking Changes
 
 * `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
@@ -29,9 +28,17 @@
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
 
 * The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
-independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
-is an artifact from the removed `clipboard` library).
+  independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
+  is an artifact from the removed `clipboard` library).
 
+### 🐞 Bug Fixes
+
+* Applications can again use the ag-Grid pinned data apis without having their data overwritten when
+  the Grid data or summary data changes
+  
+* Store will no longer trigger reactions on its observable properties when `updateData` is called 
+  with an empty `rawData` parameter (allows updating of summary data from a reaction on `records`
+  without causing mobx errors)
 
 ### ⚙️ Technical
 
