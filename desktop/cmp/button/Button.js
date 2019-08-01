@@ -37,7 +37,11 @@ export class Button extends Component {
 
     render() {
         const {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = this.getNonLayoutProps(),
-            autoFocusClassName = autoFocus ? ' xh-button--autofocus-enabled' : '';
+            classes = [];
+
+        if (minimal) classes.push('xh-button--minimal');
+        if (autoFocus) classes.push('xh-button--autofocus-enabled');
+
         return bpButton({
             icon,
             minimal,
@@ -51,7 +55,7 @@ export class Button extends Component {
             },
 
             ...rest,
-            className: this.getClassName(minimal ? `xh-button--minimal${autoFocusClassName}` : autoFocusClassName)
+            className: this.getClassName(classes)
         });
     }
 

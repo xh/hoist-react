@@ -63,7 +63,7 @@ export class Message extends Component {
             item: formField({
                 field: 'value',
                 item: withDefault(input.item, textInput({
-                    autoFocus:  autoFocus == 'input' ? true : false
+                    autoFocus:  autoFocus == 'input'
                 }))
             })
         });
@@ -77,15 +77,15 @@ export class Message extends Component {
                 text: cancelText,
                 omit: !cancelText,
                 intent: cancelIntent,
-                autoFocus:  autoFocus == 'cancel' ? true : false,
+                autoFocus:  autoFocus == 'cancel',
                 onClick: () => this.model.doCancel()
             }),
             button({
                 text: confirmText,
                 intent: confirmIntent,
                 disabled: formModel ? !formModel.isValid : false,
-                autoFocus:  autoFocus == 'confirm' ? true : false,
-                // minimal: false,
+                autoFocus:  autoFocus == 'confirm',
+                minimal: false,
                 onClick: () => this.model.doConfirmAsync()
             })
         ];
