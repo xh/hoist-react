@@ -16,14 +16,16 @@ import {SubformsFieldModel} from './field/SubformsFieldModel';
 
 
 /**
- * Backing model for a Form.
- *
  * FormModel is the main entry point for Form specification. This Model's `fields` collection holds
  * multiple FieldModel instances, which in turn hold the state of user edited data and the
  * validation rules around editing that data.
  *
  * A complete representation of all fields and data within a Form can be produced via this model's
  * `getData()` method, making it easy to harvest all values for e.g. submission to a server.
+ *
+ * Individual field values are also available as observables via this model's `values` proxy. An
+ * application model can setup a reaction to track changes to any value and execute app-specific
+ * logic such as disabling one field based on the state of another, or setting up cascading options.
  *
  * This Model provides an overall validation state, determined by the current validation state of
  * its fields as per their configured rules and constraints.
@@ -39,7 +41,7 @@ import {SubformsFieldModel} from './field/SubformsFieldModel';
 @HoistModel
 export class FormModel {
 
-    /** @member {Object} */
+    /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
     
     /** @member {FormModel} */
@@ -55,7 +57,9 @@ export class FormModel {
 
     /**
      * @member {Object} - proxy for accessing all of the current data values in this form by name.
-     *      Passed to validation rules to facilitate observable cross-field validation.
+     *      Values accessed via this object are observable, and can be used directly in reactions to
+     *      implement logic on change, such as disabling one field based on the value of another.
+     *      Also passed to validation rules to facilitate observable cross-field validation.
      */
     get values() {
         return this._valuesProxy;
@@ -92,7 +96,8 @@ export class FormModel {
     }
 
     /**
-     * Get the current values for this form, by field name.
+     * Get a snapshot of the current values for this form as an object keyed by field name.
+     * Note this is *not* a live or observable object - see the `values` getter for an alternative.
      *
      * @param {boolean} [dirtyOnly] -- include only dirty fields.
      * @returns {Object} - a complete map of this model's fields (by name) to their current value.
@@ -102,7 +107,6 @@ export class FormModel {
         return mapValues(fields, v =>  v.getData());
 
     }
-
 
     /** Reset fields to initial values and reset validation. */
     @action
