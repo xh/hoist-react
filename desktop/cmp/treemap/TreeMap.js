@@ -284,7 +284,7 @@ export class TreeMap extends Component {
                     <div>${fmtNumber(value)}</div>
                 </div>
             `),
-            heatDiv = valueField === heatField ? null : (`
+            heatDiv = valueField === heatField ? '' : (`
                 <div class='xh-treemap-tooltip__row'>
                     <div>${withDefault(heatFieldLabel, heatField)}:</div>
                     <div>${fmtNumber(heat)}</div>
