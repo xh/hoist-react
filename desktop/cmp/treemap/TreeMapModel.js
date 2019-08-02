@@ -7,7 +7,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {Cube} from '@xh/hoist/data/cube';
 import {isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
 
 /**
@@ -160,7 +159,7 @@ export class TreeMapModel {
             ret = [];
 
         rawData.forEach(record => {
-            const {id, children} = record,
+            const {id, children, xhTreePath} = record,
                 name = record[labelField],
                 value = record[valueField],
                 colorValue = record[heatField];
@@ -184,7 +183,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.nodeIsExpanded(id) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.nodeIsExpanded(xhTreePath) && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -237,38 +236,23 @@ export class TreeMapModel {
     //----------------------
     // Expand / Collapse
     //----------------------
-    nodeIsExpanded(id) {
+    nodeIsExpanded(xhTreePath) {
         if (isEmpty(this.expandState)) return false;
-        const path = this.getNodePath(id);
-        return get(this.expandState, path, false);
+        return get(this.expandState, xhTreePath, false);
     }
 
-    toggleNodeExpanded(id) {
+    toggleNodeExpanded(xhTreePath) {
         const {gridModel} = this,
-            expandState = {...gridModel.expandState},
-            path = this.getNodePath(id);
+            expandState = {...gridModel.expandState};
 
-        if (get(expandState, path)) {
-            unset(expandState, path);
+        if (get(expandState, xhTreePath)) {
+            unset(expandState, xhTreePath);
         } else {
-            set(expandState, path, true);
+            set(expandState, xhTreePath, true);
         }
 
         gridModel.agGridModel.setExpandState(expandState);
         gridModel.noteAgExpandStateChange();
-    }
-
-    getNodePath(id) {
-        const delim = Cube.RECORD_ID_DELIMITER,
-            parts = id.split(delim),
-            path = [];
-
-        // Build property path array from cube id
-        for (let i = 2; i <= parts.length; i++) {
-            path.push(parts.slice(0, i).join(delim));
-        }
-
-        return path;
     }
 
     //----------------------
@@ -287,7 +271,7 @@ export class TreeMapModel {
 
     defaultOnDoubleClick = (record) => {
         if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
-        this.toggleNodeExpanded(record.id);
+        this.toggleNodeExpanded(record.xhTreePath);
     };
 
 }
@@ -295,7 +279,7 @@ export class TreeMapModel {
 /**
  * @typedef {Object} TreeMapRecord
  * @property {(string|number)} id - Record id
- * @property {(Record|object)} record - Raw record or object from which TreeMapRecord was created.
+ * @property {Record} record - Store record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
  * @property {number} colorValue - Used by Highcharts to determine the color in a heat map.
