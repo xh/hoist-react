@@ -24,13 +24,26 @@ import './Button.scss';
 export class Button extends Component {
 
     static propTypes = {
+        /** True to attempt to auto-focus this button on render. */
+        autoFocus: PT.bool,
+
+        /** Optional icon to display along with or instead of text. */
         icon: PT.element,
+
+        /** True (default) to show a "flat" button with icon/text only - no 3D gradient. */
         minimal: PT.bool,
+
+        /** Callback when clicked, passed click event. */
         onClick: PT.func,
+
+        /** Style props - will be merged with any styles specified via layoutSupport props. */
         style: PT.object,
+
+        /** Primary label - provide this and/or icon. */
         text: PT.string,
-        title: PT.string,
-        autoFocus: PT.bool
+
+        /** Text for title attribute to provide basic tooltip support. */
+        title: PT.string
     };
 
     baseClassName = 'xh-button';
