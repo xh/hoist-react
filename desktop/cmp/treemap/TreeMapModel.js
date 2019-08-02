@@ -257,8 +257,7 @@ export class TreeMapModel {
             set(expandState, xhTreePath, true);
         }
 
-        gridModel.agGridModel.setExpandState(expandState);
-        gridModel.noteAgExpandStateChange();
+        gridModel.setExpandState(expandState);
     }
 
     //----------------------
