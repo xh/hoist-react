@@ -7,7 +7,7 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {assign, castArray, clone, merge} from 'lodash';
-import {Highcharts, highchartsExporting, highchartsOfflineExporting, highchartsExportData} from '@xh/hoist/kit/highcharts';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
@@ -19,10 +19,6 @@ import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
-
-highchartsExporting(Highcharts);
-highchartsOfflineExporting(Highcharts);
-highchartsExportData(Highcharts);
 installZoomoutGesture(Highcharts);
 
 /**

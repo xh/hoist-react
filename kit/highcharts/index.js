@@ -20,11 +20,10 @@ Highcharts.setOptions({
     }
 });
 
-export {
-    Highcharts,
-    highchartsExporting,
-    highchartsOfflineExporting,
-    highchartsExportData,
-    highchartsTree,
-    highchartsHeatmap
-};
+highchartsExporting(Highcharts);
+highchartsOfflineExporting(Highcharts);
+highchartsExportData(Highcharts);
+highchartsTree(Highcharts);
+highchartsHeatmap(Highcharts);
+
+export {Highcharts};

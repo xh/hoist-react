@@ -6,7 +6,7 @@
  */
 import {Component} from 'react';
 import PT from 'prop-types';
-import {Highcharts, highchartsExporting, highchartsOfflineExporting, highchartsExportData, highchartsTree, highchartsHeatmap} from '@xh/hoist/kit/highcharts';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box, frame} from '@xh/hoist/cmp/layout';
@@ -22,12 +22,6 @@ import {DarkTheme} from './theme/Dark';
 
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
-
-highchartsExporting(Highcharts);
-highchartsOfflineExporting(Highcharts);
-highchartsExportData(Highcharts);
-highchartsTree(Highcharts);
-highchartsHeatmap(Highcharts);
 
 /**
  * Component for rendering a TreeMap.
