@@ -91,10 +91,12 @@ class DismissButton extends Component {
             button({
                 icon: Icon.refresh(),
                 text: this.sessionExpired() ? 'Login' : 'Reload App',
+                autoFocus: true,
                 onClick: this.onReloadClick
             }) :
             button({
                 text: 'Close',
+                autoFocus: true,
                 onClick: this.onCloseClick
             });
     }

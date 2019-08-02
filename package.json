@@ -24,6 +24,7 @@
     "ag-grid-react": "~21.1.0",
     "classnames": "~2.2.6",
     "clipboard": "~2.0.4",
+    "clipboard-copy": "^3.0.0",
     "codemirror": "~5.48.2",
     "debounce-promise": "^3.1.0",
     "downloadjs": "~1.4.7",

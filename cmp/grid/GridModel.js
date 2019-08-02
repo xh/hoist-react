@@ -104,6 +104,7 @@ export class GridModel {
     static defaultContextMenuTokens = [
         'copy',
         'copyWithHeaders',
+        'copyCell',
         '-',
         'expandCollapseAll',
         '-',
@@ -492,6 +493,15 @@ export class GridModel {
         }
 
         this.columnState = columnState;
+    }
+
+    /**
+     * @param colId - id of the Column to get
+     * @returns {Column} - The Column with the given colId, or null if no Column was found with
+     *      the given colId
+     */
+    getColumn(colId) {
+        return this.findColumn(this.columns, colId);
     }
 
     /**

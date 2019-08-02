@@ -308,15 +308,17 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
-     * @param {MessageInput} [config.input] - config for input to be displayed.
-     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
-     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
-     * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
-     * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
+     * @param {MessageInput} [config.input] - config for input to be displayed (as a prompt).
+     * @param {string} [config.confirmProps] - props for primary confirm button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+     * @param {string} [config.cancelProps] - props for secondary cancel button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      *
-     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     * @returns {Promise} - Promise resolving to true if user confirms, false if user cancels.
      *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {

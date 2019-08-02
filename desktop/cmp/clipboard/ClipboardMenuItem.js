@@ -20,7 +20,13 @@ export class ClipboardMenuItem extends Component {
 
     static propTypes = {
         icon: PT.element,
+
         text: PT.string,
+
+        /** Function returning the text to copy. */
+        getCopyText: PT.func.isRequired,
+
+        /** Message to be displayed in a toast when copy is complete. */
         successMessage: PT.string
     };
 
