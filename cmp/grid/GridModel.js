@@ -442,8 +442,8 @@ export class GridModel {
 
     @action
     setExpandState(expandState) {
-        this.expandState = expandState;
         this.agGridModel.setExpandState(expandState);
+        this.noteAgExpandStateChange();
     }
 
     @action
