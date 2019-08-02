@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {Highcharts, highchartsExporting, highchartsOfflineExporting, highchartsExportData, highchartsTree, highchartsHeatmap} from '@xh/hoist/kit/highcharts';
 
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
+import {div, box, frame} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
@@ -85,11 +85,20 @@ export class TreeMap extends Component {
             item: box({
                 ...layoutProps,
                 className: this.getClassName(),
-                item: div({
-                    style: {margin: 'auto'},
-                    ref: this._chartElem.ref
-                })
+                item: this.model.data.length ?
+                    div({
+                        style: {margin: 'auto'},
+                        ref: this._chartElem.ref
+                    }) :
+                    this.renderPlaceholder()
             })
+        });
+    }
+
+    renderPlaceholder() {
+        return frame({
+            className: 'xh-treemap__placeholder',
+            item: this.model.emptyText
         });
     }
 
@@ -114,6 +123,7 @@ export class TreeMap extends Component {
     }
 
     async resizeChartAsync(e) {
+        if (!this._chart) return;
         await start(() => {
             const {width, height} = e[0].contentRect;
             if (width > 0 && height > 0) {
@@ -266,7 +276,7 @@ export class TreeMap extends Component {
             }
         });
 
-        this._chart.redraw();
+        if (this._chart) this._chart.redraw();
     }
 
     //----------------------

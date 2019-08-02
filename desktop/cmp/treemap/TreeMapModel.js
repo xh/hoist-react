@@ -58,6 +58,8 @@ export class TreeMapModel {
     algorithm;
     /** @member {(boolean|TreeMapModel~tooltipFn)} */
     tooltip;
+    /** @member {string} */
+    emptyText;
 
     //------------------------
     // Observable API
@@ -88,6 +90,8 @@ export class TreeMapModel {
      *      Defaults to 'squarified'. @see https://www.highcharts.com/docs/chart-and-series-types/treemap for algorithm examples.
      * @param {(boolean|TreeMapModel~tooltipFn)} [c.tooltip] - 'true' to use the default tooltip renderer, or a custom
      *      tooltipFn which returns a string output of the node's value.
+     * @param {(Element|string)} [c.emptyText] - Element/text to render if TreeMap has no records.
+     *      Defaults to null, in which case no empty text will be shown.
      */
     constructor({
         store,
@@ -103,7 +107,8 @@ export class TreeMapModel {
         onClick,
         onDoubleClick,
         algorithm = 'squarified',
-        tooltip = true
+        tooltip = true,
+        emptyText
     } = {}) {
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
@@ -118,6 +123,7 @@ export class TreeMapModel {
         this.maxDepth = maxDepth;
         this.filter = filter;
         this.tooltip = tooltip;
+        this.emptyText = emptyText;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
