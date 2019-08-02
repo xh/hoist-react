@@ -14,8 +14,9 @@ import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {assign, merge, clone, debounce} from 'lodash';
+import {assign, merge, clone, debounce, isFunction} from 'lodash';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -70,6 +71,7 @@ export class TreeMap extends Component {
             layoutProps.flex = 1;
         }
 
+        // No-op on first render - will re-render upon setting the _chartElem Ref
         this.renderHighChart();
         this.updateLabelVisibilityAsync();
 
@@ -132,8 +134,10 @@ export class TreeMap extends Component {
     }
 
     destroyHighChart() {
-        XH.safeDestroy(this._chart);
-        this._chart = null;
+        if (this._chart) {
+            this._chart.destroy();
+            this._chart = null;
+        }
     }
 
     //----------------------
@@ -148,25 +152,11 @@ export class TreeMap extends Component {
     }
 
     getDefaultConfig() {
-        const exporting = {
-            enabled: false,
-            fallbackToExportServer: false,
-            chartOptions: {
-                scrollbar: {enabled: false}
-            },
-            buttons: {
-                contextButton: {
-                    menuItems: ['downloadPNG', 'downloadSVG', 'separator', 'downloadCSV']
-                }
-            }
-        };
-
         return {
             chart: {margin: false},
             credits: false,
             title: false,
-            legend: {enabled: false},
-            exporting
+            legend: {enabled: false}
         };
     }
 
@@ -189,7 +179,7 @@ export class TreeMap extends Component {
                 pointFormatter: function() {
                     if (!tooltip) return;
                     const {record} = this;
-                    return tooltip == true ? defaultTooltip(record) : tooltip(record);
+                    return isFunction(tooltip) ? tooltip(record) : defaultTooltip(record);
                 }
             },
             series: [{
@@ -220,13 +210,16 @@ export class TreeMap extends Component {
     };
 
     clickHandler(record, e) {
-        const {onClick, onDoubleClick} = this.model;
-        if (onClick && this._clickCount === 1) {
-            onClick(record, e);
-        } else if (onDoubleClick && this._clickCount === 2) {
-            onDoubleClick(record, e);
+        try {
+            const {onClick, onDoubleClick} = this.model;
+            if (onClick && this._clickCount === 1) {
+                onClick(record, e);
+            } else if (onDoubleClick) {
+                onDoubleClick(record, e);
+            }
+        } finally {
+            this._clickCount = 0;
         }
-        this._clickCount = 0;
     }
 
     //----------------------
@@ -278,23 +271,24 @@ export class TreeMap extends Component {
     //----------------------
     defaultTooltip = (record) => {
         const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
-            value = record[valueField],
             name = record[labelField],
-            heat = record[heatField];
-
-        return `
-            <div class='xh-treemap-tooltip'>
-                <div class='xh-treemap-tooltip__label'>${name}</div>
+            value = record[valueField],
+            heat = record[heatField],
+            labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
+            valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
-                    <div>${valueFieldLabel || valueField}:</div>
+                    <div>${withDefault(valueFieldLabel, valueField)}:</div>
                     <div>${fmtNumber(value)}</div>
                 </div>
-                <div class='xh-treemap-tooltip__row' ${valueField == heatField ? 'style="display:none"' : ''}>
-                    <div>${heatFieldLabel || heatField}:</div>
+            `),
+            heatDiv = valueField === heatField ? null : (`
+                <div class='xh-treemap-tooltip__row'>
+                    <div>${withDefault(heatFieldLabel, heatField)}:</div>
                     <div>${fmtNumber(heat)}</div>
                 </div>
-            </div>
-        `;
+            `);
+
+        return `<div class='xh-treemap-tooltip'>${labelDiv}${valueDiv}${heatDiv}</div>`;
     };
 }
 

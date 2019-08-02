@@ -57,6 +57,7 @@ export class Chart extends Component {
             layoutProps.flex = 1;
         }
 
+        // No-op on first render - will re-render upon setting the _chartElem Ref
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
@@ -134,8 +135,10 @@ export class Chart extends Component {
     }
     
     destroyHighChart() {
-        XH.safeDestroy(this._chart);
-        this._chart = null;
+        if (this._chart) {
+            this._chart.destroy();
+            this._chart = null;
+        }
     }
 
     //----------------------
