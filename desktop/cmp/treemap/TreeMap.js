@@ -156,7 +156,8 @@ export class TreeMap extends Component {
             chart: {margin: false},
             credits: false,
             title: false,
-            legend: {enabled: false}
+            legend: {enabled: false},
+            exporting: {enabled: false}
         };
     }
 
