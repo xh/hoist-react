@@ -7,8 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {Cube} from '@xh/hoist/data/cube';
-import {isNil, isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
+import {isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -19,8 +18,13 @@ import {isNil, isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
  * Can also (optionally) be bound to a GridModel. This will enable selection syncing and
  * expand / collapse syncing for GridModels in `treeMode`.
  *
- * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
- * @see Dark and Light themes for examples.
+ * Supports any Highcharts TreeMap layout algorithm ('squarified', 'sliceAndDice', 'stripes' or 'strip').
+ *
+ * Node colors are normalized to a 0-1 range, which maps to the colorAxis. Color customization
+ * can be managed by setting colorAxis stops via the `highchartsConfig`.
+ * @see Dark and Light themes for colorAxis example.
+ *
+ * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts configuration options
  */
 @HoistModel
 export class TreeMapModel {
@@ -54,6 +58,8 @@ export class TreeMapModel {
     algorithm;
     /** @member {(boolean|TreeMapModel~tooltipFn)} */
     tooltip;
+    /** @member {string} */
+    emptyText;
 
     //------------------------
     // Observable API
@@ -80,9 +86,12 @@ export class TreeMapModel {
      *      If not provided, by default will select a record when using a GridModel.
      * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked. Receives (record, e).
      *      If not provided, by default will expand / collapse a record when using a GridModel.
-     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'sliceAndDice', 'stripes', 'squarified' or 'strip'.
+     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified', 'sliceAndDice', 'stripes' or 'strip'.
+     *      Defaults to 'squarified'. @see https://www.highcharts.com/docs/chart-and-series-types/treemap for algorithm examples.
      * @param {(boolean|TreeMapModel~tooltipFn)} [c.tooltip] - 'true' to use the default tooltip renderer, or a custom
      *      tooltipFn which returns a string output of the node's value.
+     * @param {(Element|string)} [c.emptyText] - Element/text to render if TreeMap has no records.
+     *      Defaults to null, in which case no empty text will be shown.
      */
     constructor({
         store,
@@ -98,7 +107,8 @@ export class TreeMapModel {
         onClick,
         onDoubleClick,
         algorithm = 'squarified',
-        tooltip = true
+        tooltip = true,
+        emptyText
     } = {}) {
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
@@ -113,6 +123,7 @@ export class TreeMapModel {
         this.maxDepth = maxDepth;
         this.filter = filter;
         this.tooltip = tooltip;
+        this.emptyText = emptyText;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
         this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
@@ -144,20 +155,23 @@ export class TreeMapModel {
         return this.normaliseColorValues(ret);
     }
 
+    /**
+     * Create a flat list of TreeMapRecords from hierarchical store data, ready to be
+     * passed to HighCharts for rendering. Drilldown children are included according
+     * to the bound GridModel's expandState.
+     */
     processRecordsRecursive(rawData, parentId = null, depth = 1) {
         const {labelField, valueField, heatField, maxDepth} = this,
             ret = [];
 
         rawData.forEach(record => {
-            const {id, children} = record,
+            const {id, children, xhTreePath} = record,
                 name = record[labelField],
                 value = record[valueField],
                 colorValue = record[heatField];
 
-            throwIf(isNil(id), 'TreeMap data requires an id');
-            throwIf(isNil(name), `TreeMap labelField '${labelField}' not found for record ${id}`);
-            throwIf(isNil(value), `TreeMap valueField '${valueField}' not found for record ${id}`);
-            throwIf(isNil(colorValue), `TreeMap heatField '${heatField}' not found for record ${id}`);
+            // Skip records without value
+            if (!value) return;
 
             // Create TreeMapRecord
             const treeRec = {
@@ -175,7 +189,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.nodeIsExpanded(id) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.nodeIsExpanded(xhTreePath) && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -192,11 +206,16 @@ export class TreeMapModel {
         return ret;
     }
 
+    /**
+     * Normalizes colorValues between 0-1, where 0 is the maximum negative heat, 1 is the
+     * maximum positive heat, and 0.5 is no heat. This allows the colorValue to map to
+     * the colorAxis provided to Highcharts.
+     */
     normaliseColorValues(data) {
         if (!data.length) return [];
 
         const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
-            maxNegHeat = Math.min(minBy(data, 'colorValue').colorValue, 0);
+            maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0));
 
         data.forEach(it => {
             if (it.colorValue > 0) {
@@ -205,7 +224,7 @@ export class TreeMapModel {
                 it.colorValue = (norm / 2) + 0.5;
             } else if (it.colorValue < 0) {
                 // Normalize between 0-0.5
-                const norm = this.normalize(Math.abs(it.colorValue), Math.abs(maxNegHeat), 0);
+                const norm = this.normalize(Math.abs(it.colorValue), maxNegHeat, 0);
                 it.colorValue = (norm / 2);
             } else {
                 it.colorValue = 0.5; // Exactly zero
@@ -223,38 +242,22 @@ export class TreeMapModel {
     //----------------------
     // Expand / Collapse
     //----------------------
-    nodeIsExpanded(id) {
+    nodeIsExpanded(xhTreePath) {
         if (isEmpty(this.expandState)) return false;
-        const path = this.getNodePath(id);
-        return get(this.expandState, path, false);
+        return get(this.expandState, xhTreePath, false);
     }
 
-    toggleNodeExpanded(id) {
+    toggleNodeExpanded(xhTreePath) {
         const {gridModel} = this,
-            expandState = {...gridModel.expandState},
-            path = this.getNodePath(id);
+            expandState = {...gridModel.expandState};
 
-        if (get(expandState, path)) {
-            unset(expandState, path);
+        if (get(expandState, xhTreePath)) {
+            unset(expandState, xhTreePath);
         } else {
-            set(expandState, path, true);
+            set(expandState, xhTreePath, true);
         }
 
-        gridModel.agGridModel.setExpandState(expandState);
-        gridModel.noteAgExpandStateChange();
-    }
-
-    getNodePath(id) {
-        const delim = Cube.RECORD_ID_DELIMITER,
-            parts = id.split(delim),
-            path = [];
-
-        // Build property path array from cube id
-        for (let i = 2; i <= parts.length; i++) {
-            path.push(parts.slice(0, i).join(delim));
-        }
-
-        return path;
+        gridModel.setExpandState(expandState);
     }
 
     //----------------------
@@ -273,7 +276,7 @@ export class TreeMapModel {
 
     defaultOnDoubleClick = (record) => {
         if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
-        this.toggleNodeExpanded(record.id);
+        this.toggleNodeExpanded(record.xhTreePath);
     };
 
 }
@@ -281,7 +284,7 @@ export class TreeMapModel {
 /**
  * @typedef {Object} TreeMapRecord
  * @property {(string|number)} id - Record id
- * @property {(Record|object)} record - Raw record or object from which TreeMapRecord was created.
+ * @property {Record} record - Store record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
  * @property {number} colorValue - Used by Highcharts to determine the color in a heat map.

@@ -440,6 +440,17 @@ export class GridModel {
         this.applyColumnStateChanges(colStateChanges);
     }
 
+    @action
+    setExpandState(expandState) {
+        this.agGridModel.setExpandState(expandState);
+        this.noteAgExpandStateChange();
+    }
+
+    @action
+    noteAgExpandStateChange() {
+        this.expandState = this.agGridModel.getExpandState();
+    }
+
     // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`
     // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
     // This avoids a storm of events looping through the reaction when selecting in bulk.
@@ -447,11 +458,6 @@ export class GridModel {
     noteAgSelectionStateChanged() {
         const {selModel, agGridModel} = this;
         selModel.select(agGridModel.getSelectedRowNodeIds());
-    }
-
-    @action
-    noteAgExpandStateChange() {
-        this.expandState = this.agGridModel.getExpandState();
     }
 
     /**

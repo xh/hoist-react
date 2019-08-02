@@ -6,6 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 
 
 /**
@@ -25,11 +26,7 @@ export class ChartModel {
      */
     constructor({highchartsConfig, series = [], config} = {}) {
         // Deprecation warning to avoid breaking change
-        if (config) {
-            console.warn('ChartModel "config" has been deprecated. Please use "highchartsConfig" instead.');
-            highchartsConfig = config;
-        }
-
+        throwIf(config, 'ChartModel "config" has been deprecated. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = series;
     }

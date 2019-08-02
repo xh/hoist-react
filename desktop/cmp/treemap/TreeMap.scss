@@ -1,8 +1,15 @@
 .xh-treemap {
-  text {
-    font-family: var(--xh-font-family) !important;
-    font-size: var(--xh-font-size-small-px) !important;
-    font-weight: normal !important;
+  &__placeholder {
+    padding: var(--xh-pad-px);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    background: var(--xh-bg-alt);
+  }
+
+  text > tspan {
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-font-size-small-px);
+    font-weight: normal;
   }
 
   rect.highcharts-point {
