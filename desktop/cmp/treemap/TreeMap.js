@@ -229,19 +229,21 @@ export class TreeMap extends Component {
         if (!this._chart) return;
 
         const {selectedIds, maxDepth, gridModel, store} = this.model;
-        let toSelect = [...selectedIds];
 
         // Fallback to parent node if selection exceeds max depth
+        let toSelect;
         if (maxDepth && gridModel && gridModel.treeMode) {
-            toSelect = selectedIds.map(id => {
+            toSelect = new Set(selectedIds.map(id => {
                 const record = store.getById(id);
                 return record ? record.xhTreePath.slice(0, maxDepth).pop() : null;
-            });
+            }));
+        } else {
+            toSelect = new Set(selectedIds);
         }
 
         // Update selection in chart
         this._chart.series[0].data.forEach(node => {
-            node.select(toSelect.includes(node.id), true);
+            node.select(toSelect.has(node.id), true);
         });
     }
 
