@@ -35,6 +35,8 @@
 independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
 is an artifact from the removed `clipboard` library).
 
+* ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
+
 
 ### ⚙️ Technical
 
