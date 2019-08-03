@@ -37,6 +37,11 @@
   independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
   (`clipboardSpec` is an artifact from the removed `clipboard` library).
 
+### 🐞 Bug Fixes
+
+* The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
+  `queryFn` props.
+
 ### ⚙️ Technical
 
 * `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
