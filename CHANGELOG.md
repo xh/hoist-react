@@ -51,7 +51,10 @@
 
 ### 📚 Libraries
 
-* ag-Grid `21.0.1 -> 21.1.0`
+* @blueprintjs/core `3.17 -> 3.18`
+* @fortawesome/fontawesome `5.9 -> 5.10`
+* ag-grid `21.0.1 -> 21.1.1`
+* store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
 ## v25.2.0 - 2019-07-25
