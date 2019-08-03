@@ -285,8 +285,11 @@ export class Select extends HoistInput {
                 const rsRef = this.reactSelectRef.current;
                 if (!rsRef) return;
 
-                const selectCls = rsRef.select.constructor.name == 'Select' ? rsRef.select : rsRef.select.select,
-                    inputElem = selectCls.inputRef;
+                // Use of creatable and async variants will create another level of nesting we must
+                // traverse to get to the underlying Select comp and its inputRef.
+                const refComp = rsRef.select,
+                    selectComp = refComp.constructor.name == 'Select' ? refComp : refComp.select,
+                    inputElem = selectComp.inputRef;
 
                 if (this.hasFocus && inputElem && document.activeElement == inputElem) {
                     inputElem.select();
@@ -295,7 +298,6 @@ export class Select extends HoistInput {
         }
         super.noteFocused();
     }
-
 
     //-------------------------
     // Options / value handling
@@ -377,14 +379,14 @@ export class Select extends HoistInput {
                 // But only return the matching options back to the combo.
                 return matchOpts;
             });
-    }
+    };
 
     loadingMessageFn = (params) => {
         const {loadingMessageFn} = this.props,
             q = params.inputValue;
 
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
-    }
+    };
 
 
     //----------------------
@@ -401,7 +403,7 @@ export class Select extends HoistInput {
         // implementation here to render a checkmark next to the active selection.
         const optionRenderer = this.props.optionRenderer || this.optionRenderer;
         return optionRenderer(opt);
-    }
+    };
 
     optionRenderer = (opt) => {
         if (this.suppressCheck) {
@@ -417,7 +419,7 @@ export class Select extends HoistInput {
                 span(opt.label)
             ) :
             div({item: opt.label, style: {paddingLeft: 25}});
-    }
+    };
 
     get suppressCheck() {
         const {props} = this;
@@ -444,12 +446,12 @@ export class Select extends HoistInput {
         if (noOptionsMessageFn) return noOptionsMessageFn(q);
         if (q) return 'No matches found.';
         return this.asyncMode ? 'Type to search...' : '';
-    }
+    };
 
     createMessageFn = (q) => {
         const {createMessageFn} = this.props;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
-    }
+    };
 
     getOrCreatePortalDiv() {
         let portal = document.getElementById('xh-select-input-portal');
