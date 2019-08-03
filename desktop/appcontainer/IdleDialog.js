@@ -15,10 +15,7 @@ import {message} from './Message';
 
 /**
  * Default dialog to display when the app has suspended itself due to inactivity.
- *
- * This display can be overridden by applications.
- * @see AppSpec.idleDialogClass
- *
+ * This display can be overridden by applications - {@see AppSpec.idleDialogClass}.
  * @private
  */
 @HoistComponent
@@ -40,8 +37,12 @@ export class IdleDialog extends Component {
                         p('Please click below to reload it.')
                     ]
                 }),
-                confirmIntent: 'primary',
-                confirmText: 'I\'m back',
+                confirmProps: {
+                    text: "I'm back!",
+                    intent: 'primary',
+                    minimal: false,
+                    autoFocus: true
+                },
                 onConfirm: this.props.onReactivate
             },
             className: 'xh-idle-dialog'
