@@ -23,24 +23,35 @@ export class MessageSourceModel {
     msgModels = [];
 
     message(config) {
+
+        // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
+        const {confirmProps, cancelProps, input} = config;
+
+        if ((confirmProps && isUndefined(confirmProps.autoFocus)) &&
+            (!cancelProps || isUndefined(cancelProps.autoFocus)) &&
+            !input
+        ) {
+            confirmProps.autoFocus = true;
+        }
+
         const ret = new MessageModel(config);
         this.addModel(ret);
         return ret.result;
     }
 
     alert(config) {
-        const confirmProps = {text: 'OK', autoFocus: true, ...config.confirmProps};
-        return this.message({...config, confirmProps});
+        return this.message({
+            ...config,
+            confirmProps: {text: 'OK', ...config.confirmProps}
+        });
     }
 
     confirm(config) {
-        const confirmProps = {text: 'OK', ...config.confirmProps},
-            cancelProps = {text: 'Cancel', ...config.cancelProps};
-
-        if (isUndefined(confirmProps.autoFocus) && isUndefined(cancelProps.autoFocus)) {
-            confirmProps.autoFocus = true;
-        }
-        return this.message({...config, confirmProps, cancelProps});
+        return this.message({
+            ...config,
+            confirmProps: {text: 'OK', ...config.confirmProps},
+            cancelProps: {text: 'Cancel', ...config.cancelProps}
+        });
     }
 
     prompt(config) {
