@@ -7,50 +7,60 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for a single instance of a modal dialog.
- *
+ * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
 @HoistModel
 export class MessageModel {
 
     // Immutable properties
-    title = null;
-    icon = null;
-    message = null;
-    input = null;
-    confirmText = null;
-    cancelText = null;
-    confirmIntent = null;
-    cancelIntent = null;
-    onConfirm = null;
-    onCancel = null;
+    title;
+    icon;
+    message;
+    input;
+    confirmProps;
+    cancelProps;
+    onConfirm;
+    onCancel;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
-    result = null;
-    _resolver = null;
+    result;
+    _resolver;
 
     @observable isOpen = true;
 
-    constructor(config) {
-        this.title = config.title;
-        this.icon = config.icon;
-        this.message = config.message;
-        this.input = config.input;
-        this.confirmText = config.confirmText;
-        this.cancelText = config.cancelText;
-        this.confirmIntent = config.confirmIntent;
-        this.cancelIntent = config.cancelIntent;
-        this.onConfirm = config.onConfirm;
-        this.onCancel = config.onCancel;
-        this.result = new Promise(resolve => this._resolver = resolve);
+    constructor({
+        title,
+        icon,
+        message,
+        input,
+        confirmProps = {},
+        cancelProps = {},
+        onConfirm,
+        onCancel,
 
-        // Extract properties from input
-        if (this.input) {
-            const {value, rules} = this.input;
+        // Deprecated
+        confirmText,
+        confirmIntent,
+        cancelText,
+        cancelIntent
+    }) {
+        warnIf(
+            (confirmText || confirmIntent || cancelText || cancelIntent),
+            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have been deprecated - use "confirmProps" and "cancelProps" instead.'
+        );
 
+        this.title = title;
+        this.icon = icon;
+        this.message = message;
+
+        if (input) {
+            this.input = input;
+            const {value, rules} = input;
             this.formModel = this.markManaged(new FormModel({
                 fields: [{
                     name: 'value',
@@ -59,6 +69,13 @@ export class MessageModel {
                 }]
             }));
         }
+
+        this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);
+        this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel(), cancelText, cancelIntent);
+
+        this.onConfirm = onConfirm;
+        this.onCancel = onCancel;
+        this.result = new Promise(resolve => this._resolver = resolve);
 
         // Message modals are automatically dismissed on app route changes to avoid navigating the
         // app underneath the dialog in an unsettling way.
@@ -100,6 +117,15 @@ export class MessageModel {
 
     destroy() {
         this.close();
+    }
+
+    // Merge handler and deprecated props into consolidated object.
+    // Return null if neither text nor icon provided - button should not be displayed.
+    parseButtonProps(props, handler, deprText, deprIntent) {
+        const ret = {...props, onClick: handler};
+        if (deprText) ret.text = deprText;
+        if (deprIntent) ret.intent = deprIntent;
+        return (ret.text || ret.icon) ? ret : null;
     }
 }
 

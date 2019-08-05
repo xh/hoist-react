@@ -25,8 +25,7 @@ export class ChartModel {
      * @param {Object[]} c.series - Data series to be displayed.
      */
     constructor({highchartsConfig, series = [], config} = {}) {
-        // Deprecation warning to avoid breaking change
-        throwIf(config, 'ChartModel "config" has been deprecated. Please use "highchartsConfig" instead.');
+        throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = series;
     }

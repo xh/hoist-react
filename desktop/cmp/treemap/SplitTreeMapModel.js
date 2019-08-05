@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, sumBy} from 'lodash';
+import {isFunction} from 'lodash';
 
 import {TreeMapModel} from './TreeMapModel';
 
@@ -45,29 +45,11 @@ export class SplitTreeMapModel {
     /** @member {Object} */
     @bindable.ref highchartsConfig = {};
 
-    @computed
-    get primaryMapTotal() {
-        return sumBy(this.primaryMapModel.data, it => {
-            // Only include root records that pass the filter
-            if (it.parent || !this.mapFilter(it.record)) return 0;
-            return it.value;
-        });
-    }
-
-    @computed
-    get secondaryMapTotal() {
-        return sumBy(this.secondaryMapModel.data, it => {
-            // Only include root records that don't pass the filter
-            if (it.parent || this.mapFilter(it.record)) return 0;
-            return it.value;
-        });
-    }
-
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
      * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
-     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and SplitTreeMapModel.
+     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and region TreeMapModel.
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      *
      * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.

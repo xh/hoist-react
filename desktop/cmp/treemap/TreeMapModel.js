@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable, observable} from '@xh/hoist/mobx';
+import {bindable, observable, computed} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isEmpty, maxBy, minBy, get, set, unset} from 'lodash';
+import {isEmpty, isFinite, sumBy, maxBy, minBy, get, set, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -36,26 +36,10 @@ export class TreeMapModel {
     store;
     /** @member {GridModel} */
     gridModel;
-    /** @member {string} */
-    labelField;
-    /** @member {string} */
-    valueField;
-    /** @member {string} */
-    heatField;
-    /** @member {string} */
-    valueFieldLabel;
-    /** @member {string} */
-    heatFieldLabel;
-    /** @member {number} */
-    maxDepth;
-    /** @member {function} */
-    filter;
     /** @member {function} */
     onClick;
     /** @member {function} */
     onDoubleClick;
-    /** @member {string} */
-    algorithm;
     /** @member {(boolean|TreeMapModel~tooltipFn)} */
     tooltip;
     /** @member {string} */
@@ -68,6 +52,18 @@ export class TreeMapModel {
     @bindable.ref highchartsConfig = {};
     /** @member {TreeMapRecord[]} */
     @observable.ref data = [];
+    /** @member {string} */
+    @bindable labelField;
+    /** @member {string} */
+    @bindable valueField;
+    /** @member {string} */
+    @bindable heatField;
+    /** @member {number} */
+    @bindable maxDepth;
+    /** @member {string} */
+    @bindable algorithm;
+
+    _filter;
 
     /**
      * @param {Object} c - TreeMapModel configuration.
@@ -78,16 +74,13 @@ export class TreeMapModel {
      * @param {string} c.labelField - Record field to use to determine node label.
      * @param {string} c.valueField - Record field to use to determine node size.
      * @param {string} c.heatField - Record field to use to determine node color.
-     * @param {string} [c.valueFieldLabel] - Label for valueField to render in the default tooltip.
-     * @param {string} [c.heatFieldLabel] - Label for heatField to render in the default tooltip.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
-     * @parma {function} [c.filter] - A filter function used when processing data. Receives (record), returns boolean.
+     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified', 'sliceAndDice', 'stripes' or 'strip'.
+     *      Defaults to 'squarified'. @see https://www.highcharts.com/docs/chart-and-series-types/treemap for algorithm examples.
      * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record, e).
      *      If not provided, by default will select a record when using a GridModel.
      * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked. Receives (record, e).
      *      If not provided, by default will expand / collapse a record when using a GridModel.
-     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified', 'sliceAndDice', 'stripes' or 'strip'.
-     *      Defaults to 'squarified'. @see https://www.highcharts.com/docs/chart-and-series-types/treemap for algorithm examples.
      * @param {(boolean|TreeMapModel~tooltipFn)} [c.tooltip] - 'true' to use the default tooltip renderer, or a custom
      *      tooltipFn which returns a string output of the node's value.
      * @param {(Element|string)} [c.emptyText] - Element/text to render if TreeMap has no records.
@@ -100,15 +93,13 @@ export class TreeMapModel {
         labelField = 'name',
         valueField = 'value',
         heatField = 'value',
-        valueFieldLabel,
-        heatFieldLabel,
         maxDepth,
-        filter,
+        algorithm = 'squarified',
         onClick,
         onDoubleClick,
-        algorithm = 'squarified',
         tooltip = true,
-        emptyText
+        emptyText,
+        filter
     } = {}) {
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
@@ -118,30 +109,59 @@ export class TreeMapModel {
         this.labelField = labelField;
         this.valueField = valueField;
         this.heatField = heatField;
-        this.valueFieldLabel = valueFieldLabel;
-        this.heatFieldLabel = heatFieldLabel;
         this.maxDepth = maxDepth;
-        this.filter = filter;
-        this.tooltip = tooltip;
-        this.emptyText = emptyText;
-
-        this.onClick = withDefault(onClick, this.defaultOnClick);
-        this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
 
         throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
         this.algorithm = algorithm;
 
+        this.onClick = withDefault(onClick, this.defaultOnClick);
+        this.onDoubleClick = withDefault(onDoubleClick, this.defaultOnDoubleClick);
+        this.tooltip = tooltip;
+        this.emptyText = emptyText;
+
+        this._filter = filter;
+
         this.addReaction({
-            track: () => [this.store.rootRecords, this.expandState],
+            track: () => [
+                this.store.rootRecords,
+                this.expandState,
+                this.labelField,
+                this.valueField,
+                this.heatField,
+                this.maxDepth
+            ],
             run: ([rawData]) => this.data = this.processData(rawData)
         });
     }
 
+    @computed
+    get total() {
+        return sumBy(this.data, it => {
+            // Only include root records that pass the filter
+            if (it.parent || (this._filter && !this._filter(it.record))) return 0;
+            return it.value;
+        });
+    }
+
+    @computed
+    get valueFieldLabel() {
+        const field = this.store.fields.find(it => it.name === this.valueField);
+        return field ? field.label : this.valueField;
+    }
+
+    @computed
+    get heatFieldLabel() {
+        const field = this.store.fields.find(it => it.name === this.heatField);
+        return field ? field.label : this.heatField;
+    }
+
+    @computed
     get selectedIds() {
         if (!this.gridModel || this.gridModel.selModel.mode === 'disabled') return [];
         return this.gridModel.selModel.ids;
     }
 
+    @computed
     get expandState() {
         if (!this.gridModel || !this.gridModel.treeMode) return {};
         return this.gridModel.expandState;
@@ -197,7 +217,7 @@ export class TreeMapModel {
             // a) There is no filter
             // b) There is a filter and the record passes it
             // c) There is a filter and any of its children passes it
-            if (!this.filter || this.filter(record) || childTreeRecs.length) {
+            if (!this._filter || this._filter(record) || childTreeRecs.length) {
                 ret.push(treeRec);
                 ret.push(...childTreeRecs);
             }
@@ -215,17 +235,16 @@ export class TreeMapModel {
         if (!data.length) return [];
 
         const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
-            maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0));
+            maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0)),
+            damp = 0.1;
 
         data.forEach(it => {
             if (it.colorValue > 0) {
                 // Normalize between 0.5-1
-                const norm = this.normalize(it.colorValue, 0, maxPosHeat);
-                it.colorValue = (norm / 2) + 0.5;
+                it.colorValue = this.normalizeToRange(it.colorValue, 0, maxPosHeat, 0.5 + damp, 1);
             } else if (it.colorValue < 0) {
                 // Normalize between 0-0.5
-                const norm = this.normalize(Math.abs(it.colorValue), maxNegHeat, 0);
-                it.colorValue = (norm / 2);
+                it.colorValue = this.normalizeToRange(Math.abs(it.colorValue), maxNegHeat, 0, 0, 0.5 - damp);
             } else {
                 it.colorValue = 0.5; // Exactly zero
             }
@@ -234,9 +253,21 @@ export class TreeMapModel {
         return data;
     }
 
-    normalize(value, min, max) {
-        // Return value between 0-1
-        return (value - min) / (max - min);
+    /**
+     * Takes a value, calculates its normalized (0-1) value within a specified range.
+     * If a destination range is provided, returns that value transposed to within that range.
+     */
+    normalizeToRange(value, fromMin, fromMax, toMin, toMax) {
+        const fromRange = (fromMax - fromMin),
+            toRange = (toMax - toMin);
+
+        if (isFinite(toRange)) {
+            // Return value transposed to destination range
+            return (((value - fromMin) * toRange) / fromRange) + toMin;
+        } else {
+            // Return value between 0-1
+            return (value - fromMin) / fromRange;
+        }
     }
 
     //----------------------
