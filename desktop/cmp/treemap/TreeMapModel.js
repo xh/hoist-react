@@ -36,6 +36,8 @@ export class TreeMapModel {
     store;
     /** @member {GridModel} */
     gridModel;
+    /** @member {number} */
+    maxNodes;
     /** @member {function} */
     onClick;
     /** @member {function} */
@@ -69,6 +71,7 @@ export class TreeMapModel {
      * @param {Object} c - TreeMapModel configuration.
      * @param {Store} [c.store] - A store containing records to be displayed.
      * @param {GridModel} [c.gridModel] - Optional GridModel to bind to.
+     * @param {number} [c.maxNodes] - Maximum number of nodes to render. Be aware that increasing this can severely degrade performance.
      * @param {Object} [c.highchartsConfig] - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {string} c.labelField - Record field to use to determine node label.
@@ -89,6 +92,7 @@ export class TreeMapModel {
     constructor({
         store,
         gridModel,
+        maxNodes = 1000,
         highchartsConfig,
         labelField = 'name',
         valueField = 'value',
@@ -104,6 +108,7 @@ export class TreeMapModel {
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
         throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');
+        this.maxNodes = maxNodes;
 
         this.highchartsConfig = highchartsConfig;
         this.labelField = labelField;
@@ -165,6 +170,12 @@ export class TreeMapModel {
     get expandState() {
         if (!this.gridModel || !this.gridModel.treeMode) return {};
         return this.gridModel.expandState;
+    }
+
+    @computed
+    get error() {
+        if (this.data.length > this.maxNodes) return 'Data node limit reached. Unable to render TreeMap.';
+        return null;
     }
 
     //-------------------------
@@ -236,7 +247,7 @@ export class TreeMapModel {
 
         const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
             maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0)),
-            damp = 0.1;
+            damp = 0.05;
 
         data.forEach(it => {
             if (it.colorValue > 0) {
