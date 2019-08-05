@@ -7,7 +7,7 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-
+import {isUndefined} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -29,18 +29,18 @@ export class MessageSourceModel {
     }
 
     alert(config) {
-        return this.message({
-            ...config,
-            confirmProps: {text: 'OK', autoFocus: true, ...config.confirmProps}
-        });
+        const confirmProps = {text: 'OK', autoFocus: true, ...config.confirmProps};
+        return this.message({...config, confirmProps});
     }
 
     confirm(config) {
-        return this.message({
-            ...config,
-            confirmProps: {text: 'OK', ...config.confirmProps},
-            cancelProps: {text: 'Cancel', ...config.cancelProps}
-        });
+        const confirmProps = {text: 'OK', ...config.confirmProps},
+            cancelProps = {text: 'Cancel', ...config.cancelProps};
+
+        if (isUndefined(confirmProps.autoFocus) && isUndefined(cancelProps.autoFocus)) {
+            confirmProps.autoFocus = true;
+        }
+        return this.message({...config, confirmProps, cancelProps});
     }
 
     prompt(config) {
