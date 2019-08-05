@@ -6,8 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction} from 'lodash';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import {TreeMapModel} from './TreeMapModel';
 
@@ -49,6 +48,7 @@ export class SplitTreeMapModel {
      * @param {Object} c - SplitTreeMapModel configuration.
      * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
+     *      If not passed, will default to: { return record.valueField >= 0; }
      * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and region TreeMapModel.
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      *
@@ -60,8 +60,7 @@ export class SplitTreeMapModel {
         orientation = 'vertical',
         ...rest
     } = {}) {
-        throwIf(!isFunction(mapFilter), 'SplitTreeMap requires a map filter function.');
-        this.mapFilter = mapFilter;
+        this.mapFilter = withDefault(mapFilter, this.defaultMapFilter);
         this.mapTitleFn = mapTitleFn;
 
         throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
@@ -70,12 +69,17 @@ export class SplitTreeMapModel {
         // Create child TreeMaps
         this.primaryMapModel = new TreeMapModel({
             ...rest,
-            filter: (rec) => mapFilter(rec)
+            filter: (record) => this.mapFilter(record)
         });
         this.secondaryMapModel = new TreeMapModel({
             ...rest,
-            filter: (rec) => !mapFilter(rec)
+            filter: (record) => !this.mapFilter(record)
         });
+    }
+
+    defaultMapFilter(record) {
+        const {valueField} = this.primaryMapModel;
+        return record[valueField] >= 0;
     }
 
 }
