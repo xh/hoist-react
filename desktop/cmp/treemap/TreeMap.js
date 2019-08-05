@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+import React, {Component} from 'react';
 import PT from 'prop-types';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
@@ -65,7 +65,6 @@ export class TreeMap extends Component {
     render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = this.getLayoutProps();
-
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
@@ -74,26 +73,46 @@ export class TreeMap extends Component {
         this.renderHighChart();
         this.updateLabelVisibilityAsync();
 
+        // Render child item
+        const {data, error} = this.model;
+        let item;
+        if (error) {
+            item = this.renderError(error);
+        } else if (!data.length) {
+            item = this.renderPlaceholder();
+        } else {
+            item = this.renderChartHolder();
+        }
+
         // Inner div required to be the ref for the chart element
         return resizeSensor({
             onResize: debounce((e) => this.resizeChartAsync(e), 100),
             item: box({
                 ...layoutProps,
                 className: this.getClassName(),
-                item: this.model.data.length ?
-                    div({
-                        style: {margin: 'auto'},
-                        ref: this._chartElem.ref
-                    }) :
-                    this.renderPlaceholder()
+                item
             })
+        });
+    }
+
+    renderError(error) {
+        return frame({
+            className: 'xh-treemap__error-message',
+            item: <p>{error}</p>
         });
     }
 
     renderPlaceholder() {
         return frame({
             className: 'xh-treemap__placeholder',
-            item: this.model.emptyText
+            item: <p>{this.model.emptyText}</p>
+        });
+    }
+
+    renderChartHolder() {
+        return div({
+            className: 'xh-treemap__chart-holder',
+            ref: this._chartElem.ref
         });
     }
 
@@ -165,7 +184,7 @@ export class TreeMap extends Component {
     }
 
     getModelConfig() {
-        const {data, highchartsConfig, algorithm, tooltip} = this.model,
+        const {data, highchartsConfig, algorithm, tooltip, maxNodes} = this.model,
             {defaultTooltip} = this;
 
         return {
@@ -188,6 +207,7 @@ export class TreeMap extends Component {
                 animation: false,
                 layoutAlgorithm: algorithm,
                 borderWidth: 0,
+                turboThreshold: maxNodes,
                 dataLabels: {
                     enabled: true,
                     allowOverlap: false,
