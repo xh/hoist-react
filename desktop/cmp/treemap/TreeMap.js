@@ -14,7 +14,6 @@ import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {assign, merge, clone, debounce, isFunction} from 'lodash';
 
@@ -280,13 +279,13 @@ export class TreeMap extends Component {
             labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
-                    <div>${withDefault(valueFieldLabel, valueField)}:</div>
+                    <div>${valueFieldLabel}:</div>
                     <div>${fmtNumber(value)}</div>
                 </div>
             `),
             heatDiv = valueField === heatField ? null : (`
                 <div class='xh-treemap-tooltip__row'>
-                    <div>${withDefault(heatFieldLabel, heatField)}:</div>
+                    <div>${heatFieldLabel}:</div>
                     <div>${fmtNumber(heat)}</div>
                 </div>
             `);
