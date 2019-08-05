@@ -129,6 +129,7 @@ export class Store {
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
+        let didUpdate = false;
         if (!isEmpty(rawData)) {
             const oldSummary = this.summaryRecord,
                 newSummary = this.getRootSummary(rawData);
@@ -139,12 +140,15 @@ export class Store {
 
             this._all = this._all.updateData(rawData);
             this.rebuildFiltered();
-            this.lastUpdated = Date.now();
+            didUpdate = true;
         }
 
         if (rawSummaryData) {
             this.summaryRecord = this.createSummaryRecord(rawSummaryData);
+            didUpdate = true;
         }
+
+        if (didUpdate) this.lastUpdated = Date.now();
     }
 
     /**
