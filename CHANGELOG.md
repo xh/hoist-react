@@ -24,6 +24,8 @@
   `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
   and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
   dialogs.
+  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user
+    convenience.
   * The previous text/intent configs have been deprecated and the message methods will log a console
     warning if they are used (although it will continue to respect them to aid transitioning to the
     new configs).
@@ -41,9 +43,8 @@
 
 * The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
   `queryFn` props.
-  
-* Fixes several issues regarding with `DateInput`.  Popup will now close when input is blurred.  Also, fixed
-a bug with popup behavior when `enableTextInput` is `false`.    
+* `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
+  `enableTextInput` is `false` and a month or year is clicked (#1293).
 
 ### ⚙️ Technical
 
