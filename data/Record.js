@@ -58,10 +58,6 @@ export class Record {
         return this.store.getChildrenById(this.id, false);
     }
 
-    get isSummary() {
-        return this === this.store.summaryRecord;
-    }
-
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all
      * Fields defined on the given Store and install them as top-level properties on the new Record.
