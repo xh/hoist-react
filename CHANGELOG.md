@@ -41,6 +41,11 @@
 
 * The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
   `queryFn` props.
+* Applications can again use the ag-Grid pinned data APIs directly without having pinned row data
+  overwritten by the Hoist GridModel.
+* Store will no longer trigger reactions on its observable properties when `updateData` is called
+  with an empty `rawData` parameter (allows updating of summary data from a reaction on `records`
+  without causing MobX errors due to circular reactions).
 
 ### ⚙️ Technical
 

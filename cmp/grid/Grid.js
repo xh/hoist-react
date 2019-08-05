@@ -346,7 +346,7 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -358,7 +358,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
-                        this.updatePinnedRowData();
+                        this.updatePinnedSummaryRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -518,20 +518,24 @@ export class Grid extends Component {
         }
     }
 
-    updatePinnedRowData() {
+    updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary} = model,
-            {agApi} = model.agGridModel,
-            pinnedTopRecords = [],
-            pinnedBottomRecords = [];
+            {store, showSummary, agGridModel} = model,
+            {agApi} = agGridModel,
+            filterSummaryFn = (data) => !data.xhIsSummary,
+            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
+            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
         if (showSummary && store.summaryRecord) {
-            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
-            arr.push(store.summaryRecord);
+            if (showSummary === 'bottom') {
+                pinnedBottomRowData.push(store.summaryRecord);
+            } else {
+                pinnedTopRowData.unshift(store.summaryRecord);
+            }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRecords);
-        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+        agApi.setPinnedTopRowData(pinnedTopRowData);
+        agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
 
     //------------------------
