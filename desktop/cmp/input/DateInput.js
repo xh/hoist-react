@@ -157,23 +157,23 @@ export class DateInput extends HoistInput {
                     timePrecision: props.timePrecision
                 }),
 
-                item: textInput({
-                    value: this.formatDate(this.renderValue),
-                    className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
-                    onCommit: this.onInputCommit,
-                    rightElement,
+                item: div({
+                    item: textInput({
+                        value: this.formatDate(this.renderValue),
+                        className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
+                        onCommit: this.onInputCommit,
+                        rightElement,
 
-                    disabled: props.disabled || !enableTextInput,
-                    leftIcon: props.leftIcon,
-                    tabIndex: props.tabIndex,
-                    placeholder: props.placeholder,
-                    textAlign: props.textAlign,
-
-                    ...layoutProps
+                        disabled: props.disabled || !enableTextInput,
+                        leftIcon: props.leftIcon,
+                        tabIndex: props.tabIndex,
+                        placeholder: props.placeholder,
+                        textAlign: props.textAlign,
+                        ...layoutProps
+                    }),
+                    onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null
                 })
             }),
-
-            onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -215,6 +215,7 @@ export class DateInput extends HoistInput {
             inputHasFocus = this.containsElement(activeEl);
 
         if (!popoverHasFocus && !inputHasFocus) {
+            this.setPopoverOpen(false);
             this.noteBlurred();
         }
     };
@@ -222,23 +223,24 @@ export class DateInput extends HoistInput {
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
         this.doCommit();
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onOpenPopoverClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onKeyDown = (ev) => {
         if (ev.key == 'Enter') {
             this.doCommit();
-        }
-        if (this.popoverOpen && ev.key == 'Escape') {
+            this.consumeEvent(ev);
+        } else if (this.popoverOpen && ev.key == 'Escape') {
             this.setPopoverOpen(false);
-        }
-        if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
+            this.consumeEvent(ev);
+        } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
             this.setPopoverOpen(true);
+            this.consumeEvent(ev);
         }
     };
 
@@ -306,6 +308,11 @@ export class DateInput extends HoistInput {
         // Handle 'invalid date'  as null.
         const ret = moment(dateString, this.getFormat()).toDate();
         return isNaN(ret) ? null : ret;
+    }
+
+    consumeEvent(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 
