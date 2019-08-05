@@ -95,10 +95,10 @@ export class WebSocketModel {
         const message = await XH.prompt({
             title: 'Send test alert',
             icon: Icon.bullhorn(),
-            confirmText: 'Send',
+            confirmProps: {text: 'Send'},
             message: `Send an in-app alert to ${selectedRecord.authUser} with the text below.`,
             input: {
-                item: textInput(),
+                item: textInput({autoFocus: true, selectOnFocus: true}),
                 value: 'This is a test alert',
                 rules: [required]
             }

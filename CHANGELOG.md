@@ -15,40 +15,49 @@
   * The service will monitor the socket connection with a regular heartbeat and attempt to
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
-
 * New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a TreeMap.
   Supports optional binding to a GridModel, which syncs selection and expand / collapse state.
-
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
-
-* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more details.
-
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
+  details.
+* `Button` component accepts an `autoFocus` prop to attempt to focus on render.
+* The `XH.message()` and related methods such as `XH.alert()` now support more flexible
+  `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
+  and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
+  dialogs.
+  * The previous text/intent configs have been deprecated and the message methods will log a console
+    warning if they are used (although it will continue to respect them to aid transitioning to the
+    new configs).
 
 ### 💥 Breaking Changes
 
 * `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
-
 * The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
-independent.  Specify a single `getCopyText` function rather than the `clipboardSpec`.  (`clipboardSpec`
-is an artifact from the removed `clipboard` library).
-
+  independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
+  (`clipboardSpec` is an artifact from the removed `clipboard` library).
 * ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
 
+### 🐞 Bug Fixes
+
+* The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
+  `queryFn` props.
 
 ### ⚙️ Technical
 
-* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state
-  are called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
-  Applications can check the new `isReady` property on `AgGridModel` before calling such methods
-  to verify the grid is fully initialized.
-  
+* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
+  called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to
+  verify the grid is fully initialized.
+
 ### 📚 Libraries
 
-* ag-Grid `21.0.1 -> 21.1.0`
-
+* @blueprintjs/core `3.17 -> 3.18`
+* @fortawesome/fontawesome `5.9 -> 5.10`
+* ag-grid `21.0.1 -> 21.1.1`
+* store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
 ## v25.2.0 - 2019-07-25
