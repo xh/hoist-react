@@ -318,6 +318,11 @@ class XHClass {
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      *
+     *
+     * Note that this method will auto focus the confirm button by default.  To focus the
+     * cancel button instead (e.g. for confirming risky operations), applications should specify a
+     * cancelProps argument of the following form:  cancelProps: {..., autoFocus: true}.
+     *
      * @returns {Promise} - Promise resolving to true if user confirms, false if user cancels.
      *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
