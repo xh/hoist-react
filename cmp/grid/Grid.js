@@ -351,7 +351,7 @@ export class Grid extends Component {
                 if (!api) return;
 
                 runInAction(() => {
-                    withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
+                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
                         // If we are going to delete the majority of the rows then ag-Grid is faster
                         // if we first clear out the existing data before setting the new data
                         this.clearDataIfExpensiveDeletionPending(records, api);
