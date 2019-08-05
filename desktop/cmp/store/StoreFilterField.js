@@ -222,9 +222,9 @@ export class StoreFilterField extends Component {
         let {gridModel, includeFields, excludeFields} = this.props,
             store = this.getActiveStore();
 
-        let ret = store ? store.fields.map(f => f.name) : [];
+        let ret = store ? store.fields.map(f => f.name).concat(['id']) : [];
         if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
-        if (excludeFields) ret = without(ret, excludeFields);
+        if (excludeFields) ret = without(ret, ...excludeFields);
 
         if (gridModel) {
             const groupBy = gridModel.groupBy,

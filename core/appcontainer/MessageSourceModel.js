@@ -5,16 +5,15 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {defaults} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel, managed} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 
 import {MessageModel} from './MessageModel';
 
 /**
- *  Supports displaying Modal Dialogs.
- *
- *  @private
+ * Supports managed display of modal message dialogs via `XH.message()` and friends.
+ * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
+ * @private
  */
 @HoistModel
 export class MessageSourceModel {
@@ -30,13 +29,27 @@ export class MessageSourceModel {
     }
 
     alert(config) {
-        config = defaults({}, config, {confirmText: 'OK'});
-        return this.message(config);
+        return this.message({
+            ...config,
+            confirmProps: {text: 'OK', autoFocus: true, ...config.confirmProps}
+        });
     }
 
     confirm(config) {
-        config = defaults({}, config, {confirmText: 'OK', cancelText: 'Cancel'});
-        return this.message(config);
+        return this.message({
+            ...config,
+            confirmProps: {text: 'OK', ...config.confirmProps},
+            cancelProps: {text: 'Cancel', ...config.cancelProps}
+        });
+    }
+
+    prompt(config) {
+        return this.message({
+            ...config,
+            confirmProps: {text: 'OK', ...config.confirmProps},
+            cancelProps: {text: 'Cancel', ...config.cancelProps},
+            input: config.input || {}
+        });
     }
 
     //-----------------------------------
@@ -57,4 +70,5 @@ export class MessageSourceModel {
         this.msgModels = keepModels;
         cullModels.forEach(it => it.destroy());
     }
+
 }

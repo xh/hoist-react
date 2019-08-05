@@ -1,10 +1,13 @@
 import ReactDOM from 'react-dom';
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
+import {fragment, box, hbox} from '@xh/hoist/cmp/layout';
+import {textArea, dialog} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
 import {defaultsDeep} from 'lodash';
-import {box} from '@xh/hoist/cmp/layout';
-import {textArea} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
 
 import {HoistInput} from '@xh/hoist/cmp/input';
 
@@ -36,6 +39,8 @@ import './JsonInput.scss';
 @LayoutSupport
 export class JsonInput extends HoistInput {
 
+    @bindable fullScreen = false;
+
     static propTypes = {
         ...HoistInput.propTypes,
         value: PT.string,
@@ -47,11 +52,18 @@ export class JsonInput extends HoistInput {
          * Configuration object with any properties supported by the CodeMirror API.
          * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
          */
-        editorProps: PT.object
+        editorProps: PT.object,
+
+        /** True to show Fullscreen + Auto-format buttons at top-right of input. */
+        showActionButtons: PT.bool
     };
 
     get commitOnChange() {
-        withDefault(this.props.commitOnChange, false);
+        return withDefault(this.props.commitOnChange, false);
+    }
+
+    get showActionButtons() {
+        return withDefault(this.props.showActionButtons, true);
     }
 
     constructor(props) {
@@ -81,23 +93,68 @@ export class JsonInput extends HoistInput {
     baseClassName = 'xh-json-input';
 
     render() {
-        const {width, height, ...layoutProps} = this.getLayoutProps();
+        const {width, height, ...layoutProps} = this.getLayoutProps(),
+            props = {
+                ...layoutProps,
+                width: withDefault(width, 300),
+                height: withDefault(height, 100)
+            };
 
-        return box({
-            item: textArea({
-                value: this.renderValue || '',
-                ref: this.manageJsonEditor,
-                onChange: this.onChange
+        return this.fullScreen ? this.renderFullscreen(props) : this.renderInput(props);
+    }
+
+    renderFullscreen(props) {
+        return fragment(
+            dialog({
+                className: 'xh-json-input--dialog',
+                isOpen: true,
+                canOutsideClickClose: true,
+                item: this.renderInput({flex: 1}),
+                onClose: () => this.setFullScreen(false)
             }),
+            box({
+                className: 'xh-json-input--placeholder',
+                ...props
+            })
+        );
+    }
+
+    renderInput(props) {
+        return box({
+            items: [
+                textArea({
+                    value: this.renderValue || '',
+                    ref: this.manageJsonEditor,
+                    onChange: this.onChange
+                }),
+                this.renderActionButtons()
+            ],
 
             className: this.getClassName(),
-
-            ...layoutProps,
-            width: withDefault(width, 300),
-            height: withDefault(height, 100),
-
             onBlur: this.onBlur,
-            onFocus:  this.onFocus
+            onFocus: this.onFocus,
+
+            ...props
+        });
+    }
+
+    renderActionButtons() {
+        if (!this.showActionButtons || !this.hasFocus) return null;
+        const {fullScreen} = this;
+        return hbox({
+            className: 'xh-json-input__action-buttons',
+            items: [
+                button({
+                    icon: Icon.code(),
+                    title: 'Auto-format',
+                    onClick: () => this.onAutoFormat()
+                }),
+                button({
+                    icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                    title: fullScreen ? 'Exit full screen' : 'Full screen',
+                    onClick: () => this.setFullScreen(!fullScreen)
+                })
+            ]
         });
     }
 
@@ -139,8 +196,8 @@ export class JsonInput extends HoistInput {
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
-                'Cmd-P': this.onFormatKey,
-                'Ctrl-P': this.onFormatKey
+                'Cmd-P': this.onAutoFormat,
+                'Ctrl-P': this.onAutoFormat
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
@@ -161,7 +218,7 @@ export class JsonInput extends HoistInput {
         this.noteValueChange(editor.getValue());
     };
 
-    onFormatKey = () => {
+    onAutoFormat = () => {
         const editor = this.editor,
             val = this.tryPrettyPrint(editor.getValue());
 

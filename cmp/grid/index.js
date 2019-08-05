@@ -10,3 +10,4 @@ export * from './GridModel';
 export * from './GridStateModel';
 
 export * from './columns/';
+export * from './helpers/';

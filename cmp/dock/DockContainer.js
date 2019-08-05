@@ -33,6 +33,10 @@ import {DockContainerModel} from './DockContainerModel';
 export class DockContainer extends Component {
 
     static propTypes = {
+        /** True to style docked headers with reduced padding and font-size. */
+        compactHeaders: PT.bool,
+
+        /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object]).isRequired
     }
     static modelClass = DockContainerModel;

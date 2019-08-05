@@ -131,8 +131,7 @@ export class RestFormModel {
     @action
     saveRecordAsync() {
         const {isAdd, store, formModel, currentRecord} = this,
-            dirtyOnly = !isAdd,
-            record = {...currentRecord, ...formModel.getData(dirtyOnly)},
+            record = isAdd ? {currentRecord, ...formModel.getData(false)} : {id: currentRecord.id, ...formModel.getData(true)},
             saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
 
         return saveFn()

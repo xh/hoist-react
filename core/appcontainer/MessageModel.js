@@ -4,44 +4,77 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {observable, action} from '@xh/hoist/mobx';
 import {HoistModel, XH} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
+import {FormModel} from '@xh/hoist/cmp/form';
+import {warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for a single instance of a modal dialog.
- *
+ * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
 @HoistModel
 export class MessageModel {
 
     // Immutable properties
-    title = null;
-    icon = null;
-    message = null;
-    confirmText = null;
-    cancelText = null;
-    confirmIntent = null;
-    cancelIntent = null;
-    onConfirm = null;
-    onCancel = null;
+    title;
+    icon;
+    message;
+    input;
+    confirmProps;
+    cancelProps;
+    onConfirm;
+    onCancel;
 
     // Promise to be resolved when user has clicked on choice and its internal resolver
-    result = null;
-    _resolver = null;
+    result;
+    _resolver;
 
     @observable isOpen = true;
 
-    constructor(config) {
-        this.message = config.message;
-        this.title = config.title;
-        this.icon = config.icon;
-        this.confirmText = config.confirmText;
-        this.cancelText = config.cancelText;
-        this.confirmIntent = config.confirmIntent;
-        this.cancelIntent = config.cancelIntent;
-        this.onConfirm = config.onConfirm;
-        this.onCancel = config.onCancel;
+    constructor({
+        title,
+        icon,
+        message,
+        input,
+        confirmProps = {},
+        cancelProps = {},
+        onConfirm,
+        onCancel,
+
+        // Deprecated
+        confirmText,
+        confirmIntent,
+        cancelText,
+        cancelIntent
+    }) {
+        warnIf(
+            (confirmText || confirmIntent || cancelText || cancelIntent),
+            'Message "confirmText", "confirmIntent", "cancelText", and "cancelIntent" configs have been deprecated - use "confirmProps" and "cancelProps" instead.'
+        );
+
+        this.title = title;
+        this.icon = icon;
+        this.message = message;
+
+        if (input) {
+            this.input = input;
+            const {value, rules} = input;
+            this.formModel = this.markManaged(new FormModel({
+                fields: [{
+                    name: 'value',
+                    initialValue: value,
+                    rules: rules
+                }]
+            }));
+        }
+
+        this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync(), confirmText, confirmIntent);
+        this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel(), cancelText, cancelIntent);
+
+        this.onConfirm = onConfirm;
+        this.onCancel = onCancel;
         this.result = new Promise(resolve => this._resolver = resolve);
 
         // Message modals are automatically dismissed on app route changes to avoid navigating the
@@ -53,9 +86,17 @@ export class MessageModel {
     }
 
     @action
-    doConfirm() {
+    async doConfirmAsync() {
+        let resolvedVal = true;
+
+        if (this.formModel) {
+            await this.formModel.validateAsync();
+            if (!this.formModel.isValid) return;
+            resolvedVal = this.formModel.getData().value;
+        }
+
         if (this.onConfirm) this.onConfirm();
-        this._resolver(true);
+        this._resolver(resolvedVal);
         this.close();
     }
 
@@ -77,4 +118,21 @@ export class MessageModel {
     destroy() {
         this.close();
     }
+
+    // Merge handler and deprecated props into consolidated object.
+    // Return null if neither text nor icon provided - button should not be displayed.
+    parseButtonProps(props, handler, deprText, deprIntent) {
+        const ret = {...props, onClick: handler};
+        if (deprText) ret.text = deprText;
+        if (deprIntent) ret.intent = deprIntent;
+        return (ret.text || ret.icon) ? ret : null;
+    }
 }
+
+/**
+ * @typedef {Object} MessageInput
+ * @property {Element} [item] - the react element to render; should be a HoistInput, defaults to a
+ *      platform appropriate TextInput.
+ * @property {Rule[]} [rules] - validation constraints to apply.
+ * @property {*} [initialValue] - initial value for the input.
+ */

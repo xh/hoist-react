@@ -193,12 +193,13 @@ export class Grid extends Component {
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
-                    {classes: ['group-header-icon-expanded', 'fa-fw']}
+                    {classes: ['group-header-icon-expanded']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.angleRight(),
-                    {classes: ['group-header-icon-contracted', 'fa-fw']}
-                )
+                    {classes: ['group-header-icon-contracted']}
+                ),
+                clipboardCopy: convertIconToSvg(Icon.copy())
             },
             frameworkComponents: {agColumnHeader: ColumnHeader},
             rowSelection: model.selModel.mode,
@@ -272,6 +273,8 @@ export class Grid extends Component {
         const menu = contextMenuFn(params, this.model),
             recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
+            colId = params.column ? params.column.colId : null,
+            column = isNil(colId) ? null : this.model.getColumn(colId),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.
@@ -281,10 +284,10 @@ export class Grid extends Component {
 
         if (!record) selModel.clear();
 
-        return this.buildMenuItems(menu.items, record, selModel.records);
+        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
 
-    buildMenuItems(recordActions, record, selectedRecords) {
+    buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
         let items = [];
         recordActions.forEach(action => {
             if (action === '-') {
@@ -297,19 +300,21 @@ export class Grid extends Component {
                 return;
             }
 
-            const params = {
+            const actionParams = {
                 record,
                 selectedRecords,
-                gridModel: this.model
+                gridModel: this.model,
+                column,
+                agParams
             };
 
-            const displaySpec = action.getDisplaySpec(params);
+            const displaySpec = action.getDisplaySpec(actionParams);
             if (displaySpec.hidden) return;
 
             let childItems;
             if (!isEmpty(displaySpec.items)) {
                 const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
-                childItems = this.buildMenuItems(menu.items, record, selectedRecords);
+                childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
             }
 
             let icon = displaySpec.icon;
@@ -319,11 +324,12 @@ export class Grid extends Component {
 
             items.push({
                 name: displaySpec.text,
+                shortcut: displaySpec.secondaryText,
                 icon,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,
-                action: () => action.call(params)
+                action: () => action.call(actionParams)
             });
         });
 
@@ -340,7 +346,7 @@ export class Grid extends Component {
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -352,7 +358,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
-                        this.updatePinnedRowData();
+                        this.updatePinnedSummaryRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
@@ -512,20 +518,24 @@ export class Grid extends Component {
         }
     }
 
-    updatePinnedRowData() {
+    updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary} = model,
-            {agApi} = model.agGridModel,
-            pinnedTopRecords = [],
-            pinnedBottomRecords = [];
+            {store, showSummary, agGridModel} = model,
+            {agApi} = agGridModel,
+            filterSummaryFn = (data) => !data.xhIsSummary,
+            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
+            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
         if (showSummary && store.summaryRecord) {
-            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
-            arr.push(store.summaryRecord);
+            if (showSummary === 'bottom') {
+                pinnedBottomRowData.push(store.summaryRecord);
+            } else {
+                pinnedTopRowData.unshift(store.summaryRecord);
+            }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRecords);
-        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+        agApi.setPinnedTopRowData(pinnedTopRowData);
+        agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
 
     //------------------------

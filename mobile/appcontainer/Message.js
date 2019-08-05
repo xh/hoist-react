@@ -6,9 +6,15 @@
  */
 import {Component} from 'react';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/mobile/cmp/form';
+import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {withDefault} from '@xh/hoist/utils/js';
+
+import './Message.scss';
 import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
@@ -24,24 +30,21 @@ class Message extends Component {
     render() {
         const model = this.model,
             isOpen = model && model.isOpen,
-            {icon, title, message, cancelText, confirmText} = model,
+            {icon, title, message, formModel, cancelProps, confirmProps} = model,
             buttons = [];
 
         if (!isOpen) return null;
 
-        if (cancelText) {
-            buttons.push(button({
-                text: cancelText,
-                modifier: 'quiet',
-                onClick: this.onCancel
-            }));
+        if (cancelProps) {
+            buttons.push(button({modifier: 'quiet', ...cancelProps}));
         }
 
-        if (confirmText) {
-            buttons.push(button({
-                text: confirmText,
-                onClick: this.onConfirm
-            }));
+        if (confirmProps) {
+            // Merge in formModel.isValid here in render stage to get reactivity.
+            buttons.push(formModel ?
+                button({...confirmProps, disabled: !formModel.isValid}) :
+                button(confirmProps)
+            );
         }
 
         if (buttons.length) {
@@ -53,13 +56,27 @@ class Message extends Component {
             icon,
             title,
             buttons,
-            content: message,
-            onCancel: this.onCancel
+            className: 'xh-message',
+            content: div(
+                div({omit: !message, className: 'xh-message-content', item: message}),
+                this.renderInput()
+            ),
+            onCancel: () => this.model.doCancel()
         });
     }
 
-    onConfirm = () =>   {this.model.doConfirm()}
-    onCancel = () =>    {this.model.doCancel()}
+    renderInput() {
+        const {formModel, input} = this.model;
+        if (!formModel) return null;
+        return form({
+            model: formModel,
+            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+            item: formField({
+                field: 'value',
+                item: withDefault(input.item, textInput({autoFocus: true}))
+            })
+        });
+    }
 
 }
 export const message = elemFactory(Message);

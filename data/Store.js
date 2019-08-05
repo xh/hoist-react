@@ -105,14 +105,17 @@ export class Store {
         this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
 
-        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData) : null;
+        this.summaryRecord = rawSummaryData ? this.createSummaryRecord(rawSummaryData) : null;
 
         this.lastUpdated = Date.now();
     }
 
     /**
-     * Add or update data in store. Existing records not matched by ID to rows in the update
-     * dataset will be left in place.
+     * Add or update data in store. Existing sibling or ancestor records not matched by ID to rows
+     * in the update dataset will be left in place.
+     *
+     * When updating hierarchical data the entire branch will be updated with the provided data. Any
+     * children not included in the data will be removed from the store.
      *
      * Updated summary data can be provided via `rawSummaryData` or as the root data if the Store was
      * created with the loadRootAsSummary flag set to true.
@@ -126,20 +129,38 @@ export class Store {
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
-        const oldSummary = this.summaryRecord,
-            newSummary = this.getRootSummary(rawData);
-        if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
-            rawData = newSummary.children;
-            rawSummaryData = {...newSummary, children: null};
-        }
+        let didUpdate = false;
+        if (!isEmpty(rawData)) {
+            const oldSummary = this.summaryRecord,
+                newSummary = this.getRootSummary(rawData);
+            if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
+                rawData = newSummary.children;
+                rawSummaryData = {...newSummary, children: null};
+            }
 
-        this._all = this._all.updateData(rawData);
-        this.rebuildFiltered();
+            this._all = this._all.updateData(rawData);
+            this.rebuildFiltered();
+            didUpdate = true;
+        }
 
         if (rawSummaryData) {
-            this.summaryRecord = this.createRecord(rawSummaryData);
+            this.summaryRecord = this.createSummaryRecord(rawSummaryData);
+            didUpdate = true;
         }
 
+        if (didUpdate) this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Add data to the store.
+     *
+     * @param {Object[]} rawData
+     * @param {Record} parentRecord
+     */
+    @action
+    addData(rawData, parentRecord) {
+        this._all = this._all.addData(rawData, parentRecord ? parentRecord.id : null);
+        this.rebuildFiltered();
         this.lastUpdated = Date.now();
     }
 
@@ -237,7 +258,6 @@ export class Store {
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {return this._filter}
 
-
     /** Get the count of all records loaded into the store. */
     get allCount() {
         return this._all.count;
@@ -323,7 +343,6 @@ export class Store {
         return isString(idSpec) ? data[idSpec] : idSpec(data);
     }
 
-
     /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
@@ -358,7 +377,15 @@ export class Store {
     }
 
     getRootSummary(rawData) {
-        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ? rawData[0] : null;
+        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ?
+            rawData[0] :
+            null;
+    }
+
+    createSummaryRecord(rawData) {
+        const rec = this.createRecord(rawData);
+        rec.xhIsSummary = true;
+        return rec;
     }
 }
 

@@ -31,6 +31,12 @@ export class Record {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
+    /** @param {Record} parent */
+    set parent(parent) {
+        this.parentId = parent ? parent.id : null;
+        this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
+    }
+
     /** @member {Field[]} */
     get fields() {
         return this.store.fields;
@@ -50,10 +56,6 @@ export class Record {
      */
     get allChildren() {
         return this.store.getChildrenById(this.id, false);
-    }
-
-    get isSummary() {
-        return this === this.store.summaryRecord;
     }
 
     /**
@@ -82,8 +84,7 @@ export class Record {
         this.id = id;
         this.store = store;
         this.raw = raw;
-        this.parentId = parent ? parent.id : null;
-        this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
+        this.parent = parent;
 
         store.fields.forEach(f => {
             const {name} = f;

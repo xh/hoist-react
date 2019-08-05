@@ -24,7 +24,8 @@ import {
     IdleService,
     LocalStorageService,
     PrefService,
-    TrackService
+    TrackService,
+    WebSocketService
 } from '@xh/hoist/svc';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
@@ -94,6 +95,8 @@ class XHClass {
     prefService;
     /** @member {TrackService} */
     trackService;
+    /** @member {WebSocketService} */
+    webSocketService;
 
     //----------------------------------------------------------------------------------------------
     // Aliased methods
@@ -305,13 +308,18 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
-     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
-     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
-     * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
-     * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
+     * @param {MessageInput} [config.input] - config for input to be displayed (as a prompt).
+     * @param {string} [config.confirmProps] - props for primary confirm button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+     * @param {string} [config.cancelProps] - props for secondary cancel button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
-     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     *
+     * @returns {Promise} - Promise resolving to true if user confirms, false if user cancels.
+     *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {
         return this.acm.messageSourceModel.message(config);
@@ -335,6 +343,17 @@ class XHClass {
      */
     confirm(config) {
         return this.acm.messageSourceModel.confirm(config);
+    }
+
+    /**
+     * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
+     * Applications may also provide a custom HoistInput.
+     *
+     * @param {Object} config - see XH.message() for available options.
+     * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
+     */
+    prompt(config) {
+        return this.acm.messageSourceModel.prompt(config);
     }
 
     /**
@@ -464,10 +483,19 @@ class XHClass {
             await this.installServicesAsync(TrackService);
 
             // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
+            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
             try {
                 await this.installServicesAsync(EnvironmentService);
             } catch (e) {
-                throw `Unable to load environment info - is the server running and reachable? (${e.message})`;
+                const pingURL = XH.isDevelopmentMode ?
+                    `${XH.baseUrl}ping` :
+                    `${window.location.origin}${XH.baseUrl}ping`;
+
+                throw this.exception({
+                    name: 'UI Server Unavailable',
+                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
+                    detail: e.message
+                });
             }
 
             this.setAppState(S.PRE_AUTH);
@@ -507,7 +535,9 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
-            await this.installServicesAsync(AutoRefreshService, IdleService, GridExportService);
+            await this.installServicesAsync(
+                AutoRefreshService, IdleService, GridExportService, WebSocketService
+            );
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

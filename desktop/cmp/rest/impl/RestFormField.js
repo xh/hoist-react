@@ -66,17 +66,26 @@ export class RestFormField extends Component {
                 return jsonInput();
             case 'date':
                 return dateInput();
+            case 'pwd':
+                // Key to force re-creation of DOM elements so Chrome stops suggesting passwords
+                return textInput({type: 'password', key: '_' + type});
             default:
                 return textInput();
         }
     }
 
     renderBoolean(fieldModel) {
-        return fieldModel.isRequired && fieldModel.value != null ?
+        // Favor switch, when we are not in a tri-state situation w/null
+        // Otherwise, use a clearly nullable select.
+
+        const {isRequired, value, initialValue} = fieldModel,
+            useSwitch = isRequired && value != null && initialValue != null;
+        
+        return useSwitch ?
             switchInput() :
             this.renderSelect({
                 options: [true, false],
-                enableClear: !fieldModel.isRequired,
+                enableClear: !isRequired,
                 enableCreate: false
             });
     }

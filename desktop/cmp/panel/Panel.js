@@ -38,6 +38,9 @@ export class Panel extends Component {
     static modelClass = PanelModel;
 
     static propTypes = {
+        /** True to style panel header (if displayed) with reduced padding and font-size. */
+        compactHeader: PT.bool,
+
         /** Items to be added to the right-side of the panel's header. */
         headerItems: PT.node,
 
@@ -87,6 +90,7 @@ export class Panel extends Component {
             bbar,
             title,
             icon,
+            compactHeader,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -140,7 +144,7 @@ export class Panel extends Component {
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, headerItems, model}) :
+            panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
             null;
 
         const item = vbox({
