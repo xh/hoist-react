@@ -388,11 +388,29 @@ export class AgGridModel {
     }
 
     /**
+     * Sets the data used for rows which appear pinned to the top of the grid
+     * @param {Object[]} data - the data to pin at the top of the grid
+     */
+    setPinnedTopRowData(data) {
+        this.throwIfNotReady();
+        this.agApi.setPinnedTopRowData(data);
+    }
+
+    /**
      * @returns {Array} - row data pinned to the top of the grid
      */
     getPinnedTopRowData() {
         this.throwIfNotReady();
         return this.getPinnedRowData('Top');
+    }
+
+    /**
+     * Sets the data used for rows which appear pinned to the bottom of the grid
+     * @param {Object[]} data - the data to pin at the bottom of the grid
+     */
+    setPinnedBottomRowData(data) {
+        this.throwIfNotReady();
+        this.agApi.setPinnedBottomRowData(data);
     }
 
     /**
