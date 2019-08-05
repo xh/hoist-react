@@ -140,7 +140,6 @@ export class Grid extends Component {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
-        this.addReaction(this.summaryReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
     }
@@ -342,25 +341,12 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    summaryReaction() {
-        const {model} = this,
-            {agGridModel, store} = model;
-
-        return {
-            track: () => [agGridModel.agApi, store.summaryRecord, model.showSummary],
-            run: ([api]) => {
-                if (!api) return;
-                this.updatePinnedSummaryRowData();
-            }
-        };
-    }
-
     dataReaction() {
         const {model} = this,
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
@@ -372,6 +358,7 @@ export class Grid extends Component {
 
                         // Load updated data into the grid.
                         api.setRowData(records);
+                        this.updatePinnedSummaryRowData();
 
                         // Size columns to account for scrollbar show/hide due to row count change.
                         api.sizeColumnsToFit();
