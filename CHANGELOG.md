@@ -41,6 +41,9 @@
 
 * The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
   `queryFn` props.
+  
+* Fixes several issues regarding with `DateInput`.  Popup will now close when input is blurred.  Also, fixed
+a bug with popup behavior when `enableTextInput` is `false`.    
 
 ### ⚙️ Technical
 
