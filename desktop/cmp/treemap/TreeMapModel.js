@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, observable, computed} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isEmpty, sumBy, maxBy, minBy, get, set, unset} from 'lodash';
+import {isEmpty, isFinite, sumBy, maxBy, minBy, get, set, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -235,17 +235,16 @@ export class TreeMapModel {
         if (!data.length) return [];
 
         const maxPosHeat = Math.max(maxBy(data, 'colorValue').colorValue, 0),
-            maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0));
+            maxNegHeat = Math.abs(Math.min(minBy(data, 'colorValue').colorValue, 0)),
+            damp = 0.1;
 
         data.forEach(it => {
             if (it.colorValue > 0) {
                 // Normalize between 0.5-1
-                const norm = this.normalize(it.colorValue, 0, maxPosHeat);
-                it.colorValue = (norm / 2) + 0.5;
+                it.colorValue = this.normalizeToRange(it.colorValue, 0, maxPosHeat, 0.5 + damp, 1);
             } else if (it.colorValue < 0) {
                 // Normalize between 0-0.5
-                const norm = this.normalize(Math.abs(it.colorValue), maxNegHeat, 0);
-                it.colorValue = (norm / 2);
+                it.colorValue = this.normalizeToRange(Math.abs(it.colorValue), maxNegHeat, 0, 0, 0.5 - damp);
             } else {
                 it.colorValue = 0.5; // Exactly zero
             }
@@ -254,9 +253,21 @@ export class TreeMapModel {
         return data;
     }
 
-    normalize(value, min, max) {
-        // Return value between 0-1
-        return (value - min) / (max - min);
+    /**
+     * Takes a value, calculates its normalized (0-1) value within a specified range.
+     * If a destination range is provided, returns that value transposed to within that range.
+     */
+    normalizeToRange(value, fromMin, fromMax, toMin, toMax) {
+        const fromRange = (fromMax - fromMin),
+            toRange = (toMax - toMin);
+
+        if (isFinite(toRange)) {
+            // Return value transposed to destination range
+            return (((value - fromMin) * toRange) / fromRange) + toMin;
+        } else {
+            // Return value between 0-1
+            return (value - fromMin) / fromRange;
+        }
     }
 
     //----------------------
