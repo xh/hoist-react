@@ -543,7 +543,7 @@ export class Grid extends Component {
             if (showSummary === 'bottom') {
                 pinnedBottomRowData.push(store.summaryRecord);
             } else {
-                pinnedTopRowData.splice(0, 0, store.summaryRecord);
+                pinnedTopRowData.unshift(store.summaryRecord);
             }
         }
 
