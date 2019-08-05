@@ -30,25 +30,21 @@ class Message extends Component {
     render() {
         const model = this.model,
             isOpen = model && model.isOpen,
-            {icon, title, message, formModel, cancelText, confirmText} = model,
+            {icon, title, message, formModel, cancelProps, confirmProps} = model,
             buttons = [];
 
         if (!isOpen) return null;
 
-        if (cancelText) {
-            buttons.push(button({
-                text: cancelText,
-                modifier: 'quiet',
-                onClick: this.onCancel
-            }));
+        if (cancelProps) {
+            buttons.push(button({modifier: 'quiet', ...cancelProps}));
         }
 
-        if (confirmText) {
-            buttons.push(button({
-                text: confirmText,
-                disabled: formModel ? !formModel.isValid : false,
-                onClick: () => this.model.doConfirmAsync()
-            }));
+        if (confirmProps) {
+            // Merge in formModel.isValid here in render stage to get reactivity.
+            buttons.push(formModel ?
+                button({...confirmProps, disabled: !formModel.isValid}) :
+                button(confirmProps)
+            );
         }
 
         if (buttons.length) {
