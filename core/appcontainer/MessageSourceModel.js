@@ -7,7 +7,7 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-
+import {isUndefined} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -23,6 +23,17 @@ export class MessageSourceModel {
     msgModels = [];
 
     message(config) {
+
+        // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
+        const {confirmProps, cancelProps, input} = config;
+
+        if ((confirmProps && isUndefined(confirmProps.autoFocus)) &&
+            (!cancelProps || isUndefined(cancelProps.autoFocus)) &&
+            !input
+        ) {
+            confirmProps.autoFocus = true;
+        }
+
         const ret = new MessageModel(config);
         this.addModel(ret);
         return ret.result;
@@ -31,7 +42,7 @@ export class MessageSourceModel {
     alert(config) {
         return this.message({
             ...config,
-            confirmProps: {text: 'OK', autoFocus: true, ...config.confirmProps}
+            confirmProps: {text: 'OK', ...config.confirmProps}
         });
     }
 
