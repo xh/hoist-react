@@ -122,6 +122,8 @@ export class MessageModel {
     // Merge handler and deprecated props into consolidated object.
     // Return null if neither text nor icon provided - button should not be displayed.
     parseButtonProps(props, handler, deprText, deprIntent) {
+        warnIf(props.onClick, 'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.');
+
         const ret = {...props, onClick: handler};
         if (deprText) ret.text = deprText;
         if (deprIntent) ret.intent = deprIntent;
