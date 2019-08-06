@@ -21,6 +21,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import classNames from 'classnames';
+import {wait} from '@xh/hoist/promise';
 
 import './DateInput.scss';
 
@@ -106,6 +107,8 @@ export class DateInput extends HoistInput {
 
     @bindable popoverOpen = false;
 
+    inputRef = new Ref();
+    buttonRef = new Ref();
     popoverRef = new Ref();
     baseClassName = 'xh-date-input';
 
@@ -169,6 +172,7 @@ export class DateInput extends HoistInput {
                         tabIndex: props.tabIndex,
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
+                        inputRef: this.inputRef.ref,
                         ...layoutProps
                     }),
                     onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null
@@ -198,6 +202,7 @@ export class DateInput extends HoistInput {
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
+                    elementRef: this.buttonRef.ref,
                     onClick: enablePicker && !disabled ? this.onOpenPopoverClick : null
                 })
             ]
@@ -215,10 +220,18 @@ export class DateInput extends HoistInput {
             inputHasFocus = this.containsElement(activeEl);
 
         if (!popoverHasFocus && !inputHasFocus) {
-            this.setPopoverOpen(false);
             this.noteBlurred();
         }
     };
+
+    noteBlurred() {
+        super.noteBlurred();
+        wait(1).then(() => {
+            if (!this.hasFocus) {
+                this.setPopoverOpen(false);
+            }
+        });
+    }
 
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
@@ -246,6 +259,14 @@ export class DateInput extends HoistInput {
 
     onPopoverClose = () => {
         this.doCommit();
+        if (this.hasFocus) {
+            const {inputRef, buttonRef} = this;
+            if (inputRef.value) {
+                inputRef.value.focus();
+            } else if (buttonRef.value) {
+                buttonRef.value.focus();
+            }
+        }
     };
 
     onInputCommit = (value) => {
