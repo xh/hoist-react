@@ -45,6 +45,7 @@
   `queryFn` props.
 * `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
   `enableTextInput` is `false` and a month or year is clicked (#1293).
+* CheckBox: accept autoFocus prop and pass to bpCheckBox
 
 ### ⚙️ Technical
 
