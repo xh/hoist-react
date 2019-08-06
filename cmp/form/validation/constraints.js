@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {parseCalendarDate} from '@xh/hoist/utils/datetime';
 import {isNil, isString, isArray} from 'lodash';
 import moment from 'moment';
 /**
@@ -67,9 +66,9 @@ export function numberIs({min, max, notZero}) {
  * Validate a date against allowed min/max boundaries.
  *
  * @param {Object} c
- * @param {(Date|string)} [c.min] - earliest allowed value for the date to be checked.
+ * @param {(Date|CalendarDate|string)} [c.min] - earliest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param {(Date|string)} [c.max] - latest allowed value for the date to be checked.
+ * @param {(Date|CalendarDate|string)} [c.max] - latest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule in run) and 'today' (any time on the current day).
  * @param {string} [c.fmt] - custom date format to be used in validation message.
  * @returns ConstraintCb
@@ -83,6 +82,8 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             minMoment = moment();
         } else if (min === 'today') {
             minMoment = moment().startOf('day');
+        } else if (min.isCalendarDate) {
+            minMoment = min.moment;
         } else if (min) {
             minMoment = moment(min);
         }
@@ -92,45 +93,13 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             maxMoment = moment();
         } else if (max === 'today') {
             maxMoment = moment().endOf('day');
+        } else if (max.isCalendarDate) {
+            minMoment = max.moment;
         } else if (max) {
             maxMoment = moment(max);
         }
 
         if (minMoment && minMoment.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
         if (maxMoment && maxMoment.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
-    };
-}
-
-/**
- * Validate a CalendarDate against allowed min/max boundaries.
- *
- * @param {Object} c
- * @param {(string)} [c.min] - earliest allowed value for the date to be checked.
- *      Supports CalendarDate strings and 'today'.
- * @param {(string)} [c.max] - latest allowed value for the date to be checked.
- *      Supports CalendarDate strings and 'today'.
- * @param {string} [c.fmt] - custom date format to be used in validation message.
- * @returns ConstraintCb
- */
-export function calendarDateIs({min, max, fmt}) {
-    return ({value, displayName}) => {
-        if (isNil(value)) return null;
-
-        let minDate = null;
-        if (min === 'today') {
-            minDate = moment().startOf('day');
-        } else if (min) {
-            minDate = parseCalendarDate(min);
-        }
-
-        let maxDate = null;
-        if (max === 'today') {
-            maxDate = moment().startOf('day');
-        } else if (max) {
-            maxDate = parseCalendarDate(max);
-        }
-
-        const fn = dateIs({min: minDate, max: maxDate, fmt});
-        return fn({value: parseCalendarDate(value), displayName});
     };
 }

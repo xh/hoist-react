@@ -7,7 +7,7 @@
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {toCalendarDate, parseCalendarDate} from '@xh/hoist/utils/datetime';
+import {CalendarDate} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
 import {omit} from 'lodash';
 import moment from 'moment';
@@ -41,11 +41,11 @@ export class CalendarDateInput extends HoistInput {
     }
 
     toExternal(internal) {
-        return toCalendarDate(internal);
+        return new CalendarDate(internal);
     }
 
     toInternal(external) {
-        return parseCalendarDate(external);
+        return external && external.isCalendarDate ? external.date : null;
     }
 
     onChange = (date) => {

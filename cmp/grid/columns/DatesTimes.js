@@ -6,7 +6,7 @@
  */
 import {ExportFormat} from './ExportFormat';
 import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer, fmtDate} from '@xh/hoist/format';
-import {parseCalendarDate} from '@xh/hoist/utils/datetime';
+import {CalendarDate} from '@xh/hoist/utils/datetime';
 
 const defaults = {align: 'right'};
 
@@ -40,8 +40,8 @@ export const compactDateCol = {
 
 export const calendarDateCol = {
     ...defaults,
-    renderer: (v) => fmtDate(parseCalendarDate(v)),
-    exportValue: (v) => parseCalendarDate(v),
+    renderer: (v) => fmtDate(new CalendarDate(v)),
+    exportValue: (v) => new CalendarDate(v).date,
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
 };
