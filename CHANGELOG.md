@@ -24,10 +24,11 @@
   `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
   and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
   dialogs.
-  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user convenience.
+  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user
+    convenience.
   * The previous text/intent configs have been deprecated and the message methods will log a console
     warning if they are used (although it will continue to respect them to aid transitioning to the
-    new configs).  
+    new configs).
 
 ### 💥 Breaking Changes
 
@@ -42,11 +43,8 @@
 
 * The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
   `queryFn` props.
-* Applications can again use the ag-Grid pinned data APIs directly without having pinned row data
-  overwritten by the Hoist GridModel.
-* Store will no longer trigger reactions on its observable properties when `updateData` is called
-  with an empty `rawData` parameter (allows updating of summary data from a reaction on `records`
-  without causing MobX errors due to circular reactions).
+* `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
+  `enableTextInput` is `false` and a month or year is clicked (#1293).
 
 ### ⚙️ Technical
 
