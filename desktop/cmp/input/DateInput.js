@@ -21,6 +21,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import classNames from 'classnames';
+import {wait} from '@xh/hoist/promise';
 
 import './DateInput.scss';
 
@@ -106,6 +107,8 @@ export class DateInput extends HoistInput {
 
     @bindable popoverOpen = false;
 
+    inputRef = new Ref();
+    buttonRef = new Ref();
     popoverRef = new Ref();
     baseClassName = 'xh-date-input';
 
@@ -157,23 +160,24 @@ export class DateInput extends HoistInput {
                     timePrecision: props.timePrecision
                 }),
 
-                item: textInput({
-                    value: this.formatDate(this.renderValue),
-                    className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
-                    onCommit: this.onInputCommit,
-                    rightElement,
+                item: div({
+                    item: textInput({
+                        value: this.formatDate(this.renderValue),
+                        className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
+                        onCommit: this.onInputCommit,
+                        rightElement,
 
-                    disabled: props.disabled || !enableTextInput,
-                    leftIcon: props.leftIcon,
-                    tabIndex: props.tabIndex,
-                    placeholder: props.placeholder,
-                    textAlign: props.textAlign,
-
-                    ...layoutProps
+                        disabled: props.disabled || !enableTextInput,
+                        leftIcon: props.leftIcon,
+                        tabIndex: props.tabIndex,
+                        placeholder: props.placeholder,
+                        textAlign: props.textAlign,
+                        inputRef: this.inputRef.ref,
+                        ...layoutProps
+                    }),
+                    onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null
                 })
             }),
-
-            onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -198,6 +202,7 @@ export class DateInput extends HoistInput {
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
+                    elementRef: this.buttonRef.ref,
                     onClick: enablePicker && !disabled ? this.onOpenPopoverClick : null
                 })
             ]
@@ -219,31 +224,49 @@ export class DateInput extends HoistInput {
         }
     };
 
+    noteBlurred() {
+        super.noteBlurred();
+        wait(1).then(() => {
+            if (!this.hasFocus) {
+                this.setPopoverOpen(false);
+            }
+        });
+    }
+
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
         this.doCommit();
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onOpenPopoverClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onKeyDown = (ev) => {
         if (ev.key == 'Enter') {
             this.doCommit();
-        }
-        if (this.popoverOpen && ev.key == 'Escape') {
+            this.consumeEvent(ev);
+        } else if (this.popoverOpen && ev.key == 'Escape') {
             this.setPopoverOpen(false);
-        }
-        if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
+            this.consumeEvent(ev);
+        } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
             this.setPopoverOpen(true);
+            this.consumeEvent(ev);
         }
     };
 
     onPopoverClose = () => {
         this.doCommit();
+        if (this.hasFocus) {
+            const {inputRef, buttonRef} = this;
+            if (inputRef.value) {
+                inputRef.value.focus();
+            } else if (buttonRef.value) {
+                buttonRef.value.focus();
+            }
+        }
     };
 
     onInputCommit = (value) => {
@@ -306,6 +329,11 @@ export class DateInput extends HoistInput {
         // Handle 'invalid date'  as null.
         const ret = moment(dateString, this.getFormat()).toDate();
         return isNaN(ret) ? null : ret;
+    }
+
+    consumeEvent(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 
