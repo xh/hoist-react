@@ -5,8 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {startCase, isEqual as lodashIsEqual} from 'lodash';
 import {XH} from '@xh/hoist/core';
+import {LocalDate} from '@xh/hoist/utils/datetime';
+import {startCase, isEqual as lodashIsEqual} from 'lodash';
 
 /**
  * Metadata for an individual data field within a {@see Record}.
@@ -25,7 +26,7 @@ export class Field {
     /**
      * @param {Object} c - Field configuration.
      * @param {string} c.name - unique key representing this field.
-     * @param {string} [c.type] - one of ['auto', 'string', 'int', 'number', 'bool', 'json', 'pwd', 'date']
+     * @param {string} [c.type] - one of ['auto', 'string', 'int', 'number', 'bool', 'json', 'pwd', 'date', 'localDate']
      *      Default 'auto' indicates no conversion.
      * @param {string} [c.label] - label for display, defaults to capitalized name.
      * @param {*} [c.defaultValue] - value to be used for records with a null, or non-existent value.
@@ -62,6 +63,8 @@ export class Field {
                 return val.toString();
             case 'date':
                 return new Date(val);
+            case 'localDate':
+                return new LocalDate(val);
         }
 
         throw XH.exception(`Unknown field type '${type}'`);
