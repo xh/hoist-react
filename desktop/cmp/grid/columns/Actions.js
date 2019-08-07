@@ -68,6 +68,7 @@ export const actionCol = {
             if (disabled) actionButtonEl.setAttribute('disabled', 'true');
             if (!isEmpty(tooltip)) actionButtonEl.setAttribute('title', tooltip);
             if (!isEmpty(intent)) actionButtonEl.classList.add(`bp3-intent-${intent}`);
+            if (gridModel.compact) actionButtonEl.classList.add('xh-record-action-button--compact');
 
             actionButtonEl.innerHTML = convertIconToSvg(icon);
             actionButtonEl.addEventListener('click', (ev) => {

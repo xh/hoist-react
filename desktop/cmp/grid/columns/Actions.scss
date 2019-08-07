@@ -26,6 +26,12 @@ $action-col-pad-px: $action-col-pad + 0px;
   button.xh-record-action-button {
     // Keep the buttons in the action column a consistent size so we can calc the column width
     max-width: 24px;
+
+    // Tighten up buttons in compact grids to avoid clipping/overflow.
+    &.xh-record-action-button--compact {
+      padding-top: 4px;
+      min-height: unset;
+    }
   }
 }
 
