@@ -27,7 +27,7 @@ export class VersionBar extends Component {
             justifyContent: 'center',
             alignItems: 'center',
             flex: 'none',
-            className: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
+            className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
                 [XH.appName, env, version].join(' • '),
                 Icon.info({onClick: this.showAbout})

@@ -99,7 +99,7 @@ export class WebSocketModel {
             message: `Send an in-app alert to ${selectedRecord.authUser} with the text below.`,
             input: {
                 item: textInput({autoFocus: true, selectOnFocus: true}),
-                value: 'This is a test alert',
+                initialValue: 'This is a test alert',
                 rules: [required]
             }
         });
