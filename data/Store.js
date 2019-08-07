@@ -105,7 +105,7 @@ export class Store {
         this._all = this._all.loadData(rawData);
         this.rebuildFiltered();
 
-        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData) : null;
+        this.summaryRecord = rawSummaryData ? this.createSummaryRecord(rawSummaryData) : null;
 
         this.lastUpdated = Date.now();
     }
@@ -129,21 +129,26 @@ export class Store {
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
-        const oldSummary = this.summaryRecord,
-            newSummary = this.getRootSummary(rawData);
-        if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
-            rawData = newSummary.children;
-            rawSummaryData = {...newSummary, children: null};
-        }
+        let didUpdate = false;
+        if (!isEmpty(rawData)) {
+            const oldSummary = this.summaryRecord,
+                newSummary = this.getRootSummary(rawData);
+            if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
+                rawData = newSummary.children;
+                rawSummaryData = {...newSummary, children: null};
+            }
 
-        this._all = this._all.updateData(rawData);
-        this.rebuildFiltered();
+            this._all = this._all.updateData(rawData);
+            this.rebuildFiltered();
+            didUpdate = true;
+        }
 
         if (rawSummaryData) {
-            this.summaryRecord = this.createRecord(rawSummaryData);
+            this.summaryRecord = this.createSummaryRecord(rawSummaryData);
+            didUpdate = true;
         }
 
-        this.lastUpdated = Date.now();
+        if (didUpdate) this.lastUpdated = Date.now();
     }
 
     /**
@@ -253,7 +258,6 @@ export class Store {
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {return this._filter}
 
-
     /** Get the count of all records loaded into the store. */
     get allCount() {
         return this._all.count;
@@ -339,7 +343,6 @@ export class Store {
         return isString(idSpec) ? data[idSpec] : idSpec(data);
     }
 
-
     /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
@@ -374,7 +377,15 @@ export class Store {
     }
 
     getRootSummary(rawData) {
-        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ? rawData[0] : null;
+        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ?
+            rawData[0] :
+            null;
+    }
+
+    createSummaryRecord(rawData) {
+        const rec = this.createRecord(rawData);
+        rec.xhIsSummary = true;
+        return rec;
     }
 }
 

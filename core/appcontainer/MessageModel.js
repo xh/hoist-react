@@ -60,13 +60,9 @@ export class MessageModel {
 
         if (input) {
             this.input = input;
-            const {value, rules} = input;
+            const {initialValue, rules} = input;
             this.formModel = this.markManaged(new FormModel({
-                fields: [{
-                    name: 'value',
-                    initialValue: value,
-                    rules: rules
-                }]
+                fields: [{name: 'value', initialValue, rules}]
             }));
         }
 
@@ -122,6 +118,8 @@ export class MessageModel {
     // Merge handler and deprecated props into consolidated object.
     // Return null if neither text nor icon provided - button should not be displayed.
     parseButtonProps(props, handler, deprText, deprIntent) {
+        warnIf(props.onClick, 'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.');
+
         const ret = {...props, onClick: handler};
         if (deprText) ret.text = deprText;
         if (deprIntent) ret.intent = deprIntent;

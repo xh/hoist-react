@@ -343,34 +343,44 @@ export class Grid extends Component {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
+            {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, model.showSummary],
+            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
             run: ([api, records]) => {
                 if (!api) return;
 
                 runInAction(() => {
-                    withShortDebug(`Loaded ${records.length} records into ag-Grid`, () => {
-                        // If we are going to delete the majority of the rows then ag-Grid is faster
-                        // if we first clear out the existing data before setting the new data
-                        this.clearDataIfExpensiveDeletionPending(records, api);
+                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
+
+                        if (!experimental.suppressPreclearOnDataLoad) {
+                            // If we are going to delete the majority of the rows then ag-Grid is faster
+                            // if we first clear out the existing data before setting the new data
+                            this.clearDataIfExpensiveDeletionPending(records, api);
+                        }
 
                         // Load updated data into the grid.
                         api.setRowData(records);
-                        this.updatePinnedRowData();
+                        this.updatePinnedSummaryRowData();
 
-                        // Size columns to account for scrollbar show/hide due to row count change.
-                        api.sizeColumnsToFit();
 
-                        // Force grid to fully re-render cells. We are *not* relying on its default
-                        // cell-level change detection as this does not account for our current
-                        // renderer API (where renderers can reference other properties on the data
-                        // object). See https://github.com/exhi/hoist-react/issues/550.
-                        api.refreshCells({force: true});
+                        if (!experimental.suppressSizeColsOnDataLoad) {
+                            // Size columns to account for scrollbar show/hide due to row count change.
+                            api.sizeColumnsToFit();
+                        }
 
-                        // Clear out any stale expand state
-                        model.noteAgExpandStateChange();
+                        if (!experimental.suppressRefreshCellsOnDataLoad) {
+                            // Force grid to fully re-render cells. We are *not* relying on its default
+                            // cell-level change detection as this does not account for our current
+                            // renderer API (where renderers can reference other properties on the data
+                            // object). See https://github.com/exhi/hoist-react/issues/550.
+                            api.refreshCells({force: true});
+                        }
+
+                        if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                            // Clear out any stale expand state
+                            model.noteAgExpandStateChange();
+                        }
                     }, this);
 
                     // Set flag if data is hierarchical.
@@ -521,20 +531,24 @@ export class Grid extends Component {
         }
     }
 
-    updatePinnedRowData() {
+    updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary} = model,
-            {agApi} = model.agGridModel,
-            pinnedTopRecords = [],
-            pinnedBottomRecords = [];
+            {store, showSummary, agGridModel} = model,
+            {agApi} = agGridModel,
+            filterSummaryFn = (data) => !data.xhIsSummary,
+            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
+            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
         if (showSummary && store.summaryRecord) {
-            const arr = (showSummary === 'bottom') ? pinnedBottomRecords : pinnedTopRecords;
-            arr.push(store.summaryRecord);
+            if (showSummary === 'bottom') {
+                pinnedBottomRowData.push(store.summaryRecord);
+            } else {
+                pinnedTopRowData.unshift(store.summaryRecord);
+            }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRecords);
-        agApi.setPinnedBottomRowData(pinnedBottomRecords);
+        agApi.setPinnedTopRowData(pinnedTopRowData);
+        agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
 
     //------------------------

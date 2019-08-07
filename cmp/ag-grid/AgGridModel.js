@@ -398,6 +398,40 @@ export class AgGridModel {
         return id;
     }
 
+    /**
+     * Sets the data used for rows which appear pinned to the top of the grid
+     * @param {Object[]} data - the data to pin at the top of the grid
+     */
+    setPinnedTopRowData(data) {
+        this.throwIfNotReady();
+        this.agApi.setPinnedTopRowData(data);
+    }
+
+    /**
+     * @returns {Array} - row data pinned to the top of the grid
+     */
+    getPinnedTopRowData() {
+        this.throwIfNotReady();
+        return this.getPinnedRowData('Top');
+    }
+
+    /**
+     * Sets the data used for rows which appear pinned to the bottom of the grid
+     * @param {Object[]} data - the data to pin at the bottom of the grid
+     */
+    setPinnedBottomRowData(data) {
+        this.throwIfNotReady();
+        this.agApi.setPinnedBottomRowData(data);
+    }
+
+    /**
+     * @returns {Array} - row data pinned to the bottom of the grid
+     */
+    getPinnedBottomRowData() {
+        this.throwIfNotReady();
+        return this.getPinnedRowData('Bottom');
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -413,6 +447,19 @@ export class AgGridModel {
         console.debug('AgGridModel Uninitializing!');
         this.agApi = null;
         this.agColumnApi = null;
+    }
+
+    getPinnedRowData(side) {
+        const {agApi} = this,
+            count = agApi[`getPinned${side}RowCount`](),
+            ret = [];
+
+        for (let i = 0; i < count; ++i) {
+            ret.push(agApi[`getPinned${side}Row`](i).data);
+        }
+
+        return ret;
+
     }
 
     getPivotColumnId(column) {
