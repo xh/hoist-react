@@ -15,11 +15,6 @@
   * The service will monitor the socket connection with a regular heartbeat and attempt to
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
-* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
-  both overall record count and current selection count in a configurable way.
-* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
-  details.
-* `Button` component accepts an `autoFocus` prop to attempt to focus on render.
 * The `XH.message()` and related methods such as `XH.alert()` now support more flexible
   `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
   and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
@@ -29,6 +24,12 @@
   * The previous text/intent configs have been deprecated and the message methods will log a console
     warning if they are used (although it will continue to respect them to aid transitioning to the
     new configs).
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
+  details.
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
+  both overall record count and current selection count in a configurable way.
+* The `Button` component accepts an `autoFocus` prop to attempt to focus on render.
+* The `Checkbox` component accepts an `autoFocus` prop to attempt to focus on render.
 
 ### 💥 Breaking Changes
 
@@ -38,6 +39,9 @@
 * The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
   independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
   (`clipboardSpec` is an artifact from the removed `clipboard` library).
+* The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
+  initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
+  `input.value` (#1298).
 
 ### 🐞 Bug Fixes
 

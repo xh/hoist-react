@@ -60,13 +60,9 @@ export class MessageModel {
 
         if (input) {
             this.input = input;
-            const {value, rules} = input;
+            const {initialValue, rules} = input;
             this.formModel = this.markManaged(new FormModel({
-                fields: [{
-                    name: 'value',
-                    initialValue: value,
-                    rules: rules
-                }]
+                fields: [{name: 'value', initialValue, rules}]
             }));
         }
 
