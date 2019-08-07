@@ -5,5 +5,5 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './CalendarDate';
 export * from './DateTimeUtils';
+export * from './LocalDate';

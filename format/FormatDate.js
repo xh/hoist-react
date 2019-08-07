@@ -41,7 +41,7 @@ export function fmtDate(v, opts = {}) {
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
 
-    const momentValue = v.isCalendarDate ? v.moment : moment(v);
+    const momentValue = v.isLocalDate ? v.moment : moment(v);
     let ret = momentValue.format(opts.fmt);
 
     if (ret == INVALID_DATE) {

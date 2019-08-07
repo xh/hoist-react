@@ -17,7 +17,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
-import {CalendarDate} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -102,12 +102,12 @@ export class DateInput extends HoistInput {
         /**
          * The precision of time selection that accompanies the calendar.
          * If undefined, control will not show time.
-         * Ignored when valueType is calendarDate
+         * Ignored when valueType is localDate
          */
         timePrecision: PT.oneOf(['second', 'minute']),
 
         /** Type of value to publish. Defaults to 'date'. */
-        valueType: PT.oneOf(['date', 'calendarDate'])
+        valueType: PT.oneOf(['date', 'localDate'])
     };
 
     @bindable popoverOpen = false;
@@ -122,7 +122,7 @@ export class DateInput extends HoistInput {
     get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
 
     get valueType() {return withDefault(this.props.valueType, 'date')}
-    get timePrecision() {return this.valueType === 'calendarDate' ? null : this.props.timePrecision}
+    get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
 
     render() {
         const props = this.getNonLayoutProps();
@@ -218,12 +218,12 @@ export class DateInput extends HoistInput {
     }
 
     toExternal(internal) {
-        if (this.valueType === 'calendarDate') return internal ? new CalendarDate(internal) : null;
+        if (this.valueType === 'localDate') return internal ? new LocalDate(internal) : null;
         return internal;
     }
 
     toInternal(external) {
-        if (this.valueType === 'calendarDate') return external ? external.date : null;
+        if (this.valueType === 'localDate') return external ? external.date : null;
         return external;
     }
 

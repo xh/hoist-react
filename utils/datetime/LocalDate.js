@@ -12,32 +12,29 @@ import moment from 'moment';
  *
  * Includes getters for equivalents values in moment(), js date and timestamp formats.
  * Can also be formatted using any moment format string.
- *
- * Supports many of the comment manipulation / query methods provided by moment,
- * including adding / subtracting units and comparing to other CalendarDates/moments/Dates.
  */
-export class CalendarDate {
+export class LocalDate {
 
     /** @member {string} */
     value;
 
     /** @member {boolean} */
-    isCalendarDate = true;
+    isLocalDate = true;
 
     /**
      * Can be created by passing any of the following:
-     *      {CalendarDate} - Another CalendarDate instance.
+     *      {LocalDate} - Another LocalDate instance.
      *      {Date} - A JS Date instance.
      *      {moment} - A moment instance.
      *      {string} - A moment parsable string
      *      {null} - defaults to current date
      */
     constructor(date) {
-        this.value = date && date.isCalendarDate ? date.value : moment(date).format('YYYYMMDD');
+        this.value = date && date.isLocalDate ? date.value : moment(date).format('YYYYMMDD');
     }
 
     static today() {
-        return new CalendarDate();
+        return new LocalDate();
     }
 
     //--------------------
@@ -75,34 +72,34 @@ export class CalendarDate {
      * The following methods accept the following units:
      * ['year', 'quarter', 'month', 'week', 'day', 'date']
      *
-     * All methods return a new CalendarDate instance.
+     * All methods return a new LocalDate instance.
      */
     add(value, unit = 'days') {
         if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.add(value, unit);
-        return new CalendarDate(moment);
+        return new LocalDate(moment);
     }
 
     subtract(value, unit = 'days') {
         if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.subtract(value, unit);
-        return new CalendarDate(moment);
+        return new LocalDate(moment);
     }
 
     startOf(unit) {
         if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.startOf(unit);
-        return new CalendarDate(moment);
+        return new LocalDate(moment);
     }
 
     endOf(unit) {
         if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.endOf(unit);
-        return new CalendarDate(moment);
+        return new LocalDate(moment);
     }
 
     nextBusinessDay() {
@@ -133,22 +130,22 @@ export class CalendarDate {
     // Query
     //--------------------
     equals(other) {
-        other = new CalendarDate(other);
+        other = new LocalDate(other);
         return this.timestamp === other.timestamp;
     }
 
     isBefore(other) {
-        other = new CalendarDate(other);
+        other = new LocalDate(other);
         return this.timestamp < other.timestamp;
     }
 
     isAfter(other) {
-        other = new CalendarDate(other);
+        other = new LocalDate(other);
         return this.timestamp > other.timestamp;
     }
 
     diff(other) {
-        other = new CalendarDate(other);
+        other = new LocalDate(other);
         return this.timestamp - other.timestamp;
     }
 
@@ -156,7 +153,7 @@ export class CalendarDate {
     // Implementation
     //-------------------
     /**
-     * Units smaller than 'day'/'date' are irrelevant to CalendarDates,
+     * Units smaller than 'day'/'date' are irrelevant to LocalDate,
      * and calls to set/add/subtract these units should be ignored
      */
     unitIsValid(unit) {

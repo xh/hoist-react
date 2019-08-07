@@ -66,9 +66,9 @@ export function numberIs({min, max, notZero}) {
  * Validate a date against allowed min/max boundaries.
  *
  * @param {Object} c
- * @param {(Date|CalendarDate|string)} [c.min] - earliest allowed value for the date to be checked.
+ * @param {(Date|LocalDate|string)} [c.min] - earliest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param {(Date|CalendarDate|string)} [c.max] - latest allowed value for the date to be checked.
+ * @param {(Date|LocalDate|string)} [c.max] - latest allowed value for the date to be checked.
  *      Supports strings 'now' (instant rule in run) and 'today' (any time on the current day).
  * @param {string} [c.fmt] - custom date format to be used in validation message.
  * @returns ConstraintCb
@@ -76,14 +76,14 @@ export function numberIs({min, max, notZero}) {
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
-        if (value.isCalendarDate) value = value.moment;
+        if (value.isLocalDate) value = value.moment;
 
         let minMoment = null;
         if (min === 'now') {
             minMoment = moment();
         } else if (min === 'today') {
             minMoment = moment().startOf('day');
-        } else if (min && min.isCalendarDate) {
+        } else if (min && min.isLocalDate) {
             minMoment = min.moment;
         } else if (min) {
             minMoment = moment(min);
@@ -94,7 +94,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             maxMoment = moment();
         } else if (max === 'today') {
             maxMoment = moment().endOf('day');
-        } else if (max && max.isCalendarDate) {
+        } else if (max && max.isLocalDate) {
             maxMoment = max.moment;
         } else if (max) {
             maxMoment = moment(max);
