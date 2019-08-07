@@ -216,7 +216,7 @@ export class Chart extends Component {
 
     getModelConfig() {
         return {
-            ...this.model.config,
+            ...this.model.highchartsConfig,
             series: this.model.series
         };
     }

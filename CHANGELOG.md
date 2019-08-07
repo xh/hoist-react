@@ -42,6 +42,7 @@
 * The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
   initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
   `input.value` (#1298).
+* ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
 
 ### 🐞 Bug Fixes
 
