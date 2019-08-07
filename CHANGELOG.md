@@ -1,6 +1,6 @@
 # Changelog
 
-## v26.0.0-SNAPSHOT - under development
+## v26.0.0 - 2019-08-07
 
 ### 🎁 New Features
 
@@ -50,6 +50,7 @@
   `queryFn` props.
 * `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
   `enableTextInput` is `false` and a month or year is clicked (#1293).
+* Buttons within a grid `actionCol` now render properly in compact mode, without clipping/overflow.
 
 ### ⚙️ Technical
 
@@ -65,6 +66,8 @@
 * ag-grid `21.0.1 -> 21.1.1`
 * store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.0)
 
 ## v25.2.0 - 2019-07-25
 
