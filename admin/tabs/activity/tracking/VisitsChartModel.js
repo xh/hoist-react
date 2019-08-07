@@ -4,19 +4,20 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import moment from 'moment';
+
 import {forOwn} from 'lodash';
 import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {observable, action, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel
 @LoadSupport
 export class VisitsChartModel {
 
-    @observable startDate = moment().subtract(3, 'months').toDate();
-    @observable endDate = new Date();
+    @observable startDate = new LocalDate().subtract(3, 'months');
+    @observable endDate = new LocalDate();
     @observable username = '';
     
     @managed
@@ -86,8 +87,8 @@ export class VisitsChartModel {
         const {endDate, startDate, username} = this;
 
         return {
-            startDate: this.isValidDate(startDate) ? fmtDate(startDate, 'YYYYMMDD') : null,
-            endDate: this.isValidDate(endDate) ? fmtDate(endDate, 'YYYYMMDD') : null,
+            startDate: this.isValidDate(startDate) ? startDate.value : null,
+            endDate: this.isValidDate(endDate) ? endDate.value : null,
             username
         };
     }
@@ -100,7 +101,7 @@ export class VisitsChartModel {
         const data = [];
 
         forOwn(visits, (k, v) => {
-            data.push([moment(v).valueOf(), k]);
+            data.push([new LocalDate(v).timestamp, k]);
         });
 
         return [{data}];
