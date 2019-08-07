@@ -23,8 +23,10 @@ export class Record {
     store;
     /** @member {Object} */
     raw;
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid impl. */
     xhTreePath;
+    /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
+    xhIsSummary;
 
     /** @returns {Record} */
     get parent() {
