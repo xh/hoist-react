@@ -102,6 +102,7 @@ export class DateInput extends HoistInput {
         /**
          * The precision of time selection that accompanies the calendar.
          * If undefined, control will not show time.
+         * Ignored when valueType is calendarDate
          */
         timePrecision: PT.oneOf(['second', 'minute']),
 
@@ -217,11 +218,13 @@ export class DateInput extends HoistInput {
     }
 
     toExternal(internal) {
-        return this.valueType === 'calendarDate' ? new CalendarDate(internal) : internal;
+        if (this.valueType === 'calendarDate') return internal ? new CalendarDate(internal) : null;
+        return internal;
     }
 
     toInternal(external) {
-        return this.valueType === 'calendarDate' ? external.date : external;
+        if (this.valueType === 'calendarDate') return external ? external.date : null;
+        return external;
     }
 
     /**
