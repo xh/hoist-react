@@ -343,7 +343,7 @@ export class Grid extends Component {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
+            {agGridModel, store, experimental} = model;
 
         return {
             track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
@@ -352,22 +352,31 @@ export class Grid extends Component {
 
                 runInAction(() => {
                     withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
-                        // If we are going to delete the majority of the rows then ag-Grid is faster
-                        // if we first clear out the existing data before setting the new data
-                        this.clearDataIfExpensiveDeletionPending(records, api);
+
+                        if (!experimental.suppressPreclearOnDataLoad) {
+                            // If we are going to delete the majority of the rows then ag-Grid is faster
+                            // if we first clear out the existing data before setting the new data
+                            this.clearDataIfExpensiveDeletionPending(records, api);
+                        }
 
                         // Load updated data into the grid.
                         api.setRowData(records);
                         this.updatePinnedSummaryRowData();
 
-                        // Size columns to account for scrollbar show/hide due to row count change.
-                        api.sizeColumnsToFit();
 
-                        // Force grid to fully re-render cells. We are *not* relying on its default
-                        // cell-level change detection as this does not account for our current
-                        // renderer API (where renderers can reference other properties on the data
-                        // object). See https://github.com/exhi/hoist-react/issues/550.
-                        api.refreshCells({force: true});
+                        if (!experimental.suppressSizeColsOnDataLoad) {
+                            // Size columns to account for scrollbar show/hide due to row count change.
+                            api.sizeColumnsToFit();
+                        }
+
+                        if (!experimental.suppressRefreshCellsOnDataLoad) {
+                            // Force grid to fully re-render cells. We are *not* relying on its default
+                            // cell-level change detection as this does not account for our current
+                            // renderer API (where renderers can reference other properties on the data
+                            // object). See https://github.com/exhi/hoist-react/issues/550.
+                            api.refreshCells({force: true});
+                        }
+
                     }, this);
 
                     // Set flag if data is hierarchical.
