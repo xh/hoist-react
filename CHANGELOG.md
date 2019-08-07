@@ -1,6 +1,6 @@
 # Changelog
 
-## v26.0.0 - 2019-08-07
+## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
 
@@ -62,12 +62,13 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `3.17 -> 3.18`
+* @blueprintjs/datetime `3.11 -> 3.12`
 * @fortawesome/fontawesome `5.9 -> 5.10`
 * ag-grid `21.0.1 -> 21.1.1`
 * store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.0)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.1)
 
 ## v25.2.0 - 2019-07-25
 
