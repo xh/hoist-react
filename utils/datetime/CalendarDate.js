@@ -33,7 +33,11 @@ export class CalendarDate {
      *      {null} - defaults to current date
      */
     constructor(date) {
-        this.setValue(date instanceof CalendarDate ? date.value : date);
+        this.value = date && date.isCalendarDate ? date.value : moment(date).format('YYYYMMDD');
+    }
+
+    static today() {
+        return new CalendarDate();
     }
 
     //--------------------
@@ -60,73 +64,92 @@ export class CalendarDate {
         return this.value;
     }
 
+    dayOfWeek() {
+        return this.format('dddd');
+    }
+
     //--------------------
     // Manipulate
     //--------------------
-    setValue(date) {
-        this.value = moment(date).format('YYYYMMDD');
-    }
-
-    today() {
-        this.setValue();
-    }
-
-    set(unit, value) {
-        if (!this.unitIsValid(unit)) return;
-        const {moment} = this;
-        moment.set(unit, value);
-        this.setValue(moment);
-    }
-
+    /**
+     * The following methods accept the following units:
+     * ['year', 'quarter', 'month', 'week', 'day', 'date']
+     *
+     * All methods return a new CalendarDate instance.
+     */
     add(value, unit = 'days') {
-        if (!this.unitIsValid(unit)) return;
+        if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.add(value, unit);
-        this.setValue(moment);
+        return new CalendarDate(moment);
     }
 
     subtract(value, unit = 'days') {
-        if (!this.unitIsValid(unit)) return;
+        if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.subtract(value, unit);
-        this.setValue(moment);
+        return new CalendarDate(moment);
     }
 
     startOf(unit) {
-        if (!this.unitIsValid(unit)) return;
+        if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.startOf(unit);
-        this.setValue(moment);
+        return new CalendarDate(moment);
     }
 
     endOf(unit) {
-        if (!this.unitIsValid(unit)) return;
+        if (!this.unitIsValid(unit)) return this;
         const {moment} = this;
         moment.endOf(unit);
-        this.setValue(moment);
+        return new CalendarDate(moment);
+    }
+
+    nextBusinessDay() {
+        const {moment} = this;
+        switch (moment.day()) {
+            case 5:
+                return this.add(3, 'days'); // Friday
+            case 6:
+                return this.add(2, 'days'); // Saturday
+            default:
+                return this.add(1, 'days');
+        }
+    }
+
+    prevBusinessDay() {
+        const {moment} = this;
+        switch (moment.day()) {
+            case 1:
+                return this.subtract(3, 'days'); // Monday
+            case 7:
+                return this.subtract(2, 'days'); // Sunday
+            default:
+                return this.subtract(1, 'days');
+        }
     }
 
     //--------------------
     // Query
     //--------------------
-    get(unit) {
-        return this.moment.get(unit);
+    equals(other) {
+        other = new CalendarDate(other);
+        return this.timestamp === other.timestamp;
     }
 
-    diff(other, ...args) {
-        return this.moment.diff(this.makeMomentSafe(other), ...args);
+    isBefore(other) {
+        other = new CalendarDate(other);
+        return this.timestamp < other.timestamp;
     }
 
-    isBefore(other, ...args) {
-        return this.moment.isBefore(this.makeMomentSafe(other), ...args);
+    isAfter(other) {
+        other = new CalendarDate(other);
+        return this.timestamp > other.timestamp;
     }
 
-    isSame(other, ...args) {
-        return this.moment.isSame(this.makeMomentSafe(other), ...args);
-    }
-
-    isAfter(other, ...args) {
-        return this.moment.isAfter(this.makeMomentSafe(other), ...args);
+    diff(other) {
+        other = new CalendarDate(other);
+        return this.timestamp - other.timestamp;
     }
 
     //-------------------
@@ -139,15 +162,6 @@ export class CalendarDate {
     unitIsValid(unit) {
         unit = moment.normalizeUnits(unit);
         return ['year', 'quarter', 'month', 'week', 'day', 'date'].includes(unit);
-    }
-
-    /**
-     * When doing comparisons between CalendarDates, we want to
-     * extract the moment from the other CalendarDate. This allows to compares
-     * CalendarDates to moment instances or JS Date instances.
-     */
-    makeMomentSafe(other) {
-        return other.isCalendarDate ? other.moment : other;
     }
 
 }
