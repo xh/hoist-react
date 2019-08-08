@@ -1,6 +1,6 @@
 # Changelog
 
-## v26.0.0-SNAPSHOT - under development
+## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
 
@@ -42,6 +42,7 @@
 * The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
   initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
   `input.value` (#1298).
+* ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
 
 ### 🐞 Bug Fixes
 
@@ -49,6 +50,7 @@
   `queryFn` props.
 * `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
   `enableTextInput` is `false` and a month or year is clicked (#1293).
+* Buttons within a grid `actionCol` now render properly in compact mode, without clipping/overflow.
 
 ### ⚙️ Technical
 
@@ -60,10 +62,13 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `3.17 -> 3.18`
+* @blueprintjs/datetime `3.11 -> 3.12`
 * @fortawesome/fontawesome `5.9 -> 5.10`
 * ag-grid `21.0.1 -> 21.1.1`
 * store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.1)
 
 ## v25.2.0 - 2019-07-25
 

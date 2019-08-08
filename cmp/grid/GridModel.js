@@ -179,6 +179,7 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
+        experimental =  {},
         ...rest
     }) {
         this.treeMode = treeMode;
@@ -220,6 +221,7 @@ export class GridModel {
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
+        this.experimental = experimental;
     }
 
     /**
