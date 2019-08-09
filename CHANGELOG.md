@@ -1,5 +1,13 @@
 # Changelog
 
+## v27.0.0-SNAPSHOT - Under development
+
+* New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
+  TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
+  which syncs selection and expand / collapse state.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
+
 ## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
