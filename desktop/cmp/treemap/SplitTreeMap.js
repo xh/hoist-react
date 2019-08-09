@@ -49,21 +49,29 @@ export class SplitTreeMap extends Component {
         const {model} = this,
             {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
             pTotal = primaryMapModel.total,
-            sTotal = secondaryMapModel.total,
-            flex = pTotal > 0 && sTotal > 0 ? (pTotal / sTotal) : 1;
+            sTotal = secondaryMapModel.total;
+
+        let pFlex = 1, sFlex = 1;
+        if (pTotal && sTotal) {
+            pFlex = pTotal / sTotal;
+        } else if (pTotal && !sTotal) {
+            sFlex = 0;
+        } else if (!pTotal && sTotal) {
+            pFlex = 0;
+        }
 
         return [
             panel({
                 title: mapTitleFn ? mapTitleFn('primary', primaryMapModel) : undefined,
                 compactHeader: true,
                 item: treeMap({model: primaryMapModel}),
-                flex
+                flex: pFlex
             }),
             panel({
                 title: mapTitleFn ? mapTitleFn('secondary', secondaryMapModel) : undefined,
                 compactHeader: true,
                 item: treeMap({model: secondaryMapModel}),
-                flex: 1
+                flex: sFlex
             })
         ];
     }

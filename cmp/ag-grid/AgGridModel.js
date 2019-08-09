@@ -455,7 +455,8 @@ export class AgGridModel {
             ret = [];
 
         for (let i = 0; i < count; ++i) {
-            ret.push(agApi[`getPinned${side}Row`](i).data);
+            const data = agApi[`getPinned${side}Row`](i).data;
+            if (data) ret.push(data);
         }
 
         return ret;
