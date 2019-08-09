@@ -57,12 +57,16 @@ export class LocalDate {
         return this.moment.format(...args);
     }
 
+    dayOfWeek() {
+        return this.format('dddd');
+    }
+
     toString() {
         return this.value;
     }
 
-    dayOfWeek() {
-        return this.format('dddd');
+    toJSON() {
+        return this.value;
     }
 
     //--------------------
@@ -130,22 +134,22 @@ export class LocalDate {
     // Query
     //--------------------
     equals(other) {
-        other = new LocalDate(other);
+        other = other.isLocalDate ? other : new LocalDate(other);
         return this.timestamp === other.timestamp;
     }
 
     isBefore(other) {
-        other = new LocalDate(other);
+        other = other.isLocalDate ? other : new LocalDate(other);
         return this.timestamp < other.timestamp;
     }
 
     isAfter(other) {
-        other = new LocalDate(other);
+        other = other.isLocalDate ? other : new LocalDate(other);
         return this.timestamp > other.timestamp;
     }
 
     diff(other) {
-        other = new LocalDate(other);
+        other = other.isLocalDate ? other : new LocalDate(other);
         return this.timestamp - other.timestamp;
     }
 
