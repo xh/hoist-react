@@ -56,7 +56,7 @@ export class SplitTreeMap extends Component {
             pFlex = pTotal / sTotal;
         } else if (pTotal && !sTotal) {
             sFlex = 0;
-        } else if(!pTotal && sTotal) {
+        } else if (!pTotal && sTotal) {
             pFlex = 0;
         }
 
