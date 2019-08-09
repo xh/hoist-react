@@ -48,6 +48,7 @@ export class Message extends Component {
                 ),
                 toolbar(this.renderButtons())
             ],
+            onClose: () => {if (model.cancelProps) model.close();},
             ...this.props
         });
     }
