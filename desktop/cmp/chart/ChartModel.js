@@ -8,7 +8,6 @@ import {HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
-
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
@@ -29,4 +28,5 @@ export class ChartModel {
         this.highchartsConfig = highchartsConfig;
         this.series = series;
     }
+
 }
