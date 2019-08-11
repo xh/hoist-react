@@ -341,33 +341,46 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    dataReaction() {
+    dataLoadReaction() {
         const {model} = this,
             {agGridModel, store} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
-            run: ([api, records]) => {
+            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated],
+            run: ([api, showSummary, lastLoaded, lastUpdated]) => {
+
                 if (!api) return;
 
+                const isUpdate = lastUpdated > lastLoaded;
+
+                const {records} = agGridModel;
                 runInAction(() => {
-                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
-                        // If we are going to delete the majority of the rows then ag-Grid is faster
-                        // if we first clear out the existing data before setting the new data
-                        this.clearDataIfExpensiveDeletionPending(records, api);
+                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataLoadReaction()`, () => {
+
+                        if (!isUpdate) {
+                            // If we are going to delete the majority of the rows then ag-Grid is faster
+                            // if we first clear out the existing data before setting the new data
+                            this.clearDataIfExpensiveDeletionPending(records, api);
+                        }
 
                         // Load updated data into the grid.
                         api.setRowData(records);
                         this.updatePinnedSummaryRowData();
 
-                        // Size columns to account for scrollbar show/hide due to row count change.
-                        api.sizeColumnsToFit();
+                        // If row count changing and was or will be small, may need
+                        // to force col resizing to update scrollbar.
+                        const newLength = records.length,
+                            oldLength = api.getModel().getVirtualRowCount();
+                        if (newLength != oldLength && (oldLength < 100  || newLength < 100)) {
+                            api.sizeColumnsToFit();
+                        }
 
                         // Force grid to fully re-render cells. We are *not* relying on its default
                         // cell-level change detection as this does not account for our current
                         // renderer API (where renderers can reference other properties on the data
                         // object). See https://github.com/exhi/hoist-react/issues/550.
                         api.refreshCells({force: true});
+
                     }, this);
 
                     // Set flag if data is hierarchical.
@@ -379,6 +392,7 @@ export class Grid extends Component {
             }
         };
     }
+
 
     selectionReaction() {
         const {model} = this,

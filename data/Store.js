@@ -25,11 +25,18 @@ export class Store {
     /** @member {function} */
     processRawData;
 
+
+    /**
+     * @member {number} - timestamp (ms) of the last time this store's data loaded
+     */
+    @observable lastLoaded;
+
     /**
      * @member {number} - timestamp (ms) of the last time this store's data was changed via
-     *      loadData() or as marked by noteDataUpdated().
+     *      updatedData() or noteDataUpdated().
      */
     @observable lastUpdated;
+
 
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
@@ -67,8 +74,9 @@ export class Store {
         this.setFilter(filter);
         this.idSpec = idSpec;
         this.processRawData = processRawData;
-        this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
+
+        this.lastUpdated = this.lastLoaded =  Date.now();
     }
 
     /**
@@ -107,7 +115,7 @@ export class Store {
 
         this.summaryRecord = rawSummaryData ? this.createSummaryRecord(rawSummaryData) : null;
 
-        this.lastUpdated = Date.now();
+        this.lastUpdated = this.lastLoaded = Date.now();
     }
 
     /**
