@@ -192,14 +192,18 @@ export class RecordSet {
         const newRecordsMap = new Map(records);
         newRecords.forEach(rec => newRecordsMap.set(rec.id, rec));
 
-        // 2) Adjust parents for all new records
+        // 3) Adjust parents for all new records
         newRecords.forEach(rec => {
             const existingRec = records.get(rec.id),
-                parent = existingRec.parentId ? newRecordsMap.get(rec.parentId) : null;
+                parent = existingRec.parentId ? newRecordsMap.get(existingRec.parentId) : null;
             if (parent) {
-                rec.setParent(parent);
+                rec.parent = parent;
             }
         });
+
+        console.log(newRecordsMap);
+
+        return new RecordSet(store, newRecordsMap);
     }
 
     addData(rawData, parentId) {
