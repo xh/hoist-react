@@ -156,17 +156,20 @@ export class Store {
      *
      * @param updates
      */
+    @action
     updateRecords(updates) {
-        let recordUpdates = null,
-            summaryUpdate = null,
+        console.log('Updating records in Store');
+        let summaryUpdate = null,
             didUpdate = false;
 
         if (this._loadRootAsSummary && this.summaryRecord) {
-            [recordUpdates, summaryUpdate] = partition(updates, (record) => record.id == this.summaryRecord.id);
+            [updates, [summaryUpdate]] = partition(updates, (record) => record.id === this.summaryRecord.id);
+            console.log('recordUpdates: ', updates);
+            console.log('summaryUpdate: ', summaryUpdate);
         }
         
-        if (!isEmpty(summaryUpdate)) {
-            this._all = this._all.updateRecords(recordUpdates);
+        if (!isEmpty(updates)) {
+            this._all = this._all.updateRecords(updates);
             this.rebuildFiltered();
             didUpdate = true;
         }
