@@ -39,7 +39,9 @@
     outline-style: solid;
     outline-width: 1px;
     outline-offset: -1px;
-    outline-color: var(--xh-bg);
+    // Using transparent borders means they 'double' up, leading to
+    // slightly more pronounced borders around parent groups.
+    outline-color: rgba(0, 0, 0, 0.15);
 
     &.highcharts-point-select {
       outline-width: 3px;
