@@ -8,7 +8,7 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
+import {partition, isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Record} from './Record';
 import {StoreFilter} from './StoreFilter';
@@ -150,6 +150,35 @@ export class Store {
 
         if (didUpdate) this.lastUpdated = Date.now();
     }
+
+    /**
+     * Update changes to record data, without adjusting tree structure.
+     *
+     * @param updates
+     */
+    updateRecords(updates) {
+        let recordUpdates = null,
+            summaryUpdate = null,
+            didUpdate = false;
+
+        if (this._loadRootAsSummary && this.summaryRecord) {
+            [recordUpdates, summaryUpdate] = partition(updates, (record) => record.id == this.summaryRecord.id);
+        }
+        
+        if (!isEmpty(summaryUpdate)) {
+            this._all = this._all.updateRecords(recordUpdates);
+            this.rebuildFiltered();
+            didUpdate = true;
+        }
+
+        if (summaryUpdate) {
+            this.summaryRecord = this.createSummaryRecord(summaryUpdate);
+            didUpdate = true;
+        }
+
+        if (didUpdate) this.lastUpdated = Date.now();
+    }
+
 
     /**
      * Add data to the store.

@@ -177,6 +177,31 @@ export class RecordSet {
         return new RecordSet(store, newRecords);
     }
 
+
+    updateRecords(updates) {
+        const {store, records} = this;
+
+        // 1) Create new records
+        const allNewRecords = updates.map(update => store.createRecord(update)),
+            newRecords = allNewRecords.filter(rec => records.get(rec.id));
+        if (allNewRecords.length != newRecords.length) {
+            console.warn(`Skipped ${allNewRecords.length - newRecords.length} unknown records in updateRecords()`);
+        }
+
+        // 2) Overlay on existing
+        const newRecordsMap = new Map(records);
+        newRecords.forEach(rec => newRecordsMap.set(rec.id, rec));
+
+        // 2) Adjust parents for all new records
+        newRecords.forEach(rec => {
+            const existingRec = records.get(rec.id),
+                parent = existingRec.parentId ? newRecordsMap.get(rec.parentId) : null;
+            if (parent) {
+                rec.setParent(parent);
+            }
+        });
+    }
+
     addData(rawData, parentId) {
         const {records} = this,
             parent = records.get(parentId),
@@ -199,7 +224,6 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
-
     createRecords(rawData, parent = null) {
         const ret = new Map();
         rawData.forEach(raw => this.buildRecords(raw, ret, parent));
