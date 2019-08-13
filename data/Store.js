@@ -158,14 +158,11 @@ export class Store {
      */
     @action
     updateRecords(updates) {
-        console.log('Updating records in Store');
         let summaryUpdate = null,
             didUpdate = false;
 
         if (this._loadRootAsSummary && this.summaryRecord) {
-            [updates, [summaryUpdate]] = partition(updates, (record) => record.id === this.summaryRecord.id);
-            console.log('recordUpdates: ', updates);
-            console.log('summaryUpdate: ', summaryUpdate);
+            [updates, [summaryUpdate]] = partition(updates, (record) => record.id !== this.summaryRecord.id);
         }
         
         if (!isEmpty(updates)) {
