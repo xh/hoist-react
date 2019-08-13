@@ -63,7 +63,7 @@ export function numberIs({min, max, notZero}) {
 }
 
 /**
- * Validate a date against allowed min/max boundaries.
+ * Validate a date or LocalDate against allowed min/max boundaries.
  *
  * @param {Object} c
  * @param {(Date|LocalDate|string)} [c.min] - earliest allowed value for the date to be checked.

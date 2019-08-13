@@ -40,8 +40,8 @@ export const compactDateCol = {
 
 export const localDateCol = {
     ...defaults,
-    renderer: (v) => fmtDate(new LocalDate(v)),
-    exportValue: (v) => new LocalDate(v).date,
+    renderer: (v) => fmtDate(LocalDate.from(v)),
+    exportValue: (v) => LocalDate.from(v).date,
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
 };

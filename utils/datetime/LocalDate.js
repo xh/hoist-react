@@ -6,11 +6,17 @@
  */
 
 import moment from 'moment';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * A Date representation that does not contain time information.
+ * A Date representation that does not contain time information.  Useful for business day,
+ * or calendar day data where time and time zone should be explicitly ignored.  Client-side
+ * equivalent of java LocalDate class.
  *
- * Includes getters for equivalents values in moment(), js date and timestamp formats.
+ * This class is immutable.  All Methods for manipulation return a new LocalDate instance.
+ * Unit accepted by the manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date']
+ *
+ * Includes getters for equivalents values in moment, js date and timestamp formats.
  * Can also be formatted using any moment format string.
  */
 export class LocalDate {
@@ -19,22 +25,32 @@ export class LocalDate {
     value;
 
     /** @member {boolean} */
-    isLocalDate = true;
+    get isLocalDate() {return true}
 
     /**
-     * Can be created by passing any of the following:
+     * Get an instance of this class.  Instance can be created by passing any of the following:
      *      {LocalDate} - Another LocalDate instance.
      *      {Date} - A JS Date instance.
      *      {moment} - A moment instance.
      *      {string} - A moment parsable string
-     *      {null} - defaults to current date
+     *      {undefined} - defaults to current date
      */
-    constructor(date) {
-        this.value = date && date.isLocalDate ? date.value : moment(date).format('YYYYMMDD');
+    static from(val) {
+        return val && val.isLocalDate ? val : new LocalDate(moment(val).format('YYYYMMDD'));
+    }
+
+    /**
+     *  Get an instance of this class from  a string in 'yyyyMMDD' format.
+     *
+     *  Most efficient way to create an instance of the class, and typical way to create it from
+     *  serialized server-side data.
+     */
+    static fromIsoDate(val) {
+        this.value = val;
     }
 
     static today() {
-        return new LocalDate();
+        return this.from();
     }
 
     //--------------------
@@ -72,61 +88,55 @@ export class LocalDate {
     //--------------------
     // Manipulate
     //--------------------
-    /**
-     * The following methods accept the following units:
-     * ['year', 'quarter', 'month', 'week', 'day', 'date']
-     *
-     * All methods return a new LocalDate instance.
-     */
     add(value, unit = 'days') {
-        if (!this.unitIsValid(unit)) return this;
+        this.ensureUnitValid(unit);
         const {moment} = this;
         moment.add(value, unit);
-        return new LocalDate(moment);
+        return LocalDate.from(moment);
     }
 
     subtract(value, unit = 'days') {
-        if (!this.unitIsValid(unit)) return this;
+        this.ensureUnitValid(unit);
         const {moment} = this;
         moment.subtract(value, unit);
-        return new LocalDate(moment);
+        return LocalDate.from(moment);
     }
 
     startOf(unit) {
-        if (!this.unitIsValid(unit)) return this;
+        this.ensureUnitValid(unit);
         const {moment} = this;
         moment.startOf(unit);
-        return new LocalDate(moment);
+        return LocalDate.from(moment);
     }
 
     endOf(unit) {
-        if (!this.unitIsValid(unit)) return this;
+        this.ensureUnitValid(unit);
         const {moment} = this;
         moment.endOf(unit);
-        return new LocalDate(moment);
+        return LocalDate.from(moment);
+    }
+
+    nextDay() {
+        return this.add(1);
+    }
+
+    previousDay() {
+        return this.subtract(1);
     }
 
     nextBusinessDay() {
-        const {moment} = this;
-        switch (moment.day()) {
-            case 5:
-                return this.add(3, 'days'); // Friday
-            case 6:
-                return this.add(2, 'days'); // Saturday
-            default:
-                return this.add(1, 'days');
+        switch (this.moment.day()) {
+            case 5:     return this.add(3);
+            case 6:     return this.add(2);
+            default:    return this.add(1);
         }
     }
 
-    prevBusinessDay() {
-        const {moment} = this;
-        switch (moment.day()) {
-            case 1:
-                return this.subtract(3, 'days'); // Monday
-            case 7:
-                return this.subtract(2, 'days'); // Sunday
-            default:
-                return this.subtract(1, 'days');
+    previousBusinessDay() {
+        switch (this.moment.day()) {
+            case 1:     return this.subtract(3);
+            case 7:     return this.subtract(2);
+            default:    return this.subtract(1);
         }
     }
 
@@ -134,35 +144,42 @@ export class LocalDate {
     // Query
     //--------------------
     equals(other) {
-        other = other.isLocalDate ? other : new LocalDate(other);
-        return this.timestamp === other.timestamp;
+        return this.compareTo(other) === 0;
     }
 
     isBefore(other) {
-        other = other.isLocalDate ? other : new LocalDate(other);
-        return this.timestamp < other.timestamp;
+        return this.compareTo(other) < 0;
     }
 
     isAfter(other) {
-        other = other.isLocalDate ? other : new LocalDate(other);
-        return this.timestamp > other.timestamp;
+        return this.compareTo(other) > 0;
     }
 
-    diff(other) {
-        other = other.isLocalDate ? other : new LocalDate(other);
-        return this.timestamp - other.timestamp;
+    compareTo(other) {
+        other = LocalDate.from(other);
+        return this.value.localeCompare(other.value);
+    }
+
+
+    diff(other, unit = 'days') {
+        this.ensureUnitValid(unit);
+        other = LocalDate.from(other);
+        return this.moment.diff(other.moment, unit);
     }
 
     //-------------------
     // Implementation
     //-------------------
-    /**
-     * Units smaller than 'day'/'date' are irrelevant to LocalDate,
-     * and calls to set/add/subtract these units should be ignored
-     */
-    unitIsValid(unit) {
-        unit = moment.normalizeUnits(unit);
-        return ['year', 'quarter', 'month', 'week', 'day', 'date'].includes(unit);
+    constructor(str) {
+        this.value = str;
     }
 
+    ensureUnitValid(unit) {
+        // Units smaller than 'day'/'date' are irrelevant to LocalDate,
+        unit = moment.normalizeUnits(unit);
+        throwIf(
+            !['year', 'quarter', 'month', 'week', 'day', 'date'].includes(unit),
+            `Invalid unit for LocalDate: ${unit}`
+        );
+    }
 }

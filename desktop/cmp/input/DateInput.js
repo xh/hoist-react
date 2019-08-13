@@ -164,8 +164,8 @@ export class DateInput extends HoistInput {
                     minDate: this.minDate,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-                    timePickerProps: this.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined,
-                    timePrecision: this.timePrecision
+                    timePrecision: this.timePrecision,
+                    timePickerProps: this.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined
                 }),
 
                 item: div({
@@ -218,7 +218,7 @@ export class DateInput extends HoistInput {
     }
 
     toExternal(internal) {
-        if (this.valueType === 'localDate') return internal ? new LocalDate(internal) : null;
+        if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
     }
 

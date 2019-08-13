@@ -64,7 +64,7 @@ export class Field {
             case 'date':
                 return new Date(val);
             case 'localDate':
-                return new LocalDate(val);
+                return LocalDate.from(val);
         }
 
         throw XH.exception(`Unknown field type '${type}'`);

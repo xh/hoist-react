@@ -16,8 +16,8 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 @LoadSupport
 export class VisitsChartModel {
 
-    @observable startDate = new LocalDate().subtract(3, 'months');
-    @observable endDate = new LocalDate();
+    @observable.ref startDate = LocalDate.today().subtract(3, 'months');
+    @observable.ref endDate = LocalDate.today();
     @observable username = '';
     
     @managed
@@ -87,21 +87,17 @@ export class VisitsChartModel {
         const {endDate, startDate, username} = this;
 
         return {
-            startDate: this.isValidDate(startDate) ? startDate.value : null,
-            endDate: this.isValidDate(endDate) ? endDate.value : null,
+            startDate: startDate.value,
+            endDate: endDate.value,
             username
         };
     }
-
-    isValidDate(date) {
-        return date && date.toString() !== 'Invalid Date';
-    }
-
+    
     getSeriesData(visits) {
         const data = [];
 
         forOwn(visits, (k, v) => {
-            data.push([new LocalDate(v).timestamp, k]);
+            data.push([LocalDate.from(v).timestamp, k]);
         });
 
         return [{data}];

@@ -24,7 +24,7 @@ import {isFunction, isPlainObject, isNil, omitBy} from 'lodash';
  *
  * Note that the convenience methods 'fetchJson', 'postJson', 'putJson' all accept the same options
  * as the main entry point 'fetch', as they delegate to fetch after setting additional defaults.
- */
+ */                   
 @HoistService
 export class FetchService {
 

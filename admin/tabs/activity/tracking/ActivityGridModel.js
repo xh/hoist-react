@@ -17,8 +17,8 @@ import {LocalDate, DAYS} from '@xh/hoist/utils/datetime';
 @LoadSupport
 export class ActivityGridModel {
 
-    @observable startDate = new LocalDate().subtract(7);
-    @observable endDate = new LocalDate().add(1);  // https://github.com/exhi/hoist-react/issues/400
+    @observable.ref startDate = LocalDate.today().subtract(7);
+    @observable.ref endDate = LocalDate.today().add(1);  // https://github.com/exhi/hoist-react/issues/400
     @observable username = '';
     @observable msg = '';
     @observable category = '';
@@ -75,10 +75,10 @@ export class ActivityGridModel {
     }
 
     adjustDates(dir, toToday = false) {
-        const today = new LocalDate(),
+        const today = LocalDate.today(),
             start = this.startDate,
             end = this.endDate,
-            diff = end.diff(start) / DAYS,
+            diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
@@ -96,13 +96,13 @@ export class ActivityGridModel {
 
     @action
     setStartDate(date) {
-        if (!this.isValidDate(date) || date.equals(this.startDate)) return;
+        if (date.equals(this.startDate)) return;
         this.startDate = date;
     }
 
     @action
     setEndDate(date) {
-        if (!this.isValidDate(date) || date.equals(this.endDate)) return;
+        if (date.equals(this.endDate)) return;
         this.endDate = date;
     }
 
@@ -154,9 +154,5 @@ export class ActivityGridModel {
             device: this.device,
             browser: this.browser
         };
-    }
-
-    isValidDate(date) {
-        return date && date.toString() !== 'Invalid Date';
     }
 }
