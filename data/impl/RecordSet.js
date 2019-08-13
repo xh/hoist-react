@@ -201,8 +201,6 @@ export class RecordSet {
             }
         });
 
-        console.log(newRecordsMap);
-
         return new RecordSet(store, newRecordsMap);
     }
 
