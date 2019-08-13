@@ -11,7 +11,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {LocalDate, DAYS} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel
 @LoadSupport

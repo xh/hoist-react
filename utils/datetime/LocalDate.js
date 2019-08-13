@@ -13,7 +13,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * or calendar day data where time and time zone should be explicitly ignored.  Client-side
  * equivalent of java LocalDate class.
  *
- * This class is immutable.  All Methods for manipulation return a new LocalDate instance.
+ * This class is immutable.  All methods for manipulation return a new LocalDate instance.
  * Unit accepted by the manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date']
  *
  * Includes getters for equivalents values in moment, js date and timestamp formats.
@@ -36,7 +36,7 @@ export class LocalDate {
      *      {undefined} - defaults to current date
      */
     static from(val) {
-        return val && val.isLocalDate ? val : new LocalDate(moment(val).format('YYYYMMDD'));
+        return val && val.isLocalDate ? val : this.fromIsoDate(moment(val).format('YYYYMMDD'));
     }
 
     /**
@@ -46,7 +46,7 @@ export class LocalDate {
      *  serialized server-side data.
      */
     static fromIsoDate(val) {
-        this.value = val;
+        return new LocalDate(val);
     }
 
     static today() {
