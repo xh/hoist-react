@@ -34,7 +34,6 @@ import {ExceptionHandler} from './ExceptionHandler';
 
 import '../styles/XH.scss';
 
-
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
@@ -443,7 +442,10 @@ class XHClass {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                if (it && it.destroy) it.destroy();
+                if (it && it.destroy) {
+                    console.debug('[XH] Destroying', it);
+                    it.destroy();
+                }
             });
         }
     }

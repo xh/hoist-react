@@ -9,7 +9,7 @@ import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 
 /**
- * Mixin to support "managed" instances and propeties
+ * Mixin to support "managed" instances and properties
  *
  * Managed instances are assumed to hold objects that are created by the referencing object and
  * should be destroyed when the referencing object is destroyed.  See markManaged()
@@ -53,7 +53,7 @@ export function ManagedSupport(C) {
  * via {@see ManagedSupport} when the referencing object is destroyed.
  */
 export function managed(target, property, descriptor) {
-    target._xhManagedProperties = target._xhManaged || [];
+    target._xhManagedProperties = target._xhManagedProperties || [];
     target._xhManagedProperties.push(property);
     return descriptor;
 }
