@@ -372,7 +372,7 @@ export class TreeMapModel {
     };
 
     defaultOnDoubleClick = (record) => {
-        if (!this.gridModel || !this.gridModel.treeMode || !record.raw.children) return;
+        if (!this.gridModel || !this.gridModel.treeMode || !record.children) return;
         this.toggleNodeExpanded(record.xhTreePath);
     };
 
