@@ -183,7 +183,11 @@ export class RecordSet {
 
         // 1) Create new records
         const allNewRecords = updates.map(update => store.createRecord(update)),
-            newRecords = allNewRecords.filter(rec => records.get(rec.id));
+            newRecords = allNewRecords.filter(rec => {
+                const res = records.get(rec.id);
+                if (!res) console.log(rec.id);
+                return res;
+            });
         if (allNewRecords.length != newRecords.length) {
             console.warn(`Skipped ${allNewRecords.length - newRecords.length} unknown records in updateRecords()`);
         }
