@@ -77,7 +77,7 @@ export class VisitsChartModel {
         const data = [];
 
         forOwn(visits, (v, k) => {
-            data.push([LocalDate.create(k).timestamp, v]);
+            data.push([LocalDate.get(k).timestamp, v]);
         });
 
         return [{data}];

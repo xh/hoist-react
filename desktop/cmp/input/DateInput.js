@@ -101,8 +101,7 @@ export class DateInput extends HoistInput {
 
         /**
          * The precision of time selection that accompanies the calendar.
-         * If undefined, control will not show time.
-         * Ignored when valueType is localDate
+         * If undefined, control will not show time. Ignored when valueType is localDate.
          */
         timePrecision: PT.oneOf(['second', 'minute']),
 

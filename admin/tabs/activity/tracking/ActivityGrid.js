@@ -56,7 +56,7 @@ export class ActivityGrid extends Component {
                 disabled: model.endDate >= LocalDate.today()
             }),
             button({
-                icon: Icon.angleDoubleRight(),
+                icon: Icon.reset(),
                 onClick: () => model.adjustDates('subtract', true)
             }),
             toolbarSep(),
