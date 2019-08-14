@@ -13,9 +13,8 @@ import {div, box, frame} from '@xh/hoist/cmp/layout';
 import {Ref} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {fmtNumber} from '@xh/hoist/format';
-import {forEachAsync} from '@xh/hoist/utils/async';
 import {start} from '@xh/hoist/promise';
-import {assign, merge, clone, debounce, isFunction} from 'lodash';
+import {assign, merge, clone, debounce, isFunction, isEqual, omit} from 'lodash';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -54,9 +53,15 @@ export class TreeMap extends Component {
         this._clickCount = 0;
         this._debouncedClickHandler = debounce(this.clickHandler, 500);
 
+        // Re-render highchart on config change
+        this.addReaction({
+            track: () => [this._chartElem.value, this.getMergedConfig()],
+            run: () => this.renderHighChart()
+        });
+
         // Sync selection
         this.addReaction({
-            track: () => [this.model.selectedIds, this.getMergedConfig()],
+            track: () => [this.model.selectedIds, this.model.data],
             run: () => this.syncSelection(),
             delay: 1 // Must wait for chart re-render on data / config change
         });
@@ -68,10 +73,6 @@ export class TreeMap extends Component {
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
-
-        // No-op on first render - will re-render upon setting the _chartElem Ref
-        this.renderHighChart();
-        this.updateLabelVisibilityAsync();
 
         // Render child item
         const {data, error} = this.model;
@@ -120,20 +121,34 @@ export class TreeMap extends Component {
     // Implementation
     //-------------------
     renderHighChart() {
-        this.destroyHighChart();
         const chartElem = this._chartElem.value;
-        if (chartElem) {
-            const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
+        if (!chartElem) return;
 
+        // Todo: Comment
+        const config = this.getMergedConfig(),
+            chartCfg = omit(config, 'series', 'tooltip'),
+            prevChartCfg = omit(this._prevConfig, 'series', 'tooltip'),
+            onlyDataChanged = isEqual(chartCfg, prevChartCfg);
+
+        if (this._chart && onlyDataChanged) {
+            // Update data if only the data has changed
+            this._chart.series[0].setData(config.series[0].data, false, true);
+        } else {
+            // Rebuild chart if chart config has changed
+            this.destroyHighChart();
+
+            const parentEl = chartElem.parentElement;
             assign(config.chart, {
                 width: parentEl.offsetWidth,
                 height: parentEl.offsetHeight
             });
-
             config.chart.renderTo = chartElem;
+
             this._chart = Highcharts.chart(config);
         }
+        this._prevConfig = config;
+
+        this.updateLabelVisibility();
     }
 
     async resizeChartAsync(e) {
@@ -144,7 +159,7 @@ export class TreeMap extends Component {
                 this._chart.setSize(width, height, false);
             }
         });
-        await this.updateLabelVisibilityAsync();
+        this.updateLabelVisibility();
     }
 
     destroy() {
@@ -270,22 +285,28 @@ export class TreeMap extends Component {
     //----------------------
     // Labels
     //----------------------
-    async updateLabelVisibilityAsync() {
+    updateLabelVisibility() {
         if (!this._chart) return;
 
         // Show / hide labels by comparing label size to node size
-        await forEachAsync(this._chart.series[0].data, node => {
+        let hasChanges = false;
+        this._chart.series[0].data.forEach(node => {
             if (node.dataLabel && node.graphic) {
                 const buffer = 10,
                     tooSmallWidth = (node.dataLabel.width + buffer) > node.graphic.element.width.baseVal.value,
                     tooSmallHeight = (node.dataLabel.height + buffer) > node.graphic.element.height.baseVal.value,
-                    style = tooSmallWidth || tooSmallHeight ? {visibility: 'hidden'} : {visibility: 'visible'};
+                    currentVisibility = node.dataLabel.styles.visibility,
+                    newVisibility = tooSmallWidth || tooSmallHeight ? 'hidden' : 'visible';
 
-                node.update({dataLabels: {style}}, false, false);
+                if (currentVisibility !== newVisibility) {
+                    const updates = {dataLabels: {style: {visibility: newVisibility}}};
+                    node.update(updates, false, false);
+                    hasChanges = true;
+                }
             }
         });
 
-        if (this._chart) this._chart.redraw();
+        if (hasChanges) this._chart.redraw();
     }
 
     //----------------------
