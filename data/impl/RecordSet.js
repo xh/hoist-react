@@ -122,10 +122,11 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-    updateData(rawData) {
+    updateData(rawData, opts) {
         const updatedRecords = new Map(),
             {store, records} = this,
-            updateRoots = [];
+            updateRoots = [],
+            {processHierarchy} = opts;
 
         // 1. When updating we need to first create records for the root data, and make sure we carry
         //    the parent record forward if this new data matches an existing record. Then we can build
@@ -139,69 +140,54 @@ export class RecordSet {
             if (existingRecord) rec.parent = existingRecord.parent;
 
             updatedRecords.set(rec.id, rec);
-            updateRoots.push(rec);
-            if (!isEmpty(data.children)) {
-                data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
+
+            if (processHierarchy) {
+                updateRoots.push(rec);
+                if (!isEmpty(data.children)) {
+                    data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
+                }
             }
         });
 
-        // 2. If this record set contains hierarchical data then we need to figure out which (if any)
-        //    existing records need to be removed from the record set as part of this update operation
-        const recordIdsToRemove = new Set(),
-            {childrenMap} = this;
-
-        if (childrenMap.size) {
-            updateRoots.forEach(rec => {
-                // When the existing record has descendents which are not part of the updated data
-                // they need to be removed from the record set
-                if (childrenMap.has(rec.id)) {
-                    const descendantIds = this.gatherDescendants(rec.id);
-                    descendantIds.forEach(id => {
-                        if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
-                    });
-                }
-            });
+        // 2. If we want to process hierarchy changes and this record set contains hierarchical data
+        //    then we need to figure out which (if any) existing records need to be removed from the
+        //    record set as part of this update operation
+        const recordIdsToRemove = new Set();
+        if (processHierarchy) {
+            const {childrenMap} = this;
+            if (childrenMap.size) {
+                updateRoots.forEach(rec => {
+                    // When the existing record has descendents which are not part of the updated data
+                    // they need to be removed from the record set
+                    if (childrenMap.has(rec.id)) {
+                        const descendantIds = this.gatherDescendants(rec.id);
+                        descendantIds.forEach(id => {
+                            if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
+                        });
+                    }
+                });
+            }
         }
 
         // 3. Build the new map of records
         const newRecords = new Map(records);
+        let didUpdate = false;
         updatedRecords.forEach((record, id) => {
             const currRecord = records.get(id);
             if (!currRecord || !currRecord.isEqual(record)) {
                 newRecords.set(id, record);
+                didUpdate = true;
             }
         });
 
         recordIdsToRemove.forEach(id => newRecords.delete(id));
 
-        return new RecordSet(store, newRecords);
-    }
-
-
-    updateRecords(updates) {
-        const {store, records} = this;
-
-        // 1) Create new records
-        const allNewRecords = updates.map(update => store.createRecord(update)),
-            newRecords = allNewRecords.filter(rec => records.get(rec.id));
-        if (allNewRecords.length != newRecords.length) {
-            console.warn(`Skipped ${allNewRecords.length - newRecords.length} unknown records in updateRecords()`);
+        // Avoid creating a new RecordSet if nothing actually changed
+        if (didUpdate || newRecords.size !== records.size) {
+            return new RecordSet(store, newRecords);
         }
 
-        // 2) Overlay on existing
-        const newRecordsMap = new Map(records);
-        newRecords.forEach(rec => newRecordsMap.set(rec.id, rec));
-
-        // 3) Adjust parents for all new records
-        newRecords.forEach(rec => {
-            const existingRec = records.get(rec.id),
-                parent = existingRec.parentId ? newRecordsMap.get(existingRec.parentId) : null;
-            if (parent) {
-                rec.parent = parent;
-            }
-        });
-
-        return new RecordSet(store, newRecordsMap);
+        return this;
     }
 
     addData(rawData, parentId) {
