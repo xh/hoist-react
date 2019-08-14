@@ -195,6 +195,7 @@ export class TreeMap extends Component {
                 padding: 0,
                 shape: 'square',
                 shadow: false,
+                outside: true,
                 pointFormatter: function() {
                     if (!tooltip) return;
                     const {record} = this;
