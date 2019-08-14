@@ -4,24 +4,25 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import moment from 'moment';
+
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action, observable, comparer} from '@xh/hoist/mobx';
+import {action, bindable, observable, comparer} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel
 @LoadSupport
 export class ClientErrorModel {
 
-    @observable startDate = moment().subtract(7, 'days').toDate();
-    @observable endDate = moment().toDate();
-    @observable username = '';
-    @observable error = '';
+    @bindable.ref endDate = LocalDate.today()
+    @bindable.ref startDate = LocalDate.today().subtract(7);
+    @bindable username = '';
+    @bindable error = '';
 
-    @observable detailRecord = null;
+    @observable.ref detailRecord = null;
     
     @managed
     gridModel = new GridModel({
@@ -64,46 +65,25 @@ export class ClientErrorModel {
     }
 
     adjustDates(dir, toToday = false) {
-        const today = moment(),
-            start = moment(this.startDate),
-            end = moment(this.endDate),
-            diff = end.diff(start, 'days'),
+        const today = LocalDate.today(),
+            start = this.startDate,
+            end = this.endDate,
+            diff = end.diff(start),
             incr = diff + 1;
 
-        let newStart = start[dir](incr, 'days'),
-            newEnd = end[dir](incr, 'days');
+        let newStart = start[dir](incr),
+            newEnd = end[dir](incr);
 
-        if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(Math.abs(diff), 'days');
+        if (newEnd.diff(today) > 0 || toToday) {
+            newStart = today.subtract(Math.abs(diff));
             newEnd = today;
         }
 
-        this.setStartDate(newStart.toDate());
-        this.setEndDate(newEnd.toDate());
+        this.setStartDate(newStart);
+        this.setEndDate(newEnd);
         this.loadAsync();
     }
 
-    @action
-    setStartDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
-        this.endDate = date;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
-    @action
-    setError(error) {
-        this.error = error;
-    }
 
     @action
     openDetail(rec) {
@@ -120,14 +100,10 @@ export class ClientErrorModel {
     //------------------------
     getParams() {
         return {
-            startDate: fmtDate(this.startDate, 'YYYYMMDD'),
-            endDate: fmtDate(this.endDate, 'YYYYMMDD'),
+            startDate: this.startDate,
+            endDate: this.endDate,
             username: this.username,
             error: this.error
         };
-    }
-
-    isValidDate(date) {
-        return date && date.toString() !== 'Invalid Date';
     }
 }

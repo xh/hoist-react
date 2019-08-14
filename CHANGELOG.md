@@ -1,7 +1,25 @@
 # Changelog
 
-## v27.0.0-SNAPSHOT - Under development
+## v27.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* A new `LocalDate` class has been added to the toolkit. This class provides client-side support for
+  "business" or "calendar" days that do not have a time component. It is an immutable class that
+  supports '==', '<' and '>', as well as a number of convenient manipulation functions. Support for
+  the `LocalDate` class has also been added throughout the toolkit, including:
+  * `Field.type` now supports an additional `localDate` option for automatic conversion of server
+    data to this type when loading into a `Store`.
+  * `fetchService` is aware of this class and will automatically serialize all instances of it for
+    posting to the server. ⚠ NOTE that along with this change, `fetchService` and its methods such
+    as `XH.fetchJson()` will now serialize regular JS Date objects as ms timestamps when provided in
+    params. Previously Dates were serialized in their default `toString()` format. This would be a
+    breaking change for an app that relied on that default Date serialization, but it was made for
+    increased symmetry with how Hoist JSON-serializes Dates and LocalDates on the server-side.
+  * `DateInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`. See its new
+    prop of `valueType` which can be set to `localDate` or `date` (default).
+  * A new `localDateCol` config has been added to the `@xh/hoist/grid/columns` package with
+    standardized rendering and formatting.
 * New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.

@@ -6,3 +6,4 @@
  */
 
 export * from './DateTimeUtils';
+export * from './LocalDate';
