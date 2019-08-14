@@ -161,7 +161,7 @@ export class LocalDate {
     }
 
     nextBusinessDay() {
-        switch (this.moment.day()) {
+        switch (this._moment.day()) {
             case 5:     return this.add(3);
             case 6:     return this.add(2);
             default:    return this.add(1);
@@ -169,7 +169,7 @@ export class LocalDate {
     }
 
     previousBusinessDay() {
-        switch (this.moment.day()) {
+        switch (this._moment.day()) {
             case 1:     return this.subtract(3);
             case 7:     return this.subtract(2);
             default:    return this.subtract(1);
