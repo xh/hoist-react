@@ -289,17 +289,20 @@ export class TreeMapModel {
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
+                if (minPosHeat === maxPosHeat) it.colorValue = 0.8;
                 if (colorMode === 'balanced' && posHeatValues.length > 2) {
                     if (it.colorValue >= midPosHeat) {
                         it.colorValue = this.normalizeToRange(heatValue, midPosHeat, maxPosHeat, 0.8, 1);
                     } else {
                         it.colorValue = this.normalizeToRange(heatValue, minPosHeat, midPosHeat, 0.6, 0.8);
                     }
-                } else if (colorMode === 'linear' || posHeatValues.length <= 2) {
+                } else if (colorMode === 'linear' || posHeatValues.length === 2) {
                     it.colorValue = this.normalizeToRange(heatValue, minPosHeat, maxPosHeat, 0.6, 1);
                 }
             } else if (heatValue < 0) {
                 // Normalize negative values between 0-0.4
+                if (minNegHeat === maxNegHeat) it.colorValue = 0.2;
+
                 const absHeatValue = Math.abs(heatValue);
 
                 if (colorMode === 'balanced' && negHeatValues.length > 2) {
@@ -308,7 +311,7 @@ export class TreeMapModel {
                     } else {
                         it.colorValue = this.normalizeToRange(absHeatValue, midNegHeat, minNegHeat, 0.2, 0.4);
                     }
-                } else if (colorMode === 'linear' || negHeatValues.length <= 2) {
+                } else if (colorMode === 'linear' || negHeatValues.length === 2) {
                     it.colorValue = this.normalizeToRange(absHeatValue, maxNegHeat, minNegHeat, 0, 0.4);
                 }
             } else {
