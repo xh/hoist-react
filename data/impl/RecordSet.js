@@ -122,11 +122,10 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-    updateData(rawData, opts) {
+    updateData(rawData) {
         const updatedRecords = new Map(),
             {store, records} = this,
-            updateRoots = [],
-            {processHierarchy} = opts;
+            updateRoots = [];
 
         // 1. When updating we need to first create records for the root data, and make sure we carry
         //    the parent record forward if this new data matches an existing record. Then we can build
@@ -140,54 +139,42 @@ export class RecordSet {
             if (existingRecord) rec.parent = existingRecord.parent;
 
             updatedRecords.set(rec.id, rec);
-
-            if (processHierarchy) {
-                updateRoots.push(rec);
-                if (!isEmpty(data.children)) {
-                    data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
-                }
+            updateRoots.push(rec);
+            if (!isEmpty(data.children)) {
+                data.children.forEach(childData => this.buildRecords(childData, updatedRecords, rec));
             }
         });
 
-        // 2. If we want to process hierarchy changes and this record set contains hierarchical data
-        //    then we need to figure out which (if any) existing records need to be removed from the
-        //    record set as part of this update operation
-        const recordIdsToRemove = new Set();
-        if (processHierarchy) {
-            const {childrenMap} = this;
-            if (childrenMap.size) {
-                updateRoots.forEach(rec => {
-                    // When the existing record has descendents which are not part of the updated data
-                    // they need to be removed from the record set
-                    if (childrenMap.has(rec.id)) {
-                        const descendantIds = this.gatherDescendants(rec.id);
-                        descendantIds.forEach(id => {
-                            if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
-                        });
-                    }
-                });
-            }
+        // 2. If this record set contains hierarchical data then we need to figure out which (if any)
+        //    existing records need to be removed from the record set as part of this update operation
+        const recordIdsToRemove = new Set(),
+            {childrenMap} = this;
+
+        if (childrenMap.size) {
+            updateRoots.forEach(rec => {
+                // When the existing record has descendents which are not part of the updated data
+                // they need to be removed from the record set
+                if (childrenMap.has(rec.id)) {
+                    const descendantIds = this.gatherDescendants(rec.id);
+                    descendantIds.forEach(id => {
+                        if (!updatedRecords.has(id)) recordIdsToRemove.add(id);
+                    });
+                }
+            });
         }
 
         // 3. Build the new map of records
         const newRecords = new Map(records);
-        let didUpdate = false;
         updatedRecords.forEach((record, id) => {
             const currRecord = records.get(id);
             if (!currRecord || !currRecord.isEqual(record)) {
                 newRecords.set(id, record);
-                didUpdate = true;
             }
         });
 
         recordIdsToRemove.forEach(id => newRecords.delete(id));
 
-        // Avoid creating a new RecordSet if nothing actually changed
-        if (didUpdate || newRecords.size !== records.size) {
-            return new RecordSet(store, newRecords);
-        }
-
-        return this;
+        return new RecordSet(store, newRecords);
     }
 
     addData(rawData, parentId) {
@@ -212,6 +199,7 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
+
     createRecords(rawData, parent = null) {
         const ret = new Map();
         rawData.forEach(raw => this.buildRecords(raw, ret, parent));

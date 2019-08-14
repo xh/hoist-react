@@ -122,45 +122,30 @@ export class Store {
      *
      * @param {Object[]} rawData
      * @param {Object} [rawSummaryData]
-     * @param {StoreUpdateOptions} [opts]
      */
     @action
-    updateData(rawData, rawSummaryData = null, opts = {processHierarchy: true}) {
+    updateData(rawData, rawSummaryData = null) {
         throwIf(this._loadRootAsSummary && rawSummaryData,
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
-        if (this._loadRootAsSummary && !isEmpty(rawData)) {
-            const currSummaryRec = this.summaryRecord,
-                newSummaryData = this.getRootSummary(rawData);
-
-            if (currSummaryRec && newSummaryData && currSummaryRec.id === this.buildRecordId(
-                newSummaryData)) {
-                rawData = newSummaryData.children;
-                rawSummaryData = {...newSummaryData, children: null};
-            }
-        }
-
         let didUpdate = false;
         if (!isEmpty(rawData)) {
-            const currAll = this._all,
-                updatedAll = currAll.updateData(rawData, opts);
-
-            if (updatedAll !== currAll) {
-                this._all = updatedAll;
-                this.rebuildFiltered();
-                didUpdate = true;
+            const oldSummary = this.summaryRecord,
+                newSummary = this.getRootSummary(rawData);
+            if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
+                rawData = newSummary.children;
+                rawSummaryData = {...newSummary, children: null};
             }
+
+            this._all = this._all.updateData(rawData);
+            this.rebuildFiltered();
+            didUpdate = true;
         }
 
         if (rawSummaryData) {
-            const currSummaryRec = this.summaryRecord,
-                newSummaryRec = this.createSummaryRecord(rawSummaryData);
-
-            if (!currSummaryRec || !currSummaryRec.isEqual(newSummaryRec)) {
-                this.summaryRecord = newSummaryRec;
-                didUpdate = true;
-            }
+            this.summaryRecord = this.createSummaryRecord(rawSummaryData);
+            didUpdate = true;
         }
 
         if (didUpdate) this.lastUpdated = Date.now();
@@ -392,7 +377,7 @@ export class Store {
     }
 
     getRootSummary(rawData) {
-        return this._loadRootAsSummary && rawData.length === 1 ?
+        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ?
             rawData[0] :
             null;
     }
@@ -404,12 +389,4 @@ export class Store {
     }
 }
 
-/**
- * @typedef {Object} StoreUpdateOptions
- * @property {boolean} [processHierarchy] - Set to false to skip processing any hierarchy changes
- *      as part of the Store data update process to allow for a more efficient update process and
- *      a simpler api for providing the updated data. If this flag is false then `rawData` should
- *      be provided as a flat list (unless loading the root as the summary, in which case `rawData`
- *      should contain the updated summary data as the root of `rawData` if the summary data needs
- *      to be updated, and it's `children` should be a flat list of updated data)
- */
+
