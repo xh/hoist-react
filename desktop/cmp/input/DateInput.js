@@ -17,6 +17,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -100,9 +101,12 @@ export class DateInput extends HoistInput {
 
         /**
          * The precision of time selection that accompanies the calendar.
-         * If undefined, control will not show time.
+         * If undefined, control will not show time. Ignored when valueType is localDate.
          */
-        timePrecision: PT.oneOf(['second', 'minute'])
+        timePrecision: PT.oneOf(['second', 'minute']),
+
+        /** Type of value to publish. Defaults to 'date'. */
+        valueType: PT.oneOf(['date', 'localDate'])
     };
 
     @bindable popoverOpen = false;
@@ -115,6 +119,9 @@ export class DateInput extends HoistInput {
     // Prop-backed convenience getters
     get maxDate() {return this.props.maxDate || moment().add(100, 'years').toDate()}
     get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
+
+    get valueType() {return withDefault(this.props.valueType, 'date')}
+    get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
 
     render() {
         const props = this.getNonLayoutProps();
@@ -156,8 +163,8 @@ export class DateInput extends HoistInput {
                     minDate: this.minDate,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-                    timePickerProps: props.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined,
-                    timePrecision: props.timePrecision
+                    timePrecision: this.timePrecision,
+                    timePickerProps: this.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined
                 }),
 
                 item: div({
@@ -207,6 +214,16 @@ export class DateInput extends HoistInput {
                 })
             ]
         });
+    }
+
+    toExternal(internal) {
+        if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
+        return internal;
+    }
+
+    toInternal(external) {
+        if (this.valueType === 'localDate') return external ? external.date : null;
+        return external;
     }
 
     /**
@@ -281,7 +298,7 @@ export class DateInput extends HoistInput {
         // If no time component, selecting a date in the picker is most likely a "click and done"
         // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
         // however, the picker is used to adjust multiple fields and should stay visible.
-        if (!this.props.timePrecision) {
+        if (!this.timePrecision) {
             this.setPopoverOpen(false);
         }
     };
@@ -297,7 +314,7 @@ export class DateInput extends HoistInput {
     };
 
     applyPrecision(date) {
-        let {timePrecision} = this.props;
+        let {timePrecision} = this;
         date = clone(date);
         if (timePrecision == 'second') {
             date.setMilliseconds(0);
@@ -310,7 +327,9 @@ export class DateInput extends HoistInput {
     }
 
     getFormat() {
-        const {formatString, timePrecision} = this.props;
+        const {timePrecision} = this,
+            {formatString} = this.props;
+
         if (formatString) return formatString;
         let ret = 'YYYY-MM-DD';
         if (timePrecision == 'minute') {

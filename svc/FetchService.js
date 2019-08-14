@@ -8,7 +8,8 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
-import {isFunction, isPlainObject, isNil, omitBy} from 'lodash';
+import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -107,8 +108,13 @@ export class FetchService {
 
         // 3) Preprocess and apply params
         if (params) {
-            const qsOpts = {arrayFormat: 'repeat', allowDots: true, ...opts.qsOpts},
-                paramsString = stringify(params, qsOpts);
+            const qsOpts = {
+                arrayFormat: 'repeat',
+                allowDots: true,
+                filter: this.qsFilterFn,
+                ...opts.qsOpts
+            };
+            const paramsString = stringify(params, qsOpts);
 
             if (['POST', 'PUT'].includes(method) && headers.get('Content-Type') !== 'application/json') {
                 // Fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json.
@@ -240,4 +246,12 @@ export class FetchService {
             return null;
         }
     }
+
+    qsFilterFn = (prefix, value) => {
+        if (isDate(value))      return value.getTime();
+        if (isLocalDate(value)) return value.isoString;
+        return value;
+    }
 }
+
+

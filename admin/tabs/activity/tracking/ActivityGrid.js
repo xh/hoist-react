@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistComponent
 export class ActivityGrid extends Component {
@@ -51,10 +52,11 @@ export class ActivityGrid extends Component {
             this.dateInput({bind: 'endDate'}),
             button({
                 icon: Icon.angleRight(),
-                onClick: () => model.adjustDates('add')
+                onClick: () => model.adjustDates('add'),
+                disabled: model.endDate >= LocalDate.today()
             }),
             button({
-                icon: Icon.angleDoubleRight(),
+                icon: Icon.reset(),
                 onClick: () => model.adjustDates('subtract', true)
             }),
             toolbarSep(),
@@ -77,6 +79,7 @@ export class ActivityGrid extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'bottom',
+            valueType: 'localDate',
             width: 120,
             ...args
         });
