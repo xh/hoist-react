@@ -8,7 +8,7 @@
 import {observable, action} from '@xh/hoist/mobx';
 import {RecordSet} from './impl/RecordSet';
 import {Field} from './Field';
-import {partition, isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
+import {isString, castArray, isEmpty, isFunction, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Record} from './Record';
 import {StoreFilter} from './StoreFilter';
@@ -122,63 +122,49 @@ export class Store {
      *
      * @param {Object[]} rawData
      * @param {Object} [rawSummaryData]
+     * @param {StoreUpdateOptions} [opts]
      */
     @action
-    updateData(rawData, rawSummaryData = null) {
+    updateData(rawData, rawSummaryData = null, opts = {processHierarchy: true}) {
         throwIf(this._loadRootAsSummary && rawSummaryData,
             'Cannot provide rawSummaryData to updateData when loadRootAsSummary is true.'
         );
 
+        if (this._loadRootAsSummary && !isEmpty(rawData)) {
+            const currSummaryRec = this.summaryRecord,
+                newSummaryData = this.getRootSummary(rawData);
+
+            if (currSummaryRec && newSummaryData && currSummaryRec.id === this.buildRecordId(
+                newSummaryData)) {
+                rawData = newSummaryData.children;
+                rawSummaryData = {...newSummaryData, children: null};
+            }
+        }
+
         let didUpdate = false;
         if (!isEmpty(rawData)) {
-            const oldSummary = this.summaryRecord,
-                newSummary = this.getRootSummary(rawData);
-            if (oldSummary && newSummary && oldSummary.id === this.buildRecordId(newSummary)) {
-                rawData = newSummary.children;
-                rawSummaryData = {...newSummary, children: null};
-            }
+            const currAll = this._all,
+                updatedAll = currAll.updateData(rawData, opts);
 
-            this._all = this._all.updateData(rawData);
-            this.rebuildFiltered();
-            didUpdate = true;
+            if (updatedAll !== currAll) {
+                this._all = updatedAll;
+                this.rebuildFiltered();
+                didUpdate = true;
+            }
         }
 
         if (rawSummaryData) {
-            this.summaryRecord = this.createSummaryRecord(rawSummaryData);
-            didUpdate = true;
+            const currSummaryRec = this.summaryRecord,
+                newSummaryRec = this.createSummaryRecord(rawSummaryData);
+
+            if (!currSummaryRec || !currSummaryRec.isEqual(newSummaryRec)) {
+                this.summaryRecord = newSummaryRec;
+                didUpdate = true;
+            }
         }
 
         if (didUpdate) this.lastUpdated = Date.now();
     }
-
-    /**
-     * Update changes to record data, without adjusting tree structure.
-     *
-     * @param updates
-     */
-    @action
-    updateRecords(updates) {
-        let summaryUpdate = null,
-            didUpdate = false;
-
-        if (this._loadRootAsSummary && this.summaryRecord) {
-            [updates, [summaryUpdate]] = partition(updates, (record) => record.id !== this.summaryRecord.id);
-        }
-        
-        if (!isEmpty(updates)) {
-            this._all = this._all.updateRecords(updates);
-            this.rebuildFiltered();
-            didUpdate = true;
-        }
-
-        if (summaryUpdate) {
-            this.summaryRecord = this.createSummaryRecord(summaryUpdate);
-            didUpdate = true;
-        }
-
-        if (didUpdate) this.lastUpdated = Date.now();
-    }
-
 
     /**
      * Add data to the store.
@@ -406,7 +392,7 @@ export class Store {
     }
 
     getRootSummary(rawData) {
-        return this._loadRootAsSummary && rawData.length === 1 && !isEmpty(rawData[0].children) ?
+        return this._loadRootAsSummary && rawData.length === 1 ?
             rawData[0] :
             null;
     }
@@ -418,4 +404,12 @@ export class Store {
     }
 }
 
-
+/**
+ * @typedef {Object} StoreUpdateOptions
+ * @property {boolean} [processHierarchy] - Set to false to skip processing any hierarchy changes
+ *      as part of the Store data update process to allow for a more efficient update process and
+ *      a simpler api for providing the updated data. If this flag is false then `rawData` should
+ *      be provided as a flat list (unless loading the root as the summary, in which case `rawData`
+ *      should contain the updated summary data as the root of `rawData` if the summary data needs
+ *      to be updated, and it's `children` should be a flat list of updated data)
+ */
