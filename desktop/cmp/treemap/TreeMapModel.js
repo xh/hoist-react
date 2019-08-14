@@ -302,7 +302,7 @@ export class TreeMapModel {
                 // Normalize negative values between 0-0.4
                 const absHeatValue = Math.abs(heatValue);
 
-                if (colorMode === 'balanced' && posHeatValues.length > 2) {
+                if (colorMode === 'balanced' && negHeatValues.length > 2) {
                     if (absHeatValue >= midNegHeat) {
                         it.colorValue = this.normalizeToRange(absHeatValue, maxNegHeat, midNegHeat, 0, 0.2);
                     } else {
