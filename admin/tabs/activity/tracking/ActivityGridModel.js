@@ -4,27 +4,28 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import moment from 'moment';
+
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action, observable, comparer} from '@xh/hoist/mobx';
+import {action, bindable, observable, comparer} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel
 @LoadSupport
 export class ActivityGridModel {
 
-    @observable startDate = moment().subtract(7, 'days').toDate();
-    @observable endDate = moment().add(1, 'days').toDate();  // https://github.com/exhi/hoist-react/issues/400
-    @observable username = '';
-    @observable msg = '';
-    @observable category = '';
-    @observable device = '';
-    @observable browser = '';
+    @bindable.ref startDate = LocalDate.today().subtract(7);
+    @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/exhi/hoist-react/issues/400
+    @bindable username = '';
+    @bindable msg = '';
+    @bindable category = '';
+    @bindable device = '';
+    @bindable browser = '';
 
-    @observable detailRecord = null;
+    @observable.ref detailRecord = null;
 
     @managed
     gridModel = new GridModel({
@@ -74,62 +75,25 @@ export class ActivityGridModel {
     }
 
     adjustDates(dir, toToday = false) {
-        const today = moment(),
-            start = moment(this.startDate),
-            end = moment(this.endDate),
-            diff = end.diff(start, 'days'),
+        const today = LocalDate.today(),
+            start = this.startDate,
+            end = this.endDate,
+            diff = end.diff(start),
             incr = diff + 1;
 
-        let newStart = start[dir](incr, 'days'),
-            newEnd = end[dir](incr, 'days');
+        let newStart = start[dir](incr),
+            newEnd = end[dir](incr);
 
-        if (newEnd.diff(today, 'days') > 0 || toToday) {
-            newStart = today.clone().subtract(Math.abs(diff), 'days');
+        if (newEnd.diff(today) > 0 || toToday) {
+            newStart = today.subtract(Math.abs(diff));
             newEnd = today;
         }
 
-        this.setStartDate(newStart.toDate());
-        this.setEndDate(newEnd.toDate());
+        this.setStartDate(newStart);
+        this.setEndDate(newEnd);
         this.loadAsync();
     }
-
-    @action
-    setStartDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.startDate)) return;
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        if (!this.isValidDate(date) || moment(date).isSame(this.endDate)) return;
-        this.endDate = date;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
-    @action
-    setMsg(msg) {
-        this.msg = msg;
-    }
-
-    @action
-    setCategory(category) {
-        this.category = category;
-    }
-
-    @action
-    setDevice(device) {
-        this.device = device;
-    }
-
-    @action
-    setBrowser(browser) {
-        this.browser = browser;
-    }
-
+    
     @action
     openDetail(rec) {
         this.detailRecord = rec;
@@ -145,17 +109,13 @@ export class ActivityGridModel {
     //----------------
     getParams() {
         return {
-            startDate: fmtDate(this.startDate, 'YYYYMMDD'),
-            endDate: fmtDate(this.endDate, 'YYYYMMDD'),
+            startDate: this.startDate,
+            endDate: this.endDate,
             username: this.username,
             msg: this.msg,
             category: this.category,
             device: this.device,
             browser: this.browser
         };
-    }
-
-    isValidDate(date) {
-        return date && date.toString() !== 'Invalid Date';
     }
 }
