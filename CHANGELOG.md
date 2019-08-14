@@ -1,5 +1,22 @@
 # Changelog
 
+## v27.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* A new `LocalDate` class has been added to the toolkit.  This class provides client-side support 
+for "business" or "calendar" days that do not have a time component. It is an immutable class that supports
+'==', '<' and '>', as well as a number of convenient manipulation functions.  Support for the `LocalDate`
+class has also been added throughout the toolkit, including:
+  * `Store.type` now supports an additional `localDate` option for automatic conversion of server data
+  to this type.
+  * `fetchService` is aware of this class and will automatically serialize all instances of it for posting 
+  to the server.   
+  * `DateTimeInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`.  See its new prop of
+   `valueType` which can be set to `localDate` or `date` (default).
+  * A new `localDateCol` has been added to the `@xh/hoist/grid/columns` package.
+       
+
 ## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
