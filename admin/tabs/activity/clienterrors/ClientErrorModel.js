@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action, observable, comparer} from '@xh/hoist/mobx';
+import {action, bindable, observable, comparer} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
@@ -17,12 +17,12 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 @LoadSupport
 export class ClientErrorModel {
 
-    @observable.ref endDate = LocalDate.today()
-    @observable.ref startDate = LocalDate.today().subtract(7);
-    @observable username = '';
-    @observable error = '';
+    @bindable.ref endDate = LocalDate.today()
+    @bindable.ref startDate = LocalDate.today().subtract(7);
+    @bindable username = '';
+    @bindable error = '';
 
-    @observable detailRecord = null;
+    @observable.ref detailRecord = null;
     
     @managed
     gridModel = new GridModel({
@@ -84,27 +84,6 @@ export class ClientErrorModel {
         this.loadAsync();
     }
 
-    @action
-    setStartDate(date) {
-        if (date.equals(this.startDate)) return;
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        if (date.equals(this.endDate)) return;
-        this.endDate = date;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
-    @action
-    setError(error) {
-        this.error = error;
-    }
 
     @action
     openDetail(rec) {
@@ -121,8 +100,8 @@ export class ClientErrorModel {
     //------------------------
     getParams() {
         return {
-            startDate: this.startDate.value,
-            endDate: this.endDate.value,
+            startDate: this.startDate,
+            endDate: this.endDate,
             username: this.username,
             error: this.error
         };

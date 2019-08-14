@@ -6,8 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {startCase, isEqual as lodashIsEqual} from 'lodash';
+import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
+import {startCase, isDate, isEqual as lodashIsEqual} from 'lodash';
 
 /**
  * Metadata for an individual data field within a {@see Record}.
@@ -62,9 +62,9 @@ export class Field {
             case 'string':
                 return val.toString();
             case 'date':
-                return new Date(val);
+                return isDate(val) ? val : new Date(val);
             case 'localDate':
-                return LocalDate.from(val);
+                return isLocalDate(val) ? val : LocalDate.create(val);
         }
 
         throw XH.exception(`Unknown field type '${type}'`);

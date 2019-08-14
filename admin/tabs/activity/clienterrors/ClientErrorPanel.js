@@ -13,6 +13,7 @@ import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
@@ -40,7 +41,7 @@ export class ClientErrorPanel extends Component {
     renderToolbar() {
         const {model} = this,
             {gridModel} = model;
-
+        
         return [
             button({
                 icon: Icon.angleLeft(),
@@ -51,10 +52,11 @@ export class ClientErrorPanel extends Component {
             this.dateInput({bind: 'endDate'}),
             button({
                 icon: Icon.angleRight(),
-                onClick: () => model.adjustDates('add')
+                onClick: () => model.adjustDates('add'),
+                disabled: model.endDate >= LocalDate.today()
             }),
             button({
-                icon: Icon.angleDoubleRight(),
+                icon: Icon.reset(),
                 onClick: () => model.adjustDates('subtract', true)
             }),
             toolbarSep(),

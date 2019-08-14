@@ -7,7 +7,7 @@
 
 import {forOwn} from 'lodash';
 import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
-import {observable, action, comparer} from '@xh/hoist/mobx';
+import {bindable, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -16,9 +16,9 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 @LoadSupport
 export class VisitsChartModel {
 
-    @observable.ref startDate = LocalDate.today().subtract(3, 'months');
-    @observable.ref endDate = LocalDate.today();
-    @observable username = '';
+    @bindable.ref startDate = LocalDate.today().subtract(3, 'months');
+    @bindable.ref endDate = LocalDate.today();
+    @bindable username = '';
     
     @managed
     chartModel = new ChartModel({
@@ -64,40 +64,20 @@ export class VisitsChartModel {
             this.chartModel.setSeries(this.getSeriesData(data));
         }).catchDefault();
     }
-
-    @action
-    setStartDate(date) {
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        this.endDate = date;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
+    
     //----------------
     // Implementation
     //----------------
     getParams() {
         const {endDate, startDate, username} = this;
-
-        return {
-            startDate: startDate.value,
-            endDate: endDate.value,
-            username
-        };
+        return {startDate, endDate, username};
     }
     
     getSeriesData(visits) {
         const data = [];
 
-        forOwn(visits, (k, v) => {
-            data.push([LocalDate.from(v).timestamp, k]);
+        forOwn(visits, (v, k) => {
+            data.push([LocalDate.create(k).timestamp, v]);
         });
 
         return [{data}];

@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {ExportFormat} from './ExportFormat';
-import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer, fmtDate} from '@xh/hoist/format';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '@xh/hoist/format';
 
 const defaults = {align: 'right'};
 
@@ -39,9 +38,6 @@ export const compactDateCol = {
 };
 
 export const localDateCol = {
-    ...defaults,
-    renderer: (v) => fmtDate(LocalDate.from(v)),
-    exportValue: (v) => LocalDate.from(v).date,
-    exportFormat: ExportFormat.DATE_FMT,
-    width: 100
+    ...dateCol,
+    exportValue: (v) => v ? v.date : null
 };

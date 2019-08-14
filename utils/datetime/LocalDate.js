@@ -7,6 +7,7 @@
 
 import moment from 'moment';
 import {throwIf} from '@xh/hoist/utils/js';
+import {isString} from 'lodash';
 
 /**
  * A Date representation that does not contain time information.  Useful for business day,
@@ -14,106 +15,141 @@ import {throwIf} from '@xh/hoist/utils/js';
  * equivalent of java LocalDate class.
  *
  * This class is immutable.  All methods for manipulation return a new LocalDate instance.
- * Unit accepted by the manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date']
+ * In addition, instances of this class are interned [memoized], and only a single version
+ * of the object will be returned for each calendar day.
  *
- * Includes getters for equivalents values in moment, js date and timestamp formats.
- * Can also be formatted using any moment format string.
+ * Unit accepted by the manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date']
  */
 export class LocalDate {
 
-    /** @member {string} */
-    value;
+    static _instances = new Map();
 
-    /** @member {boolean} */
-    get isLocalDate() {return true}
+    _isoString;
+    _moment;
+    _date;
+
+    //------------------------
+    // Factories
+    //------------------------
+    /**
+     *  Get an instance of this class.
+     *
+     * This is the standard way to get an instance of this object from serialized
+     * server-side data.
+     *
+     * @param {string} s - a valid date in 'YYYYMMDD' format.
+     * @returns {LocalDate}
+     */
+    static create(s) {
+        throwIf(!isString(s), 'LocalDate.create() requires a string of the form "YYYYMMDD"');
+        let {_instances} = this,
+            ret = _instances.get(s);
+        if (!ret) {
+            ret = new LocalDate(s);
+            _instances.set(s, ret);
+        }
+        return ret;
+    }
 
     /**
-     * Get an instance of this class.  Instance can be created by passing any of the following:
-     *      {LocalDate} - Another LocalDate instance.
-     *      {Date} - A JS Date instance.
-     *      {moment} - A moment instance.
-     *      {string} - A moment parsable string
-     *      {undefined} - defaults to current date
+     * Get an instance of this class.
+     *
+     * Note: Applications should favor using the create() factory instead of this method. create()
+     * takes an explicit 'yyyyMMDD' format and is the safest way to create an instance of this object.
+     *
+     * @params {*} val - any string, timestamp, or date parseable by moment.js.
+     * @returns {LocalDate}
      */
     static from(val) {
-        return val && val.isLocalDate ? val : this.fromIsoDate(moment(val).format('YYYYMMDD'));
+        throwIf(!val, 'Cannot create LocalDate from null or undefined.');
+        if (val.isLocalDate) return val;
+        const m = moment.isMoment(val) ? val : moment(val);
+        return this.create(m.format('YYYYMMDD'));
     }
 
     /**
-     *  Get an instance of this class from  a string in 'yyyyMMDD' format.
+     * Return a LocalDate representing the current day.
      *
-     *  Most efficient way to create an instance of the class, and typical way to create it from
-     *  serialized server-side data.
+     * @returns {LocalDate}
      */
-    static fromIsoDate(val) {
-        return new LocalDate(val);
-    }
-
     static today() {
-        return this.from();
+        return this.from(moment());
+    }
+
+    /**
+     * Is the input value a local Date?
+     * @param {*} v
+     * @returns {boolean}
+     * */
+    static isLocalDate(v) {
+        return v && v.isLocalDate;
     }
 
     //--------------------
-    // Output
+    // Getters and basic methods.
     //--------------------
-    get moment() {
-        return moment(this.value, 'YYYYMMDD');
+    get isoString() {
+        return this._isoString;
     }
 
     get date() {
-        const ret = this.moment.toDate();
-        return isNaN(ret) ? null : ret;
+        return new Date(this._date.getTime());
+    }
+
+    get moment() {
+        return this._moment.clone();
     }
 
     get timestamp() {
-        return this.moment.valueOf();
+        return this._date.getTime();
     }
 
     format(...args) {
-        return this.moment.format(...args);
+        return this._moment.format(...args);
     }
 
     dayOfWeek() {
         return this.format('dddd');
     }
 
+    //----------------
+    // Core overrides.
+    //----------------
     toString() {
-        return this.value;
+        return this._isoString;
     }
 
     toJSON() {
-        return this.value;
+        return this._isoString;
     }
 
-    //--------------------
-    // Manipulate
-    //--------------------
+    valueOf() {
+        return this._isoString;
+    }
+
+    get isLocalDate() {return true}
+
+    //--------------------------
+    // Manipulate/Calendar logic
+    //--------------------------
     add(value, unit = 'days') {
         this.ensureUnitValid(unit);
-        const {moment} = this;
-        moment.add(value, unit);
-        return LocalDate.from(moment);
+        return LocalDate.from(this.moment.add(value, unit));
     }
 
     subtract(value, unit = 'days') {
         this.ensureUnitValid(unit);
-        const {moment} = this;
-        moment.subtract(value, unit);
-        return LocalDate.from(moment);
+        return LocalDate.from(this.moment.subtract(value, unit));
     }
 
     startOf(unit) {
         this.ensureUnitValid(unit);
-        const {moment} = this;
-        moment.startOf(unit);
-        return LocalDate.from(moment);
+        return LocalDate.from(this.moment.startOf(unit));
     }
 
     endOf(unit) {
         this.ensureUnitValid(unit);
-        const {moment} = this;
-        moment.endOf(unit);
-        return LocalDate.from(moment);
+        return LocalDate.from(this.moment.endOf(unit));
     }
 
     nextDay() {
@@ -140,38 +176,25 @@ export class LocalDate {
         }
     }
 
-    //--------------------
-    // Query
-    //--------------------
-    equals(other) {
-        return this.compareTo(other) === 0;
-    }
-
-    isBefore(other) {
-        return this.compareTo(other) < 0;
-    }
-
-    isAfter(other) {
-        return this.compareTo(other) > 0;
-    }
-
-    compareTo(other) {
-        other = LocalDate.from(other);
-        return this.value.localeCompare(other.value);
-    }
-
-
     diff(other, unit = 'days') {
         this.ensureUnitValid(unit);
-        other = LocalDate.from(other);
-        return this.moment.diff(other.moment, unit);
+        return this._moment.diff(other._moment, unit);
     }
 
     //-------------------
     // Implementation
     //-------------------
-    constructor(str) {
-        this.value = str;
+    /**
+     * @private
+     * Not for public use -- use one of the static factory methods instead.
+     */
+    constructor(s) {
+        const m = moment(s, 'YYYYMMDD');
+        throwIf(!m.isValid, `Invalid argument for LocalDate: ${s}`);
+        this._isoString = s;
+        this._moment = m;
+        this._date = m.toDate();
+        Object.freeze(this);
     }
 
     ensureUnitValid(unit) {
@@ -182,4 +205,13 @@ export class LocalDate {
             `Invalid unit for LocalDate: ${unit}`
         );
     }
+}
+
+/**
+ * Is the input value a local Date?
+ *
+ * Convenience alias for LocalDate.isLocalDate()
+ */
+export function isLocalDate(val) {
+    return val && val.isLocalDate;
 }

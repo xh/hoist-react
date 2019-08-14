@@ -6,6 +6,8 @@
  */
 
 import {isNil, isString, isArray} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
+
 import moment from 'moment';
 /**
  * A set of validation functions to assist in form field validation.
@@ -76,14 +78,15 @@ export function numberIs({min, max, notZero}) {
 export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
-        if (value.isLocalDate) value = value.moment;
+
+        if (isLocalDate(value)) value = value.moment;
 
         let minMoment = null;
         if (min === 'now') {
             minMoment = moment();
         } else if (min === 'today') {
             minMoment = moment().startOf('day');
-        } else if (min && min.isLocalDate) {
+        } else if (isLocalDate(min)) {
             minMoment = min.moment;
         } else if (min) {
             minMoment = moment(min);
@@ -94,7 +97,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             maxMoment = moment();
         } else if (max === 'today') {
             maxMoment = moment().endOf('day');
-        } else if (max && max.isLocalDate) {
+        } else if (isLocalDate(max)) {
             maxMoment = max.moment;
         } else if (max) {
             maxMoment = moment(max);
