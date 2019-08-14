@@ -49,14 +49,14 @@
     "store2": "~2.8.0"
   },
   "peerDependencies": {
-      "react": "^16.9.0",
-      "react-dom": "^16.9.0",
+      "react": "^16.8.0",
+      "react-dom": "^16.8.0",
       "react-dom-factories": "^1.0.2"
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "~3.7.7",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
     "react-dom-factories": "^1.0.2"
   }
 }

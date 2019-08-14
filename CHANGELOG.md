@@ -21,10 +21,6 @@
   * A new `localDateCol` config has been added to the `@xh/hoist/grid/columns` package with
     standardized rendering and formatting.
 
-### 📚 Libraries
-
-* react `16.8 -> 16.9` (dev/peer dependency)
-
 ## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
