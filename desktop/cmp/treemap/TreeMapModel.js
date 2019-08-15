@@ -185,6 +185,11 @@ export class TreeMapModel {
     }
 
     @computed
+    get hasData() {
+        return !isEmpty(this.data);
+    }
+
+    @computed
     get error() {
         if (this.data.length > this.maxNodes) return 'Data node limit reached. Unable to render TreeMap.';
         return null;
