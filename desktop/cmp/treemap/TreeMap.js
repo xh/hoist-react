@@ -56,6 +56,7 @@ export class TreeMap extends Component {
         // model API changes, and/or the source data array itself changes.
         this.addReaction({
             track: () => [
+                XH.darkTheme,
                 this._chartElem.value,
                 this.model.highChartsConfig,
                 this.model.algorithm,
