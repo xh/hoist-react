@@ -64,13 +64,13 @@ export class SplitTreeMap extends Component {
 
         return [
             panel({
-                title: mapTitleFn ? mapTitleFn('primary', primaryMapModel) : undefined,
+                title: mapTitleFn ? mapTitleFn(primaryMapModel, true) : undefined,
                 compactHeader: true,
                 item: treeMap({model: primaryMapModel}),
                 flex: pFlex
             }),
             panel({
-                title: mapTitleFn ? mapTitleFn('secondary', secondaryMapModel) : undefined,
+                title: mapTitleFn ? mapTitleFn(secondaryMapModel, false) : undefined,
                 compactHeader: true,
                 item: treeMap({model: secondaryMapModel}),
                 flex: sFlex

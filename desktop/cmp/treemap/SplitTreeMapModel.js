@@ -49,7 +49,7 @@ export class SplitTreeMapModel {
      * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
      *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
      *      If not passed, will default to: { return record.valueField >= 0; }
-     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives map name ['primary', 'secondary'] and region TreeMapModel.
+     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives region TreeMapModel and boolean isPrimary.
      * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
      *
      * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.
