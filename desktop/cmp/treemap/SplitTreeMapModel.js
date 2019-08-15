@@ -46,13 +46,13 @@ export class SplitTreeMapModel {
 
     /**
      * @param {Object} c - SplitTreeMapModel configuration.
-     * @param {function} c.mapFilter - A filter function used when processing data. Receives (record), returns boolean.
-     *      Records that pass the filter will be placed into the primary TreeMap, and the rest into the secondary TreeMap.
-     *      If not passed, will default to: { return record.valueField >= 0; }
-     * @param {function} [c.mapTitleFn] - Function to render map titles. Receives region TreeMapModel and boolean isPrimary.
-     * @param {string} [c.orientation] - Display primary TreeMap above ('vertical') or to the right ('horizontal') of secondary TreeMap.
+     * @param {SplitTreeMapFilterFn} [c.mapFilter] - filter used to allocate records between the
+     *      primary and secondary maps. Defaults to: `record[valueField] >= 0`.
+     * @param {SplitTreeMapTitleFn} [c.mapTitleFn] - function to render region titles.
+     * @param {string} [c.orientation] - 'vertical' (default) to display primary and secondary maps
+     *      one above the other, 'horizontal' to show them side-by-side.
      *
-     * Additionally accepts any TreeMapModel configuration options. @see TreeMapModel.
+     * Additionally accepts any {@see TreeMapModel} configuration options.
      */
     constructor({
         mapFilter,
@@ -83,3 +83,17 @@ export class SplitTreeMapModel {
     }
 
 }
+
+/**
+ * @callback SplitTreeMapFilterFn
+ * @param {Record} record - record to evaluate for inclusion in the primary vs. secondary map.
+ * @return {boolean} - true if record belongs to / should appear within the primary map, falsey to
+ *      have it allocated to the secondary map.
+ */
+
+/**
+ * @callback SplitTreeMapTitleFn
+ * @param {TreeMapModel} treeMapModel - model for the region's inner TreeMap.
+ * @param {boolean} isPrimary - true if the region is the primary (top/left) map in the pair.
+ * @return {(String|Node)} - the region title to display.
+ */
