@@ -16,10 +16,15 @@
     params. Previously Dates were serialized in their default `toString()` format. This would be a
     breaking change for an app that relied on that default Date serialization, but it was made for
     increased symmetry with how Hoist JSON-serializes Dates and LocalDates on the server-side.
-  * `DateInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`. See its
-    new prop of `valueType` which can be set to `localDate` or `date` (default).
+  * `DateInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`. See its new
+    prop of `valueType` which can be set to `localDate` or `date` (default).
   * A new `localDateCol` config has been added to the `@xh/hoist/grid/columns` package with
     standardized rendering and formatting.
+* New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
+  TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
+  which syncs selection and expand / collapse state.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
 ## v26.0.1 - 2019-08-07
 
