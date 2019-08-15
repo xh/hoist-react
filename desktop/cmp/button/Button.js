@@ -39,7 +39,7 @@ export const [Button, button] = hoistComponent(function Button(props) {
         },
 
         ...rest,
-        className: getClassName(classes)
+        className: getClassName('xh-button', props, classes)
     });
 });
 
