@@ -135,7 +135,7 @@ export class RecordSet {
 
                 if (!existing) {
                     missingUpdates++;
-                    console.debug(`Attempted to update non-existent record: '${id}'`);
+                    console.debug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
                 rec.parentId = existing.parentId;
@@ -149,7 +149,7 @@ export class RecordSet {
                 const recs = this.createRecords([rawData], parentId);
                 recs.forEach(rec => {
                     const {id} = rec;
-                    throwIf(newRecords.has(id), `Attempted to insert duplicate record: '${id}'`);
+                    throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                     newRecords.set(id, rec);
                 });
             });
@@ -158,14 +158,16 @@ export class RecordSet {
 
         // 2) Deletes
         if (deletes) {
+            const allDeletes = new Set();
             deletes.forEach(id => {
                 if (!newRecords.has(id)) {
                     missingDeletes++;
                     console.debug(`Attempted to delete non-existent record: ${id}`);
                     return;
                 }
-                newRecords.delete(id);
+                this.gatherDescendants(id, allDeletes);
             });
+            allDeletes.forEach(it => newRecords.delete(it));
         }
 
         if (missingUpdates > 0) console.warn(`Failed to update ${missingUpdates} records not found by id`);
@@ -223,7 +225,7 @@ export class RecordSet {
         return ret;
     }
 
-    gatherDescendants(id, idSet = new Set()) {
+    gatherDescendants(id, idSet) {
         if (!idSet.has(id)) {
             idSet.add(id);
             const children = this.childrenMap.get(id);
