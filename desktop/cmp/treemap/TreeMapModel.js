@@ -185,6 +185,11 @@ export class TreeMapModel {
     }
 
     @computed
+    get hasData() {
+        return !isEmpty(this.data);
+    }
+
+    @computed
     get error() {
         if (this.data.length > this.maxNodes) return 'Data node limit reached. Unable to render TreeMap.';
         return null;
@@ -378,7 +383,7 @@ export class TreeMapModel {
     };
 
     defaultOnDoubleClick = (record) => {
-        if (!this.gridModel || !this.gridModel.treeMode || !record.children) return;
+        if (!this.gridModel || !this.gridModel.treeMode || isEmpty(record.children)) return;
         this.toggleNodeExpanded(record.xhTreePath);
     };
 

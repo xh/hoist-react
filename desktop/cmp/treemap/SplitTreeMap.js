@@ -53,6 +53,8 @@ export class SplitTreeMap extends Component {
 
         let pFlex = 1, sFlex = 1;
         if (pTotal && sTotal) {
+            // pFlex value is rounded to limit the precision of our flex config and avoid extra
+            // render cycles due to imperceptible changes in the ratio between the sides.
             pFlex = (pTotal / sTotal).toFixed(2);
         } else if (pTotal && !sTotal) {
             sFlex = 0;

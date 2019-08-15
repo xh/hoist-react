@@ -4,24 +4,22 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import React, {Component} from 'react';
-import PT from 'prop-types';
-import {Highcharts} from '@xh/hoist/kit/highcharts';
-
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {div, box, frame} from '@xh/hoist/cmp/layout';
-import {Ref} from '@xh/hoist/utils/react';
-import {resizeSensor} from '@xh/hoist/kit/blueprint';
+import {box, div, frame} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {forEachAsync} from '@xh/hoist/utils/async';
+import {resizeSensor} from '@xh/hoist/kit/blueprint';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
-import {assign, merge, clone, debounce, isFunction} from 'lodash';
+import {withShortDebug} from '@xh/hoist/utils/js';
+import {Ref} from '@xh/hoist/utils/react';
+import {assign, cloneDeep, debounce, isEqual, isFunction, merge, omit} from 'lodash';
+import PT from 'prop-types';
+import React, {Component} from 'react';
 
-import {LightTheme} from './theme/Light';
-import {DarkTheme} from './theme/Dark';
-
-import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
+import {DarkTheme} from './theme/Dark';
+import {LightTheme} from './theme/Light';
+import './TreeMap.scss';
 
 /**
  * Component for rendering a TreeMap.
@@ -54,11 +52,24 @@ export class TreeMap extends Component {
         this._clickCount = 0;
         this._debouncedClickHandler = debounce(this.clickHandler, 500);
 
-        // Sync selection
+        // Render HighChart when chartElem container ready in DOM, a relevant observable on the
+        // model API changes, and/or the source data array itself changes.
         this.addReaction({
-            track: () => [this.model.selectedIds, this.getMergedConfig()],
+            track: () => [
+                XH.darkTheme,
+                this._chartElem.value,
+                this.model.highChartsConfig,
+                this.model.algorithm,
+                this.model.data
+            ],
+            run: () => this.createOrReloadHighChart()
+        });
+
+        // Sync selection on a deferred basis when model selection or data changes.
+        this.addReaction({
+            track: () => [this.model.selectedIds, this.model.data],
             run: () => this.syncSelection(),
-            delay: 1 // Must wait for chart re-render on data / config change
+            delay: 1 // Must wait for chart re-render triggered above.
         });
     }
 
@@ -69,22 +80,18 @@ export class TreeMap extends Component {
             layoutProps.flex = 1;
         }
 
-        // No-op on first render - will re-render upon setting the _chartElem Ref
-        this.renderHighChart();
-        this.updateLabelVisibilityAsync();
-
-        // Render child item
-        const {data, error} = this.model;
+        // Render child item - note this will NOT render the actual HighCharts viz - only a shell
+        // div to hold one. The chart itself will be rendered once the shell's ref resolves.
+        const {error, hasData} = this.model;
         let item;
         if (error) {
             item = this.renderError(error);
-        } else if (!data.length) {
+        } else if (!hasData) {
             item = this.renderPlaceholder();
         } else {
             item = this.renderChartHolder();
         }
 
-        // Inner div required to be the ref for the chart element
         return resizeSensor({
             onResize: debounce((e) => this.resizeChartAsync(e), 100),
             item: box({
@@ -95,6 +102,10 @@ export class TreeMap extends Component {
         });
     }
 
+
+    //-------------------
+    // Implementation
+    //-------------------
     renderError(error) {
         return frame({
             className: 'xh-treemap__error-message',
@@ -116,35 +127,63 @@ export class TreeMap extends Component {
         });
     }
 
-    //-------------------
-    // Implementation
-    //-------------------
-    renderHighChart() {
-        this.destroyHighChart();
+    createOrReloadHighChart() {
         const chartElem = this._chartElem.value;
-        if (chartElem) {
-            const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
+        if (!chartElem) return;
 
-            assign(config.chart, {
-                width: parentEl.offsetWidth,
-                height: parentEl.offsetHeight
-            });
+        // Extract and compare a subset of the config across calls to determine if we should
+        // recreate the entire chart or just reload the series data.
+        const config = this.getMergedConfig(),
+            chartCfg = omit(config, 'series', 'tooltip'),
+            canUpdateInPlace = this._chart && isEqual(chartCfg, this._prevConfig);
 
-            config.chart.renderTo = chartElem;
-            this._chart = Highcharts.chart(config);
+        if (canUpdateInPlace) {
+            this.reloadSeriesData(config.series[0].data);
+        } else {
+            this._prevConfig = cloneDeep(chartCfg);
+            this.createChart(config);
         }
+
+        this.updateLabelVisibility();
+    }
+
+    createChart(config) {
+        const chartElem = this._chartElem.value;
+        if (!chartElem) return;
+
+        const newData = config.series[0].data,
+            parentEl = chartElem.parentElement;
+
+        assign(config.chart, {
+            width: parentEl.offsetWidth,
+            height: parentEl.offsetHeight,
+            renderTo: chartElem
+        });
+
+        withShortDebug(`Creating new TreeMap | ${newData.length} records`, () => {
+            this.destroyHighChart();
+            this._chart = Highcharts.chart(config);
+        }, this);
+    }
+
+    reloadSeriesData(newData) {
+        if (!this._chart) return;
+
+        withShortDebug(`Updating TreeMap series | ${newData.length} records`, () => {
+            this._chart.series[0].setData(newData, true, false);
+        }, this);
     }
 
     async resizeChartAsync(e) {
         if (!this._chart) return;
+
         await start(() => {
             const {width, height} = e[0].contentRect;
             if (width > 0 && height > 0) {
                 this._chart.setSize(width, height, false);
             }
         });
-        await this.updateLabelVisibilityAsync();
+        this.updateLabelVisibility();
     }
 
     destroy() {
@@ -164,9 +203,9 @@ export class TreeMap extends Component {
     getMergedConfig() {
         const defaultConf = this.getDefaultConfig(),
             themeConf = this.getThemeConfig(),
-            propsConf = this.getModelConfig();
+            modelConf = this.getModelConfig();
 
-        return merge(defaultConf, themeConf, propsConf);
+        return merge(defaultConf, themeConf, modelConf);
     }
 
     getDefaultConfig() {
@@ -180,7 +219,7 @@ export class TreeMap extends Component {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? clone(DarkTheme) : clone(LightTheme);
+        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
     }
 
     getModelConfig() {
@@ -188,7 +227,6 @@ export class TreeMap extends Component {
             {defaultTooltip} = this;
 
         return {
-            ...highchartsConfig,
             tooltip: {
                 enabled: !!tooltip,
                 useHTML: true,
@@ -217,7 +255,8 @@ export class TreeMap extends Component {
                     style: {textOutline: 'none', visibility: 'hidden'}
                 },
                 events: {click: this.onClick}
-            }]
+            }],
+            ...highchartsConfig
         };
     }
 
@@ -271,22 +310,32 @@ export class TreeMap extends Component {
     //----------------------
     // Labels
     //----------------------
-    async updateLabelVisibilityAsync() {
+    updateLabelVisibility() {
         if (!this._chart) return;
 
         // Show / hide labels by comparing label size to node size
-        await forEachAsync(this._chart.series[0].data, node => {
+        let hasChanges = false;
+        this._chart.series[0].data.forEach(node => {
             if (node.dataLabel && node.graphic) {
                 const buffer = 10,
                     tooSmallWidth = (node.dataLabel.width + buffer) > node.graphic.element.width.baseVal.value,
                     tooSmallHeight = (node.dataLabel.height + buffer) > node.graphic.element.height.baseVal.value,
-                    style = tooSmallWidth || tooSmallHeight ? {visibility: 'hidden'} : {visibility: 'visible'};
+                    currentVisibility = node.dataLabel.styles.visibility,
+                    newVisibility = tooSmallWidth || tooSmallHeight ? 'hidden' : 'visible';
 
-                node.update({dataLabels: {style}}, false, false);
+                if (currentVisibility !== newVisibility) {
+                    const updates = {dataLabels: {style: {visibility: newVisibility}}};
+                    node.update(updates, false, false);
+                    hasChanges = true;
+                }
             }
         });
 
-        if (this._chart) this._chart.redraw();
+        if (hasChanges) {
+            withShortDebug('Redrawing TreeMap due to label visibility change', () => {
+                this._chart.redraw();
+            }, this);
+        }
     }
 
     //----------------------
