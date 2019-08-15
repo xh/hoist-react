@@ -3,7 +3,7 @@
   "version": "27.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:exhi/hoist-react",
-  "homepage": "https://github.com/exhi/hoist-react",
+  "homepage": "https://xh.io",
   "bugs": "https://github.com/exhi/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
@@ -49,14 +49,14 @@
     "store2": "~2.8.0"
   },
   "peerDependencies": {
-      "react": "^16.8.0",
-      "react-dom": "^16.8.0",
-      "react-dom-factories": "^1.0.2"
+      "react": "~16.8.0",
+      "react-dom": "~16.8.0",
+      "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "~3.7.7",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "react-dom-factories": "^1.0.2"
+    "react": "~16.8.0",
+    "react-dom": "~16.8.0",
+    "react-dom-factories": "~1.0.2"
   }
 }
