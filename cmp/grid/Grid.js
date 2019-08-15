@@ -377,6 +377,10 @@ export class Grid extends Component {
                             api.refreshCells({force: true});
                         }
 
+                        if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                            // Clear out any stale expand state
+                            model.noteAgExpandStateChange();
+                        }
                     }, this);
 
                     // Set flag if data is hierarchical.
@@ -579,6 +583,7 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+        this.model.noteAgExpandStateChange();
     };
 
     // Catches column pinning changes triggered from ag-grid ui components

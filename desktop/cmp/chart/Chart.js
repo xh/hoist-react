@@ -7,25 +7,18 @@
 import {Component} from 'react';
 import PT from 'prop-types';
 import {assign, castArray, clone, merge} from 'lodash';
-import Highcharts from 'highcharts/highstock';
-import highchartsExporting from 'highcharts/modules/exporting';
-import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
-import highchartsExportData from 'highcharts/modules/export-data';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
 
-import { XH, elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
-import { div, box } from '@xh/hoist/cmp/layout';
-import { Ref } from '@xh/hoist/utils/react';
-import { resizeSensor } from '@xh/hoist/kit/blueprint';
+import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {div, box} from '@xh/hoist/cmp/layout';
+import {Ref} from '@xh/hoist/utils/react';
+import {resizeSensor} from '@xh/hoist/kit/blueprint';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
-
-highchartsExporting(Highcharts);
-highchartsOfflineExporting(Highcharts);
-highchartsExportData(Highcharts);
 installZoomoutGesture(Highcharts);
 
 /**
@@ -64,6 +57,7 @@ export class Chart extends Component {
             layoutProps.flex = 1;
         }
 
+        // No-op on first render - will re-render upon setting the _chartElem Ref
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
@@ -141,8 +135,10 @@ export class Chart extends Component {
     }
     
     destroyHighChart() {
-        XH.safeDestroy(this._chart);
-        this._chart = null;
+        if (this._chart) {
+            this._chart.destroy();
+            this._chart = null;
+        }
     }
 
     //----------------------

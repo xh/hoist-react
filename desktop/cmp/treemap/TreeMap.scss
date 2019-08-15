@@ -1,0 +1,81 @@
+.xh-treemap,
+.xh-split-treemap {
+  &__error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--xh-bg-alt);
+
+    p {
+      padding: var(--xh-pad-px);
+      background: var(--xh-bg);
+      border: var(--xh-border-solid);
+      font-size: var(--xh-font-size-small-px);
+      max-width: 50%;
+    }
+  }
+}
+
+.xh-treemap {
+  &__placeholder {
+    padding: var(--xh-pad-px);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    background: var(--xh-bg-alt);
+  }
+
+  &__chart-holder {
+    margin: auto;
+  }
+
+  text > tspan {
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-font-size-small-px);
+    font-weight: normal;
+  }
+
+  rect.highcharts-point {
+    outline-style: solid;
+    outline-width: 1px;
+    outline-offset: -1px;
+    // Using transparent borders means they 'double' up, leading to
+    // slightly more pronounced borders around parent groups.
+    outline-color: rgba(0, 0, 0, 0.15);
+
+    &.highcharts-point-select {
+      outline-width: 3px;
+      outline-offset: -3px;
+      outline-color: var(--xh-blue-light);
+    }
+  }
+}
+
+.xh-treemap-tooltip {
+  color: var(--xh-text-color);
+  border: var(--xh-border-solid);
+  white-space: nowrap;
+
+  &__label {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg-alt);
+    font-size: var(--xh-font-size-small-px);
+  }
+
+  &__row {
+    display: flex;
+    background: var(--xh-bg);
+    border-top: var(--xh-border-solid);
+    font-size: var(--xh-font-size-small-px);
+
+    & > div {
+      padding: var(--xh-pad-half-px);
+
+      &:first-of-type {
+        flex: 1;
+        padding-right: var(--xh-pad-px);
+        font-weight: bold;
+      }
+    }
+  }
+}
