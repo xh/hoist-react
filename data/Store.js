@@ -111,9 +111,9 @@ export class Store {
     }
 
     /**
-     * Add, update, or delete existing data in store.
+     * Add, update, or delete records in this store.
      *
-     * @param {StoreChangeSet} changes,
+     * @param {StoreUpdate} changes
      */
     @action
     updateData(changes) {
@@ -348,18 +348,13 @@ export class Store {
 }
 
 /**
- * @type StoreUpdateSet
- *
+ * @type StoreUpdate
  * @param {Object[]} updates - list of raw data objects representing records to be updated. The
  *      form of these records should be the same as presented to loadData(), with the exception that
- *      the children property will be ignored, and the previous children
- *      for the record in question will be preserved.
- *
+ *      the children property will be ignored, and the existing children for the record in question will be preserved.
  * @param {Object[]} adds - list of raw data representing records to be added, with the parent node
- *      it should be added to, if any.  Each item should be of the form {parentId: , rawData:{}}.  The
- *      form of these records should be the same as presented to loadData()
- *
- * @param {int[} deletes - list of ids to be removed.
- *
+ *      where they should be added, if not at the root..  Each item should be of the form
+ *      {parentId: , rawData:{}}.  The form of these rawData should be the same as presented to loadData()
+ * @param {string[]} deletes - list of ids representing records to be removed.
  * @param {Object} summaryUpdate - update to the dedicated summary row for this store.
  */
