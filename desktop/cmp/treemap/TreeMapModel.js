@@ -294,8 +294,9 @@ export class TreeMapModel {
 
             if (heatValue > 0) {
                 // Normalize positive values between 0.6-1
-                if (minPosHeat === maxPosHeat) it.colorValue = 0.8;
-                if (colorMode === 'balanced' && posHeatValues.length > 2) {
+                if (minPosHeat === maxPosHeat) {
+                    it.colorValue = 0.8;
+                } else if (colorMode === 'balanced' && posHeatValues.length > 2) {
                     if (it.colorValue >= midPosHeat) {
                         it.colorValue = this.normalizeToRange(heatValue, midPosHeat, maxPosHeat, 0.8, 1);
                     } else {
@@ -306,11 +307,11 @@ export class TreeMapModel {
                 }
             } else if (heatValue < 0) {
                 // Normalize negative values between 0-0.4
-                if (minNegHeat === maxNegHeat) it.colorValue = 0.2;
-
                 const absHeatValue = Math.abs(heatValue);
 
-                if (colorMode === 'balanced' && negHeatValues.length > 2) {
+                if (minNegHeat === maxNegHeat) {
+                    it.colorValue = 0.2;
+                } else if (colorMode === 'balanced' && negHeatValues.length > 2) {
                     if (absHeatValue >= midNegHeat) {
                         it.colorValue = this.normalizeToRange(absHeatValue, maxNegHeat, midNegHeat, 0, 0.2);
                     } else {
