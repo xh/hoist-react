@@ -17,10 +17,12 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import classNames from 'classnames';
+import {wait} from '@xh/hoist/promise';
 
 import './DateInput.scss';
 
@@ -99,19 +101,27 @@ export class DateInput extends HoistInput {
 
         /**
          * The precision of time selection that accompanies the calendar.
-         * If undefined, control will not show time.
+         * If undefined, control will not show time. Ignored when valueType is localDate.
          */
-        timePrecision: PT.oneOf(['second', 'minute'])
+        timePrecision: PT.oneOf(['second', 'minute']),
+
+        /** Type of value to publish. Defaults to 'date'. */
+        valueType: PT.oneOf(['date', 'localDate'])
     };
 
     @bindable popoverOpen = false;
 
+    inputRef = new Ref();
+    buttonRef = new Ref();
     popoverRef = new Ref();
     baseClassName = 'xh-date-input';
 
     // Prop-backed convenience getters
     get maxDate() {return this.props.maxDate || moment().add(100, 'years').toDate()}
     get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
+
+    get valueType() {return withDefault(this.props.valueType, 'date')}
+    get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
 
     render() {
         const props = this.getNonLayoutProps();
@@ -153,27 +163,28 @@ export class DateInput extends HoistInput {
                     minDate: this.minDate,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-                    timePickerProps: props.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined,
-                    timePrecision: props.timePrecision
+                    timePrecision: this.timePrecision,
+                    timePickerProps: this.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined
                 }),
 
-                item: textInput({
-                    value: this.formatDate(this.renderValue),
-                    className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
-                    onCommit: this.onInputCommit,
-                    rightElement,
+                item: div({
+                    item: textInput({
+                        value: this.formatDate(this.renderValue),
+                        className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
+                        onCommit: this.onInputCommit,
+                        rightElement,
 
-                    disabled: props.disabled || !enableTextInput,
-                    leftIcon: props.leftIcon,
-                    tabIndex: props.tabIndex,
-                    placeholder: props.placeholder,
-                    textAlign: props.textAlign,
-
-                    ...layoutProps
+                        disabled: props.disabled || !enableTextInput,
+                        leftIcon: props.leftIcon,
+                        tabIndex: props.tabIndex,
+                        placeholder: props.placeholder,
+                        textAlign: props.textAlign,
+                        inputRef: this.inputRef.ref,
+                        ...layoutProps
+                    }),
+                    onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null
                 })
             }),
-
-            onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null,
             onBlur: this.onBlur,
             onFocus: this.onFocus,
             onKeyDown: this.onKeyDown
@@ -198,10 +209,21 @@ export class DateInput extends HoistInput {
                     className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
+                    elementRef: this.buttonRef.ref,
                     onClick: enablePicker && !disabled ? this.onOpenPopoverClick : null
                 })
             ]
         });
+    }
+
+    toExternal(internal) {
+        if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
+        return internal;
+    }
+
+    toInternal(external) {
+        if (this.valueType === 'localDate') return external ? external.date : null;
+        return external;
     }
 
     /**
@@ -219,31 +241,49 @@ export class DateInput extends HoistInput {
         }
     };
 
+    noteBlurred() {
+        super.noteBlurred();
+        wait(1).then(() => {
+            if (!this.hasFocus) {
+                this.setPopoverOpen(false);
+            }
+        });
+    }
+
     onClearBtnClick = (ev) => {
         this.noteValueChange(null);
         this.doCommit();
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onOpenPopoverClick = (ev) => {
         this.setPopoverOpen(!this.popoverOpen);
-        ev.stopPropagation();
+        this.consumeEvent(ev);
     };
 
     onKeyDown = (ev) => {
         if (ev.key == 'Enter') {
             this.doCommit();
-        }
-        if (this.popoverOpen && ev.key == 'Escape') {
+            this.consumeEvent(ev);
+        } else if (this.popoverOpen && ev.key == 'Escape') {
             this.setPopoverOpen(false);
-        }
-        if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
+            this.consumeEvent(ev);
+        } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
             this.setPopoverOpen(true);
+            this.consumeEvent(ev);
         }
     };
 
     onPopoverClose = () => {
         this.doCommit();
+        if (this.hasFocus) {
+            const {inputRef, buttonRef} = this;
+            if (inputRef.value) {
+                inputRef.value.focus();
+            } else if (buttonRef.value) {
+                buttonRef.value.focus();
+            }
+        }
     };
 
     onInputCommit = (value) => {
@@ -258,7 +298,7 @@ export class DateInput extends HoistInput {
         // If no time component, selecting a date in the picker is most likely a "click and done"
         // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
         // however, the picker is used to adjust multiple fields and should stay visible.
-        if (!this.props.timePrecision) {
+        if (!this.timePrecision) {
             this.setPopoverOpen(false);
         }
     };
@@ -274,7 +314,7 @@ export class DateInput extends HoistInput {
     };
 
     applyPrecision(date) {
-        let {timePrecision} = this.props;
+        let {timePrecision} = this;
         date = clone(date);
         if (timePrecision == 'second') {
             date.setMilliseconds(0);
@@ -287,7 +327,9 @@ export class DateInput extends HoistInput {
     }
 
     getFormat() {
-        const {formatString, timePrecision} = this.props;
+        const {timePrecision} = this,
+            {formatString} = this.props;
+
         if (formatString) return formatString;
         let ret = 'YYYY-MM-DD';
         if (timePrecision == 'minute') {
@@ -306,6 +348,11 @@ export class DateInput extends HoistInput {
         // Handle 'invalid date'  as null.
         const ret = moment(dateString, this.getFormat()).toDate();
         return isNaN(ret) ? null : ret;
+    }
+
+    consumeEvent(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 }
 

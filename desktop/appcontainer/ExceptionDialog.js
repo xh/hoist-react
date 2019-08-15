@@ -74,10 +74,12 @@ export const [DismissButton, dismissButton] = hoistComponent(props => {
         button({
             icon: Icon.refresh(),
             text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
+            autoFocus: true,
             onClick:  () => XH.reloadApp()
         }) :
         button({
             text: 'Close',
+            autoFocus: true,
             onClick: () => model.close()
         });
 });

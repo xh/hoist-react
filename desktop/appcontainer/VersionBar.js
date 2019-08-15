@@ -23,7 +23,7 @@ export const [VersionBar, versionBar] = hoistComponent(() => {
         justifyContent: 'center',
         alignItems: 'center',
         flex: 'none',
-        className: `xh-version-bar xh-version-bar-${env.toLowerCase()}`,
+        className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
         items: [
             [XH.appName, env, version].join(' • '),
             Icon.info({

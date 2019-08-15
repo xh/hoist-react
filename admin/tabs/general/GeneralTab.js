@@ -6,12 +6,14 @@
  */
 import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import {AboutPanel} from './about/AboutPanel';
 import {ConfigPanel} from './configs/ConfigPanel';
-import {ServicePanel} from './services/ServicePanel';
 import {EhCachePanel} from './ehcache/EhCachePanel';
+import {ServicePanel} from './services/ServicePanel';
 import {UserPanel} from './users/UserPanel';
+import {WebSocketPanel} from './websocket/WebSocketPanel';
 
 export const [GeneralTab] = hoistComponent(() => {
     return tabContainer({
@@ -19,11 +21,12 @@ export const [GeneralTab] = hoistComponent(() => {
             route: 'default.general',
             switcherPosition: 'left',
             tabs: [
-                {id: 'about', content: AboutPanel},
-                {id: 'config', content: ConfigPanel},
-                {id: 'services', content: ServicePanel},
-                {id: 'ehCache', title: 'Caches', content: EhCachePanel},
-                {id: 'users', content: UserPanel}
+                {id: 'about', icon: Icon.info(), content: AboutPanel},
+                {id: 'config', icon: Icon.settings(), content: ConfigPanel},
+                {id: 'services', icon: Icon.gears(), content: ServicePanel},
+                {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: EhCachePanel},
+                {id: 'users', icon: Icon.users(), content: UserPanel},
+                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: WebSocketPanel}
             ]
         }
     });

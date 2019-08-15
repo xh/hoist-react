@@ -20,6 +20,10 @@ export class Checkbox extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
+
+        /** True to focus the control on render. */
+        autoFocus: PT.bool,
+                
         value: PT.bool,
 
         /** True (default) if the control should appear as an inline element. */
@@ -50,6 +54,7 @@ export class Checkbox extends HoistInput {
             valueIsUnset = (this.renderValue === null || this.renderValue === undefined);
 
         return bpCheckbox({
+            autoFocus: props.autoFocus,
             checked: !!this.renderValue,
             indeterminate: valueIsUnset && displayUnsetState,
             alignIndicator: labelAlign == 'left' ? 'right' : 'left',

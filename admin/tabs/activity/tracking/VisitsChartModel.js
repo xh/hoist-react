@@ -4,24 +4,25 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import moment from 'moment';
+
 import {forOwn} from 'lodash';
 import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
-import {observable, action, comparer} from '@xh/hoist/mobx';
+import {bindable, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel
 @LoadSupport
 export class VisitsChartModel {
 
-    @observable startDate = moment().subtract(3, 'months').toDate();
-    @observable endDate = new Date();
-    @observable username = '';
+    @bindable.ref startDate = LocalDate.today().subtract(3, 'months');
+    @bindable.ref endDate = LocalDate.today();
+    @bindable username = '';
     
     @managed
     chartModel = new ChartModel({
-        config: {
+        highchartsConfig: {
             chart: {type: 'column'},
             plotOptions: {
                 column: {animation: false}
@@ -63,44 +64,20 @@ export class VisitsChartModel {
             this.chartModel.setSeries(this.getSeriesData(data));
         }).catchDefault();
     }
-
-    @action
-    setStartDate(date) {
-        this.startDate = date;
-    }
-
-    @action
-    setEndDate(date) {
-        this.endDate = date;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
+    
     //----------------
     // Implementation
     //----------------
     getParams() {
         const {endDate, startDate, username} = this;
-
-        return {
-            startDate: this.isValidDate(startDate) ? fmtDate(startDate, 'YYYYMMDD') : null,
-            endDate: this.isValidDate(endDate) ? fmtDate(endDate, 'YYYYMMDD') : null,
-            username
-        };
+        return {startDate, endDate, username};
     }
-
-    isValidDate(date) {
-        return date && date.toString() !== 'Invalid Date';
-    }
-
+    
     getSeriesData(visits) {
         const data = [];
 
-        forOwn(visits, (k, v) => {
-            data.push([moment(v).valueOf(), k]);
+        forOwn(visits, (v, k) => {
+            data.push([LocalDate.get(k).timestamp, v]);
         });
 
         return [{data}];

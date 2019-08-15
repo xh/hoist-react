@@ -50,6 +50,7 @@ function renderToolbar(model) {
 function renderDateInput(args) {
     return dateInput({
         popoverPosition: 'top-left',
+        valueType: 'localDate',
         width: 120,
         ...args
     });

@@ -10,6 +10,8 @@ import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 
+import './Button.scss';
+
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
  * and adds layout support for top-level sizing and margin/padding props.
@@ -18,22 +20,31 @@ import {getClassName} from '@xh/hoist/utils/react';
  */
 export const [Button, button] = hoistComponent(function Button(props) {
     const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-        {icon, text, onClick, minimal = true, style, ...rest} = nonLayoutProps;
+        {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,
+        classes = [];
+
+    if (minimal) classes.push('xh-button--minimal');
+    if (autoFocus) classes.push('xh-button--autofocus-enabled');
+
     return bpButton({
         icon,
         minimal,
         onClick,
         text,
+        autoFocus,
+
         style: {
             ...style,
             ...layoutProps
         },
+
         ...rest,
-        className: getClassName('xh-button', props, minimal ? 'xh-button--minimal' : '')
+        className: getClassName(classes)
     });
 });
 
 Button.propTypes = {
+    autoFocus: PT.bool,
     icon: PT.element,
     minimal: PT.bool,
     onClick: PT.func,

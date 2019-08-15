@@ -12,6 +12,7 @@ import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
@@ -44,10 +45,11 @@ function renderToolbar(model) {
         renderDateInput({model, bind: 'endDate'}),
         button({
             icon: Icon.angleRight(),
-            onClick: () => model.adjustDates('add')
+            onClick: () => model.adjustDates('add'),
+            disabled: model.endDate >= LocalDate.today()
         }),
         button({
-            icon: Icon.angleDoubleRight(),
+            icon: Icon.reset(),
             onClick: () => model.adjustDates('subtract', true)
         }),
         toolbarSep(),
@@ -66,6 +68,7 @@ function renderToolbar(model) {
 function renderDateInput(args) {
     return dateInput({
         popoverPosition: 'bottom',
+        valueType: 'localDate',
         width: 120,
         ...args
     });

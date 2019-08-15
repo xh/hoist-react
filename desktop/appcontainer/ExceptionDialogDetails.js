@@ -77,7 +77,7 @@ export const [ExceptionDialogDetails, exceptionDialogDetails] = hoistComponent(p
                     omit: !clientUserKnown
                 }),
                 clipboardButton({
-                    clipboardSpec: {text: () => errorStr},
+                    getCopyText: () => errorStr,
                     successMessage: 'Error details copied to clipboard.'
                 }),
                 dismissButton({model})

@@ -1,6 +1,6 @@
 # Changelog
 
-## v26.0.0-SNAPSHOT - under development
+## v27.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
@@ -9,8 +9,53 @@
    essential forward-looking patterns in the React world, Class-based Components remain fully
    supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 
+* A new `LocalDate` class has been added to the toolkit. This class provides client-side support for
+  "business" or "calendar" days that do not have a time component. It is an immutable class that
+  supports '==', '<' and '>', as well as a number of convenient manipulation functions. Support for
+  the `LocalDate` class has also been added throughout the toolkit, including:
+  * `Field.type` now supports an additional `localDate` option for automatic conversion of server
+    data to this type when loading into a `Store`.
+  * `fetchService` is aware of this class and will automatically serialize all instances of it for
+    posting to the server. ⚠ NOTE that along with this change, `fetchService` and its methods such
+    as `XH.fetchJson()` will now serialize regular JS Date objects as ms timestamps when provided in
+    params. Previously Dates were serialized in their default `toString()` format. This would be a
+    breaking change for an app that relied on that default Date serialization, but it was made for
+    increased symmetry with how Hoist JSON-serializes Dates and LocalDates on the server-side.
+  * `DateInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`. See its
+    new prop of `valueType` which can be set to `localDate` or `date` (default).
+  * A new `localDateCol` config has been added to the `@xh/hoist/grid/columns` package with
+    standardized rendering and formatting.
+
+## v26.0.1 - 2019-08-07
+
+### 🎁 New Features
+
+* **WebSocket support** has been added in the form of `XH.webSocketService` to establish and
+  maintain a managed websocket connection with the Hoist UI server. This is implemented on the
+  client via the native `WebSocket` object supported by modern browsers and relies on the
+  corresponding service and management endpoints added to Hoist Core v6.1.
+  * Apps must declare `webSocketsEnabled: true` in their `AppSpec` configuration to enable this
+    overall functionality on the client.
+  * Apps can then subscribe via the new service to updates on a requested topic and will receive any
+    inbound messages for that topic via a callback.
+  * The service will monitor the socket connection with a regular heartbeat and attempt to
+    re-establish if dropped.
+  * A new admin console snap-in provides an overview of connected websocket clients.
+* The `XH.message()` and related methods such as `XH.alert()` now support more flexible
+  `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
+  and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
+  dialogs.
+  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user
+    convenience.
+  * The previous text/intent configs have been deprecated and the message methods will log a console
+    warning if they are used (although it will continue to respect them to aid transitioning to the
+    new configs).
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
+  details.
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
+* The `Button` component accepts an `autoFocus` prop to attempt to focus on render.
+* The `Checkbox` component accepts an `autoFocus` prop to attempt to focus on render.
 
 ### 💥 Breaking Changes
 
@@ -18,13 +63,45 @@
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
   
- * TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
-   factory function. Previously functions could also be provided to the `content` prop, but now that
-   prop must be a Class or a function that is strictly a React Component definition.
-   
+* The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
+  independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
+  (`clipboardSpec` is an artifact from the removed `clipboard` library).
+
+* The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
+  initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
+  `input.value` (#1298).
+  
+* ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
+
+* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
+  factory function. Previously functions could also be provided to the `content` prop, but now that
+  prop must be a Class or a function that is strictly a React Component definition.
+
+### 🐞 Bug Fixes
+
+* The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
+  `queryFn` props.
+* `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
+  `enableTextInput` is `false` and a month or year is clicked (#1293).
+* Buttons within a grid `actionCol` now render properly in compact mode, without clipping/overflow.
+
+### ⚙️ Technical
+
+* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
+  called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to
+  verify the grid is fully initialized.
+
 ### 📚 Libraries
 
-* ag-Grid `21.0.1 -> 21.1.0` 
+* @blueprintjs/core `3.17 -> 3.18`
+* @blueprintjs/datetime `3.11 -> 3.12`
+* @fortawesome/fontawesome `5.9 -> 5.10`
+* ag-grid `21.0.1 -> 21.1.1`
+* store2 `2.7 -> 2.8`
+* The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.1)
 
 ## v25.2.0 - 2019-07-25
 

@@ -56,7 +56,7 @@ function renderDetail(model, rec) {
         toolbar(
             filler(),
             clipboardButton({
-                clipboardSpec: {text: () => model.detailRecord.error},
+                getCopyText: () => model.detailRecord.error,
                 successMessage: 'Error details copied to clipboard.'
             }),
             button({

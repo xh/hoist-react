@@ -4,23 +4,23 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
 import {form} from '@xh/hoist/cmp/form';
+import {filler} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {Component} from 'react';
 
 import './Message.scss';
-import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
 
 /**
- * A modal dialog that supports imperative alert/confirm.
- *
+ * A preconfigured dialog component used to render modal messages.
+ * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
 @HoistComponent
@@ -48,6 +48,7 @@ export class Message extends Component {
                 ),
                 toolbar(this.renderButtons())
             ],
+            onClose: () => {if (model.cancelProps) model.doCancel();},
             ...this.props
         });
     }
@@ -66,22 +67,22 @@ export class Message extends Component {
     }
 
     renderButtons() {
-        const {formModel, confirmText, cancelText, confirmIntent, cancelIntent} = this.model;
-        return [
-            filler(),
-            button({
-                text: cancelText,
-                omit: !cancelText,
-                intent: cancelIntent,
-                onClick: () => this.model.doCancel()
-            }),
-            button({
-                text: confirmText,
-                intent: confirmIntent,
-                disabled: formModel ? !formModel.isValid : false,
-                onClick: () => this.model.doConfirmAsync()
-            })
-        ];
+        const {confirmProps, cancelProps, formModel} = this.model,
+            ret = [filler()];
+
+        if (cancelProps) {
+            ret.push(button(cancelProps));
+        }
+
+        if (confirmProps) {
+            // Merge in formModel.isValid here in render stage to get reactivity.
+            ret.push(formModel ?
+                button({...confirmProps, disabled: !formModel.isValid}) :
+                button(confirmProps)
+            );
+        }
+
+        return ret;
     }
 
 }

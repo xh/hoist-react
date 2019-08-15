@@ -4,11 +4,15 @@
   background-color: var(--xh-green-muted);
   padding: var(--xh-pad-half-px);
 
-  &-production, &-bcp {
+  &--production {
     background-color: var(--xh-red);
   }
 
-  &-staging, &-beta, &-uat {
+  &--bcp {
+    background-color: var(--xh-purple);
+  }
+
+  &--staging, &--beta, &--uat {
     background-color: var(--xh-blue);
   }
 

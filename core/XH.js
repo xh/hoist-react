@@ -24,7 +24,8 @@ import {
     IdleService,
     LocalStorageService,
     PrefService,
-    TrackService
+    TrackService,
+    WebSocketService
 } from '@xh/hoist/svc';
 
 import {AppContainerModel} from './appcontainer/AppContainerModel';
@@ -32,7 +33,6 @@ import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
 
 import '../styles/XH.scss';
-
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -94,6 +94,8 @@ class XHClass {
     prefService;
     /** @member {TrackService} */
     trackService;
+    /** @member {WebSocketService} */
+    webSocketService;
 
     //----------------------------------------------------------------------------------------------
     // Aliased methods
@@ -305,15 +307,22 @@ class XHClass {
      * @param {string} config.message - message text to be displayed.
      * @param {string} [config.title] - title of message box.
      * @param {Element} [config.icon] - icon to be displayed.
-     * @param {MessageInput} [config.input] - config for input to be displayed.
-     * @param {string} [config.confirmText] - Text for confirm button. If null, no button will be shown.
-     * @param {string} [config.cancelText] - Text for cancel button. If null, no button will be shown.
-     * @param {string} [config.confirmIntent] - Blueprint Intent for confirm button (desktop only).
-     * @param {string} [config.cancelIntent] - Blueprint Intent for cancel button (desktop only).
+     * @param {MessageInput} [config.input] - config for input to be displayed (as a prompt).
+     * @param {string} [config.confirmProps] - props for primary confirm button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+     * @param {string} [config.cancelProps] - props for secondary cancel button.
+     *      Must provide either text or icon for button to be displayed, or use a preconfigured
+     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
      * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
      * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
      *
-     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     *
+     * Note that this method will auto focus the confirm button by default.  To focus the
+     * cancel button instead (e.g. for confirming risky operations), applications should specify a
+     * cancelProps argument of the following form:  cancelProps: {..., autoFocus: true}.
+     *
+     * @returns {Promise} - Promise resolving to true if user confirms, false if user cancels.
      *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {
@@ -433,7 +442,10 @@ class XHClass {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                if (it && it.destroy) it.destroy();
+                if (it && it.destroy) {
+                    console.debug('[XH] Destroying', it);
+                    it.destroy();
+                }
             });
         }
     }
@@ -530,7 +542,9 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
-            await this.installServicesAsync(AutoRefreshService, IdleService, GridExportService);
+            await this.installServicesAsync(
+                AutoRefreshService, IdleService, GridExportService, WebSocketService
+            );
             this.initModels();
 
             // Delay to workaround hot-reload styling issues in dev.

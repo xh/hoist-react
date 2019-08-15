@@ -64,7 +64,7 @@ export class Timer {
      * It is a one-way operation, intended for permanently halting app activity before sleeping.
      */
     static cancelAll() {
-        this._timers.forEach(t => t.cancel());
+        this._timers.forEach(t => t.cancelInternal());
         this._timers = [];
     }
 
@@ -72,8 +72,7 @@ export class Timer {
      * Permanently cancel this timer.
      */
     cancel() {
-        this.cancelled = true;
-        this.runFn = null;
+        this.cancelInternal();
         pull(Timer._timers, this);
     }
 
@@ -95,6 +94,11 @@ export class Timer {
         this.timeout = args.timeout;
         this.delay = args.delay;
         wait(this.delay).then(() => this.heartbeatAsync());
+    }
+
+    cancelInternal() {
+        this.cancelled = true;
+        this.runFn = null;
     }
 
     async heartbeatAsync() {

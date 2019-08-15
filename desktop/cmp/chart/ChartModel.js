@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-
+import {bindable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
@@ -14,27 +14,18 @@ import {observable, action} from '@xh/hoist/mobx';
 @HoistModel
 export class ChartModel {
 
-    @observable.ref config = {};
-    @observable.ref series = [];
+    @bindable.ref highchartsConfig = {};
+    @bindable.ref series = [];
 
     /**
      * @param {Object} c - ChartModel configuration.
-     * @param {Object} c.config - Highcharts configuration object for the managed chart. May include
+     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
      * @param {Object[]} c.series - Data series to be displayed.
      */
-    constructor({config, series = []} = {}) {
-        this.config = config;
-        this.series = series;
-    }
-
-    @action
-    setConfig(config) {
-        this.config = config;
-    }
-
-    @action
-    setSeries(series) {
+    constructor({highchartsConfig, series = [], config} = {}) {
+        throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
+        this.highchartsConfig = highchartsConfig;
         this.series = series;
     }
 
