@@ -346,48 +346,48 @@ export class Grid extends Component {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated],
-            run: ([api, showSummary, lastLoaded, lastUpdated]) => {
+            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
+            run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
 
                 if (!api) return;
 
                 const isUpdate = lastUpdated > lastLoaded;
 
-                const {records} = agGridModel;
+                const prevRs = this._prevRs,
+                    newCount = newRs.count,
+                    prevCount = prevRs ? prevRs.count : 0,
+                    deltaCount = newCount - prevCount;
+
                 runInAction(() => {
-                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
+                    const transaction = this.genTransaction(newRs, prevRs);
 
-                        if (!experimental.suppressPreclearOnDataLoad) {
-                            // If we are going to delete the majority of the rows then ag-Grid is faster
-                            // if we first clear out the existing data before setting the new data
-                            this.clearDataIfExpensiveDeletionPending(records, api);
-                        }
+                    withShortDebug(
+                        `${isUpdate ? 'Updating' : 'Loading'} Grid: ${this.transactionLogStr(transaction)}`,
+                        () => {
 
-                        // Load updated data into the grid.
-                        api.setRowData(records);
-                        this.updatePinnedSummaryRowData();
+                            api.updateRowData(transaction);
+                            this.updatePinnedSummaryRowData();
 
-                        // If row count changing and was or will be small, may need
-                        // to force col resizing to update scrollbar.
-                        const newLength = records.length,
-                            oldLength = api.getModel().getVirtualRowCount();
-                        if (newLength != oldLength && (oldLength < 100  || newLength < 100)) {
-                            api.sizeColumnsToFit();
-                        }
+                            // If row count changing to/from  small amt. force col resizing to update scrollbar.
+                            if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
+                                api.sizeColumnsToFit();
+                            }
 
-                        if (!experimental.suppressRefreshCellsOnDataLoad) {
-                            // Force grid to fully re-render cells. We are *not* relying on its default
-                            // cell-level change detection as this does not account for our current
-                            // renderer API (where renderers can reference other properties on the data
-                            // object). See https://github.com/exhi/hoist-react/issues/550.
-                            api.refreshCells({force: true});
-                        }
+                            if (!experimental.suppressRefreshCellsOnDataLoad) {
+                                // Force grid to fully re-render cells. We are *not* relying on its default
+                                // cell-level change detection as this does not account for our current
+                                // renderer API (where renderers can reference other properties on the data
+                                // object). See https://github.com/exhi/hoist-react/issues/550.
+                                api.refreshCells({force: true});
+                            }
 
-                        if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                            // Clear out any stale expand state
-                            model.noteAgExpandStateChange();
-                        }
-                    }, this);
+                            if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                                model.noteAgExpandStateChange();
+                            }
+                        }, this
+                    );
+
+                    this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
@@ -515,28 +515,6 @@ export class Grid extends Component {
         };
     }
 
-    clearDataIfExpensiveDeletionPending(newRecords, api) {
-        let currCount = 0, deleteCount = 0, addCount = 0;
-
-        const ids = new Set();
-        api.forEachNode((node, index) => ids.add(node.id));
-        currCount = ids.size;
-
-        newRecords.forEach(rec => {
-            if (!ids.delete(rec.id)) addCount++;
-        });
-        deleteCount = ids.size;
-
-        // Heuristic -- we think slow deletions grow by order (D * (C + A))
-        if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
-            console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
-            withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
-                api.selectionController.reset();
-                api.clientSideRowModel.setRowData([]);
-            }, this);
-        }
-    }
-
     updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
@@ -556,6 +534,35 @@ export class Grid extends Component {
         agApi.setPinnedTopRowData(pinnedTopRowData);
         agApi.setPinnedBottomRowData(pinnedBottomRowData);
     }
+
+    genTransaction(newRs, prevRs) {
+
+        if (!prevRs) return {add: newRs.list};
+
+        const newList = newRs.list,
+            prevList = prevRs.list,
+            newMap = newRs.records,
+            prevMap = prevRs.records,
+            add = [],
+            update = [];
+        newList.forEach(rec => {
+            const existing = prevMap.get(rec.id);
+            if (!existing) {
+                add.push(rec);
+            } else if (existing !== rec) {
+                update.push(rec);
+            }
+        });
+
+        const remove = prevList.filter(rec => !newMap.has(rec.id));
+
+        return {add, update, remove};
+    }
+
+    transactionLogStr(t) {
+        return `u: ${t.update ? t.update.length : 0} | a: ${t.add ? t.add.length : 0} | r: ${t.remove ? t.remove.length : 0}`;
+    }
+
 
     //------------------------
     // Event Handlers on AG Grid.
