@@ -15,6 +15,7 @@ import {
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
@@ -25,7 +26,6 @@ import {
     findLast,
     isArray,
     isEmpty,
-    isEqual,
     isNil,
     isUndefined,
     isPlainObject,
@@ -453,7 +453,7 @@ export class GridModel {
     noteAgExpandStateChange() {
         const agModelState = this.agGridModel.getExpandState();
 
-        if (!isEqual(this.expandState, agModelState)) {
+        if (!equal(this.expandState, agModelState)) {
             this.expandState = agModelState;
         }
     }
@@ -739,7 +739,7 @@ export class GridModel {
             items: GridModel.defaultContextMenuTokens,
             gridModel
         });
-    }
+    };
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
