@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
+/* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect} from 'react';
 
 /**

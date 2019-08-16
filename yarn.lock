@@ -1188,19 +1188,20 @@
     "@webassemblyjs/wast-parser" "1.8.5"
     "@xtuc/long" "4.2.2"
 
-"@xh/eslint-config@~1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-1.1.1.tgz#133bb60d820992eec9637117b22a9e5e769e5af6"
-  integrity sha512-nCML1Tn3+HoEJNthFEZDvPCm+3peoLjEj1DMrkuHNxf6+E1nCr13AYW0zqS2mThclVXgbgcIRk8dP6HjykWzUg==
+"@xh/eslint-config@~1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-1.2.0.tgz#de9e365360fc3b23db038fb1df39c6bfd76606e2"
+  integrity sha512-HWqTKgxkAD14QXrnWqTs9eyA2MhT7Sq5Sci1jsSC/5vrWHRvx0p2Q7RVSVLHju1l7g39HbuCtAI6yRNBJ13PSQ==
   dependencies:
     babel-eslint "~8.2.6"
     eslint "~4.19.1"
-    eslint-plugin-react "~7.12.4"
+    eslint-plugin-react "~7.14.3"
+    eslint-plugin-react-hooks "~1.7.0"
 
-"@xh/hoist-dev-utils@~3.7.7":
-  version "3.7.7"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.7.7.tgz#add85275989b2bfdbcb58dc0ba9333946e6076eb"
-  integrity sha512-sv4tqUBkCjWqWkh4xv6GoynOjB1P2Bxi+UVnuQymIlcTmItjWk2QnBmwvHrwfbUZJmsXG0yKZSR5ujhFymHvjw==
+"@xh/hoist-dev-utils@~3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-3.8.0.tgz#292882710aad0ee23fbd9ff1e315c1ae398b50fc"
+  integrity sha512-DBu5rvPnb8x22v6yxi0KALJzGbio5qVydqTS1geU75Z6b0T5dXL3NR5zdXBzTq9OkMndQkOczDUnR+ozupyCxA==
   dependencies:
     "@babel/core" "~7.4.4"
     "@babel/plugin-proposal-class-properties" "~7.4.4"
@@ -1210,7 +1211,7 @@
     "@babel/polyfill" "~7.4.4"
     "@babel/preset-env" "~7.4.4"
     "@babel/preset-react" "~7.0.0"
-    "@xh/eslint-config" "~1.1.1"
+    "@xh/eslint-config" "~1.2.0"
     autoprefixer "~9.5.1"
     babel-loader "~8.0.6"
     babel-plugin-transform-imports "~1.5.1"
@@ -3318,18 +3319,25 @@ escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha1-G2HAViGQqN/2rjuyzwIAyhMLhtQ=
 
-eslint-plugin-react@~7.12.4:
-  version "7.12.4"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.12.4.tgz#b1ecf26479d61aee650da612e425c53a99f48c8c"
-  integrity sha512-1puHJkXJY+oS1t467MjbqjvX53uQ05HXwjqDgdbGBqf5j9eeydI54G3KwiJmWciQ0HTBacIKw2jgwSBSH3yfgQ==
+eslint-plugin-react-hooks@~1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-1.7.0.tgz#6210b6d5a37205f0b92858f895a4e827020a7d04"
+  integrity sha512-iXTCFcOmlWvw4+TOE8CLWj6yX1GwzT0Y6cUfHHZqWnSk144VmVIRcVGtUAzrLES7C798lmvnt02C7rxaOX1HNA==
+
+eslint-plugin-react@~7.14.3:
+  version "7.14.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.14.3.tgz#911030dd7e98ba49e1b2208599571846a66bdf13"
+  integrity sha512-EzdyyBWC4Uz2hPYBiEJrKCUi2Fn+BJ9B/pJQcjw5X+x/H2Nm59S4MJIvL4O5NEE0+WbnQwEBxWY03oUk+Bc3FA==
   dependencies:
     array-includes "^3.0.3"
     doctrine "^2.1.0"
     has "^1.0.3"
-    jsx-ast-utils "^2.0.1"
+    jsx-ast-utils "^2.1.0"
+    object.entries "^1.1.0"
     object.fromentries "^2.0.0"
-    prop-types "^15.6.2"
-    resolve "^1.9.0"
+    object.values "^1.1.0"
+    prop-types "^15.7.2"
+    resolve "^1.10.1"
 
 eslint-scope@3.7.1:
   version "3.7.1"
@@ -5198,7 +5206,7 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-jsx-ast-utils@^2.0.1:
+jsx-ast-utils@^2.1.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/jsx-ast-utils/-/jsx-ast-utils-2.2.1.tgz#4d4973ebf8b9d2837ee91a8208cc66f3a2776cfb"
   integrity sha512-v3FxCcAf20DayI+uxnCuw795+oOIkVu6EnJ1+kSzhqqTZHNkTZ7B66ZgLp4oLJ/gbA64cI0B7WRoHZMSRdyVRQ==
@@ -7450,7 +7458,7 @@ resolve-url@^0.2.1:
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
   integrity sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
 
-resolve@^1.10.0, resolve@^1.3.2, resolve@^1.9.0:
+resolve@^1.10.0, resolve@^1.10.1, resolve@^1.3.2:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.12.0.tgz#3fc644a35c84a48554609ff26ec52b66fa577df6"
   integrity sha512-B/dOmuoAik5bKcD6s6nXDCjzUKnaDvdkRyAk6rsmsKLipWj4797iothd7jmmUhWTfinVMU+wc56rYKsit2Qy4w==
