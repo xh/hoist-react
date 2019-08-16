@@ -14,7 +14,7 @@ import {
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {deepFreeze, ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -454,7 +454,7 @@ export class GridModel {
         const agModelState = this.agGridModel.getExpandState();
 
         if (!equal(this.expandState, agModelState)) {
-            this.expandState = agModelState;
+            this.expandState = deepFreeze(agModelState);
         }
     }
 
