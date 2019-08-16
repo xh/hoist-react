@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual, isNil} from 'lodash';
+import {isEqual, isNil, isString} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -82,7 +82,8 @@ export class Record {
      * @param {string} [c.parentId] - id of parent record, if any.
      */
     constructor({data, raw, store, parentId}) {
-        const id = store.buildRecordId(data);
+        const {idSpec} = store,
+            id = isString(idSpec) ? data[idSpec] : idSpec(data);
 
         throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 

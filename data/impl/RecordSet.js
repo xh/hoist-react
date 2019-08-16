@@ -102,9 +102,8 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    loadData(rawData) {
-        const {records} = this,
-            newRecords = this.createRecords(rawData);
+    loadRecords(newRecords) {
+        const {records} = this;
 
         if (records.size) {
             const newKeys = newRecords.keys();
@@ -122,15 +121,14 @@ export class RecordSet {
     }
 
     updateData({updates, adds, deletes}) {
-        const {records, store} = this,
+        const {records} = this,
             newRecords = new Map(records);
         let missingDeletes = 0, missingUpdates = 0;
 
         // 0) Updates
         if (updates) {
-            updates.forEach(data => {
-                const rec = store.createRecord(data),
-                    {id} = rec,
+            updates.forEach(rec => {
+                const {id} = rec,
                     existing = records.get(id);
 
                 if (!existing) {
@@ -145,13 +143,10 @@ export class RecordSet {
 
         // 1) Additions
         if (adds) {
-            adds.forEach(({rawData, parentId}) => {
-                const recs = this.createRecords([rawData], parentId);
-                recs.forEach(rec => {
-                    const {id} = rec;
-                    throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
-                    newRecords.set(id, rec);
-                });
+            adds.forEach(rec => {
+                const {id} = rec;
+                throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
+                newRecords.set(id, rec);
             });
         }
 
@@ -180,27 +175,6 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
-    createRecords(rawData, parentId = null) {
-        const ret = new Map();
-        rawData.forEach(raw => this.buildRecords(raw, ret, parentId));
-        return ret;
-    }
-
-    buildRecords(raw, records, parentId) {
-        const rec = this.store.createRecord(raw, parentId),
-            {id} = rec;
-        throwIf(
-            records.has(id),
-            `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
-        );
-
-        records.set(id, rec);
-
-        if (raw.children) {
-            raw.children.forEach(rawChild => this.buildRecords(rawChild, records, id));
-        }
-    }
-
     computeChildrenMap(records) {
         const ret = new Map();
         records.forEach(r => {
