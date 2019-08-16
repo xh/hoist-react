@@ -17,7 +17,7 @@ import {throwIf} from '../../utils/js';
 export class RecordSet {
 
     store;
-    records;        // Records by id
+    recordMap;      // Map of all Records by id
     count;
     rootCount;
 
@@ -25,11 +25,19 @@ export class RecordSet {
     _list;          // Lazy list of all records.
     _rootList;      // Lazy list of root records.
 
-    constructor(store, records = new Map()) {
+    constructor(store, recordMap = new Map()) {
         this.store = store;
-        this.records = records;
-        this.count = records.size;
-        this.rootCount = this.countRoots(records);
+        this.recordMap = recordMap;
+        this.count = recordMap.size;
+        this.rootCount = this.countRoots(recordMap);
+    }
+
+    get empty() {
+        return this.count == 0;
+    }
+
+    getById(id) {
+        return this.recordMap.get(id);
     }
 
     //----------------------------------------------------------
@@ -38,12 +46,12 @@ export class RecordSet {
     // clients will never ask for list or tree representations.
     //----------------------------------------------------------
     get childrenMap() {
-        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.records);
+        if (!this._childrenMap) this._childrenMap = this.computeChildrenMap(this.recordMap);
         return this._childrenMap;
     }
 
     get list() {
-        if (!this._list) this._list = Array.from(this.records.values());
+        if (!this._list) this._list = Array.from(this.recordMap.values());
         return this._list;
     }
 
@@ -56,7 +64,7 @@ export class RecordSet {
     }
 
     //----------------------------------------------
-    // Editing operations that spawn new recordsets.
+    // Editing operations that spawn new RecordSets.
     // Preserve all record references we can!
     //-----------------------------------------------
     applyFilter(filter) {
@@ -82,7 +90,7 @@ export class RecordSet {
                 });
             };
         }
-        this.records.forEach(rec => {
+        this.recordMap.forEach(rec => {
             if (!isMarked(rec) && fn(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
@@ -102,56 +110,31 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    loadRecords(newRecords) {
-        const {records} = this;
-
-        if (records.size) {
-            const newKeys = newRecords.keys();
-            for (let key of newKeys) {
-                const currRec = records.get(key),
-                    newRec = newRecords.get(key);
+    loadRecords(recordMap) {
+        // Reuse existing Record object instances where possible if they resolve as equal to their
+        // new counterparts. See note on Store.loadRecords().
+        if (!this.empty) {
+            const newIds = recordMap.keys();
+            for (let id of newIds) {
+                const currRec = this.getById(id),
+                    newRec = recordMap.get(id);
 
                 if (currRec && currRec.isEqual(newRec)) {
-                    newRecords.set(key, currRec);
+                    recordMap.set(id, currRec);
                 }
             }
         }
 
-        return new RecordSet(this.store, newRecords);
+        return new RecordSet(this.store, recordMap);
     }
 
-    updateData({updates, adds, deletes}) {
-        const {records} = this,
-            newRecords = new Map(records);
+    updateData({deletes, updates, adds}) {
+        const {recordMap} = this,
+            newRecords = new Map(recordMap);
+
         let missingDeletes = 0, missingUpdates = 0;
 
-        // 0) Updates
-        if (updates) {
-            updates.forEach(rec => {
-                const {id} = rec,
-                    existing = records.get(id);
-
-                if (!existing) {
-                    missingUpdates++;
-                    console.debug(`Attempted to update non-existent record: ${id}`);
-                    return;
-                }
-                rec.parentId = existing.parentId;
-                newRecords.set(id, rec);
-            });
-        }
-
-        // 1) Additions
-        if (adds) {
-            adds.forEach(rec => {
-                const {id} = rec;
-                throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
-                newRecords.set(id, rec);
-            });
-        }
-
-
-        // 2) Deletes
+        // 0) Deletes - process first to allow delete-then-add-elsewhere-in-tree.
         if (deletes) {
             const allDeletes = new Set();
             deletes.forEach(id => {
@@ -165,8 +148,33 @@ export class RecordSet {
             allDeletes.forEach(it => newRecords.delete(it));
         }
 
-        if (missingUpdates > 0) console.warn(`Failed to update ${missingUpdates} records not found by id`);
+        // 1) Updates - cannot modify hierarchy by design, and incoming records do not have any
+        //    parent pointers. Assign the parentId of the existing rec to maintain the tree.
+        if (updates) {
+            updates.forEach(rec => {
+                const {id} = rec,
+                    existing = newRecords.get(id);
+                if (!existing) {
+                    missingUpdates++;
+                    console.debug(`Attempted to update non-existent record: ${id}`);
+                    return;
+                }
+                rec.parentId = existing.parentId;
+                newRecords.set(id, rec);
+            });
+        }
+
+        // 2) Adds
+        if (adds) {
+            adds.forEach(rec => {
+                const {id} = rec;
+                throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
+                newRecords.set(id, rec);
+            });
+        }
+
         if (missingDeletes > 0) console.warn(`Failed to delete ${missingDeletes} records not found by id`);
+        if (missingUpdates > 0) console.warn(`Failed to update ${missingUpdates} records not found by id`);
 
         return new RecordSet(this.store, newRecords);
     }
@@ -175,9 +183,9 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
-    computeChildrenMap(records) {
+    computeChildrenMap(recordMap) {
         const ret = new Map();
-        records.forEach(r => {
+        recordMap.forEach(r => {
             const {parent} = r;
             if (parent) {
                 const children = ret.get(parent.id);
@@ -191,9 +199,9 @@ export class RecordSet {
         return ret;
     }
 
-    countRoots(records) {
+    countRoots(recordMap) {
         let ret = 0;
-        records.forEach(rec => {
+        recordMap.forEach(rec => {
             if (rec.parentId == null) ret++;
         });
         return ret;

@@ -7,7 +7,8 @@
 
 import {XH} from '@xh/hoist/core';
 import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
-import {startCase, isDate, isEqual as lodashIsEqual} from 'lodash';
+import {startCase, isDate} from 'lodash';
+import equal from 'fast-deep-equal';
 
 /**
  * Metadata for an individual data field within a {@see Record}.
@@ -71,6 +72,6 @@ export class Field {
     }
 
     isEqual(val1, val2) {
-        return lodashIsEqual(val1, val2);
+        return equal(val1, val2);
     }
 }

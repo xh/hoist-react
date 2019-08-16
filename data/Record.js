@@ -4,8 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual, isNil, isString} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import equal from 'fast-deep-equal';
+import {isNil} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}.
@@ -82,8 +83,7 @@ export class Record {
      * @param {string} [c.parentId] - id of parent record, if any.
      */
     constructor({data, raw, store, parentId}) {
-        const {idSpec} = store,
-            id = isString(idSpec) ? data[idSpec] : idSpec(data);
+        const id = store.idSpec(data);
 
         throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 
@@ -112,7 +112,7 @@ export class Record {
         return (
             this.id == rec.id &&
             this.parentId == rec.parentId &&
-            isEqual(this.xhTreePath, rec.xhTreePath) &&
+            equal(this.xhTreePath, rec.xhTreePath) &&
             this.store == rec.store &&
             this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
         );

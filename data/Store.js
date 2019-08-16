@@ -5,11 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {observable, action} from '@xh/hoist/mobx';
-import {RecordSet} from './impl/RecordSet';
-import {Field} from './Field';
-import {isString, isEmpty, isFunction, isPlainObject, remove} from 'lodash';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {isEmpty, isFunction, isPlainObject, isString, remove} from 'lodash';
+import {Field} from './Field';
+import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
 import {StoreFilter} from './StoreFilter';
 
@@ -20,7 +20,7 @@ export class Store {
 
     /** @member {Field[]} */
     fields = null;
-    /** @member {(function|string)} */
+    /** @member {function} */
     idSpec;
     /** @member {function} */
     processRawData;
@@ -43,14 +43,16 @@ export class Store {
      * @param {Object} c - Store configuration.
      * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or Field config objects.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
-     *      unique id for each record. May be either a property (default is 'id') or a function to
-     *      create an id from a record. If there is no natural id to select/generate, you can use
-     *      `XH.genId` to generate a unique id on the fly. NOTE that in this case, grids and other
-     *      components bound to this store will not be able to maintain record state across reloads.
+     *      unique id for each record. May be either a string property name (default is 'id') or a
+     *      function to create an id from a record. Will be normalized to a function upon Store
+     *      construction. If there is no natural id to select/generate, you can use `XH.genId` to
+     *      generate a unique id on the fly. NOTE that in this case, grids and other components
+     *      bound to this store will not be able to maintain record state across reloads.
      * @param {function} [c.processRawData] - function to run on each individual data object
-     *      presented to loadData() prior to creating a record from that object.  This function should
-     *      return a data object, taking care to clone the original object if edits are necessary.
-     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for records, or specification for creating one.
+     *      presented to loadData() prior to creating a Record from that object. This function
+     *      must return an object, cloning the original object if edits are necessary.
+     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for Records, or a
+     *      StoreFilter config to create.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
@@ -65,27 +67,28 @@ export class Store {
         this.fields = this.parseFields(fields);
         this._filtered = this._all = new RecordSet(this);
         this.setFilter(filter);
-        this.idSpec = idSpec;
+        this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
         this.processRawData = processRawData;
         this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
     }
 
     /**
-     * Load new data into this store, replacing any/all pre-existing records.
+     * Load a new and complete dataset, replacing any/all pre-existing Records as needed.
      *
-     * If raw data objects have a `children` property it will be expected to be an array
-     * and its items will be recursively processed into child records.
+     * If raw data objects have a `children` property, it will be expected to be an array and its
+     * items will be recursively processed into child records, each created with a pointer to its
+     * parent's newly assigned Record ID.
      *
-     * Note that this process will re-use pre-existing Records if they are present in the new
-     * dataset (as identified by their ID), contain the same data, and occupy the same place in any
-     * hierarchy across old and new loads.
+     * Note that this process will re-use pre-existing Record object instances if they are present
+     * in the new dataset (as identified by their ID), contain the same data, and occupy the same
+     * place in any hierarchy across old and new loads.
      *
      * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
      * that have not changed and do not need to be re-evaluated / re-rendered.
      *
      * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
-     * created with the loadRootAsSummary flag set to true.
+     * created with its `loadRootAsSummary` flag set to true.
      *
      * @param {Object[]} rawData
      * @param {Object} [rawSummaryData]
@@ -103,7 +106,8 @@ export class Store {
             rawData = rawData[0].children;
         }
 
-        this._all = this._all.loadRecords(this.createRecords(rawData, null));
+        const recordMap = this.createRecords(rawData, null);
+        this._all = this._all.loadRecords(recordMap);
         this.rebuildFiltered();
         this.setSummaryRecordInternal(rawSummaryData ? this.createRecord(rawSummaryData) : null);
         this.lastLoaded = this.lastUpdated = Date.now();
@@ -111,8 +115,7 @@ export class Store {
 
     /**
      * Add, update, or delete records in this store.
-     *
-     * @param {StoreUpdate} changes
+     * @param {StoreUpdate} changes - adds/updates/deletes to process
      */
     @action
     updateData(changes) {
@@ -141,7 +144,7 @@ export class Store {
         // 3) Apply changes
         let didUpdate = false;
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(deletes)) {
-            this._all = this._all.updateData({updates: updateRecs,  adds: addRecs, deletes: deletes});
+            this._all = this._all.updateData({updates: updateRecs, adds: addRecs, deletes: deletes});
             this.rebuildFiltered();
             didUpdate = true;
         }
@@ -161,10 +164,10 @@ export class Store {
 
     /**
      * Call if/when any records have had their data modified directly, outside of this store's load
-     * and update APIs.
+     * and update APIs. An example would be an inline grid editor updating a data field.
      *
-     * If the structure of the data has changed (e.g. deletion, additions, re-parenting of children)
-     * loadData() should be called instead.
+     * To change the structure of the data (e.g. deletion, additions, re-parenting of children)
+     * the `updateData()` or `loadData()` methods must be used instead.
      */
     @action
     noteDataUpdated() {
@@ -236,14 +239,14 @@ export class Store {
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {return this._filter}
 
-    /** Get the count of all records loaded into the store. */
-    get allCount() {
-        return this._all.count;
-    }
-
     /** Get the count of the filtered records in the store. */
     get count() {
         return this._filtered.count;
+    }
+
+    /** Get the count of all records loaded into the store. */
+    get allCount() {
+        return this._all.count;
     }
 
     /** Get the count of the filtered root records in the store. */
@@ -257,10 +260,14 @@ export class Store {
     }
 
     /** Is the store empty after filters have been applied? */
-    get empty() {return this.count === 0}
+    get empty() {
+        return this._filtered.empty;
+    }
 
     /** Is this store empty before filters have been applied? */
-    get allEmpty() {return this.allCount === 0}
+    get allEmpty() {
+        return this._all.empty;
+    }
 
     /**
      * Get a record by ID, or null if no matching record found.
@@ -271,7 +278,7 @@ export class Store {
      */
     getById(id, fromFiltered = false) {
         const rs = fromFiltered ? this._filtered : this._all;
-        return rs.records.get(id);
+        return rs.getById(id);
     }
 
     /**
@@ -317,7 +324,7 @@ export class Store {
 
         throwIf(
             ret.some(it => it.name == 'id'),
-            `Applications should not specify a field for the id of a record.  An id property is created 
+            `Applications should not specify a field for the id of a record. An id property is created 
             automatically for all records. See Store.idSpec for more info.`
         );
         return ret;
@@ -345,34 +352,44 @@ export class Store {
         return new Record({data, raw, parentId, store: this});
     }
 
-    createRecords(rawRecs, parentId, records = new Map()) {
+    createRecords(rawRecs, parentId, recordMap = new Map()) {
         rawRecs.forEach(raw => {
             const rec = this.createRecord(raw, parentId),
                 {id} = rec;
+
             throwIf(
-                records.has(id),
+                recordMap.has(id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
-            records.set(id, rec);
+            recordMap.set(id, rec);
 
             if (raw.children) {
-                this.createRecords(raw.children, id, records);
+                this.createRecords(raw.children, id, recordMap);
             }
         });
-        return records;
+        return recordMap;
     }
 }
 
 /**
- * @typedef StoreUpdate
- * @property {Object[]} updates - list of raw data objects representing records to be updated. The
- *      form of these records should be the same as presented to loadData(), with the exception that
- *      the children property will be ignored, and the existing children for the record in question will be preserved.
- * @property {Object[]} adds - list of raw data representing records to be added, with the parent node
- *      where they should be added, if not at the root.  Each item should be of the form
- *      {parentId: id , rawData: {}}.  The form of the rawData objects should be the same as presented to loadData()
- * @property {string[]} deletes - list of ids representing records to be removed.
- * @property {Object} rawSummaryData - update to the dedicated summary row for this store. If Store.loadRootAsSummary,
- *      this may alternatively be specified in the updates collection.
+ * @typedef {Object} StoreUpdate - object representing updates/adds/deletes to perform
+ *      on a Store's data in a single transaction.
+ * @property {Object[]} [updates] - list of raw data objects representing records to be updated.
+ *      Updates must be matched to existing records by id in order to be applied. The form of the
+ *      update objects should be the same as presented to loadData(), with the exception that any
+ *      children property will be ignored, and any existing children for the record being updated
+ *      will be preserved. If the record is a child, the new updated instance will be assigned to
+ *      the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
+ * @property {Object[]} [adds] - list of raw data representing records to be added, Each top-level
+ *      item in the array must be of the form `{parentId: x, rawData: {}}`, where `parentId` provides
+ *      a pointer to the intended parent if the record is not to be added to the root. The form of
+ *      the rawData objects should be the same as presented to loadData() and *can* include a
+ *      children property that will be processed into new child records. (Meaning: adds can be used
+ *      to add new branches to the tree.)
+ * @property {string[]} [deletes] - list of ids representing records to be removed. Any children of
+ *      these records will also be removed.
+ * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
+ *      If the store has its `loadRootAsSummary` flag set to true, the summary record should
+ *      instead be provided via the `updates` property.
  */
