@@ -117,20 +117,21 @@ export class Store {
      */
     @action
     updateData(changes) {
-        if (isEmpty(changes.updates) &&
-            isEmpty(changes.adds) &&
-            isEmpty(changes.deletes) &&
-            isNil(changes.summaryUpdate)
-        ) return;
+        const {updates, adds, deletes, summaryUpdate} = changes;
+        let didUpdate = false;
 
-        const {summaryUpdate, ...coreChanges}  = changes;
+        if (!isEmpty(updates) || !isEmpty(adds) || !isEmpty(deletes)) {
+            this._all = this._all.updateData({updates, adds, deletes});
+            this.rebuildFiltered();
+            didUpdate = true;
+        }
 
-        this._all = this._all.updateData(coreChanges);
-        this.rebuildFiltered();
         if (summaryUpdate) {
             this.summaryRecord = this.createSummaryRecord(summaryUpdate);
+            didUpdate = true;
         }
-        this.lastUpdated = Date.now();
+
+        if (didUpdate) this.lastUpdated = Date.now();
     }
 
     /** Remove all records from the store. */
@@ -282,8 +283,7 @@ export class Store {
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
-            throwIf(!data,
-                'processRawData should return an object. If writing/editing, be sure to return a clone!');
+            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
         return new Record({data, raw, parentId, store: this});
