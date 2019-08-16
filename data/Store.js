@@ -106,7 +106,7 @@ export class Store {
         this._all = this._all.loadRecords(this.createRecords(rawData, null));
         this.rebuildFiltered();
         this.setSummaryRecordInternal(rawSummaryData ? this.createRecord(rawSummaryData) : null);
-        this.lastloaded = this.lastUpdated = Date.now();
+        this.lastLoaded = this.lastUpdated = Date.now();
     }
 
     /**
