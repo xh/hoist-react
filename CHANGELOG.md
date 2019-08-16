@@ -1,6 +1,41 @@
 # Changelog
 
-## v26.0.0-SNAPSHOT - under development
+## v27.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* A new `LocalDate` class has been added to the toolkit. This class provides client-side support for
+  "business" or "calendar" days that do not have a time component. It is an immutable class that
+  supports '==', '<' and '>', as well as a number of convenient manipulation functions. Support for
+  the `LocalDate` class has also been added throughout the toolkit, including:
+  * `Field.type` now supports an additional `localDate` option for automatic conversion of server
+    data to this type when loading into a `Store`.
+  * `fetchService` is aware of this class and will automatically serialize all instances of it for
+    posting to the server. ⚠ NOTE that along with this change, `fetchService` and its methods such
+    as `XH.fetchJson()` will now serialize regular JS Date objects as ms timestamps when provided in
+    params. Previously Dates were serialized in their default `toString()` format. This would be a
+    breaking change for an app that relied on that default Date serialization, but it was made for
+    increased symmetry with how Hoist JSON-serializes Dates and LocalDates on the server-side.
+  * `DateInput` can now be used to seamlessly bind to a `LocalDate` as well as a `Date`. See its new
+    prop of `valueType` which can be set to `localDate` or `date` (default).
+  * A new `localDateCol` config has been added to the `@xh/hoist/grid/columns` package with
+    standardized rendering and formatting.
+* New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
+  TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
+  which syncs selection and expand / collapse state.
+
+
+### 💥 Breaking Changes
+
+* The updating of Store data has been reworked to provide a simpler and more powerful API that allows 
+for the applications of additions, deletions, and updates in a single transaction:
+    * The signature of `Store.updateData` has been substantially changed, and is now the main entry point for all updates.
+    * The method `Store.removeRecords` has been removed.  Use `Store.updateData` instead.
+    * The method `Store.addData` has been removed.  Use `Store.updateData` instead.
+    
+[Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
+
+## v26.0.1 - 2019-08-07
 
 ### 🎁 New Features
 
@@ -15,19 +50,21 @@
   * The service will monitor the socket connection with a regular heartbeat and attempt to
     re-establish if dropped.
   * A new admin console snap-in provides an overview of connected websocket clients.
-* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
-  both overall record count and current selection count in a configurable way.
-* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
-  details.
-* `Button` component accepts an `autoFocus` prop to attempt to focus on render.
 * The `XH.message()` and related methods such as `XH.alert()` now support more flexible
   `confirmProps` and `cancelProps` configs, each of which will be passed to their respective button
   and merged with suitable defaults. Allows use of the new `autoFocus` prop with these preconfigured
   dialogs.
-  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user convenience.
+  * By default, `XH.alert()` and `XH.confirm()` will auto focus the confirm button for user
+    convenience.
   * The previous text/intent configs have been deprecated and the message methods will log a console
     warning if they are used (although it will continue to respect them to aid transitioning to the
-    new configs).  
+    new configs).
+* `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
+  details.
+* New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
+  both overall record count and current selection count in a configurable way.
+* The `Button` component accepts an `autoFocus` prop to attempt to focus on render.
+* The `Checkbox` component accepts an `autoFocus` prop to attempt to focus on render.
 
 ### 💥 Breaking Changes
 
@@ -37,16 +74,18 @@
 * The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
   independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
   (`clipboardSpec` is an artifact from the removed `clipboard` library).
+* The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
+  initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
+  `input.value` (#1298).
+* ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
 
 ### 🐞 Bug Fixes
 
 * The `Select.selectOnFocus` prop is now respected when used in tandem with `enableCreate` and/or
   `queryFn` props.
-* Applications can again use the ag-Grid pinned data APIs directly without having pinned row data
-  overwritten by the Hoist GridModel.
-* Store will no longer trigger reactions on its observable properties when `updateData` is called
-  with an empty `rawData` parameter (allows updating of summary data from a reaction on `records`
-  without causing MobX errors due to circular reactions).
+* `DateInput` popup _will_ now close when input is blurred but will _not_ immediately close when
+  `enableTextInput` is `false` and a month or year is clicked (#1293).
+* Buttons within a grid `actionCol` now render properly in compact mode, without clipping/overflow.
 
 ### ⚙️ Technical
 
@@ -58,10 +97,13 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `3.17 -> 3.18`
+* @blueprintjs/datetime `3.11 -> 3.12`
 * @fortawesome/fontawesome `5.9 -> 5.10`
 * ag-grid `21.0.1 -> 21.1.1`
 * store2 `2.7 -> 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v25.2.0...v26.0.1)
 
 ## v25.2.0 - 2019-07-25
 

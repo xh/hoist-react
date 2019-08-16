@@ -25,6 +25,7 @@ import {
     findLast,
     isArray,
     isEmpty,
+    isEqual,
     isNil,
     isUndefined,
     isPlainObject,
@@ -94,6 +95,8 @@ export class GridModel {
     @observable.ref columns = [];
     /** @member {ColumnState[]} */
     @observable.ref columnState = [];
+    /** @member {Object} */
+    @observable.ref expandState = {};
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
@@ -179,6 +182,7 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
+        experimental =  {},
         ...rest
     }) {
         this.treeMode = treeMode;
@@ -220,6 +224,7 @@ export class GridModel {
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
+        this.experimental = experimental;
     }
 
     /**
@@ -337,6 +342,7 @@ export class GridModel {
         if (agApi) {
             agApi.expandAll();
             agApi.sizeColumnsToFit();
+            this.noteAgExpandStateChange();
         }
     }
 
@@ -346,6 +352,7 @@ export class GridModel {
         if (agApi) {
             agApi.collapseAll();
             agApi.sizeColumnsToFit();
+            this.noteAgExpandStateChange();
         }
     }
 
@@ -404,7 +411,7 @@ export class GridModel {
             colConfigs.some(c => !isPlainObject(c)),
             'GridModel only accepts plain objects for Column or ColumnGroup configs'
         );
-        
+
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
@@ -434,6 +441,21 @@ export class GridModel {
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
+    }
+
+    @action
+    setExpandState(expandState) {
+        this.agGridModel.setExpandState(expandState);
+        this.noteAgExpandStateChange();
+    }
+
+    @action
+    noteAgExpandStateChange() {
+        const agModelState = this.agGridModel.getExpandState();
+
+        if (!isEqual(this.expandState, agModelState)) {
+            this.expandState = agModelState;
+        }
     }
 
     // We debounce this method because the implementation of `AgGridModel.setSelectedRowNodeIds()`

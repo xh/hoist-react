@@ -36,3 +36,8 @@ export const compactDateCol = {
     exportFormat: ExportFormat.DATE_FMT,
     width: 100
 };
+
+export const localDateCol = {
+    ...dateCol,
+    exportValue: (v) => v ? v.date : null
+};

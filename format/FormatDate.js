@@ -11,6 +11,7 @@ import {span} from '@xh/hoist/cmp/layout';
 
 import {saveOriginal, createRenderer} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
@@ -41,7 +42,9 @@ export function fmtDate(v, opts = {}) {
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
 
-    let ret = moment(v).format(opts.fmt);
+    let ret = isLocalDate(v) || moment.isMoment(v) ?
+        v.format(opts.fmt) :
+        moment(v).format(opts.fmt);
 
     if (ret == INVALID_DATE) {
         ret = '';

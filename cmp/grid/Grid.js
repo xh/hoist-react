@@ -341,9 +341,9 @@ export class Grid extends Component {
     //------------------------
     // Reactions to model
     //------------------------
-    dataLoadReaction() {
+    dataReaction() {
         const {model} = this,
-            {agGridModel, store} = model;
+            {agGridModel, store, experimental} = model;
 
         return {
             track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated],
@@ -355,9 +355,9 @@ export class Grid extends Component {
 
                 const {records} = agGridModel;
                 runInAction(() => {
-                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataLoadReaction()`, () => {
+                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
 
-                        if (!isUpdate) {
+                        if (!experimental.suppressPreclearOnDataLoad) {
                             // If we are going to delete the majority of the rows then ag-Grid is faster
                             // if we first clear out the existing data before setting the new data
                             this.clearDataIfExpensiveDeletionPending(records, api);
@@ -375,12 +375,18 @@ export class Grid extends Component {
                             api.sizeColumnsToFit();
                         }
 
-                        // Force grid to fully re-render cells. We are *not* relying on its default
-                        // cell-level change detection as this does not account for our current
-                        // renderer API (where renderers can reference other properties on the data
-                        // object). See https://github.com/exhi/hoist-react/issues/550.
-                        api.refreshCells({force: true});
+                        if (!experimental.suppressRefreshCellsOnDataLoad) {
+                            // Force grid to fully re-render cells. We are *not* relying on its default
+                            // cell-level change detection as this does not account for our current
+                            // renderer API (where renderers can reference other properties on the data
+                            // object). See https://github.com/exhi/hoist-react/issues/550.
+                            api.refreshCells({force: true});
+                        }
 
+                        if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                            // Clear out any stale expand state
+                            model.noteAgExpandStateChange();
+                        }
                     }, this);
 
                     // Set flag if data is hierarchical.
@@ -392,7 +398,6 @@ export class Grid extends Component {
             }
         };
     }
-
 
     selectionReaction() {
         const {model} = this,
@@ -584,6 +589,7 @@ export class Grid extends Component {
 
     onRowGroupOpened = () => {
         this.model.agGridModel.agApi.sizeColumnsToFit();
+        this.model.noteAgExpandStateChange();
     };
 
     // Catches column pinning changes triggered from ag-grid ui components

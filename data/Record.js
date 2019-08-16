@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEqual, isNil} from 'lodash';
+import {isEqual, isNil, isString} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -23,18 +23,23 @@ export class Record {
     store;
     /** @member {Object} */
     raw;
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid implementation. */
-    xhTreePath;
+    /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
+    xhIsSummary;
+
+    _xhTreePath = null;
 
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
-    /** @param {Record} parent */
-    set parent(parent) {
-        this.parentId = parent ? parent.id : null;
-        this.xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid impl. */
+    get xhTreePath() {
+        if (this._xhTreePath === null) {
+            const {parent} = this;
+            this._xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
+        }
+        return this._xhTreePath;
     }
 
     /** @member {Field[]} */
@@ -74,17 +79,18 @@ export class Record {
      *      pre-processed if applicable by `store.processRawData()`.
      * @param {Object} c.raw - the same data, prior to any store pre-processing.
      * @param {Store} c.store - store containing this record.
-     * @param {Record} [c.parent] - parent record, if any.
+     * @param {string} [c.parentId] - id of parent record, if any.
      */
-    constructor({data, raw, store, parent}) {
-        const id = store.buildRecordId(data);
+    constructor({data, raw, store, parentId}) {
+        const {idSpec} = store,
+            id = isString(idSpec) ? data[idSpec] : idSpec(data);
 
         throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
 
         this.id = id;
         this.store = store;
         this.raw = raw;
-        this.parent = parent;
+        this.parentId = parentId;
 
         store.fields.forEach(f => {
             const {name} = f;

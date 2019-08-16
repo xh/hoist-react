@@ -61,6 +61,7 @@ export class VisitsChart extends Component {
         return dateInput({
             model: this.model,
             popoverPosition: 'top-left',
+            valueType: 'localDate',
             width: 120,
             ...args
         });
