@@ -29,6 +29,10 @@
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
 
+### 💥 Breaking Changes
+
+* If using JSX, component ToolbarSeparator has been renamed ToobarSep
+
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
 ## v26.0.1 - 2019-08-07
