@@ -348,12 +348,10 @@ export class Grid extends Component {
         return {
             track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
             run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
-
                 if (!api) return;
 
-                const isUpdate = lastUpdated > lastLoaded;
-
-                const prevRs = this._prevRs,
+                const isUpdate = lastUpdated > lastLoaded,
+                    prevRs = this._prevRs,
                     newCount = newRs.count,
                     prevCount = prevRs ? prevRs.count : 0,
                     deltaCount = newCount - prevCount;
@@ -364,7 +362,6 @@ export class Grid extends Component {
                     withShortDebug(
                         `${isUpdate ? 'Updating' : 'Loading'} Grid: ${this.transactionLogStr(transaction)}`,
                         () => {
-
                             api.updateRowData(transaction);
                             this.updatePinnedSummaryRowData();
 
@@ -536,17 +533,15 @@ export class Grid extends Component {
     }
 
     genTransaction(newRs, prevRs) {
-
         if (!prevRs) return {add: newRs.list};
 
         const newList = newRs.list,
             prevList = prevRs.list,
-            newMap = newRs.records,
-            prevMap = prevRs.records,
             add = [],
             update = [];
+
         newList.forEach(rec => {
-            const existing = prevMap.get(rec.id);
+            const existing = prevRs.getById(rec.id);
             if (!existing) {
                 add.push(rec);
             } else if (existing !== rec) {
@@ -554,9 +549,18 @@ export class Grid extends Component {
             }
         });
 
-        const remove = prevList.filter(rec => !newMap.has(rec.id));
+        // Only include lists in transaction if non-empty (ag-grid is not internally optimized as
+        // you might expect to treat empty vs. undefined lists identically).
+        const ret = {};
+        if (add.length) ret.add = add;
+        if (update.length) ret.update = update;
 
-        return {add, update, remove};
+        const hasRemoves = newList.length != (prevList.length + add.length);
+        if (hasRemoves) {
+            ret.remove = prevList.filter(rec => !newRs.getById(rec.id));
+        }
+
+        return ret;
     }
 
     transactionLogStr(t) {
