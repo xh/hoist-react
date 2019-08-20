@@ -350,12 +350,10 @@ export class Grid extends Component {
         return {
             track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
             run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
-
                 if (!api) return;
 
-                const isUpdate = lastUpdated > lastLoaded;
-
-                const prevRs = this._prevRs,
+                const isUpdate = lastUpdated > lastLoaded,
+                    prevRs = this._prevRs,
                     newCount = newRs.count,
                     prevCount = prevRs ? prevRs.count : 0,
                     deltaCount = newCount - prevCount;
@@ -547,12 +545,11 @@ export class Grid extends Component {
 
             const newList = newRs.list,
                 prevList = prevRs.list,
-                newMap = newRs.records,
-                prevMap = prevRs.records,
                 add = [],
-                update = [];
+                update = [],
+                remove = [];
             newList.forEach(rec => {
-                const existing = prevMap.get(rec.id);
+                const existing = prevRs.getById(rec.id);
                 if (!existing) {
                     add.push(rec);
                 } else if (existing !== rec) {
@@ -560,13 +557,23 @@ export class Grid extends Component {
                 }
             });
 
-            const remove = prevList.filter(rec => !newMap.has(rec.id));
-            return {add, update, remove};
+            if (newList.length != (prevList.length + add.length)) {
+                remove = prevList.filter(rec => !newRs.getById(rec.id));
+            }
+
+
+            // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
+            const ret = {};
+            if (!isEmpty(add)) ret.add = add;
+            if (!isEmpty(update)) ret.update = update;
+            if (!isEmpty(remove)) ret.remove = remove;
+            return ret;
+
         }, this);
     }
 
     transactionIsEmpty(t) {
-        return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
+        return t.update && t.add && t.remove;
     }
 
     transactionLogStr(t) {

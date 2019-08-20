@@ -12,14 +12,15 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
 import {Ref} from '@xh/hoist/utils/react';
-import {assign, cloneDeep, debounce, isEqual, isFunction, merge, omit} from 'lodash';
+import equal from 'fast-deep-equal';
+import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React, {Component} from 'react';
-
-import {TreeMapModel} from './TreeMapModel';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 import './TreeMap.scss';
+
+import {TreeMapModel} from './TreeMapModel';
 
 /**
  * Component for rendering a TreeMap.
@@ -135,7 +136,7 @@ export class TreeMap extends Component {
         // recreate the entire chart or just reload the series data.
         const config = this.getMergedConfig(),
             chartCfg = omit(config, 'series', 'tooltip'),
-            canUpdateInPlace = this._chart && isEqual(chartCfg, this._prevConfig);
+            canUpdateInPlace = this._chart && equal(chartCfg, this._prevConfig);
 
         if (canUpdateInPlace) {
             this.reloadSeriesData(config.series[0].data);

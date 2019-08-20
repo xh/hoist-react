@@ -24,15 +24,15 @@
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
 
-
 ### 💥 Breaking Changes
 
-* The updating of Store data has been reworked to provide a simpler and more powerful API that allows 
-for the applications of additions, deletions, and updates in a single transaction:
-    * The signature of `Store.updateData` has been substantially changed, and is now the main entry point for all updates.
-    * The method `Store.removeRecords` has been removed.  Use `Store.updateData` instead.
-    * The method `Store.addData` has been removed.  Use `Store.updateData` instead.
-    
+* The updating of Store data has been reworked to provide a simpler and more powerful API that
+  allows for the applications of additions, deletions, and updates in a single transaction:
+  * The signature of `Store.updateData` has been substantially changed, and is now the main entry
+    point for all updates.
+  * The method `Store.removeRecords` has been removed. Use `Store.updateData` instead.
+  * The method `Store.addData` has been removed. Use `Store.updateData` instead.
+
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
 ## v26.0.1 - 2019-08-07
