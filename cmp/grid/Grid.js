@@ -544,10 +544,9 @@ export class Grid extends Component {
             if (!prevRs) return {add: newRs.list};
 
             const newList = newRs.list,
-                prevList = prevRs.list,
-                add = [],
-                update = [],
-                remove = [];
+                prevList = prevRs.list;
+
+            let add = [], update = [], remove = [];
             newList.forEach(rec => {
                 const existing = prevRs.getById(rec.id);
                 if (!existing) {
@@ -561,7 +560,6 @@ export class Grid extends Component {
                 remove = prevList.filter(rec => !newRs.getById(rec.id));
             }
 
-
             // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
             const ret = {};
             if (!isEmpty(add)) ret.add = add;
@@ -573,7 +571,7 @@ export class Grid extends Component {
     }
 
     transactionIsEmpty(t) {
-        return t.update && t.add && t.remove;
+        return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
     }
 
     transactionLogStr(t) {
