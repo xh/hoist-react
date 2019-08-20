@@ -24,14 +24,31 @@
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
 
-### 💥 Breaking Changes
+* 
+  
 
+### 💥 Breaking Changes
 * The updating of Store data has been reworked to provide a simpler and more powerful API that
   allows for the applications of additions, deletions, and updates in a single transaction:
   * The signature of `Store.updateData` has been substantially changed, and is now the main entry
     point for all updates.
   * The method `Store.removeRecords` has been removed. Use `Store.updateData` instead.
   * The method `Store.addData` has been removed. Use `Store.updateData` instead.
+* `Column` now takes an additional property `rendererIsComplex`.  Application must set this flag to `true` to indicate
+if a column renderer uses values other than its own bound field.  This change provides an efficiency boost and also allows
+the use of agGrid's native `enableCellChangeFlash` option for all simple columns not needing a complex renderer.
+
+### ⚙️ Technical
+
+* `Grid` will now update the underlying agGrid using agGrid transactions.  This is intended to provide
+the best possible grid performance, and generally streamline the use of the agGrid Api over the current 
+`deltaRowDataMode` based mechanism.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `3.7 -> 3.8`
+* qs `6.7 -> 6.8`
+
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
