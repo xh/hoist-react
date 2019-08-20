@@ -79,6 +79,10 @@ export class Column {
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
+     *      just the value of the field associated with this column.  Set to true to ensure that
+     *      the cells for this column are updated any time the record is changed.  Setting to true
+     *      may have performance implications. Default false.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -108,6 +112,7 @@ export class Column {
         sortable,
         pinned,
         renderer,
+        rendererIsComplex,
         elementRenderer,
         chooserName,
         chooserGroup,
@@ -162,6 +167,7 @@ export class Column {
         this.pinned = (pinned === true) ? 'left' : pinned;
 
         this.renderer = renderer;
+        this.rendererIsComplex = rendererIsComplex;
         this.elementRenderer = elementRenderer;
 
         this.chooserName = chooserName || this.headerName || this.colId;
@@ -294,7 +300,7 @@ export class Column {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
         }
-    
+
         if (this.comparator === undefined) {
             // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
             ret.comparator = this.defaultComparator;
@@ -316,7 +322,7 @@ export class Column {
                         agNodeA,
                         agNodeB
                     };
-        
+
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }

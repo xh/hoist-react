@@ -177,10 +177,12 @@ export class Grid extends Component {
     // Implementation
     //------------------------
     createDefaultAgOptions() {
-        const {model, props} = this;
+        const {model, props} = this,
+            {useDeltaSort, useTransactions} = model.experimental;
 
         let ret = {
-            deltaRowDataMode: true,
+            deltaSort: useDeltaSort && !model.treeMode,
+            deltaRowDataMode: !useTransactions,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -358,34 +360,38 @@ export class Grid extends Component {
                     prevCount = prevRs ? prevRs.count : 0,
                     deltaCount = newCount - prevCount;
 
-                runInAction(() => {
-                    const transaction = this.genTransaction(newRs, prevRs);
+                withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
 
-                    withShortDebug(
-                        `${isUpdate ? 'Updating' : 'Loading'} Grid: ${this.transactionLogStr(transaction)}`,
-                        () => {
+                    if (experimental.useTransactions) {
+                        const transaction = this.genTransaction(newRs, prevRs);
+                        console.debug(this.transactionLogStr(transaction));
 
+                        if (!this.transactionIsEmpty(transaction)) {
                             api.updateRowData(transaction);
-                            this.updatePinnedSummaryRowData();
+                        }
+                    } else {
+                        api.setRowData(newRs.list);
+                    }
 
-                            // If row count changing to/from  small amt. force col resizing to update scrollbar.
-                            if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
-                                api.sizeColumnsToFit();
-                            }
 
-                            if (!experimental.suppressRefreshCellsOnDataLoad) {
-                                // Force grid to fully re-render cells. We are *not* relying on its default
-                                // cell-level change detection as this does not account for our current
-                                // renderer API (where renderers can reference other properties on the data
-                                // object). See https://github.com/exhi/hoist-react/issues/550.
-                                api.refreshCells({force: true});
-                            }
+                    this.updatePinnedSummaryRowData();
 
-                            if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                                model.noteAgExpandStateChange();
-                            }
-                        }, this
-                    );
+                    // If row count changing to/from  small amt. force col resizing to update scrollbar.
+                    if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
+                        api.sizeColumnsToFit();
+                    }
+
+                    const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                    if (!isEmpty(refreshCols)) {
+                        api.refreshCells({columns: refreshCols.map(c =>c.colId), force: true});
+                    }
+
+                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                        model.noteAgExpandStateChange();
+                    }
+                }, this);
+
+                runInAction(() => {
 
                     this._prevRs = newRs;
 
@@ -536,33 +542,36 @@ export class Grid extends Component {
     }
 
     genTransaction(newRs, prevRs) {
+        return withShortDebug('Generating Transaction', () => {
+            if (!prevRs) return {add: newRs.list};
 
-        if (!prevRs) return {add: newRs.list};
+            const newList = newRs.list,
+                prevList = prevRs.list,
+                newMap = newRs.records,
+                prevMap = prevRs.records,
+                add = [],
+                update = [];
+            newList.forEach(rec => {
+                const existing = prevMap.get(rec.id);
+                if (!existing) {
+                    add.push(rec);
+                } else if (existing !== rec) {
+                    update.push(rec);
+                }
+            });
 
-        const newList = newRs.list,
-            prevList = prevRs.list,
-            newMap = newRs.records,
-            prevMap = prevRs.records,
-            add = [],
-            update = [];
-        newList.forEach(rec => {
-            const existing = prevMap.get(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
+            const remove = prevList.filter(rec => !newMap.has(rec.id));
+            return {add, update, remove};
+        }, this);
+    }
 
-        const remove = prevList.filter(rec => !newMap.has(rec.id));
-
-        return {add, update, remove};
+    transactionIsEmpty(t) {
+        return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
     }
 
     transactionLogStr(t) {
         return `u: ${t.update ? t.update.length : 0} | a: ${t.add ? t.add.length : 0} | r: ${t.remove ? t.remove.length : 0}`;
     }
-
 
     //------------------------
     // Event Handlers on AG Grid.
@@ -657,5 +666,4 @@ export class Grid extends Component {
         if (this.props.onKeyDown) this.props.onKeyDown(evt);
     }
 }
-
 export const grid = elemFactory(Grid);
