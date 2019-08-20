@@ -24,9 +24,6 @@
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
 
-* 
-  
-
 ### 💥 Breaking Changes
 * The updating of Store data has been reworked to provide a simpler and more powerful API that
   allows for the applications of additions, deletions, and updates in a single transaction:
@@ -40,9 +37,8 @@ the use of agGrid's native `enableCellChangeFlash` option for all simple columns
 
 ### ⚙️ Technical
 
-* `Grid` will now update the underlying agGrid using agGrid transactions.  This is intended to provide
-the best possible grid performance, and generally streamline the use of the agGrid Api over the current 
-`deltaRowDataMode` based mechanism.
+* `Grid` will now update the underlying agGrid using agGrid transactions rather than relying on agGrid `deltaRowMode`.
+  This is intended to provide the best possible grid performance, and generally streamline the use of the agGrid Api.
 
 ### 📚 Libraries
 
