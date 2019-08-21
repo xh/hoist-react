@@ -46,7 +46,7 @@ export class NavigatorModel {
 
         this.addReaction({
             track: () => this.pages,
-            run: this.onPagesChange
+            run: this.onPagesChangeAsync
         });
     }
 
@@ -117,9 +117,15 @@ export class NavigatorModel {
         this.setPages(pages);
     }
 
-    onPagesChange() {
-        this.updateNavigatorPagesAsync().then(() => {
-            this.updatePageVisibility();
+    async onPagesChangeAsync() {
+        await this.updateNavigatorPagesAsync();
+
+        // Ensure only the last page is visible after a page transition.
+        if (!this._navigator) return;
+        const {pages} = this._navigator._navi;
+        pages.forEach((pageEl, idx) => {
+            const lastPage = idx === pages.length - 1;
+            pageEl.style.display = lastPage ? 'block' : 'none';
         });
     }
 
@@ -141,23 +147,8 @@ export class NavigatorModel {
             return this._navigator.pushPage(pages[pages.length - 1]);
         } else {
             // Otherwise, we should reset the page stack
-            return this._navigator.resetPageStack(pages);
+            return this._navigator.resetPageStack(pages, {animation: 'none'});
         }
-    }
-
-    // Ensure only the last page is visible after a page transition.
-    // Onsen performs similar logic itself during each page transition - however, an issue
-    // with transient duplicate pages can sometimes mess this up and leave you with hidden pages.
-    // We re-run this operation ourselves here to make sure the correct page is shown.
-    //
-    // See https://github.com/OnsenUI/OnsenUI/issues/2682
-    updatePageVisibility() {
-        if (!this._navigator) return;
-        const {pages} = this._navigator._navi;
-        pages.forEach((pageEl, idx) => {
-            const lastPage = idx === pages.length - 1;
-            pageEl.style.display = lastPage ? 'block' : 'none';
-        });
     }
 
     renderPage(pageModel, navigator) {
@@ -180,9 +171,7 @@ export class NavigatorModel {
         // when navigating from one page stack to another where the last page of
         // the new stack is already present in the previous stack.
         //
-        // For this workaround, we identify the duplicate page (the one at the incorrect index)
-        // and suffix its key to ensure it is unique during its transient render. This page is
-        // then dropped in the next render of the Onsen navigator.
+        // For this workaround, we skip rendering the duplicate page (the one at the incorrect index).
         //
         // See https://github.com/OnsenUI/OnsenUI/issues/2682
         const onsenNavPages = this._navigator.routes.filter(it => !it.init),
@@ -192,7 +181,7 @@ export class NavigatorModel {
             const onsenIdx = onsenNavPages.indexOf(pageModel),
                 ourIdx = this.pages.findIndex(it => it.key === key);
 
-            if (onsenIdx !== ourIdx) key += `&onsenIdx=${onsenIdx}`;
+            if (onsenIdx !== ourIdx) return null;
         }
 
         return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
