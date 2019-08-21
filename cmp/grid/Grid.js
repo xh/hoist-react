@@ -63,7 +63,7 @@ export class Grid extends Component {
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
          * interfere with the implementation of this component and its use of the ag-Grid API.
          *
-         * Note that changes to these options after the initial render of this component will be ignored.
+         * Note that changes to these options after the component's initial render will be ignored.
          */
         agOptions: PT.object,
 
@@ -177,10 +177,12 @@ export class Grid extends Component {
     // Implementation
     //------------------------
     createDefaultAgOptions() {
-        const {model, props} = this;
+        const {model, props} = this,
+            {useDeltaSort, useTransactions} = model.experimental;
 
         let ret = {
-            deltaRowDataMode: true,
+            deltaSort: useDeltaSort && !model.treeMode,
+            deltaRowDataMode: !useTransactions,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -346,42 +348,48 @@ export class Grid extends Component {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.records, store.lastUpdated, store.summaryRecord, model.showSummary],
-            run: ([api, records]) => {
+            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
+            run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
                 if (!api) return;
 
+                const isUpdate = lastUpdated > lastLoaded,
+                    prevRs = this._prevRs,
+                    newCount = newRs.count,
+                    prevCount = prevRs ? prevRs.count : 0,
+                    deltaCount = newCount - prevCount;
+
+                withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
+                    if (prevCount != 0 && experimental.useTransactions) {
+                        const transaction = this.genTransaction(newRs, prevRs);
+                        console.debug(this.transactionLogStr(transaction));
+
+                        if (!this.transactionIsEmpty(transaction)) {
+                            api.updateRowData(transaction);
+                        }
+                    } else {
+                        api.setRowData(newRs.list);
+                    }
+
+                    this.updatePinnedSummaryRowData();
+
+                    // If row count changing to/from a small amt, force col resizing to account for
+                    // possible appearance/disappearance of the vertical scrollbar.
+                    if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
+                        api.sizeColumnsToFit();
+                    }
+
+                    const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
+                    if (!isEmpty(refreshCols)) {
+                        api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
+                    }
+
+                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
+                        model.noteAgExpandStateChange();
+                    }
+                }, this);
+
                 runInAction(() => {
-                    withShortDebug(`(Re)assigned ${records.length} records to ag-Grid in dataReaction()`, () => {
-
-                        if (!experimental.suppressPreclearOnDataLoad) {
-                            // If we are going to delete the majority of the rows then ag-Grid is faster
-                            // if we first clear out the existing data before setting the new data
-                            this.clearDataIfExpensiveDeletionPending(records, api);
-                        }
-
-                        // Load updated data into the grid.
-                        api.setRowData(records);
-                        this.updatePinnedSummaryRowData();
-
-
-                        if (!experimental.suppressSizeColsOnDataLoad) {
-                            // Size columns to account for scrollbar show/hide due to row count change.
-                            api.sizeColumnsToFit();
-                        }
-
-                        if (!experimental.suppressRefreshCellsOnDataLoad) {
-                            // Force grid to fully re-render cells. We are *not* relying on its default
-                            // cell-level change detection as this does not account for our current
-                            // renderer API (where renderers can reference other properties on the data
-                            // object). See https://github.com/exhi/hoist-react/issues/550.
-                            api.refreshCells({force: true});
-                        }
-
-                        if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                            // Clear out any stale expand state
-                            model.noteAgExpandStateChange();
-                        }
-                    }, this);
+                    this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
                     this._isHierarchical = store.allRootCount != store.allCount;
@@ -509,28 +517,6 @@ export class Grid extends Component {
         };
     }
 
-    clearDataIfExpensiveDeletionPending(newRecords, api) {
-        let currCount = 0, deleteCount = 0, addCount = 0;
-
-        const ids = new Set();
-        api.forEachNode((node, index) => ids.add(node.id));
-        currCount = ids.size;
-
-        newRecords.forEach(rec => {
-            if (!ids.delete(rec.id)) addCount++;
-        });
-        deleteCount = ids.size;
-
-        // Heuristic -- we think slow deletions grow by order (D * (C + A))
-        if (deleteCount > 1 && (deleteCount * (currCount + addCount)) > 10000000) {
-            console.debug(`Expensive deletion detected! Deletes: ${deleteCount} | Curr + Adds: ${currCount + addCount}`);
-            withShortDebug(`Pre-Cleared ${currCount} records from ag-Grid`, () => {
-                api.selectionController.reset();
-                api.clientSideRowModel.setRowData([]);
-            }, this);
-        }
-    }
-
     updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
@@ -549,6 +535,45 @@ export class Grid extends Component {
 
         agApi.setPinnedTopRowData(pinnedTopRowData);
         agApi.setPinnedBottomRowData(pinnedBottomRowData);
+    }
+
+    genTransaction(newRs, prevRs) {
+        return withShortDebug('Generating Transaction', () => {
+            if (!prevRs) return {add: newRs.list};
+
+            const newList = newRs.list,
+                prevList = prevRs.list;
+
+            let add = [], update = [], remove = [];
+            newList.forEach(rec => {
+                const existing = prevRs.getById(rec.id);
+                if (!existing) {
+                    add.push(rec);
+                } else if (existing !== rec) {
+                    update.push(rec);
+                }
+            });
+
+            if (newList.length != (prevList.length + add.length)) {
+                remove = prevList.filter(rec => !newRs.getById(rec.id));
+            }
+
+            // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
+            const ret = {};
+            if (!isEmpty(add)) ret.add = add;
+            if (!isEmpty(update)) ret.update = update;
+            if (!isEmpty(remove)) ret.remove = remove;
+            return ret;
+
+        }, this);
+    }
+
+    transactionIsEmpty(t) {
+        return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
+    }
+
+    transactionLogStr(t) {
+        return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
     //------------------------
@@ -644,5 +669,4 @@ export class Grid extends Component {
         if (this.props.onKeyDown) this.props.onKeyDown(evt);
     }
 }
-
 export const grid = elemFactory(Grid);

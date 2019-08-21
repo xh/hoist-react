@@ -31,7 +31,30 @@
 
 ### 💥 Breaking Changes
 
-* If using JSX, component ToolbarSeparator has been renamed ToobarSep
+* The updating of Store data has been reworked to provide a simpler and more powerful API that
+  allows for the applications of additions, deletions, and updates in a single transaction:
+  * The signature of `Store.updateData` has been substantially changed, and is now the main entry
+    point for all updates.
+  * The method `Store.removeRecords` has been removed. Use `Store.updateData` instead.
+  * The method `Store.addData` has been removed. Use `Store.updateData` instead.
+* `Column` now takes an additional property `rendererIsComplex`. Application must set this flag to
+  `true` to indicate if a column renderer uses values other than its own bound field. This change
+  provides an efficiency boost and also allows the use of agGrid's native `enableCellChangeFlash`
+  option for all simple columns not needing a complex renderer.
+* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
+  factory function. Previously functions could also be provided to the `content` prop, but now that
+  prop must be a Class or a function that is strictly a React Component definition.
+
+### ⚙️ Technical
+
+* `Grid` will now update the underlying agGrid using agGrid transactions rather than relying on
+  agGrid `deltaRowMode`. This is intended to provide the best possible grid performance, and
+  generally streamline the use of the agGrid Api.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `3.7 -> 3.8`
+* qs `6.7 -> 6.8`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
@@ -71,20 +94,13 @@
 * `StoreCountLabel` has been moved from `/desktop/cmp/store` to the cross-platform package
   `/cmp/store`. Its `gridModel` prop has also been removed - usages with grids should likely switch
   to the new `GridCountLabel` component, noted above and imported from `/cmp/grid`.
-  
 * The API for `ClipboardButton` and `ClipboardMenuItem` has been simplified, and made implementation
   independent. Specify a single `getCopyText` function rather than the `clipboardSpec`.
   (`clipboardSpec` is an artifact from the removed `clipboard` library).
-
 * The `XH.prompt()` and `XH.message()` input config has been updated to work as documented, with any
   initial/default value for the input sourced from `input.initialValue`. Was previously sourced from
   `input.value` (#1298).
-  
 * ChartModel `config` has been deprecated. Please use `highchartsConfig` instead.
-
-* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
-  factory function. Previously functions could also be provided to the `content` prop, but now that
-  prop must be a Class or a function that is strictly a React Component definition.
 
 ### 🐞 Bug Fixes
 

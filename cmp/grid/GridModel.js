@@ -14,7 +14,8 @@ import {
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {deepFreeze, ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
@@ -25,7 +26,6 @@ import {
     findLast,
     isArray,
     isEmpty,
-    isEqual,
     isNil,
     isUndefined,
     isPlainObject,
@@ -182,7 +182,7 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
-        experimental =  {},
+        experimental,
         ...rest
     }) {
         this.treeMode = treeMode;
@@ -224,7 +224,12 @@ export class GridModel {
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
-        this.experimental = experimental;
+        this.experimental = {
+            suppressUpdateExpandStateOnDataLoad: false,
+            useTransactions: true,
+            useDeltaSort: false,
+            ...experimental
+        };
     }
 
     /**
@@ -453,8 +458,8 @@ export class GridModel {
     noteAgExpandStateChange() {
         const agModelState = this.agGridModel.getExpandState();
 
-        if (!isEqual(this.expandState, agModelState)) {
-            this.expandState = agModelState;
+        if (!equal(this.expandState, agModelState)) {
+            this.expandState = deepFreeze(agModelState);
         }
     }
 
@@ -739,7 +744,7 @@ export class GridModel {
             items: GridModel.defaultContextMenuTokens,
             gridModel
         });
-    }
+    };
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);

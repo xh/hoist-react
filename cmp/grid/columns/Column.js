@@ -79,6 +79,10 @@ export class Column {
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
+     *      just the value of the field associated with this column.  Set to true to ensure that
+     *      the cells for this column are updated any time the record is changed.  Setting to true
+     *      may have performance implications. Default false.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -108,6 +112,7 @@ export class Column {
         sortable,
         pinned,
         renderer,
+        rendererIsComplex,
         elementRenderer,
         chooserName,
         chooserGroup,
@@ -162,6 +167,7 @@ export class Column {
         this.pinned = (pinned === true) ? 'left' : pinned;
 
         this.renderer = renderer;
+        this.rendererIsComplex = rendererIsComplex;
         this.elementRenderer = elementRenderer;
 
         this.chooserName = chooserName || this.headerName || this.colId;
@@ -294,7 +300,7 @@ export class Column {
             ret.sort = sortCfg.sort;
             ret.sortedAt = gridModel.sortBy.indexOf(sortCfg);
         }
-    
+
         if (this.comparator === undefined) {
             // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
             ret.comparator = this.defaultComparator;
@@ -316,7 +322,7 @@ export class Column {
                         agNodeA,
                         agNodeB
                     };
-        
+
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
         }
@@ -353,28 +359,34 @@ export class Column {
  */
 
 /**
- * @callback Column~rendererFn - normalized renderer function for a grid cell.
+ * @callback Column~rendererFn - renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
+ *      Note that columns with renderers that access/rely on record fields other than the primary
+ *      value should also have their `rendererIsComplex` flag set to true to ensure they are
+ *      re-run whenever the record (and not just the primary value) changes.
  * @return {string} - the formatted value for display.
  */
 
 /**
- * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
+ * @callback Column~elementRendererFn - renderer function for a grid cell returning a React element.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
+ *      Note that columns with renderers that access/rely on record fields other than the primary
+ *      value should also have their `rendererIsComplex` flag set to true to ensure they are
+ *      re-run whenever the record (and not just the primary value) changes.
  * @return {Element} - the React element to render.
  */
 
 /**
- * @callback Column~cellClassFn - normalized function to generate grid cell CSS classes.
+ * @callback Column~cellClassFn - function to generate grid cell CSS classes.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
  */
 
 /**
- * @callback Column~headerClassFn - normalized function to generate header CSS classes.
+ * @callback Column~headerClassFn - function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
  */

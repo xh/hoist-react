@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable, observable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isEmpty, isFinite, sumBy, get, set, unset, partition} from 'lodash';
+import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -18,17 +18,17 @@ import {isEmpty, isFinite, sumBy, get, set, unset, partition} from 'lodash';
  * Can also (optionally) be bound to a GridModel. This will enable selection syncing and
  * expand / collapse syncing for GridModels in `treeMode`.
  *
- * Supports any Highcharts TreeMap layout algorithm ('squarified', 'sliceAndDice', 'stripes' or 'strip').
+ * Supports any Highcharts TreeMap algorithm ('squarified', 'sliceAndDice', 'stripes' or 'strip').
  *
- * Node colors are normalized to a 0-1 range, which maps to the colorAxis. Supports 'linear', 'balanced' and 'none'.
- * color modes. 'linear' distributes normalized color values across the colorAxis, according to the heatField.
- * 'balanced' attempts to account for outliers by adjusting the normalisation ranges around the median value.
+ * Node colors are normalized to a 0-1 range and mapped to a colorAxis via the following colorModes:
+ * 'linear' distributes normalized color values across the colorAxis according to the heatField.
+ * 'balanced' attempts to account for outliers by adjusting normalisation ranges around the median.
  * 'none' will ignore the colorAxis, and instead use the flat color.
  *
  * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
  * @see Dark and Light themes for colorAxis example.
  *
- * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts configuration options
+ * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts config options
  */
 @HoistModel
 export class TreeMapModel {
@@ -77,22 +77,27 @@ export class TreeMapModel {
      * @param {Object} c - TreeMapModel configuration.
      * @param {Store} [c.store] - A store containing records to be displayed.
      * @param {GridModel} [c.gridModel] - Optional GridModel to bind to.
-     * @param {number} [c.maxNodes] - Maximum number of nodes to render. Be aware that increasing this can severely degrade performance.
-     * @param {Object} [c.highchartsConfig] - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`, which should be set via dedicated config.
+     * @param {number} [c.maxNodes] - Maximum number of nodes to render. Be aware that increasing
+     *     this can severely degrade performance.
+     * @param {Object} [c.highchartsConfig] - Highcharts configuration object for the managed
+     *     chart. May include any Highcharts opts other than `series`, which should be set via
+     *     dedicated config.
      * @param {string} c.labelField - Record field to use to determine node label.
      * @param {string} c.valueField - Record field to use to determine node size.
      * @param {string} c.heatField - Record field to use to determine node color.
      * @param {number} [c.maxDepth] - Maximum tree depth to render.
-     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified', 'sliceAndDice', 'stripes' or 'strip'.
-     *      Defaults to 'squarified'. @see https://www.highcharts.com/docs/chart-and-series-types/treemap for algorithm examples.
-     * @param {string} [c.colorMode] - Heat color distribution mode. Either 'linear', 'balanced' or 'none'. Defaults to 'linear'.
-     * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record, e).
-     *      If not provided, by default will select a record when using a GridModel.
-     * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked. Receives (record, e).
-     *      If not provided, by default will expand / collapse a record when using a GridModel.
-     * @param {(boolean|TreeMapModel~tooltipFn)} [c.tooltip] - 'true' to use the default tooltip renderer, or a custom
-     *      tooltipFn which returns a string output of the node's value.
+     * @param {string} [c.algorithm] - Layout algorithm to use. Either 'squarified',
+     *     'sliceAndDice', 'stripes' or 'strip'. Defaults to 'squarified'.
+     *     {@see https://www.highcharts.com/docs/chart-and-series-types/treemap} for examples.
+     * @param {string} [c.colorMode] - Heat color distribution mode. Either 'linear', 'balanced' or
+     *     'none'. Defaults to 'linear'.
+     * @param {function} [c.onClick] - Callback to call when a node is clicked. Receives (record,
+     *     e). If not provided, by default will select a record when using a GridModel.
+     * @param {function} [c.onDoubleClick] - Callback to call when a node is double clicked.
+     *     Receives (record, e). If not provided, by default will expand / collapse a record when
+     *     using a GridModel.
+     * @param {(boolean|TreeMapModel~tooltipFn)} [c.tooltip] - 'true' to use the default tooltip
+     *     renderer, or a custom tooltipFn which returns a string output of the node's value.
      * @param {(Element|string)} [c.emptyText] - Element/text to render if TreeMap has no records.
      *      Defaults to null, in which case no empty text will be shown.
      */
@@ -355,7 +360,7 @@ export class TreeMapModel {
 
     toggleNodeExpanded(xhTreePath) {
         const {gridModel} = this,
-            expandState = {...gridModel.expandState};
+            expandState = cloneDeep(gridModel.expandState);
 
         if (get(expandState, xhTreePath)) {
             unset(expandState, xhTreePath);
@@ -393,7 +398,7 @@ export class TreeMapModel {
  * @property {Record} record - Store record from which TreeMapRecord was created.
  * @property {string} name - Used by Highcharts to determine the node label.
  * @property {number} value - Used by Highcharts to determine the node size.
- * @property {number} heatValue - A transient property used to determine the colorValue used by Highcharts.
+ * @property {number} heatValue - transient property used to determine the Highcharts colorValue.
  * @property {number} colorValue - Used by Highcharts to determine the color in a heat map.
  */
 
