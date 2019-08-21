@@ -8,9 +8,10 @@
 import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import './Dragger.scss';
-
 import {PanelModel} from '../PanelModel';
+import {throttle} from 'lodash';
+
+import './Dragger.scss';
 
 /** This is an implementation class private to Hoist
  * @private
@@ -23,6 +24,11 @@ export class Dragger extends Component {
     resizeState = null;
     startSize = null;
 
+    constructor(props) {
+        super(props);
+        this.throttledSetSize = throttle(size => this.model.setSize(size), 50);
+    }
+
     render() {
         const {side} = this.model;
         return div({
@@ -33,7 +39,7 @@ export class Dragger extends Component {
             draggable: true
         });
     }
-    
+
     onDragStart = (e) => {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
         this.startSize = this.model.size;
@@ -66,7 +72,7 @@ export class Dragger extends Component {
         }
 
         if (this.startSize !== null) {
-            this.model.setSize(this.startSize + diff);
+            this.throttledSetSize(this.startSize + diff);
         }
     }
 

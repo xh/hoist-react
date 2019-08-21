@@ -24,6 +24,11 @@
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
 
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `3.7 -> 3.8`
+* qs `6.7 -> 6.8`
+
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
 ## v26.0.1 - 2019-08-07
