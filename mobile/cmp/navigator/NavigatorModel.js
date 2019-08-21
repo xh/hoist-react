@@ -46,7 +46,7 @@ export class NavigatorModel {
 
         this.addReaction({
             track: () => this.pages,
-            run: this.onPagesChange
+            run: this.onPagesChangeAsync
         });
     }
 
@@ -117,23 +117,43 @@ export class NavigatorModel {
         this.setPages(pages);
     }
 
-    onPagesChange() {
+    async onPagesChangeAsync() {
+        await this.updateNavigatorPagesAsync();
+
+        // Ensure only the last page is visible after a page transition.
+        if (!this._navigator) return;
+        const {pages} = this._navigator._navi;
+        pages.forEach((pageEl, idx) => {
+            const lastPage = idx === pages.length - 1;
+            pageEl.style.display = lastPage ? 'block' : 'none';
+        });
+    }
+
+    async updateNavigatorPagesAsync() {
+        if (!this._navigator) return;
         const {pages} = this,
             keyStack = pages.map(it => it.key),
-            prevKeyStack = this._prevKeyStack || [];
-
-        // If we have gone back one page in the same stack, we can safely pop() the page
-        if (isEqual(keyStack, prevKeyStack.slice(0, -1))) {
-            this._navigator.popPage();
-        } else {
-            this._navigator.resetPageStack(pages);
-        }
+            prevKeyStack = this._prevKeyStack || [],
+            backOnePage = isEqual(keyStack, prevKeyStack.slice(0, -1)),
+            forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack);
 
         this._prevKeyStack = keyStack;
+
+        if (backOnePage) {
+            // If we have gone back one page in the same stack, we can safely pop() the page
+            return this._navigator.popPage();
+        } else if (forwardOnePage) {
+            // If we have gone forward one page in the same stack, we can safely push() the new page
+            return this._navigator.pushPage(pages[pages.length - 1]);
+        } else {
+            // Otherwise, we should reset the page stack
+            return this._navigator.resetPageStack(pages, {animation: 'none'});
+        }
     }
 
     renderPage(pageModel, navigator) {
-        const {init, key, content, props} = pageModel;
+        const {init, content, props} = pageModel;
+        let key = pageModel.key;
 
         // Note: We use the special "init" object to obtain a reference to the
         // navigator and to read the initial route.
@@ -144,6 +164,26 @@ export class NavigatorModel {
             }
             return null;
         }
+
+        // This is a workaround for an Onsen issue with resetPageStack(),
+        // which can result in transient duplicate pages in a stack. Having duplicate pages
+        // will cause React to throw with a duplicate key error. The error occurs
+        // when navigating from one page stack to another where the last page of
+        // the new stack is already present in the previous stack.
+        //
+        // For this workaround, we skip rendering the duplicate page (the one at the incorrect index).
+        //
+        // See https://github.com/OnsenUI/OnsenUI/issues/2682
+        const onsenNavPages = this._navigator.routes.filter(it => !it.init),
+            hasDupes = onsenNavPages.filter(it => it.key === key).length > 1;
+
+        if (hasDupes) {
+            const onsenIdx = onsenNavPages.indexOf(pageModel),
+                ourIdx = this.pages.findIndex(it => it.key === key);
+
+            if (onsenIdx !== ourIdx) return null;
+        }
+
         return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
     }
 
