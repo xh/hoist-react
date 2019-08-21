@@ -7,7 +7,7 @@
 
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isFunction, isPlainObject, isString, remove} from 'lodash';
+import {isEmpty, isFunction, isPlainObject, isString, remove as lodashRemove} from 'lodash';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -115,27 +115,34 @@ export class Store {
 
     /**
      * Add, update, or delete records in this store.
-     * @param {StoreUpdate} changes - adds/updates/deletes to process
+     * @param {StoreUpdate} changes - data changes to process
      */
     @action
     updateData(changes) {
-        const {updates, adds, deletes, rawSummaryData} = changes;
+        const {update, add, remove, rawSummaryData, ...other} = changes;
+        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
-        // 1) Pre-process updates, adds into Records
+        // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
-        if (updates) {
-            updateRecs = updates.map(it => this.createRecord(it));
+        if (update) {
+            updateRecs = update.map(it => this.createRecord(it));
         }
-        if (adds) {
+        if (add) {
             addRecs = new Map();
-            adds.forEach(it => this.createRecords([it.rawData], it.parentId, addRecs));
+            add.forEach(it => {
+                if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
+                    this.createRecords([it.rawData], it.parentId, addRecs);
+                } else {
+                    this.createRecords([it], null, addRecs);
+                }
+            });
         }
 
         // 2) Pre-process summary record, peeling it out of updates if needed
         let {summaryRecord} = this,
             summaryUpdateRec;
         if (summaryRecord) {
-            [summaryUpdateRec] = remove(updateRecs, {id: summaryRecord.id});
+            [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
             if (!summaryUpdateRec && rawSummaryData) {
                 summaryUpdateRec = this.createRecord(rawSummaryData);
             }
@@ -143,8 +150,8 @@ export class Store {
 
         // 3) Apply changes
         let didUpdate = false;
-        if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(deletes)) {
-            this._all = this._all.updateData({updates: updateRecs, adds: addRecs, deletes: deletes});
+        if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
+            this._all = this._all.updateData({update: updateRecs, add: addRecs, remove: remove});
             this.rebuildFiltered();
             didUpdate = true;
         }
@@ -373,23 +380,23 @@ export class Store {
 }
 
 /**
- * @typedef {Object} StoreUpdate - object representing updates/adds/deletes to perform
+ * @typedef {Object} StoreUpdate - object representing data changes to perform
  *      on a Store's data in a single transaction.
- * @property {Object[]} [updates] - list of raw data objects representing records to be updated.
+ * @property {Object[]} [update] - list of raw data objects representing records to be updated.
  *      Updates must be matched to existing records by id in order to be applied. The form of the
  *      update objects should be the same as presented to loadData(), with the exception that any
  *      children property will be ignored, and any existing children for the record being updated
  *      will be preserved. If the record is a child, the new updated instance will be assigned to
  *      the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
- * @property {Object[]} [adds] - list of raw data representing records to be added, Each top-level
- *      item in the array must be of the form `{parentId: x, rawData: {}}`, where `parentId` provides
- *      a pointer to the intended parent if the record is not to be added to the root. The form of
- *      the rawData objects should be the same as presented to loadData() and *can* include a
- *      children property that will be processed into new child records. (Meaning: adds can be used
- *      to add new branches to the tree.)
- * @property {string[]} [deletes] - list of ids representing records to be removed. Any children of
+ * @property {Object[]} [add] - list of raw data representing records to be added, Each top-level
+ *      item in the array must be either a rawData object of the form passed to loadData or
+ *      a wrapper object of the form `{parentId: x, rawData: {}}`, where `parentId` provides
+ *      a pointer to the intended parent if the record is not to be added to the root. The rawData
+ *      *can* include a children property that will be processed into new child records.
+ *      (Meaning: adds can be used to add new branches to the tree.)
+ * @property {string[]} [remove] - list of ids representing records to be removed. Any children of
  *      these records will also be removed.
  * @property {Object} [rawSummaryData] - update to the dedicated summary row for this store.
  *      If the store has its `loadRootAsSummary` flag set to true, the summary record should
- *      instead be provided via the `updates` property.
+ *      instead be provided via the `update` property.
  */

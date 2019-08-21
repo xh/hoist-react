@@ -380,7 +380,7 @@ export class Grid extends Component {
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
-                        api.refreshCells({columns: refreshCols.map(c =>c.colId), force: true});
+                        api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
                     if (!experimental.suppressUpdateExpandStateOnDataLoad) {

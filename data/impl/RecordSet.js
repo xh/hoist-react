@@ -128,30 +128,30 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    updateData({deletes, updates, adds}) {
+    updateData({update, add, remove}) {
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
-        let missingDeletes = 0, missingUpdates = 0;
+        let missingRemoves = 0, missingUpdates = 0;
 
-        // 0) Deletes - process first to allow delete-then-add-elsewhere-in-tree.
-        if (deletes) {
-            const allDeletes = new Set();
-            deletes.forEach(id => {
+        // 0) Removes - process first to allow delete-then-add-elsewhere-in-tree.
+        if (remove) {
+            const allRemoves = new Set();
+            remove.forEach(id => {
                 if (!newRecords.has(id)) {
-                    missingDeletes++;
-                    console.debug(`Attempted to delete non-existent record: ${id}`);
+                    missingRemoves++;
+                    console.debug(`Attempted to remove non-existent record: ${id}`);
                     return;
                 }
-                this.gatherDescendants(id, allDeletes);
+                this.gatherDescendants(id, allRemoves);
             });
-            allDeletes.forEach(it => newRecords.delete(it));
+            allRemoves.forEach(it => newRecords.delete(it));
         }
 
         // 1) Updates - cannot modify hierarchy by design, and incoming records do not have any
         //    parent pointers. Assign the parentId of the existing rec to maintain the tree.
-        if (updates) {
-            updates.forEach(rec => {
+        if (update) {
+            update.forEach(rec => {
                 const {id} = rec,
                     existing = newRecords.get(id);
                 if (!existing) {
@@ -165,15 +165,15 @@ export class RecordSet {
         }
 
         // 2) Adds
-        if (adds) {
-            adds.forEach(rec => {
+        if (add) {
+            add.forEach(rec => {
                 const {id} = rec;
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
             });
         }
 
-        if (missingDeletes > 0) console.warn(`Failed to delete ${missingDeletes} records not found by id`);
+        if (missingRemoves > 0) console.warn(`Failed to remove ${missingRemoves} records not found by id`);
         if (missingUpdates > 0) console.warn(`Failed to update ${missingUpdates} records not found by id`);
 
         return new RecordSet(this.store, newRecords);
