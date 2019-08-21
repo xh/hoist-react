@@ -359,28 +359,34 @@ export class Column {
  */
 
 /**
- * @callback Column~rendererFn - normalized renderer function for a grid cell.
+ * @callback Column~rendererFn - renderer function for a grid cell.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
+ *      Note that columns with renderers that access/rely on record fields other than the primary
+ *      value should also have their `rendererIsComplex` flag set to true to ensure they are
+ *      re-run whenever the record (and not just the primary value) changes.
  * @return {string} - the formatted value for display.
  */
 
 /**
- * @callback Column~elementRendererFn - renderer function for a grid cell which returns a React component
+ * @callback Column~elementRendererFn - renderer function for a grid cell returning a React element.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
+ *      Note that columns with renderers that access/rely on record fields other than the primary
+ *      value should also have their `rendererIsComplex` flag set to true to ensure they are
+ *      re-run whenever the record (and not just the primary value) changes.
  * @return {Element} - the React element to render.
  */
 
 /**
- * @callback Column~cellClassFn - normalized function to generate grid cell CSS classes.
+ * @callback Column~cellClassFn - function to generate grid cell CSS classes.
  * @param {*} value - cell data value (column + row).
  * @param {CellContext} context - additional data about the column, row and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
  */
 
 /**
- * @callback Column~headerClassFn - normalized function to generate header CSS classes.
+ * @callback Column~headerClassFn - function to generate header CSS classes.
  * @param {HeaderContext} context - contains data about the column and GridModel.
  * @return {(string|string[])} - CSS class(es) to use.
  */

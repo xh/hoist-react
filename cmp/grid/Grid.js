@@ -63,7 +63,7 @@ export class Grid extends Component {
          * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
          * interfere with the implementation of this component and its use of the ag-Grid API.
          *
-         * Note that changes to these options after the initial render of this component will be ignored.
+         * Note that changes to these options after the component's initial render will be ignored.
          */
         agOptions: PT.object,
 
@@ -359,8 +359,7 @@ export class Grid extends Component {
                     deltaCount = newCount - prevCount;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
-
-                    if (experimental.useTransactions) {
+                    if (prevCount != 0 && experimental.useTransactions) {
                         const transaction = this.genTransaction(newRs, prevRs);
                         console.debug(this.transactionLogStr(transaction));
 
@@ -371,10 +370,10 @@ export class Grid extends Component {
                         api.setRowData(newRs.list);
                     }
 
-
                     this.updatePinnedSummaryRowData();
 
-                    // If row count changing to/from  small amt. force col resizing to update scrollbar.
+                    // If row count changing to/from a small amt, force col resizing to account for
+                    // possible appearance/disappearance of the vertical scrollbar.
                     if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
                         api.sizeColumnsToFit();
                     }
@@ -390,7 +389,6 @@ export class Grid extends Component {
                 }, this);
 
                 runInAction(() => {
-
                     this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
@@ -575,7 +573,7 @@ export class Grid extends Component {
     }
 
     transactionLogStr(t) {
-        return `u: ${t.update ? t.update.length : 0} | a: ${t.add ? t.add.length : 0} | r: ${t.remove ? t.remove.length : 0}`;
+        return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
     //------------------------
