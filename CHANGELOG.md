@@ -47,6 +47,7 @@
 
 * @xh/hoist-dev-utils `3.7 -> 3.8`
 * qs `6.7 -> 6.8`
+* store2 `2.8 -> 2.9`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
