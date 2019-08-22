@@ -23,6 +23,7 @@ import './Mask.scss';
  */
 export const Mask = hoistComponent({
     displayName: 'Mask',
+
     render(props) {
         const model = useProvidedModel(PendingTaskModel, props),
             isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),

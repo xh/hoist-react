@@ -14,6 +14,7 @@ import {box} from './Box';
  */
 export const Spacer = hoistComponent({
     displayName: 'Spacer',
+
     render(props) {
         return box({
             ...props,
@@ -28,6 +29,7 @@ export const Spacer = hoistComponent({
  */
 export const Filler = hoistComponent({
     displayName: 'Filler',
+
     render(props) {
         return box({
             ...props,

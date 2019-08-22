@@ -11,8 +11,8 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
-export const MonitorTab = hoistComponent(() => {
-    return tabContainer({
+export const MonitorTab = hoistComponent(
+    () => tabContainer({
         model: {
             route: 'default.monitor',
             switcherPosition: 'left',
@@ -21,5 +21,5 @@ export const MonitorTab = hoistComponent(() => {
                 {id: 'editMonitors', content: MonitorEditorPanel}
             ]
         }
-    });
-});
+    })
+);

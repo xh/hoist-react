@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {keys, toString} from 'lodash';
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,8 +16,8 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
 
-export const configDifferDetail = hoistComponentFactory(
-    (props) => {
+export const configDifferDetail = hoistElemFactory(
+    props => {
         const model = useProvidedModel(ConfigDifferDetailModel, props);
         if (!model.record) return null;
 

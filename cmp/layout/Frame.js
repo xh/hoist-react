@@ -17,6 +17,7 @@ import {box} from './Box';
  */
 export const Frame = hoistComponent({
     displayName: 'Frame',
+
     render(props, ref) {
         return box({ref, ...props, flex: 'auto'});
     }
@@ -24,6 +25,7 @@ export const Frame = hoistComponent({
 
 export const VFrame = hoistComponent({
     displayName: 'VFrame',
+
     render(props, ref) {
         return box({
             ref,
@@ -37,6 +39,7 @@ export const VFrame = hoistComponent({
 
 export const HFrame = hoistComponent({
     displayName: 'HFrame',
+
     render(props, ref) {
         return box({
             ref,

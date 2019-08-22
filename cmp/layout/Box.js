@@ -20,6 +20,7 @@ import {div} from './Tags';
  */
 export const Box = hoistComponent({
     displayName: 'Box',
+
     render(props, ref) {
         let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
 
@@ -39,6 +40,7 @@ export const Box = hoistComponent({
 
 export const VBox = hoistComponent({
     displayName: 'VBox',
+
     render(props, ref) {
         return box({
             ref,
@@ -51,6 +53,7 @@ export const VBox = hoistComponent({
 
 export const HBox = hoistComponent({
     displayName: 'HBox',
+
     render(props, ref) {
         return box({
             ref,

@@ -24,6 +24,7 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  */
 export const Tab = hoistComponent({
     displayName: 'Tab',
+
     render(props) {
         let model = useProvidedModel(TabModel, props),
             {content, contentFn, isActive, renderMode, refreshContextModel} = model,

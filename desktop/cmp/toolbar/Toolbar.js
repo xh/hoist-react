@@ -17,6 +17,7 @@ import './Toolbar.scss';
  */
 export const Toolbar = hoistComponent({
     displayName: 'Toolbar',
+
     render(props) {
         const {vertical, ...rest} = props;
 

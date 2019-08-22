@@ -26,7 +26,7 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
  * to create support for references.  If the function input contains two arguments, it is assumed to
  * support forward references.
  *
- * @param {Object|function} config - configuration object or function defining the component
+ * @param {(Object|function)} config - configuration object or function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
  * @param {string} [config.displayName] - name of function for debugging/inspection purposes (if config object specified)
  *
@@ -45,7 +45,17 @@ export function hoistComponent(config) {
     return component;
 }
 
-export function hoistComponentFactory(config) {
+/**
+ * Create a new Hoist functional component and return an element factory for it.
+ *
+ * This method is a shortcut for elemFactory(hoistComponent(...)), and is useful for
+ * internal usages that do not need need to export any references to the Component itself.
+ *
+ * @see hoistComponent
+ * @see elemFactory
+ */
+
+export function hoistElemFactory(config) {
     return elemFactory(hoistComponent(config));
 }
 
@@ -253,8 +263,8 @@ function warnNoModelClassProvided() {
 //---------------------------------------------------------------------------
 // Internal components to wrap the contents of a class based @HoistComponent.
 //---------------------------------------------------------------------------
-const loadSupportWrapper = hoistComponentFactory(
-    (props) => {
+const loadSupportWrapper = hoistElemFactory(
+    props => {
         useLoadSupportLinker(props.loadSupport);
         return props.renderFn();
     }

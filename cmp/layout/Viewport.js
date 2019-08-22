@@ -15,6 +15,7 @@ import {box} from './Box';
  */
 export const Viewport = hoistComponent({
     displayName: 'Viewport',
+
     render(props) {
         return box({
             ...props,

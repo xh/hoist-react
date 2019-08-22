@@ -5,14 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {label} from '@xh/hoist/cmp/layout';
 import {numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {LogViewerModel} from './LogViewerModel';
 
-export const logViewerToolbar = hoistComponentFactory(
-    (props) => {
+export const logViewerToolbar = hoistElemFactory(
+    props => {
         const model = useProvidedModel(LogViewerModel, props);
         return toolbar(
             label('Start line:'),

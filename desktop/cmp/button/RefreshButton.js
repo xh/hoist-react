@@ -22,6 +22,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  */
 export const RefreshButton = hoistComponent({
     displayName: 'RefreshButton',
+
     render({model, ...buttonProps}) {
         const refreshContext = useContext(RefreshContext);
 

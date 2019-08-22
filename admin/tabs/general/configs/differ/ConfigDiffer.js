@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {hoistComponentFactory, useProvidedModel, XH} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -18,8 +18,8 @@ import {identity} from 'lodash';
 import {configDifferDetail} from './ConfigDifferDetail';
 import {ConfigDifferModel} from './ConfigDifferModel';
 
-export const configDiffer = hoistComponentFactory(
-    (props) => {
+export const configDiffer = hoistElemFactory(
+    props => {
         const model = useProvidedModel(ConfigDifferModel, props),
             {detailModel} = model;
 

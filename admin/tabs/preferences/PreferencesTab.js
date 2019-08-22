@@ -10,8 +10,8 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-export const PreferencesTab = hoistComponent(() => {
-    return tabContainer({
+export const PreferencesTab = hoistComponent(
+    () => tabContainer({
         model: {
             route: 'default.preferences',
             switcherPosition: 'left',
@@ -20,5 +20,5 @@ export const PreferencesTab = hoistComponent(() => {
                 {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
             ]
         }
-    });
-});
+    })
+);

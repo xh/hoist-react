@@ -23,6 +23,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  */
 export const ExportButton = hoistComponent({
     displayName: 'ExportButton',
+
     render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {
 
         warnIf(

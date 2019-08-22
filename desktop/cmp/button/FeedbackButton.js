@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const FeedbackButton = hoistComponent({
     displayName: 'FeedbackButton',
+
     render(props) {
         return button({
             icon: Icon.comment({className: 'fa-flip-horizontal'}),

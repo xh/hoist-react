@@ -15,8 +15,8 @@ import {ServicePanel} from './services/ServicePanel';
 import {UserPanel} from './users/UserPanel';
 import {WebSocketPanel} from './websocket/WebSocketPanel';
 
-export const GeneralTab = hoistComponent(() => {
-    return tabContainer({
+export const GeneralTab = hoistComponent(
+    () => tabContainer({
         model: {
             route: 'default.general',
             switcherPosition: 'left',
@@ -29,5 +29,5 @@ export const GeneralTab = hoistComponent(() => {
                 {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: WebSocketPanel}
             ]
         }
-    });
-});
+    })
+);

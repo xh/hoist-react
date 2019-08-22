@@ -14,24 +14,26 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-export const EhCachePanel = hoistComponent(() => {
-    const model = useLocalModel(EhCacheModel),
-        {gridModel} = model;
+export const EhCachePanel = hoistComponent(
+    () => {
+        const model = useLocalModel(EhCacheModel),
+            {gridModel} = model;
 
-    return panel({
-        mask: model.loadModel,
-        tbar: [
-            button({
-                icon: Icon.reset(),
-                text: 'Clear All',
-                intent: 'danger',
-                onClick: () => model.clearAll()
-            }),
-            filler(),
-            gridCountLabel({gridModel, unit: 'cache'}),
-            storeFilterField({gridModel}),
-            exportButton({gridModel})
-        ],
-        item: grid({model: gridModel})
-    });
-});
+        return panel({
+            mask: model.loadModel,
+            tbar: [
+                button({
+                    icon: Icon.reset(),
+                    text: 'Clear All',
+                    intent: 'danger',
+                    onClick: () => model.clearAll()
+                }),
+                filler(),
+                gridCountLabel({gridModel, unit: 'cache'}),
+                storeFilterField({gridModel}),
+                exportButton({gridModel})
+            ],
+            item: grid({model: gridModel})
+        });
+    }
+);

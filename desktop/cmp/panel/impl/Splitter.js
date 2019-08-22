@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -14,7 +14,7 @@ import {PanelModel} from '../PanelModel';
 import './Splitter.scss';
 
 /** @private */
-export const splitter = hoistComponentFactory(
+export const splitter = hoistElemFactory(
     (props) => {
         const model = useProvidedModel(PanelModel, props),
             {vertical, showSplitterCollapseButton, collapsible} = model;

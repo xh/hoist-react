@@ -20,6 +20,7 @@ import './Button.scss';
  */
 export const Button = hoistComponent({
     displayName: 'Button',
+
     render(props) {
         const [layoutProps, nonLayoutProps] = useLayoutProps(props),
             {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,

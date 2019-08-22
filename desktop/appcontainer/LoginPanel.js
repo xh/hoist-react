@@ -6,7 +6,7 @@
  */
 
 import {text} from '@xh/hoist/kit/blueprint';
-import {XH, hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -23,8 +23,8 @@ import './LoginPanel.scss';
  *
  * @private
  */
-export const loginPanel = hoistComponentFactory(
-    (props) => {
+export const loginPanel = hoistElemFactory(
+    props => {
         const model = useProvidedModel(LoginPanelModel, props),
             {loginMessage} = XH.appSpec;
 

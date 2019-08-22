@@ -25,6 +25,7 @@ import './AppBar.scss';
  */
 export const AppBar = hoistComponent({
     displayName: 'AppBar',
+
     render(props) {
         const {
             icon,

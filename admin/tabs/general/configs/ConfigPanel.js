@@ -13,19 +13,21 @@ import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
-export const ConfigPanel = hoistComponent(() => {
-    const model = useLocalModel(ConfigModel);
-    return fragment(
-        restGrid({
-            model: model.gridModel,
-            extraToolbarItems: () => {
-                return button({
-                    icon: Icon.diff(),
-                    text: 'Compare w/ Remote',
-                    onClick: () => model.differModel.open()
-                });
-            }
-        }),
-        configDiffer({model: model.differModel})
-    );
-});
+export const ConfigPanel = hoistComponent(
+    () => {
+        const model = useLocalModel(ConfigModel);
+        return fragment(
+            restGrid({
+                model: model.gridModel,
+                extraToolbarItems: () => {
+                    return button({
+                        icon: Icon.diff(),
+                        text: 'Compare w/ Remote',
+                        onClick: () => model.differModel.open()
+                    });
+                }
+            }),
+            configDiffer({model: model.differModel})
+        );
+    }
+);

@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 export const AppMenuButton = hoistComponent({
     displayName: 'AppMenuButton',
+
     render(props) {
         let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
         extraItems = extraItems ?

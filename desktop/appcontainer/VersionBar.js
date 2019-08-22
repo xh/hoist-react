@@ -4,32 +4,34 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistComponentFactory} from '@xh/hoist/core';
+import {XH, hoistElemFactory} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
 /** @private */
-export const versionBar = hoistComponentFactory(() => {
+export const versionBar = hoistElemFactory(
+    () => {
 
-    if (!isShowing()) return null;
+        if (!isShowing()) return null;
 
-    const env = XH.getEnv('appEnvironment'),
-        version = XH.getEnv('clientVersion');
+        const env = XH.getEnv('appEnvironment'),
+            version = XH.getEnv('clientVersion');
 
-    return box({
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 'none',
-        className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
-        items: [
-            [XH.appName, env, version].join(' • '),
-            Icon.info({
-                onClick: () => XH.showAboutDialog()
-            })
-        ]
-    });
-});
+        return box({
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 'none',
+            className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
+            items: [
+                [XH.appName, env, version].join(' • '),
+                Icon.info({
+                    onClick: () => XH.showAboutDialog()
+                })
+            ]
+        });
+    }
+);
 
 
 //----------------------

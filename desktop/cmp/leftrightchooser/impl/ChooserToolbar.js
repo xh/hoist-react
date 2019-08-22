@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {vspacer} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -12,8 +12,8 @@ import {Icon} from '@xh/hoist/icon';
 import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @private */
-export const chooserToolbar = hoistComponentFactory(
-    (props) => {
+export const chooserToolbar = hoistElemFactory(
+    props => {
         const model = useProvidedModel(LeftRightChooserModel, props),
             leftSel = model.leftModel.selModel,
             rightSel = model.rightModel.selModel;

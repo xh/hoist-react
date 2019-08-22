@@ -24,6 +24,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 export const TabSwitcher = hoistComponent({
     displayName: 'TabSwitcher',
+
     render(props) {
         const model = useProvidedModel(TabContainerModel, props),
             {id, tabs, activeTabId} = model;

@@ -15,28 +15,30 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 import {UserModel} from './UserModel';
 
-export const UserPanel = hoistComponent(() => {
-    const model = useLocalModel(UserModel),
-        {gridModel} = model;
-    return panel({
-        mask: model.loadModel,
-        tbar: [
-            switchInput({
-                model,
-                bind: 'activeOnly',
-                label: 'Active only'
-            }),
-            toolbarSep(),
-            switchInput({
-                model,
-                bind: 'withRolesOnly',
-                label: 'With roles only'
-            }),
-            filler(),
-            gridCountLabel({gridModel, unit: 'user'}),
-            storeFilterField({gridModel}),
-            exportButton({gridModel})
-        ],
-        item: grid({model: gridModel})
-    });
-});
+export const UserPanel = hoistComponent(
+    () => {
+        const model = useLocalModel(UserModel),
+            {gridModel} = model;
+        return panel({
+            mask: model.loadModel,
+            tbar: [
+                switchInput({
+                    model,
+                    bind: 'activeOnly',
+                    label: 'Active only'
+                }),
+                toolbarSep(),
+                switchInput({
+                    model,
+                    bind: 'withRolesOnly',
+                    label: 'With roles only'
+                }),
+                filler(),
+                gridCountLabel({gridModel, unit: 'user'}),
+                storeFilterField({gridModel}),
+                exportButton({gridModel})
+            ],
+            item: grid({model: gridModel})
+        });
+    }
+);

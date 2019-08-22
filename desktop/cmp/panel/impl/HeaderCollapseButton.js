@@ -1,10 +1,10 @@
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {PanelModel} from '../PanelModel';
 
 /** @private */
-export const headerCollapseButton = hoistComponentFactory(
+export const headerCollapseButton = hoistElemFactory(
     (props) => {
         const model = useProvidedModel(PanelModel, props);
         return button({

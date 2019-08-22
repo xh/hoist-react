@@ -30,6 +30,7 @@ import {TabContainerModel} from './TabContainerModel';
  */
 export const TabContainer = hoistComponent({
     displayName: 'TabContainer',
+
     render(props) {
         throwIf(
             props.switcherPosition,
@@ -44,6 +45,4 @@ TabContainer.propTypes = {
 };
 
 export const tabContainer = elemFactory(TabContainer);
-
-
 

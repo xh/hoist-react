@@ -17,6 +17,7 @@ import {DataViewModel} from './DataViewModel';
  */
 export const DataView = hoistComponent({
     displayName: 'DataView',
+
     render(props) {
         const model = useProvidedModel(DataViewModel, props),
             [layoutProps] = useLayoutProps(props),

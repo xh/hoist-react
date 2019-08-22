@@ -13,6 +13,7 @@ import {navbarDivider} from '@xh/hoist/kit/blueprint';
  */
 export const AppBarSeparator = hoistComponent({
     displayName: 'AppBarSeparator',
+
     render() {
         return navbarDivider();
     }

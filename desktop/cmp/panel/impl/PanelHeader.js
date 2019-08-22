@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 import {headerCollapseButton} from './HeaderCollapseButton';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -13,7 +13,7 @@ import './PanelHeader.scss';
 import {PanelModel} from '../PanelModel';
 
 /** @private */
-export const panelHeader = hoistComponentFactory(
+export const panelHeader = hoistElemFactory(
     (props) => {
         const model = useProvidedModel(PanelModel, props),
             {title, icon, compact, headerItems = []} = props,

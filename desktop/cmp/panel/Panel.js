@@ -33,6 +33,7 @@ import './Panel.scss';
  */
 export const Panel = hoistComponent({
     displayName: 'Panel',
+
     render(props, ref) {
         let model = useProvidedModel(PanelModel, props),
             [flags] = useState({wasDisplayed: true}),

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, useProvidedModel, hoistComponentFactory} from '@xh/hoist/core';
+import {XH, useProvidedModel, hoistElemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -13,8 +13,8 @@ import './UpdateBar.scss';
 import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
 
 /** @private */
-export const updateBar = hoistComponentFactory(
-    (props) => {
+export const updateBar = hoistElemFactory(
+    props => {
         const model = useProvidedModel(AppContainerModel, props),
             {updateVersion} = model,
             className = 'xh-update-bar';

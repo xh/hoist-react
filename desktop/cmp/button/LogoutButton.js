@@ -16,6 +16,7 @@ import {button, Button} from './Button';
  */
 export const LogoutButton = hoistComponent({
     displayName: 'LogoutButton',
+
     render(props)  {
         if (XH.appSpec.isSSO) return null;
         return button({

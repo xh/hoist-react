@@ -17,6 +17,7 @@ import './ButtonGroup.scss';
  */
 export const ButtonGroup = hoistComponent({
     displayName: 'ButtonGroup',
+
     render(props) {
         const [layoutProps, nonLayoutProps] = useLayoutProps(props),
             {fill, minimal, vertical, style, ...rest} = nonLayoutProps;

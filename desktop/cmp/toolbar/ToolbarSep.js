@@ -15,6 +15,7 @@ import './Toolbar.scss';
  */
 export const ToolbarSeparator = hoistComponent({
     displayName: 'ToolbarSeperator',
+
     render(props) {
         return span({
             ...props,

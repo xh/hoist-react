@@ -25,6 +25,7 @@ import './LeftRightChooser.scss';
  */
 export const LeftRightChooser = hoistComponent({
     displayName: 'LeftRightChooser',
+
     render(props) {
         const model = useProvidedModel(LeftRightChooserModel, props),
             className = getClassName('xh-lr-chooser', props),

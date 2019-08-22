@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponentFactory, useLocalModel} from '@xh/hoist/core';
+import {hoistElemFactory, useLocalModel} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -14,21 +14,23 @@ import {VisitsChartModel} from './VisitsChartModel';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 
-export const visitsChart = hoistComponentFactory(() => {
-    const model = useLocalModel(VisitsChartModel);
-    return panel({
-        mask: model.loadModel,
-        icon: Icon.users(),
-        title: 'Unique Daily Visitors',
-        item: chart({model: model.chartModel}),
-        bbar: renderToolbar(model),
-        model: {
-            defaultSize: 500,
-            side: 'bottom',
-            prefName: 'xhAdminActivityChartSize'
-        }
-    });
-});
+export const visitsChart = hoistElemFactory(
+    () => {
+        const model = useLocalModel(VisitsChartModel);
+        return panel({
+            mask: model.loadModel,
+            icon: Icon.users(),
+            title: 'Unique Daily Visitors',
+            item: chart({model: model.chartModel}),
+            bbar: renderToolbar(model),
+            model: {
+                defaultSize: 500,
+                side: 'bottom',
+                prefName: 'xhAdminActivityChartSize'
+            }
+        });
+    }
+);
 
 function renderToolbar(model) {
     return [

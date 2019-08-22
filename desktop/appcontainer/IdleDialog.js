@@ -19,7 +19,7 @@ import idleImage from './IdleDialogImage.png';
  * @private
  */
 export const IdleDialog = hoistComponent(
-    (props) => {
+    props => {
         return message({
             model: {
                 title: `${XH.clientAppName} is sleeping`,

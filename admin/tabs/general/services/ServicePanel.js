@@ -14,31 +14,33 @@ import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-export const ServicePanel = hoistComponent(() => {
-    const model = useLocalModel(ServiceModel),
-        {gridModel} = model;
+export const ServicePanel = hoistComponent(
+    () => {
+        const model = useLocalModel(ServiceModel),
+            {gridModel} = model;
 
-    return panel({
-        mask: model.loadModel,
-        tbar: [
-            button({
-                icon: Icon.reset(),
-                text: 'Clear Selected',
-                intent: 'danger',
-                onClick: () => model.clearCaches(),
-                disabled: gridModel.selModel.isEmpty
-            }),
-            filler(),
-            gridCountLabel({gridModel, unit: 'service'}),
-            storeFilterField({gridModel}),
-            exportButton({gridModel})
-        ],
-        item: grid({
-            model: gridModel,
-            hideHeaders: true,
-            agOptions: {
-                groupRowInnerRenderer: (params) => params.value + ' Services'
-            }
-        })
-    });
-});
+        return panel({
+            mask: model.loadModel,
+            tbar: [
+                button({
+                    icon: Icon.reset(),
+                    text: 'Clear Selected',
+                    intent: 'danger',
+                    onClick: () => model.clearCaches(),
+                    disabled: gridModel.selModel.isEmpty
+                }),
+                filler(),
+                gridCountLabel({gridModel, unit: 'service'}),
+                storeFilterField({gridModel}),
+                exportButton({gridModel})
+            ],
+            item: grid({
+                model: gridModel,
+                hideHeaders: true,
+                agOptions: {
+                    groupRowInnerRenderer: (params) => params.value + ' Services'
+                }
+            })
+        });
+    }
+);

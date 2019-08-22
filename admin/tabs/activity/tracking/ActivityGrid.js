@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponentFactory, useLocalModel} from '@xh/hoist/core';
+import {hoistElemFactory, useLocalModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -17,8 +17,8 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
-export const activityGrid = hoistComponentFactory(
-    (props) => {
+export const activityGrid = hoistElemFactory(
+    props => {
         const model = useLocalModel(ActivityGridModel);
         return panel({
             mask: model.loadModel,

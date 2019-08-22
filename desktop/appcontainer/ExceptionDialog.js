@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -23,8 +23,8 @@ import './ExceptionDialog.scss';
  *
  * @private
  */
-export const exceptionDialog = hoistComponentFactory(
-    (props) => {
+export const exceptionDialog = hoistElemFactory(
+    props => {
         const model = useProvidedModel(ExceptionDialogModel, props),
             {exception, options} = model;
 
@@ -70,7 +70,7 @@ function getButtons(model) {
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistComponentFactory(
+export const dismissButton = hoistElemFactory(
     (props) => {
         const model = useProvidedModel(ExceptionDialogModel, props);
         return model.options.requireReload ?

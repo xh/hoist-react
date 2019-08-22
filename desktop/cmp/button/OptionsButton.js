@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const OptionsButton = hoistComponent({
     displayName: 'OptionsButton',
+
     render(props) {
         return button({
             icon: Icon.gear(),
