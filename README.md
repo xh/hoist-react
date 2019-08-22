@@ -147,7 +147,7 @@ solution with "smart' reactivity, tight integration with React Components, and a
 reactive programming that extends beyond Components. Please review and familiarize yourself with the
 MobX documentation to make the best use of Hoist React.
 
-All Hoist Components (functional or class-based) include 'observer' support from the 'mobx-react-lite'
+All Hoist Components (functional or class-based) include 'observer' support from the 'mobx-react'
 project.  This means that these Components are automatically re-rendered when any observable state they 
 used during their last render is modified.  This support provides the core engine of reactivity in Hoist.
 
@@ -262,9 +262,8 @@ typically done by passing to model to `XH.safeDestroy()`.
 ⚛️ Components are the most familiar artifacts in React development, and are likely what come to
 mind first when most developers think of React. Functional components are the preferred method of 
 defining components in React and Hoist.  To define a functional component in Hoist, simply wrap a render
-function with the `hoistComponent` function.  This will apply the MobX observability, and will return 
-the Component, as well as an 'element factory' that can be optionally used to facilitate creation of 
-the Component (see 'Element Factories' below). 
+function with the `hoistComponent` function.  This will apply core Hoist support, including MobX observability, 
+and support for Forwards refs, and will return the Component.
 
 Alternatively, Hoist continues to fully support ES6 class-based Components.  These can be specified using 
 the '@HoistComponent' decorator.  This decorator will enable MobX reactivity and augment a Component with
@@ -308,8 +307,9 @@ tasks and code patterns commonly used within Service classes.
 
 Hoist encourages the use of Element factories to create element trees in render functions using pure Javascript.  These
 factory methods take a configuration object where properties and child elements are specified without any wrapping 
-braces or additional syntax. `hoistComponent` will automatically produce such a factory, and there is also an 
-`elemFactory()` function which can be used to create such a factory from any Component.    
+braces or additional syntax. All Hoist API components have predefined element factories available for import alongside
+the core Component.  We also provide an `elemFactory()` function which can be used to create such a factory from any 
+third-party or application Component.    
 
 We believe that this factory approach excels for declarative specification of code-heavy element trees.  New users of 
 Hoist are invited to examine the source code of our core components to see examples of its use.  Its probably
