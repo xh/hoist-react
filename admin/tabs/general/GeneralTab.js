@@ -15,7 +15,7 @@ import {ServicePanel} from './services/ServicePanel';
 import {UserPanel} from './users/UserPanel';
 import {WebSocketPanel} from './websocket/WebSocketPanel';
 
-export const [GeneralTab] = hoistComponent(() => {
+export const GeneralTab = hoistComponent(() => {
     return tabContainer({
         model: {
             route: 'default.general',

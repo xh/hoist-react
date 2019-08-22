@@ -15,7 +15,7 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 import {UserModel} from './UserModel';
 
-export const [UserPanel] = hoistComponent(() => {
+export const UserPanel = hoistComponent(() => {
     const model = useLocalModel(UserModel),
         {gridModel} = model;
     return panel({

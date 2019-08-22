@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useLayoutProps} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useLayoutProps} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 
@@ -18,31 +18,33 @@ import './Button.scss';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistComponent(function Button(props) {
-    const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-        {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,
-        classes = [];
+export const Button = hoistComponent({
+    displayName: 'Button',
+    render(props) {
+        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
+            {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,
+            classes = [];
 
-    if (minimal) classes.push('xh-button--minimal');
-    if (autoFocus) classes.push('xh-button--autofocus-enabled');
+        if (minimal) classes.push('xh-button--minimal');
+        if (autoFocus) classes.push('xh-button--autofocus-enabled');
 
-    return bpButton({
-        icon,
-        minimal,
-        onClick,
-        text,
-        autoFocus,
+        return bpButton({
+            icon,
+            minimal,
+            onClick,
+            text,
+            autoFocus,
 
-        style: {
-            ...style,
-            ...layoutProps
-        },
+            style: {
+                ...style,
+                ...layoutProps
+            },
 
-        ...rest,
-        className: getClassName('xh-button', props, classes)
-    });
+            ...rest,
+            className: getClassName('xh-button', props, classes)
+        });
+    }
 });
-
 Button.propTypes = {
     autoFocus: PT.bool,
     icon: PT.element,
@@ -52,3 +54,6 @@ Button.propTypes = {
     text: PT.string,
     title: PT.string
 };
+
+export const button = elemFactory(Button);
+

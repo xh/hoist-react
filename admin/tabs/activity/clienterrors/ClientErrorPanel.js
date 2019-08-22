@@ -17,7 +17,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-export const [ClientErrorPanel] = hoistComponent(() => {
+export const ClientErrorPanel = hoistComponent(() => {
     const model = useLocalModel(ClientErrorModel);
     return panel({
         mask: model.loadModel,

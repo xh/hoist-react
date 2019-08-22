@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
-export const [ConfigPanel] = hoistComponent(() => {
+export const ConfigPanel = hoistComponent(() => {
     const model = useLocalModel(ConfigModel);
     return fragment(
         restGrid({

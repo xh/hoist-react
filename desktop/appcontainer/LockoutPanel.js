@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
 import {div, box, filler, vframe, viewport, p} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 
@@ -18,20 +18,22 @@ import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
  *
  * @private
  */
-export const [LockoutPanel, lockoutPanel] = hoistComponent(props => {
-    const model = useProvidedModel(AppContainerModel, props);
-    return viewport(
-        vframe(
-            impersonationBar({model: model.impersonationBarModel}),
-            filler(),
-            box({
-                className: 'xh-lockout-panel',
-                item: unauthorizedMessage(model.accessDeniedMessage)
-            }),
-            filler()
-        )
-    );
-});
+export const lockoutPanel = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(AppContainerModel, props);
+        return viewport(
+            vframe(
+                impersonationBar({model: model.impersonationBarModel}),
+                filler(),
+                box({
+                    className: 'xh-lockout-panel',
+                    item: unauthorizedMessage(model.accessDeniedMessage)
+                }),
+                filler()
+            )
+        );
+    }
+);
 
 function unauthorizedMessage(msg) {
     const {appSpec} = XH,

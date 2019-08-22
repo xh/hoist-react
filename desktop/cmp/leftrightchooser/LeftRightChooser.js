@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistComponent, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -23,45 +23,49 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-export const [LeftRightChooser, leftRightChooser] = hoistComponent(props =>  {
-    const model = useProvidedModel(LeftRightChooserModel, props),
-        className = getClassName('xh-lr-chooser', props),
-        [layoutProps] = useLayoutProps(props),
-        {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
-        gridOptions = {
-            onRowDoubleClicked: (e) => {
-                if (e.data) model.moveRows([e.data]);
-            },
-            agOptions: {
-                defaultColDef: {
-                    resizable: false
+export const LeftRightChooser = hoistComponent({
+    displayName: 'LeftRightChooser',
+    render(props) {
+        const model = useProvidedModel(LeftRightChooserModel, props),
+            className = getClassName('xh-lr-chooser', props),
+            [layoutProps] = useLayoutProps(props),
+            {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
+            gridOptions = {
+                onRowDoubleClicked: (e) => {
+                    if (e.data) model.moveRows([e.data]);
+                },
+                agOptions: {
+                    defaultColDef: {
+                        resizable: false
+                    }
                 }
-            }
-        },
-        leftGridOptions = cloneDeep(gridOptions),
-        rightGridOptions = cloneDeep(gridOptions);
+            },
+            leftGridOptions = cloneDeep(gridOptions),
+            rightGridOptions = cloneDeep(gridOptions);
 
-    if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
-    if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
+        if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
+        if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
 
-    return vbox({
-        items: [
-            hframe({
-                className: 'xh-lr-chooser__grid-frame',
-                items: [
-                    grid({model: leftModel, ...leftGridOptions}),
-                    chooserToolbar({model}),
-                    grid({model: rightModel, ...rightGridOptions})
-                ]
-            }),
-            description({model})
-        ],
-        className,
-        ...layoutProps
-    });
+        return vbox({
+            items: [
+                hframe({
+                    className: 'xh-lr-chooser__grid-frame',
+                    items: [
+                        grid({model: leftModel, ...leftGridOptions}),
+                        chooserToolbar({model}),
+                        grid({model: rightModel, ...rightGridOptions})
+                    ]
+                }),
+                description({model})
+            ],
+            className,
+            ...layoutProps
+        });
+    }
 });
-
 LeftRightChooser.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
 };
+
+export const leftRightChooser = elemFactory(LeftRightChooser);

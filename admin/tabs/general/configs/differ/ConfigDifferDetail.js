@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {keys, toString} from 'lodash';
-import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,32 +16,34 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
 
-export const [ConfigDifferDetail, configDifferDetail] = hoistComponent(props => {
-    const model = useProvidedModel(ConfigDifferDetailModel, props);
-    if (!model.record) return null;
+export const configDifferDetail = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(ConfigDifferDetailModel, props);
+        if (!model.record) return null;
 
-    return dialog({
-        title: 'Detail',
-        isOpen: model.record,
-        onClose: () => model.close(),
-        item: panel({
-            item: renderDiffTable(),
-            bbar: [
-                filler(),
-                button({
-                    text: 'Cancel',
-                    onClick: () => model.close()
-                }),
-                button({
-                    text: 'Accept Remote',
-                    icon: Icon.cloudDownload(),
-                    intent: 'primary',
-                    onClick: () => model.confirmApplyRemote()
-                })
-            ]
-        })
-    });
-});
+        return dialog({
+            title: 'Detail',
+            isOpen: model.record,
+            onClose: () => model.close(),
+            item: panel({
+                item: renderDiffTable(),
+                bbar: [
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        onClick: () => model.close()
+                    }),
+                    button({
+                        text: 'Accept Remote',
+                        icon: Icon.cloudDownload(),
+                        intent: 'primary',
+                        onClick: () => model.confirmApplyRemote()
+                    })
+                ]
+            })
+        });
+    }
+);
 
 function renderDiffTable(model) {
     const rec = model.record,

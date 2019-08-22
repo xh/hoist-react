@@ -18,28 +18,30 @@ import idleImage from './IdleDialogImage.png';
  * This display can be overridden by applications - {@see AppSpec.idleDialogClass}. *
  * @private
  */
-export const [IdleDialog, idleDialog] = hoistComponent(props => {
-    return message({
-        model: {
-            title: `${XH.clientAppName} is sleeping`,
-            icon: Icon.moon(),
-            message: div(
-                img({
-                    src: idleImage,
-                    width: 300,
-                    height: 180
-                }),
-                p('This application is sleeping due to inactivity.'),
-                p('Please click below to reload it.')
-            ),
-            confirmProps: {
-                text: "I'm back!",
-                intent: 'primary',
-                minimal: false,
-                autoFocus: true
+export const IdleDialog = hoistComponent(
+    (props) => {
+        return message({
+            model: {
+                title: `${XH.clientAppName} is sleeping`,
+                icon: Icon.moon(),
+                message: div(
+                    img({
+                        src: idleImage,
+                        width: 300,
+                        height: 180
+                    }),
+                    p('This application is sleeping due to inactivity.'),
+                    p('Please click below to reload it.')
+                ),
+                confirmProps: {
+                    text: "I'm back!",
+                    intent: 'primary',
+                    minimal: false,
+                    autoFocus: true
+                },
+                onConfirm: props.onReactivate
             },
-            onConfirm: props.onReactivate
-        },
-        className: 'xh-idle-dialog'
-    });
-});
+            className: 'xh-idle-dialog'
+        });
+    }
+);

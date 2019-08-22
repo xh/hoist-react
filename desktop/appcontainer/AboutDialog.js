@@ -6,7 +6,7 @@
  */
 
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,34 +22,36 @@ import './AboutDialog.scss';
  *
  * @private
  */
-export const [AboutDialog, aboutDialog] = hoistComponent(props => {
-    const model = useProvidedModel(AboutDialogModel, props);
+export const aboutDialog = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(AboutDialogModel, props);
 
-    if (!model.isOpen) return null;
+        if (!model.isOpen) return null;
 
-    const onClose = () => model.hide();
+        const onClose = () => model.hide();
 
-    return dialog({
-        isOpen: true,
-        isCloseButtonShown: false,
-        icon: Icon.info({size: 'lg'}),
-        className: 'xh-about-dialog',
-        title: `About ${XH.appName}`,
-        style: {width: 450},
-        items: [
-            frame({
-                className: 'xh-about-dialog__inner',
-                item: model.getTable()
-            }),
-            toolbar(
-                filler(),
-                button({
-                    text: 'Close',
-                    intent: 'primary',
-                    onClick: onClose
-                })
-            )
-        ],
-        onClose
-    });
-});
+        return dialog({
+            isOpen: true,
+            isCloseButtonShown: false,
+            icon: Icon.info({size: 'lg'}),
+            className: 'xh-about-dialog',
+            title: `About ${XH.appName}`,
+            style: {width: 450},
+            items: [
+                frame({
+                    className: 'xh-about-dialog__inner',
+                    item: model.getTable()
+                }),
+                toolbar(
+                    filler(),
+                    button({
+                        text: 'Close',
+                        intent: 'primary',
+                        onClick: onClose
+                    })
+                )
+            ],
+            onClose
+        });
+    }
+);

@@ -11,7 +11,7 @@ import {TrackingPanel} from './tracking/TrackingPanel';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './feedback/FeedbackPanel';
 
-export const [ActivityTab] = hoistComponent(() => {
+export const ActivityTab = hoistComponent(() => {
     return tabContainer({
         model: {
             route: 'default.activity',

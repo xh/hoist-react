@@ -14,7 +14,7 @@ import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-export const [ServicePanel] = hoistComponent(() => {
+export const ServicePanel = hoistComponent(() => {
     const model = useLocalModel(ServiceModel),
         {gridModel} = model;
 

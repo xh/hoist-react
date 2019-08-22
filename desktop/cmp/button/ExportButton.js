@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistComponent, elemFactory} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -21,8 +21,9 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-export const [ExportButton, exportButton] = hoistComponent(
-    ({icon, title, onClick, gridModel, exportOptions={}, disabled, ...rest}) => {
+export const ExportButton = hoistComponent({
+    displayName: 'ExportButton',
+    render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {
 
         warnIf(
             (gridModel && !gridModel.enableExport),
@@ -37,8 +38,14 @@ export const [ExportButton, exportButton] = hoistComponent(
             ...rest
         });
     }
-);
+});
+ExportButton.propTypes = {
+    ...Button.propTypes,
+    gridModel: PT.instanceOf(GridModel),
+    exportOptions: PT.object
+};
 
+export const exportButton = elemFactory(ExportButton);
 
 //---------------------------
 // Implementation
@@ -48,8 +55,3 @@ function exportGridData(gridModel, exportOptions) {
 }
 
 
-ExportButton.propTypes = {
-    ...Button.propTypes,
-    gridModel: PT.instanceOf(GridModel),
-    exportOptions: PT.object
-};

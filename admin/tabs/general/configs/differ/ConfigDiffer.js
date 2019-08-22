@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {hoistComponent, useProvidedModel, XH} from '@xh/hoist/core';
+import {hoistComponentFactory, useProvidedModel, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -18,22 +18,23 @@ import {identity} from 'lodash';
 import {configDifferDetail} from './ConfigDifferDetail';
 import {ConfigDifferModel} from './ConfigDifferModel';
 
+export const configDiffer = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(ConfigDifferModel, props),
+            {detailModel} = model;
 
-export const [ConfigDiffer, configDiffer] = hoistComponent(props => {
-    const model = useProvidedModel(ConfigDifferModel, props),
-        {detailModel} = model;
-
-    return fragment(
-        dialog({
-            isOpen: model.isOpen,
-            canOutsideClickClose: false,
-            onClose: () => model.close(),
-            style: {height: 600, width: '80%'},
-            item: renderContents(model)
-        }),
-        configDifferDetail({model: detailModel})
-    );
-});
+        return fragment(
+            dialog({
+                isOpen: model.isOpen,
+                canOutsideClickClose: false,
+                onClose: () => model.close(),
+                style: {height: 600, width: '80%'},
+                item: renderContents(model)
+            }),
+            configDifferDetail({model: detailModel})
+        );
+    }
+);
 
 function renderContents(model) {
     const {gridModel} = model,

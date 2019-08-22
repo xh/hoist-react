@@ -10,7 +10,7 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {LogLevelPanel} from './LogLevelPanel';
 import {LogViewer} from './viewer/LogViewer';
 
-export const [LoggingTab] = hoistComponent(() => {
+export const LoggingTab = hoistComponent(() => {
     return tabContainer({
         model: {
             route: 'default.logging',

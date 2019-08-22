@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, XH} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
@@ -23,41 +23,43 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppBar, appBar] = hoistComponent(function AppBar(props) {
-    const {
-        icon,
-        title,
-        leftItems,
-        rightItems,
-        hideRefreshButton,
-        hideAppMenuButton,
-        appMenuButtonOptions = {}
-    } = props;
+export const AppBar = hoistComponent({
+    displayName: 'AppBar',
+    render(props) {
+        const {
+            icon,
+            title,
+            leftItems,
+            rightItems,
+            hideRefreshButton,
+            hideAppMenuButton,
+            appMenuButtonOptions = {}
+        } = props;
 
-    return navbar({
-        className: getClassName('xh-appbar', props),
-        items: [
-            navbarGroup({
-                align: 'left',
-                items: [
-                    icon,
-                    span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
-                    appBarSeparator({omit: isEmpty(leftItems)}),
-                    ...leftItems || []
-                ]
-            }),
-            navbarGroup({
-                align: 'right',
-                items: [
-                    ...rightItems || [],
-                    refreshButton({omit: hideRefreshButton}),
-                    appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
-                ]
-            })
-        ]
-    });
+        return navbar({
+            className: getClassName('xh-appbar', props),
+            items: [
+                navbarGroup({
+                    align: 'left',
+                    items: [
+                        icon,
+                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
+                        appBarSeparator({omit: isEmpty(leftItems)}),
+                        ...leftItems || []
+                    ]
+                }),
+                navbarGroup({
+                    align: 'right',
+                    items: [
+                        ...rightItems || [],
+                        refreshButton({omit: hideRefreshButton}),
+                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
+                    ]
+                })
+            ]
+        });
+    }
 });
-
 AppBar.propTypes = {
 
     /** Icon to display to the left of the title. */
@@ -83,3 +85,5 @@ AppBar.propTypes = {
     /** Options to pass to the AppMenuButton. */
     appMenuButtonOptions: PT.object
 };
+
+export const appBar = elemFactory(AppBar);

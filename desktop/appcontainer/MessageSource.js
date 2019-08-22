@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
 import {MessageSourceModel} from '@xh/hoist/core/appcontainer/MessageSourceModel';
@@ -14,9 +14,11 @@ import {MessageSourceModel} from '@xh/hoist/core/appcontainer/MessageSourceModel
  *
  *  @private
  */
-export const [MessageSource, messageSource] = hoistComponent(props => {
-    const model = useProvidedModel(MessageSourceModel, props),
-        models = model.msgModels,
-        children = models.map(model => message({model, key: model.xhId}));
-    return children.length ? fragment(...children) : null;
-});
+export const messageSource = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(MessageSourceModel, props),
+            models = model.msgModels,
+            children = models.map(model => message({model, key: model.xhId}));
+        return children.length ? fragment(...children) : null;
+    }
+);

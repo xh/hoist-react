@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useState} from 'react';
-import {elem, hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {elem, elemFactory,  hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -22,32 +22,37 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-export const [Tab, tab] = hoistComponent(function Tab(props) {
-    let model = useProvidedModel(TabModel, props),
-        {content, contentFn, isActive, renderMode, refreshContextModel} = model,
-        [flags] = useState({wasActivated: false}),
-        className = getClassName('xh-tab', props);
+export const Tab = hoistComponent({
+    displayName: 'Tab',
+    render(props) {
+        let model = useProvidedModel(TabModel, props),
+            {content, contentFn, isActive, renderMode, refreshContextModel} = model,
+            [flags] = useState({wasActivated: false}),
+            className = getClassName('xh-tab', props);
 
-    if (!flags.wasActivated && isActive) flags.wasActivated = true;
+        if (!flags.wasActivated && isActive) flags.wasActivated = true;
 
-    if (
-        !isActive &&
-        (
-            (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-            (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
-        )
-    ) {
-        return null;
+        if (
+            !isActive &&
+            (
+                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
+            )
+        ) {
+            return null;
+        }
+
+        const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
+
+        return frame({
+            display: isActive ? 'flex' : 'none',
+            className,
+            item: refreshContextView({
+                model: refreshContextModel,
+                item: contentElem
+            })
+        });
     }
-
-    const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
-
-    return frame({
-        display: isActive ? 'flex' : 'none',
-        className,
-        item: refreshContextView({
-            model: refreshContextModel,
-            item: contentElem
-        })
-    });
 });
+
+export const tab = elemFactory(Tab);

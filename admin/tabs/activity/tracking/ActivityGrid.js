@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistComponentFactory, useLocalModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -17,20 +17,22 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
-export const [ActivityGrid, activityGrid] = hoistComponent(props => {
-    const model = useLocalModel(ActivityGridModel);
-    return panel({
-        mask: model.loadModel,
-        tbar: renderToolbar(model),
-        items: [
-            grid({
-                model: model.gridModel,
-                onRowDoubleClicked: (e) => model.openDetail(e.data)
-            }),
-            activityDetail({model})
-        ]
-    });
-});
+export const activityGrid = hoistComponentFactory(
+    (props) => {
+        const model = useLocalModel(ActivityGridModel);
+        return panel({
+            mask: model.loadModel,
+            tbar: renderToolbar(model),
+            items: [
+                grid({
+                    model: model.gridModel,
+                    onRowDoubleClicked: (e) => model.openDetail(e.data)
+                }),
+                activityDetail({model})
+            ]
+        });
+    }
+);
 
 function renderToolbar(model) {
     const {gridModel} = model;
@@ -64,7 +66,7 @@ function renderToolbar(model) {
         exportButton({gridModel})
     ];
 }
-    
+
 function renderDateInput(args) {
     return dateInput({
         popoverPosition: 'bottom',

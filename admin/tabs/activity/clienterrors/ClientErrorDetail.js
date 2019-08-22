@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponentFactory, useProvidedModel} from '@xh/hoist/core';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
@@ -14,20 +14,22 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
 import {ClientErrorModel} from './ClientErrorModel';
 
-export const [ClientErrorDetail, clientErrorDetail] = hoistComponent(props => {
-    const model = useProvidedModel(ClientErrorModel, props),
-        rec = model.detailRecord;
+export const clientErrorDetail = hoistComponentFactory(
+    (props) => {
+        const model = useProvidedModel(ClientErrorModel, props),
+            rec = model.detailRecord;
 
-    if (!rec) return null;
+        if (!rec) return null;
 
-    return dialog({
-        title: 'Error Details',
-        style: {width: 1000},
-        isOpen: true,
-        onClose: () => model.closeDetail(),
-        items: renderDetail(model, rec)
-    });
-});
+        return dialog({
+            title: 'Error Details',
+            style: {width: 1000},
+            isOpen: true,
+            onClose: () => model.closeDetail(),
+            items: renderDetail(model, rec)
+        });
+    }
+);
 
 function renderDetail(model, rec) {
     return [

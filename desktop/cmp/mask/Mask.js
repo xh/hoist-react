@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
@@ -21,33 +21,36 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const [Mask, mask] = hoistComponent(function Mask(props) {
-    const model = useProvidedModel(PendingTaskModel, props),
-        isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
-        className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
+export const Mask = hoistComponent({
+    displayName: 'Mask',
+    render(props) {
+        const model = useProvidedModel(PendingTaskModel, props),
+            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
+            className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
 
-    if (!isDisplayed) return null;
+        if (!isDisplayed) return null;
 
-    const message = withDefault(props.message, model && model.message),
-        inline = withDefault(props.inline, true),
-        showSpinner = withDefault(props.spinner, false);
+        const message = withDefault(props.message, model && model.message),
+            inline = withDefault(props.inline, true),
+            showSpinner = withDefault(props.spinner, false);
 
-    return overlay({
-        className,
-        autoFocus: false,
-        isOpen: true,
-        canEscapeKeyClose: false,
-        usePortal: !inline,
-        enforceFocus: !inline,
-        item: vbox({
-            className: 'xh-mask-body',
-            items: [
-                showSpinner ? spinner() : null,
-                showSpinner ? vspacer(10) : null,
-                message ? box({className: 'xh-mask-text', item: message}) : null
-            ]
-        })
-    });
+        return overlay({
+            className,
+            autoFocus: false,
+            isOpen: true,
+            canEscapeKeyClose: false,
+            usePortal: !inline,
+            enforceFocus: !inline,
+            item: vbox({
+                className: 'xh-mask-body',
+                items: [
+                    showSpinner ? spinner() : null,
+                    showSpinner ? vspacer(10) : null,
+                    message ? box({className: 'xh-mask-text', item: message}) : null
+                ]
+            })
+        });
+    }
 });
 
 Mask.propTypes = {
@@ -67,3 +70,5 @@ Mask.propTypes = {
     /** Click handler **/
     onClick: PT.func
 };
+
+export const mask = elemFactory(Mask);

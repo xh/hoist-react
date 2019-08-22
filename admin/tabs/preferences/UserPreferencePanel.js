@@ -8,7 +8,7 @@ import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-export const [UserPreferencePanel] = hoistComponent(() => {
+export const UserPreferencePanel = hoistComponent(() => {
     const model = useLocalModel(createModel);
     return restGrid({model});
 });

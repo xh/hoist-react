@@ -8,14 +8,14 @@ import ReactDom from 'react-dom';
 import React from 'react';
 import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
 import {observer} from '@xh/hoist/mobx';
-import {isPlainObject} from 'lodash';
+import {isPlainObject, isFunction} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {getClassName} from '@xh/hoist/utils/react';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 
 /**
- * Core Hoist utility for defining a React function component and corresponding Hoist elemFactory.
+ * Core Hoist utility for defining a React functional component.
  *
  * This function always applies the MobX 'observer' behavior to the new component, enabling MobX
  * powered reactivity and auto-re-rendering. See the hooks package for additional Hoist-provided
@@ -26,15 +26,27 @@ import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
  * to create support for references.  If the function input contains two arguments, it is assumed to
  * support forward references.
  *
- * @param {function} renderFn - function defining a React component.
- * @returns {Object[]} - Array containing the Component and an elemFactory for the Component.
+ * @param {Object|function} config - configuration object or function defining the component
+ * @param {function} [config.render] - function defining the component (if config object specified)
+ * @param {string} [config.displayName] - name of function for debugging/inspection purposes (if config object specified)
  *
- * @see HoistComponent decorator for a ES6 class-based approach to defining a Component in Hoist.
+ * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
  */
-export function hoistComponent(renderFn) {
-    const hasRef = renderFn.length >= 2,
-        component = observer(hasRef ? React.forwardRef(renderFn) : renderFn);
-    return [component, elemFactory(component)];
+export function hoistComponent(config) {
+    if (isFunction(config)) config = {render: config};
+
+    let {render, displayName} = config;
+
+    const hasRef = render.length >= 2,
+        component = observer(hasRef ? React.forwardRef(render) : render);
+
+    if (displayName) component.displayName = displayName;
+
+    return component;
+}
+
+export function hoistComponentFactory(config) {
+    return elemFactory(hoistComponent(config));
 }
 
 
@@ -241,7 +253,9 @@ function warnNoModelClassProvided() {
 //---------------------------------------------------------------------------
 // Internal components to wrap the contents of a class based @HoistComponent.
 //---------------------------------------------------------------------------
-const [, loadSupportWrapper] = hoistComponent(props => {
-    useLoadSupportLinker(props.loadSupport);
-    return props.renderFn();
-});
+const loadSupportWrapper = hoistComponentFactory(
+    (props) => {
+        useLoadSupportLinker(props.loadSupport);
+        return props.renderFn();
+    }
+);

@@ -7,7 +7,7 @@
 
 import {useContext} from 'react';
 import PT from 'prop-types';
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistComponent, elemFactory} from '@xh/hoist/core';
 import {RefreshContext} from '@xh/hoist/core/refresh';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
@@ -20,8 +20,9 @@ import {warnIf} from '@xh/hoist/utils/js';
  * provided. If neither of these props are provided, the contextual RefreshContextModel for this
  * button will be used.
  */
-export const [RefreshButton, refreshButton] = hoistComponent(
-    ({model, ...buttonProps}) => {
+export const RefreshButton = hoistComponent({
+    displayName: 'RefreshButton',
+    render({model, ...buttonProps}) {
         const refreshContext = useContext(RefreshContext);
 
         warnIf(
@@ -42,10 +43,14 @@ export const [RefreshButton, refreshButton] = hoistComponent(
             ...buttonProps
         });
     }
-);
+});
 RefreshButton.propTypes = {
     ...Button.propTypes,
 
     /** HoistModel to refresh. */
     model: PT.object
 };
+
+export const refreshButton = elemFactory(RefreshButton);
+
+

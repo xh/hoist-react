@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-export const [EhCachePanel] = hoistComponent(() => {
+export const EhCachePanel = hoistComponent(() => {
     const model = useLocalModel(EhCacheModel),
         {gridModel} = model;
 

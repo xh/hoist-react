@@ -8,7 +8,7 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistComponent, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -31,89 +31,92 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-export const [Panel, panel] = hoistComponent(function Panel(props, ref) {
-    let model = useProvidedModel(PanelModel, props),
-        [flags] = useState({wasDisplayed: true}),
-        className = getClassName('xh-panel', props),
-        [layoutProps, nonLayoutProps] = useLayoutProps(props);
+export const Panel = hoistComponent({
+    displayName: 'Panel',
+    render(props, ref) {
+        let model = useProvidedModel(PanelModel, props),
+            [flags] = useState({wasDisplayed: true}),
+            className = getClassName('xh-panel', props),
+            [layoutProps, nonLayoutProps] = useLayoutProps(props);
 
-    const {
-        tbar,
-        bbar,
-        title,
-        icon,
-        compactHeader,
-        headerItems,
-        mask: maskProp,
-        loadingIndicator: loadingIndicatorProp,
-        children,
-        model: modelProp,
-        ...rest
-    } = nonLayoutProps;
+        const {
+            tbar,
+            bbar,
+            title,
+            icon,
+            compactHeader,
+            headerItems,
+            mask: maskProp,
+            loadingIndicator: loadingIndicatorProp,
+            children,
+            model: modelProp,
+            ...rest
+        } = nonLayoutProps;
 
-    // 1) Pre-process layout
-    // Block unwanted use of padding props, which will separate the panel's header
-    // and bottom toolbar from its edges in a confusing way.
-    layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
+        // 1) Pre-process layout
+        // Block unwanted use of padding props, which will separate the panel's header
+        // and bottom toolbar from its edges in a confusing way.
+        layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
 
-    // Give Panels a default flexing behavior if no dimensions / flex specified.
-    if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
-        layoutProps.flex = 'auto';
-    }
+        // Give Panels a default flexing behavior if no dimensions / flex specified.
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 'auto';
+        }
 
-    // 2) Prepare 'core' contents according to collapsed state
-    const {
-        resizable = false,
-        collapsible = false,
-        collapsed = false,
-        collapsedRenderMode = null,
-        vertical = false,
-        showSplitter = false
-    } = model || {};
+        // 2) Prepare 'core' contents according to collapsed state
+        const {
+            resizable = false,
+            collapsible = false,
+            collapsed = false,
+            collapsedRenderMode = null,
+            vertical = false,
+            showSplitter = false
+        } = model || {};
 
-    if (collapsed) {
-        delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
-        delete layoutProps[vertical ? 'height' : 'width'];
-    }
+        if (collapsed) {
+            delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
+            delete layoutProps[vertical ? 'height' : 'width'];
+        }
 
-    let coreContents = null;
-    if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
-        const parseToolbar = (barSpec) => {
-            return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
-        };
+        let coreContents = null;
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
+            const parseToolbar = (barSpec) => {
+                return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
+            };
 
-        coreContents = vframe({
-            style: {display: collapsed ? 'none' : 'flex'},
+            coreContents = vframe({
+                style: {display: collapsed ? 'none' : 'flex'},
+                items: [
+                    parseToolbar(tbar),
+                    ...(castArray(children)),
+                    parseToolbar(bbar)
+                ]
+            });
+        }
+        if (!collapsed) flags.wasDisplayed = true;
+
+        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        const processedPanelHeader = (title || icon || headerItems) ?
+            panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
+            null;
+
+        const item = vbox({
             items: [
-                parseToolbar(tbar),
-                ...(castArray(children)),
-                parseToolbar(bbar)
-            ]
+                processedPanelHeader,
+                coreContents,
+                parseLoadDecorator(maskProp, mask),
+                parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
+            ],
+            ...rest,
+            ...layoutProps,
+            className
         });
+
+        // 4) Return, wrapped in resizable and its affordances if needed.
+        return resizable || collapsible || showSplitter ?
+            resizeContainer({item, model}) :
+            item;
     }
-    if (!collapsed) flags.wasDisplayed = true;
-
-    // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
-    const processedPanelHeader = (title || icon || headerItems) ?
-        panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
-        null;
-
-    const item = vbox({
-        items: [
-            processedPanelHeader,
-            coreContents,
-            parseLoadDecorator(maskProp, mask),
-            parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
-        ],
-        ...rest,
-        ...layoutProps,
-        className
-    });
-
-    // 4) Return, wrapped in resizable and its affordances if needed.
-    return resizable || collapsible || showSplitter ?
-        resizeContainer({item, model}) :
-        item;
 });
 
 // LoadingIndicator/Mask is as provided, or a default simple loadingIndicator/mask.
@@ -175,3 +178,5 @@ Panel.propTypes = {
     /** Title text added to the panel's header. */
     title: PT.oneOfType([PT.string, PT.node])
 };
+
+export const panel = elemFactory(Panel);
