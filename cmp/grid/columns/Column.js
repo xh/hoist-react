@@ -83,6 +83,8 @@ export class Column {
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
      *      may have performance implications. Default false.
+     * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
+     *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -113,6 +115,7 @@ export class Column {
         pinned,
         renderer,
         rendererIsComplex,
+        highlightOnChange,
         elementRenderer,
         chooserName,
         chooserGroup,
@@ -167,8 +170,13 @@ export class Column {
         this.pinned = (pinned === true) ? 'left' : pinned;
 
         this.renderer = renderer;
-        this.rendererIsComplex = rendererIsComplex;
         this.elementRenderer = elementRenderer;
+        this.rendererIsComplex = rendererIsComplex;
+        this.highlightOnChange = highlightOnChange;
+        warnIf(
+            rendererIsComplex && highlightOnChange,
+            'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
+        );
 
         this.chooserName = chooserName || this.headerName || this.colId;
         this.chooserGroup = chooserGroup;
@@ -209,6 +217,7 @@ export class Column {
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressToolPanel: this.excludeFromChooser,
+                enableCellChangeFlash: this.highlightOnChange,
                 headerValueGetter: ({location}) => {
                     return location === 'header' ?
                         this.headerName:

@@ -71,27 +71,28 @@ body {
   --xh-chart-bg: var(--chart-bg, var(--xh-bg));
 
   // Grid
-  --xh-grid-bg: var(--grid-bg, var(--xh-bg));
-  --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
+  --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
+  --xh-grid-bg: var(--grid-bg, var(--xh-bg));
   --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '200')});
-  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, var(--xh-focus-outline-color));
-  --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
+  --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('yellow', '400', 0.6)});
   --xh-grid-cell-lr-pad-px: calc(var(--xh-grid-cell-lr-pad) * 1px);
+  --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
   --xh-grid-empty-text-color: var(--grid-empty-text-color, var(--xh-text-color-muted));
   --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
-  --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
-  --xh-grid-line-height: var(--grid-line-height, 26);
-  --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
+  --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
+  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
   --xh-grid-group-text-color: var(--grid-group-text-color, white);
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-blue-gray-light));
-  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
   --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
+  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
+  --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
+  --xh-grid-line-height: var(--grid-line-height, 26);
+  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
 
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
@@ -266,7 +267,7 @@ body.xh-dark {
   // Background (app / components in general)
   --xh-bg: var(--bg, var(--xh-black));
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
-  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.6)});
+  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
 
   // Borders
   --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
@@ -274,10 +275,11 @@ body.xh-dark {
   // Grid
   --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
   --xh-grid-border-color: var(--grid-border-color, #293233);
-  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
+  --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
   --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
+  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
   --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
+  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
 
   // Inputs
   --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.

@@ -27,3 +27,6 @@ ij_javascript_space_before_colon = true
 ij_javascript_space_before_comma = false
 ij_javascript_use_double_quotes = false
 ij_javascript_use_semicolon_after_statement = true
+
+[{*.css, *.scss}]
+indent_size = 2
