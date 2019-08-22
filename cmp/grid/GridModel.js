@@ -399,6 +399,11 @@ export class GridModel {
         return this.store.loadData(...args);
     }
 
+    /** Update the underlying store. */
+    updateData(...args) {
+        return this.store.updateData(...args);
+    }
+
     /** Clear the underlying store, removing all rows. */
     clear() {
         this.store.clear();
