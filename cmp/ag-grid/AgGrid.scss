@@ -154,6 +154,11 @@
     }
   }
 
+  // Change highlighting
+  .ag-cell-data-changed {
+    background-color: var(--xh-grid-cell-change-bg-highlight) !important;
+  }
+
   //------------------------
   // Compact Mode
   //------------------------

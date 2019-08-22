@@ -37,24 +37,33 @@
     point for all updates.
   * The method `Store.removeRecords` has been removed. Use `Store.updateData` instead.
   * The method `Store.addData` has been removed. Use `Store.updateData` instead.
-* `Column` now takes an additional property `rendererIsComplex`. Application must set this flag to
+* `Column` takes an additional property `rendererIsComplex`. Application must set this flag to
   `true` to indicate if a column renderer uses values other than its own bound field. This change
   provides an efficiency boost and also allows the use of agGrid's native `enableCellChangeFlash`
   option for all simple columns not needing a complex renderer.
 * TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
   factory function. Previously functions could also be provided to the `content` prop, but now that
   prop must be a Class or a function that is strictly a React Component definition.
+  provides an efficiency boost by allowing ag-Grid to use its default change detection instead of
+  forcing a cell refresh on any change.
+* `Column` also gets a new `highlightOnChange` config. If true, the grid will highlight the cell on
+  each change by flashing its background. (Currently this is a simple on/off config - future
+  iterations could support a function variant or other options to customize the flash effect based
+  on the old/new values.) A new CSS var `--xh-grid-cell-change-bg-highlight` can be used to
+  customize the color used, app-wide or scoped to a particular grid selector. Note that columns must
+  *not* specify `rendererIsComplex` if they wish to enable the new highlight flag.
 
 ### ⚙️ Technical
 
-* `Grid` will now update the underlying agGrid using agGrid transactions rather than relying on
-  agGrid `deltaRowMode`. This is intended to provide the best possible grid performance, and
-  generally streamline the use of the agGrid Api.
+* `Grid` will now update the underlying ag-Grid using ag-Grid transactions rather than relying on
+  agGrid `deltaRowMode`. This is intended to provide the best possible grid performance and
+  generally streamline the use of the ag-Grid Api.
 
 ### 📚 Libraries
 
 * @xh/hoist-dev-utils `3.7 -> 3.8`
 * qs `6.7 -> 6.8`
+* store2 `2.8 -> 2.9`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v26.0.1...develop)
 
