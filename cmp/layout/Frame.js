@@ -13,6 +13,8 @@ import {box} from './Box';
  * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
  * creating nested layouts.
  *
+ * Like Box, Frame provides access to its internal div via a ref argument.
+ *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
 export const Frame = hoistComponent({

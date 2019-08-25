@@ -5,40 +5,36 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import React from 'react';
 import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
-import {observer} from '@xh/hoist/mobx';
 import {isPlainObject, isFunction} from 'lodash';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {getClassName} from '@xh/hoist/utils/react';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
-
+import {observer as classComponentObserver} from 'mobx-react';
+import {observer as functionalComponentObserver} from 'mobx-react-lite';
 
 /**
  * Core Hoist utility for defining a React functional component.
  *
  * This function always applies the MobX 'observer' behavior to the new component, enabling MobX
- * powered reactivity and auto-re-rendering. See the hooks package for additional Hoist-provided
- * custom hooks that can (and should!) be used within function components to replicate the most
- * essential / relevant capabilities of the class-based HoistComponent decorator
+ * powered reactivity and auto-re-rendering.  This includes support for forward refs; If the render
+ * function provided contains two arguments, the second argument will be considered a ref and
+ * React.forwardRef will be applied.
  *
- * This function also automatically applies React.forwardRef to the passed render function, if needed,
- * to create support for references.  If the function input contains two arguments, it is assumed to
- * support forward references.
+ * See the @xh/hoist/core/hooks package for Hoist-provided custom hooks that can (and should!) be used
+ * within functional components to access HoistModels and other essential capabilities of Hoist.
  *
- * @param {(Object|function)} config - configuration object or function defining the component
+ * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
- * @param {string} [config.displayName] - name of function for debugging/inspection purposes (if config object specified)
+ * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
  *
  * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
  */
 export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config};
 
-    let {render, displayName} = config;
-
-    const hasRef = render.length >= 2,
-        component = observer(hasRef ? React.forwardRef(render) : render);
+    const {render, displayName} = config,
+        component = functionalComponentObserver(render, {forwardRef: render.length >= 2});
 
     if (displayName) component.displayName = displayName;
 
@@ -75,7 +71,7 @@ export function hoistElemFactory(config) {
 export function HoistComponent(C) {
     return applyMixin(C, {
         name: 'HoistComponent',
-        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [classComponentObserver, ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**

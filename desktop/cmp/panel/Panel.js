@@ -29,6 +29,8 @@ import './Panel.scss';
  * Panels also support resizing and collapsing their contents via its `model` prop. Provide an
  * optional `PanelModel` config as a prop to enable and customize these features.
  *
+ * A Panel will accept a ref argument to provide access to its top level DOM element.
+ *
  * @see PanelModel
  */
 export const Panel = hoistComponent({
@@ -74,6 +76,8 @@ export const Panel = hoistComponent({
             showSplitter = false
         } = model || {};
 
+        const requiresContainer = resizable || collapsible || showSplitter;
+
         if (collapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
             delete layoutProps[vertical ? 'height' : 'width'];
@@ -101,7 +105,9 @@ export const Panel = hoistComponent({
             panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
             null;
 
+
         const item = vbox({
+            ref: !requiresContainer ? ref : undefined,
             items: [
                 processedPanelHeader,
                 coreContents,
@@ -114,8 +120,8 @@ export const Panel = hoistComponent({
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.
-        return resizable || collapsible || showSplitter ?
-            resizeContainer({item, model}) :
+        return requiresContainer ?
+            resizeContainer({ref, item, model}) :
             item;
     }
 });

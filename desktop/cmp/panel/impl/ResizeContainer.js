@@ -15,7 +15,7 @@ import {PanelModel} from '../PanelModel';
 
 /** @private */
 export const resizeContainer = hoistElemFactory(
-    (props) => {
+    (props, ref) => {
         let model = useProvidedModel(PanelModel, props),
             className = getClassName('xh-resizable', props),
             {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
@@ -34,6 +34,7 @@ export const resizeContainer = hoistElemFactory(
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
 
         return cmp({
+            ref,
             className,
             flex: 'none',
             [maxDim]: '100%',

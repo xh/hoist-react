@@ -16,6 +16,8 @@ import {div} from './Tags';
  * Box is the component that provides the core implementation of the LayoutSupport mixin.
  * It renders a div and merges all layout props to that div's `style` property.
  *
+ * Access to the internal div is provided via a ref argument.
+ *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
 export const Box = hoistComponent({

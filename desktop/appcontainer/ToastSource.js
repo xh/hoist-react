@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import {HoistModel} from '@xh/hoist/core';
-import {defaultTo, defaults} from 'lodash';
+import {defaultTo, defaults, isElement} from 'lodash';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
 
 import './Toast.scss';
@@ -56,14 +56,17 @@ export class ToastSource {
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param {string} [position] - see Blueprint Position enum for allowed values.
-     * @params {Component} [containerRef] - Component to contain the toast.
+     * @params {HTMLElement} [containerRef] - DOM Element used to position (contain) the toast.
      */
     getToaster(position, containerRef) {
+
+        if (containerRef && !isElement(containerRef)) {
+            console.warn('containerRef argument for Toast must be a DOM element. Argument will be ignored.');
+            containerRef = null;
+        }
         const toasters = this._toasters,
-            container = containerRef ?
-                (containerRef.getDOMNode ? containerRef.getDOMNode() : containerRef) :
-                document.body,
-            containerId = containerRef ? containerRef.xhId : 'viewport',
+            container = containerRef ? containerRef : document.body,
+            containerId = containerRef ? containerRef.id : 'viewport',
             className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`,
             toasterId = containerId + '--' + position;
 

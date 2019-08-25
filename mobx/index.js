@@ -21,7 +21,7 @@ export {
     comparer
 } from 'mobx';
 
-export {Observer, observer} from 'mobx-react';
+export {observer} from 'mobx-react';
 
 export {settable, bindable} from './decorators';
 
