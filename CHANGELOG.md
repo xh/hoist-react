@@ -11,10 +11,6 @@
    supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 
 ### 💥 Breaking Changes
-
-* `TabModel` has a new prop `contentFn` for use when defining the contents of a Tab as a general
-  factory function. Previously functions could also be provided to the `content` prop, but now that
-  prop must be a Class or a function that is strictly a React Component definition.
   
 * The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no 
 longer supported types for this value.  This is required to support functional Components throughout the toolkit.

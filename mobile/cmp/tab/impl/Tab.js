@@ -28,7 +28,7 @@ export class Tab extends Component {
     wasActivated = false;
 
     render() {
-        const {content, contentFn, isActive, renderMode, refreshContextModel} = this.model;
+        const {content, isActive, renderMode, refreshContextModel} = this.model;
 
         this.wasActivated = this.wasActivated || isActive;
 
@@ -44,7 +44,7 @@ export class Tab extends Component {
             return onsenPage();
         }
 
-        const contentElem = content? elem(content) : contentFn();
+        const contentElem = content.isHoistComponent? elem(content) : content();
 
         return refreshContextView({
             model: refreshContextModel,

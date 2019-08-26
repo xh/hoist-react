@@ -37,6 +37,7 @@ export function hoistComponent(config) {
         component = functionalComponentObserver(render, {forwardRef: render.length >= 2});
 
     if (displayName) component.displayName = displayName;
+    component.isHoistComponent = true;
 
     return component;
 }

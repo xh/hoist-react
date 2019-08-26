@@ -27,7 +27,7 @@ export const Tab = hoistComponent({
 
     render(props) {
         let model = useProvidedModel(TabModel, props),
-            {content, contentFn, isActive, renderMode, refreshContextModel} = model,
+            {content, isActive, renderMode, refreshContextModel} = model,
             [flags] = useState({wasActivated: false}),
             className = getClassName('xh-tab', props);
 
@@ -43,7 +43,7 @@ export const Tab = hoistComponent({
             return null;
         }
 
-        const contentElem = content ? elem(content, {flex: 1}) : contentFn({flex: 1});
+        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
 
         return frame({
             display: isActive ? 'flex' : 'none',

@@ -40,8 +40,8 @@ export class TabModel {
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
-     * @param {Object} c.content - React Component (class or functional) to be rendered by this Tab;
-     * @param {function} c.contentFn - function returning react element to be rendered by this Tab.
+     * @param {(Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
+     *      Tab; or function returning react element to be rendered by this Tab.
      * @param {TabRenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
@@ -55,7 +55,6 @@ export class TabModel {
         disabled,
         excludeFromSwitcher,
         content,
-        contentFn,
         refreshMode,
         renderMode
     }) {
@@ -66,7 +65,6 @@ export class TabModel {
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.content = content;
-        this.contentFn = contentFn;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -90,7 +88,7 @@ export class TabModel {
     get isActive() {
         return this.containerModel.activeTabId === this.id;
     }
-    
+
     @action
     setDisabled(disabled) {
         if (disabled && this.isActive) {
