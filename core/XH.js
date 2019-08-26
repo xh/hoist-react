@@ -121,7 +121,7 @@ class XHClass {
     //---------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
-    
+
     //---------------------------
     // Other State
     //---------------------------
@@ -179,8 +179,8 @@ class XHClass {
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
             throwIf(this[name], (
-                `Service cannot be installed: property '${name}' already exists on XH object, 
-                indicating duplicate/conflicting service names or an (unsupported) attempt to 
+                `Service cannot be installed: property '${name}' already exists on XH object,
+                indicating duplicate/conflicting service names or an (unsupported) attempt to
                 install the same service twice.`
             ));
             this[name] = svc;
@@ -322,7 +322,7 @@ class XHClass {
      * cancel button instead (e.g. for confirming risky operations), applications should specify a
      * cancelProps argument of the following form:  cancelProps: {..., autoFocus: true}.
      *
-     * @returns {Promise} - Promise resolving to true if user confirms, false if user cancels.
+     * @returns {Promise} - resolves to true if user confirms, false if user cancels.
      *      If an input is provided, the Promise will resolve to the input value if user confirms.
      */
     message(config) {
@@ -333,7 +333,7 @@ class XHClass {
      * Show a modal 'alert' dialog with message and default 'OK' button.
      *
      * @param {Object} config - see XH.message() for available options.
-     * @returns {Promise} - A Promise that will resolve to true when user acknowledges alert.
+     * @returns {Promise} - resolves to true when user acknowledges alert.
      */
     alert(config) {
         return this.acm.messageSourceModel.alert(config);
@@ -343,18 +343,23 @@ class XHClass {
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
      *
      * @param {Object} config - see XH.message() for available options.
-     * @returns {Promise} - A Promise that will resolve to true if user confirms, and false if user cancels.
+     * @returns {Promise} - resolves to true if user confirms, false if user cancels.
      */
     confirm(config) {
         return this.acm.messageSourceModel.confirm(config);
     }
 
     /**
-     * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
-     * Applications may also provide a custom HoistInput.
+     * Show a modal 'prompt' dialog with a default TextInput, message and 'OK'/'Cancel' buttons.
+     *
+     * The default TextInput comes with props set for:
+     *   1. autoFocus = true
+     *   2. selectOnFocus = true (desktop only)
+     *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
+     * Applications may also provide a custom HoistInput, in which all props must be set.
      *
      * @param {Object} config - see XH.message() for available options.
-     * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
+     * @returns {Promise} - resolves to value of input if user confirms, false if user cancels.
      */
     prompt(config) {
         return this.acm.messageSourceModel.prompt(config);
@@ -509,7 +514,7 @@ class XHClass {
 
             // Check if user has already been authenticated (prior login, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-            
+
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
                 throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
@@ -618,7 +623,7 @@ class XHClass {
                 return it.initAsync();
             }, 'XH');
         });
-        
+
         const results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 

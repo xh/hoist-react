@@ -4,6 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {Component} from 'react';
+
 import {form} from '@xh/hoist/cmp/form';
 import {filler} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
@@ -14,7 +16,6 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Component} from 'react';
 
 import './Message.scss';
 
@@ -61,7 +62,11 @@ export class Message extends Component {
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',
-                item: withDefault(input.item, textInput({autoFocus: true}))
+                item: withDefault(input.item, textInput({
+                    autoFocus: true,
+                    selectOnFocus: true,
+                    onKeyDown: evt => {if (evt.key == 'Enter') this.model.doConfirmAsync();}
+                }))
             })
         });
     }
