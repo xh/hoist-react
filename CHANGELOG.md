@@ -1,5 +1,13 @@
 # Changelog
 
+## v27.0.1 - 2019-08-26
+
+### 🐞 Bug Fixes
+
+* Fix to `Store.clear()` and `GridModel.clear()`, which delegates to the same (#1324).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.0...v27.0.1)
+
 ## v27.0.0 - 2019-08-23
 
 ### 🎁 New Features
