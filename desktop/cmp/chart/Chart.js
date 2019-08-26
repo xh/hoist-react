@@ -41,7 +41,7 @@ export class Chart extends Component {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
     };
-    
+
     static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
@@ -90,7 +90,10 @@ export class Chart extends Component {
             }));
 
             config.chart.renderTo = chartElem;
-            this._chart = Highcharts.chart(config);
+
+            const newChart = Highcharts.chart(config);
+            this._chart = newChart;
+            this.model.setHighchartsChart(newChart);
         }
     }
 
@@ -133,11 +136,12 @@ export class Chart extends Component {
     destroy() {
         this.destroyHighChart();
     }
-    
+
     destroyHighChart() {
         if (this._chart) {
             this._chart.destroy();
             this._chart = null;
+            this.model.setHighchartsChart(null);
         }
     }
 

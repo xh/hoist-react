@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -18,6 +18,15 @@ export class ChartModel {
     @bindable.ref series = [];
 
     /**
+     * Instance of the actual Highcharts Chart object, if instantiated and rendered.
+     *
+     * Developers are strongly discouraged from saving a reference to this chart instance or calling
+     * methods on it to modify its state, as it can be destroyed and recreated at any time to
+     * respond to changes in this model's state.
+     */
+    @observable.ref highchartsChart;
+
+    /**
      * @param {Object} c - ChartModel configuration.
      * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
      *      any Highcharts opts other than `series`, which should be set via dedicated config.
@@ -27,6 +36,15 @@ export class ChartModel {
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
         this.highchartsConfig = highchartsConfig;
         this.series = series;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    // Called by Chart component when chart instance rendered to the DOM. Not for application use.
+    @action
+    setHighchartsChart(chartInstance) {
+        this.highchartsChart = chartInstance;
     }
 
 }
