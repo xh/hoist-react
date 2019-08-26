@@ -44,6 +44,7 @@ export const actionCol = {
     resizable: false,
     chooserName: 'Actions',
     excludeFromExport: true,
+    rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {
         if (agParams.node.group || (record && record.xhIsSummary)) return null;
 
