@@ -1,19 +1,29 @@
 # Changelog
 
-
 ## v28.0.0-SNAPSHOT - Unreleased
 
 ### 🎁 New Features
 
 * Hoist now fully supports React functional components and hooks. See the new function
-   `hoistComponent` for more information. While functional components and hooks are considered
-   essential forward-looking patterns in the React world, Class-based Components remain fully
-   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
+  `hoistComponent` for more information. While functional components and hooks are considered
+  essential forward-looking patterns in the React world, Class-based Components remain fully
+  supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 
 ### 💥 Breaking Changes
-  
-* The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no 
-longer supported types for this value.  This is required to support functional Components throughout the toolkit.
+
+* The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
+  no longer supported types for this value. This is required to support functional Components
+  throughout the toolkit.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...develop)
+
+## v27.0.1 - 2019-08-26
+
+### 🐞 Bug Fixes
+
+* Fix to `Store.clear()` and `GridModel.clear()`, which delegates to the same (#1324).
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.0...v27.0.1)
 
 ## v27.0.0 - 2019-08-23
 
