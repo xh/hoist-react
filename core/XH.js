@@ -121,7 +121,7 @@ class XHClass {
     //---------------------------
     appContainerModel = new AppContainerModel();
     routerModel = new RouterModel();
-    
+
     //---------------------------
     // Other State
     //---------------------------
@@ -179,8 +179,8 @@ class XHClass {
         svcs.forEach(svc => {
             const name = camelCase(svc.constructor.name);
             throwIf(this[name], (
-                `Service cannot be installed: property '${name}' already exists on XH object, 
-                indicating duplicate/conflicting service names or an (unsupported) attempt to 
+                `Service cannot be installed: property '${name}' already exists on XH object,
+                indicating duplicate/conflicting service names or an (unsupported) attempt to
                 install the same service twice.`
             ));
             this[name] = svc;
@@ -351,7 +351,12 @@ class XHClass {
 
     /**
      * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
-     * Applications may also provide a custom HoistInput.
+     * The default TextInput comes with props set for:
+     *   1. autoFocus = true
+     *   2. selectOnFocus = true
+     *   3. an onKeyDown event listener to submit the field on 'Enter' key (same as clicking 'OK')
+     *
+     * Applications may also provide a custom HoistInput, in which all props must be set.
      *
      * @param {Object} config - see XH.message() for available options.
      * @returns {Promise} - A Promise that will resolve to the input value if user confirms, and false if user cancels.
@@ -509,7 +514,7 @@ class XHClass {
 
             // Check if user has already been authenticated (prior login, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-            
+
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
             if (!userIsAuthenticated) {
                 throwIf(appSpec.isSSO, 'Failed to authenticate user via SSO.');
@@ -618,7 +623,7 @@ class XHClass {
                 return it.initAsync();
             }, 'XH');
         });
-        
+
         const results = await allSettled(promises),
             errs = results.filter(it => it.state === 'rejected');
 
