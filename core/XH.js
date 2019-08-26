@@ -353,8 +353,8 @@ class XHClass {
      * Show a modal 'prompt' dialog with a default TextInput, message and default 'OK'/'Cancel' buttons.
      * The default TextInput comes with props set for:
      *   1. autoFocus = true
-     *   2. selectOnFocus = true
-     *   3. an onKeyDown event listener to submit the field on 'Enter' key (same as clicking 'OK')
+     *   2. selectOnFocus = true  (desktop only)
+     *   3. an onKeyDown event listener to submit the field on 'Enter' key (same as clicking 'OK') (desktop only)
      *
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *

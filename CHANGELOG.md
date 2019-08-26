@@ -10,9 +10,12 @@
    essential forward-looking patterns in the React world, Class-based Components remain fully
    supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 
+* XH.prompt on desktop:  the default TextInput field now has selectOnFocus=true,
+*  and an an onKeyDown event listener to submit the field on 'Enter' key (same as clicking 'OK').
+
 ### 💥 Breaking Changes
-  
-* The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no 
+
+* The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no
 longer supported types for this value.  This is required to support functional Components throughout the toolkit.
 
 ## v27.0.0 - 2019-08-23
