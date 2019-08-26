@@ -10,6 +10,7 @@ import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 
 import './ButtonGroup.scss';
 
@@ -27,7 +28,7 @@ export class ButtonGroup extends Component {
             buttons = castArray(children);
 
         buttons.forEach(button => {
-            throwIf(button && button.type.name !== 'Button', 'ButtonGroup child must be a Button.');
+            throwIf(button && button.type !== Button, 'ButtonGroup child must be a Button.');
         });
 
         return hbox({

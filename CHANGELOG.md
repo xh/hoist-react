@@ -1,5 +1,20 @@
 # Changelog
 
+
+## v28.0.0-SNAPSHOT - Unreleased
+
+### 🎁 New Features
+
+* Hoist now fully supports React functional components and hooks. See the new function
+   `hoistComponent` for more information. While functional components and hooks are considered
+   essential forward-looking patterns in the React world, Class-based Components remain fully
+   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
+
+### 💥 Breaking Changes
+  
+* The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no 
+longer supported types for this value.  This is required to support functional Components throughout the toolkit.
+
 ## v27.0.0 - 2019-08-23
 
 ### 🎁 New Features

@@ -4,8 +4,7 @@
 *
 * Copyright © 2019 Extremely Heavy Industries Inc.
 */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -15,35 +14,26 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-@HoistComponent
-export class EhCachePanel extends Component {
-
-    model = new EhCacheModel();
-
-    render() {
-        const {model} = this;
+export const EhCachePanel = hoistComponent(
+    () => {
+        const model = useLocalModel(EhCacheModel),
+            {gridModel} = model;
 
         return panel({
             mask: model.loadModel,
-            tbar: this.renderToolbar(),
-            item: grid({model: model.gridModel})
+            tbar: [
+                button({
+                    icon: Icon.reset(),
+                    text: 'Clear All',
+                    intent: 'danger',
+                    onClick: () => model.clearAll()
+                }),
+                filler(),
+                gridCountLabel({gridModel, unit: 'cache'}),
+                storeFilterField({gridModel}),
+                exportButton({gridModel})
+            ],
+            item: grid({model: gridModel})
         });
     }
-
-    renderToolbar() {
-        const {model} = this,
-            {gridModel} = model;
-        return [
-            button({
-                icon: Icon.reset(),
-                text: 'Clear All',
-                intent: 'danger',
-                onClick: () => model.clearAll()
-            }),
-            filler(),
-            gridCountLabel({gridModel, unit: 'cache'}),
-            storeFilterField({gridModel}),
-            exportButton({gridModel})
-        ];
-    }
-}
+);

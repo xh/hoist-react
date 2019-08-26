@@ -6,13 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './Mask.scss';
 
@@ -22,35 +21,13 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-@HoistComponent
-export class Mask extends Component {
+export const Mask = hoistComponent({
+    displayName: 'Mask',
 
-    static modelClass = PendingTaskModel;
-
-    static propTypes = {
-
-        /** Model to which a mask is bound - mask will be visible whenever model.isPending */
-        model: PT.instanceOf(PendingTaskModel),
-
-        /** True to display mask. */
-        isDisplayed: PT.bool,
-
-        /** Optional text to be displayed. */
-        message: PT.string,
-
-        /** True to display a spinning image.  Default false. */
-        spinner: PT.bool,
-
-        /** True (default) to contain mask within its parent, false to fill the viewport. */
-        inline: PT.bool
-    };
-
-    baseClassName = 'xh-mask';
-    
-    render() {
-        const {props} = this,
-            {model} = props,
-            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
+    render(props) {
+        const model = useProvidedModel(PendingTaskModel, props),
+            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
+            className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
 
         if (!isDisplayed) return null;
 
@@ -59,7 +36,7 @@ export class Mask extends Component {
             showSpinner = withDefault(props.spinner, false);
 
         return overlay({
-            className: this.getClassName(Classes.OVERLAY_SCROLL_CONTAINER),
+            className,
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
@@ -75,7 +52,24 @@ export class Mask extends Component {
             })
         });
     }
-}
+});
+
+Mask.propTypes = {
+
+    /** True to display mask. */
+    isDisplayed: PT.bool,
+
+    /** Optional text to be displayed. */
+    message: PT.string,
+
+    /** True to display a spinning image.  Default false. */
+    spinner: PT.bool,
+
+    /** True (default) to contain mask within its parent, false to fill the viewport. */
+    inline: PT.bool,
+
+    /** Click handler **/
+    onClick: PT.func
+};
+
 export const mask = elemFactory(Mask);
-
-

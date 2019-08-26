@@ -4,38 +4,35 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 import {headerCollapseButton} from './HeaderCollapseButton';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './PanelHeader.scss';
 import {PanelModel} from '../PanelModel';
 
-/**
- * A standardized header for a Panel component
- * @private
- */
-@HoistComponent
-export class PanelHeader extends Component {
-
-    static modelClass = PanelModel;
-
-    baseClassName = 'xh-panel-header';
-
-    render() {
-        let {title, icon, compact, headerItems = []} = this.props,
-            {collapsed, vertical, side, showHeaderCollapseButton} = this.model || {};
+/** @private */
+export const panelHeader = hoistElemFactory(
+    (props) => {
+        const model = useProvidedModel(PanelModel, props),
+            {title, icon, compact, headerItems = []} = props,
+            {collapsed, vertical, side, showHeaderCollapseButton} = model || {};
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
-        const titleCls = 'xh-panel-header__title',
+        const onDoubleClick = () => {
+            if (model && model.collapsible) model.toggleCollapsed();
+        };
+
+        const baseCls = 'xh-panel-header',
+            titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
         if (!collapsed || vertical) {
             return hbox({
-                className: this.getClassName(compactCls),
+                className: getClassName(baseCls, props, compactCls),
                 items: [
                     icon || null,
                     title ?
@@ -46,18 +43,18 @@ export class PanelHeader extends Component {
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    this.renderHeaderCollapseButton()
+                    renderHeaderCollapseButton(model)
                 ],
-                onDoubleClick: this.onDblClick
+                onDoubleClick
             });
         } else {
             // For vertical layout, skip header items.
             const isLeft = side === 'left';
             return vbox({
-                className: this.getClassName(sideCls, compactCls),
+                className: getClassName(baseCls, props, sideCls, compactCls),
                 flex: 1,
                 items: [
-                    isLeft ? filler() : this.renderHeaderCollapseButton(),
+                    isLeft ? filler() : renderHeaderCollapseButton(model),
                     icon || null,
                     title ?
                         box({
@@ -65,28 +62,18 @@ export class PanelHeader extends Component {
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : this.renderHeaderCollapseButton()
+                    !isLeft ? filler() : renderHeaderCollapseButton(model)
                 ],
-                onDoubleClick: this.onDblClick
+                onDoubleClick
             });
         }
     }
+);
 
-    renderHeaderCollapseButton() {
-        const {model} = this;
-        if (!model) return null;
+function renderHeaderCollapseButton(model) {
+    if (!model) return null;
 
-        return model.showHeaderCollapseButton && model.collapsible ?
-            headerCollapseButton({model}) :
-            null;
-    }
-
-    onDblClick = () => {
-        const {model} = this;
-        if (model && model.collapsible) {
-            model.toggleCollapsed();
-        }
-    };
+    return model.showHeaderCollapseButton && model.collapsible ?
+        headerCollapseButton({model}) :
+        null;
 }
-
-export const panelHeader = elemFactory(PanelHeader);

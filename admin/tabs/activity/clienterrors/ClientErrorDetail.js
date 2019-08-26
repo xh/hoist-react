@@ -4,21 +4,19 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
+import {ClientErrorModel} from './ClientErrorModel';
 
-@HoistComponent
-export class ClientErrorDetail extends Component {
-
-    render() {
-        const {model} =  this,
+export const clientErrorDetail = hoistElemFactory(
+    props => {
+        const model = useProvidedModel(ClientErrorModel, props),
             rec = model.detailRecord;
 
         if (!rec) return null;
@@ -27,56 +25,47 @@ export class ClientErrorDetail extends Component {
             title: 'Error Details',
             style: {width: 1000},
             isOpen: true,
-            onClose: this.onCloseClick,
-            items: this.renderDetail(rec)
+            onClose: () => model.closeDetail(),
+            items: renderDetail(model, rec)
         });
     }
+);
 
-    renderDetail(rec) {
-        return [
-            table({
-                className: 'xh-admin-error-detail',
-                items: [
-                    tbody(
-                        tr(th('User:'), td(rec.username)),
-                        tr(th('Message:'), td(rec.msg || 'None provided')),
-                        tr(th('User Alerted:'), td(`${rec.userAlerted}`)),
-                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
-                        tr(th('Agent:'), td(rec.userAgent)),
-                        tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment)),
-                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
-                    )
-                ]
+function renderDetail(model, rec) {
+    return [
+        table({
+            className: 'xh-admin-error-detail',
+            items: [
+                tbody(
+                    tr(th('User:'), td(rec.username)),
+                    tr(th('Message:'), td(rec.msg || 'None provided')),
+                    tr(th('User Alerted:'), td(`${rec.userAlerted}`)),
+                    tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
+                    tr(th('Agent:'), td(rec.userAgent)),
+                    tr(th('App Version:'), td(rec.appVersion)),
+                    tr(th('Environment:'), td(rec.appEnvironment)),
+                    tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
+                )
+            ]
+        }),
+        jsonInput({
+            value: rec.error,
+            disabled: true,
+            height: 450,
+            width: '100%',
+            editorProps: {lineWrapping: true}
+        }),
+        toolbar(
+            filler(),
+            clipboardButton({
+                getCopyText: () => model.detailRecord.error,
+                successMessage: 'Error details copied to clipboard.'
             }),
-            jsonInput({
-                value: rec.error,
-                disabled: true,
-                height: 450,
-                width: '100%',
-                editorProps: {lineWrapping: true}
-            }),
-            toolbar(
-                filler(),
-                clipboardButton({
-                    getCopyText: this.getErrorStr,
-                    successMessage: 'Error details copied to clipboard.'
-                }),
-                button({
-                    text: 'Close',
-                    intent: 'primary',
-                    onClick: this.onCloseClick
-                })
-            )
-        ];
-    }
-
-    onCloseClick = () => {
-        this.model.closeDetail();
-    }
-
-    getErrorStr = () => {
-        return this.model.detailRecord.error;
-    }
+            button({
+                text: 'Close',
+                intent: 'primary',
+                onClick: () => model.closeDetail()
+            })
+        )
+    ];
 }
-export const clientErrorDetail = elemFactory(ClientErrorDetail);

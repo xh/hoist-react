@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,19 +14,28 @@ import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-@HoistComponent
-export class ServicePanel extends Component {
-    
-    model = new ServiceModel();
-
-    render() {
-        const {model} = this;
+export const ServicePanel = hoistComponent(
+    () => {
+        const model = useLocalModel(ServiceModel),
+            {gridModel} = model;
 
         return panel({
             mask: model.loadModel,
-            tbar: this.renderToolbar(),
+            tbar: [
+                button({
+                    icon: Icon.reset(),
+                    text: 'Clear Selected',
+                    intent: 'danger',
+                    onClick: () => model.clearCaches(),
+                    disabled: gridModel.selModel.isEmpty
+                }),
+                filler(),
+                gridCountLabel({gridModel, unit: 'service'}),
+                storeFilterField({gridModel}),
+                exportButton({gridModel})
+            ],
             item: grid({
-                model: model.gridModel,
+                model: gridModel,
                 hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: (params) => params.value + ' Services'
@@ -34,22 +43,4 @@ export class ServicePanel extends Component {
             })
         });
     }
-
-    renderToolbar() {
-        const {model} = this,
-            {gridModel} = model;
-        return [
-            button({
-                icon: Icon.reset(),
-                text: 'Clear Selected',
-                intent: 'danger',
-                onClick: () => model.clearCaches(),
-                disabled: gridModel.selModel.isEmpty
-            }),
-            filler(),
-            gridCountLabel({gridModel, unit: 'service'}),
-            storeFilterField({gridModel}),
-            exportButton({gridModel})
-        ];
-    }
-}
+);

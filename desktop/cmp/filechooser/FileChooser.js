@@ -78,7 +78,7 @@ export class FileChooser extends Component {
             enableMulti = withDefault(props.enableMulti, true),
             enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
-
+        
         return hbox({
             items: [
                 dropzone({

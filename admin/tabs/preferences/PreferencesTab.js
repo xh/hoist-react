@@ -4,26 +4,21 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-@HoistComponent
-export class PreferencesTab extends Component {
-
-    render() {
-        return tabContainer({
-            model: {
-                route: 'default.preferences',
-                switcherPosition: 'left',
-                tabs: [
-                    {id: 'prefs', content: PreferencePanel},
-                    {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
-                ]
-            }
-        });
-    }
-}
+export const PreferencesTab = hoistComponent(
+    () => tabContainer({
+        model: {
+            route: 'default.preferences',
+            switcherPosition: 'left',
+            tabs: [
+                {id: 'prefs', content: PreferencePanel},
+                {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
+            ]
+        }
+    })
+);

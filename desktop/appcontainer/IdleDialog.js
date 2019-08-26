@@ -5,47 +5,43 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {div, img, p} from '@xh/hoist/cmp/layout';
-import {HoistComponent, XH} from '@xh/hoist/core';
+import {hoistComponent, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {Component} from 'react';
+import {message} from './Message';
+import {div, img, p} from '@xh/hoist/cmp/layout';
 import './IdleDialog.scss';
 import idleImage from './IdleDialogImage.png';
-import {message} from './Message';
+
 
 /**
  * Default dialog to display when the app has suspended itself due to inactivity.
- * This display can be overridden by applications - {@see AppSpec.idleDialogClass}.
+ * This display can be overridden by applications - {@see AppSpec.idleDialogClass}. *
  * @private
  */
-@HoistComponent
-export class IdleDialog extends Component {
-
-    render() {
+export const IdleDialog = hoistComponent(
+    props => {
         return message({
             model: {
                 title: `${XH.clientAppName} is sleeping`,
                 icon: Icon.moon(),
-                message: div({
-                    items: [
-                        img({
-                            src: idleImage,
-                            width: 300,
-                            height: 180
-                        }),
-                        p('This application is sleeping due to inactivity.'),
-                        p('Please click below to reload it.')
-                    ]
-                }),
+                message: div(
+                    img({
+                        src: idleImage,
+                        width: 300,
+                        height: 180
+                    }),
+                    p('This application is sleeping due to inactivity.'),
+                    p('Please click below to reload it.')
+                ),
                 confirmProps: {
                     text: "I'm back!",
                     intent: 'primary',
                     minimal: false,
                     autoFocus: true
                 },
-                onConfirm: this.props.onReactivate
+                onConfirm: props.onReactivate
             },
             className: 'xh-idle-dialog'
         });
     }
-}
+);

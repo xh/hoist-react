@@ -5,10 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {button, Button} from '@xh/hoist/desktop/cmp/button';
+import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {button, Button} from './Button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -16,51 +15,44 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.
  *
- * Must be provided either an onClick handler *or* a model. If a model is provided, this button
+ * Must be provided either an onClick handler *or* a gridModel. If a model is provided, this button
  * will call exportAsync() on the model class. Options supported by GridExportService.exportAsync()
  * can be set via the exportOptions props.
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-@HoistComponent
-export class ExportButton extends Component {
+export const ExportButton = hoistComponent({
+    displayName: 'ExportButton',
 
-    static propTypes = {
-        ...Button.propTypes,
-        gridModel: PT.instanceOf(GridModel),
-        exportOptions: PT.object
-    };
-
-    constructor(props) {
-        const {gridModel} = props;
+    render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {
 
         warnIf(
             (gridModel && !gridModel.enableExport),
             'ExportButton bound to GridModel with enableExport != true - exports will not work.'
         );
 
-        super(props);
-    }
-
-    render() {
-        const {icon, title, onClick, gridModel, exportOptions, disabled, ...rest} = this.props;
         return button({
             icon: withDefault(icon, Icon.download()),
             title: withDefault(title, 'Export'),
-            onClick: withDefault(onClick, this.exportGridData),
+            onClick: withDefault(onClick, () => exportGridData(gridModel, exportOptions)),
             disabled: withDefault(disabled, gridModel && gridModel.empty),
             ...rest
         });
     }
+});
+ExportButton.propTypes = {
+    ...Button.propTypes,
+    gridModel: PT.instanceOf(GridModel),
+    exportOptions: PT.object
+};
 
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    exportGridData = () => {
-        const {gridModel, exportOptions = {}} = this.props;
-        gridModel.exportAsync(exportOptions).catchDefault();
-    }
-
-}
 export const exportButton = elemFactory(ExportButton);
+
+//---------------------------
+// Implementation
+//---------------------------
+function exportGridData(gridModel, exportOptions) {
+    gridModel.exportAsync(exportOptions).catchDefault();
+}
+
+

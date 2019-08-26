@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, hoistComponent} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
 
@@ -13,46 +13,45 @@ import {box} from './Box';
  * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
  * creating nested layouts.
  *
+ * Like Box, Frame provides access to its internal div via a ref argument.
+ *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent
-@LayoutSupport
-export class Frame extends Component {
-    render() {
-        return box({
-            ...this.props,
-            flex: 'auto'
-        });
-    }
-}
+export const Frame = hoistComponent({
+    displayName: 'Frame',
 
-@HoistComponent
-@LayoutSupport
-export class VFrame extends Component {
-    baseClassName = 'xh-vframe';
-    render() {
+    render(props, ref) {
+        return box({ref, ...props, flex: 'auto'});
+    }
+});
+
+export const VFrame = hoistComponent({
+    displayName: 'VFrame',
+
+    render(props, ref) {
         return box({
-            ...this.props,
+            ref,
+            ...props,
             flex: 'auto',
             flexDirection: 'column',
-            className: this.getClassName()
+            className: getClassName('xh-vframe', props)
         });
     }
-}
+});
 
-@HoistComponent
-@LayoutSupport
-export class HFrame extends Component {
-    baseClassName = 'xh-hframe';
-    render() {
+export const HFrame = hoistComponent({
+    displayName: 'HFrame',
+
+    render(props, ref) {
         return box({
-            ...this.props,
+            ref,
+            ...props,
             flex: 'auto',
             flexDirection: 'row',
-            className: this.getClassName()
+            className: getClassName('xh-hframe', props)
         });
     }
-}
+});
 
 export const frame = elemFactory(Frame);
 export const vframe = elemFactory(VFrame);

@@ -4,9 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {useState} from 'react';
+import {elem, elemFactory,  hoistComponent, useProvidedModel} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
+import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
 import {TabModel} from '@xh/hoist/cmp/tab';
@@ -21,39 +22,38 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-@HoistComponent
-export class Tab extends Component {
+export const Tab = hoistComponent({
+    displayName: 'Tab',
 
-    static modelClass = TabModel;
-    baseClassName = 'xh-tab';
+    render(props) {
+        let model = useProvidedModel(TabModel, props),
+            {content, isActive, renderMode, refreshContextModel} = model,
+            [flags] = useState({wasActivated: false}),
+            className = getClassName('xh-tab', props);
 
-    wasActivated = false;
-
-    render() {
-        const {content, isActive, renderMode, refreshContextModel} = this.model;
-
-        this.wasActivated = this.wasActivated || isActive;
+        if (!flags.wasActivated && isActive) flags.wasActivated = true;
 
         if (
             !isActive &&
             (
                 (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !this.wasActivated)
+                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
             )
         ) {
             return null;
         }
 
-        const contentElem = content.prototype.render ? elem(content, {flex: 1}) : content({flex: 1});
-        
+        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
+
         return frame({
             display: isActive ? 'flex' : 'none',
-            className: this.getClassName(),
+            className,
             item: refreshContextView({
                 model: refreshContextModel,
                 item: contentElem
             })
         });
     }
-}
+});
+
 export const tab = elemFactory(Tab);

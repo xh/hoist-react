@@ -4,31 +4,23 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Children, Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {Children} from 'react';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {dragger} from './Dragger';
 import {splitter} from './Splitter';
 import {PanelModel} from '../PanelModel';
 
-/**
- * A Resizable/Collapsible Container used by Panel.
- *
- * @private
- */
-@HoistComponent
-export class ResizeContainer extends Component {
-
-    static modelClass = PanelModel;
-
-    baseClassName = 'xh-resizable';
-
-    render() {
-        let {model} = this,
+/** @private */
+export const resizeContainer = hoistElemFactory(
+    (props, ref) => {
+        let model = useProvidedModel(PanelModel, props),
+            className = getClassName('xh-resizable', props),
             {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
-            items = [this.renderChild()];
-        
+            items = [renderChild(model, Children.only(props.children))];
+
         if (showSplitter) {
             const splitterCmp = splitter({model});
             items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
@@ -42,24 +34,20 @@ export class ResizeContainer extends Component {
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
 
         return cmp({
-            className: this.getClassName(),
+            ref,
+            className,
             flex: 'none',
             [maxDim]: '100%',
             items
         });
     }
+);
 
-    //---------------
-    // Implementation
-    //---------------
-    renderChild() {
-        const {vertical, size, collapsed} = this.model,
-            dim = vertical ? 'height' : 'width',
-            item = Children.only(this.props.children);
+function renderChild(model, child) {
+    const {vertical, size, collapsed} = model,
+        dim = vertical ? 'height' : 'width';
 
-        return collapsed ?
-            box({item}) :
-            box({item, [dim]: size});
-    }
+    return collapsed ?
+        box(child) :
+        box({item: child, [dim]: size});
 }
-export const resizeContainer = elemFactory(ResizeContainer);

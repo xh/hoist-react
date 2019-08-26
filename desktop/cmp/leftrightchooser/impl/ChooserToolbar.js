@@ -4,26 +4,22 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {vspacer} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
-/**
- * A Toolbar for the LeftRightChooser.
- * @private
- */
-@HoistComponent
-export class ChooserToolbar extends Component {
-
-    render() {
-        const {model} = this,
+/** @private */
+export const chooserToolbar = hoistElemFactory(
+    props => {
+        const model = useProvidedModel(LeftRightChooserModel, props),
             leftSel = model.leftModel.selModel,
             rightSel = model.rightModel.selModel;
 
         return toolbar({
+            width: 50,
             vertical: true,
             className: 'xh-lr-chooser__toolbar',
             items: [
@@ -41,5 +37,4 @@ export class ChooserToolbar extends Component {
             ]
         });
     }
-}
-export const chooserToolbar = elemFactory(ChooserToolbar);
+);

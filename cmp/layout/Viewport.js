@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
 
@@ -13,20 +13,19 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
-@HoistComponent
-@LayoutSupport
-export class Viewport extends Component {
-    baseClassName = 'xh-viewport';
-    render() {
+export const Viewport = hoistComponent({
+    displayName: 'Viewport',
+
+    render(props) {
         return box({
-            ...this.props,
+            ...props,
             top: 0,
             left: 0,
             position: 'fixed',
             width: '100%',
             height: '100%',
-            className: this.getClassName()
+            className: getClassName('xh-viewport', props)
         });
     }
-}
+});
 export const viewport = elemFactory(Viewport);

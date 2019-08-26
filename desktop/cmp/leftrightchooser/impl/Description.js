@@ -4,19 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {callout} from '@xh/hoist/kit/blueprint';
+import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
-/**
- * Description panel for the LeftRightChooser.
- * @private
- */
-@HoistComponent
-export class Description extends Component {
-
-    render() {
-        const model = this.model,
+/** @private */
+export const description = hoistElemFactory(
+    props => {
+        const model = useProvidedModel(LeftRightChooserModel, props),
             {hasDescription, leftModel, rightModel} = model,
             selected = leftModel.selectedRecord || rightModel.selectedRecord;
 
@@ -30,5 +25,4 @@ export class Description extends Component {
             item: selected.description
         });
     }
-}
-export const description = elemFactory(Description);
+);

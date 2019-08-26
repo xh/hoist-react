@@ -44,7 +44,7 @@ export class Tab extends Component {
             return onsenPage();
         }
 
-        const contentElem = content.prototype.render ? elem(content) : content();
+        const contentElem = content.isHoistComponent? elem(content) : content();
 
         return refreshContextView({
             model: refreshContextModel,

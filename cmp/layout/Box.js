@@ -4,10 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {merge, castArray} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, useLayoutProps, elemFactory} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {div} from './Tags';
+
 
 /**
  * A Component that supports flexbox-based layout of its contents.
@@ -15,51 +16,55 @@ import {div} from './Tags';
  * Box is the component that provides the core implementation of the LayoutSupport mixin.
  * It renders a div and merges all layout props to that div's `style` property.
  *
+ * Access to the internal div is provided via a ref argument.
+ *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-@HoistComponent
-@LayoutSupport
-export class Box extends Component {
-    render() {
-        let {children, ...props} = this.getNonLayoutProps();
-        props = merge(
+export const Box = hoistComponent({
+    displayName: 'Box',
+
+    render(props, ref) {
+        let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
+
+        restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
-            {style: this.getLayoutProps()},
-            props
+            {style: layoutProps},
+            restProps
         );
 
         return div({
-            ...props,
+            ref,
+            ...restProps,
             items: castArray(children)
         });
     }
-}
+});
 
-@HoistComponent
-@LayoutSupport
-export class VBox extends Component {
-    baseClassName = 'xh-vbox';
-    render() {
+export const VBox = hoistComponent({
+    displayName: 'VBox',
+
+    render(props, ref) {
         return box({
-            ...this.props,
+            ref,
+            ...props,
             flexDirection: 'column',
-            className: this.getClassName()
+            className: getClassName('xh-vbox', props)
         });
     }
-}
+});
 
-@HoistComponent
-@LayoutSupport
-export class HBox extends Component {
-    baseClassName = 'xh-hbox';
-    render() {
+export const HBox = hoistComponent({
+    displayName: 'HBox',
+
+    render(props, ref) {
         return box({
-            ...this.props,
+            ref,
+            ...props,
             flexDirection: 'row',
-            className: this.getClassName()
+            className: getClassName('xh-hbox', props)
         });
     }
-}
+});
 
 export const box = elemFactory(Box);
 export const vbox = elemFactory(VBox);

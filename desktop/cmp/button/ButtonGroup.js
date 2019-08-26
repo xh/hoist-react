@@ -5,52 +5,47 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useLayoutProps} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './ButtonGroup.scss';
 
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-@HoistComponent
-@LayoutSupport
-export class ButtonGroup extends Component {
+export const ButtonGroup = hoistComponent({
+    displayName: 'ButtonGroup',
 
-    static propTypes = {
-        /** True to have all buttons fill available width equally. */
-        fill: PT.bool,
-
-        /** True to render each button with minimal surrounding chrome (default false). */
-        minimal: PT.bool,
-
-        /** Style block. */
-        style: PT.object,
-
-        /** True to render in a vertical orientation. */
-        vertical: PT.bool
-    };
-
-    baseClassName = 'xh-button-group';
-
-    render() {
-        const {fill, minimal, vertical, style, ...rest} = this.getNonLayoutProps();
+    render(props) {
+        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
+            {fill, minimal, vertical, style, ...rest} = nonLayoutProps;
         return bpButtonGroup({
             fill,
             minimal,
             vertical,
-
             style: {
                 ...style,
-                ...this.getLayoutProps()
+                ...layoutProps
             },
-
             ...rest,
-            className: this.getClassName()
+            className: getClassName('xh-button-group', props)
         });
     }
+});
+ButtonGroup.propTypes = {
+    /** True to have all buttons fill available width equally. */
+    fill: PT.bool,
 
-}
+    /** True to render each button with minimal surrounding chrome (default false). */
+    minimal: PT.bool,
+
+    /** Style block. */
+    style: PT.object,
+
+    /** True to render in a vertical orientation. */
+    vertical: PT.bool
+};
+
 export const buttonGroup = elemFactory(ButtonGroup);

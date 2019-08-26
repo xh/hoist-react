@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
@@ -23,25 +23,16 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-@HoistComponent
-@LayoutSupport
-export class LeftRightChooser extends Component {
+export const LeftRightChooser = hoistComponent({
+    displayName: 'LeftRightChooser',
 
-    static modelClass = LeftRightChooserModel;
-
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
-    };
-
-    baseClassName = 'xh-lr-chooser';
-
-    render() {
-        const {model} = this,
+    render(props) {
+        const model = useProvidedModel(LeftRightChooserModel, props),
+            className = getClassName('xh-lr-chooser', props),
+            [layoutProps] = useLayoutProps(props),
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
-                    // Conditional avoids error if group header double-clicked to expand/collapse.
                     if (e.data) model.moveRows([e.data]);
                 },
                 agOptions: {
@@ -68,9 +59,14 @@ export class LeftRightChooser extends Component {
                 }),
                 description({model})
             ],
-            className: this.getClassName(),
-            ...this.getLayoutProps()
+            className,
+            ...layoutProps
         });
     }
-}
+});
+LeftRightChooser.propTypes = {
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
+};
+
 export const leftRightChooser = elemFactory(LeftRightChooser);

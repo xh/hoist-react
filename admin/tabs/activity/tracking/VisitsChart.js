@@ -4,30 +4,25 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistElemFactory, useLocalModel} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
-@HoistComponent
-export class VisitsChart extends Component {
-    
-    model = new VisitsChartModel();
-    
-    render() {
-        const {model} = this;
+
+export const visitsChart = hoistElemFactory(
+    () => {
+        const model = useLocalModel(VisitsChartModel);
         return panel({
             mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart({model: model.chartModel}),
-            bbar: this.renderToolbar(),
+            bbar: renderToolbar(model),
             model: {
                 defaultSize: 500,
                 side: 'bottom',
@@ -35,36 +30,30 @@ export class VisitsChart extends Component {
             }
         });
     }
+);
 
-    //-----------------------------
-    // Implementation
-    //-----------------------------
-    renderToolbar() {
-        const {model} = this;
-        return [
-            this.dateInput({bind: 'startDate'}),
-            Icon.angleRight(),
-            this.dateInput({bind: 'endDate'}),
-            toolbarSep(),
-            textInput({
-                model,
-                bind: 'username',
-                placeholder: 'Username',
-                enableClear: true,
-                width: 150
-            }),
-            refreshButton({model})
-        ];
-    }
-
-    dateInput(args) {
-        return dateInput({
-            model: this.model,
-            popoverPosition: 'top-left',
-            valueType: 'localDate',
-            width: 120,
-            ...args
-        });
-    }
+function renderToolbar(model) {
+    return [
+        renderDateInput({model, bind: 'startDate'}),
+        Icon.angleRight(),
+        renderDateInput({model, bind: 'endDate'}),
+        toolbarSep(),
+        textInput({
+            model,
+            bind: 'username',
+            placeholder: 'Username',
+            enableClear: true,
+            width: 150
+        }),
+        refreshButton({model})
+    ];
 }
-export const visitsChart = elemFactory(VisitsChart);
+
+function renderDateInput(args) {
+    return dateInput({
+        popoverPosition: 'top-left',
+        valueType: 'localDate',
+        width: 120,
+        ...args
+    });
+}

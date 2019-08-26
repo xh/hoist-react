@@ -7,6 +7,7 @@
 
 export * from './elem';
 export * from './mixins';
+export * from './hooks';
 export * from './AppState';
 export * from './AppSpec';
 export * from './HoistAppModel';

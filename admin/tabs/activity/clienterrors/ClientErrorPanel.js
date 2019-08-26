@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -18,16 +17,12 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-@HoistComponent
-export class ClientErrorPanel extends Component {
-
-    model = new ClientErrorModel();
-
-    render() {
-        const {model} = this;
+export const ClientErrorPanel = hoistComponent(
+    () => {
+        const model = useLocalModel(ClientErrorModel);
         return panel({
             mask: model.loadModel,
-            tbar: this.renderToolbar(),
+            tbar: renderToolbar(model),
             items: [
                 grid({
                     model: model.gridModel,
@@ -37,56 +32,50 @@ export class ClientErrorPanel extends Component {
             ]
         });
     }
+);
 
-    renderToolbar() {
-        const {model} = this,
-            {gridModel} = model;
-        
-        return [
-            button({
-                icon: Icon.angleLeft(),
-                onClick: () => model.adjustDates('subtract')
-            }),
-            this.dateInput({bind: 'startDate'}),
-            Icon.caretRight(),
-            this.dateInput({bind: 'endDate'}),
-            button({
-                icon: Icon.angleRight(),
-                onClick: () => model.adjustDates('add'),
-                disabled: model.endDate >= LocalDate.today()
-            }),
-            button({
-                icon: Icon.reset(),
-                onClick: () => model.adjustDates('subtract', true)
-            }),
-            toolbarSep(),
-            this.textInput({bind: 'username', placeholder: 'Username', enableClear: true}),
-            this.textInput({bind: 'error', placeholder: 'Error', enableClear: true}),
-            refreshButton({model}),
-            filler(),
-            gridCountLabel({gridModel, unit: 'error'}),
-            exportButton({gridModel})
-        ];
-    }
+function renderToolbar(model) {
+    const {gridModel} = model;
 
-    //-----------------------------
-    // Implementation
-    //-----------------------------
-    dateInput(args) {
-        return dateInput({
-            model: this.model,
-            popoverPosition: 'bottom',
-            valueType: 'localDate',
-            width: 120,
-            ...args
-        });
-    }
+    return [
+        button({
+            icon: Icon.angleLeft(),
+            onClick: () => model.adjustDates('subtract')
+        }),
+        renderDateInput({model, bind: 'startDate'}),
+        Icon.caretRight(),
+        renderDateInput({model, bind: 'endDate'}),
+        button({
+            icon: Icon.angleRight(),
+            onClick: () => model.adjustDates('add'),
+            disabled: model.endDate >= LocalDate.today()
+        }),
+        button({
+            icon: Icon.angleDoubleRight(),
+            onClick: () => model.adjustDates('subtract', true)
+        }),
+        toolbarSep(),
+        renderTextInput({model, bind: 'username', placeholder: 'Username', enableClear: true}),
+        renderTextInput({model, bind: 'error', placeholder: 'Error', enableClear: true}),
+        refreshButton({model}),
+        filler(),
+        gridCountLabel({gridModel, unit: 'error'}),
+        exportButton({gridModel})
+    ];
+}
 
-    textInput(args) {
-        return textInput({
-            model: this.model,
-            width: 150,
-            ...args
-        });
-    }
+function renderDateInput(args) {
+    return dateInput({
+        popoverPosition: 'bottom',
+        valueType: 'localDate',
+        width: 120,
+        ...args
+    });
+}
+
+function renderTextInput(args) {
+    return textInput({
+        width: 150,
+        ...args
+    });
 }

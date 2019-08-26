@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {applyMixin} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 
 /**
@@ -13,20 +12,11 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
  *
  * @see getLayoutProps for supported properties and overall documentation on this system, including
  * important notes on what Components must do to ensure layout props are actually applied.
+ *
+ * @param {Array} props
+ * @returns {Object[]} - Array containing a bundle of layout props and a bundle of all non-layout props.
  */
-export function LayoutSupport(C) {
-    return applyMixin(C, {
-        name: 'LayoutSupport',
-
-        provides: {
-
-            getLayoutProps() {
-                return getLayoutProps(this.props);
-            },
-
-            getNonLayoutProps() {
-                return getNonLayoutProps(this.props);
-            }
-        }
-    });
+export function useLayoutProps(props) {
+    // Consider caching this comp if props haven't changed.
+    return [getLayoutProps(props), getNonLayoutProps(props)];
 }

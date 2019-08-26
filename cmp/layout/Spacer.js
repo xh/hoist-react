@@ -4,43 +4,40 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-
+import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {getClassName} from '@xh/hoist/utils/react';
 import {box} from './Box';
 
 /**
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
  * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
-@HoistComponent
-@LayoutSupport
-export class Spacer extends Component {
-    baseClassName = 'xh-spacer';
-    render() {
+export const Spacer = hoistComponent({
+    displayName: 'Spacer',
+
+    render(props) {
         return box({
-            ...this.props,
+            ...props,
             flex: 'none',
-            className: this.getClassName()
+            className: getClassName('xh-spacer', props)
         });
     }
-}
+});
 
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-@HoistComponent
-@LayoutSupport
-export class Filler extends Component {
-    baseClassName = 'xh-filler';
-    render() {
+export const Filler = hoistComponent({
+    displayName: 'Filler',
+
+    render(props) {
         return box({
-            ...this.props,
+            ...props,
             flex: 'auto',
-            className: this.getClassName()
+            className: getClassName('xh-filler', props)
         });
     }
-}
+});
 
 export const spacer = elemFactory(Spacer);
 export const filler = elemFactory(Filler);

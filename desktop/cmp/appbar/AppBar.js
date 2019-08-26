@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
+import {getClassName} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
 
@@ -23,37 +23,10 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-@HoistComponent
-export class AppBar extends Component {
-    static propTypes = {
+export const AppBar = hoistComponent({
+    displayName: 'AppBar',
 
-        /** Icon to display to the left of the title. */
-        icon: PT.element,
-
-        /**
-         * Title to display to the left side of the AppBar. Defaults to XH.clientAppName.
-         */
-        title: PT.string,
-
-        /** Items to be added to the left side of the AppBar, immediately after the title (or . */
-        leftItems: PT.node,
-
-        /** Items to be added to the right side of the AppBar, before the standard buttons. */
-        rightItems: PT.node,
-
-        /** True to hide the Refresh button. */
-        hideRefreshButton: PT.bool,
-
-        /** True to hide the AppMenuButton. */
-        hideAppMenuButton: PT.bool,
-
-        /** Options to pass to the AppMenuButton. */
-        appMenuButtonOptions: PT.object
-    };
-
-    baseClassName = 'xh-appbar';
-
-    render() {
+    render(props) {
         const {
             icon,
             title,
@@ -62,10 +35,10 @@ export class AppBar extends Component {
             hideRefreshButton,
             hideAppMenuButton,
             appMenuButtonOptions = {}
-        } = this.props;
+        } = props;
 
         return navbar({
-            className: this.getClassName(),
+            className: getClassName('xh-appbar', props),
             items: [
                 navbarGroup({
                     align: 'left',
@@ -87,6 +60,31 @@ export class AppBar extends Component {
             ]
         });
     }
-}
+});
+AppBar.propTypes = {
+
+    /** Icon to display to the left of the title. */
+    icon: PT.element,
+
+    /**
+     * Title to display to the left side of the AppBar. Defaults to XH.clientAppName.
+     */
+    title: PT.string,
+
+    /** Items to be added to the left side of the AppBar, immediately after the title (or . */
+    leftItems: PT.node,
+
+    /** Items to be added to the right side of the AppBar, before the standard buttons. */
+    rightItems: PT.node,
+
+    /** True to hide the Refresh button. */
+    hideRefreshButton: PT.bool,
+
+    /** True to hide the AppMenuButton. */
+    hideAppMenuButton: PT.bool,
+
+    /** Options to pass to the AppMenuButton. */
+    appMenuButtonOptions: PT.object
+};
 
 export const appBar = elemFactory(AppBar);

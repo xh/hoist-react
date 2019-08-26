@@ -4,17 +4,21 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistComponent, useLocalModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
-import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-@HoistComponent
-export class FeedbackPanel extends Component {
+export const FeedbackPanel = hoistComponent(
+    () => {
+        const model = useLocalModel(createModel);
+        return restGrid({model});
+    }
+);
 
-    model = new RestGridModel({
+function createModel() {
+    return new RestGridModel({
         stateModel: 'xhFeedbackGrid',
         enableColChooser: true,
         enableExport: true,
@@ -76,8 +80,4 @@ export class FeedbackPanel extends Component {
             {field: 'dateCreated'}
         ]
     });
-
-    render() {
-        return restGrid({model: this.model});
-    }
 }

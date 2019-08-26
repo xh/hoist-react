@@ -16,6 +16,7 @@ import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getReactElementName} from '@xh/hoist/utils/react';
 
 import './FormField.scss';
 
@@ -213,7 +214,7 @@ export class FormField extends Component {
 
     get childCssName() {
         const child = this.props.children;
-        return child ? `xh-form-field-${kebabCase(child.type.name)}` : null;
+        return child ? `xh-form-field-${kebabCase(getReactElementName(child))}` : null;
     }
 
     getDefaultedProp(name, defaultVal) {
@@ -268,7 +269,7 @@ export class FormField extends Component {
         return tooltip({
             target,
             targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
-            targetTagName: !this.blockChildren.includes(target.type.name) || target.props.width ? 'span' : 'div',
+            targetTagName: !this.blockChildren.includes(getReactElementName(target)) || target.props.width ? 'span' : 'div',
             position: 'right',
             disabled: !displayNotValid,
             content: this.getErrorTooltipContent(errors)
