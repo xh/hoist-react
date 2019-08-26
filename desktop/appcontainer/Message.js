@@ -65,7 +65,7 @@ export class Message extends Component {
                 item: withDefault(input.item, textInput({
                     autoFocus: true,
                     selectOnFocus: true,
-                    onKeyDown: evt => {if (evt.key == 'Enter') this.model.doConfirmAsync(); }
+                    onKeyDown: evt => {if (evt.key == 'Enter') this.model.doConfirmAsync();}
                 }))
             })
         });

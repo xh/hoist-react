@@ -8,9 +8,8 @@
   `hoistComponent` for more information. While functional components and hooks are considered
   essential forward-looking patterns in the React world, Class-based Components remain fully
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
-
-* XH.prompt on desktop:  the default TextInput field now has selectOnFocus=true,
-*  and an an onKeyDown event listener to submit the field on 'Enter' key (same as clicking 'OK').
+* The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
+  user's entry on an <enter> keypress (same as clicking 'OK').
 
 ### 💥 Breaking Changes
 
