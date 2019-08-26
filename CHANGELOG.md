@@ -1,6 +1,7 @@
 # Changelog
 
-## v27.0.0 - 2019-08-23
+
+## v28.0.0-SNAPSHOT - Unreleased
 
 ### 🎁 New Features
 
@@ -8,6 +9,19 @@
    `hoistComponent` for more information. While functional components and hooks are considered
    essential forward-looking patterns in the React world, Class-based Components remain fully
    supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
+
+### 💥 Breaking Changes
+
+* `TabModel` has a new prop `contentFn` for use when defining the contents of a Tab as a general
+  factory function. Previously functions could also be provided to the `content` prop, but now that
+  prop must be a Class or a function that is strictly a React Component definition.
+  
+* The `containerRef` argument for `XH.toast()` should now be a DOM element.  Component instances are no 
+longer supported types for this value.  This is required to support functional Components throughout the toolkit.
+
+## v27.0.0 - 2019-08-23
+
+### 🎁 New Features
 
 * A new `LocalDate` class has been added to the toolkit. This class provides client-side support for
   "business" or "calendar" days that do not have a time component. It is an immutable class that
@@ -39,11 +53,6 @@
   * `Store.addData()` has been removed. Use `Store.updateData()` instead.
 * `Column` takes an additional property `rendererIsComplex`. Application must set this flag to
   `true` to indicate if a column renderer uses values other than its own bound field. This change
-  provides an efficiency boost and also allows the use of agGrid's native `enableCellChangeFlash`
-  option for all simple columns not needing a complex renderer.
-* TabModel has a new prop `contentFn` for use when defining the contents of a Tab as a general
-  factory function. Previously functions could also be provided to the `content` prop, but now that
-  prop must be a Class or a function that is strictly a React Component definition.
   provides an efficiency boost by allowing ag-Grid to use its default change detection instead of
   forcing a cell refresh on any change.
 * `Column` also gets a new `highlightOnChange` config. If true, the grid will highlight the cell on
