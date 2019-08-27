@@ -7,6 +7,7 @@
 import React, {Component} from 'react';
 import PT from 'prop-types';
 import {isArray, isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import {elemFactory, HoistComponent, LayoutSupport, StableIdSupport} from '@xh/hoist/core';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -14,7 +15,7 @@ import {FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getReactElementName} from '@xh/hoist/utils/react';
 
@@ -252,7 +253,7 @@ export class FormField extends Component {
                 overrides.height = null;
             }
         }
-        
+
         if (displayNotValid && propTypes.leftIcon && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
@@ -261,7 +262,7 @@ export class FormField extends Component {
         if (propTypes.commitOnChange && !isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
-        
+
         const target = readonly ? this.renderReadonly() : React.cloneElement(item, overrides);
 
         if (!minimal) return target;
@@ -288,10 +289,11 @@ export class FormField extends Component {
     }
 
     defaultReadonlyRenderer(value) {
+        if (isLocalDate(value)) return fmtDate(value);
         if (isDate(value)) return fmtDateTime(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
-        return span(value);
+        return span(value != null ? value.toString() : null);
     }
 
     getErrorTooltipContent(errors) {
