@@ -7,6 +7,7 @@
 import React, {Component} from 'react';
 import PT from 'prop-types';
 import {isArray, isDate, isFinite, isBoolean, isUndefined} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {box, div, span} from '@xh/hoist/cmp/layout';
@@ -231,10 +232,11 @@ export class FormField extends Component {
     }
 
     defaultReadonlyRenderer(value) {
+        if (isLocalDate(value)) return fmtDate(value);
         if (isDate(value)) return fmtDate(value);
         if (isFinite(value)) return fmtNumber(value);
         if (isBoolean(value)) return value.toString();
-        return value;
+        return span(value != null ? value.toString() : null);
     }
 
     ensureConditions() {
