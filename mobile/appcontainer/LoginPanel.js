@@ -15,7 +15,7 @@ import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
-import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
+import {LoginPanelModel} from '@xh/hoist/appcontainer/LoginPanelModel';
 
 /**
  *

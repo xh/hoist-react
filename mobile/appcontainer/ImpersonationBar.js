@@ -13,7 +13,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 import './ImpersonationBar.scss';
-import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBarModel';
+import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending

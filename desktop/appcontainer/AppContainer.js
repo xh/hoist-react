@@ -25,7 +25,7 @@ import {messageSource} from './MessageSource';
 import {IdleDialog} from './IdleDialog';
 import {ToastSource} from './ToastSource';
 
-import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 import {tabContainer} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {dockContainer} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';

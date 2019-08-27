@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {form} from '@xh/hoist/cmp/form';
 import {filler} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
+import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input';

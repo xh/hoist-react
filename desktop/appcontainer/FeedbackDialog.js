@@ -11,7 +11,7 @@ import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
-import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
+import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.

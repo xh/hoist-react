@@ -11,7 +11,7 @@ import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textArea} from '@xh/hoist/mobile/cmp/input';
 
-import {FeedbackDialogModel} from '@xh/hoist/core/appcontainer/FeedbackDialogModel';
+import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 import './FeedbackDialog.scss';
 
 /**

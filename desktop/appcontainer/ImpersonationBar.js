@@ -15,7 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBarModel';
+import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
@@ -28,7 +28,7 @@ import {ImpersonationBarModel} from '@xh/hoist/core/appcontainer/ImpersonationBa
 export class ImpersonationBar extends Component {
 
     static modelClass = ImpersonationBarModel;
-    
+
     @observable pendingTarget = null;
 
     renderHotkeys() {
@@ -47,7 +47,7 @@ export class ImpersonationBar extends Component {
 
         if (!canImpersonate) return null;
         if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
-    
+
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
