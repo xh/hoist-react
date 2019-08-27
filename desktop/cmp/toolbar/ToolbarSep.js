@@ -25,5 +25,9 @@ export const ToolbarSeparator = hoistComponent({
 });
 export const toolbarSeparator = elemFactory(ToolbarSeparator);
 
-// TODO: Deprecate/Remove
-export const toolbarSep = elemFactory(ToolbarSeparator);
+
+/**
+ * Abbreviated alias for ToolbarSeparator
+ */
+export const ToolbarSep = ToolbarSeparator;
+export const toolbarSep = toolbarSeparator;
