@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
-import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an

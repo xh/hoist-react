@@ -25,7 +25,7 @@ import {lockoutPanel} from './LockoutPanel';
 import {toastSource} from './ToastSource';
 import {messageSource} from './MessageSource';
 
-import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
@@ -113,7 +113,7 @@ export class AppContainer extends Component {
         runInAction(() => this.caughtException = e);
         XH.handleException(e, {requireReload: true});
     }
-    
+
     //------------------------
     // Implementation
     //------------------------

@@ -7,7 +7,7 @@
 import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
-import {MessageSourceModel} from '@xh/hoist/core/appcontainer/MessageSourceModel';
+import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
 
 /**
  *  Support for publishing multiple Messages in the DOM.

@@ -13,7 +13,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import {LoginPanelModel} from '@xh/hoist/core/appcontainer/LoginPanelModel';
+import {LoginPanelModel} from '@xh/hoist/appcontainer/LoginPanelModel';
 
 import './LoginPanel.scss';
 

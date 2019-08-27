@@ -28,7 +28,7 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 
-import {AppContainerModel} from './appcontainer/AppContainerModel';
+import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
 

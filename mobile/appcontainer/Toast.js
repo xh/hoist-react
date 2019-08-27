@@ -12,7 +12,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 
 import './Toast.scss';
-import {ToastModel} from '@xh/hoist/core/appcontainer/ToastModel';
+import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 
 /**
  * Display an instance of ToastModel.

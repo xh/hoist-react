@@ -11,7 +11,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import './VersionBar.scss';
-import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /**
  * @private
@@ -23,7 +23,7 @@ export class VersionBar extends Component {
 
     render() {
         if (!this.isShowing()) return null;
-        
+
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion');
 
@@ -46,14 +46,14 @@ export class VersionBar extends Component {
     onInfoClick = () => {
         XH.showAboutDialog();
     }
-    
+
     //----------------------
     // Implementation
     //----------------------
-    
+
     isShowing() {
         const env = XH.getEnv('appEnvironment');
-        
+
         switch (XH.getPref('xhShowVersionBar', 'auto')) {
             case 'always':
                 return true;
@@ -64,6 +64,6 @@ export class VersionBar extends Component {
                 return (env !== 'Production' || XH.getUser().isHoistAdmin);
         }
     }
-    
+
 }
 export const versionBar = elemFactory(VersionBar);

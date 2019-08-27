@@ -9,7 +9,7 @@ import {head} from 'lodash';
 import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {toast} from './Toast';
-import {ToastSourceModel} from '@xh/hoist/core/appcontainer/ToastSourceModel';
+import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 
 /**
  *  Support for popping global Toasts into the DOM.

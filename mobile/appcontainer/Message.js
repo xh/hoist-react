@@ -15,7 +15,7 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 
 import './Message.scss';
-import {MessageModel} from '@xh/hoist/core/appcontainer/MessageModel';
+import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 
 /**
  * Render a modal dialog

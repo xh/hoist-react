@@ -10,7 +10,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import './UpdateBar.scss';
-import {AppContainerModel} from '@xh/hoist/core/appcontainer/AppContainerModel';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /** @private */
 export const updateBar = hoistElemFactory(

@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import './ExceptionDialog.scss';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
-import {ExceptionDialogModel} from '@xh/hoist/core/appcontainer/ExceptionDialogModel';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace

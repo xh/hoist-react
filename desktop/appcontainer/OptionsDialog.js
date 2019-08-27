@@ -13,7 +13,7 @@ import {filler, span} from '@xh/hoist/cmp/layout';
 import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {OptionsDialogModel} from '@xh/hoist/core/appcontainer/OptionsDialogModel';
+import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import './OptionsDialog.scss';
 
 /**
