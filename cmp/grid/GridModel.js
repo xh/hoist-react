@@ -122,7 +122,8 @@ export class GridModel {
      * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
      * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
      * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
-     *      Store. If not supplied, store fields will be inferred from columns config.
+     *      Store. If not supplied, store fields will be inferred from columns config.  If supplied,
+     *      any missing fields needed by the columns will be similiarly inferred.
      * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
      * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
@@ -680,18 +681,32 @@ export class GridModel {
 
         if (isPlainObject(store)) {
             // Ensure store config has a complete set of fields for all configured columns.
-            const fields = store.fields || [],
+
+            const fields = store.fields || [];
+
+            // a) Auto-generate fields that are missing, pulling type and label if available.
+            const cols = this.getLeafColumns(),
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
-                colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                colFieldNames = uniq(compact(map(cols, 'field'))),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
 
-            // ID is always present on a Record, yet will never be listed within store.fields.
+            // id is always present on a Record, yet will never be listed within store.fields.
             pull(missingFieldNames, 'id');
 
+            const missingFields = missingFieldNames.map(name => {
+                const ret = {name},
+                    col = cols.find(c => c.field == name);
+
+                if (col && !isNil(col.fieldType)) ret.type = col.fieldType;
+                if (col && !isNil(col.headerName)) ret.label = col.headerName;
+                return ret;
+            });
+
+            // b) Enhance store def with missing fields (or create new store def)
             if (missingFieldNames.length) {
                 store = {
                     ...store,
-                    fields: [...fields, ...missingFieldNames]
+                    fields: [...fields, ...missingFields]
                 };
             }
 
@@ -699,7 +714,8 @@ export class GridModel {
         }
 
         throw XH.exception(
-            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
+            'The GridModel.store config must be either a concrete instance of Store or a config to create one.'
+        );
     }
 
     parseSelModel(selModel) {

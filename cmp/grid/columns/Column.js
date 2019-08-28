@@ -25,6 +25,8 @@ export class Column {
     /**
      * @param {Object} c - Column configuration.
      * @param {string} [c.field] - name of data store field to display within the column.
+     * @param {string} [c.fieldType] - type of store field. Used if store field being auto-generated
+     *      for this column by GridModel.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
      * @param {string} [c.headerName] - display text for grid header.
@@ -94,6 +96,7 @@ export class Column {
      */
     constructor({
         field,
+        fieldType,
         colId,
         isTreeColumn,
         headerName,
@@ -134,6 +137,7 @@ export class Column {
         Object.assign(this, rest);
 
         this.field = field;
+        this.fieldType = fieldType;
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
