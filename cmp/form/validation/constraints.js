@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {isNil, isString, isArray} from 'lodash';
+import {castArray, isNil, isString, isArray} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import moment from 'moment';
@@ -105,5 +105,24 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 
         if (minMoment && minMoment.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
         if (maxMoment && maxMoment.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
+    };
+}
+
+/**
+ * Validate that a value does not contain the characters specified by "chars".
+ * Value can be an array of strings or a single string
+ * @param {Array} [string] chars
+ * @returns ConstraintCb
+ */
+export function excludesChars(chars) {
+    return ({value, displayName}) => {
+        if (isNil(value)) return null;
+
+        if (
+            castArray(value)
+                .some(val => {
+                    return chars.some(char => val.includes(char));
+                })
+        ) return `${displayName} must not include these characters: ${chars.join(', ')}.`;
     };
 }
