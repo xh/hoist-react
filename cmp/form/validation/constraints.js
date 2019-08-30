@@ -109,9 +109,9 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 }
 
 /**
- * Validate that a value does not contain the characters specified by "chars".
+ * Validate that a value does not contain the characters specified by the "chars" array.
  * Value can be a single string or an array of strings (e.g. Select w/create = true & w/multiple values -- tag picker).
- * @param {Array} [string] chars
+ * @param {Array} [string] chars - an array of single characters
  * @returns ConstraintCb
  */
 export function excludesChars(chars) {
@@ -122,6 +122,6 @@ export function excludesChars(chars) {
             charsInArray = (arr) => arr.some(charsInString),
             valArray = castArray(value);
 
-        if (charsInArray(valArray)) return `${displayName} must not include these characters: ${chars.join(', ')}.`;
+        if (charsInArray(valArray)) return `${displayName} must not use: ${chars.join(' ')}`;
     };
 }
