@@ -17,7 +17,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {Ref} from '@xh/hoist/utils/react';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {bindable} from '@xh/hoist/mobx';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -70,10 +70,10 @@ export class DateInput extends HoistInput {
         rightElement: PT.element,
 
         /** Maximum (inclusive) valid date. */
-        maxDate: PT.instanceOf(Date),
+        maxDate: PT.instanceOf(Date, LocalDate),
 
         /** Minimum (inclusive) valid date. */
-        minDate: PT.instanceOf(Date),
+        minDate: PT.instanceOf(Date, LocalDate),
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
@@ -117,8 +117,17 @@ export class DateInput extends HoistInput {
     baseClassName = 'xh-date-input';
 
     // Prop-backed convenience getters
-    get maxDate() {return this.props.maxDate || moment().add(100, 'years').toDate()}
-    get minDate() {return this.props.minDate || moment().subtract(100, 'years').toDate()}
+    get maxDate() {
+        const {maxDate} = this.props;
+        if (!maxDate) return moment().add(100, 'years').toDate();
+        return isLocalDate(maxDate) ? maxDate.date : maxDate;
+    }
+
+    get minDate() {
+        const {minDate} = this.props;
+        if (!minDate) return moment().subtract(100, 'years').toDate();
+        return isLocalDate(minDate) ? minDate.date : minDate;
+    }
 
     get valueType() {return withDefault(this.props.valueType, 'date')}
     get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
