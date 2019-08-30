@@ -124,9 +124,10 @@ export class HoistInput extends Component {
     /** The value to be rendered internally by control. **/
     @computed
     get renderValue() {
-        return this.hasFocus || (isEqual(this.internalValue, this.toInternal(this.externalValue)))  ?
+        const toInternal = this.toInternal(this.externalValue);
+        return this.hasFocus || (isEqual(this.internalValue, toInternal))  ?
             this.internalValue :
-            this.toInternal(this.externalValue);
+            toInternal;
     }
 
     /**
