@@ -124,7 +124,7 @@ export class HoistInput extends Component {
     /** The value to be rendered internally by control. **/
     @computed
     get renderValue() {
-        return this.hasFocus ?
+        return this.hasFocus || (isEqual(this.internalValue, this.toInternal(this.externalValue)))  ?
             this.internalValue :
             this.toInternal(this.externalValue);
     }
@@ -144,6 +144,7 @@ export class HoistInput extends Component {
 
     @action
     setInternalValue(val) {
+        if (isEqual(val, this.internalValue)) return;
         this.internalValue = val;
     }
 
