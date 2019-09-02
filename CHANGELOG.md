@@ -10,6 +10,7 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
+* `DataViewModel` now supports a `sortBy` configuration. Accepts the same values as `GridModel.sortBy`.
 
 ### 💥 Breaking Changes
 

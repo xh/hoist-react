@@ -8,7 +8,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
-import {omit} from 'lodash';
+import {castArray, isString} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -27,6 +27,8 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
+     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
+     *      colId and sort direction.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.
@@ -35,23 +37,32 @@ export class DataViewModel {
     constructor({
         itemRenderer,
         store,
+        sortBy = [],
         selModel,
         emptyText,
         contextMenuFn = null
     }) {
+        sortBy = castArray(sortBy);
+        throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
+
+        let field = 'id';
+        if (sortBy.length === 1) {
+            const sorter = sortBy[0];
+            field = isString(sorter) ? sorter : sorter.colId;
+        }
+
         this.gridModel = new GridModel({
             store,
+            sortBy,
             selModel,
             contextMenuFn,
             emptyText,
             columns: [
                 {
-                    colId: 'data',
+                    field,
                     flex: true,
                     elementRenderer: itemRenderer,
-                    agOptions: {
-                        valueGetter: this.valueGetter
-                    }
+                    rendererIsComplex: true
                 }
             ]
         });
@@ -103,17 +114,4 @@ export class DataViewModel {
     loadData(...args) {
         return this.store.loadData(...args);
     }
-
-
-    //------------------------
-    // Implementation
-    //------------------------
-    valueGetter = (params) => {
-        // Return a basic stringified version of all raw record values to ensure a change to any one
-        // triggers an ag-grid cell refresh. String meant to be generally sane if value ends up
-        // being copied-to-clipboard or exported from the underlying gridModel, but in practice not
-        // expected to be used directly.
-        const realData = omit(params.data.raw, 'id');
-        return Object.values(realData).join('\r');
-    };
 }
