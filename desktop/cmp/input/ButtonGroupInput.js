@@ -40,7 +40,8 @@ export class ButtonGroupInput extends HoistInput {
         const buttons = castArray(children).map(button => {
             if (!button) return null;
 
-            const {value} = button.props;
+            const {value} = button.props,
+                btnDisabled = disabled || button.props.disabled;
 
             throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
@@ -49,7 +50,7 @@ export class ButtonGroupInput extends HoistInput {
             return React.cloneElement(button, {
                 active,
                 minimal: withDefault(minimal, false),
-                disabled: withDefault(disabled, false),
+                disabled: withDefault(btnDisabled, false),
                 onClick: () => {
                     if (enableClear) {
                         this.noteValueChange(active ? null : value);
