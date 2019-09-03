@@ -10,6 +10,8 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
+* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing 
+  to respect the overall `ButtonGroupInput`'s disabled prop.
 
 ### 💥 Breaking Changes
 
