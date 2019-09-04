@@ -126,7 +126,9 @@ export class GridExportService {
             const {field, exportWidth: width} = column;
             let {exportFormat} = column, type = null;
 
-            // We must revert the function form of exportFormat to ExportFormat.DEFAULT
+            // If using the function form to support per-cell formats, replace with
+            // ExportFormat.DEFAULT as a placeholder at the column level. The cell-level data for
+            // this column will be shipped with the calculated formats.
             if (isFunction(exportFormat)) exportFormat = ExportFormat.DEFAULT;
 
             if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
