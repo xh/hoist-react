@@ -51,7 +51,6 @@
     "regenerator-runtime": "~0.13.3",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "rsvp": "~4.8.4",
     "store2": "~2.9.0"
   },
   "peerDependencies": {

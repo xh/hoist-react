@@ -8,7 +8,7 @@
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action, observable} from '@xh/hoist/mobx';
-import {allSettled, never, wait} from '@xh/hoist/promise';
+import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
     ConfigService,
@@ -623,8 +623,8 @@ class XHClass {
             }, 'XH');
         });
 
-        const results = await allSettled(promises),
-            errs = results.filter(it => it.state === 'rejected');
+        const results = await Promise.allSettled(promises),
+            errs = results.filter(it => it.status === 'rejected');
 
         if (errs.length > 0) {
             // Enhance entire result col w/class name, we care about errs only
