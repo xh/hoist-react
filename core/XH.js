@@ -5,8 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import 'core-js/stable';
-import 'regenerator-runtime';
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action, observable} from '@xh/hoist/mobx';

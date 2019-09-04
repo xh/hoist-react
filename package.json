@@ -10,6 +10,9 @@
   "scripts": {
     "lint": "yarn run eslint ."
   },
+  "sideEffects": [
+    "./static/polyfills.js"
+  ],
   "dependencies": {
     "@blueprintjs/core": "~3.18.0",
     "@blueprintjs/datetime": "~3.12.0",
