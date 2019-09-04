@@ -125,6 +125,8 @@ export class GridExportService {
         return columns.map(column => {
             const {field, exportWidth: width} = column;
             let {exportFormat} = column, type = null;
+
+            // We must revert the function form of exportFormat to ExportFormat.DEFAULT
             if (isFunction(exportFormat)) exportFormat = ExportFormat.DEFAULT;
 
             if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
