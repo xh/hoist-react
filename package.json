@@ -25,6 +25,7 @@
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
     "codemirror": "~5.48.4",
+    "core-js": "~3.2.1",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~2.0.1",
@@ -55,7 +56,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.8.1",
+    "@xh/hoist-dev-utils": "~4.0.0-SNAPSHOT.1567574532675",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2"
