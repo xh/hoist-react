@@ -1427,10 +1427,10 @@
     eslint-plugin-react "~7.14.3"
     eslint-plugin-react-hooks "~2.0.1"
 
-"@xh/hoist-dev-utils@~4.0.0-SNAPSHOT.1567574532675":
-  version "4.0.0-SNAPSHOT.1567574532675"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.0.0-SNAPSHOT.1567574532675.tgz#76678d350b49458ccbb8b67e62182d9b24cfd721"
-  integrity sha512-bTcC4bD/wDwOx9b3V/tvrSa38jvpKfa3dmXp54gtiGeq41BakP2QdGRIUFeWvKuVhz93Mb8YtGa2NUF59+jjqg==
+"@xh/hoist-dev-utils@4.0.0-SNAPSHOT.1567633245281":
+  version "4.0.0-SNAPSHOT.1567633245281"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.0.0-SNAPSHOT.1567633245281.tgz#1eca937f56e695eae15c4e07460a6a6f0d4b7f00"
+  integrity sha512-zNw+1dR04pKycKPCZUVp4/+gPHfnqPlccNtmGux3TkSMHdgdAnu3aYBgC8Cc3L6nkfQl0eSSyxrb+xhD3CLn8g==
   dependencies:
     "@babel/core" "~7.5.5"
     "@babel/plugin-proposal-class-properties" "~7.5.5"
