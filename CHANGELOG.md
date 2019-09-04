@@ -10,14 +10,29 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
-* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing 
+* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing
   to respect the overall `ButtonGroupInput`'s disabled prop.
+* Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
+  support for the nullsafe operator `let foo = bar?.baz` via the
+  `@babel/plugin-proposal-optional-chaining` plugin.
 
 ### 💥 Breaking Changes
 
+* Apps should update their dev dependencies to the latest `@xh/hoist-dev-utils` package: v4.0+. This
+  updates the versions of Babel / Webpack used in builds and swaps to the updated Babel
+  recommendation of `core-js` for polyfills.
+* The `allSettled` function in `@xh/promise` has been removed. Applications using this method should
+  use the ECMA standard (stage-2) `Promise.allSettled` instead. This method is now fully available
+  in Hoist via bundled polyfills. Note that the standard method returns an array of objects of the
+  form `{status: [rejected|fulfilled], ...}`, rather than `{state: [rejected|fulfilled], ...}`.
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `3.8 -> 4.0`
+* rsvp (removed)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...develop)
 
