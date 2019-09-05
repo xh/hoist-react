@@ -28,7 +28,7 @@ export class DataViewModel {
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
-     *      colId and sort direction.
+     *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.
@@ -45,6 +45,11 @@ export class DataViewModel {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
 
+        // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
+        // the data sorted, initially and through updates via transactions. To continue leveraging
+        // the grid for sort, set the field of our single column to the desired sort field. (The
+        // field setting should not have any other meaningful impact on the grid, since we use a
+        // custom renderer and mark it as complex to ensure re-renders on any record change.)
         let field = 'id';
         if (sortBy.length === 1) {
             const sorter = sortBy[0];
@@ -69,23 +74,12 @@ export class DataViewModel {
 
     }
 
-    get store() {
-        return this.gridModel.store;
-    }
+    get store() {return this.gridModel.store}
+    get selModel() {return this.gridModel.selModel}
 
-    get selModel() {
-        return this.gridModel.selModel;
-    }
-
-    /**
-     * Select the first row in the dataview.
-     * Note that dataview assumes store data is already sorted.
-     */
+    /** Select the first record in the DataView. */
     selectFirst() {
-        const {store, selModel} = this,
-            recs = store.records;
-
-        if (recs.length) selModel.select(recs[0]);
+        this.gridModel.selectFirst();
     }
 
     /**
@@ -114,4 +108,15 @@ export class DataViewModel {
     loadData(...args) {
         return this.store.loadData(...args);
     }
+
+    /** Update the underlying store. */
+    updateData(...args) {
+        return this.store.updateData(...args);
+    }
+
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
+    }
+
 }
