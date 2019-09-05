@@ -5,33 +5,33 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistElemFactory, useModel} from '@xh/hoist/core';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtDateTime} from '@xh/hoist/format';
-import {ClientErrorModel} from './ClientErrorModel';
 
-export const clientErrorDetail = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ClientErrorModel, props),
-            rec = model.detailRecord;
+export const clientErrorDetail = hoistElemFactory(() => {
+    const model = useModel(),
+        rec = model.detailRecord;
 
-        if (!rec) return null;
+    if (!rec) return null;
 
-        return dialog({
-            title: 'Error Details',
-            style: {width: 1000},
-            isOpen: true,
-            onClose: () => model.closeDetail(),
-            items: renderDetail(model, rec)
-        });
-    }
-);
+    return dialog({
+        title: 'Error Details',
+        style: {width: 1000},
+        isOpen: true,
+        onClose: () => model.closeDetail(),
+        items: detail()
+    });
+});
 
-function renderDetail(model, rec) {
+const detail = hoistElemFactory(() => {
+    const model = useModel(),
+        rec = model.detailRecord;
+
     return [
         table({
             className: 'xh-admin-error-detail',
@@ -58,7 +58,7 @@ function renderDetail(model, rec) {
         toolbar(
             filler(),
             clipboardButton({
-                getCopyText: () => model.detailRecord.error,
+                getCopyText: () => rec.error,
                 successMessage: 'Error details copied to clipboard.'
             }),
             button({
@@ -68,4 +68,4 @@ function renderDetail(model, rec) {
             })
         )
     ];
-}
+});

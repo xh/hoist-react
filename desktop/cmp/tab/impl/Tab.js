@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useState} from 'react';
-import {elem, elemFactory,  hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {elem, elemFactory,  hoistComponent, useModel} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -26,7 +26,7 @@ export const Tab = hoistComponent({
     displayName: 'Tab',
 
     render(props) {
-        let model = useProvidedModel(TabModel, props),
+        let model = useModel(TabModel, props),
             {content, isActive, renderMode, refreshContextModel} = model,
             [flags] = useState({wasActivated: false}),
             className = getClassName('xh-tab', props);

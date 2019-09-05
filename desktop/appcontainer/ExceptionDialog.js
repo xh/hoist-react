@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistElemFactory, useModel, providedModel} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -23,9 +23,12 @@ import './ExceptionDialog.scss';
  *
  * @private
  */
-export const exceptionDialog = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ExceptionDialogModel, props),
+export const exceptionDialog = hoistElemFactory({
+    displayName: 'Exception Dialog',
+    model: providedModel(ExceptionDialogModel),
+
+    render(props) {
+        const model = useModel(),
             {exception, options} = model;
 
         if (!exception) return null;
@@ -41,19 +44,20 @@ export const exceptionDialog = hoistElemFactory(
                 icon: Icon.warning({size: 'lg'}),
                 items: [
                     dialogBody(options.message),
-                    toolbar(getButtons(model))
+                    bbar()
                 ]
             }),
-            exceptionDialogDetails({model})
+            exceptionDialogDetails()
         );
     }
-);
+});
 
 //--------------------------------
 // Implementation
 //--------------------------------
-function getButtons(model) {
-    return [
+const bbar = hoistElemFactory(()=> {
+    const model = useModel();
+    return toolbar(
         filler(),
         button({
             icon: Icon.search(),
@@ -61,32 +65,30 @@ function getButtons(model) {
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
         }),
-        dismissButton({model})
-    ];
-}
+        dismissButton()
+    );
+});
 
 
 /**
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistElemFactory(
-    (props) => {
-        const model = useProvidedModel(ExceptionDialogModel, props);
-        return model.options.requireReload ?
-            button({
-                icon: Icon.refresh(),
-                text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
-                autoFocus: true,
-                onClick:  () => XH.reloadApp()
-            }) :
-            button({
-                text: 'Close',
-                autoFocus: true,
-                onClick: () => model.close()
-            });
-    }
-);
+export const dismissButton = hoistElemFactory(() => {
+    const model = useModel();
+    return model.options.requireReload ?
+        button({
+            icon: Icon.refresh(),
+            text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
+            autoFocus: true,
+            onClick:  () => XH.reloadApp()
+        }) :
+        button({
+            text: 'Close',
+            autoFocus: true,
+            onClick: () => model.close()
+        });
+});
 
 function isSessionExpired(e) {
     return e && e.httpStatus === 401;

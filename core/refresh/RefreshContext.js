@@ -16,7 +16,7 @@ import React from 'react';
  * Sub-contexts may be established with a RefreshContextView.
  *
  * @see RefreshContextModel
- * @see RefreshContextView
+ * @see ModelProvider
  */
 export const RefreshContext = React.createContext(null);
 

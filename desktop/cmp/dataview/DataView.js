@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useLayoutProps, useModel, providedModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -17,9 +17,10 @@ import {DataViewModel} from './DataViewModel';
  */
 export const DataView = hoistComponent({
     displayName: 'DataView',
+    model: providedModel(DataViewModel),
 
     render(props) {
-        const model = useProvidedModel(DataViewModel, props),
+        const model = useModel(),
             [layoutProps] = useLayoutProps(props),
             className = getClassName('xh-data-view', props),
             {rowCls, itemHeight, onRowDoubleClicked} = props;

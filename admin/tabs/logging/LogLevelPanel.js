@@ -4,13 +4,17 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
-export const LogLevelPanel = hoistComponent(
-    () => restGrid({model: useLocalModel(createModel)})
-);
+export const LogLevelPanel = hoistComponent({
+    model: localModel(createModel),
+
+    render() {
+        return restGrid({model: useModel()});
+    }
+});
 
 function createModel() {
     return new RestGridModel({

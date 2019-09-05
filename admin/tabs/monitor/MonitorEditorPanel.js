@@ -4,14 +4,18 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
 import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const MonitorEditorPanel = hoistComponent(
-    () => restGrid({model: useLocalModel(createModel)})
-);
+export const MonitorEditorPanel = hoistComponent({
+    model: localModel(createModel),
+
+    render() {
+        return restGrid({model: useModel()});
+    }
+});
 
 function createModel() {
     return new RestGridModel({

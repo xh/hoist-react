@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistComponent, elemFactory, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -25,9 +25,10 @@ import './LeftRightChooser.scss';
  */
 export const LeftRightChooser = hoistComponent({
     displayName: 'LeftRightChooser',
+    model: providedModel(LeftRightChooserModel),
 
     render(props) {
-        const model = useProvidedModel(LeftRightChooserModel, props),
+        const model = useModel(),
             className = getClassName('xh-lr-chooser', props),
             [layoutProps] = useLayoutProps(props),
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
@@ -53,11 +54,11 @@ export const LeftRightChooser = hoistComponent({
                     className: 'xh-lr-chooser__grid-frame',
                     items: [
                         grid({model: leftModel, ...leftGridOptions}),
-                        chooserToolbar({model}),
+                        chooserToolbar(),
                         grid({model: rightModel, ...rightGridOptions})
                     ]
                 }),
-                description({model})
+                description()
             ],
             className,
             ...layoutProps

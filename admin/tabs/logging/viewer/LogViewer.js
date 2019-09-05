@@ -25,8 +25,7 @@ export class LogViewer extends Component {
     model = new LogViewerModel(this);
 
     render() {
-        const {model} = this,
-            {filesGridModel, logDisplayModel, loadModel} = model;
+        const {filesGridModel, logDisplayModel, loadModel} = this.model;
 
         return hframe({
             className: 'xh-log-viewer',
@@ -44,7 +43,7 @@ export class LogViewer extends Component {
                     ]
                 }),
                 panel({
-                    tbar: logViewerToolbar({model}),
+                    tbar: logViewerToolbar(),
                     item: logDisplay({model: logDisplayModel}),
                     mask: loadModel
                 })

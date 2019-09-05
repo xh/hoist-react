@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {hoistElemFactory, useProvidedModel, XH} from '@xh/hoist/core';
+import {hoistElemFactory, useModel, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -16,29 +16,26 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {identity} from 'lodash';
 
 import {configDifferDetail} from './ConfigDifferDetail';
-import {ConfigDifferModel} from './ConfigDifferModel';
 
-export const configDiffer = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ConfigDifferModel, props),
-            {detailModel} = model;
+export const configDiffer = hoistElemFactory(() => {
+    const model = useModel();
 
-        return fragment(
-            dialog({
-                isOpen: model.isOpen,
-                canOutsideClickClose: false,
-                onClose: () => model.close(),
-                style: {height: 600, width: '80%'},
-                item: renderContents(model)
-            }),
-            configDifferDetail({model: detailModel})
-        );
-    }
-);
+    return fragment(
+        dialog({
+            isOpen: model.isOpen,
+            canOutsideClickClose: false,
+            onClose: () => model.close(),
+            style: {height: 600, width: '80%'},
+            item: contents()
+        }),
+        configDifferDetail()
+    );
+});
 
-function renderContents(model) {
-    const {gridModel} = model,
-        {store} = gridModel;
+const contents = hoistElemFactory(() => {
+    const model = useModel(),
+        {gridModel} = model,
+        {store} = model.gridModel;
 
     return panel({
         tbar: [
@@ -82,4 +79,4 @@ function renderContents(model) {
             })
         ]
     });
-}
+});

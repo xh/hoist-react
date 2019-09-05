@@ -23,7 +23,7 @@ export class ClientErrorModel {
     @bindable error = '';
 
     @observable.ref detailRecord = null;
-    
+
     @managed
     gridModel = new GridModel({
         stateModel: 'xhClientErrorGrid',

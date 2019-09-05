@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistComponent, elemFactory, useModel} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -26,7 +26,7 @@ export const TabSwitcher = hoistComponent({
     displayName: 'TabSwitcher',
 
     render(props) {
-        const model = useProvidedModel(TabContainerModel, props),
+        const model = useModel(TabContainerModel, props),
             {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),

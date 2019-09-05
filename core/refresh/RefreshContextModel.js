@@ -35,7 +35,7 @@ import {HoistModel, LoadSupport}  from '@xh/hoist/core';
  * use case.
  *
  * @see RefreshContext
- * @see RefreshContextView
+ * @see ModelProvider
  * @see RootRefreshContextModel
  */
 export function RefreshContextModel(C) {

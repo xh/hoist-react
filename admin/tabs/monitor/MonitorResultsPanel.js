@@ -21,13 +21,11 @@ export class MonitorResultsPanel extends Component {
     model = new MonitorResultsModel({view: this});
 
     render() {
-        const {model} = this;
-
         return panel({
-            mask: model.loadModel,
+            mask: this.model.loadModel,
             className: 'xh-monitor-results-panel',
-            tbar: monitorResultsToolbar({model}),
-            item: monitorResultsDisplay({model})
+            tbar: monitorResultsToolbar(),
+            item: monitorResultsDisplay()
         });
     }
 }

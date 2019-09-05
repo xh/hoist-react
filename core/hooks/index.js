@@ -6,5 +6,4 @@
  */
 export * from './LayoutProps';
 export * from './Model';
-export * from './Mount';
 

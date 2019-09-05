@@ -4,13 +4,16 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-export const UserPreferencePanel = hoistComponent(() => {
-    const model = useLocalModel(createModel);
-    return restGrid({model});
+export const UserPreferencePanel = hoistComponent({
+    model: localModel(createModel),
+
+    render() {
+        return restGrid({model: useModel()});
+    }
 });
 
 function createModel() {

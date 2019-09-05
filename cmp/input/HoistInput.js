@@ -47,6 +47,8 @@ import './HoistInput.scss';
  */
 export class HoistInput extends Component {
 
+    static supportModelFromContext = true;
+
     static propTypes = {
 
         /**

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistComponent, useModel, localModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -15,21 +15,21 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 import {UserModel} from './UserModel';
 
-export const UserPanel = hoistComponent(
-    () => {
-        const model = useLocalModel(UserModel),
+export const UserPanel = hoistComponent({
+    model: localModel(UserModel),
+
+    render() {
+        const model = useModel(),
             {gridModel} = model;
         return panel({
             mask: model.loadModel,
             tbar: [
                 switchInput({
-                    model,
                     bind: 'activeOnly',
                     label: 'Active only'
                 }),
                 toolbarSep(),
                 switchInput({
-                    model,
                     bind: 'withRolesOnly',
                     label: 'With roles only'
                 }),
@@ -41,4 +41,4 @@ export const UserPanel = hoistComponent(
             item: grid({model: gridModel})
         });
     }
-);
+});

@@ -5,57 +5,15 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import ReactDom from 'react-dom';
-import {XH, elemFactory, useLoadSupportLinker} from '@xh/hoist/core';
-import {isPlainObject, isFunction} from 'lodash';
-import {applyMixin} from '@xh/hoist/utils/js';
+import {XH, elemFactory} from '@xh/hoist/core';
+import {isPlainObject, isUndefined} from 'lodash';
+import {throwIf, applyMixin} from '@xh/hoist/utils/js';
 import {getClassName} from '@xh/hoist/utils/react';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
-import {observer as classComponentObserver} from 'mobx-react';
-import {observer as functionalComponentObserver} from 'mobx-react-lite';
+import {observer} from 'mobx-react';
 
-/**
- * Core Hoist utility for defining a React functional component.
- *
- * This function always applies the MobX 'observer' behavior to the new component, enabling MobX
- * powered reactivity and auto-re-rendering.  This includes support for forward refs; If the render
- * function provided contains two arguments, the second argument will be considered a ref and
- * React.forwardRef will be applied.
- *
- * See the @xh/hoist/core/hooks package for Hoist-provided custom hooks that can (and should!) be used
- * within functional components to access HoistModels and other essential capabilities of Hoist.
- *
- * @param {(Object|function)} config - configuration object or render function defining the component
- * @param {function} [config.render] - function defining the component (if config object specified)
- * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
- *
- * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
- */
-export function hoistComponent(config) {
-    if (isFunction(config)) config = {render: config};
-
-    const {render, displayName} = config,
-        component = functionalComponentObserver(render, {forwardRef: render.length >= 2});
-
-    if (displayName) component.displayName = displayName;
-    component.isHoistComponent = true;
-
-    return component;
-}
-
-/**
- * Create a new Hoist functional component and return an element factory for it.
- *
- * This method is a shortcut for elemFactory(hoistComponent(...)), and is useful for
- * internal usages that do not need need to export any references to the Component itself.
- *
- * @see hoistComponent
- * @see elemFactory
- */
-
-export function hoistElemFactory(config) {
-    return elemFactory(hoistComponent(config));
-}
-
+import {ModelLookupContext} from './impl/ModelLookup';
+import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
 
 /**
  * Create a Class Component in Hoist.
@@ -66,37 +24,35 @@ export function hoistElemFactory(config) {
  * Hoist React, and is maintained to support legacy applications and any exceptional cases where
  * a class-based component continues to be necessary or preferred.
  *
- * Developers are encouraged to @see hoistComponent above for a functional, hooks-compatible
+ * Developers are encouraged to @see hoistComponent for a functional, hooks-compatible
  * approach to component definition for Hoist apps.
  */
 export function HoistComponent(C) {
+
+    if (C.supportModelFromContext) applyModelFromContextSupport(C);
+
     return applyMixin(C, {
         name: 'HoistComponent',
-        includes: [classComponentObserver, ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [observer, ManagedSupport, ReactiveSupport, XhIdSupport],
 
         defaults: {
             /**
              * Model instance which this component is rendering.
              *
-             * Applications specify a Component's model by either setting it as a field directly on
-             * the Component class definition or by passing it as a prop from a parent Component.
-             * If provided as a prop, the model can be passed as either an already-created class
-             * instance or as a config for one to be created internally. A Component class
-             * definition should include a static `modelClass` field to support this latter
-             * create-on-demand pattern.
+             * This property provides a Class-based component with similar functionality that
+             * the 'model' config and useModel() provides a functional component.
              *
-             * Parent components should provide concrete instances of models to their children only
-             * if they wish to programmatically access those models to reference data or otherwise
-             * manipulate the component using the model's API. Otherwise, models can and should be
-             * created internally by the Component, either in the class definition or via a config
-             * object prop.
+             * Specify the static property 'modelClass' on the component to define the type of the model.
+             * Specify the static property 'supportModelFromContext' to allow looking up a provided model
+             * from context.
              *
-             * Models that are created internally by the component may be considered "owned" models.
-             * They will be destroyed when the component is unmounted (via destroy()).
+             * Specify a 'localModel' by setting it as a field directly on the Component class
+             * definition. Specify a 'providedModel' by providing an instance of HoistModel in props.model, or
+             * receiving it from context.
              *
-             * When concrete instances are provided via props they are assumed to be owned / managed
-             * by a parent Component. Otherwise models are considered to be "locally owned" by the
-             * Component itself and will be destroyed when the Component is unmounted and destroyed.
+             * Provided concrete models are assumed to be owned / managed by a ancestor Component. Local models or models
+             * provided as config will be managed by this Component itself and will be destroyed when the Component
+             * is unmounted and destroyed.
              *
              * The model instance is not expected to change for the lifetime of the component. Apps
              * that wish to swap out the model for a mounted component should ensure that a new
@@ -109,46 +65,48 @@ export function HoistComponent(C) {
                 get() {
                     const {_model, _modelIsOwned, props} = this;
 
-                    // Return any model instance that has already been processed / set on the Component.
-                    if (_model) {
+                    // 1) Return any model instance that has already been processed / set on the Component.
+                    if (!isUndefined(_model)) {
                         if (!_modelIsOwned && props.model !== _model) throwModelChangeException();
                         return _model;
                     }
 
-                    // ...or source from props, potentially instantiating if appropriate.
+                    // 2) Otherwise we will source, validate, and memoize as appropriated
                     const {modelClass} = C,
                         propsModel = props.model;
+                    let ret = null;
 
+                    // 2a) Try props, potentially instantiating if appropriate.
                     if (propsModel) {
                         if (isPlainObject(propsModel)) {
                             if (modelClass) {
-                                this._model = new modelClass(propsModel);
+                                ret = new modelClass(propsModel);
                                 this._modelIsOwned = true;
                             } else {
                                 warnNoModelClassProvided();
                             }
                         } else {
-                            if (modelClass && !(propsModel instanceof modelClass)) throwWrongModelClass(this);
-                            this._model = propsModel;
-                            this._modelIsOwned = false;
+                            ret = propsModel;
                         }
                     }
 
-                    // ...and return whatever was (or not) created
-                    return this._model;
+                    // 2b) Try context.
+                    if (!propsModel && C.supportModelFromContext) {
+                        const modelLookup = this.context;
+                        if (modelLookup) {
+                            return modelLookup.lookup(modelClass);
+                        }
+                    }
+
+                    // 2c) Validate and return
+                    if (modelClass && !(ret instanceof modelClass)) throwWrongModelClass(this);
+                    return this._model = ret;
                 },
 
                 set(value) {
                     if (this._model) throwModelChangeException();
                     this._model = value;
                     this._modelIsOwned = true;
-                }
-            },
-
-            ownedModel: {
-                get() {
-                    const {model, _modelIsOwned} = this;
-                    return model && _modelIsOwned ? model : null;
                 }
             },
 
@@ -212,12 +170,6 @@ export function HoistComponent(C) {
             componentWillUnmount() {
                 this._mounted = false;
                 this.destroy();
-            },
-
-            destroy() {
-                if (this._modelIsOwned) {
-                    XH.safeDestroy(this._model);
-                }
             }
         },
 
@@ -225,22 +177,25 @@ export function HoistComponent(C) {
         overrides: {
             render: (sup) => {
                 return function() {
-                    const {ownedModel} = this,
-                        renderFn = sup.bind(this);
-
-                    return (ownedModel && ownedModel.isLoadSupport) ?
-                        loadSupportWrapper({renderFn, loadSupport: ownedModel}) :
-                        renderFn();
+                    const element = sup.call(this);
+                    return this._modelIsOwned ? modelHost({model: this.model, element}) : element;
                 };
             }
         }
     });
 }
 
-
 //-------------------------------
 // Implementation
 //--------------------------------
+function applyModelFromContextSupport(C) {
+    throwIf(C.contextClass,
+        'Cannot support reading model from context.  Component already defines a contextClass.  Use a functional component instead.'
+    );
+    C.contextClass = ModelLookupContext;
+}
+
+
 function throwModelChangeException() {
     throw XH.exception(`
                 Cannot re-render Component with a different model. If a new model is required, ensure 
@@ -256,13 +211,9 @@ function warnNoModelClassProvided() {
     console.warn('Component class definition must specify a modelClass to support creating models from prop objects.');
 }
 
+function ModelHost({model, element}) {
+    useOwnedModelLinker(model);
+    return element;
+}
 
-//---------------------------------------------------------------------------
-// Internal components to wrap the contents of a class based @HoistComponent.
-//---------------------------------------------------------------------------
-const loadSupportWrapper = hoistElemFactory(
-    props => {
-        useLoadSupportLinker(props.loadSupport);
-        return props.renderFn();
-    }
-);
+const modelHost = elemFactory(ModelHost);

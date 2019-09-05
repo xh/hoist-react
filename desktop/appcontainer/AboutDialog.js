@@ -6,7 +6,7 @@
  */
 
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistElemFactory, useModel} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -24,7 +24,7 @@ import './AboutDialog.scss';
  */
 export const aboutDialog = hoistElemFactory(
     props => {
-        const model = useProvidedModel(AboutDialogModel, props);
+        const model = useModel(AboutDialogModel, props);
 
         if (!model.isOpen) return null;
 

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, useProvidedModel, useLayoutProps} from '@xh/hoist/core';
+import {hoistElemFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -19,11 +19,11 @@ import '../Tabs.scss';
  */
 export const tabContainer = hoistElemFactory({
     displayName: 'TabContainer',
+    model: providedModel(TabContainerModel),
 
     render(props) {
-        const model = useProvidedModel(TabContainerModel, props),
+        const {activeTabId, tabs, switcherPosition} = useModel(),
             [layoutProps] = useLayoutProps(props),
-            {activeTabId, tabs, switcherPosition} = model,
             switcherBefore = ['left', 'top'].includes(switcherPosition),
             switcherAfter = ['right', 'bottom'].includes(switcherPosition),
             vertical = ['left', 'right'].includes(switcherPosition),
@@ -38,7 +38,7 @@ export const tabContainer = hoistElemFactory({
             ...layoutProps,
             className: getClassName('xh-tab-container', props),
             items: [
-                switcherBefore ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null,
+                switcherBefore ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null,
                 ...tabs.map(tabModel => {
                     const tabId = tabModel.id,
                         style = (activeTabId !== tabId) ? hideStyle : undefined;
@@ -50,7 +50,7 @@ export const tabContainer = hoistElemFactory({
                         item: tab({model: tabModel})
                     });
                 }),
-                switcherAfter ? tabSwitcher({model, key: 'switcher', orientation: switcherPosition}) : null
+                switcherAfter ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null
             ]
         });
     }
