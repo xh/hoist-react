@@ -17,6 +17,8 @@
   record. Note that per-cell formatting _requires_ that the server-side of your app updates to
   hoist-core v6.3.0+ to work, although earlier versions of hoist-core _are_ backwards compatible
   with the pre-existing, column-level export formatting.
+* `DataViewModel` now supports a `sortBy` config. Accepts the same inputs as `GridModel.sortBy`,
+  with the caveat that only a single-level sort is supported at this time.
 
 ### 💥 Breaking Changes
 
