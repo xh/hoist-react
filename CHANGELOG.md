@@ -10,8 +10,14 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
-* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing
-  to respect the overall `ButtonGroupInput`'s disabled prop.
+* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
+  respect the overall `ButtonGroupInput`'s disabled prop.
+* `Column.exportFormat` can now be a function, which supports setting Excel formats on a per-cell
+  (vs. entire column) basis by returning a conditional `exportFormat` based upon the value and / or
+  record.
+  * ⚠️ Note that per-cell formatting _requires_ that apps update their server to use hoist-core
+    v6.3.0+ to work, although earlier versions of hoist-core _are_ backwards compatible with the
+    pre-existing, column-level export formatting.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
   support for the nullsafe operator `let foo = bar?.baz` via the
   `@babel/plugin-proposal-optional-chaining` plugin.
