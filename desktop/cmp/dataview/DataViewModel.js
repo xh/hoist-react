@@ -8,13 +8,13 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
-import {omit} from 'lodash';
+import {castArray, isString} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
  * using a configured component for rendering each item.
  *
- * This is the primary application entry-point for specifying DataView component options and behavior.
+ * This is the primary app entry-point for specifying DataView component options and behavior.
  */
 @HoistModel
 export class DataViewModel {
@@ -27,6 +27,8 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
+     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
+     *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.
@@ -35,23 +37,37 @@ export class DataViewModel {
     constructor({
         itemRenderer,
         store,
+        sortBy = [],
         selModel,
         emptyText,
         contextMenuFn = null
     }) {
+        sortBy = castArray(sortBy);
+        throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
+
+        // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
+        // the data sorted, initially and through updates via transactions. To continue leveraging
+        // the grid for sort, set the field of our single column to the desired sort field. (The
+        // field setting should not have any other meaningful impact on the grid, since we use a
+        // custom renderer and mark it as complex to ensure re-renders on any record change.)
+        let field = 'id';
+        if (sortBy.length === 1) {
+            const sorter = sortBy[0];
+            field = isString(sorter) ? sorter : sorter.colId;
+        }
+
         this.gridModel = new GridModel({
             store,
+            sortBy,
             selModel,
             contextMenuFn,
             emptyText,
             columns: [
                 {
-                    colId: 'data',
+                    field,
                     flex: true,
                     elementRenderer: itemRenderer,
-                    agOptions: {
-                        valueGetter: this.valueGetter
-                    }
+                    rendererIsComplex: true
                 }
             ]
         });
@@ -66,15 +82,9 @@ export class DataViewModel {
         return this.gridModel.selModel;
     }
 
-    /**
-     * Select the first row in the dataview.
-     * Note that dataview assumes store data is already sorted.
-     */
+    /** Select the first record in the DataView. */
     selectFirst() {
-        const {store, selModel} = this,
-            recs = store.records;
-
-        if (recs.length) selModel.select(recs[0]);
+        this.gridModel.selectFirst();
     }
 
     /**
@@ -104,16 +114,14 @@ export class DataViewModel {
         return this.store.loadData(...args);
     }
 
+    /** Update the underlying store. */
+    updateData(...args) {
+        return this.store.updateData(...args);
+    }
 
-    //------------------------
-    // Implementation
-    //------------------------
-    valueGetter = (params) => {
-        // Return a basic stringified version of all raw record values to ensure a change to any one
-        // triggers an ag-grid cell refresh. String meant to be generally sane if value ends up
-        // being copied-to-clipboard or exported from the underlying gridModel, but in practice not
-        // expected to be used directly.
-        const realData = omit(params.data.raw, 'id');
-        return Object.values(realData).join('\r');
-    };
+    /** Clear the underlying store, removing all rows. */
+    clear() {
+        this.store.clear();
+    }
+
 }

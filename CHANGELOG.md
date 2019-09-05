@@ -1,5 +1,12 @@
 # Changelog
 
+## v27.1.0 - 2019-09-05
+
+### 🎁 New Features
+
+* `DataViewModel` now supports a `sortBy` config. Accepts the same inputs as `GridModel.sortBy`,
+  with the caveat that only a single-level sort is supported at this time.
+
 ## v27.0.1 - 2019-08-26
 
 ### 🐞 Bug Fixes
