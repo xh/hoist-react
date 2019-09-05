@@ -201,8 +201,7 @@ class XHClass {
      * Trigger a full reload of the current application.
      *
      * This method will reload the entire application document in the browser.
-     *
-     * To simply trigger a refresh of the loadable content within the application
+     * To simply trigger a refresh of the loadable content within the application,
      * see XH.refreshAppAsync() instead.
      **/
     @action
@@ -227,9 +226,7 @@ class XHClass {
 
     /**
      * Tracks globally loading promises.
-     *
-     * Applications should link any async operations that should mask the entire viewport to this
-     * model.
+     * Apps should link any async operations that should mask the entire viewport to this model.
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
