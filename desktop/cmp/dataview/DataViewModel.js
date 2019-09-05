@@ -14,7 +14,7 @@ import {castArray, isString} from 'lodash';
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
  * using a configured component for rendering each item.
  *
- * This is the primary application entry-point for specifying DataView component options and behavior.
+ * This is the primary app entry-point for specifying DataView component options and behavior.
  */
 @HoistModel
 export class DataViewModel {
