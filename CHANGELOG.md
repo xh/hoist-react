@@ -4,8 +4,16 @@
 
 ### 🎁 New Features
 
+* `Column.exportFormat` can now be a function, which supports setting Excel formats on a per-cell
+  (vs. entire column) basis by returning a conditional `exportFormat` based upon the value and / or
+  record.
+  * ⚠️ Note that per-cell formatting _requires_ that apps update their server to use hoist-core
+    v6.3.0+ to work, although earlier versions of hoist-core _are_ backwards compatible with the
+    pre-existing, column-level export formatting.
 * `DataViewModel` now supports a `sortBy` config. Accepts the same inputs as `GridModel.sortBy`,
   with the caveat that only a single-level sort is supported at this time.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...v27.1.0)
 
 ## v27.0.1 - 2019-08-26
 
