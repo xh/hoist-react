@@ -10,6 +10,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
 import {Timer} from '@xh/hoist/utils/async';
+import {Ref} from '@xh/hoist/utils/react';
 
 @HoistModel
 @LoadSupport
@@ -17,7 +18,7 @@ export class MonitorResultsModel {
     @observable.ref results = [];
     @observable lastRun = null;
     timer = null;
-    view = null;
+    view = new Ref();
 
     @computed
     get passed() {
@@ -34,17 +35,17 @@ export class MonitorResultsModel {
         return this.results.filter(monitor => monitor.status === 'FAIL').length;
     }
 
-    constructor({view}) {
-        this.view = view;
+    constructor() {
         this.timer = Timer.create({
             runFn: () => this.refreshAsync(),
             delay: 10 * SECONDS,
             interval: 10 * SECONDS
         });
     }
-    
+
     async doLoadAsync(loadSpec) {
-        if (!this.view.isDisplayed) return;
+        const view = this.view.current;
+        if (!view || !view.isDisplayed) return;
 
         return XH
             .fetchJson({url: 'monitorAdmin/results', loadSpec})

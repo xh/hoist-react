@@ -117,7 +117,7 @@ export class LogViewerModel {
         if (tail &&
             logDisplayModel.tailIsDisplayed &&
             olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            view.current && view.current.isDisplayed
+            view.current && isDisplayed(view.current)
         ) {
             logDisplayModel.refreshAsync();
         }
