@@ -42,9 +42,9 @@ export function hoistComponent(config) {
     let ret = innerComponent;
 
     // Wrap with model support for components introducing/requiring models.
-    let spec = config.model;
+    const spec = config.model;
     if (spec) {
-        spec = spec instanceof HoistModelSpec ? spec : new HoistModelSpec(spec);
+        throwIf(!(spec instanceof HoistModelSpec), "'model' config for hoistComponent() must be a HoistModelSpec.");
         ret = (props, ref) => {
             props = isForwardRef ? {...props, ref} : props;
             const {model, isOwned, isContext} = useResolvedModel(spec, props);
