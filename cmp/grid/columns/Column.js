@@ -70,10 +70,9 @@ export class Column {
      * @param {string} [c.exportName] - display name to use as a header within a file export.
      *      Defaults to headerName.
      * @param {(string|function)} [c.exportValue] - alternate field name to reference or function
-     *      to call when producing a value for a file export.
-     *      @see GridExportService
-     * @param {ExportFormat} [c.exportFormat] - structured format string for Excel-based exports.
-     *      @see ExportFormat
+     *      to call when producing a value for a file export. {@see GridExportService}
+     * @param {(ExportFormat|function)} [c.exportFormat] - structured format string for Excel-based
+     *      exports, or a function to produce one. {@see ExportFormat}
      * @param {number} [c.exportWidth] - width in characters for Excel-based exports. Typically used
      *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
