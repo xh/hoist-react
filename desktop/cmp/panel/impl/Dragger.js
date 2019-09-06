@@ -9,7 +9,7 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {PanelModel} from '../PanelModel';
-import {throttle} from 'lodash';
+import {capitalize} from 'lodash';
 
 import './Dragger.scss';
 
@@ -23,10 +23,10 @@ export class Dragger extends Component {
 
     resizeState = null;
     startSize = null;
+    diff = null;
 
     constructor(props) {
         super(props);
-        this.throttledSetSize = throttle(size => this.model.setSize(size), 50);
     }
 
     render() {
@@ -44,7 +44,7 @@ export class Dragger extends Component {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
         this.startSize = this.model.size;
         this.model.setIsResizing(true);
-        // here create copy of splitter for moving
+        this.insertDraggableSplitter(e);
         e.stopPropagation();
     }
 
@@ -64,33 +64,39 @@ export class Dragger extends Component {
             return;
         }
 
-        let diff;
         switch (side) {
-            case 'left':    diff = clientX - startX; break;
-            case 'right':   diff = startX - clientX; break;
-            case 'bottom':  diff = startY - clientY; break;
-            case 'top':     diff = clientY - startY; break;
+            case 'left':    this.diff = clientX - startX; break;
+            case 'right':   this.diff = startX - clientX; break;
+            case 'bottom':  this.diff = startY - clientY; break;
+            case 'top':     this.diff = clientY - startY; break;
         }
 
-        this.moveSplitter(e, side, diff);
-
-        if (this.startSize !== null) {
-            // this.throttledSetSize(this.startSize + diff);
-        }
+        this.moveSplitterBar(e);
     }
 
     onDragEnd = () => {
+        console.log('ender');
+        if (this.diff === null) return;
+
+        this.model.setSize(this.startSize + this.diff);
         this.resizeState = null;
         this.startSize = null;
+        this.diff = null;
         this.model.setIsResizing(false);
+
+        const clone = document.querySelector('.xh-draggable-splitter-bar');
+        clone.parentElement.removeChild(clone);
+
     }
 
-    moveSplitter(e, side, diff) {
-        const splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
-            // draggableSplitter =
-            parent = e.target.parent;
+    insertDraggableSplitter(e) {
+        const {side} = this.model,
+            splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
+            panel = splitter.parentElement,
+            clone = splitter.cloneNode(),
+            splitterSide = this.getSplitterSide(),
+            stl = clone.style;
 
-        console.log(parent);
         let dim;
         switch (side) {
             case 'left':
@@ -99,26 +105,43 @@ export class Dragger extends Component {
             case 'top':     dim = 'width'; break;
         }
 
-        let splitterSide;
-        switch (side) {
-            case 'left':    splitterSide = 'right'; break;
-            case 'right':   splitterSide = 'left'; break;
-            case 'bottom':  splitterSide = 'top'; break;
-            case 'top':     splitterSide = 'bottom'; break;
-        }
-
-        switch (side) {
-            case 'left':    splitterSide = 'right'; break;
-            case 'right':   splitterSide = 'left'; break;
-            case 'bottom':  if (diff > 0) return; break;
-            case 'top':     splitterSide = 'bottom'; break;
-        }
-        const stl = splitter.style;
+        clone.classList.add('xh-draggable-splitter-bar');
         stl.position = 'absolute';
-        stl[splitterSide] = Math.abs(diff) + 'px'; console.log(splitterSide, diff);
+        stl[splitterSide] =  panel['offset' + capitalize(splitterSide)] + 'px';
         stl[dim] = '100%';
         stl.zIndex = 1;
+        splitter.parentElement.parentElement.appendChild(clone);
+    }
 
+    moveSplitterBar(e) {
+        const {side} = this.model,
+            panel = e.target.parentElement,
+            splitterSide  = this.getSplitterSide(),
+            bar = panel.parentElement.querySelector('.xh-draggable-splitter-bar'),
+            {diff} = this;
+
+        switch (side) {
+            case 'left':     break;
+            case 'right':   break;
+            case 'bottom':  if ((diff < 0 && diff * -1 > this.startSize) || diff > panel['offset' + capitalize(splitterSide)]) return; break;
+            case 'top':     break;
+        }
+
+        const stl = bar.style;
+        // console.log(bar['offset' + capitalize(splitterSide)], diff);
+        stl[splitterSide] = (panel['offset' + capitalize(splitterSide)] + diff * -1) + 'px';
+    }
+
+    getSplitterSide() {
+        const {side} = this.model;
+        let ret;
+        switch (side) {
+            case 'left':    ret = 'right'; break;
+            case 'right':   ret = 'left'; break;
+            case 'bottom':  ret = 'top'; break;
+            case 'top':     ret = 'bottom'; break;
+        }
+        return ret;
     }
 
     getSibling(item, dir, className) {
