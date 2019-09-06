@@ -19,7 +19,7 @@ import {RefreshContext} from '../refresh/RefreshContext';
 export function useOwnedModelLinker(model) {
     const context = useContext(RefreshContext);
     useEffect(() => {
-        if (model && model.loadSupport) {
+        if (model && model.isLoadSupport) {
             model.loadAsync();
             if (context) {
                 context.register(model);
