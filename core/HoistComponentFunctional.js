@@ -7,7 +7,7 @@
 import {elemFactory} from '@xh/hoist/core';
 import {isFunction} from 'lodash';
 import {observer} from 'mobx-react-lite';
-import {useState, useContext, createElement} from 'react';
+import {useState, useContext, createElement, forwardRef} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
 
 import {HoistModelSpec} from './HoistModelSpec';
@@ -36,22 +36,22 @@ import {ModelLookupContext} from './impl/ModelLookup';
 export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config};
     const {render, displayName ='HoistComponent'} = config,
-        forwardRef = render.length >= 2;
+        isForwardRef = render.length >= 2;
 
-    const innerComponent = observer(render, {forwardRef});
+    const innerComponent = observer(render, {forwardRef: isForwardRef});
     let ret = innerComponent;
 
     // Wrap with model support for components introducing/requiring models.
     let spec = config.model;
     if (spec) {
         spec = spec instanceof HoistModelSpec ? spec : new HoistModelSpec(spec);
-        ret = function(props, forwardRef) {
-            // if (forwardRef) props = {...props, ref: forwardRef};
-
+        ret = (props, ref) => {
+            props = isForwardRef ? {...props, ref} : props;
             const {model, isOwned, isContext} = useResolvedModel(spec, props);
             useOwnedModelLinker(isOwned && model);
             return useModelContextWrapper(!isContext && model, createElement(innerComponent, props));
         };
+        ret = isForwardRef ? forwardRef(ret) : ret;
     }
 
     ret.displayName = displayName;

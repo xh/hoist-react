@@ -7,6 +7,7 @@
 import React from 'react';
 import {HoistModel} from '@xh/hoist/core';
 import {defaultTo, defaults, isElement} from 'lodash';
+import {withDefault} from '@xh/hoist/utils/js';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
 
 import './Toast.scss';
@@ -19,7 +20,7 @@ import './Toast.scss';
 @HoistModel
 export class ToastSource {
 
-    _toasters = {};
+    _toasterMap = new Map();
 
     constructor(toastSourceModel) {
         this.addReaction({
@@ -64,15 +65,17 @@ export class ToastSource {
             console.warn('containerRef argument for Toast must be a DOM element. Argument will be ignored.');
             containerRef = null;
         }
-        const toasters = this._toasters,
+        const toasterMap = this._toasterMap,
             container = containerRef ? containerRef : document.body,
-            containerId = containerRef ? containerRef.id : 'viewport',
-            className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`,
-            toasterId = containerId + '--' + position;
+            className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`;
 
-        if (toasterId in toasters) return toasters[toasterId];
+        position = withDefault(position, 'top');
 
-        return toasters[toasterId] = Toaster.create({position, className}, container);
+        // We want to just memoize this by two args (one object)?  Is there a library for this?
+        const toasters = toasterMap.get(container) || {};
+        if (!toasters[position]) toasters[position] = Toaster.create({position, className}, container);
+        toasterMap.set(container, toasters);
+        return toasters[position];
     }
 
     getStyledIcon(icon) {
