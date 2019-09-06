@@ -39,9 +39,9 @@ export class Chart extends Component {
         aspectRatio: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
+        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
     };
-    
+
     static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
@@ -133,7 +133,7 @@ export class Chart extends Component {
     destroy() {
         this.destroyHighChart();
     }
-    
+
     destroyHighChart() {
         if (this._chart) {
             this._chart.destroy();

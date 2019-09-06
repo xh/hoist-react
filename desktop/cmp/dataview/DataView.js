@@ -40,7 +40,7 @@ export const DataView = hoistComponent({
 });
 DataView.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object]).isRequired
+    model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object])
 };
 
 export const dataView = elemFactory(DataView);

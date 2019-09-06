@@ -61,7 +61,7 @@ ColChooserButton.propTypes = {
     ...Button.propTypes,
 
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel: PT.instanceOf(GridModel).isRequired,
+    gridModel: PT.instanceOf(GridModel),
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([

@@ -29,7 +29,7 @@ export class LeftRightChooserFilter extends Component {
         anyMatch: PT.bool,
 
         /** A LeftRightChooserModel to bind to. */
-        model: PT.object.isRequired
+        model: PT.object
     };
 
     @observable value = '';
@@ -57,7 +57,7 @@ export class LeftRightChooserFilter extends Component {
         runInAction(() => this.value = '');
         this.runFilter();
     }
-    
+
     runFilter() {
         const {fields, anyMatch} = this.props;
         let searchTerm = escapeRegExp(this.value);

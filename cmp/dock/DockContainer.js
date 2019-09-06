@@ -37,7 +37,7 @@ export class DockContainer extends Component {
         compactHeaders: PT.bool,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object]).isRequired
+        model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object])
     }
     static modelClass = DockContainerModel;
 

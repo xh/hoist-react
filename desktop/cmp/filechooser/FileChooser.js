@@ -55,7 +55,7 @@ export class FileChooser extends Component {
         minSize: PT.number,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(FileChooserModel), PT.object]).isRequired,
+        model: PT.oneOfType([PT.instanceOf(FileChooserModel), PT.object]),
 
         /**
          * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
@@ -78,7 +78,7 @@ export class FileChooser extends Component {
             enableMulti = withDefault(props.enableMulti, true),
             enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
-        
+
         return hbox({
             items: [
                 dropzone({

@@ -71,7 +71,7 @@ export class Grid extends Component {
         hideHeaders: PT.bool,
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
+        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
 
         /**
          * Callback when the grid has initialized. The component will call this with the ag-Grid

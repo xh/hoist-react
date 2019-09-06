@@ -41,7 +41,7 @@ export const TabContainer = hoistComponent({
     }
 });
 TabContainer.propTypes = {
-    model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object]).isRequired
+    model: PT.oneOfType([PT.instanceOf(TabContainerModel), PT.object])
 };
 
 export const tabContainer = elemFactory(TabContainer);

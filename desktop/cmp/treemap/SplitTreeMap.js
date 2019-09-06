@@ -25,7 +25,7 @@ export class SplitTreeMap extends Component {
 
     static propTypes = {
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object]).isRequired
+        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
     };
 
     static modelClass = SplitTreeMapModel;

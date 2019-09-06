@@ -36,7 +36,7 @@ export class TreeMap extends Component {
 
     static propTypes = {
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object]).isRequired
+        model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
     };
 
     static modelClass = TreeMapModel;

@@ -42,7 +42,7 @@ export class Form extends Component {
 
 
         /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(FormModel), PT.object]).isRequired
+        model: PT.oneOfType([PT.instanceOf(FormModel), PT.object])
     };
 
     render() {
