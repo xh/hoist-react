@@ -11,7 +11,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
-import {Ref} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 
 import {LightTheme} from './theme/Light';
@@ -46,7 +46,7 @@ export class Chart extends Component {
 
     baseClassName = 'xh-chart';
 
-    _chartElem = new Ref();
+    _chartRef = createObservableRef();
     _chart = null;
 
     render() {
@@ -57,7 +57,7 @@ export class Chart extends Component {
             layoutProps.flex = 1;
         }
 
-        // No-op on first render - will re-render upon setting the _chartElem Ref
+        // No-op on first render - will re-render upon setting the _chartRef
         this.renderHighChart();
 
         // Inner div required to be the ref for the chart element
@@ -68,7 +68,7 @@ export class Chart extends Component {
                 className: this.getClassName(),
                 item: div({
                     style: {margin: 'auto'},
-                    ref: this._chartElem.ref
+                    ref: this._chartRef
                 })
             })
         });
@@ -79,7 +79,7 @@ export class Chart extends Component {
     //-------------------
     renderHighChart() {
         this.destroyHighChart();
-        const chartElem = this._chartElem.value;
+        const chartElem = this._chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement;

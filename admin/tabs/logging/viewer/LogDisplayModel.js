@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
-import {Ref} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {bindable} from '@xh/hoist/mobx';
 
 /**
@@ -15,8 +15,8 @@ import {bindable} from '@xh/hoist/mobx';
 @LoadSupport
 export class LogDisplayModel {
 
-    firstRow = new Ref();
-    lastRow = new Ref();
+    firstRowRef = createObservableRef();
+    lastRowRef = createObservableRef();
 
     @bindable.ref rows = [];
 
@@ -24,19 +24,19 @@ export class LogDisplayModel {
         this.parent = parent;
         this.addAutorun(this.syncTail);
     }
-    
+
     get tailIsDisplayed() {
-        const {lastRow} = this,
-            rect = lastRow.value && lastRow.value.getBoundingClientRect();
+        const {lastRowRef} = this,
+            rect = lastRowRef.current && lastRowRef.current.getBoundingClientRect();
 
         return rect && rect.bottom <= window.innerHeight;
     }
-    
+
     getRowRef(idx, total) {
         if (idx === total - 1) {
-            return this.lastRow.ref;
+            return this.lastRowRef;
         } else if (idx === 0) {
-            return this.firstRow.ref;
+            return this.firstRowRef;
         }
 
         return undefined;
@@ -44,7 +44,7 @@ export class LogDisplayModel {
 
     syncTail() {
         const {tail} = this.parent,
-            rowElem = this[tail ? 'lastRow' : 'firstRow'].value;
+            rowElem = this[tail ? 'lastRowRef' : 'firstRowRef'].current;
 
         if (rowElem) rowElem.scrollIntoView();
     }

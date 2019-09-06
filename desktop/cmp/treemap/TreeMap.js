@@ -11,13 +11,14 @@ import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {Ref} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React, {Component} from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
+import {createObservableRef} from '@xh/hoist/utils/react';
+
 import './TreeMap.scss';
 
 import {TreeMapModel} from './TreeMapModel';
@@ -43,7 +44,7 @@ export class TreeMap extends Component {
 
     baseClassName = 'xh-treemap';
 
-    _chartElem = new Ref();
+    _chartRef = createObservableRef();
     _chart = null;
 
     constructor(props) {
@@ -58,7 +59,7 @@ export class TreeMap extends Component {
         this.addReaction({
             track: () => [
                 XH.darkTheme,
-                this._chartElem.value,
+                this._chartRef.current,
                 this.model.highChartsConfig,
                 this.model.algorithm,
                 this.model.data
@@ -124,12 +125,12 @@ export class TreeMap extends Component {
     renderChartHolder() {
         return div({
             className: 'xh-treemap__chart-holder',
-            ref: this._chartElem.ref
+            ref: this._chartRef
         });
     }
 
     createOrReloadHighChart() {
-        const chartElem = this._chartElem.value;
+        const chartElem = this._chartRef.current;
         if (!chartElem) return;
 
         // Extract and compare a subset of the config across calls to determine if we should
@@ -149,7 +150,7 @@ export class TreeMap extends Component {
     }
 
     createChart(config) {
-        const chartElem = this._chartElem.value;
+        const chartElem = this._chartRef.current;
         if (!chartElem) return;
 
         const newData = config.series[0].data,

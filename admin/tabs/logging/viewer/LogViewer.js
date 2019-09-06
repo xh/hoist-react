@@ -19,11 +19,11 @@ export const LogViewer = hoistComponent({
     model: localModel(LogViewerModel),
 
     render() {
-        const {filesGridModel, logDisplayModel, loadModel, view} = useModel();
+        const {filesGridModel, logDisplayModel, loadModel, viewRef} = useModel();
 
         return hframe({
             className: 'xh-log-viewer',
-            ref: view.ref,
+            ref: viewRef,
             items: [
                 panel({
                     model: {

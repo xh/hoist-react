@@ -19,7 +19,7 @@ export const MonitorResultsPanel = hoistComponent({
     render() {
         const model = useModel();
         return panel({
-            ref: model.view.ref,
+            ref: model.viewRef,
             mask: model.loadModel,
             className: 'xh-monitor-results-panel',
             tbar: monitorResultsToolbar(),

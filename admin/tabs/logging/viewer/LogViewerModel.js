@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {createRef} from 'react';
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {find} from 'lodash';
 import {action, observable, bindable} from '@xh/hoist/mobx';
@@ -12,7 +13,6 @@ import {UrlStore} from '@xh/hoist/data';
 import {SECONDS, olderThan} from '@xh/hoist/utils/datetime';
 import {Timer} from '@xh/hoist/utils/async';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {Ref} from '@xh/hoist/utils/react';
 
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -32,7 +32,7 @@ export class LogViewerModel {
     // Overall State
     @observable file = null;
 
-    view = new Ref();
+    viewRef = createRef();
 
     @managed
     timer = null;
@@ -112,12 +112,12 @@ export class LogViewerModel {
     }
 
     autoRefreshLines() {
-        const {logDisplayModel, tail, view} = this;
+        const {logDisplayModel, tail, viewRef} = this;
 
         if (tail &&
             logDisplayModel.tailIsDisplayed &&
             olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            view.current && isDisplayed(view.current)
+            viewRef.current && isDisplayed(viewRef.current)
         ) {
             logDisplayModel.refreshAsync();
         }
