@@ -16,7 +16,8 @@ import {isString} from 'lodash';
  *
  * This class is immutable. All methods for manipulation return a new LocalDate instance.
  * For efficiency and to enable strict equality checks, instances of this class are memoized:
- * only a single version of the object will be created and returned for each calendar day.
+ * only a single version of the object will be created and returned for each calendar day,
+ * as long as the caller uses one of the *public factory methods*, which they always should!
  *
  * Unit accepted by manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date'].
  */
@@ -81,7 +82,7 @@ export class LocalDate {
      * Is the input value a local Date?
      * @param {*} v
      * @returns {boolean}
-     * */
+     */
     static isLocalDate(v) {
         return v && v.isLocalDate;
     }
@@ -185,10 +186,7 @@ export class LocalDate {
     //-------------------
     // Implementation
     //-------------------
-    /**
-     * @private
-     * Not for public use -- use one of the static factory methods instead.
-     */
+    /** @private - use one of the static factory methods instead. */
     constructor(s) {
         const m = moment(s, 'YYYYMMDD');
         throwIf(!m.isValid(), `Invalid argument for LocalDate: ${s}`);

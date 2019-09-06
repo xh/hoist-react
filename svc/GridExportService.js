@@ -123,11 +123,18 @@ export class GridExportService {
 
     getColumnMetadata(columns) {
         return columns.map(column => {
-            const {field, exportFormat, exportWidth: width} = column;
-            let type = null;
+            const {field, exportWidth: width} = column;
+            let {exportFormat} = column, type = null;
+
+            // If using the function form to support per-cell formats, replace with
+            // ExportFormat.DEFAULT as a placeholder at the column level. The cell-level data for
+            // this column will be shipped with the calculated formats.
+            if (isFunction(exportFormat)) exportFormat = ExportFormat.DEFAULT;
+
             if (exportFormat === ExportFormat.DATE_FMT) type = 'date';
             if (exportFormat === ExportFormat.DATETIME_FMT) type = 'datetime';
             if (exportFormat === ExportFormat.LONG_TEXT) type = 'longText';
+
             return {field, type, format: exportFormat, width};
         });
     }
@@ -153,7 +160,7 @@ export class GridExportService {
         });
 
         records.forEach(record => {
-            ret.push(this.getRecordRow(record, columns, depth));
+            ret.push(this.getRecordRow(gridModel, record, columns, depth));
             if (treeMode && record.children.length) {
                 ret.push(...this.getRecordRowsRecursive(gridModel, record.children, columns, depth + 1));
             }
@@ -162,13 +169,13 @@ export class GridExportService {
         return ret;
     }
 
-    getRecordRow(record, columns, depth) {
-        const data = columns.map(it => this.getCellData(record, it));
+    getRecordRow(gridModel, record, columns, depth) {
+        const data = columns.map(it => this.getCellData(gridModel, record, it));
         return {data, depth};
     }
 
-    getCellData(record, column) {
-        const {field, exportValue, exportFormat} = column;
+    getCellData(gridModel, record, column) {
+        const {field, exportValue} = column;
 
         // Modify value using exportValue
         let value = record[field];
@@ -182,11 +189,20 @@ export class GridExportService {
 
         if (isNil(value)) return null;
 
+        // Get cell-level format if function form provided
+        let {exportFormat} = column,
+            cellHasExportFormat = isFunction(exportFormat);
+
+        if (cellHasExportFormat) {
+            exportFormat = exportFormat(value, {record, column, gridModel});
+        }
+
         // Enforce date formats expected by server
         if (exportFormat === ExportFormat.DATE_FMT) value = fmtDate(value);
         if (exportFormat === ExportFormat.DATETIME_FMT) value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
 
-        return value.toString();
+        value = value.toString();
+        return cellHasExportFormat ? {value, format: exportFormat} : value;
     }
 
     getContentType(type) {

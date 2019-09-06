@@ -10,8 +10,15 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
-* `excludesChars` function added to form validation constraints.  This allows
-   an input value to block specific characters, e.g. no slash "/" in a textInput for  a filename.
+* `stringExcludesAll` function added to form validation constraints.  This allows
+   an input value to block specific characters or strings, e.g. no slash "/" in a textInput for
+   a filename.
+* `applyToAll` function added to form validation constraints.  This takes another
+   constraint as its only argument, and applies that constraint to an array of values,
+   rather than just one value.  This is useful for applying a constraint to inputs that produce
+   arrays, such as tag pickers.
+* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
+  respect the overall `ButtonGroupInput`'s disabled prop.
 
 ### 💥 Breaking Changes
 
@@ -19,7 +26,22 @@
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...develop)
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
+
+## v27.1.0 - 2019-09-05
+
+### 🎁 New Features
+
+* `Column.exportFormat` can now be a function, which supports setting Excel formats on a per-cell
+  (vs. entire column) basis by returning a conditional `exportFormat` based upon the value and / or
+  record.
+  * ⚠️ Note that per-cell formatting _requires_ that apps update their server to use hoist-core
+    v6.3.0+ to work, although earlier versions of hoist-core _are_ backwards compatible with the
+    pre-existing, column-level export formatting.
+* `DataViewModel` now supports a `sortBy` config. Accepts the same inputs as `GridModel.sortBy`,
+  with the caveat that only a single-level sort is supported at this time.
+
+[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...v27.1.0)
 
 ## v27.0.1 - 2019-08-26
 
@@ -52,6 +74,12 @@
 * New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
+* `Column` gets a new `highlightOnChange` config. If true, the grid will highlight the cell on each
+  change by flashing its background. (Currently this is a simple on/off config - future iterations
+  could support a function variant or other options to customize the flash effect based on the
+  old/new values.) A new CSS var `--xh-grid-cell-change-bg-highlight` can be used to customize the
+  color used, app-wide or scoped to a particular grid selector. Note that columns must *not* specify
+  `rendererIsComplex` (see below) if they wish to enable the new highlight flag.
 
 ### 💥 Breaking Changes
 
@@ -65,12 +93,6 @@
   `true` to indicate if a column renderer uses values other than its own bound field. This change
   provides an efficiency boost by allowing ag-Grid to use its default change detection instead of
   forcing a cell refresh on any change.
-* `Column` also gets a new `highlightOnChange` config. If true, the grid will highlight the cell on
-  each change by flashing its background. (Currently this is a simple on/off config - future
-  iterations could support a function variant or other options to customize the flash effect based
-  on the old/new values.) A new CSS var `--xh-grid-cell-change-bg-highlight` can be used to
-  customize the color used, app-wide or scoped to a particular grid selector. Note that columns must
-  *not* specify `rendererIsComplex` if they wish to enable the new highlight flag.
 
 ### ⚙️ Technical
 
