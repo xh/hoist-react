@@ -10,7 +10,7 @@ import {observer} from 'mobx-react-lite';
 import {useState, useContext, createElement} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
 
-import {HoistComponentModelSpec} from './HoistComponentModelSpec';
+import {HoistModelSpec} from './HoistModelSpec';
 import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
 import {useModelContextWrapper} from './impl/UseModelContextWrapper';
 import {ModelLookupContext} from './impl/ModelLookup';
@@ -28,15 +28,15 @@ import {ModelLookupContext} from './impl/ModelLookup';
  *
  * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
- * @param {HoistComponentModelSpec} [config.model] - spec defining the model to be used by the component.
+ * @param {HoistModelSpec} [config.model] - spec defining the model to be used by the component.
  * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
  *
  * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
  */
 export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config};
-    const {render, displayName ='AnonHoistComponent'} = config,
-        forwardRef = render.length > 2;
+    const {render, displayName ='HoistComponent'} = config,
+        forwardRef = render.length >= 2;
 
     const innerComponent = observer(render, {forwardRef});
     let ret = innerComponent;
@@ -44,9 +44,9 @@ export function hoistComponent(config) {
     // Wrap with model support for components introducing/requiring models.
     let spec = config.model;
     if (spec) {
-        spec = spec instanceof HoistComponentModelSpec ? spec : new HoistComponentModelSpec(spec);
+        spec = spec instanceof HoistModelSpec ? spec : new HoistModelSpec(spec);
         ret = function(props, forwardRef) {
-            if (forwardRef) props = {...props, ref: forwardRef};
+            // if (forwardRef) props = {...props, ref: forwardRef};
 
             const {model, isOwned, isContext} = useResolvedModel(spec, props);
             useOwnedModelLinker(isOwned && model);
@@ -77,12 +77,6 @@ export function hoistElemFactory(config) {
 //-------------------
 // Implementation
 //------------------
-function ensureModelType(model, type) {
-    throwIf(type && !(model instanceof type),
-        `Incorrect model type provided to component: expected ${type.prototype.constructor.name}.`
-    );
-}
-
 function useResolvedModel(spec, props) {
     const modelLookup = useContext(ModelLookupContext);
     return useState(() => {
@@ -96,16 +90,21 @@ function useResolvedModel(spec, props) {
                 if (model && spec.provideFromConfig) {
                     return {model: spec.createFn(model), isOwned: true};
                 }
-                if (modelLookup && spec.provideromContext) {
+                if (modelLookup && spec.provideFromContext) {
                     model = modelLookup.lookupModel(spec.type);
                     if (model) return {model, isContext: true};
                 }
                 break;
             case 'local':
                 return {model: spec.createFn(), isOwned: true};
-            default:
-                return {model: null};
         }
+        return {model: null};
     })[0];
 }
 
+
+function ensureModelType(model, type) {
+    throwIf(type && !(model instanceof type),
+        `Incorrect model type provided to component: expected ${type.prototype.constructor.name}.`
+    );
+}

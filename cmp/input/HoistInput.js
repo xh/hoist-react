@@ -93,6 +93,9 @@ export class HoistInput extends Component {
 
         throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
         throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");
+    }
+
+    componentDidMount() {
         this.addReaction({
             track: () => this.externalValue,
             run: (externalVal) => {
@@ -137,7 +140,8 @@ export class HoistInput extends Component {
      */
     @computed
     get externalValue() {
-        const {value, model, bind} = this.props;
+        const {value, bind} = this.props,
+            {model} = this;
         if (model && bind) {
             return model[bind];
         }
@@ -183,7 +187,8 @@ export class HoistInput extends Component {
     }
 
     doCommitInternal() {
-        const {onCommit, model, bind} = this.props;
+        const {onCommit, bind} = this.props,
+            {model} = this;
         let currentValue = this.externalValue,
             newValue = this.toExternal(this.internalValue);
 
@@ -257,5 +262,4 @@ export class HoistInput extends Component {
 
         return classNames('xh-input', validityClass, disabledClass, this.baseClassName, this.props.className, ...extraClassNames);
     }
-
 }

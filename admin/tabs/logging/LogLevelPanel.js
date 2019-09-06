@@ -9,8 +9,7 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
 export const LogLevelPanel = hoistComponent({
-    model: localModel(createModel),
-
+    model: localModel(() => createModel()),
     render() {
         return restGrid({model: useModel()});
     }

@@ -9,8 +9,7 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
 export const UserPreferencePanel = hoistComponent({
-    model: localModel(createModel),
-
+    model: localModel(() => createModel()),
     render() {
         return restGrid({model: useModel()});
     }

@@ -11,7 +11,7 @@ import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 export const FeedbackPanel = hoistComponent({
-    model: localModel(createModel),
+    model: localModel(() => createModel()),
     render() {
         return restGrid({model: useModel()});
     }

@@ -10,8 +10,7 @@ import {restGrid, RestGridModel, RestStore} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 export const MonitorEditorPanel = hoistComponent({
-    model: localModel(createModel),
-
+    model: localModel(() => createModel()),
     render() {
         return restGrid({model: useModel()});
     }

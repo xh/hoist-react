@@ -53,6 +53,6 @@ export class ModelLookup {
  *
  * Context used to publish a ModelLookup
  */
-export const ModelLookupContext = createContext();
+export const ModelLookupContext = createContext(null);
 
 export const modelLookupContextProvider = elemFactory(ModelLookupContext.Provider);

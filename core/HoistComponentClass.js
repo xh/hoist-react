@@ -63,13 +63,10 @@ export function HoistComponent(C) {
              */
             model: {
                 get() {
-                    const {_model, _modelIsOwned, props} = this;
+                    const {_model, props} = this;
 
                     // 1) Return any model instance that has already been processed / set on the Component.
-                    if (!isUndefined(_model)) {
-                        if (!_modelIsOwned && props.model !== _model) throwModelChangeException();
-                        return _model;
-                    }
+                    if (!isUndefined(_model)) return _model;
 
                     // 2) Otherwise we will source, validate, and memoize as appropriated
                     const {modelClass} = C,
@@ -94,7 +91,7 @@ export function HoistComponent(C) {
                     if (!propsModel && C.supportModelFromContext) {
                         const modelLookup = this.context;
                         if (modelLookup) {
-                            return modelLookup.lookup(modelClass);
+                            ret = modelLookup.lookupModel(modelClass);
                         }
                     }
 
@@ -189,12 +186,11 @@ export function HoistComponent(C) {
 // Implementation
 //--------------------------------
 function applyModelFromContextSupport(C) {
-    throwIf(C.contextClass,
+    throwIf(C.contextType,
         'Cannot support reading model from context.  Component already defines a contextClass.  Use a functional component instead.'
     );
-    C.contextClass = ModelLookupContext;
+    C.contextType = ModelLookupContext;
 }
-
 
 function throwModelChangeException() {
     throw XH.exception(`
