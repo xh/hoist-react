@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {useContext, useEffect} from 'react';
-import {RefreshContext} from '../refresh/RefreshContext';
+import {useEffect} from 'react';
+import {useModel} from '../hooks/UseModel';
 
 /**
  * @private
@@ -17,7 +17,7 @@ import {RefreshContext} from '../refresh/RefreshContext';
  * Null op, if model is null.
  */
 export function useOwnedModelLinker(model) {
-    const context = useContext(RefreshContext);
+    const context = useModel('RefreshContextModel');
     useEffect(() => {
         if (model && model.isLoadSupport) {
             model.loadAsync();

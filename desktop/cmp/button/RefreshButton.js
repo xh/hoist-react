@@ -4,11 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {useContext} from 'react';
 import PT from 'prop-types';
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
-import {RefreshContext} from '@xh/hoist/core/refresh';
+import {hoistComponent, elemFactory, useModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -23,28 +20,24 @@ import {warnIf} from '@xh/hoist/utils/js';
 export const RefreshButton = hoistComponent({
     displayName: 'RefreshButton',
 
-    render({model, ...buttonProps}) {
-        const refreshContext = useContext(RefreshContext);
-
+    render({model, ...props}) {
         warnIf(
-            model && buttonProps.onClick,
+            model && props.onClick,
             'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
         );
 
-        const onClick = () => {
-            const target = model || refreshContext;
-            if (target) target.refreshAsync();
-        };
+        const target = useModel('RefreshContextModel') || model;
 
         return button({
             icon: Icon.refresh(),
             title: 'Refresh',
             intent: 'success',
-            onClick,
-            ...buttonProps
+            onClick: () => target && target.refreshAsync(),
+            ...props
         });
     }
 });
+
 RefreshButton.propTypes = {
     ...Button.propTypes,
 

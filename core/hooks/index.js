@@ -4,6 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './LayoutProps';
-export * from './Model';
+export * from './UseLayoutProps';
+export * from './UseModel';
 

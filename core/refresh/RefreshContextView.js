@@ -4,42 +4,37 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {RefreshContext} from './RefreshContext';
-
-
-const refreshContextProvider = elemFactory(RefreshContext.Provider);
+import {useContext, useEffect} from 'react';
+import {hoistComponent, elemFactory, providedModel, useModel} from '@xh/hoist/core';
+import {ModelLookupContext} from '../impl/ModelLookup';
 
 /**
- * Establishes an area of the application with an independent RefreshContext and RefreshContextModel.
+ * Establishes an area of the application with an independent RefreshContextModel.
  *
  * The model established by this view will be refreshed by its parent context but may also be refreshed
  * independently.
  *
- * @see RefreshContext
  * @see RefreshContextModel
  */
-@HoistComponent
-export class RefreshContextView extends Component {
 
-    static contextType = RefreshContext;
+export const RefreshContextView = hoistComponent({
+    displayName: 'RefreshContextView',
+    model: providedModel(),
 
-    render() {
-        return refreshContextProvider({
-            value: this.model,
-            items: this.props.children
+    render(props) {
+        const lookup = useContext(ModelLookupContext),
+            model = useModel('RefreshContextModel'),
+            parentModel = lookup.parent ? lookup.parent.lookupModel('RefreshContextModel') : null;
+
+        useEffect(() => {
+            if (model && parentModel) {
+                parentModel.register(model);
+                return () => parentModel.unregister(model);
+            }
         });
-    }
 
-    componentDidMount() {
-        const {context, model} = this;
-        if (context && model) context.register(model);
+        return props.children;
     }
+});
 
-    componentWillUnmount() {
-        const {context, model} = this;
-        if (context && model) context.unregister(model);
-    }
-}
 export const refreshContextView = elemFactory(RefreshContextView);

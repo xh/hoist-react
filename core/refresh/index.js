@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export * from './RefreshContext';
 export * from './RefreshContextModel';
 export * from './RootRefreshContextModel';
 export * from './RefreshContextView';

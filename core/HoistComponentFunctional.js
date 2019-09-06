@@ -105,6 +105,6 @@ function useResolvedModel(spec, props) {
 
 function ensureModelType(model, type) {
     throwIf(type && !(model instanceof type),
-        `Incorrect model type provided to component: expected ${type.prototype.constructor.name}.`
+        `Incorrect model type provided to component: expected ${type}.`
     );
 }
