@@ -11,7 +11,8 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {UrlStore} from '@xh/hoist/data';
 import {SECONDS, olderThan} from '@xh/hoist/utils/datetime';
 import {Timer} from '@xh/hoist/utils/async';
-import {debounced} from '@xh/hoist/utils/js';
+import {debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {Ref} from '@xh/hoist/utils/react';
 
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -30,6 +31,8 @@ export class LogViewerModel {
 
     // Overall State
     @observable file = null;
+
+    view = new Ref();
 
     @managed
     timer = null;
@@ -52,8 +55,7 @@ export class LogViewerModel {
         ]
     });
 
-    constructor(cmp) {
-        this.component = cmp;
+    constructor() {
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());
@@ -110,12 +112,12 @@ export class LogViewerModel {
     }
 
     autoRefreshLines() {
-        const {logDisplayModel, component, tail} = this;
+        const {logDisplayModel, tail, view} = this;
 
         if (tail &&
             logDisplayModel.tailIsDisplayed &&
             olderThan(logDisplayModel.lastLoadCompleted, 5 * SECONDS) &&
-            component.isDisplayed
+            view.current && view.current.isDisplayed
         ) {
             logDisplayModel.refreshAsync();
         }

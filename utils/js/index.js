@@ -9,3 +9,4 @@ export * from './HtmlUtils';
 export * from './LangUtils';
 export * from './Decorators';
 export * from './WithDebug';
+export * from './DomUtils';

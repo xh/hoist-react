@@ -187,7 +187,7 @@ export function HoistComponent(C) {
 //--------------------------------
 function applyModelFromContextSupport(C) {
     throwIf(C.contextType,
-        'Cannot support reading model from context.  Component already defines a contextClass.  Use a functional component instead.'
+        'Cannot support reading model from context.  Component already defines a contextType.  Use a functional component instead.'
     );
     C.contextType = ModelLookupContext;
 }
