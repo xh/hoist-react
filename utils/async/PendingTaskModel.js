@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {HoistModel} from '@xh/hoist/core/HoistModel';
 import {observable, action, bindable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 
@@ -18,6 +19,7 @@ import {isUndefined} from 'lodash';
  * @see Promise#linkTo
  * @see Panel.mask
  */
+@HoistModel
 export class PendingTaskModel {
 
     @bindable message = null;
