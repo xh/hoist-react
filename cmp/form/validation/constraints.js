@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {castArray, isNil, isString, isArray} from 'lodash';
+import {isEmpty, isNil, isString, isArray} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import moment from 'moment';
@@ -109,19 +109,31 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 }
 
 /**
- * Validate that a value does not contain the characters specified by the "chars" array.
- * Value can be a single string or an array of strings (e.g. Select w/create = true & w/multiple values -- tag picker).
- * @param {Array} [string] chars - an array of single characters
- * @returns ConstraintCb
- */
-export function excludesChars(chars) {
+* Apply constraint to an array of values, e.g coming from tag picker.
+*
+* @param {function()} the executed constraint function to use on the array of values
+* @returns ConstraintCb
+*/
+export function applyToAll(constraint) {
+    return ({values, displayName}) => {
+        if (isNil(values) || isEmpty(values)) return null;
+
+        let fail;
+        values.find(value => fail = constraint({value, displayName}));
+        if (fail) return fail;
+    };
+}
+
+/**
+* Validate that a value does not contain specific strings or characters.
+*
+* @param {...string} excludeVals - one or more strings to exclude
+* @returns ConstraintCb
+*/
+export function stringExcludesAll(...excludeVals) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
-
-        const charsInString = (str) => chars.some(char => str.includes(char)),
-            charsInArray = (arr) => arr.some(charsInString),
-            valArray = castArray(value);
-
-        if (charsInArray(valArray)) return `${displayName} must not use: ${chars.join(' ')}`;
+        const fail = excludeVals.find(s => value.includes(s));
+        if (fail) return `${displayName} must not include "${fail}"`;
     };
 }
