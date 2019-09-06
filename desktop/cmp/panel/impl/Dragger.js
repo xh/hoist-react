@@ -44,6 +44,7 @@ export class Dragger extends Component {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
         this.startSize = this.model.size;
         this.model.setIsResizing(true);
+        // here create copy of splitter for moving
         e.stopPropagation();
     }
 
@@ -71,8 +72,10 @@ export class Dragger extends Component {
             case 'top':     diff = clientY - startY; break;
         }
 
+        this.moveSplitter(e, side, diff);
+
         if (this.startSize !== null) {
-            this.throttledSetSize(this.startSize + diff);
+            // this.throttledSetSize(this.startSize + diff);
         }
     }
 
@@ -80,6 +83,51 @@ export class Dragger extends Component {
         this.resizeState = null;
         this.startSize = null;
         this.model.setIsResizing(false);
+    }
+
+    moveSplitter(e, side, diff) {
+        const splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
+            // draggableSplitter =
+            parent = e.target.parent;
+
+        console.log(parent);
+        let dim;
+        switch (side) {
+            case 'left':
+            case 'right':   dim = 'height'; break;
+            case 'bottom':
+            case 'top':     dim = 'width'; break;
+        }
+
+        let splitterSide;
+        switch (side) {
+            case 'left':    splitterSide = 'right'; break;
+            case 'right':   splitterSide = 'left'; break;
+            case 'bottom':  splitterSide = 'top'; break;
+            case 'top':     splitterSide = 'bottom'; break;
+        }
+
+        switch (side) {
+            case 'left':    splitterSide = 'right'; break;
+            case 'right':   splitterSide = 'left'; break;
+            case 'bottom':  if (diff > 0) return; break;
+            case 'top':     splitterSide = 'bottom'; break;
+        }
+        const stl = splitter.style;
+        stl.position = 'absolute';
+        stl[splitterSide] = Math.abs(diff) + 'px'; console.log(splitterSide, diff);
+        stl[dim] = '100%';
+        stl.zIndex = 1;
+
+    }
+
+    getSibling(item, dir, className) {
+        const method = dir + 'ElementSibling';
+        let ret = item[method];
+        while (!ret.classList.contains(className)) {
+            ret = ret[method];
+        }
+        return ret;
     }
 }
 export const dragger = elemFactory(Dragger);
