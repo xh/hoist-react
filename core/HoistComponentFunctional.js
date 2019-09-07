@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import {isFunction} from 'lodash';
+import {isFunction, isPlainObject} from 'lodash';
 import {observer} from 'mobx-react-lite';
 import {useState, useContext, createElement, forwardRef} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -24,7 +24,7 @@ import {ModelLookupContext} from './impl/ModelLookup';
  * React.forwardRef will be applied.
  *
  * This function also supports a 'model' property.  This property defines how a model will be provided to
- * this component, and how this component will in-turn provide this model it to its sub-components.
+ * this component, and how this component will in-turn provide this model to its sub-components.
  *
  * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
@@ -46,10 +46,10 @@ export function hoistComponent(config) {
     if (spec) {
         throwIf(!(spec instanceof HoistModelSpec), "'model' config for hoistComponent() must be a HoistModelSpec.");
         ret = (props, ref) => {
-            props = isForwardRef ? {...props, ref} : props;
-            const {model, isOwned, isContext} = useResolvedModel(spec, props);
-            useOwnedModelLinker(isOwned && model);
-            return useModelContextWrapper(!isContext && model, createElement(innerComponent, props));
+            const {model, isOwned} = useResolvedModel(spec, props);
+            useOwnedModelLinker(isOwned ? model : null);
+            props = isForwardRef ? {...props, ref, model} : {...props, model};
+            return useModelContextWrapper(model, createElement(innerComponent, props));
         };
         ret = isForwardRef ? forwardRef(ret) : ret;
     }
@@ -83,16 +83,18 @@ function useResolvedModel(spec, props) {
         let {model} = props;
         switch (spec.mode) {
             case 'provide':
-                if (model && model.isHoistModel) {
+                if (model && isPlainObject(model) && spec.provideFromConfig) {
+                    return {model: spec.createFn(model), isOwned: true};
+                }
+
+                if (model) {
                     ensureModelType(model, spec.type);
                     return {model};
                 }
-                if (model && spec.provideFromConfig) {
-                    return {model: spec.createFn(model), isOwned: true};
-                }
+
                 if (modelLookup && spec.provideFromContext) {
                     model = modelLookup.lookupModel(spec.type);
-                    if (model) return {model, isContext: true};
+                    if (model) return {model};
                 }
                 break;
             case 'local':
@@ -104,6 +106,7 @@ function useResolvedModel(spec, props) {
 
 
 function ensureModelType(model, type) {
+    throwIf(!model.isHoistModel, 'Model must be a HoistModel');
     throwIf(type && !(model instanceof type),
         `Incorrect model type provided to component: expected ${type}.`
     );

@@ -4,9 +4,9 @@ import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './Mod
 /**
  * @private
  *
- * Wrap an element in an element that established a model context.
+ * Wrap an element in an element that establishes a model context.
  *
- * Null op, if model is null.
+ * No-op, if model is null.
  */
 export function useModelContextWrapper(model, element) {
     const parent = useContext(ModelLookupContext),

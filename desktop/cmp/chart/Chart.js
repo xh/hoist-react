@@ -30,6 +30,9 @@ installZoomoutGesture(Highcharts);
 @LayoutSupport
 export class Chart extends Component {
 
+    static supportModelFromContext = true;
+    static modelClass = ChartModel;
+
     static propTypes = {
         /**
          * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
@@ -41,8 +44,6 @@ export class Chart extends Component {
         /** Primary component model instance. */
         model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
     };
-
-    static modelClass = ChartModel;
 
     baseClassName = 'xh-chart';
 

@@ -64,7 +64,7 @@ const tbar = hoistElemFactory({
             refreshButton({model}),
             filler(),
             gridCountLabel({model: gridModel, unit: 'error'}),
-            exportButton()
+            exportButton({gridModel})
         );
     }
 });

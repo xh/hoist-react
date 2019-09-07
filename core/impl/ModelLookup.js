@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {createContext} from 'react';
-import {isNil, isString, isFunction} from 'lodash';
 import {elemFactory} from '@xh/hoist/core';
 
 /**
@@ -22,8 +21,8 @@ export class ModelLookup {
     parent;
 
     /**
-     * @param model -  model provided by this object.
-     * @param {ModelLookup} parent - parent instance of this class.
+     * @param {Object} model -  model provided by this object.
+     * @param {ModelLookup} [parent] - parent instance of this class.
      */
     constructor(model, parent) {
         this.model = model;
@@ -34,17 +33,16 @@ export class ModelLookup {
      * Lookup a model in the object, or one of its parents.
      *
      * @param {(Class|string)} [selector] - class or name of mixin applied to class of
-     *      model to be returned.  If not provided the 'closest' inherited model will be returned.
+     *      model to be returned.  If not provided the model contained in this object will be returned.
      * @returns {*} model or null if no matching model found.
      */
     lookupModel(selector) {
         const {model, parent} = this;
 
-        if (isNil(selector) ||
-            (isFunction(selector) && model instanceof selector) ||
-            (isString(selector) && model['is'+selector])) {
-            return model;
-        }
+        if (!selector) return model;
+
+        const ret = model.lookupModel(selector);
+        if (ret) return ret;
 
         return parent ? parent.lookupModel(selector) : null;
     }

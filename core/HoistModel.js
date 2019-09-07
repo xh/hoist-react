@@ -6,6 +6,7 @@
  */
 import {ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
 import {applyMixin} from '@xh/hoist/utils/js';
+import {isString, isFunction, forOwn} from 'lodash';
 
 
 /**
@@ -27,7 +28,26 @@ import {applyMixin} from '@xh/hoist/utils/js';
 export function HoistModel(C) {
     return applyMixin(C, {
         name: 'HoistModel',
-        includes: [ManagedSupport, ReactiveSupport, XhIdSupport]
+        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
+
+        provides: {
+            lookupModel(selector) {
+                if (this.matchesSelector(selector)) return this;
+
+                let ret = null;
+                forOwn(this, (value, key) => {
+                    if (key.endsWith('Model') && value.isHoistModel && value.matchesSelector(selector)) {
+                        ret = value;
+                        return false;
+                    }
+                });
+                return ret;
+            },
+
+            matchesSelector(selector) {
+                return (isFunction(selector) && this instanceof selector) || (isString(selector) && this['is' + selector]);
+            }
+        }
     });
 }
 

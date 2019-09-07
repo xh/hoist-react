@@ -14,8 +14,9 @@ import {isFunction} from 'lodash';
  * @see hoistComponent()
  */
 export class HoistModelSpec {
-    type;
+
     mode;
+    type;
     createFn;
 
     provideFromConfig;
@@ -27,6 +28,7 @@ export class HoistModelSpec {
      * @param {Object} [config.type] - type of model.  Must be a class decorated with HoistModel.
      * @param {function} [config.createFn] - function to be used to create the model.  If model being created from
      *      a provided config, this will be passed to this function. Defaults to the model type constructor.
+
      * @param {boolean} [config.provideFromContext] - true to accept a provided model from context, as well as props. Default to true.
      * @param {boolean} [config.provideFromConfig] - true to accept provided model from config, and generate a model instance
      *      locally.  Note that any model created in this  way will be considered to be 'owned' by the receiving
@@ -41,6 +43,7 @@ export class HoistModelSpec {
     }) {
         createFn = withDefault(createFn, type ? (f) => new type(f) : null);
 
+        // TODO: Defend against user mistakenly passing instance
         throwIf(type && !type.isHoistModel, 'Specified model type must be an instance of HoistModel.');
         throwIf(mode === 'local'  && !createFn, 'Must specify type or createFn() for local model.');
 
@@ -55,7 +58,7 @@ export class HoistModelSpec {
 /**
  * Create a specification for a local model.
  *
- * @param {(Object|function)} config - configuration object (see constructor), type, or creation function.
+ * @param {(Object|class|function)} config - configuration object (see constructor), Model class, or creation function.
  * @returns {HoistModelSpec}
  */
 export function localModel(config) {
@@ -65,19 +68,19 @@ export function localModel(config) {
     } else if (isFunction(config)) {
         config = {createFn: config};
     }
-    return new HoistModelSpec({mode: 'local', ...config});
+    return new HoistModelSpec({...config, mode: 'local'});
 }
 
 
 /**
  * Create a specification for a provided model.
  *
- * @param {(Object|function)} [config] - configuration object (see constructor) or type,
+ * @param {(Object|class)} [config] - configuration object (see constructor) or Model class.
  * @returns {HoistModelSpec}
  */
 export function providedModel(config = {}) {
     if (config.isHoistModel) {
         config = {type: config};
     }
-    return new HoistModelSpec({mode: 'provide', ...config});
+    return new HoistModelSpec({...config, mode: 'provide'});
 }
