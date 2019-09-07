@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponent, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {message} from './Message';
 import {div, img, p} from '@xh/hoist/cmp/layout';
@@ -18,7 +18,7 @@ import idleImage from './IdleDialogImage.png';
  * This display can be overridden by applications - {@see AppSpec.idleDialogClass}. *
  * @private
  */
-export const IdleDialog = hoistComponent(
+export const IdleDialog = hoistCmp(
     props => {
         return message({
             model: {

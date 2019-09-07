@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useModel} from '@xh/hoist/core';
+import {hoistCmp, elemFactory, useModel} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
@@ -21,7 +21,7 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const Mask = hoistComponent({
+export const Mask = hoistCmp({
     displayName: 'Mask',
 
     render(props) {

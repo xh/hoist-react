@@ -4,14 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-export const ThemeToggleButton = hoistComponent({
+export const ThemeToggleButton = hoistCmp({
     displayName: 'ThemeToggleButton',
     render(props) {
         return button({

@@ -62,7 +62,7 @@ export function hoistComponent(config) {
 }
 
 /**
- * Alias for hoistComponent
+ * Alias for hoistCmp
  * @see hoistComponent
  */
 export const hoistCmp = hoistComponent;

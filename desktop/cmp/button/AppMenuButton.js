@@ -6,13 +6,13 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {hoistCmp, elemFactory, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {getClassName} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 
-export const AppMenuButton = hoistComponent({
+export const AppMenuButton = hoistCmp({
     displayName: 'AppMenuButton',
 
     render(props) {

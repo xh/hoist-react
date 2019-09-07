@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,7 +14,7 @@ import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-export const ServicePanel = hoistComponent({
+export const ServicePanel = hoistCmp({
     model: localModel(ServiceModel),
 
     render() {

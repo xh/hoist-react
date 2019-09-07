@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp, elemFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 
@@ -12,7 +12,7 @@ import {button, Button} from '@xh/hoist/desktop/cmp/button';
  * Convenience Button to open the admin client.
  * Visible only to users with the hoistAdmin application role.
  */
-export const LaunchAdminButton = hoistComponent({
+export const LaunchAdminButton = hoistCmp({
     displayName: 'LaunchAdminButton',
 
     render(props) {

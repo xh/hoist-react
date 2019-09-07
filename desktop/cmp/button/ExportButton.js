@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, elemFactory} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -21,7 +21,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-export const ExportButton = hoistComponent({
+export const ExportButton = hoistCmp({
     displayName: 'ExportButton',
 
     render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {

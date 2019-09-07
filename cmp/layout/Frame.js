@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {elemFactory, hoistComponent} from '@xh/hoist/core';
+import {elemFactory, hoistCmp} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
@@ -17,7 +17,7 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const Frame = hoistComponent({
+export const Frame = hoistCmp({
     displayName: 'Frame',
 
     render(props, ref) {
@@ -25,7 +25,7 @@ export const Frame = hoistComponent({
     }
 });
 
-export const VFrame = hoistComponent({
+export const VFrame = hoistCmp({
     displayName: 'VFrame',
 
     render(props, ref) {
@@ -39,7 +39,7 @@ export const VFrame = hoistComponent({
     }
 });
 
-export const HFrame = hoistComponent({
+export const HFrame = hoistCmp({
     displayName: 'HFrame',
 
     render(props, ref) {

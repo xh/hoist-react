@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {hoistCmp, elemFactory, XH} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const RestoreDefaultsButton = hoistComponent({
+export const RestoreDefaultsButton = hoistCmp({
     displayName: 'RestoreDefaultsButton',
     render({
         warningMessage = 'Are you sure you want to restore defaults?',

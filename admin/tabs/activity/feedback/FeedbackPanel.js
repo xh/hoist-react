@@ -4,13 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
 import {restGrid, RestGridModel, RestStore, deleteAction} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const FeedbackPanel = hoistComponent({
+export const FeedbackPanel = hoistCmp({
     model: localModel(() => createModel()),
     render() {
         return restGrid({model: useModel()});

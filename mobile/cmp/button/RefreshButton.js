@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {elemFactory, hoistComponent, useModel} from '@xh/hoist/core';
+import {elemFactory, hoistCmp, useModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -18,7 +18,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
  * for this button will be used.
  */
-export const RefreshButton = hoistComponent({
+export const RefreshButton = hoistCmp({
     displayName: 'RefreshButton',
 
     render(model, ...props) {

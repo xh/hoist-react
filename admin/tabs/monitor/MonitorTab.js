@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
 
-export const MonitorTab = hoistComponent(
+export const MonitorTab = hoistCmp(
     () => tabContainer({
         model: {
             route: 'default.monitor',

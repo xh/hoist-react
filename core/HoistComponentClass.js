@@ -24,7 +24,7 @@ import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
  * Hoist React, and is maintained to support legacy applications and any exceptional cases where
  * a class-based component continues to be necessary or preferred.
  *
- * Developers are encouraged to @see hoistComponent for a functional, hooks-compatible
+ * Developers are encouraged to @see hoistCmp for a functional, hooks-compatible
  * approach to component definition for Hoist apps.
  */
 export function HoistComponent(C) {

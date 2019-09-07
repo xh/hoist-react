@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useState} from 'react';
-import {elem, elemFactory,  hoistComponent, useModel} from '@xh/hoist/core';
+import {elem, elemFactory,  hoistCmp, useModel} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -22,7 +22,7 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-export const Tab = hoistComponent({
+export const Tab = hoistCmp({
     displayName: 'Tab',
 
     render(props) {

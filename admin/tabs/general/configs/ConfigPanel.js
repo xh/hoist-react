@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
-export const ConfigPanel = hoistComponent({
+export const ConfigPanel = hoistCmp({
     model: localModel(ConfigModel),
 
     render() {

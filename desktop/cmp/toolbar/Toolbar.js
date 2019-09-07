@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, elemFactory} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
@@ -15,7 +15,7 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-export const Toolbar = hoistComponent({
+export const Toolbar = hoistCmp({
     displayName: 'Toolbar',
 
     render(props) {
