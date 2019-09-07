@@ -6,13 +6,13 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, XH} from '@xh/hoist/core';
+import {hoistCmpAndFactory, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {getClassName} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 
-export const AppMenuButton = hoistCmp({
+export const [AppMenuButton, appMenuButton] = hoistCmpAndFactory({
     displayName: 'AppMenuButton',
 
     render(props) {
@@ -93,5 +93,3 @@ AppMenuButton.propTypes = {
      */
     extraItems: PT.array
 };
-
-export const appMenuButton = elemFactory(AppMenuButton);

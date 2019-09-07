@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmp, elemFactory} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
@@ -15,7 +15,7 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-export const Toolbar = hoistCmp({
+export const [Toolbar, toolbar] = hoistCmpAndFactory({
     displayName: 'Toolbar',
 
     render(props) {
@@ -35,5 +35,3 @@ Toolbar.propTypes = {
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool
 };
-
-export const toolbar = elemFactory(Toolbar);

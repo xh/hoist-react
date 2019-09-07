@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistCmp, elemFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -23,7 +23,7 @@ import './LeftRightChooser.scss';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-export const LeftRightChooser = hoistCmp({
+export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
     displayName: 'LeftRightChooser',
     model: providedModel(LeftRightChooserModel),
 
@@ -69,5 +69,3 @@ LeftRightChooser.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
 };
-
-export const leftRightChooser = elemFactory(LeftRightChooser);

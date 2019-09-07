@@ -5,17 +5,16 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, elemFactory} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {navbarDivider} from '@xh/hoist/kit/blueprint';
 
 /**
  * Convenience component for adding a separator between AppBar items.
  */
-export const AppBarSeparator = hoistCmp({
+export const [AppBarSeparator, appBarSeparator] = hoistCmpAndFactory({
     displayName: 'AppBarSeparator',
 
     render() {
         return navbarDivider();
     }
 });
-export const appBarSeparator = elemFactory(AppBarSeparator);

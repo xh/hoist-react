@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, elemFactory} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {box} from './Box';
 
@@ -12,7 +12,7 @@ import {box} from './Box';
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
  * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
-export const Spacer = hoistCmp({
+export const [Spacer, spacer] = hoistCmpAndFactory({
     displayName: 'Spacer',
 
     render(props) {
@@ -27,7 +27,7 @@ export const Spacer = hoistCmp({
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-export const Filler = hoistCmp({
+export const [Filler, filler] = hoistCmpAndFactory({
     displayName: 'Filler',
 
     render(props) {
@@ -39,8 +39,6 @@ export const Filler = hoistCmp({
     }
 });
 
-export const spacer = elemFactory(Spacer);
-export const filler = elemFactory(Filler);
 
 //--------------------------------
 // Convenience Factories

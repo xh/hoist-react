@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, elemFactory, XH} from '@xh/hoist/core';
+import {XH, hoistCmpAndFactory} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const FeedbackButton = hoistCmp({
+export const [FeedbackButton, feedbackButton] = hoistCmpAndFactory({
     displayName: 'FeedbackButton',
 
     render(props) {
@@ -25,6 +25,4 @@ export const FeedbackButton = hoistCmp({
     }
 });
 FeedbackButton.propTypes = {...Button.propTypes};
-
-export const feedbackButton = elemFactory(FeedbackButton);
 

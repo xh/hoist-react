@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useLayoutProps} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 
@@ -18,7 +18,7 @@ import './Button.scss';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const Button = hoistCmp({
+export const [Button, button] = hoistCmpAndFactory({
     displayName: 'Button',
 
     render(props) {
@@ -55,6 +55,4 @@ Button.propTypes = {
     text: PT.string,
     title: PT.string
 };
-
-export const button = elemFactory(Button);
 

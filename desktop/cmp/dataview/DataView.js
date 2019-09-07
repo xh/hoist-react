@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, useLayoutProps, useModel, providedModel} from '@xh/hoist/core';
+import {useLayoutProps, useModel, providedModel, hoistCmpAndFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -15,7 +15,7 @@ import {DataViewModel} from './DataViewModel';
  * A DataView is a specialized version of the Grid component. It displays its data within a
  * single column, using a configured component for rendering each item.
  */
-export const DataView = hoistCmp({
+export const [DataView, dataView] = hoistCmpAndFactory({
     displayName: 'DataView',
     model: providedModel(DataViewModel),
 
@@ -42,7 +42,3 @@ DataView.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object])
 };
-
-export const dataView = elemFactory(DataView);
-
-

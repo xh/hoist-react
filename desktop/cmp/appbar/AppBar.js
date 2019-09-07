@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, XH} from '@xh/hoist/core';
+import {hoistCmpAndFactory, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
@@ -23,7 +23,7 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const AppBar = hoistCmp({
+export const [AppBar, appBar] = hoistCmpAndFactory({
     displayName: 'AppBar',
 
     render(props) {
@@ -86,5 +86,3 @@ AppBar.propTypes = {
     /** Options to pass to the AppMenuButton. */
     appMenuButtonOptions: PT.object
 };
-
-export const appBar = elemFactory(AppBar);

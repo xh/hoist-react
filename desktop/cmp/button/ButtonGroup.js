@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useLayoutProps} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 
@@ -15,7 +15,7 @@ import './ButtonGroup.scss';
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-export const ButtonGroup = hoistCmp({
+export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
     displayName: 'ButtonGroup',
 
     render(props) {
@@ -47,5 +47,3 @@ ButtonGroup.propTypes = {
     /** True to render in a vertical orientation. */
     vertical: PT.bool
 };
-
-export const buttonGroup = elemFactory(ButtonGroup);

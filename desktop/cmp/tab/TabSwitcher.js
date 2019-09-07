@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmp, elemFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useModel} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -22,7 +22,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * @see TabContainer
  * @see TabContainerModel
  */
-export const TabSwitcher = hoistCmp({
+export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
     displayName: 'TabSwitcher',
 
     render(props) {
@@ -58,5 +58,3 @@ TabSwitcher.propTypes = {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
 };
-
-export const tabSwitcher = elemFactory(TabSwitcher);

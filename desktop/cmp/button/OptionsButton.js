@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmp, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmpAndFactory} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const OptionsButton = hoistCmp({
+export const [OptionsButton, optionsButton] = hoistCmpAndFactory({
     displayName: 'OptionsButton',
 
     render(props) {
@@ -27,5 +27,3 @@ export const OptionsButton = hoistCmp({
     }
 });
 OptionsButton.propTypes = {...Button.propTypes};
-
-export const optionsButton = elemFactory(OptionsButton);
