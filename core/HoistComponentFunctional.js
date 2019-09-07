@@ -24,14 +24,15 @@ import {ModelLookupContext} from './impl/ModelLookup';
  * React.forwardRef will be applied.
  *
  * This function also supports a 'model' property.  This property defines how a model will be provided to
- * this component, and how this component will in-turn provide this model to its sub-components.
+ * this component, and how this component will optionally publish this model to its sub-components via context.
+ *
+ * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
  *
  * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
  * @param {HoistModelSpec} [config.model] - spec defining the model to be used by the component.
  * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
- *
- * @see HoistComponent decorator for a class-based approach to defining a Component in Hoist.
+ * @returns {*} A functional react component.
  */
 export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config};
@@ -61,6 +62,13 @@ export function hoistComponent(config) {
 }
 
 /**
+ * Alias for hoistComponent
+ * @see hoistComponent
+ */
+export const hoistCmp = hoistComponent;
+
+
+/**
  * Create a new Hoist functional component and return an element factory for it.
  *
  * This method is a shortcut for elemFactory(hoistComponent(...)), and is useful for
@@ -68,10 +76,26 @@ export function hoistComponent(config) {
  *
  * @see hoistComponent
  * @see elemFactory
+ *
+ * @returns {function} -- an elementFactory function.
  */
+export function hoistCmpFactory(config) {
+    return elemFactory(hoistCmp(config));
+}
 
-export function hoistElemFactory(config) {
-    return elemFactory(hoistComponent(config));
+/**
+ * Create a new Hoist functional component and return it *with* a corresponding
+ * element factory for it.
+ *
+ * @see hoistComponent
+ * @see elemFactory
+ *
+ * @returns {[]} - Array of length 2, with a Component as the first element and
+ *      an elementFactory function as the second.
+ */
+export function hoistCmpAndFactory(config) {
+    const ret = hoistCmp(config);
+    return [ret, elemFactory(ret)];
 }
 
 //-------------------

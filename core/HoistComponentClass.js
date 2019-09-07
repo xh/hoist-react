@@ -200,7 +200,7 @@ function throwModelChangeException() {
 }
 
 function throwWrongModelClass(obj) {
-    throw XH.exception(`Component requires model of type ${obj.modelClass.constructor}.`);
+    throw XH.exception(`Component requires model of type ${obj.modelClass}.`);
 }
 
 function warnNoModelClassProvided() {

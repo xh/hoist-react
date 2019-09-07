@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {XH, hoistElemFactory, useModel} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, useModel} from '@xh/hoist/core';
 import {div, box, filler, vframe, viewport, p} from '@xh/hoist/cmp/layout';
 import {logoutButton} from '@xh/hoist/desktop/cmp/button';
 
@@ -18,7 +18,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
  *
  * @private
  */
-export const lockoutPanel = hoistElemFactory(
+export const lockoutPanel = hoistCmpFactory(
     props => {
         const model = useModel(AppContainerModel, props);
         return viewport(

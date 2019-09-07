@@ -5,14 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistElemFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory, useModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 
-export const activityDetail = hoistElemFactory(() => {
+export const activityDetail = hoistCmpFactory(() => {
     const model = useModel(),
         rec = model.detailRecord;
 
@@ -28,7 +28,7 @@ export const activityDetail = hoistElemFactory(() => {
 });
 
 
-const detail = hoistElemFactory(() => {
+const detail = hoistCmpFactory(() => {
     const model = useModel(),
         rec = model.detailRecord,
         user = rec.impersonating ? `${rec.username} as ${rec.impersonating}` : rec.username;

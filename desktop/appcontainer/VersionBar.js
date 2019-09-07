@@ -4,13 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistElemFactory} from '@xh/hoist/core';
+import {XH, hoistCmpFactory} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
 /** @private */
-export const versionBar = hoistElemFactory(
+export const versionBar = hoistCmpFactory(
     () => {
 
         if (!isShowing()) return null;

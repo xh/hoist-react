@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistElemFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory, useModel} from '@xh/hoist/core';
 import {label} from '@xh/hoist/cmp/layout';
 import {numberInput, textInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
-export const logViewerToolbar = hoistElemFactory(() => {
+export const logViewerToolbar = hoistCmpFactory(() => {
     const model = useModel();
     return toolbar(
         label('Start line:'),

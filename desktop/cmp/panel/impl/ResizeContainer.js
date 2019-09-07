@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistElemFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory, useModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getClassName} from '@xh/hoist/utils/react';
 
@@ -14,7 +14,7 @@ import {splitter} from './Splitter';
 import {PanelModel} from '../PanelModel';
 
 /** @private */
-export const resizeContainer = hoistElemFactory(
+export const resizeContainer = hoistCmpFactory(
     (props, ref) => {
         let model = useModel(PanelModel),
             className = getClassName('xh-resizable', props),

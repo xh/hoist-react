@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistElemFactory} from '@xh/hoist/core';
+import {hoistCmpFactory} from '@xh/hoist/core';
 import {vbox, div} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import './Tile.scss';
 
-export const tile = hoistElemFactory(
+export const tile = hoistCmpFactory(
     props => {
         const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
             {icon, statusText} = statusProperties(status),

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpFactory, providedModel, useModel, useLayoutProps} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -17,7 +17,7 @@ import '../Tabs.scss';
  * Desktop implementation of TabContainer.
  * @private
  */
-export const tabContainer = hoistElemFactory({
+export const tabContainer = hoistCmpFactory({
     displayName: 'TabContainer',
     model: providedModel(TabContainerModel),
 
