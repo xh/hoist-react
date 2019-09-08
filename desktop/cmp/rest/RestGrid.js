@@ -7,7 +7,6 @@
 
 import {Component, cloneElement} from 'react';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
