@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const [OptionsButton, optionsButton] = hoistCmpAndFactory({
     displayName: 'OptionsButton',
+    model: null,
 
     render(props) {
         return button({

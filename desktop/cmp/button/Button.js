@@ -20,6 +20,7 @@ import './Button.scss';
  */
 export const [Button, button] = hoistCmpAndFactory({
     displayName: 'Button',
+    model: null,
 
     render(props) {
         const [layoutProps, nonLayoutProps] = useLayoutProps(props),

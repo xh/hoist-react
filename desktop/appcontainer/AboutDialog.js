@@ -6,7 +6,7 @@
  */
 
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, useModel} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, provided} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,10 +22,10 @@ import './AboutDialog.scss';
  *
  * @private
  */
-export const aboutDialog = hoistCmpFactory(
-    props => {
-        const model = useModel(AboutDialogModel, props);
+export const aboutDialog = hoistCmpFactory({
+    model: provided(AboutDialogModel),
 
+    render({model}) {
         if (!model.isOpen) return null;
 
         const onClose = () => model.hide();
@@ -54,4 +54,4 @@ export const aboutDialog = hoistCmpFactory(
             onClose
         });
     }
-);
+});

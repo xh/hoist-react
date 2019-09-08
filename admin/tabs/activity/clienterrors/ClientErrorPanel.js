@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useModel, localModel, hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp, hoistCmpFactory, localAndPublished} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -18,16 +18,15 @@ import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
 export const ClientErrorPanel = hoistCmp({
-    model: localModel(ClientErrorModel),
+    model: localAndPublished(ClientErrorModel),
 
-    render() {
-        const model = useModel();
+    render({model}) {
         return panel({
             mask: model.loadModel,
             tbar: tbar(),
             items: [
                 grid({
-                    gridModel: model.gridModel,
+                    model: model.gridModel,
                     onRowDoubleClicked: (e) => model.openDetail(e.data)
                 }),
                 clientErrorDetail()
@@ -36,10 +35,9 @@ export const ClientErrorPanel = hoistCmp({
     }
 });
 
-const tbar = hoistCmpFactory({
-    render() {
-        const model = useModel(),
-            {gridModel} = model;
+const tbar = hoistCmpFactory(
+    ({model}) => {
+        const {gridModel} = model;
 
         return toolbar(
             button({
@@ -63,11 +61,11 @@ const tbar = hoistCmpFactory({
             textInput({bind: 'error', placeholder: 'Error', ...textProps}),
             refreshButton({model}),
             filler(),
-            gridCountLabel({model: gridModel, unit: 'error'}),
+            gridCountLabel({gridModel, unit: 'error'}),
             exportButton({gridModel})
         );
     }
-});
+);
 
 const dateProps = {
     popoverPosition: 'bottom',

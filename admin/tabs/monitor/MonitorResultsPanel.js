@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localAndPublished} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
@@ -14,10 +14,9 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 import './MonitorResultsPanel.scss';
 
 export const MonitorResultsPanel = hoistCmp({
-    model: localModel(MonitorResultsModel),
+    model: localAndPublished(MonitorResultsModel),
 
-    render() {
-        const model = useModel();
+    render({model}) {
         return panel({
             ref: model.viewRef,
             mask: model.loadModel,

@@ -5,11 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, provided} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {omit} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /**
@@ -24,10 +23,10 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
     displayName: 'TabSwitcher',
+    model: provided(TabContainerModel),
 
-    render(props) {
-        const model = useModel(TabContainerModel, props),
-            {id, tabs, activeTabId} = model;
+    render({model, ...props}) {
+        const {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),
             vertical = ['left', 'right'].includes(orientation);
@@ -45,7 +44,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
                     items: [icon, title]
                 });
             }),
-            ...omit(props, 'model'),
+            ...props,
             className: getClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
         });
     }

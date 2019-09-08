@@ -1,17 +1,15 @@
-import {hoistCmpFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {PanelModel} from '../PanelModel';
 
 /** @private */
-export const headerCollapseButton = hoistCmpFactory(() => {
-    const model = useModel(PanelModel);
-    return button({
+export const headerCollapseButton = hoistCmpFactory(
+    ({model}) => button({
         icon: Icon[getChevron(model)](),
         onClick: () => model.toggleCollapsed(),
         minimal: true
-    });
-});
+    })
+);
 
 function getChevron(model) {
     const {vertical, collapsed, contentFirst} = model,

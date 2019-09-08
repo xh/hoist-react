@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, provided} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
@@ -23,10 +23,10 @@ import './Mask.scss';
  */
 export const [Mask, mask] = hoistCmpAndFactory({
     displayName: 'Mask',
+    model: provided({type: PendingTaskModel, provideFromContext: false}),
 
-    render(props) {
-        const model = useModel(PendingTaskModel, props),
-            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
+    render({model, ...props}) {
+        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
             className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
 
         if (!isDisplayed) return null;

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, useModel, hoistCmpFactory} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, provided} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -13,10 +13,11 @@ import './UpdateBar.scss';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /** @private */
-export const updateBar = hoistCmpFactory(
-    props => {
-        const model = useModel(AppContainerModel, props),
-            {updateVersion} = model,
+export const updateBar = hoistCmpFactory({
+    model: provided(AppContainerModel),
+
+    render({model}) {
+        const {updateVersion} = model,
             className = 'xh-update-bar';
 
         if (!updateVersion) return null;
@@ -38,4 +39,4 @@ export const updateBar = hoistCmpFactory(
             ]
         });
     }
-);
+});

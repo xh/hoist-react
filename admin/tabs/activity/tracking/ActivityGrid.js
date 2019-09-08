@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory, localAndPublished} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -18,11 +18,10 @@ import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
 export const activityGrid = hoistCmpFactory({
-    model: localModel(ActivityGridModel),
+    model: localAndPublished(ActivityGridModel),
 
-    render() {
-        const model = useModel();
-
+    render({model}) {
+        console.log(model);
         return panel({
             mask: model.loadModel,
             tbar: tbar(),
@@ -37,39 +36,40 @@ export const activityGrid = hoistCmpFactory({
     }
 });
 
-const tbar = hoistCmpFactory(() => {
-    const model = useModel(),
-        {gridModel} = model;
+const tbar = hoistCmpFactory(
+    ({model}) => {
+        const {gridModel} = model;
 
-    return toolbar(
-        button({
-            icon: Icon.angleLeft(),
-            onClick: () => model.adjustDates('subtract')
-        }),
-        dateInput({bind: 'startDate', ...dateProps}),
-        Icon.caretRight(),
-        dateInput({bind: 'endDate', ...dateProps}),
-        button({
-            icon: Icon.angleRight(),
-            onClick: () => model.adjustDates('add'),
-            disabled: model.endDate >= LocalDate.today()
-        }),
-        button({
-            icon: Icon.reset(),
-            onClick: () => model.adjustDates('subtract', true)
-        }),
-        toolbarSep(),
-        textInput({bind: 'username', placeholder: 'Username', ...textProps}),
-        textInput({bind: 'msg', placeholder: 'Message', ...textProps}),
-        textInput({bind: 'category', placeholder: 'Category', ...textProps}),
-        textInput({bind: 'device', placeholder: 'Device', ...textProps}),
-        textInput({bind: 'browser', placeholder: 'Browser', ...textProps}),
-        refreshButton({model}),
-        filler(),
-        gridCountLabel({gridModel, unit: 'log'}),
-        exportButton({gridModel})
-    );
-});
+        return toolbar(
+            button({
+                icon: Icon.angleLeft(),
+                onClick: () => model.adjustDates('subtract')
+            }),
+            dateInput({bind: 'startDate', ...dateProps}),
+            Icon.caretRight(),
+            dateInput({bind: 'endDate', ...dateProps}),
+            button({
+                icon: Icon.angleRight(),
+                onClick: () => model.adjustDates('add'),
+                disabled: model.endDate >= LocalDate.today()
+            }),
+            button({
+                icon: Icon.reset(),
+                onClick: () => model.adjustDates('subtract', true)
+            }),
+            toolbarSep(),
+            textInput({bind: 'username', placeholder: 'Username', ...textProps}),
+            textInput({bind: 'msg', placeholder: 'Message', ...textProps}),
+            textInput({bind: 'category', placeholder: 'Category', ...textProps}),
+            textInput({bind: 'device', placeholder: 'Device', ...textProps}),
+            textInput({bind: 'browser', placeholder: 'Browser', ...textProps}),
+            refreshButton({model}),
+            filler(),
+            gridCountLabel({gridModel, unit: 'log'}),
+            exportButton({gridModel})
+        );
+    }
+);
 
 const dateProps = {
     popoverPosition: 'bottom',

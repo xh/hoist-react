@@ -17,6 +17,7 @@ import './ButtonGroup.scss';
  */
 export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
     displayName: 'ButtonGroup',
+    model: null,
 
     render(props) {
         const [layoutProps, nonLayoutProps] = useLayoutProps(props),

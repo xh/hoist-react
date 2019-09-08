@@ -14,6 +14,7 @@ import {button, Button} from '@xh/hoist/desktop/cmp/button';
  */
 export const [LaunchAdminButton, launchAdminButton] = hoistCmpAndFactory({
     displayName: 'LaunchAdminButton',
+    model: null,
 
     render(props) {
         if (!XH.getUser().isHoistAdmin) return null;

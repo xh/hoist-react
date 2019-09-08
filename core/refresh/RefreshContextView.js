@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useContext, useEffect} from 'react';
-import {hoistCmpAndFactory, providedModel, useModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, providedAndPublished} from '@xh/hoist/core';
 import {ModelLookupContext} from '../impl/ModelLookup';
 
 /**
@@ -16,15 +16,14 @@ import {ModelLookupContext} from '../impl/ModelLookup';
  *
  * @see RefreshContextModel
  */
-
 export const [RefreshContextView, refreshContextView] = hoistCmpAndFactory({
     displayName: 'RefreshContextView',
-    model: providedModel(),
+    model: providedAndPublished('RefreshContextModel'),
 
     render(props) {
-        const lookup = useContext(ModelLookupContext),
-            model = useModel('RefreshContextModel'),
-            parentModel = lookup.parent ? lookup.parent.lookupModel('RefreshContextModel') : null;
+        const {model} = props,
+            lookup = useContext(ModelLookupContext),
+            parentModel = lookup && lookup.parent ? lookup.parent.lookupModel('RefreshContextModel') : null;
 
         useEffect(() => {
             if (model && parentModel) {

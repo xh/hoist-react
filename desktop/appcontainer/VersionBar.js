@@ -12,7 +12,6 @@ import './VersionBar.scss';
 /** @private */
 export const versionBar = hoistCmpFactory(
     () => {
-
         if (!isShowing()) return null;
 
         const env = XH.getEnv('appEnvironment'),

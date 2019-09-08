@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localAndPublished} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -14,10 +14,9 @@ import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
 export const ConfigPanel = hoistCmp({
-    model: localModel(ConfigModel),
+    model: localAndPublished(ConfigModel),
 
-    render() {
-        const model = useModel();
+    render({model}) {
         return fragment(
             restGrid({
                 model: model.gridModel,
@@ -29,7 +28,7 @@ export const ConfigPanel = hoistCmp({
                     });
                 }
             }),
-            configDiffer({model: model.differModel})
+            configDiffer()
         );
     }
 });

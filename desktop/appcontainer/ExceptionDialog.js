@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, useModel, providedModel} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -25,11 +25,10 @@ import './ExceptionDialog.scss';
  */
 export const exceptionDialog = hoistCmpFactory({
     displayName: 'Exception Dialog',
-    model: providedModel(ExceptionDialogModel),
+    model: providedAndPublished(ExceptionDialogModel),
 
-    render(props) {
-        const model = useModel(),
-            {exception, options} = model;
+    render({model}) {
+        const {exception, options} = model;
 
         if (!exception) return null;
 
@@ -55,9 +54,8 @@ export const exceptionDialog = hoistCmpFactory({
 //--------------------------------
 // Implementation
 //--------------------------------
-const bbar = hoistCmpFactory(()=> {
-    const model = useModel();
-    return toolbar(
+const bbar = hoistCmpFactory(
+    ({model}) => toolbar(
         filler(),
         button({
             icon: Icon.search(),
@@ -66,29 +64,30 @@ const bbar = hoistCmpFactory(()=> {
             omit: !model.options.showAsError
         }),
         dismissButton()
-    );
-});
+    )
+);
 
 
 /**
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistCmpFactory(() => {
-    const model = useModel();
-    return model.options.requireReload ?
-        button({
-            icon: Icon.refresh(),
-            text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
-            autoFocus: true,
-            onClick:  () => XH.reloadApp()
-        }) :
-        button({
-            text: 'Close',
-            autoFocus: true,
-            onClick: () => model.close()
-        });
-});
+export const dismissButton = hoistCmpFactory(
+    ({model}) => {
+        return model.options.requireReload ?
+            button({
+                icon: Icon.refresh(),
+                text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
+                autoFocus: true,
+                onClick: () => XH.reloadApp()
+            }) :
+            button({
+                text: 'Close',
+                autoFocus: true,
+                onClick: () => model.close()
+            });
+    }
+);
 
 function isSessionExpired(e) {
     return e && e.httpStatus === 401;

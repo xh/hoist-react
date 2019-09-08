@@ -5,32 +5,32 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmpFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
-import {PanelModel} from '../PanelModel';
 import './Splitter.scss';
 
 /** @private */
-export const splitter = hoistCmpFactory(() => {
-    const model = useModel(PanelModel),
-        {vertical, showSplitterCollapseButton, collapsible} = model;
+export const splitter = hoistCmpFactory(
+    ({model}) => {
+        const {vertical, showSplitterCollapseButton, collapsible} = model;
 
-    const cmp = vertical ? hbox : vbox,
-        cfg = {
-            className: `xh-resizable-splitter ${vertical ? 'vertical' : 'horizontal'}`,
-            item: button({
-                className: 'xh-resizable-collapser-btn',
-                icon: Icon[getChevron(model)](),
-                onClick: () => model.toggleCollapsed(),
-                omit: !showSplitterCollapseButton || !collapsible
-            })
-        };
+        const cmp = vertical ? hbox : vbox,
+            cfg = {
+                className: `xh-resizable-splitter ${vertical ? 'vertical' : 'horizontal'}`,
+                item: button({
+                    className: 'xh-resizable-collapser-btn',
+                    icon: Icon[getChevron(model)](),
+                    onClick: () => model.toggleCollapsed(),
+                    omit: !showSplitterCollapseButton || !collapsible
+                })
+            };
 
-    return cmp(cfg);
-});
+        return cmp(cfg);
+    }
+);
 
 function getChevron(model) {
     const {vertical, collapsed, contentFirst} = model,

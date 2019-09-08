@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistCmpFactory, providedModel, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -20,10 +20,9 @@ import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
  * @private
  */
 export const feedbackDialog = hoistCmpFactory({
-    model: providedModel(FeedbackDialogModel),
+    model: providedAndPublished(FeedbackDialogModel),
 
-    render() {
-        const model = useModel(FeedbackDialogModel);
+    render({model}) {
         if (!model.isOpen) return null;
 
         return dialog({

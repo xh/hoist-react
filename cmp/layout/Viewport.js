@@ -15,6 +15,7 @@ import {box} from './Box';
  */
 export const [Viewport, viewport] = hoistCmpAndFactory({
     displayName: 'Viewport',
+    model: null,
 
     render(props) {
         return box({

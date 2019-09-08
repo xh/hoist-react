@@ -13,6 +13,8 @@ import {button, Button} from './Button';
  */
 export const [ThemeToggleButton, themeToggleButton] = hoistCmpAndFactory({
     displayName: 'ThemeToggleButton',
+    model: null,
+
     render(props) {
         return button({
             icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),

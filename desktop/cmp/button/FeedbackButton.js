@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const [FeedbackButton, feedbackButton] = hoistCmpAndFactory({
     displayName: 'FeedbackButton',
+    model: null,
 
     render(props) {
         return button({

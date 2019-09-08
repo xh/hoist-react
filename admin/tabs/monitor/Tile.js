@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import './Tile.scss';
 
 export const tile = hoistCmpFactory(
-    props => {
+    (props) => {
         const {checksInStatus, lastStatusChanged, metric, metricUnit, message, name, status} = props.check,
             {icon, statusText} = statusProperties(status),
             tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),

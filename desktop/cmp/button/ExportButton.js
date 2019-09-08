@@ -23,6 +23,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  */
 export const [ExportButton, exportButton] = hoistCmpAndFactory({
     displayName: 'ExportButton',
+    model: null,
 
     render({icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest}) {
 

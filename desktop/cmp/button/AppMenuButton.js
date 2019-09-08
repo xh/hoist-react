@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 export const [AppMenuButton, appMenuButton] = hoistCmpAndFactory({
     displayName: 'AppMenuButton',
+    model: null,
 
     render(props) {
         let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;

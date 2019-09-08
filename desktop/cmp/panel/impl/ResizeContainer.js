@@ -5,19 +5,17 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistCmpFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpFactory} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getClassName} from '@xh/hoist/utils/react';
 
 import {dragger} from './Dragger';
 import {splitter} from './Splitter';
-import {PanelModel} from '../PanelModel';
 
 /** @private */
 export const resizeContainer = hoistCmpFactory(
-    (props, ref) => {
-        let model = useModel(PanelModel),
-            className = getClassName('xh-resizable', props),
+    ({model, ...props}, ref) => {
+        let className = getClassName('xh-resizable', props),
             {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [renderChild(model, Children.only(props.children))];
 

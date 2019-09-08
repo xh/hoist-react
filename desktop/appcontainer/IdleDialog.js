@@ -19,7 +19,7 @@ import idleImage from './IdleDialogImage.png';
  * @private
  */
 export const IdleDialog = hoistCmp(
-    props => {
+    ({onReactivate}) => {
         return message({
             model: {
                 title: `${XH.clientAppName} is sleeping`,
@@ -39,7 +39,7 @@ export const IdleDialog = hoistCmp(
                     minimal: false,
                     autoFocus: true
                 },
-                onConfirm: props.onReactivate
+                onConfirm: onReactivate
             },
             className: 'xh-idle-dialog'
         });

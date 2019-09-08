@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, localModel, useModel} from '@xh/hoist/core';
+import {hoistCmp, localAndPublished} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -16,10 +16,10 @@ import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
 export const LogViewer = hoistCmp({
-    model: localModel(LogViewerModel),
+    model: localAndPublished(LogViewerModel),
 
-    render() {
-        const {filesGridModel, logDisplayModel, loadModel, viewRef} = useModel();
+    render({model}) {
+        const {filesGridModel, logDisplayModel, loadModel, viewRef} = model;
 
         return hframe({
             className: 'xh-log-viewer',

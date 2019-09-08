@@ -14,6 +14,7 @@ import {box} from './Box';
  */
 export const [Spacer, spacer] = hoistCmpAndFactory({
     displayName: 'Spacer',
+    model: null,
 
     render(props) {
         return box({
@@ -29,6 +30,7 @@ export const [Spacer, spacer] = hoistCmpAndFactory({
  */
 export const [Filler, filler] = hoistCmpAndFactory({
     displayName: 'Filler',
+    model: null,
 
     render(props) {
         return box({

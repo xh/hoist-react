@@ -5,10 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useModel, provided} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
 import {warnIf} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -19,6 +20,7 @@ import {warnIf} from '@xh/hoist/utils/js';
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
+    model: provided({provideFromContext: false}),
 
     render({model, ...props}) {
         warnIf(
@@ -26,7 +28,7 @@ export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
             'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
         );
 
-        const target = useModel('RefreshContextModel') || model;
+        const target = withDefault(model, useModel('RefreshContextModel'));
 
         return button({
             icon: Icon.refresh(),

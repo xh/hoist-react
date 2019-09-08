@@ -18,6 +18,8 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmpAndFactory({
     displayName: 'RestoreDefaultsButton',
+    model: null,
+
     render({
         warningMessage = 'Are you sure you want to restore defaults?',
         warningTitle = 'All app customizations, including grid customizations, will be restored to their default settings and the app will be reloaded.',

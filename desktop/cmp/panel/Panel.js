@@ -8,7 +8,7 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistCmpAndFactory, useLayoutProps, useModel, providedModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useLayoutProps, providedAndPublished} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -35,11 +35,10 @@ import './Panel.scss';
  */
 export const [Panel, panel] = hoistCmpAndFactory({
     displayName: 'Panel',
-    model: providedModel({type: PanelModel, provideFromContext: false}),
+    model: providedAndPublished({type: PanelModel, provideFromContext: false}),
 
-    render(props, ref) {
-        let model = useModel(),
-            [flags] = useState({wasDisplayed: true}),
+    render({model, ...props}, ref) {
+        let [flags] = useState({wasDisplayed: true}),
             className = getClassName('xh-panel', props),
             [layoutProps, nonLayoutProps] = useLayoutProps(props);
 
@@ -103,7 +102,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
+            panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
 
@@ -122,7 +121,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
-            resizeContainer({ref, item, model}) :
+            resizeContainer({ref, item}) :
             item;
     }
 });
