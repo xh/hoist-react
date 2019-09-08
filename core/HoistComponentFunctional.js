@@ -6,8 +6,8 @@
  */
 import {elemFactory} from '@xh/hoist/core';
 import {isFunction, isPlainObject} from 'lodash';
-import {observer} from 'mobx-react-lite';
-import {useState, useContext, createElement, forwardRef} from 'react';
+import {useObserver} from 'mobx-react-lite';
+import {useState, useContext, createElement, forwardRef, memo} from 'react';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import {HoistModelSpec, provided} from './HoistModelSpec';
@@ -36,7 +36,7 @@ import {ModelLookupContext, ModelLookup, modelLookupContextProvider} from './imp
  * @returns {*} A functional react component.
  */
 export function hoistComponent(config) {
-    // Pre-process raw function
+    // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
     const render = config.render,
@@ -44,22 +44,34 @@ export function hoistComponent(config) {
         argCount = render.length,
         isForwardRef = argCount == 2;
 
-    // Default and validate the modelSpec -- note the default based on presence of props arg.
+    // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
     const modelSpec = withDefault(config.model, argCount > 0 ? provided() : null);
     throwIf(
         modelSpec && !(modelSpec instanceof HoistModelSpec),
         "'model' for hoistComponent() must be a HoistModelSpec."
     );
 
-    let ret;
-    if (modelSpec == null) {
-        ret = createBaseComponent(render, isForwardRef);
-    } else if (modelSpec.publish) {
-        ret = createPublishModelComponent(render, isForwardRef, modelSpec);
-    } else {
-        ret = createSimpleModelComponent(render, isForwardRef, modelSpec);
-    }
+    // 2) Decorate with behaviors: useObserver, model handling, forwardRef, memo
+    // Note that we don't use "observer" which is just useObserver + memo + isForwardRef
+    // Its confusing and gives us less fine-grained control.
 
+    // Questions -- do we want to allow customizability of observer decoration?  memo decoration?
+    // We have a lot of objects that render the default memo() ineffective by taking object props
+    // (e.g. icons, agSpec, model spec, etc)
+    let ret = (props, ref) => useObserver(() => render(props, ref));
+
+    if (modelSpec) {
+        ret = modelSpec.publish ?
+            wrapWithPublishModel(ret, modelSpec):
+            wrapWithSimpleModel(ret,  modelSpec);
+    }
+    if (isForwardRef) {
+        ret = forwardRef(ret);
+        ret.displayName = displayName+'Inner';
+    }
+    ret = memo(ret);
+
+    // 3) Mark and return
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 
@@ -106,43 +118,45 @@ export function hoistCmpAndFactory(config) {
 //-------------------
 // Implementation
 //------------------
-function createBaseComponent(render, isForwardRef) {
-    return observer(render, {forwardRef: isForwardRef});
-}
-
-function createSimpleModelComponent(render, isForwardRef, spec) {
-    // Just enhance render function -- no new component beyond observer required.
-    const enhancedRender = (props, ref) => {
+function wrapWithSimpleModel(render, spec) {
+    return (props, ref) => {
         const [model] = useResolvedModel(spec, props);
         if (model) props = {...props, model};
         return render(props, ref);
     };
-
-    return createBaseComponent(enhancedRender, isForwardRef);
 }
 
-function createPublishModelComponent(render, isForwardRef, spec) {
-    // To publish context, need to wrap the inner observer with additional wrapper component
-    const inner = createBaseComponent(render, isForwardRef);
-    const ret = (props, ref) => {
-        const [model, modelLookup] = useResolvedModel(spec, props);
+function wrapWithPublishModel(render, spec) {
+    return (props, ref) => {
+        const [model, lookup] = useResolvedModel(spec, props);
+        const [newLookup] = useState(
+            () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
+        );
+        if (model) props = {...props, model};
+        const rendering = render(props, ref);
+        return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
+    };
+}
+
+// To publish context, to *self* and children need to wrap a new inner anonymous component with the context.
+// DO WE NEED THIS COMPLEXITY?
+function wrapWithPublishModelComplex(render, isForwardRef, spec) {
+    const inner = isForwardRef ? forwardRef(render) : render;
+    return (props, ref) => {
+        const [model, lookup] = useResolvedModel(spec, props);
         if (isForwardRef || model) {
             props = {...props};
             if (isForwardRef) props.ref = ref;
             if (model) props.model = model;
         }
 
-        const [insertLookup] = useState(() => {
-            return model && (!modelLookup || modelLookup.model !== model) ?
-                new ModelLookup(model, modelLookup) :
-                null;
-        });
+        const [newLookup] = useState(
+            () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
+        );
 
         const innerElement = createElement(inner, props);
-        return insertLookup ? modelLookupContextProvider({value: insertLookup, item: innerElement}) : innerElement;
+        return newLookup ? modelLookupContextProvider({value: newLookup, item: innerElement}) : innerElement;
     };
-
-    return isForwardRef ? forwardRef(ret) : ret;
 }
 
 function useResolvedModel(spec, props) {
