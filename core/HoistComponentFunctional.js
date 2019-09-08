@@ -138,26 +138,26 @@ function wrapWithPublishModel(render, spec) {
     };
 }
 
-// To publish context, to *self* and children need to wrap a new inner anonymous component with the context.
+// Below would publish context, to *self* and children need to wrap a new inner anonymous component with the context.
 // DO WE NEED THIS COMPLEXITY?
-function wrapWithPublishModelComplex(render, isForwardRef, spec) {
-    const inner = isForwardRef ? forwardRef(render) : render;
-    return (props, ref) => {
-        const [model, lookup] = useResolvedModel(spec, props);
-        if (isForwardRef || model) {
-            props = {...props};
-            if (isForwardRef) props.ref = ref;
-            if (model) props.model = model;
-        }
-
-        const [newLookup] = useState(
-            () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
-        );
-
-        const innerElement = createElement(inner, props);
-        return newLookup ? modelLookupContextProvider({value: newLookup, item: innerElement}) : innerElement;
-    };
-}
+// function wrapWithPublishModelComplex(render, isForwardRef, spec) {
+//     const inner = isForwardRef ? forwardRef(render) : render;
+//     return (props, ref) => {
+//         const [model, lookup] = useResolvedModel(spec, props);
+//         if (isForwardRef || model) {
+//             props = {...props};
+//             if (isForwardRef) props.ref = ref;
+//             if (model) props.model = model;
+//         }
+//
+//         const [newLookup] = useState(
+//             () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
+//         );
+//
+//         const innerElement = createElement(inner, props);
+//         return newLookup ? modelLookupContextProvider({value: newLookup, item: innerElement}) : innerElement;
+//     };
+// }
 
 function useResolvedModel(spec, props) {
     const modelLookup = useContext(ModelLookupContext);
