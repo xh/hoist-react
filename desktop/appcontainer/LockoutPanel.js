@@ -24,7 +24,7 @@ export const lockoutPanel = hoistCmpFactory({
     render({model}) {
         return viewport(
             vframe(
-                impersonationBar({model: model.impersonationBarModel}),
+                impersonationBar(),
                 filler(),
                 box({
                     className: 'xh-lockout-panel',

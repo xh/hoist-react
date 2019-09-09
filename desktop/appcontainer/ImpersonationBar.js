@@ -27,6 +27,7 @@ import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarMode
 @HotkeysTarget
 export class ImpersonationBar extends Component {
 
+    static supportModelFromContext = true;
     static modelClass = ImpersonationBarModel;
 
     @observable pendingTarget = null;

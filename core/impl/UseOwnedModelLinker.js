@@ -5,8 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {useEffect} from 'react';
-import {useModel} from '../hooks/UseModel';
+import {useContextModel} from '../hooks/UseModel';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 
 /**
@@ -19,9 +20,8 @@ import {useOnUnmount} from '@xh/hoist/utils/react';
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
-
 export function useOwnedModelLinker(model) {
-    const context = useModel('RefreshContextModel');
+    const context = useContextModel('RefreshContextModel');
     useEffect(() => {
         if (model && model.isLoadSupport) {
             model.loadAsync();
@@ -32,7 +32,5 @@ export function useOwnedModelLinker(model) {
         }
     }, []);
 
-    useOnUnmount(() => {
-        if (model && model.destroy) model.destroy();
-    });
+    useOnUnmount(() => XH.safeDestroy(model));
 }

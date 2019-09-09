@@ -44,8 +44,11 @@ export function HoistModel(C) {
                 return ret;
             },
 
+            // TODO: normalize this into a single 'function' selector at the beginning of the lookup? selector could
+            // flag whether it is interested in sub-model lookups.
             matchesSelector(selector) {
-                return (isFunction(selector) && this instanceof selector) || (isString(selector) && this['is' + selector]);
+                if (isFunction(selector))   return selector.isHoistModel ? this instanceof selector : selector(this);
+                if (isString(selector))     return this['is' + selector];
             }
         }
     });

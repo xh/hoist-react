@@ -26,6 +26,7 @@ import './OptionsDialog.scss';
 @HotkeysTarget
 export class OptionsDialog extends Component {
 
+    static supportModelFromContext = true;
     static modelClass = OptionsDialogModel;
 
     baseClassName = 'xh-options-dialog';

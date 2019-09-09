@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -19,23 +18,20 @@ import './FeedbackDialog.scss';
  *
  * @private
  */
-@HoistComponent
-export class FeedbackDialog extends Component {
+export const feedbackDialog = hoistCmpFactory({
 
-    static modelClass = FeedbackDialogModel;
+    model: providedAndPublished(FeedbackDialogModel),
 
-    render() {
-        const {model} = this;
+    render({model}) {
         if (!model.isOpen) return null;
 
         return dialog({
             title: 'Submit Feedback',
             className: 'xh-feedback-dialog',
             isOpen: true,
-            onCancel: this.onCancelClick,
+            onCancel: () => model.hide(),
             content: textArea({
                 placeholder: 'Please enter your comments...',
-                model,
                 bind: 'message'
             }),
             buttons: [
@@ -43,22 +39,13 @@ export class FeedbackDialog extends Component {
                 button({
                     text: 'Cancel',
                     modifier: 'quiet',
-                    onClick: this.onCancelClick
+                    onClick: () => model.hide()
                 }),
                 button({
                     text: 'Send',
-                    onClick: this.onSendClick
+                    onClick: () => model.submitAsync()
                 })
             ]
         });
     }
-
-    onSendClick = () => {
-        this.model.submitAsync();
-    }
-
-    onCancelClick = () => {
-        this.model.hide();
-    }
-}
-export const feedbackDialog = elemFactory(FeedbackDialog);
+});

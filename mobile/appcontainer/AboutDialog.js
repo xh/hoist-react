@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
+import {hoistCmpFactory, provided, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
@@ -20,13 +19,10 @@ import './AboutDialog.scss';
  *
  * @private
  */
-@HoistComponent
-export class AboutDialog extends Component {
+export const aboutDialog = hoistCmpFactory({
+    model: provided(AboutDialogModel),
 
-    static modelClass = AboutDialogModel;
-
-    render() {
-        const {model} = this;
+    render({model}) {
         if (!model.isOpen) return null;
 
         return dialog({
@@ -34,16 +30,8 @@ export class AboutDialog extends Component {
             title: `About ${XH.appName}`,
             className: 'xh-about-dialog',
             isOpen: true,
-            onCancel: this.onClose,
+            onCancel: () => model.hide(),
             content: model.getTable()
         });
     }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    onClose = () => {
-        this.model.hide();
-    }
-}
-export const aboutDialog = elemFactory(AboutDialog);
+});

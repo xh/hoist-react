@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useModel, provided} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useContextModel, provided} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -28,7 +28,7 @@ export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
             'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
         );
 
-        const target = withDefault(model, useModel('RefreshContextModel'));
+        const target = withDefault(model, useContextModel('RefreshContextModel'));
 
         return button({
             icon: Icon.sync(),

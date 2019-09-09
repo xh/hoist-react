@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmpFactory} from '@xh/hoist/core';
 import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -21,12 +20,10 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-@HoistComponent
-export class ExceptionDialogDetails extends Component {
+export const exceptionDialogDetails = hoistCmpFactory({
 
-    render() {
-        const {model} = this,
-            {detailsIsOpen, exception, options} = model,
+    render({model}) {
+        const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
@@ -47,13 +44,12 @@ export class ExceptionDialogDetails extends Component {
             icon: Icon.search(),
             isOpen: true,
             isCloseButtonShown: !requireReload,
-            onCancel: !requireReload ? this.onCloseClick : null,
+            onCancel: !requireReload ? () => model.close() : null,
             content: fragment(
                 header,
                 pre(this.errorStr),
                 textArea({
                     placeholder: 'Add message here...',
-                    model: model,
                     bind: 'userMessage'
                 })
             ),
@@ -62,25 +58,11 @@ export class ExceptionDialogDetails extends Component {
                     icon: Icon.envelope(),
                     text: 'Send',
                     disabled: !model.userMessage,
-                    onClick: this.onSendClick
+                    onClick: () => model.sendReportAsync()
                 }),
                 filler(),
-                dismissButton({model})
+                dismissButton()
             ]
         });
     }
-
-
-    //------------------------
-    // Implementation
-    //------------------------
-    onSendClick = () => {
-        this.model.sendReportAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.close();
-    }
-}
-
-export const exceptionDialogDetails = elemFactory(ExceptionDialogDetails);
+});

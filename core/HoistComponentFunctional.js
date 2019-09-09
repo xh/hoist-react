@@ -7,7 +7,7 @@
 import {elemFactory} from '@xh/hoist/core';
 import {isFunction, isPlainObject} from 'lodash';
 import {useObserver} from 'mobx-react-lite';
-import {useState, useContext, createElement, forwardRef, memo} from 'react';
+import {useState, useContext, forwardRef, memo} from 'react';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import {HoistModelSpec, provided} from './HoistModelSpec';

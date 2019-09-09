@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
@@ -22,14 +21,11 @@ import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
  *
  * @private
  */
-@HoistComponent
-class Message extends Component {
+export const message = hoistCmpFactory({
+    model: providedAndPublished(MessageModel),
 
-    static modelClass = MessageModel;
-
-    render() {
-        const model = this.model,
-            isOpen = model && model.isOpen,
+    render({model}) {
+        const isOpen = model && model.isOpen,
             {icon, title, message, formModel, cancelProps, confirmProps} = model,
             buttons = [];
 
@@ -59,14 +55,17 @@ class Message extends Component {
             className: 'xh-message',
             content: div(
                 div({omit: !message, className: 'xh-message-content', item: message}),
-                this.renderInput()
+                inputCmp({model})
             ),
-            onCancel: () => this.model.doCancel()
+            onCancel: () => model.doCancel()
         });
     }
+});
 
-    renderInput() {
-        const {formModel, input} = this.model;
+
+const inputCmp = hoistCmpFactory(
+    ({model}) => {
+        const {formModel, input} = model;
         if (!formModel) return null;
         return form({
             model: formModel,
@@ -77,6 +76,4 @@ class Message extends Component {
             })
         });
     }
-
-}
-export const message = elemFactory(Message);
+);

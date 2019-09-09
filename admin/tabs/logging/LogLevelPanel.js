@@ -54,5 +54,5 @@ const modelSpec = {
         {field: 'name'},
         {field: 'level'}
     ]
-}
+};
 

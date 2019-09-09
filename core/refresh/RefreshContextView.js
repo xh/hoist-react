@@ -4,9 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {useContext, useEffect} from 'react';
+import {useEffect} from 'react';
 import {hoistCmpAndFactory, providedAndPublished} from '@xh/hoist/core';
-import {ModelLookupContext} from '../impl/ModelLookup';
+import {useContextModel} from '@xh/hoist/core/index';
 
 /**
  * Establishes an area of the application with an independent RefreshContextModel.
@@ -20,18 +20,16 @@ export const [RefreshContextView, refreshContextView] = hoistCmpAndFactory({
     displayName: 'RefreshContextView',
     model: providedAndPublished('RefreshContextModel'),
 
-    render(props) {
-        const {model} = props,
-            lookup = useContext(ModelLookupContext),
-            parentModel = lookup && lookup.parent ? lookup.parent.lookupModel('RefreshContextModel') : null;
+    render({model, children}) {
+        const parent = useContextModel(m => m.isRefreshContextModel && m != model);
 
         useEffect(() => {
-            if (model && parentModel) {
-                parentModel.register(model);
-                return () => parentModel.unregister(model);
+            if (model && parent) {
+                parent.register(model);
+                return () => parent.unregister(model);
             }
         });
 
-        return props.children;
+        return children;
     }
 });

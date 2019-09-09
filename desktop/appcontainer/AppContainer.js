@@ -6,8 +6,7 @@
  */
 
 import {Component} from 'react';
-import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elemFactory, elem, AppState, XH} from '@xh/hoist/core';
+import {HoistComponent, elemFactory, elem, AppState, XH, hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -23,7 +22,7 @@ import {versionBar}  from './VersionBar';
 import {lockoutPanel} from './LockoutPanel';
 import {messageSource} from './MessageSource';
 import {IdleDialog} from './IdleDialog';
-import {ToastSource} from './ToastSource';
+import {toastSource} from './ToastSource';
 
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
@@ -49,86 +48,86 @@ installDesktopImpls({
  * popup message support, and exception rendering.
  *
  * This component will kick off the Hoist application lifecycle when mounted.
+ * It also handles the high-level error boundary (and therefore must remain a class component)
  */
 @HoistComponent
 export class AppContainer extends Component {
 
     static modelClass = AppContainerModel;
 
-    @observable.ref caughtException = null;
-
     constructor() {
         super();
         XH.initAsync();
     }
 
-    componentDidMount() {
-        this.toastSource = new ToastSource(this.model.toastSourceModel);
-    }
-
     render() {
+        const {model} = this;
         return div(
-            this.renderContent(),
-            // Always be prepared to render exceptions :-(
-            exceptionDialog({
-                model: this.model.exceptionDialogModel
-            })
+            contentView({model}),
+            exceptionDialog({model: model.exceptionDialogModel})
         );
     }
 
-    renderContent() {
-        const {model} = this;
-        const S = AppState;
-        if (this.caughtException) return null;
+    componentDidCatch(e, info) {
+        this.model.setCaughtException(e);
+        XH.handleException(e, {requireReload: true});
+    }
+}
+export const appContainer = elemFactory(AppContainer);
 
+
+//-----------------------------------------
+// Implementation
+//-----------------------------------------
+const contentView = hoistCmpFactory({
+    model: providedAndPublished(AppContainerModel),
+
+    render({model}) {
+        if (model.caughtException) return null;
+
+        const S = AppState;
         switch (XH.appState) {
             case S.PRE_AUTH:
             case S.INITIALIZING:
                 return viewport(mask({isDisplayed: true, spinner: true}));
             case S.LOGIN_REQUIRED:
-                return loginPanel({model: model.loginPanelModel});
+                return loginPanel();
             case S.ACCESS_DENIED:
-                return lockoutPanel({model});
+                return lockoutPanel();
             case S.LOAD_FAILED:
                 return null;
             case S.RUNNING:
             case S.SUSPENDED:
                 return viewport(
                     vframe(
-                        impersonationBar({model: model.impersonationBarModel}),
-                        updateBar({model}),
+                        impersonationBar(),
+                        updateBar(),
                         refreshContextView({
                             model: model.refreshContextModel,
                             item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                         }),
-                        versionBar({model})
+                        versionBar()
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
-                    messageSource({model: model.messageSourceModel}),
-                    optionsDialog({model: model.optionsDialogModel}),
-                    feedbackDialog({model: model.feedbackDialogModel}),
-                    aboutDialog({model: model.aboutDialogModel}),
-                    this.renderIdleDialog()
+                    messageSource(),
+                    toastSource(),
+                    optionsDialog(),
+                    feedbackDialog(),
+                    aboutDialog(),
+                    idleDialog()
                 );
             default:
                 return null;
         }
     }
+});
 
-    componentDidCatch(e, info) {
-        runInAction(() => this.caughtException = e);
-        XH.handleException(e, {requireReload: true});
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    renderIdleDialog() {
+const idleDialog = hoistCmpFactory(
+    () => {
         const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
 
         return XH.appState == AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
             null;
     }
-}
-export const appContainer = elemFactory(AppContainer);
+);

@@ -5,20 +5,36 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, provided, hoistCmpFactory, useLocalModel} from '@xh/hoist/core';
 import {defaultTo, defaults, isElement} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
 
+import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
+
 import './Toast.scss';
 
 /**
- *  Support for showing publishing Blueprint Toasts in an application.
+ *  Support for showing Toasts in a  application.
+ *
+ *  Unusually, this component does not actually render any content, declaratively,
+ *  but for technical reasons, (primarily symmetry with mobile) it remains a component.
  *
  *  @private
  */
+export const toastSource = hoistCmpFactory({
+    model: provided(ToastSourceModel),
+
+    render({model}) {
+        useLocalModel(() => new BlueprintToastModel(model));
+
+        return null;
+    }
+});
+
+
 @HoistModel
-export class ToastSource {
+class BlueprintToastModel {
 
     _toasterMap = new Map();
 
@@ -28,6 +44,7 @@ export class ToastSource {
             run: this.displayPendingToasts
         });
     }
+
 
     //-----------------------------------
     // Implementation

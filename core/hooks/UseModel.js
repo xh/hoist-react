@@ -5,17 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {useState, useContext} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
+import {useOnUnmount} from '@xh/hoist/utils/react';
 
 /**
- * Hook to allow a component to access a HoistModel provided by an ancestor component, or props.  A model
- * set directly on props will take precedence.
- *
- * The model instance is not expected to change for the lifetime of the component. Apps that wish
- * to swap out the model for a mounted component should ensure that a new instance of the component
- * gets mounted. This can be done by rendering the component with a `key` prop set to `model.xhId`, as
- * HoistModels always return IDs unique to each instance.
+ * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
  *
  * @param {(Class|string)} [selector] - class or name of mixin applied to class of
  *      model to be returned.  If not provided the 'closest' inherited model will be returned.
@@ -23,14 +19,9 @@ import {ModelLookupContext} from '../impl/ModelLookup';
  *
  * @returns model or null if no matching model found.
  */
-export function useModel(selector, props) {
+export function useContextModel(selector) {
     const modelLookup = useContext(ModelLookupContext),
         [ret] = useState(() => {
-            if (props) {
-                const {model} = props;
-                // TODO: validate with selector here?
-                if (model && model.isHoistModel) return model;
-            }
             if (modelLookup) {
                 return modelLookup.lookupModel(selector);
             }
@@ -38,4 +29,15 @@ export function useModel(selector, props) {
         });
 
     return ret;
+}
+
+/**
+ * Create a new model that will be maintained for lifetime of component and destroyed
+ * when component is unmounted.
+ *
+ * @param spec
+ */
+export function useLocalModel(spec) {
+    const [ret] = useState(() => spec.isHoistModel ? new spec() : spec.call());
+    useOnUnmount(() => XH.safeDestroy(ret));
 }
