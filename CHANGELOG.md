@@ -13,7 +13,7 @@
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Resizable panels now default to not redrawing their content when resized until the resize bar is dropped.
-  To force a panel to redraw while the resize bar is being dragged, set `animateResize=true` on the PanelModel config.
+  To force a panel to redraw while the resize bar is being dragged, set `animateResize:true` on the PanelModel config.
 
 
 ### 💥 Breaking Changes
