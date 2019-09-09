@@ -40,7 +40,7 @@ export class DateInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
-        value: PT.instanceOf(Date),
+        value: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
         /** Props passed to ReactDayPicker component, as per DayPicker docs. */
         dayPickerProps: PT.object,
@@ -70,10 +70,10 @@ export class DateInput extends HoistInput {
         rightElement: PT.element,
 
         /** Maximum (inclusive) valid date. */
-        maxDate: PT.instanceOf(Date, LocalDate),
+        maxDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
         /** Minimum (inclusive) valid date. */
-        minDate: PT.instanceOf(Date, LocalDate),
+        minDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
         /** Text to display when control is empty. */
         placeholder: PT.string,
