@@ -23,3 +23,17 @@
     &.right {left: 0;}
     &.left {right: 0;}
 }
+
+.xh-resizable-dragger-visible {
+    display: none;
+    z-index: 1;
+    opacity: .75;
+
+    &.vertical {
+        width: 100%;
+    }
+
+    &.horizontal {
+        height: 100%;
+    }
+}

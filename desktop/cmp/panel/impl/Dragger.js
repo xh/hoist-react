@@ -9,7 +9,6 @@ import {Component} from 'react';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {PanelModel} from '../PanelModel';
-import {capitalize} from 'lodash';
 
 import './Dragger.scss';
 
@@ -24,6 +23,8 @@ export class Dragger extends Component {
     resizeState = null;
     startSize = null;
     diff = null;
+    panel = null;
+    panelParent = null;
 
     constructor(props) {
         super(props);
@@ -43,6 +44,8 @@ export class Dragger extends Component {
     onDragStart = (e) => {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
         this.startSize = this.model.size;
+        this.panel = e.target.parentElement;
+        this.panelParent = this.panel.parentElement;
         this.model.setIsResizing(true);
         this.insertDraggableSplitter(e);
         e.stopPropagation();
@@ -71,78 +74,104 @@ export class Dragger extends Component {
             case 'top':     this.diff = clientY - startY; break;
         }
 
-        this.moveSplitterBar(e);
+        this.moveSplitterBar();
     }
 
-    onDragEnd = () => {
-        console.log('ender');
+    onDragEnd = (e) => {
         if (this.diff === null) return;
 
-        this.model.setSize(this.startSize + this.diff);
+        const size = this.solveNewSize();
+
+        this.model.setSize(size);
         this.resizeState = null;
         this.startSize = null;
         this.diff = null;
+        this.panel = null;
+        this.panelParent = null;
         this.model.setIsResizing(false);
 
-        const clone = document.querySelector('.xh-draggable-splitter-bar');
+        const clone = document.querySelector('.xh-resizable-dragger-visible');
         clone.parentElement.removeChild(clone);
+    }
 
+    solveNewSize() {
+        return Math.min(this.solveMaxSize(), Math.max(0, this.startSize + this.diff));
     }
 
     insertDraggableSplitter(e) {
-        const {side} = this.model,
-            splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
-            panel = splitter.parentElement,
-            clone = splitter.cloneNode(),
-            splitterSide = this.getSplitterSide(),
-            stl = clone.style;
+        // clone .xh-resizable-splitter to get its styling
+        const splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
+            clone = splitter.cloneNode();
 
-        let dim;
-        switch (side) {
+        // set position=absolute here
+        // to overide whatever may be in splitter inline styles
+        clone.style.position = 'absolute';
+        clone.classList.add('xh-resizable-dragger-visible');
+        this.panelParent.appendChild(clone);
+    }
+
+    moveSplitterBar() {
+        const {diff, model, panel, panelParent} = this,
+            bar = panelParent.querySelector('.xh-resizable-dragger-visible'),
+            stl = bar.style;
+
+        let maxSize = this.solveMaxSize();
+
+        switch (model.side) {
             case 'left':
-            case 'right':   dim = 'height'; break;
+                if (diff + this.startSize <= 0) {                       // min-size
+                    stl.left = panel.offsetLeft + 'px';
+                } else if (diff + this.startSize >= maxSize) {          // max-size
+                    stl.left = maxSize + 'px';
+                } else {
+                    stl.left = (panel.offsetWidth + diff) + 'px';
+                }
+                break;
+            case 'right':
+                if (diff + this.startSize <= 0) {                       // min-size
+                    stl.left = (panel.offsetLeft + this.startSize) + 'px';
+                } else if (diff + this.startSize >= maxSize) {          // max-size
+                    stl.left = (panelParent.offsetWidth - maxSize - bar.offsetWidth) + 'px';
+                } else {
+                    stl.left = (panel.offsetLeft  - diff) + 'px';
+                }
+                break;
             case 'bottom':
-            case 'top':     dim = 'width'; break;
+                if (diff + this.startSize <= 0) {                       // min-size
+                    stl.top = (panel.offsetTop + this.startSize) + 'px';
+                } else if (diff + this.startSize >= maxSize) {          // max-size
+                    stl.top = (panelParent.offsetHeight - maxSize - bar.offsetHeight) + 'px';
+                } else {
+                    stl.top = (panel.offsetTop - diff) + 'px';
+                }
+                break;
+            case 'top':
+                if (diff + this.startSize <= 0) {                       // min-size
+                    stl.top = panel.offsetTop + 'px';
+                } else if (diff + this.startSize >= maxSize) {         // max-size
+                    stl.top = (maxSize) + 'px';
+                } else {
+                    stl.top = (panel.offsetHeight + diff - bar.offsetHeight) + 'px';
+                }
+                break;
         }
 
-        clone.classList.add('xh-draggable-splitter-bar');
-        stl.position = 'absolute';
-        stl[splitterSide] =  panel['offset' + capitalize(splitterSide)] + 'px';
-        stl[dim] = '100%';
-        stl.zIndex = 1;
-        splitter.parentElement.parentElement.appendChild(clone);
+        stl.display = 'block';
     }
 
-    moveSplitterBar(e) {
-        const {side} = this.model,
-            panel = e.target.parentElement,
-            splitterSide  = this.getSplitterSide(),
-            bar = panel.parentElement.querySelector('.xh-draggable-splitter-bar'),
-            {diff} = this;
+    solveMaxSize() {
+        const {model, panel, panelParent, startSize} = this,
+            prevSib = panel.previousElementSibling,
+            nextSib = panel.nextElementSibling;
 
-        switch (side) {
-            case 'left':     break;
-            case 'right':   break;
-            case 'bottom':  if ((diff < 0 && diff * -1 > this.startSize) || diff > panel['offset' + capitalize(splitterSide)]) return; break;
-            case 'top':     break;
+        switch (model.side) {
+            case 'left':    return nextSib ? startSize + nextSib.offsetWidth : panelParent.offsetWidth;
+            case 'right':   return prevSib ? startSize + prevSib.offsetWidth : panelParent.offsetWidth;
+            case 'bottom':  return prevSib ? startSize + prevSib.offsetHeight -1 : panelParent.offsetHeight;
+            case 'top':     return nextSib ? startSize + nextSib.offsetHeight - 1 : panelParent.offsetHeight;
         }
-
-        const stl = bar.style;
-        // console.log(bar['offset' + capitalize(splitterSide)], diff);
-        stl[splitterSide] = (panel['offset' + capitalize(splitterSide)] + diff * -1) + 'px';
     }
 
-    getSplitterSide() {
-        const {side} = this.model;
-        let ret;
-        switch (side) {
-            case 'left':    ret = 'right'; break;
-            case 'right':   ret = 'left'; break;
-            case 'bottom':  ret = 'top'; break;
-            case 'top':     ret = 'bottom'; break;
-        }
-        return ret;
-    }
 
     getSibling(item, dir, className) {
         const method = dir + 'ElementSibling';
