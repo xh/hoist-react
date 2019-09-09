@@ -22,6 +22,7 @@ export class PanelModel {
     // Immutable Properties
     //-----------------------
     resizable;
+    animateResize;
     collapsible;
     defaultSize;
     defaultCollapsed;
@@ -47,6 +48,7 @@ export class PanelModel {
     /**
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can panel be resized?
+     * @param {boolean} [config.animateResize] - Redraw panel as resize happens?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {number} config.defaultSize - Default size of content (in pixels).
      * @param {number} [config.defaultCollapsed] - Default collapsed state.
@@ -64,6 +66,7 @@ export class PanelModel {
     constructor({
         collapsible = true,
         resizable = true,
+        animateResize = false,
         defaultSize,
         defaultCollapsed = false,
         side,
@@ -78,6 +81,7 @@ export class PanelModel {
         // Set immutables
         this.collapsible = collapsible;
         this.resizable = resizable;
+        this.animateResize = animateResize;
         this.defaultSize = defaultSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -142,7 +146,7 @@ export class PanelModel {
     get contentFirst() {
         return this.side === 'top' || this.side === 'left';
     }
-    
+
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------

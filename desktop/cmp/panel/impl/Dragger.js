@@ -106,6 +106,11 @@ export class Dragger extends Component {
         // set position=absolute here
         // to overide whatever may be in splitter inline styles
         clone.style.position = 'absolute';
+
+        // display = none needed to prevent flash of new bar
+        // even though its css already has display: none
+        clone.style.display = 'none';
+
         clone.classList.add('xh-resizable-dragger-visible');
         this.panelParent.appendChild(clone);
     }

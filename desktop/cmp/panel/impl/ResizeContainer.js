@@ -9,6 +9,7 @@ import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getClassName} from '@xh/hoist/utils/react';
 
+import {draggerAnimated} from './DraggerAnimated';
 import {dragger} from './Dragger';
 import {splitter} from './Splitter';
 import {PanelModel} from '../PanelModel';
@@ -18,7 +19,7 @@ export const resizeContainer = hoistElemFactory(
     (props, ref) => {
         let model = useProvidedModel(PanelModel, props),
             className = getClassName('xh-resizable', props),
-            {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+            {animateResize, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             items = [renderChild(model, Children.only(props.children))];
 
         if (showSplitter) {
@@ -27,7 +28,8 @@ export const resizeContainer = hoistElemFactory(
         }
 
         if (!collapsed && resizable) {
-            items.push(dragger({model}));
+            const drg = animateResize ? draggerAnimated({model}) : dragger({model});
+            items.push(drg);
         }
 
         const cmp = vertical ? vbox : hbox,
