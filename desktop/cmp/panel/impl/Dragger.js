@@ -116,20 +116,20 @@ export class Dragger extends Component {
     }
 
     moveSplitterBar() {
-        const {diff, model, panel, panelParent} = this,
+        const {diff, model, panel, panelParent, startSize} = this,
             bar = panelParent.querySelector('.xh-resizable-dragger-visible'),
             prevSib = panel.previousElementSibling,
             stl = bar.style;
 
         let maxSize = this.solveMaxSize();
-        if (diff + this.startSize <= 0) {               // min-size
+        if (diff + startSize <= 0) {               // min-size
             switch (model.side) {
                 case 'left':    stl.left = panel.offsetLeft + 'px'; break;
-                case 'right':   stl.left = (panel.offsetLeft + this.startSize) + 'px'; break;
-                case 'bottom':  stl.top = (panel.offsetTop + this.startSize) + 'px'; break;
+                case 'right':   stl.left = (panel.offsetLeft + startSize) + 'px'; break;
+                case 'bottom':  stl.top = (panel.offsetTop + startSize) + 'px'; break;
                 case 'top':     stl.top = panel.offsetTop + 'px'; break;
             }
-        } else if (diff + this.startSize >= maxSize) {  // max-size
+        } else if (diff + startSize >= maxSize) {  // max-size
             switch (model.side) {
                 case 'left':    stl.left = (panel.offsetLeft + maxSize) + 'px'; break;
                 case 'right':   stl.left = (prevSib ? prevSib.offsetLeft : 0) + 'px'; break;
@@ -139,7 +139,7 @@ export class Dragger extends Component {
         } else {
             switch (model.side) {
                 case 'left':    stl.left = (panel.offsetLeft + panel.offsetWidth + diff) + 'px'; break;
-                case 'right':   stl.left = (panel.offsetLeft  - diff) + 'px'; break;
+                case 'right':   stl.left = (panel.offsetLeft - diff) + 'px'; break;
                 case 'bottom':  stl.top = (panel.offsetTop - diff) + 'px'; break;
                 case 'top':     stl.top = (panel.offsetTop + panel.offsetHeight + diff - bar.offsetHeight) + 'px'; break;
             }
