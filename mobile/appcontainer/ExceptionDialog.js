@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
-import {fragment, filler} from '@xh/hoist/cmp/layout';
+import {XH, hoistCmpFactory, provided} from '@xh/hoist/core';
+import {filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,14 +22,14 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  * @private
  */
 export const exceptionDialog = hoistCmpFactory({
-    model: providedAndPublished(ExceptionDialogModel),
+    model: provided(ExceptionDialogModel),
 
     render({model}) {
         const {exception, options} = model;
 
         if (!exception) return null;
 
-        return fragment(
+        return [
             dialog({
                 isOpen: true,
                 title: options.title,
@@ -42,14 +42,14 @@ export const exceptionDialog = hoistCmpFactory({
                         icon: Icon.search(),
                         text: 'Show/Report Details',
                         onClick: () => model.openDetails(),
-                        omit: !model.options.showAsError
+                        omit: !options.showAsError
                     }),
                     filler(),
                     dismissButton({model})
                 ]
             }),
             exceptionDialogDetails({model})
-        );
+        ];
     }
 });
 

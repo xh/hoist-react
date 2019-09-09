@@ -38,7 +38,6 @@ export const versionBar = hoistCmpFactory({
     }
 });
 
-
 function isShowing() {
     const env = XH.getEnv('appEnvironment');
 

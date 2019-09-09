@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpFactory} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, provided} from '@xh/hoist/core';
 import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -13,6 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
@@ -21,6 +22,7 @@ import {dismissButton} from './ExceptionDialog';
  * @private
  */
 export const exceptionDialogDetails = hoistCmpFactory({
+    model: provided(ExceptionDialogModel),
 
     render({model}) {
         const {detailsIsOpen, exception, options} = model,
@@ -29,7 +31,7 @@ export const exceptionDialogDetails = hoistCmpFactory({
 
         if (!detailsIsOpen || !exception) return null;
 
-        this.errorStr = stringifyErrorSafely(exception);
+        const errorStr = stringifyErrorSafely(exception);
         const header = table(
             tbody(
                 row('Name', exception.name),
@@ -47,10 +49,11 @@ export const exceptionDialogDetails = hoistCmpFactory({
             onCancel: !requireReload ? () => model.close() : null,
             content: fragment(
                 header,
-                pre(this.errorStr),
+                pre(errorStr),
                 textArea({
                     placeholder: 'Add message here...',
-                    bind: 'userMessage'
+                    bind: 'userMessage',
+                    model
                 })
             ),
             buttons: [
@@ -61,7 +64,7 @@ export const exceptionDialogDetails = hoistCmpFactory({
                     onClick: () => model.sendReportAsync()
                 }),
                 filler(),
-                dismissButton()
+                dismissButton({model})
             ]
         });
     }
