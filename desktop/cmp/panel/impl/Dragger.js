@@ -118,49 +118,32 @@ export class Dragger extends Component {
     moveSplitterBar() {
         const {diff, model, panel, panelParent} = this,
             bar = panelParent.querySelector('.xh-resizable-dragger-visible'),
+            prevSib = panel.previousElementSibling,
             stl = bar.style;
 
         let maxSize = this.solveMaxSize();
-
-        switch (model.side) {
-            case 'left':
-                if (diff + this.startSize <= 0) {                       // min-size
-                    stl.left = panel.offsetLeft + 'px';
-                } else if (diff + this.startSize >= maxSize) {          // max-size
-                    stl.left = maxSize + 'px';
-                } else {
-                    stl.left = (panel.offsetWidth + diff) + 'px';
-                }
-                break;
-            case 'right':
-                if (diff + this.startSize <= 0) {                       // min-size
-                    stl.left = (panel.offsetLeft + this.startSize) + 'px';
-                } else if (diff + this.startSize >= maxSize) {          // max-size
-                    stl.left = (panelParent.offsetWidth - maxSize - bar.offsetWidth) + 'px';
-                } else {
-                    stl.left = (panel.offsetLeft  - diff) + 'px';
-                }
-                break;
-            case 'bottom':
-                if (diff + this.startSize <= 0) {                       // min-size
-                    stl.top = (panel.offsetTop + this.startSize) + 'px';
-                } else if (diff + this.startSize >= maxSize) {          // max-size
-                    stl.top = (panelParent.offsetHeight - maxSize - bar.offsetHeight) + 'px';
-                } else {
-                    stl.top = (panel.offsetTop - diff) + 'px';
-                }
-                break;
-            case 'top':
-                if (diff + this.startSize <= 0) {                       // min-size
-                    stl.top = panel.offsetTop + 'px';
-                } else if (diff + this.startSize >= maxSize) {         // max-size
-                    stl.top = (maxSize) + 'px';
-                } else {
-                    stl.top = (panel.offsetHeight + diff - bar.offsetHeight) + 'px';
-                }
-                break;
+        if (diff + this.startSize <= 0) {               // min-size
+            switch (model.side) {
+                case 'left':    stl.left = panel.offsetLeft + 'px'; break;
+                case 'right':   stl.left = (panel.offsetLeft + this.startSize) + 'px'; break;
+                case 'bottom':  stl.top = (panel.offsetTop + this.startSize) + 'px'; break;
+                case 'top':     stl.top = panel.offsetTop + 'px'; break;
+            }
+        } else if (diff + this.startSize >= maxSize) {  // max-size
+            switch (model.side) {
+                case 'left':    stl.left = (panel.offsetLeft + maxSize) + 'px'; break;
+                case 'right':   stl.left = (prevSib ? prevSib.offsetLeft : 0) + 'px'; break;
+                case 'bottom':  stl.top = (panelParent.offsetHeight - maxSize - bar.offsetHeight) + 'px'; break;
+                case 'top':     stl.top = (panel.offsetTop + maxSize) + 'px'; break;
+            }
+        } else {
+            switch (model.side) {
+                case 'left':    stl.left = (panel.offsetLeft + panel.offsetWidth + diff) + 'px'; break;
+                case 'right':   stl.left = (panel.offsetLeft  - diff) + 'px'; break;
+                case 'bottom':  stl.top = (panel.offsetTop - diff) + 'px'; break;
+                case 'top':     stl.top = (panel.offsetTop + panel.offsetHeight + diff - bar.offsetHeight) + 'px'; break;
+            }
         }
-
         stl.display = 'block';
     }
 
@@ -170,10 +153,16 @@ export class Dragger extends Component {
             nextSib = panel.nextElementSibling;
 
         switch (model.side) {
-            case 'left':    return nextSib ? startSize + nextSib.offsetWidth : panelParent.offsetWidth;
-            case 'right':   return prevSib ? startSize + prevSib.offsetWidth : panelParent.offsetWidth;
-            case 'bottom':  return prevSib ? startSize + prevSib.offsetHeight -1 : panelParent.offsetHeight;
-            case 'top':     return nextSib ? startSize + nextSib.offsetHeight - 1 : panelParent.offsetHeight;
+            case 'left':    return nextSib ?
+                startSize + nextSib.offsetWidth :
+                panelParent.offsetWidth - panel.offsetLeft;
+            case 'right':   return startSize + (prevSib ? prevSib.offsetWidth : panel.offsetLeft);
+            case 'bottom':  return prevSib ?
+                startSize + prevSib.offsetHeight -1 :
+                panelParent.offsetHeight - (panelParent.offsetHeight - (panel.offsetTop + startSize));
+            case 'top':     return nextSib ?
+                startSize + nextSib.offsetHeight - 1 :
+                panelParent.offsetHeight - panel.offsetTop;
         }
     }
 
