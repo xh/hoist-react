@@ -24,7 +24,6 @@
 
 * Date picker month and year controls will now work properly in LocalDate mode. (Previously would reset to underlying value)
 
-[Commit Log](https://github.com/exhi/hoist-react/compare/v27.0.1...develop)
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
 ## v27.1.0 - 2019-09-05
