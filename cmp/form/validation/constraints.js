@@ -118,7 +118,7 @@ export function constrainAll(constraint) {
     return ({values, displayName}) => {
         if (isNil(values) || isEmpty(values)) return null;
         
-        for (v in values) {
+        for (let value in values) {
             const fail = constraint({value, displayName});
             if (fail) return fail;
         }
