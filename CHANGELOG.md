@@ -10,7 +10,7 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
-* `stringExcludesAll` function added to form validation constraints.  This allows
+* `stringExcludes` function added to form validation constraints.  This allows
    an input value to block specific characters or strings, e.g. no slash "/" in a textInput for
    a filename.
 * `constrainAll` function added to form validation constraints.  This takes another
