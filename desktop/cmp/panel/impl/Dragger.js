@@ -77,7 +77,7 @@ export class Dragger extends Component {
         this.moveSplitterBar();
     }
 
-    onDragEnd = (e) => {
+    onDragEnd = () => {
         if (this.diff === null) return;
 
         const size = this.solveNewSize();
@@ -137,7 +137,7 @@ export class Dragger extends Component {
             }
         } else {
             switch (model.side) {
-                case 'left':    stl.left = (panel.offsetLeft + panel.offsetWidth + diff) + 'px'; break;
+                case 'left':    stl.left = (panel.offsetLeft + startSize + diff) + 'px'; break;
                 case 'right':   stl.left = (panel.offsetLeft - diff) + 'px'; break;
                 case 'bottom':  stl.top = (panel.offsetTop - diff) + 'px'; break;
                 case 'top':     stl.top = (panel.offsetTop + startSize + diff - bar.offsetHeight) + 'px'; break;
@@ -150,14 +150,13 @@ export class Dragger extends Component {
         const {model, panel, startSize} = this,
             prevSib = panel.previousElementSibling,
             nextSib = panel.nextElementSibling;
-
+            // Use 'clientWidth/Height', not 'offsetWidth/Height' here, because clientHeight does not count borders.
+            // Flexbox does not collapse borders when resizing.
         switch (model.side) {
-            case 'left':    return startSize + nextSib.offsetWidth - this.getDragBarDim();
-            case 'right':   return startSize + prevSib.offsetWidth - this.getDragBarDim();
-            case 'bottom':  return startSize + prevSib.offsetHeight - this.getDragBarDim();
-            // need -1 here to avoid pushing down panel beneath when new size is set
-            // smelly, but can't find cause
-            case 'top':     return startSize + nextSib.offsetHeight - this.getDragBarDim() - 1;
+            case 'left':    return startSize + nextSib.clientWidth - this.getDragBarDim();
+            case 'right':   return startSize + prevSib.clientWidth - this.getDragBarDim();
+            case 'bottom':  return startSize + prevSib.clientHeight - this.getDragBarDim();
+            case 'top':     return startSize + nextSib.clientHeight - this.getDragBarDim();
         }
     }
 
