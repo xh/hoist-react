@@ -183,7 +183,10 @@ export class HoistInput extends Component {
 
     internalFromExternal() {
         const ret = this.toInternal(this.externalValue);
-        if (isEqual(this.internalValue, ret)) return this.internalValue; // if values are functionally equivalent keep references consistent (to prevent unwanted renders)
+
+        // keep references consistent (to prevent unwanted renders)
+        if (isEqual(this.internalValue, ret)) return this.internalValue;
+
         return ret;
     }
 
