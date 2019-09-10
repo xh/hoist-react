@@ -23,7 +23,7 @@ export class AppModel {
         switcherPosition: 'none',
         tabs: this.createTabs()
     });
-    
+
     getRoutes() {
         return [
             {
@@ -90,7 +90,7 @@ export class AppModel {
     createTabs() {
         return [
             {id: 'general', icon: Icon.info(), content: GeneralTab},
-            {id: 'activity', icon: Icon.chartBar(), content: ActivityTab},
+            {id: 'activity', icon: Icon.analytics(), content: ActivityTab},
             {id: 'logging', icon: Icon.fileText(), content: LoggingTab},
             {id: 'monitor', icon: Icon.shieldCheck(), content: MonitorTab},
             {id: 'preferences', icon: Icon.bookmark(), content: PreferencesTab}
