@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {useEffect} from 'react';
-import {useContextModel} from '../hooks/UseModel';
+import {useContextModel} from '../hooks/Models';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 
 /**

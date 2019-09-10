@@ -96,7 +96,7 @@ export function HoistComponent(C) {
                     }
 
                     // 2c) Validate and return
-                    if (modelClass && !(ret instanceof modelClass)) throwWrongModelClass(this);
+                    if (ret && modelClass && !(ret instanceof modelClass)) throwWrongModelClass(modelClass);
                     return this._model = ret;
                 },
 
@@ -199,8 +199,8 @@ function throwModelChangeException() {
             `);
 }
 
-function throwWrongModelClass(obj) {
-    throw XH.exception(`Component requires model of type ${obj.modelClass}.`);
+function throwWrongModelClass(modelClass) {
+    throw XH.exception(`Component requires model of type ${modelClass.name}.`);
 }
 
 function warnNoModelClassProvided() {

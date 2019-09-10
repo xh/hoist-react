@@ -15,8 +15,6 @@ import {useOnUnmount} from '@xh/hoist/utils/react';
  *
  * @param {(Class|string)} [selector] - class or name of mixin applied to class of
  *      model to be returned.  If not provided the 'closest' inherited model will be returned.
- * @param {Array} [props] - provide to do initial search in props.
- *
  * @returns model or null if no matching model found.
  */
 export function useContextModel(selector) {
@@ -40,4 +38,5 @@ export function useContextModel(selector) {
 export function useLocalModel(spec) {
     const [ret] = useState(() => spec.isHoistModel ? new spec() : spec.call());
     useOnUnmount(() => XH.safeDestroy(ret));
+    return ret;
 }

@@ -6,7 +6,7 @@
  */
 
 import {XH, hoistCmpFactory, provided} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -29,7 +29,7 @@ export const exceptionDialog = hoistCmpFactory({
 
         if (!exception) return null;
 
-        return [
+        return fragment(
             dialog({
                 isOpen: true,
                 title: options.title,
@@ -49,7 +49,7 @@ export const exceptionDialog = hoistCmpFactory({
                 ]
             }),
             exceptionDialogDetails({model})
-        ];
+        );
     }
 });
 
