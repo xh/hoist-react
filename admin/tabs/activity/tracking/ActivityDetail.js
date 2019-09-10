@@ -7,7 +7,7 @@
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {hoistCmpFactory} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {filler, table, tbody, tr, th, td, fragment} from '@xh/hoist/cmp/layout';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
@@ -34,7 +34,7 @@ const detail = hoistCmpFactory(
         const rec = model.detailRecord,
             user = rec.impersonating ? `${rec.username} as ${rec.impersonating}` : rec.username;
 
-        return [
+        return fragment(
             table({
                 className: 'xh-admin-activity-detail',
                 items: [
@@ -65,6 +65,6 @@ const detail = hoistCmpFactory(
                     onClick: () => model.closeDetail()
                 })
             )
-        ];
+        );
     }
 );
