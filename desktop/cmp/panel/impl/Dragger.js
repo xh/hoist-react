@@ -118,7 +118,6 @@ export class Dragger extends Component {
     moveSplitterBar() {
         const {diff, model, panel, panelParent, startSize} = this,
             bar = panelParent.querySelector('.xh-resizable-dragger-visible'),
-            prevSib = panel.previousElementSibling,
             stl = bar.style;
 
         let maxSize = this.solveMaxSize();
@@ -132,8 +131,8 @@ export class Dragger extends Component {
         } else if (diff + startSize >= maxSize) {  // max-size
             switch (model.side) {
                 case 'left':    stl.left = (panel.offsetLeft + maxSize) + 'px'; break;
-                case 'right':   stl.left = (prevSib ? prevSib.offsetLeft : 0) + 'px'; break;
-                case 'bottom':  stl.top = (panelParent.offsetHeight - maxSize - bar.offsetHeight) + 'px'; break;
+                case 'right':   stl.left = (panel.offsetLeft + startSize - maxSize) + 'px'; break;
+                case 'bottom':  stl.top = (panel.offsetTop + startSize - maxSize) + 'px'; break;
                 case 'top':     stl.top = (panel.offsetTop + maxSize) + 'px'; break;
             }
         } else {
@@ -141,7 +140,7 @@ export class Dragger extends Component {
                 case 'left':    stl.left = (panel.offsetLeft + panel.offsetWidth + diff) + 'px'; break;
                 case 'right':   stl.left = (panel.offsetLeft - diff) + 'px'; break;
                 case 'bottom':  stl.top = (panel.offsetTop - diff) + 'px'; break;
-                case 'top':     stl.top = (panel.offsetTop + panel.offsetHeight + diff - bar.offsetHeight) + 'px'; break;
+                case 'top':     stl.top = (panel.offsetTop + startSize + diff - bar.offsetHeight) + 'px'; break;
             }
         }
         stl.display = 'block';
@@ -154,18 +153,32 @@ export class Dragger extends Component {
 
         switch (model.side) {
             case 'left':    return nextSib ?
-                startSize + nextSib.offsetWidth :
+                startSize + nextSib.offsetWidth - this.getDragBarDim() :
                 panelParent.offsetWidth - panel.offsetLeft;
-            case 'right':   return startSize + (prevSib ? prevSib.offsetWidth : panel.offsetLeft);
+            case 'right':   return startSize + (prevSib ? prevSib.offsetWidth - this.getDragBarDim() : panel.offsetLeft);
             case 'bottom':  return prevSib ?
-                startSize + prevSib.offsetHeight -1 :
+                startSize + prevSib.offsetHeight - this.getDragBarDim() :
                 panelParent.offsetHeight - (panelParent.offsetHeight - (panel.offsetTop + startSize));
             case 'top':     return nextSib ?
-                startSize + nextSib.offsetHeight - 1 :
+                // need -1 here to avoid pushing down panel beneath when new size is set
+                // can't find cause
+                startSize + nextSib.offsetHeight - 1 - this.getDragBarDim() :
                 panelParent.offsetHeight - panel.offsetTop;
         }
     }
 
+    getDragBarDim() {
+        const {model, panel} = this,
+            prevSib = panel.previousElementSibling,
+            nextSib = panel.nextElementSibling;
+
+        switch (model.side) {
+            case 'left':    return nextSib.classList.contains('xh-resizable') ? nextSib.querySelector('.xh-resizable-splitter').offsetWidth : 0;
+            case 'right':   return prevSib.classList.contains('xh-resizable') ? prevSib.querySelector('.xh-resizable-splitter').offsetWidth : 0;
+            case 'bottom':  return prevSib.classList.contains('xh-resizable') ? prevSib.querySelector('.xh-resizable-splitter').offsetHeight : 0;
+            case 'top':     return nextSib.classList.contains('xh-resizable') ? nextSib.querySelector('.xh-resizable-splitter').offsetHeight : 0;
+        }
+    }
 
     getSibling(item, dir, className) {
         const method = dir + 'ElementSibling';
