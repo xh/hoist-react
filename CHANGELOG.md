@@ -13,9 +13,9 @@
 * `stringExcludesAll` function added to form validation constraints.  This allows
    an input value to block specific characters or strings, e.g. no slash "/" in a textInput for
    a filename.
-* `applyToAll` function added to form validation constraints.  This takes another
+* `constrainAll` function added to form validation constraints.  This takes another
    constraint as its only argument, and applies that constraint to an array of values,
-   rather than just one value.  This is useful for applying a constraint to inputs that produce
+   rather than just to one value.  This is useful for applying a constraint to inputs that produce
    arrays, such as tag pickers.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
