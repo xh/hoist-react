@@ -10,6 +10,14 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
+* `stringExcludes` function added to form validation constraints.  This allows
+   an input value to block specific characters or strings, e.g. no slash "/" in a textInput for
+   a filename.
+* `constrainAll` function added to form validation constraints.  This takes another
+   constraint as its only argument, and applies that constraint to an array of values,
+   rather than just to one value.  This is useful for applying a constraint to inputs that produce
+   arrays, such as tag pickers.
+* `DateInput` will now accept LocalDates as `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Resizable panels now default to not redrawing their content when resized until the resize bar is dropped.
@@ -21,6 +29,10 @@
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
+  
+### 🐞 Bug Fixes
+
+* Date picker month and year controls will now work properly in LocalDate mode. (Previously would reset to underlying value)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
