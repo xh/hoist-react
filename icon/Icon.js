@@ -15,6 +15,7 @@ import {toLower} from 'lodash';
 import {
     faAddressCard,
     faAlignJustify,
+    faAnalytics,
     faAngleDoubleDown,
     faAngleDoubleLeft,
     faAngleDoubleRight,
@@ -172,6 +173,7 @@ import {
 import {
     faAddressCard as faAddressCardLight,
     faAlignJustify as faAlignJustifyLight,
+    faAnalytics as faAnalyticsLight,
     faAngleDoubleDown as faAngleDoubleDownLight,
     faAngleDoubleLeft as faAngleDoubleLeftLight,
     faAngleDoubleRight as faAngleDoubleRightLight,
@@ -329,6 +331,7 @@ import {
 import {
     faAddressCard as faAddressCardSolid,
     faAlignJustify as faAlignJustifySolid,
+    faAnalytics as faAnalyticsSolid,
     faAngleDoubleDown as faAngleDoubleDownSolid,
     faAngleDoubleLeft as faAngleDoubleLeftSolid,
     faAngleDoubleRight as faAngleDoubleRightSolid,
@@ -488,6 +491,7 @@ library.add(
     faAddressCard, faAddressCardLight, faAddressCardSolid,
     faAddressCard, faAddressCardLight, faAddressCardSolid,
     faAlignJustify, faAlignJustifyLight, faAlignJustifySolid,
+    faAnalytics, faAnalyticsLight, faAnalyticsSolid,
     faAngleDoubleDown, faAngleDoubleDownLight, faAngleDoubleDownSolid,
     faAngleDoubleLeft, faAngleDoubleLeftLight, faAngleDoubleLeftSolid,
     faAngleDoubleRight, faAngleDoubleRightLight, faAngleDoubleRightSolid,
@@ -654,6 +658,7 @@ export const Icon = {
     accessDenied(p)     {return fa(p, 'ban')},
     add(p)              {return fa(p, 'plus-circle')},
     addressCard(p)      {return fa(p, 'address-card')},
+    analytics(p)        {return fa(p, 'analytics')},
     angleDoubleDown(p)  {return fa(p, 'angle-double-down')},
     angleDoubleLeft(p)  {return fa(p, 'angle-double-left')},
     angleDoubleRight(p) {return fa(p, 'angle-double-right')},
