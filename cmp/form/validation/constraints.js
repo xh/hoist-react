@@ -114,13 +114,16 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 * @param {function()} the executed constraint function to use on the array of values
 * @returns ConstraintCb
 */
-export function applyToAll(constraint) {
+export function constrainAll(constraint) {
     return ({values, displayName}) => {
         if (isNil(values) || isEmpty(values)) return null;
-
-        let fail;
-        values.find(value => fail = constraint({value, displayName}));
-        if (fail) return fail;
+        
+        for (v in values) {
+            const fail = constraint({value, displayName});
+            if (fail) return fail;
+        }
+       
+        return null;
     };
 }
 
