@@ -10,6 +10,7 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
+* `DateInput` will now accept LocalDates as `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 
@@ -18,6 +19,10 @@
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
+  
+### 🐞 Bug Fixes
+
+* Date picker month and year controls will now work properly in LocalDate mode. (Previously would reset to underlying value)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
