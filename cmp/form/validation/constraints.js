@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {isNil, isString, isArray} from 'lodash';
+import {isEmpty, isNil, isString, isArray} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import moment from 'moment';
@@ -105,5 +105,38 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 
         if (minMoment && minMoment.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
         if (maxMoment && maxMoment.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
+    };
+}
+
+/**
+* Apply a constraint to an array of values, e.g values coming from a tag picker.
+*
+* @param {function()} the executed constraint function to use on the array of values
+* @returns ConstraintCb
+*/
+export function constrainAll(constraint) {
+    return ({values, displayName}) => {
+        if (isNil(values) || isEmpty(values)) return null;
+        
+        for (let value in values) {
+            const fail = constraint({value, displayName});
+            if (fail) return fail;
+        }
+       
+        return null;
+    };
+}
+
+/**
+* Validate that a value does not contain specific strings or characters.
+*
+* @param {...string} excludeVals - one or more strings to exclude
+* @returns ConstraintCb
+*/
+export function stringExcludes(...excludeVals) {
+    return ({value, displayName}) => {
+        if (isNil(value)) return null;
+        const fail = excludeVals.find(s => value.includes(s));
+        if (fail) return `${displayName} must not include "${fail}"`;
     };
 }
