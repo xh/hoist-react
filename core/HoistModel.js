@@ -36,7 +36,7 @@ export function HoistModel(C) {
 
                 let ret = null;
                 forOwn(this, (value, key) => {
-                    if (key.endsWith('Model') && value.isHoistModel && value.matchesSelector(selector)) {
+                    if (value && value.isHoistModel && value.matchesSelector(selector)) {
                         ret = value;
                         return false;
                     }
@@ -47,6 +47,7 @@ export function HoistModel(C) {
             // TODO: normalize this into a single 'function' selector at the beginning of the lookup? selector could
             // flag whether it is interested in sub-model lookups.
             matchesSelector(selector) {
+                if (selector == '*')        return true;
                 if (isFunction(selector))   return selector.isHoistModel ? this instanceof selector : selector(this);
                 if (isString(selector))     return this['is' + selector];
             }

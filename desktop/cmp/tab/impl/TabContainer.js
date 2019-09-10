@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, providedAndPublished,  useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpFactory, receive,  useLayoutProps} from '@xh/hoist/core';
 import {getClassName} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -19,7 +19,7 @@ import '../Tabs.scss';
  */
 export const tabContainer = hoistCmpFactory({
     displayName: 'TabContainer',
-    model: providedAndPublished(TabContainerModel),
+    model: receive(TabContainerModel, {provide: true}),
 
     render({model, ...props}) {
         const {activeTabId, tabs, switcherPosition} = model,

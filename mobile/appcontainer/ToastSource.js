@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {head} from 'lodash';
-import {hoistCmpFactory, provided} from '@xh/hoist/core';
+import {hoistCmpFactory, receive} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {toast} from './Toast';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
@@ -19,7 +19,7 @@ import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
  *  @private
  */
 export const toastSource = hoistCmpFactory({
-    model: provided(ToastSourceModel),
+    model: receive(ToastSourceModel),
 
     render({model}) {
         const pending = model.toastModels.filter(it => it.isOpen),

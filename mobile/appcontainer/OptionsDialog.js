@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, provided} from '@xh/hoist/core';
+import {hoistCmpFactory, receive} from '@xh/hoist/core';
 import {vframe, filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
@@ -22,7 +22,7 @@ import './OptionsDialog.scss';
  * @private
  */
 export const optionsDialog = hoistCmpFactory({
-    model: provided(OptionsDialogModel),
+    model: receive(OptionsDialogModel),
 
     render({model}) {
         const {isOpen, loadModel, formModel, reloadRequired} = model;

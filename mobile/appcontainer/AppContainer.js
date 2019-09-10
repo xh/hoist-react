@@ -6,7 +6,7 @@
  */
 
 import {Component} from 'react';
-import {HoistComponent, elem, elemFactory, AppState, XH, providedAndPublished, hoistCmpFactory} from '@xh/hoist/core';
+import {HoistComponent, elem, elemFactory, AppState, XH, receive, hoistCmpFactory} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -76,7 +76,7 @@ export const appContainer = elemFactory(AppContainer);
 // Implementation
 //-------------------
 const contentView = hoistCmpFactory({
-    model: providedAndPublished(AppContainerModel),
+    model: receive(AppContainerModel, {provide: true}),
 
     render({model}) {
         if (model.caughtException) return null;

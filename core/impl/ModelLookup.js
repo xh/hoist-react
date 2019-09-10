@@ -39,7 +39,7 @@ export class ModelLookup {
     lookupModel(selector) {
         const {model, parent} = this;
 
-        if (!selector) return model;
+        if (!selector || selector == '*') return model;
 
         const ret = model.lookupModel(selector);
         if (ret) return ret;

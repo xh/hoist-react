@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {hoistCmpFactory, providedAndPublished, XH} from '@xh/hoist/core';
+import {hoistCmpFactory, receive, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -19,7 +19,7 @@ import {ConfigDifferModel} from './ConfigDifferModel';
 import {configDifferDetail} from './ConfigDifferDetail';
 
 export const configDiffer = hoistCmpFactory({
-    model: providedAndPublished(ConfigDifferModel),
+    model: receive(ConfigDifferModel, {provide: true}),
 
     render({model}) {
         return fragment(

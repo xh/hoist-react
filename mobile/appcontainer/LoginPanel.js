@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, receive} from '@xh/hoist/core';
 import {page} from '@xh/hoist/mobile/cmp/page';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {div, vframe, vbox, filler} from '@xh/hoist/cmp/layout';
@@ -22,7 +22,7 @@ import {LoginPanelModel} from '@xh/hoist/appcontainer/LoginPanelModel';
  * @private
  */
 export const loginPanel = hoistCmpFactory({
-    model: providedAndPublished(LoginPanelModel),
+    model: receive(LoginPanelModel, {provide: true}),
 
     render({model}) {
         const {loginMessage} = XH.appSpec;

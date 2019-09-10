@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistCmpAndFactory, providedAndPublished, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory, receive, useLayoutProps} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -25,7 +25,7 @@ import './LeftRightChooser.scss';
  */
 export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
     displayName: 'LeftRightChooser',
-    model: providedAndPublished(LeftRightChooserModel),
+    model: receive(LeftRightChooserModel, {provide: true}),
 
     render({model, ...props}) {
         const className = getClassName('xh-lr-chooser', props),

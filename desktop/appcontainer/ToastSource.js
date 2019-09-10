@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {HoistModel, provided, hoistCmpFactory, useLocalModel} from '@xh/hoist/core';
+import {HoistModel, receive, hoistCmpFactory, useLocalModel} from '@xh/hoist/core';
 import {defaultTo, defaults, isElement} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
@@ -23,7 +23,7 @@ import './Toast.scss';
  *  @private
  */
 export const toastSource = hoistCmpFactory({
-    model: provided(ToastSourceModel),
+    model: receive(ToastSourceModel),
 
     render({model}) {
         useLocalModel(() => new BlueprintToastModel(model));

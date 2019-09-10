@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, provided} from '@xh/hoist/core';
+import {hoistCmpFactory, receive} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -29,7 +29,7 @@ import {ColChooserModel} from './ColChooserModel';
  * It is not necessary to manually create instances of this component within an application.
  */
 export const colChooser = hoistCmpFactory({
-    model: provided(ColChooserModel),
+    model: receive(ColChooserModel),
 
     render({model, ...props}) {
         const {gridModel, lrModel, isPopoverOpen} = model,

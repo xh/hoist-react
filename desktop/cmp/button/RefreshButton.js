@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel, provided} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useContextModel, receive} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -20,7 +20,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
-    model: provided({provideFromContext: false}),
+    model: receive('*', {fromContext: false, optional: true}),
 
     render({model, ...props}) {
         warnIf(

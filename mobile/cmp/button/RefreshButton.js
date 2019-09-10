@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel, provided} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useContextModel, receive} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -20,7 +20,7 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
-    model: provided({provideFromContext: false}),
+    model: receive('*', {fromContext: false, optional: true}),
 
     render({model, ...props}) {
         warnIf(

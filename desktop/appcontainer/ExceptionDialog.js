@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, providedAndPublished} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, receive} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -25,7 +25,7 @@ import './ExceptionDialog.scss';
  */
 export const exceptionDialog = hoistCmpFactory({
     displayName: 'Exception Dialog',
-    model: providedAndPublished(ExceptionDialogModel),
+    model: receive(ExceptionDialogModel, {provide: true}),
 
     render({model}) {
         const {exception, options} = model;

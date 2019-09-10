@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import {isFunction, isPlainObject} from 'lodash';
+import {isFunction, isString, isPlainObject} from 'lodash';
 import {useObserver} from 'mobx-react-lite';
 import {useState, useContext, forwardRef, memo} from 'react';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
-import {HoistModelSpec, provided} from './HoistModelSpec';
+import {receive} from './modelspec/ModelReceiveSpec';
 import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
 import {ModelLookupContext, ModelLookup, modelLookupContextProvider} from './impl/ModelLookup';
 
@@ -29,9 +29,9 @@ import {ModelLookupContext, ModelLookup, modelLookupContextProvider} from './imp
  *
  * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
- * @param {HoistModelSpec} [config.model] - spec defining the model to be used by/ or created by the component.
- *      Defaults to provided() for render functions taking props, otherwise null.   Specify as null for
- *      components that don't require model processing
+ * @param {ModelCreateSpec | ModelReceiveSpec} [config.model] - spec defining the model to be used by/ or created by the component.
+ *      Defaults to receive('*') for render functions taking props, otherwise null.   Specify as null for
+ *      components that don't require model processing at all.
  * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
  * @returns {*} A functional react component.
  */
@@ -45,10 +45,10 @@ export function hoistComponent(config) {
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? provided() : null);
+    const modelSpec = withDefault(config.model, argCount > 0 ? receive('*', {optional: true, provide: false}) : null);
     throwIf(
-        modelSpec && !(modelSpec instanceof HoistModelSpec),
-        "'model' for hoistComponent() must be a HoistModelSpec."
+        modelSpec && !(modelSpec.isCreate || modelSpec.isReceive),
+        "'model' for hoistComponent() is incorrectly specified.  Use create() or receive()"
     );
 
     // 2) Decorate with behaviors: useObserver, model handling, forwardRef, memo
@@ -61,9 +61,9 @@ export function hoistComponent(config) {
     let ret = (props, ref) => useObserver(() => render(props, ref));
 
     if (modelSpec) {
-        ret = modelSpec.publish ?
-            wrapWithPublishModel(ret, modelSpec):
-            wrapWithSimpleModel(ret,  modelSpec);
+        ret = modelSpec.provide ?
+            wrapWithProvidedModel(ret, modelSpec, displayName):
+            wrapWithLocalModel(ret,  modelSpec, displayName);
     }
     if (isForwardRef) {
         ret = forwardRef(ret);
@@ -118,17 +118,17 @@ export function hoistCmpAndFactory(config) {
 //-------------------
 // Implementation
 //------------------
-function wrapWithSimpleModel(render, spec) {
+function wrapWithLocalModel(render, spec, displayName) {
     return (props, ref) => {
-        const [model] = useResolvedModel(spec, props);
+        const [model] = useResolvedModel(spec, props, displayName);
         if (model) props = {...props, model};
         return render(props, ref);
     };
 }
 
-function wrapWithPublishModel(render, spec) {
+function wrapWithProvidedModel(render, spec, displayName) {
     return (props, ref) => {
-        const [model, lookup] = useResolvedModel(spec, props);
+        const [model, lookup] = useResolvedModel(spec, props, displayName);
         const [newLookup] = useState(
             () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
         );
@@ -138,63 +138,47 @@ function wrapWithPublishModel(render, spec) {
     };
 }
 
-// Below would publish context, to *self* and children need to wrap a new inner anonymous component with the context.
-// DO WE NEED THIS COMPLEXITY?
-// function wrapWithPublishModelComplex(render, isForwardRef, spec) {
-//     const inner = isForwardRef ? forwardRef(render) : render;
-//     return (props, ref) => {
-//         const [model, lookup] = useResolvedModel(spec, props);
-//         if (isForwardRef || model) {
-//             props = {...props};
-//             if (isForwardRef) props.ref = ref;
-//             if (model) props.model = model;
-//         }
-//
-//         const [newLookup] = useState(
-//             () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
-//         );
-//
-//         const innerElement = createElement(inner, props);
-//         return newLookup ? modelLookupContextProvider({value: newLookup, item: innerElement}) : innerElement;
-//     };
-// }
-
-function useResolvedModel(spec, props) {
+function useResolvedModel(spec, props, displayName) {
     const modelLookup = useContext(ModelLookupContext);
-
     const [{model, isOwned}] = useState(() => {
-        if (spec.mode === 'local') {
-            return {model: spec.createFn(), isOwned: true};
-        }
-
-        if (spec.mode === 'provided') {
-            const {model} = props;
-            if (model && isPlainObject(model) && spec.provideFromConfig) {
-                return {model: spec.createFn(model), isOwned: true};
-            }
-
-            if (model) {
-                ensureModelType(model, spec.type);
-                return {model, isOwned: false};
-            }
-
-            if (modelLookup && spec.provideFromContext) {
-                return {model: modelLookup.lookupModel(spec.type), isOwned: false};
-            }
-        }
-
-        return {model: null, isOwned: false};
+        return spec.isCreate ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName);
     });
-
     useOwnedModelLinker(isOwned ? model : null);
 
     return [model, modelLookup];
 }
 
+function createModel(spec) {
+    return {model: spec.createFn(), isOwned: true};
+}
 
-function ensureModelType(model, type) {
-    throwIf(!model.isHoistModel, 'Model must be a HoistModel');
-    throwIf(type && !(model instanceof type),
-        `Incorrect model type provided to component: expected ${type}.`
+function lookupModel(spec, props, modelLookup, displayName) {
+    const {model} = props,
+        {selector} = spec;
+    if (model && isPlainObject(model) && spec.fromConfig) {
+        return {model: new selector(model), isOwned: true};
+    }
+
+    if (model) {
+        throwIf(!model.isHoistModel, `Model for '${displayName}' must be a HoistModel.`);
+        throwIf(!model.matchesSelector(selector),
+            `Incorrect model received for '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
+        );
+        return {model, isOwned: false};
+    }
+
+    if (modelLookup && spec.fromContext) {
+        return {model: modelLookup.lookupModel(selector), isOwned: false};
+    }
+
+    throwIf(!spec.optional,
+        `Unable to find specified model for '${displayName}'. Expected: ${formatSelector(selector)}`
     );
+    return {model: null, isOwned: false};
+}
+
+function formatSelector(selector) {
+    if (isString(selector)) return selector;
+    if (isFunction(selector)  && selector.isHoistModel) return selector.name;
+    return '[Selector]';
 }

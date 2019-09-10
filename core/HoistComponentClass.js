@@ -46,8 +46,8 @@ export function HoistComponent(C) {
              * Specify the static property 'supportModelFromContext' to allow looking up a provided model
              * from context.
              *
-             * Specify a 'localModel' by setting it as a field directly on the Component class
-             * definition. Specify a 'providedModel' by providing an instance of HoistModel in props.model, or
+             * Specify an internally created model by setting it as a field directly on the Component class
+             * definition. Specify an external model by providing an instance of HoistModel in props.model, or
              * receiving it from context.
              *
              * Provided concrete models are assumed to be owned / managed by a ancestor Component. Local models or models
