@@ -161,7 +161,7 @@ export class Dragger extends Component {
                 panelParent.offsetHeight - (panelParent.offsetHeight - (panel.offsetTop + startSize));
             case 'top':     return nextSib ?
                 // need -1 here to avoid pushing down panel beneath when new size is set
-                // can't find cause
+                // smelly, but can't find cause
                 startSize + nextSib.offsetHeight - 1 - this.getDragBarDim() :
                 panelParent.offsetHeight - panel.offsetTop;
         }

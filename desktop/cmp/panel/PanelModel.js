@@ -120,6 +120,7 @@ export class PanelModel {
         this.collapsed = collapsed;
         this.dispatchResize();
     }
+
     @action
     setSize(v) {
         this.size = v;
@@ -133,6 +134,11 @@ export class PanelModel {
 
     toggleCollapsed() {
         this.setCollapsed(!this.collapsed);
+    }
+
+    @action
+    setAnimateResize(animateResize) {
+        this.animateResize = animateResize;
     }
 
     //---------------------------------------------
