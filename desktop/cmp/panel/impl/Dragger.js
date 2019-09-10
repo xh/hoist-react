@@ -147,23 +147,17 @@ export class Dragger extends Component {
     }
 
     solveMaxSize() {
-        const {model, panel, panelParent, startSize} = this,
+        const {model, panel, startSize} = this,
             prevSib = panel.previousElementSibling,
             nextSib = panel.nextElementSibling;
 
         switch (model.side) {
-            case 'left':    return nextSib ?
-                startSize + nextSib.offsetWidth - this.getDragBarDim() :
-                panelParent.offsetWidth - panel.offsetLeft;
-            case 'right':   return startSize + (prevSib ? prevSib.offsetWidth - this.getDragBarDim() : panel.offsetLeft);
-            case 'bottom':  return prevSib ?
-                startSize + prevSib.offsetHeight - this.getDragBarDim() :
-                panelParent.offsetHeight - (panelParent.offsetHeight - (panel.offsetTop + startSize));
-            case 'top':     return nextSib ?
-                // need -1 here to avoid pushing down panel beneath when new size is set
-                // smelly, but can't find cause
-                startSize + nextSib.offsetHeight - 1 - this.getDragBarDim() :
-                panelParent.offsetHeight - panel.offsetTop;
+            case 'left':    return startSize + nextSib.offsetWidth - this.getDragBarDim();
+            case 'right':   return startSize + prevSib.offsetWidth - this.getDragBarDim();
+            case 'bottom':  return startSize + prevSib.offsetHeight - this.getDragBarDim();
+            // need -1 here to avoid pushing down panel beneath when new size is set
+            // smelly, but can't find cause
+            case 'top':     return startSize + nextSib.offsetHeight - this.getDragBarDim() - 1;
         }
     }
 
