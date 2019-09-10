@@ -22,7 +22,7 @@ import {LoginPanelModel} from '@xh/hoist/appcontainer/LoginPanelModel';
  * @private
  */
 export const loginPanel = hoistCmpFactory({
-    model: receive(LoginPanelModel, {provide: true}),
+    model: receive(LoginPanelModel),
 
     render({model}) {
         const {loginMessage} = XH.appSpec;

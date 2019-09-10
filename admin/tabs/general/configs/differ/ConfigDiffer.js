@@ -19,7 +19,7 @@ import {ConfigDifferModel} from './ConfigDifferModel';
 import {configDifferDetail} from './ConfigDifferDetail';
 
 export const configDiffer = hoistCmpFactory({
-    model: receive(ConfigDifferModel, {provide: true}),
+    model: receive(ConfigDifferModel),
 
     render({model}) {
         return fragment(

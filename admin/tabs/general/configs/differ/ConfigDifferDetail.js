@@ -16,7 +16,7 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 import './Differ.scss';
 
 export const configDifferDetail = hoistCmpFactory({
-    model: receive(ConfigDifferDetailModel, {provide: true}),
+    model: receive(ConfigDifferDetailModel),
 
     render({model}) {
         if (!model.record) return null;

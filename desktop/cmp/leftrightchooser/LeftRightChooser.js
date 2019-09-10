@@ -25,7 +25,7 @@ import './LeftRightChooser.scss';
  */
 export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
     displayName: 'LeftRightChooser',
-    model: receive(LeftRightChooserModel, {provide: true}),
+    model: receive(LeftRightChooserModel),
 
     render({model, ...props}) {
         const className = getClassName('xh-lr-chooser', props),

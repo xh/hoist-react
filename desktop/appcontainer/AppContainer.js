@@ -80,7 +80,7 @@ export const appContainer = elemFactory(AppContainer);
 // Implementation
 //-----------------------------------------
 const contentView = hoistCmpFactory({
-    model: receive(AppContainerModel, {provide: true}),
+    model: receive(AppContainerModel),
 
     render({model}) {
         if (model.caughtException) return null;

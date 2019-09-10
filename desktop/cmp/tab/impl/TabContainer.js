@@ -19,7 +19,7 @@ import '../Tabs.scss';
  */
 export const tabContainer = hoistCmpFactory({
     displayName: 'TabContainer',
-    model: receive(TabContainerModel, {provide: true}),
+    model: receive(TabContainerModel),
 
     render({model, ...props}) {
         const {activeTabId, tabs, switcherPosition} = model,

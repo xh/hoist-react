@@ -18,7 +18,7 @@ import {useContextModel} from '@xh/hoist/core/index';
  */
 export const [RefreshContextView, refreshContextView] = hoistCmpAndFactory({
     displayName: 'RefreshContextView',
-    model: receive('RefreshContextModel', {provide: true}),
+    model: receive('RefreshContextModel'),
 
     render({model, children}) {
         const parent = useContextModel(m => m.isRefreshContextModel && m != model);

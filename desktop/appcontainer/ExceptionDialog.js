@@ -25,7 +25,7 @@ import './ExceptionDialog.scss';
  */
 export const exceptionDialog = hoistCmpFactory({
     displayName: 'Exception Dialog',
-    model: receive(ExceptionDialogModel, {provide: true}),
+    model: receive(ExceptionDialogModel),
 
     render({model}) {
         const {exception, options} = model;
