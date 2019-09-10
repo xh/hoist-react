@@ -133,7 +133,7 @@ export function constrainAll(constraint) {
 * @param {...string} excludeVals - one or more strings to exclude
 * @returns ConstraintCb
 */
-export function stringExcludesAll(...excludeVals) {
+export function stringExcludes(...excludeVals) {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
         const fail = excludeVals.find(s => value.includes(s));
