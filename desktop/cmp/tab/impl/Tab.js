@@ -4,8 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {useState} from 'react';
-import {elem, hoistCmpAndFactory} from '@xh/hoist/core';
+import {useRef} from 'react';
+import {elem, hoistCmpFactory} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -21,21 +21,21 @@ import {TabRenderMode} from '@xh/hoist/enums';
  *
  * @private
  */
-export const [Tab, tab] = hoistCmpAndFactory({
+export const tab = hoistCmpFactory({
     displayName: 'Tab',
 
     render({model, ...props}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
-            [flags] = useState({wasActivated: false}),
+            wasActivated = useRef(false),
             className = getClassName('xh-tab', props);
 
-        if (!flags.wasActivated && isActive) flags.wasActivated = true;
+        if (!wasActivated.current && isActive) wasActivated.current = true;
 
         if (
             !isActive &&
             (
                 (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
+                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;

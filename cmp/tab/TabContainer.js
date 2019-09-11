@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpAndFactory} from '@xh/hoist/core';
+import {XH, hoistCmpAndFactory, receive} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
-import {tabContainer as desktopTabContainer} from '@xh/hoist/dynamics/desktop';
-import {tabContainer as mobileTabContainer} from '@xh/hoist/dynamics/mobile';
+import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
+import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
 import {TabContainerModel} from './TabContainerModel';
 
 /**
@@ -30,7 +30,7 @@ import {TabContainerModel} from './TabContainerModel';
  */
 export const [TabContainer, tabContainer] = hoistCmpAndFactory({
     displayName: 'TabContainer',
-    model: false, memo: false, observer: false,
+    model: receive(TabContainerModel),
 
     render(props) {
         throwIf(
@@ -38,7 +38,7 @@ export const [TabContainer, tabContainer] = hoistCmpAndFactory({
             "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
         );
 
-        return XH.isMobile ? mobileTabContainer(props) : desktopTabContainer(props);
+        return XH.isMobile ? mobileTabContainerImpl(props) : desktopTabContainerImpl(props);
     }
 });
 TabContainer.propTypes = {
