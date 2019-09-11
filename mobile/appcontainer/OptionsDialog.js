@@ -22,6 +22,7 @@ import './OptionsDialog.scss';
  * @private
  */
 export const optionsDialog = hoistCmpFactory({
+    displayName: 'OptionsDialog',
     model: receive(OptionsDialogModel),
 
     render({model}) {

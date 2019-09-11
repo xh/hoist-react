@@ -14,6 +14,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /** @private */
 export const updateBar = hoistCmpFactory({
+    displayName: 'UpdateBar',
     model: receive(AppContainerModel),
 
     render({model}) {

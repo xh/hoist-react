@@ -22,6 +22,7 @@ import {LoginPanelModel} from '@xh/hoist/appcontainer/LoginPanelModel';
  * @private
  */
 export const loginPanel = hoistCmpFactory({
+    displayName: 'LoginPanel',
     model: receive(LoginPanelModel),
 
     render({model}) {

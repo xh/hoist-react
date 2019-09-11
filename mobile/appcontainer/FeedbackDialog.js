@@ -19,6 +19,7 @@ import './FeedbackDialog.scss';
  * @private
  */
 export const feedbackDialog = hoistCmpFactory({
+    displayName: 'FeedbackDialog',
     model: receive(FeedbackDialogModel),
 
     render({model}) {

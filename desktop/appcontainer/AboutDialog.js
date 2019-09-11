@@ -23,6 +23,7 @@ import './AboutDialog.scss';
  * @private
  */
 export const aboutDialog = hoistCmpFactory({
+    displayName: 'AboutDialog',
     model: receive(AboutDialogModel),
 
     render({model}) {

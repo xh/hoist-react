@@ -20,6 +20,7 @@ import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
  * @private
  */
 export const feedbackDialog = hoistCmpFactory({
+    displayName: 'FeedbackDialog',
     model: receive(FeedbackDialogModel),
 
     render({model}) {

@@ -15,6 +15,7 @@ import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
  *  @private
  */
 export const messageSource = hoistCmpFactory({
+    displayName: 'MessageSource',
     model: receive(MessageSourceModel),
 
     render({model}) {

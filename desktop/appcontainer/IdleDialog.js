@@ -18,8 +18,10 @@ import idleImage from './IdleDialogImage.png';
  * This display can be overridden by applications - {@see AppSpec.idleDialogClass}. *
  * @private
  */
-export const IdleDialog = hoistCmp(
-    ({onReactivate}) => {
+export const IdleDialog = hoistCmp({
+    displayName: 'IdleDialog',
+
+    render({onReactivate}) {
         return message({
             model: {
                 title: `${XH.clientAppName} is sleeping`,
@@ -44,4 +46,4 @@ export const IdleDialog = hoistCmp(
             className: 'xh-idle-dialog'
         });
     }
-);
+});

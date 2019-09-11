@@ -19,6 +19,7 @@ import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
  * @private
  */
 export const toast = hoistCmpFactory({
+    displayName: 'Toast',
     model: receive(ToastModel),
 
     render({model}) {

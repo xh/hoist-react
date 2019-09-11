@@ -22,6 +22,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
  * @private
  */
 export const lockoutPanel = hoistCmpFactory({
+    displayName: 'LockoutPanel',
     model: receive(AppContainerModel),
 
     render({model}) {

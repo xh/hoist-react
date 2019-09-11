@@ -23,6 +23,7 @@ import './Toast.scss';
  *  @private
  */
 export const toastSource = hoistCmpFactory({
+    displayName: 'ToastSource',
     model: receive(ToastSourceModel),
 
     render({model}) {

@@ -46,7 +46,7 @@ export function hoistComponent(config) {
 
     const render = config.render,
         argCount = render.length,
-        displayName = withDefault(config.displayName, 'HoistComponent'),
+        displayName = config.displayName ? config.displayName : 'HoistCmp',
         isMemo = withDefault(config.memo, true),
         isObserver = withDefault(config.observer, true),
         isForwardRef = argCount == 2;

@@ -22,6 +22,7 @@ import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
  * @private
  */
 export const message = hoistCmpFactory({
+    displayName: 'Message',
     model: receive(MessageModel),
 
     render({model}) {

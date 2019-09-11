@@ -22,6 +22,7 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  * @private
  */
 export const exceptionDialog = hoistCmpFactory({
+    displayName: 'ExceptionDialog',
     model: receive(ExceptionDialogModel),
 
     render({model}) {

@@ -21,6 +21,7 @@ import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarMode
  * @private
  */
 export const impersonationBar = hoistCmpFactory({
+    displayName: 'ImpersonationBar',
     model: receive(ImpersonationBarModel),
 
     render({model}) {

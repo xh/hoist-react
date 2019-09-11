@@ -24,6 +24,7 @@ import './LoginPanel.scss';
  * @private
  */
 export const loginPanel = hoistCmpFactory({
+    displayName: 'LoginPanel',
     model: receive(LoginPanelModel),
 
     render({model}) {

@@ -63,7 +63,7 @@ export class AppContainer extends Component {
     render() {
         const {model} = this;
         return div(
-            contentView({model}),
+            appContainerView({model}),
             exceptionDialog({model: model.exceptionDialogModel})
         );
     }
@@ -79,7 +79,8 @@ export const appContainer = elemFactory(AppContainer);
 //-----------------------------------------
 // Implementation
 //-----------------------------------------
-const contentView = hoistCmpFactory({
+const appContainerView = hoistCmpFactory({
+    displayName: 'AppContainerView',
     model: receive(AppContainerModel),
 
     render({model}) {
@@ -122,12 +123,13 @@ const contentView = hoistCmpFactory({
     }
 });
 
-const idleDialog = hoistCmpFactory(
-    () => {
+const idleDialog = hoistCmpFactory({
+    displayName: 'IdleDialog',
+    render() {
         const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
 
         return XH.appState == AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
             null;
     }
-);
+});
