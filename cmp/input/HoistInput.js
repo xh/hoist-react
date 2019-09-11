@@ -101,7 +101,7 @@ export class HoistInput extends Component {
             run: (externalVal) => {
                 // Ensure that updates to the external value - are always flushed to the internal value but
                 // only change internal if not already a valid representation of external to avoid flapping
-                if (this.toExternal(this.internalValue) != externalVal) {
+                if (this.externalFromInternal() != externalVal) {
                     this.setInternalValue(this.toInternal(externalVal));
                 }
             },
@@ -131,7 +131,7 @@ export class HoistInput extends Component {
     get renderValue() {
         return this.hasFocus ?
             this.internalValue :
-            this.toInternal(this.externalValue);
+            this.internalFromExternal();
     }
 
     /**
@@ -150,6 +150,7 @@ export class HoistInput extends Component {
 
     @action
     setInternalValue(val) {
+        if (isEqual(val, this.internalValue)) return;
         this.internalValue = val;
     }
 
@@ -172,7 +173,7 @@ export class HoistInput extends Component {
     doCommit() {
         this.doCommitInternal();
         // After explicit commit, we want to fully round-trip external value to get canonical value.
-        this.setInternalValue(this.toInternal(this.externalValue));
+        this.setInternalValue(this.internalFromExternal());
 
     }
 
@@ -186,11 +187,24 @@ export class HoistInput extends Component {
         return external;
     }
 
+    internalFromExternal() {
+        const ret = this.toInternal(this.externalValue);
+
+        // keep references consistent (to prevent unwanted renders)
+        if (isEqual(this.internalValue, ret)) return this.internalValue;
+
+        return ret;
+    }
+
+    externalFromInternal() {
+        return this.toExternal(this.internalValue);
+    }
+
     doCommitInternal() {
         const {onCommit, bind} = this.props,
             {model} = this;
         let currentValue = this.externalValue,
-            newValue = this.toExternal(this.internalValue);
+            newValue = this.externalFromInternal();
 
         if (isEqual(newValue, currentValue)) return;
 
@@ -240,7 +254,7 @@ export class HoistInput extends Component {
     noteFocused() {
         if (this.hasFocus) return;
 
-        this.setInternalValue(this.toInternal(this.externalValue));
+        this.setInternalValue(this.internalFromExternal());
         this.hasFocus = true;
     }
 

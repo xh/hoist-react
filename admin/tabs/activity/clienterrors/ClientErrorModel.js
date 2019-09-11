@@ -17,7 +17,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 @LoadSupport
 export class ClientErrorModel {
 
-    @bindable.ref endDate = LocalDate.today()
+    @bindable.ref endDate = LocalDate.today();
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable username = '';
     @bindable error = '';
