@@ -100,8 +100,10 @@ export class Dragger extends Component {
 
     insertDraggableSplitter(e) {
         // clone .xh-resizable-splitter to get its styling
-        const splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter'),
-            clone = splitter.cloneNode();
+        const splitter = this.getSibling(e.target, 'previous', 'xh-resizable-splitter');
+        if (!splitter) return;
+        
+        const clone = splitter.cloneNode();
 
         // set position=absolute here
         // to overide whatever may be in splitter inline styles
@@ -117,8 +119,10 @@ export class Dragger extends Component {
 
     moveSplitterBar() {
         const {diff, model, panel, panelParent, startSize} = this,
-            bar = panelParent.querySelector('.xh-resizable-dragger-visible'),
-            stl = bar.style;
+            bar = panelParent.querySelector('.xh-resizable-dragger-visible');
+        if (!bar) return;
+        
+        const stl = bar.style;
 
         let maxSize = this.solveMaxSize();
         if (diff + startSize <= 0) {               // min-size
@@ -176,7 +180,7 @@ export class Dragger extends Component {
     getSibling(item, dir, className) {
         const method = dir + 'ElementSibling';
         let ret = item[method];
-        while (!ret.classList.contains(className)) {
+        while (ret && !ret.classList.contains(className)) {
             ret = ret[method];
         }
         return ret;
