@@ -5,9 +5,11 @@
 ### 🎁 New Features
 
 * Hoist now fully supports React functional components and hooks. See the new function
-  `hoistComponent` for more information. While functional components and hooks are considered
-  essential forward-looking patterns in the React world, Class-based Components remain fully
-  supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
+  `hoistComponent`, `useLocalModel()`, and `useContextModel()` for more information. 
+  (Note that Class-based Components remain fully supported (by both Hoist and React) using the 
+  familiar `@HoistComponent` decorator.
+* Hoist components are now be able to read their models from context, allowing a much less verbose
+  specification of application code.  Currently only functional components can publish models to context.  
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
 * `stringExcludes` function added to form validation constraints.  This allows
@@ -17,9 +19,12 @@
    constraint as its only argument, and applies that constraint to an array of values,
    rather than just to one value.  This is useful for applying a constraint to inputs that produce
    arrays, such as tag pickers.
-* `DateInput` will now accept LocalDates as `minDate` and `maxDate` props.
+* `DateInput` will now accept LocalDates as `value`, `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
+* `createObservableRef()` is now available in `@xh/hoist/utils/react` package.  Use this function for
+   creating ref's that are  functionally equivalent to refs created with `React.createRef()`, yet fully 
+   observable.  With this change the `Ref` class in the same package is now obsolete..
 
 ### 💥 Breaking Changes
 
@@ -29,7 +34,7 @@
   
 ### 🐞 Bug Fixes
 
-* Date picker month and year controls will now work properly in LocalDate mode. (Previously would reset to underlying value)
+* Date picker month and year controls will now work properly in `localDate` mode.
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
