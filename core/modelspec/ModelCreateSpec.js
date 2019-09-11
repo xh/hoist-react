@@ -38,8 +38,7 @@ export class ModelCreateSpec {
 }
 
 /**
- * Specification for model to be created internally by a HoistComponent
- * for use by itself, and potentially its sub-components.
+ * Specification for model to be created internally by a HoistComponent for use by itself and its sub-components.
  *
  * @param {Class|function} spec - Class of HoistModel to construct, or function to call to create a HoistModel
  * @param {Object} [flags]

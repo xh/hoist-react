@@ -6,13 +6,12 @@
  */
 import {elemFactory} from '@xh/hoist/core';
 import {isFunction, isString, isPlainObject} from 'lodash';
-import {useObserver} from 'mobx-react-lite';
-import {useState, useContext, forwardRef, memo} from 'react';
+import {useObserver} from 'mobx-react';
+import {useState, useContext, forwardRef, memo, useDebugValue} from 'react';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
 import {receive} from './modelspec/ModelReceiveSpec';
-import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
-import {ModelLookupContext, ModelLookup, modelLookupContextProvider} from './impl/ModelLookup';
+import {ModelLookup, modelLookupContextProvider, ModelLookupContext, useOwnedModelLinker} from './impl';
 
 /**
  * Core Hoist utility for defining a functional component.
@@ -144,6 +143,8 @@ function useResolvedModel(spec, props, displayName) {
         return spec.isCreate ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName);
     });
     useOwnedModelLinker(isOwned ? model : null);
+    useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
+
 
     return [model, modelLookup];
 }

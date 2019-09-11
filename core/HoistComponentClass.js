@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {useDebugValue} from 'react';
 import ReactDom from 'react-dom';
 import {XH, elemFactory} from '@xh/hoist/core';
 import {isPlainObject, isUndefined} from 'lodash';
@@ -12,8 +13,7 @@ import {getClassName} from '@xh/hoist/utils/react';
 import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 import {observer} from 'mobx-react';
 
-import {ModelLookupContext} from './impl/ModelLookup';
-import {useOwnedModelLinker} from './impl/UseOwnedModelLinker';
+import {ModelLookupContext, useOwnedModelLinker} from './impl';
 
 /**
  * Create a Class Component in Hoist.
@@ -208,6 +208,7 @@ function warnNoModelClassProvided() {
 }
 
 function ModelHost({model, element}) {
+    useDebugValue(model, m => m.constructor.name + ' (owned)');
     useOwnedModelLinker(model);
     return element;
 }
