@@ -19,7 +19,7 @@ import {box} from './Box';
  */
 export const [Frame, frame] = hoistCmpAndFactory({
     displayName: 'Frame',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({ref, ...props, flex: 'auto'});
@@ -28,7 +28,7 @@ export const [Frame, frame] = hoistCmpAndFactory({
 
 export const [VFrame, vframe] = hoistCmpAndFactory({
     displayName: 'VFrame',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({
@@ -43,7 +43,7 @@ export const [VFrame, vframe] = hoistCmpAndFactory({
 
 export const [HFrame, hframe] = hoistCmpAndFactory({
     displayName: 'HFrame',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({

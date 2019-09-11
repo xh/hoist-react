@@ -17,7 +17,7 @@ import './Toolbar.scss';
  */
 export const [Toolbar, toolbar] = hoistCmpAndFactory({
     displayName: 'Toolbar',
-    model: null,
+    model: false, memo: false, observable: false,
 
     render(props) {
         const {vertical, ...rest} = props;

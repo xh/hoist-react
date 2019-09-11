@@ -22,7 +22,7 @@ import {div} from './Tags';
  */
 export const [Box, box] = hoistCmpAndFactory({
     displayName: 'Box',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
@@ -43,7 +43,7 @@ export const [Box, box] = hoistCmpAndFactory({
 
 export const [VBox, vbox] = hoistCmpAndFactory({
     displayName: 'VBox',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({
@@ -57,7 +57,7 @@ export const [VBox, vbox] = hoistCmpAndFactory({
 
 export const [HBox, hbox] = hoistCmpAndFactory({
     displayName: 'HBox',
-    model: null,
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({

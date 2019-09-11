@@ -35,7 +35,8 @@ import './Panel.scss';
  */
 export const [Panel, panel] = hoistCmpAndFactory({
     displayName: 'Panel',
-    model: receive(PanelModel, {fromContext: false, provide: true, optional: true}),
+    model: receive(PanelModel, {fromContext: false, optional: true}),
+    memo: false,
 
     render({model, ...props}, ref) {
         let [flags] = useState({wasDisplayed: true}),

@@ -31,6 +31,12 @@ import {ModelLookup, modelLookupContextProvider, ModelLookupContext, useOwnedMod
  * @param {ModelCreateSpec | ModelReceiveSpec} [config.model] - spec defining the model to be used by/ or created by the component.
  *      Defaults to receive('*') for render functions taking props, otherwise null.   Specify as null for
  *      components that don't require model processing at all.
+ * @param boolean [config.memo] - wrap returned component in React.memo()?  True by default. Components that
+ *      are known to be unable to make effective use of memo (e.g. container components) may set this to *false*.
+ *      Not typically set by application code.
+ * @param boolean [config.observer] - Make component reactive via MobX useObserver(). True by default. Components that
+ *      are known to dereference no observable state may set this to *false*.
+ *      Not typically set by application code.
  * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
  * @returns {*} A functional react component.
  */
@@ -39,8 +45,10 @@ export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
     const render = config.render,
-        displayName = withDefault(config.displayName, 'HoistComponent'),
         argCount = render.length,
+        displayName = withDefault(config.displayName, 'HoistComponent'),
+        isMemo = withDefault(config.memo, true),
+        isObserver = withDefault(config.observer, true),
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
@@ -50,25 +58,21 @@ export function hoistComponent(config) {
         "'model' for hoistComponent() is incorrectly specified.  Use create() or receive()"
     );
 
-    // 2) Decorate with behaviors: useObserver, model handling, forwardRef, memo
-    // Note that we don't use "observer" which is just useObserver + memo + isForwardRef
-    // Its confusing and gives us less fine-grained control.
-
-    // Questions -- do we want to allow customizability of observer decoration?  memo decoration?
-    // We have a lot of objects that render the default memo() ineffective by taking object props
-    // (e.g. icons, agSpec, model spec, etc)
-    let ret = (props, ref) => useObserver(() => render(props, ref));
-
+    // 2) Decorate with behaviors
+    let ret = render;
+    if (isObserver) {
+        ret = (props, ref) => useObserver(() => render(props, ref));
+    }
     if (modelSpec) {
-        ret = modelSpec.provide ?
-            wrapWithProvidedModel(ret, modelSpec, displayName):
-            wrapWithLocalModel(ret,  modelSpec, displayName);
+        const wrapper = modelSpec.provide ? wrapWithProvidedModel : wrapWithLocalModel;
+        ret = wrapper(ret, modelSpec, displayName);
     }
     if (isForwardRef) {
         ret = forwardRef(ret);
-        ret.displayName = displayName+'Inner';
     }
-    ret = memo(ret);
+    if (isMemo) {
+        ret = memo(ret);
+    }
 
     // 3) Mark and return
     ret.displayName = displayName;
