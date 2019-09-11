@@ -59,7 +59,7 @@ export class AppContainer extends Component {
     render() {
         const {model} = this;
         return div(
-            contentView({model}),
+            appContainerView({model}),
             exceptionDialog({model: model.exceptionDialogModel})
         );
     }
@@ -75,7 +75,8 @@ export const appContainer = elemFactory(AppContainer);
 //-------------------
 // Implementation
 //-------------------
-const contentView = hoistCmpFactory({
+const appContainerView = hoistCmpFactory({
+    displayName: 'AppContainerView',
     model: receive(AppContainerModel),
 
     render({model}) {
