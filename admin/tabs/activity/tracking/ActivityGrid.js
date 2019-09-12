@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, create} from '@xh/hoist/core';
+import {hoistCmpFactory, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -18,7 +18,7 @@ import {ActivityGridModel} from './ActivityGridModel';
 import {activityDetail} from './ActivityDetail';
 
 export const activityGrid = hoistCmpFactory({
-    model: create(ActivityGridModel),
+    model: creates(ActivityGridModel),
 
     render({model}) {
         return panel({

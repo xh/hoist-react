@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {useLayoutProps,  receive, hoistCmpAndFactory} from '@xh/hoist/core';
+import {useLayoutProps,  uses, hoistCmpAndFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {getClassName} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -17,7 +17,7 @@ import {DataViewModel} from './DataViewModel';
  */
 export const [DataView, dataView] = hoistCmpAndFactory({
     displayName: 'DataView',
-    model: receive(DataViewModel),
+    model: uses(DataViewModel),
 
     render({model, ...props}) {
         const [layoutProps] = useLayoutProps(props),

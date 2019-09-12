@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpAndFactory, receive} from '@xh/hoist/core';
+import {XH, hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -29,7 +29,7 @@ import {DockContainerModel} from './DockContainerModel';
  * @see DockContainerModel
  */
 export const [DockContainer, dockContainer] = hoistCmpAndFactory({
-    model: receive(DockContainerModel),
+    model: uses(DockContainerModel),
 
     render(props) {
         throwIf(XH.isMobile, 'DockContainer is not implemented on mobile');

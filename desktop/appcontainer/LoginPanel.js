@@ -6,7 +6,7 @@
  */
 
 import {text} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, receive} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -25,7 +25,7 @@ import './LoginPanel.scss';
  */
 export const loginPanel = hoistCmpFactory({
     displayName: 'LoginPanel',
-    model: receive(LoginPanelModel),
+    model: uses(LoginPanelModel),
 
     render({model}) {
         const {loginMessage} = XH.appSpec;

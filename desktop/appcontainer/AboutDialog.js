@@ -6,7 +6,7 @@
  */
 
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, receive} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -24,7 +24,7 @@ import './AboutDialog.scss';
  */
 export const aboutDialog = hoistCmpFactory({
     displayName: 'AboutDialog',
-    model: receive(AboutDialogModel),
+    model: uses(AboutDialogModel),
 
     render({model}) {
         if (!model.isOpen) return null;

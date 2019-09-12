@@ -8,7 +8,7 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistCmpAndFactory, useLayoutProps, receive} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useLayoutProps, uses} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -35,7 +35,8 @@ import './Panel.scss';
  */
 export const [Panel, panel] = hoistCmpAndFactory({
     displayName: 'Panel',
-    model: receive(PanelModel, {fromContext: false, optional: true}),
+    model: uses(PanelModel, {fromContext: false, optional: true}),
+
     memo: false,
 
     render({model, ...props}, ref) {

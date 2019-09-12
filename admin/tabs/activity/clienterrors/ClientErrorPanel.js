@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, hoistCmpFactory, create} from '@xh/hoist/core';
+import {hoistCmp, hoistCmpFactory, creates} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -18,7 +18,7 @@ import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
 export const ClientErrorPanel = hoistCmp({
-    model: create(ClientErrorModel),
+    model: creates(ClientErrorModel),
 
     render({model}) {
         return panel({

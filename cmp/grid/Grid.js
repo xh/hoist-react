@@ -20,7 +20,7 @@ import {
     isFinite
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {hoistCmpAndFactory, useLayoutProps, XH, receive, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useLayoutProps, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -53,7 +53,7 @@ import {getClassName} from '@xh/hoist/utils/react';
 
 export const [Grid, grid] = hoistCmpAndFactory({
     displayName: 'GridModel',
-    model: receive(GridModel),
+    model: uses(GridModel),
 
     render({model, ...props}) {
 

@@ -4,7 +4,7 @@
 *
 * Copyright © 2019 Extremely Heavy Industries Inc.
 */
-import {hoistCmp, create} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,7 +16,7 @@ import {EhCacheModel} from './EhCacheModel';
 
 export const EhCachePanel = hoistCmp({
 
-    model: create(EhCacheModel),
+    model: creates(EhCacheModel),
 
     render({model}) {
         const {gridModel} = model;

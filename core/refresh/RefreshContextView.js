@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
-import {hoistCmpAndFactory, receive} from '@xh/hoist/core';
+import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {useContextModel} from '@xh/hoist/core/index';
 
 /**
@@ -18,7 +18,7 @@ import {useContextModel} from '@xh/hoist/core/index';
  */
 export const [RefreshContextView, refreshContextView] = hoistCmpAndFactory({
     displayName: 'RefreshContextView',
-    model: receive('RefreshContextModel'),
+    model: uses('RefreshContextModel'),
 
     render({model, children}) {
         const parent = useContextModel(m => m.isRefreshContextModel && m != model);

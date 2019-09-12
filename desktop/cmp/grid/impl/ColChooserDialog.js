@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistCmpFactory, receive} from '@xh/hoist/core';
+import {hoistCmpFactory, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {getClassName} from '@xh/hoist/utils/react';
 
@@ -13,7 +13,7 @@ import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
 export const colChooserDialog = hoistCmpFactory({
-    model: receive(ColChooserModel),
+    model: uses(ColChooserModel),
 
     render({model, ...props}) {
 

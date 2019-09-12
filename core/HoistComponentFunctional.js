@@ -10,7 +10,7 @@ import {useObserver} from 'mobx-react';
 import {useState, useContext, forwardRef, memo, useDebugValue} from 'react';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 
-import {receive} from './modelspec/ModelReceiveSpec';
+import {ModelSpec, CreatesSpec, uses} from './modelspec';
 import {ModelLookup, modelLookupContextProvider, ModelLookupContext, useOwnedModelLinker} from './impl';
 
 /**
@@ -28,17 +28,19 @@ import {ModelLookup, modelLookupContextProvider, ModelLookupContext, useOwnedMod
  *
  * @param {(Object|function)} config - configuration object or render function defining the component
  * @param {function} [config.render] - function defining the component (if config object specified)
- * @param {ModelCreateSpec | ModelReceiveSpec} [config.model] - spec defining the model to be used by/ or created by the component.
- *      Defaults to receive('*') for render functions taking props, otherwise null.   Specify as null for
- *      components that don't require model processing at all.
- * @param boolean [config.memo] - wrap returned component in React.memo()?  True by default. Components that
+ * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
+ *        @see uses() and creates() for factories that may be used to define this spec.  Specify as false for
+ *        components that don't require model access. Defaults to uses('*') for render functions taking props,
+ *        otherwise false.
+ * @param {boolean} [config.memo] - wrap returned component in React.memo()?  True by default. Components that
  *      are known to be unable to make effective use of memo (e.g. container components) may set this to *false*.
  *      Not typically set by application code.
- * @param boolean [config.observer] - Make component reactive via MobX useObserver(). True by default. Components that
+ * @param {boolean} [config.observer] - Make component reactive via MobX useObserver(). True by default. Components that
  *      are known to dereference no observable state may set this to *false*.
  *      Not typically set by application code.
  * @param {string} [config.displayName] - component name for debugging/inspection (if config object specified)
- * @returns {*} A functional react component.
+ *
+ * @returns {*} A functional React component.
  */
 export function hoistComponent(config) {
     // 0) Pre-process/parse args.
@@ -52,10 +54,10 @@ export function hoistComponent(config) {
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? receive('*', {optional: true, provide: false}) : null);
+    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true}) : null);
     throwIf(
-        modelSpec && !(modelSpec.isCreate || modelSpec.isReceive),
-        "'model' for hoistComponent() is incorrectly specified.  Use create() or receive()"
+        modelSpec && !(modelSpec instanceof ModelSpec),
+        "'model' for hoistComponent() is incorrectly specified.  Specify with uses() or creates()"
     );
 
     // 2) Decorate with behaviors
@@ -64,8 +66,7 @@ export function hoistComponent(config) {
         ret = (props, ref) => useObserver(() => render(props, ref));
     }
     if (modelSpec) {
-        const wrapper = modelSpec.provide ? wrapWithProvidedModel : wrapWithLocalModel;
-        ret = wrapper(ret, modelSpec, displayName);
+        ret = wrapWithModelSupport(ret, modelSpec, displayName);
     }
     if (isForwardRef) {
         ret = forwardRef(ret);
@@ -121,15 +122,7 @@ export function hoistCmpAndFactory(config) {
 //-------------------
 // Implementation
 //------------------
-function wrapWithLocalModel(render, spec, displayName) {
-    return (props, ref) => {
-        const [model] = useResolvedModel(spec, props, displayName);
-        if (model) props = {...props, model};
-        return render(props, ref);
-    };
-}
-
-function wrapWithProvidedModel(render, spec, displayName) {
+function wrapWithModelSupport(render, spec, displayName) {
     return (props, ref) => {
         const [model, lookup] = useResolvedModel(spec, props, displayName);
         const [newLookup] = useState(
@@ -144,11 +137,10 @@ function wrapWithProvidedModel(render, spec, displayName) {
 function useResolvedModel(spec, props, displayName) {
     const modelLookup = useContext(ModelLookupContext);
     const [{model, isOwned}] = useState(() => {
-        return spec.isCreate ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName);
+        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName);
     });
     useOwnedModelLinker(isOwned ? model : null);
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
-
 
     return [model, modelLookup];
 }
@@ -160,20 +152,31 @@ function createModel(spec) {
 function lookupModel(spec, props, modelLookup, displayName) {
     const {model} = props,
         {selector} = spec;
-    if (model && isPlainObject(model) && spec.fromConfig) {
+
+    // 1) props - config
+    if (model && isPlainObject(model) && spec.createFromConfig) {
         return {model: new selector(model), isOwned: true};
     }
 
+    // 2) props - instance
     if (model) {
         throwIf(!model.isHoistModel, `Model for '${displayName}' must be a HoistModel.`);
         throwIf(!model.matchesSelector(selector),
-            `Incorrect model received for '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
+            `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
         return {model, isOwned: false};
     }
 
+    // 3) context
     if (modelLookup && spec.fromContext) {
         return {model: modelLookup.lookupModel(selector), isOwned: false};
+    }
+
+    // 4) default create
+    const create = spec.defaultCreate;
+    if (create) {
+        const model = (isFunction(create) ? create() : new selector());
+        return {model, isOwned: true};
     }
 
     throwIf(!spec.optional,

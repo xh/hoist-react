@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpFactory, receive} from '@xh/hoist/core';
+import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,7 +15,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 /** @private */
 export const updateBar = hoistCmpFactory({
     displayName: 'UpdateBar',
-    model: receive(AppContainerModel),
+    model: uses(AppContainerModel),
 
     render({model}) {
         const {updateVersion} = model,

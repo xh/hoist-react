@@ -4,7 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './ModelCreateSpec';
-export * from './ModelReceiveSpec';
+
+export * from './ModelSpec';
+export * from './creates';
+export * from './uses';
 
 

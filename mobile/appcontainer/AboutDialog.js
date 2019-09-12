@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmpFactory, receive, XH} from '@xh/hoist/core';
+import {hoistCmpFactory, uses, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
@@ -21,7 +21,7 @@ import './AboutDialog.scss';
  */
 export const aboutDialog = hoistCmpFactory({
     displayName: 'AboutDialog',
-    model: receive(AboutDialogModel),
+    model: uses(AboutDialogModel),
 
     render({model}) {
         if (!model.isOpen) return null;
