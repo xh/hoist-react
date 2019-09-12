@@ -6,10 +6,10 @@
  */
 import PT from 'prop-types';
 import {cloneDeep} from 'lodash';
-import {hoistCmpAndFactory, uses, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
-import {getClassName} from '@xh/hoist/utils/react';
+import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
