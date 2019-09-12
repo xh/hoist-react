@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {merge, castArray} from 'lodash';
-import {hoistCmpAndFactory, useLayoutProps} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
 import {div} from './Tags';
 
 
@@ -25,7 +25,7 @@ export const [Box, box] = hoistCmpAndFactory({
     model: false, memo: false, observer: false,
 
     render(props, ref) {
-        let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
+        let [layoutProps, {children, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},

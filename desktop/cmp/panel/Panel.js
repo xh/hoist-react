@@ -8,11 +8,11 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistCmpAndFactory, useLayoutProps, uses} from '@xh/hoist/core';
+import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {isReactElement, getClassName} from '@xh/hoist/utils/react';
+import {isReactElement, getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -42,7 +42,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
     render({model, ...props}, ref) {
         let [flags] = useState({wasDisplayed: true}),
             className = getClassName('xh-panel', props),
-            [layoutProps, nonLayoutProps] = useLayoutProps(props);
+            [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
         const {
             tbar,
@@ -54,7 +54,6 @@ export const [Panel, panel] = hoistCmpAndFactory({
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
             children,
-            model: modelProp,
             ...rest
         } = nonLayoutProps;
 

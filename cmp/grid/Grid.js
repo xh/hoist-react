@@ -20,7 +20,7 @@ import {
     isFinite
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {hoistCmpAndFactory, useLayoutProps, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmpAndFactory, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -32,7 +32,7 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
-import {getClassName} from '@xh/hoist/utils/react';
+import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -58,7 +58,6 @@ export const [Grid, grid] = hoistCmpAndFactory({
     render({model, ...props}) {
 
         const implModel = useLocalModel(() => new GridImplModel(model, props)),
-            layoutProps = useLayoutProps(props),
             className = getClassName('xh-grid', props, implModel.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
             platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
 
@@ -67,7 +66,7 @@ export const [Grid, grid] = hoistCmpAndFactory({
             frame({
                 className,
                 item: agGrid({
-                    ...layoutProps,
+                    ...getLayoutProps(props),
                     ...implModel.agOptions
                 }),
                 onKeyDown: implModel.onKeyDown

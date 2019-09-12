@@ -29,7 +29,6 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
 
     render({model, ...props}) {
         const className = getClassName('xh-lr-chooser', props),
-            [layoutProps] = useLayoutProps(props),
             {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
@@ -60,7 +59,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
                 description()
             ],
             className,
-            ...layoutProps
+            ...getLayoutProps(props)
         });
     }
 });

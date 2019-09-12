@@ -6,9 +6,9 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
-import {getClassName} from '@xh/hoist/utils/react';
+import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './Button.scss';
 
@@ -23,8 +23,7 @@ export const [Button, button] = hoistCmpAndFactory({
     model: null,
 
     render(props) {
-        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-            {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,
+        const [layoutProps, {icon, text, onClick, minimal = true, style, autoFocus, ...rest}] = splitLayoutProps(props),
             classes = [];
 
         if (minimal) classes.push('xh-button--minimal');

@@ -6,9 +6,9 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
-import {getClassName} from '@xh/hoist/utils/react';
+import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './ButtonGroup.scss';
 
@@ -20,8 +20,8 @@ export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
     model: null,
 
     render(props) {
-        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-            {fill, minimal, vertical, style, ...rest} = nonLayoutProps;
+        const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
+
         return bpButtonGroup({
             fill,
             minimal,
