@@ -10,6 +10,12 @@
   supported (by both Hoist and React) using the familiar `@HoistComponent` decorator.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an <enter> keypress (same as clicking 'OK').
+* `stringExcludes` function added to form validation constraints. This allows an input value to
+  block specific characters or strings, e.g. no slash "/" in a textInput for a filename.
+* `constrainAll` function added to form validation constraints. This takes another constraint as its
+  only argument, and applies that constraint to an array of values, rather than just to one value.
+  This is useful for applying a constraint to inputs that produce arrays, such as tag pickers.
+* `DateInput` will now accept LocalDates as `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
@@ -18,7 +24,7 @@
 
 ### 💥 Breaking Changes
 
-* Apps should update their dev dependencies to the latest `@xh/hoist-dev-utils` package: v4.0+. This
+* Apps must update their dev dependencies to the latest `@xh/hoist-dev-utils` package: v4.0+. This
   updates the versions of Babel / Webpack used in builds and swaps to the updated Babel
   recommendation of `core-js` for polyfills.
 * The `allSettled` function in `@xh/promise` has been removed. Applications using this method should
@@ -29,9 +35,15 @@
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
 
+### 🐞 Bug Fixes
+
+* Date picker month and year controls will now work properly in LocalDate mode. (Previously would
+  reset to underlying value.)
+
 ### 📚 Libraries
 
-* @xh/hoist-dev-utils `3.8 -> 4.0`
+* @xh/hoist-dev-utils `3.8 -> 4.0` (multiple transitive updates to build tooling)
+* ag-grid `21.1 -> 21.2`
 * rsvp (removed)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
@@ -82,6 +94,12 @@
 * New `TreeMap` and `SplitTreeMap` components added, to render hierarchical data in a configurable
   TreeMap visualization based on the Highcharts library. Supports optional binding to a GridModel,
   which syncs selection and expand / collapse state.
+* `Column` gets a new `highlightOnChange` config. If true, the grid will highlight the cell on each
+  change by flashing its background. (Currently this is a simple on/off config - future iterations
+  could support a function variant or other options to customize the flash effect based on the
+  old/new values.) A new CSS var `--xh-grid-cell-change-bg-highlight` can be used to customize the
+  color used, app-wide or scoped to a particular grid selector. Note that columns must *not* specify
+  `rendererIsComplex` (see below) if they wish to enable the new highlight flag.
 
 ### 💥 Breaking Changes
 
@@ -95,12 +113,6 @@
   `true` to indicate if a column renderer uses values other than its own bound field. This change
   provides an efficiency boost by allowing ag-Grid to use its default change detection instead of
   forcing a cell refresh on any change.
-* `Column` also gets a new `highlightOnChange` config. If true, the grid will highlight the cell on
-  each change by flashing its background. (Currently this is a simple on/off config - future
-  iterations could support a function variant or other options to customize the flash effect based
-  on the old/new values.) A new CSS var `--xh-grid-cell-change-bg-highlight` can be used to
-  customize the color used, app-wide or scoped to a particular grid selector. Note that columns must
-  *not* specify `rendererIsComplex` if they wish to enable the new highlight flag.
 
 ### ⚙️ Technical
 

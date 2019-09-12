@@ -7,8 +7,9 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, isString} from 'lodash';
+import {castArray} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -52,8 +53,9 @@ export class DataViewModel {
         // custom renderer and mark it as complex to ensure re-renders on any record change.)
         let field = 'id';
         if (sortBy.length === 1) {
-            const sorter = sortBy[0];
-            field = isString(sorter) ? sorter : sorter.colId;
+            let sorter = sortBy[0];
+            if (!(sorter instanceof GridSorter)) sorter = GridSorter.parse(sorter);
+            field = sorter.colId;
         }
 
         this.gridModel = new GridModel({
