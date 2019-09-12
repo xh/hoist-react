@@ -4,12 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import React, {Component} from 'react';
+import React from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmpAndFactory, hoistCmpFactory, uses} from '@xh/hoist/core';
 import {hframe, vframe, frame} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
+import {getLayoutProps, getClassName} from '@xh/hoist/utils/react';
 
 import {treeMap} from './TreeMap';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
@@ -19,35 +20,30 @@ import {SplitTreeMapModel} from './SplitTreeMapModel';
  *
  * @see SplitTreeMapModel
  */
-@HoistComponent
-@LayoutSupport
-export class SplitTreeMap extends Component {
+export const [SplitTreeMap, splitTreeMap]  = hoistCmpAndFactory({
+    model: uses(SplitTreeMapModel),
 
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
-    };
-
-    static modelClass = SplitTreeMapModel;
-
-    baseClassName = 'xh-split-treemap';
-
-    render() {
-        const {model} = this,
-            {primaryMapModel, secondaryMapModel, orientation} = model,
+    render({model, ...props}) {
+        const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
-            className: this.getClassName(),
-            items: errors.length ? this.renderErrors(errors) : this.renderChildMaps(),
-            ...this.getLayoutProps()
+            className: getClassName('xh-split-treemap', props),
+            items: errors.length ? errorPanel({errors}) : childMaps(),
+            ...getLayoutProps(props)
         });
     }
+});
+SplitTreeMap.propTypes = {
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(SplitTreeMapModel), PT.object])
+};
 
-    renderChildMaps() {
-        const {model} = this,
-            {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
+
+const childMaps = hoistCmpFactory(
+    ({model}) => {
+        const {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
             pTotal = primaryMapModel.total,
             sTotal = secondaryMapModel.total;
 
@@ -77,14 +73,11 @@ export class SplitTreeMap extends Component {
             })
         ];
     }
+);
 
-    renderErrors(errors) {
-        return frame({
-            className: 'xh-split-treemap__error-message',
-            items: errors.map(e => <p>{e}</p>)
-        });
-    }
-
-}
-
-export const splitTreeMap = elemFactory(SplitTreeMap);
+const errorPanel = hoistCmpFactory(
+    ({errors}) => frame({
+        className: getClassName('xh-split-treemap__error-message'),
+        items: errors.map(e => <p>{e}</p>)
+    })
+);

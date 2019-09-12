@@ -25,6 +25,7 @@ import './DimensionChooser.scss';
 @HoistComponent
 export class DimensionChooser extends Component {
 
+    static supportModelFromContext = true;
     static modelClass = DimensionChooserModel;
 
     static propTypes = {
