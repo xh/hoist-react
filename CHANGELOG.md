@@ -2,39 +2,45 @@
 
 ## v28.0.0-SNAPSHOT - Unreleased
 
+_"The one with the hooks."_
+
 ### 🎁 New Features
 
-* Hoist now fully supports React functional components and hooks. See the new function
-  `hoistComponent`, `useLocalModel()`, and `useContextModel()` for more information. 
-  (Note that Class-based Components remain fully supported (by both Hoist and React) using the 
-  familiar `@HoistComponent` decorator.
+* **Hoist now fully supports React functional components and hooks.** See the new function
+  `hoistComponent`, `useLocalModel()`, and `useContextModel()` for more information. (Note that
+  Class-based Components remain fully supported (by both Hoist and React) using the familiar
+  `@HoistComponent` decorator.
 * Hoist components are now be able to read their models from context, allowing a much less verbose
-  specification of application code.  Currently only functional components can publish models to context.  
+  specification of application code. Currently only functional components can publish models to
+  context.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
-  user's entry on an <enter> keypress (same as clicking 'OK').
-* `stringExcludes` function added to form validation constraints.  This allows
-   an input value to block specific characters or strings, e.g. no slash "/" in a textInput for
-   a filename.
-* `constrainAll` function added to form validation constraints.  This takes another
-   constraint as its only argument, and applies that constraint to an array of values,
-   rather than just to one value.  This is useful for applying a constraint to inputs that produce
-   arrays, such as tag pickers.
+  user's entry on an `<enter>` keypress (same as clicking 'OK').
+* `stringExcludes` function added to form validation constraints. This allows an input value to
+  block specific characters or strings, e.g. no slash "/" in a textInput for a filename.
+* `constrainAll` function added to form validation constraints. This takes another constraint as its
+  only argument, and applies that constraint to an array of values, rather than just to one value.
+  This is useful for applying a constraint to inputs that produce arrays, such as tag pickers.
 * `DateInput` will now accept LocalDates as `value`, `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
-* `createObservableRef()` is now available in `@xh/hoist/utils/react` package.  Use this function for
-   creating ref's that are  functionally equivalent to refs created with `React.createRef()`, yet fully 
-   observable.  With this change the `Ref` class in the same package is now obsolete..
+* `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
+  creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
+  fully observable. With this change the `Ref` class in the same package is now obsolete..
 
 ### 💥 Breaking Changes
 
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
-  
+
 ### 🐞 Bug Fixes
 
-* Date picker month and year controls will now work properly in `localDate` mode.
+* Date picker month and year controls will now work properly in `localDate` mode. (Previously would
+  reset to underlying value.)
+
+### 📚 Libraries
+
+* ag-grid `21.1 -> 21.2`
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
@@ -115,7 +121,7 @@
 * Panel resize events are now properly throttled, avoiding extreme lagginess when resizing panels
   that contain complex components such as big grids.
 * Workaround for issues with the mobile Onsen toolkit throwing errors while resetting page stack.
-* Dialogs call `doCancel()` handler if cancelled via <escape> key.
+* Dialogs call `doCancel()` handler if cancelled via `<esc>` keypress.
 
 ### 📚 Libraries
 
