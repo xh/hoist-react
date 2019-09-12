@@ -124,7 +124,8 @@ export function hoistCmpAndFactory(config) {
 //------------------
 function wrapWithModelSupport(render, spec, displayName) {
     return (props, ref) => {
-        const [model, lookup] = useResolvedModel(spec, props, displayName);
+        const lookup = useContext(ModelLookupContext);
+        const model = useResolvedModel(spec, props, lookup, displayName);
         const [newLookup] = useState(
             () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
         );
@@ -134,15 +135,14 @@ function wrapWithModelSupport(render, spec, displayName) {
     };
 }
 
-function useResolvedModel(spec, props, displayName) {
-    const modelLookup = useContext(ModelLookupContext);
+function useResolvedModel(spec, props, lookup, displayName) {
     const [{model, isOwned}] = useState(() => {
-        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName);
+        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
     });
     useOwnedModelLinker(isOwned ? model : null);
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
 
-    return [model, modelLookup];
+    return model;
 }
 
 function createModel(spec) {
