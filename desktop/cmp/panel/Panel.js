@@ -103,7 +103,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, compact: compactHeader, headerItems}) :
+            panelHeader({model, title, icon, compact: compactHeader, headerItems}) :
             null;
 
 
@@ -122,7 +122,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
-            resizeContainer({ref, item}) :
+            resizeContainer({model, ref, item}) :
             item;
     }
 });
