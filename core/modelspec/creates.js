@@ -23,20 +23,22 @@ import {ModelSpec} from './ModelSpec';
  *
  * @param {Class|function} spec - HoistModel Class to construct, or a function returning a concrete
  *      HoistModel instance.
+ * @param {Object} [flags]
+ * @param {boolean} [flags.toContext] - true (default) to publish model in props for consumption as
+ *      primary model by descendant components.
  * @returns {ModelSpec}
  */
-export function creates(spec) {
-    return new CreatesSpec(spec);
+export function creates(spec, {toContext = true} = {}) {
+    return new CreatesSpec(spec, toContext);
 }
-
 
 /** @private */
 export class CreatesSpec extends ModelSpec {
 
     createFn;
 
-    constructor(spec) {
-        super();
+    constructor(spec, toContext) {
+        super(false, toContext);
         if (spec.isHoistModel) {
             throwIf(spec.lookupModel, 'Specified model type must *not* be an instance. Specify a class name instead.');
             this.createFn = () => new spec();

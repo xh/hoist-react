@@ -10,7 +10,16 @@
  *
  * Applications should not instantiate this class directly. Instead, {@see uses()} and
  * {@see creates()} for standard factories that produce instances of this class.
+ *
+ * @private
  */
 export class ModelSpec {
+    fromContext;
+    toContext;
 
+
+    constructor(fromContext, toContext) {
+        this.fromContext = fromContext;
+        this.toContext = toContext;
+    }
 }

@@ -66,7 +66,7 @@ export function hoistComponent(config) {
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true}) : null);
+    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true, toContext: false}) : null);
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
@@ -78,7 +78,8 @@ export function hoistComponent(config) {
         ret = (props, ref) => useObserver(() => render(props, ref));
     }
     if (modelSpec) {
-        ret = wrapWithModelSupport(ret, modelSpec, displayName);
+        const wrap = (modelSpec.fromContext || modelSpec.toContext) ? wrapWithContextModel : wrapWithSimpleModel;
+        ret = wrap(ret, modelSpec, displayName);
     }
     if (isForwardRef) {
         ret = forwardRef(ret);
@@ -131,16 +132,24 @@ export function hoistCmpAndFactory(config) {
 //------------------------
 // Implementation
 //------------------------
-function wrapWithModelSupport(render, spec, displayName) {
+function wrapWithContextModel(render, spec, displayName) {
     return (props, ref) => {
         const lookup = useContext(ModelLookupContext);
         const model = useResolvedModel(spec, props, lookup, displayName);
         const [newLookup] = useState(
-            () => model && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
+            () => model && spec.toContext && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
         );
         if (model) props = {...props, model};
         const rendering = render(props, ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
+    };
+}
+
+function wrapWithSimpleModel(render, spec, displayName) {
+    return (props, ref) => {
+        const model = useResolvedModel(spec, props, null, displayName);
+        if (model) props = {...props, model};
+        return render(props, ref);
     };
 }
 

@@ -35,7 +35,7 @@ import './Panel.scss';
  */
 export const [Panel, panel] = hoistCmpAndFactory({
     displayName: 'Panel',
-    model: uses(PanelModel, {fromContext: false, optional: true}),
+    model: uses(PanelModel, {fromContext: false, toContext: false, optional: true}),
 
     memo: false,
 

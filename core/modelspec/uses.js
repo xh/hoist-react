@@ -34,6 +34,8 @@ import {ModelSpec} from './ModelSpec';
  *      suitable model can be sourced, the component will throw on mount.
  * @param {boolean} [flags.fromContext] - true (default) to look for a suitable model in context if
  *      not sourced via props.
+ * @param {boolean} [flags.toContext] - true (default) to publish model in props for consumption as
+ *      primary model by descendant components.
  * @param {boolean} [flags.createFromConfig] - true (default) to accept model config from props and
  *      construct an instance on-demand. Selector must be a HoistModel Class.
  * @params {(boolean|function)} [flags.createDefault] - true create a model if none provided.
@@ -44,10 +46,11 @@ export function uses(
     selector, {
         optional = false,
         fromContext = true,
+        toContext = true,
         createFromConfig = true,
         createDefault = false
     } = {}) {
-    return new UsesSpec(selector, {optional, fromContext, createFromConfig, createDefault});
+    return new UsesSpec(selector, optional, fromContext, toContext, createFromConfig, createDefault);
 }
 
 
@@ -56,18 +59,16 @@ export class UsesSpec extends ModelSpec  {
 
     selector;
     optional;
-    fromContext;
     createFromConfig;
     createDefault;
 
-    constructor(selector, flags) {
-        super();
+    constructor(selector, optional, fromContext, toContext, createFromConfig, createDefault) {
+        super(fromContext, toContext);
         throwIf(!selector, 'Must specify selector in uses().');
 
         this.selector = selector;
-        this.optional = flags.optional;
-        this.fromContext = flags.fromContext;
-        this.createFromConfig = flags.createFromConfig;
-        this.createDefault = flags.createDefault;
+        this.optional = optional;
+        this.createFromConfig = createFromConfig;
+        this.createDefault = createDefault;
     }
 }
