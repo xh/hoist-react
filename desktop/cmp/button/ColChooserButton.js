@@ -4,9 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
@@ -26,17 +27,25 @@ export const [ColChooserButton, colChooserButton] = hoistCmpAndFactory({
     model: null,
 
     render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
-        const {colChooserModel} = gridModel;
+        gridModel = withDefault(gridModel, useContextModel(GridModel));
 
+        const displayButton = button({
+            icon: withDefault(icon, Icon.gridPanel()),
+            title: withDefault(title, 'Choose grid columns...'),
+            ...rest
+        });
+
+        if (!gridModel) {
+            console.error("No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context.");
+            return cloneElement(displayButton, {disabled: true});
+        }
+
+        const {colChooserModel} = gridModel;
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: button({
-                icon: withDefault(icon, Icon.gridPanel()),
-                title: withDefault(title, 'Choose grid columns...'),
-                ...rest
-            }),
+            target: displayButton,
             content: vbox(
                 div({
                     className: 'xh-popup__title',
