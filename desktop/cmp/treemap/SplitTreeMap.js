@@ -21,6 +21,8 @@ import {SplitTreeMapModel} from './SplitTreeMapModel';
  * @see SplitTreeMapModel
  */
 export const [SplitTreeMap, splitTreeMap]  = hoistCmpAndFactory({
+    displayName: 'SplitTreeMap',
+
     model: uses(SplitTreeMapModel),
 
     render({model, ...props}) {
