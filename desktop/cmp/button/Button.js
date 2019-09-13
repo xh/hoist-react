@@ -20,7 +20,7 @@ import './Button.scss';
  */
 export const [Button, button] = hoistCmpAndFactory({
     displayName: 'Button',
-    model: null,
+    model: false,
 
     render(props) {
         const [layoutProps, {icon, text, onClick, minimal = true, style, autoFocus, ...rest}] = splitLayoutProps(props),

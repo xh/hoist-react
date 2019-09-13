@@ -25,10 +25,7 @@ export const activityGrid = hoistCmpFactory({
             mask: model.loadModel,
             tbar: tbar(),
             items: [
-                grid({
-                    model: model.gridModel,
-                    onRowDoubleClicked: (e) => model.openDetail(e.data)
-                }),
+                grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
                 activityDetail()
             ]
         });
@@ -37,8 +34,6 @@ export const activityGrid = hoistCmpFactory({
 
 const tbar = hoistCmpFactory(
     ({model}) => {
-        const {gridModel} = model;
-
         return toolbar(
             button({
                 icon: Icon.angleLeft(),
@@ -62,10 +57,10 @@ const tbar = hoistCmpFactory(
             textInput({bind: 'category', placeholder: 'Category', ...textProps}),
             textInput({bind: 'device', placeholder: 'Device', ...textProps}),
             textInput({bind: 'browser', placeholder: 'Browser', ...textProps}),
-            refreshButton({model}),
+            refreshButton(),
             filler(),
-            gridCountLabel({gridModel, unit: 'log'}),
-            exportButton({gridModel})
+            gridCountLabel({unit: 'log'}),
+            exportButton()
         );
     }
 );

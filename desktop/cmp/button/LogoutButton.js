@@ -16,7 +16,7 @@ import {button, Button} from './Button';
  */
 export const [LogoutButton, logoutButton] = hoistCmpAndFactory({
     displayName: 'LogoutButton',
-    model: null,
+    model: false,
 
     render(props)  {
         if (XH.appSpec.isSSO) return null;

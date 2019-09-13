@@ -13,7 +13,7 @@ import {button, Button} from './Button';
  */
 export const [ThemeToggleButton, themeToggleButton] = hoistCmpAndFactory({
     displayName: 'ThemeToggleButton',
-    model: null,
+    model: false,
 
     render(props) {
         return button({

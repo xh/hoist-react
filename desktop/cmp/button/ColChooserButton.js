@@ -24,7 +24,7 @@ import {colChooser} from '@xh/hoist/desktop/cmp/grid';
  */
 export const [ColChooserButton, colChooserButton] = hoistCmpAndFactory({
     displayName: 'ColChooserButton',
-    model: null,
+    model: false,
 
     render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));

@@ -22,7 +22,7 @@ export const visitsChart = hoistCmpFactory({
             mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: model.chartModel}),
+            item: chart(),
             bbar: bbar(),
             model: {
                 defaultSize: 500,
@@ -34,7 +34,7 @@ export const visitsChart = hoistCmpFactory({
 });
 
 const bbar = hoistCmpFactory(
-    ({model}) => toolbar(
+    () => toolbar(
         dateInput({bind: 'startDate', dateProps}),
         Icon.angleRight(),
         dateInput({bind: 'endDate', ...dateProps}),
@@ -45,7 +45,7 @@ const bbar = hoistCmpFactory(
             enableClear: true,
             width: 150
         }),
-        refreshButton({model})
+        refreshButton()
     )
 );
 

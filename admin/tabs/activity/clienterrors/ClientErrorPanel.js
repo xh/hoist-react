@@ -26,7 +26,6 @@ export const ClientErrorPanel = hoistCmp({
             tbar: tbar(),
             items: [
                 grid({
-                    model: model.gridModel,
                     onRowDoubleClicked: (e) => model.openDetail(e.data)
                 }),
                 clientErrorDetail()
@@ -37,8 +36,6 @@ export const ClientErrorPanel = hoistCmp({
 
 const tbar = hoistCmpFactory(
     ({model}) => {
-        const {gridModel} = model;
-
         return toolbar(
             button({
                 icon: Icon.angleLeft(),
@@ -59,10 +56,10 @@ const tbar = hoistCmpFactory(
             toolbarSep(),
             textInput({bind: 'username', placeholder: 'Username', ...textProps}),
             textInput({bind: 'error', placeholder: 'Error', ...textProps}),
-            refreshButton({model}),
+            refreshButton(),
             filler(),
-            gridCountLabel({gridModel, unit: 'error'}),
-            exportButton({gridModel})
+            gridCountLabel({unit: 'error'}),
+            exportButton()
         );
     }
 );

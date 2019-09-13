@@ -18,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmpAndFactory({
     displayName: 'RestoreDefaultsButton',
-    model: null,
+    model: false,
 
     render({
         warningMessage = 'Are you sure you want to restore defaults?',

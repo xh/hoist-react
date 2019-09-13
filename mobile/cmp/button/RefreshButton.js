@@ -20,6 +20,7 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
+    model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
     render({model, onClick, ...props}) {
         const refreshContextModel = useContextModel('RefreshContextModel');
