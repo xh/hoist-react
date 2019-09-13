@@ -21,6 +21,7 @@ import PT from 'prop-types';
 @LayoutSupport
 export class RestGrid extends Component {
 
+    static supportModelFromContext = true;
     static modelClass = RestGridModel;
 
     static propTypes = {

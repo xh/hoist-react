@@ -37,16 +37,12 @@ export const configDiffer = hoistCmpFactory({
 
 const contents = hoistCmpFactory(
     ({model}) => {
-        const {gridModel} = model,
-            {store} = gridModel;
-
         return panel({
             tbar: [
                 box(<b>Configuration Comparison</b>),
                 filler(),
                 box('Compare with:'),
                 select({
-                    model,
                     bind: 'remoteHost',
                     placeholder: 'https://remote-host/',
                     enableCreate: true,
@@ -63,11 +59,10 @@ const contents = hoistCmpFactory(
             ],
             item: panel({
                 mask: mask({
-                    isDisplayed: !model.remoteHost || !store.count,
+                    isDisplayed: !model.remoteHost || !model.gridModel.store.count,
                     message: store.allCount ? 'All configs match!' : 'Enter a remote host for comparison.'
                 }),
                 item: grid({
-                    model: gridModel,
                     onRowDoubleClicked: (e) => model.detailModel.open(e.data),
                     agOptions: {
                         popupParent: null

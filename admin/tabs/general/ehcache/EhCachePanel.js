@@ -19,8 +19,6 @@ export const EhCachePanel = hoistCmp({
     model: creates(EhCacheModel),
 
     render({model}) {
-        const {gridModel} = model;
-
         return panel({
             mask: model.loadModel,
             tbar: [
@@ -31,11 +29,11 @@ export const EhCachePanel = hoistCmp({
                     onClick: () => model.clearAll()
                 }),
                 filler(),
-                gridCountLabel({gridModel, unit: 'cache'}),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                gridCountLabel({unit: 'cache'}),
+                storeFilterField(),
+                exportButton()
             ],
-            item: grid({model: gridModel})
+            item: grid()
         });
     }
 });

@@ -19,7 +19,6 @@ export const UserPanel = hoistCmp({
     model: creates(UserModel),
 
     render({model}) {
-        const {gridModel} = model;
         return panel({
             mask: model.loadModel,
             tbar: [
@@ -33,11 +32,11 @@ export const UserPanel = hoistCmp({
                     label: 'With roles only'
                 }),
                 filler(),
-                gridCountLabel({gridModel, unit: 'user'}),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                gridCountLabel({unit: 'user'}),
+                storeFilterField(),
+                exportButton()
             ],
-            item: grid({model: gridModel})
+            item: grid()
         });
     }
 });

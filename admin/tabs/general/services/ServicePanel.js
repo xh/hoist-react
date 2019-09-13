@@ -18,8 +18,6 @@ export const ServicePanel = hoistCmp({
     model: creates(ServiceModel),
 
     render({model}) {
-        const {gridModel} = model;
-
         return panel({
             mask: model.loadModel,
             tbar: [
@@ -28,15 +26,14 @@ export const ServicePanel = hoistCmp({
                     text: 'Clear Selected',
                     intent: 'danger',
                     onClick: () => model.clearCaches(),
-                    disabled: gridModel.selModel.isEmpty
+                    disabled: model.gridModel.selModel.isEmpty
                 }),
                 filler(),
-                gridCountLabel({gridModel, unit: 'service'}),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                gridCountLabel({unit: 'service'}),
+                storeFilterField(),
+                exportButton()
             ],
             item: grid({
-                model: gridModel,
                 hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: (params) => params.value + ' Services'
