@@ -45,13 +45,13 @@ import {CreatesSpec, ModelSpec, uses} from './modelspec';
  *      {@see uses()} and {@see creates()} - these two factory functions can be used to create an
  *      appropriate spec for either externally-provided or internally-created models. Defaults to
  *      `uses('*')` for render functions taking props, otherwise false.
+ * @param {string} [config.displayName] - component name for debugging/inspection.
  * @param {boolean} [config.memo] - true (default) to wrap component in a call to `React.memo()`.
  *      Components that are known to be unable to make effective use of memo (e.g. container
  *      components) may set this to `false`. Not typically set by application code.
  * @param {boolean} [config.observer] - true (default) to enable MobX-powered reactivity via the
  *      `useObserver()` hook from mobx-react. Components that are known to dereference no
  *      observable state may set this to `false`. Not typically set by application code.
- * @param {string} [config.displayName] - component name for debugging/inspection.
  * @returns {function} - a functional Component for use within Hoist apps.
  */
 export function hoistComponent(config) {
