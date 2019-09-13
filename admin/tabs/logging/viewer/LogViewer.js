@@ -19,11 +19,9 @@ export const LogViewer = hoistCmp({
     model: creates(LogViewerModel),
 
     render({model}) {
-        const {filesGridModel, logDisplayModel, loadModel, viewRef} = model;
-
         return hframe({
             className: 'xh-log-viewer',
-            ref: viewRef,
+            ref: model.viewRef,
             items: [
                 panel({
                     model: {
@@ -31,16 +29,16 @@ export const LogViewer = hoistCmp({
                         defaultSize: 250,
                         showHeaderCollapseButton: false
                     },
-                    item: grid({model: filesGridModel}),
+                    item: grid(),
                     bbar: [
                         filler(),
-                        storeFilterField({gridModel: filesGridModel})
+                        storeFilterField()
                     ]
                 }),
                 panel({
                     tbar: logViewerToolbar(),
-                    item: logDisplay({model: logDisplayModel}),
-                    mask: loadModel
+                    item: logDisplay(),
+                    mask: model.loadModel
                 })
             ]
         });

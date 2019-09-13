@@ -12,6 +12,7 @@ import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
 import {clipboardMenuItem} from '@xh/hoist/desktop/cmp/clipboard';
 import {ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
+import {LogDisplayModel} from './LogDisplayModel';
 
 /**
  * @private
@@ -19,6 +20,9 @@ import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 @HoistComponent
 @ContextMenuSupport
 export class LogDisplay extends Component {
+
+    static supportModelFromContext = true;
+    static modelClass = LogDisplayModel;
 
     render() {
         const {rows, loadModel} = this.model;
