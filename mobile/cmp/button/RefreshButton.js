@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel, uses} from '@xh/hoist/core';
+import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
