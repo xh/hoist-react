@@ -8,33 +8,33 @@ import PT from 'prop-types';
 import {hoistCmpAndFactory, useContextModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
-import {warnIf} from '@xh/hoist/utils/js';
+import {errorIf} from '@xh/hoist/utils/js';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
- * If a model is provided it will be directly refreshed. Alternatively an onClick handler may be
- * provided. If neither of these props are provided, the contextual RefreshContextModel for this
- * button will be used.
+ * If an onClick handler is provided it will be used. Otherwise this button will
+ * be linked to any model in props implementing LoadSupport, or the contextual
+ * RefreshContextModel.
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
-    model: uses('*', {fromContext: false, optional: true}),
 
-    render({model, ...props}) {
-        warnIf(
-            model && props.onClick,
-            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
-        );
+    render({model, onClick, ...props}) {
+        const refreshContextModel = useContextModel('RefreshContextModel');
 
-        const target = withDefault(model, useContextModel('RefreshContextModel'));
+        if (!onClick) {
+            errorIf(model && !model.isLoadSupport, 'Provided model to RefreshButton must be decorated with LoadSupport.');
+            model = withDefault(model, refreshContextModel);
+            onClick = model ? () => model.refreshAsync() : null;
+        }
 
         return button({
             icon: Icon.refresh(),
             title: 'Refresh',
             intent: 'success',
-            onClick: () => target && target.refreshAsync(),
+            onClick,
             ...props
         });
     }

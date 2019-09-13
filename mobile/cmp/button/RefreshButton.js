@@ -9,7 +9,7 @@ import PT from 'prop-types';
 import {hoistCmpAndFactory, useContextModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -20,19 +20,19 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
  */
 export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
     displayName: 'RefreshButton',
-    model: uses('*', {fromContext: false, optional: true}),
 
-    render({model, ...props}) {
-        warnIf(
-            model && props.onClick,
-            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
-        );
+    render({model, onClick, ...props}) {
+        const refreshContextModel = useContextModel('RefreshContextModel');
 
-        const target = withDefault(model, useContextModel('RefreshContextModel'));
+        if (!onClick) {
+            errorIf(model && !model.isLoadSupport, 'Provided model to RefreshButton must be decorated with LoadSupport.');
+            model = withDefault(model, refreshContextModel);
+            onClick = model ? () => model.refreshAsync() : null;
+        }
 
         return button({
             icon: Icon.sync(),
-            onClick: () => target && target.refreshAsync(),
+            onClick,
             ...props
         });
     }
