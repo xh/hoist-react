@@ -50,7 +50,6 @@ import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-
 export const [Grid, grid] = hoistCmpAndFactory({
     displayName: 'GridModel',
     model: uses(GridModel),
@@ -76,7 +75,7 @@ export const [Grid, grid] = hoistCmpAndFactory({
     }
 });
 
-GridModel.propTypes = {
+Grid.propTypes = {
     /**
      * Options for ag-Grid's API.
      *
