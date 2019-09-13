@@ -4,28 +4,26 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {elemFactory, XH} from '@xh/hoist/core';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {getClassName} from '@xh/hoist/utils/react';
+import {isPlainObject, isUndefined} from 'lodash';
+import {observer} from 'mobx-react';
 import {useDebugValue} from 'react';
 import ReactDom from 'react-dom';
-import {XH, elemFactory} from '@xh/hoist/core';
-import {isPlainObject, isUndefined} from 'lodash';
-import {throwIf, applyMixin} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
-import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
-import {observer} from 'mobx-react';
-
 import {ModelLookupContext, useOwnedModelLinker} from './impl';
+import {ManagedSupport, ReactiveSupport, XhIdSupport} from './mixins';
 
 /**
- * Create a Class Component in Hoist.
- *
- * Adds support for MobX reactivity, model awareness, and other convenience methods below.
+ * Hoist decorator for creating class-based components. Adds support for MobX reactivity, model
+ * awareness, and other convenience methods below.
  *
  * NOTE: This decorator provided the original method for specifying class-based components within
  * Hoist React, and is maintained to support legacy applications and any exceptional cases where
  * a class-based component continues to be necessary or preferred.
  *
- * Developers are encouraged to @see hoistCmp for a functional, hooks-compatible
- * approach to component definition for Hoist apps.
+ * Developers are encouraged to {@see hoistComponent} for a functional, hooks-compatible approach
+ * to defining components within Hoist apps.
  */
 export function HoistComponent(C) {
 
@@ -37,22 +35,29 @@ export function HoistComponent(C) {
 
         defaults: {
             /**
-             * Model instance which this component is rendering.
+             * The primary backing Model instance for this component.
              *
-             * This property provides a Class-based component with similar functionality that
-             * the 'model' config and useModel() provides a functional component.
+             * This property provides a Class-based component with functionality similar to that
+             * provided to functional components by their 'model' config and the `useModel()` hook.
              *
-             * Specify the static property 'modelClass' on the component to define the type of the model.
-             * Specify the static property 'supportModelFromContext' to allow looking up a provided model
-             * from context.
+             * Set the static 'modelClass' property to specify the type of its primary model. This
+             * validates any provided model and allows the component to auto-create a model of the
+             * required type when provided with a plain config object via props.
              *
-             * Specify an internally created model by setting it as a field directly on the Component class
-             * definition. Specify an external model by providing an instance of HoistModel in props.model, or
-             * receiving it from context.
+             * Specify an internally created model by creating an instance of the model class and
+             * setting it as a field directly on the Component class definition.
              *
-             * Provided concrete models are assumed to be owned / managed by a ancestor Component. Local models or models
-             * provided as config will be managed by this Component itself and will be destroyed when the Component
-             * is unmounted and destroyed.
+             * Specify an external model by providing an instance of a HoistModel in `props.model`
+             * or by providing it via context. To direct a component to look in context for its
+             * primary model, set the static 'supportModelFromContext' property to true.
+             *
+             * Local models or models provided as a plain-object config (and therefore created
+             * on-demand) will have their lifecycle bound to that of the Component itself - i.e.
+             * they will be destroyed when the Component is unmounted and destroyed.
+             *
+             * External models provided as concrete instances (via props or context) are assumed to
+             * be owned / managed by an ancestor Component and will *not* be auto-destroyed when
+             * this component is unmounted.
              *
              * The model instance is not expected to change for the lifetime of the component. Apps
              * that wish to swap out the model for a mounted component should ensure that a new
@@ -182,21 +187,22 @@ export function HoistComponent(C) {
     });
 }
 
-//-------------------------------
+
+//------------------------
 // Implementation
-//--------------------------------
+//------------------------
 function applyModelFromContextSupport(C) {
     throwIf(C.contextType,
-        'Cannot support reading model from context.  Component already defines a contextType.  Use a functional component instead.'
+        'Cannot support reading model from context because Component already defines a contextType. Use a functional component instead.'
     );
     C.contextType = ModelLookupContext;
 }
 
 function throwModelChangeException() {
     throw XH.exception(`
-                Cannot re-render Component with a different model. If a new model is required, ensure 
-                the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
-            `);
+        Cannot re-render Component with a different model. If a new model is required, ensure 
+        the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
+    `);
 }
 
 function throwWrongModelClass(modelClass) {
@@ -204,7 +210,7 @@ function throwWrongModelClass(modelClass) {
 }
 
 function warnNoModelClassProvided() {
-    console.warn('Component class definition must specify a modelClass to support creating models from prop objects.');
+    console.warn('Component class definition must set the static modelClass property to support creating models from prop objects.');
 }
 
 function ModelHost({model, element}) {
