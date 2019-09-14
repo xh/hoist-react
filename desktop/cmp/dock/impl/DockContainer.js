@@ -22,7 +22,7 @@ export function dockContainerImpl({model, compactHeaders, ...props}) {
         className,
         items: model.views.map(viewModel => {
             return dockView({
-                key: model.xhId,
+                key: viewModel.xhId,
                 model: viewModel,
                 compactHeaders
             });
