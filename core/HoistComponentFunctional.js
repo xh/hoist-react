@@ -66,7 +66,7 @@ export function hoistComponent(config) {
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true, toContext: false}) : null);
+    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true}) : null);
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
