@@ -66,7 +66,7 @@ export function hoistComponent(config) {
         isForwardRef = argCount == 2;
 
     // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*', {optional: true}) : null);
+    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*') : null);
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
@@ -191,13 +191,14 @@ function lookupModel(spec, props, modelLookup, displayName) {
     }
 
     // 4) default create
-    const create = spec.defaultCreate;
+    const create = spec.createDefault;
     if (create) {
         const model = (isFunction(create) ? create() : new selector());
         return {model, isOwned: true};
     }
 
-    throwIf(!spec.optional,
+    //  Component are encouraged to handle a missing model gently. Could also be error
+    console.warn(
         `Unable to find specified model for '${displayName}'. Expected: ${formatSelector(selector)}`
     );
     return {model: null, isOwned: false};

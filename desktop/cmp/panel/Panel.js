@@ -35,7 +35,11 @@ import './Panel.scss';
  */
 export const [Panel, panel] = hoistCmpAndFactory({
     displayName: 'Panel',
-    model: uses(PanelModel, {fromContext: false, toContext: false, optional: true}),
+    model: uses(PanelModel, {
+        fromContext: false,
+        toContext: false,
+        createDefault: () => new PanelModel({collapsible: false, resizable: false})
+    }),
 
     memo: false,
 
@@ -69,13 +73,13 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
         // 2) Prepare 'core' contents according to collapsed state
         const {
-            resizable = false,
-            collapsible = false,
-            collapsed = false,
-            collapsedRenderMode = null,
-            vertical = false,
-            showSplitter = false
-        } = model || {};
+            resizable,
+            collapsible,
+            collapsed,
+            collapsedRenderMode,
+            vertical,
+            showSplitter
+        } = model;
 
         const requiresContainer = resizable || collapsible || showSplitter;
 

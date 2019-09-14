@@ -30,8 +30,6 @@ import {ModelSpec} from './ModelSpec';
  *      indicates that this component will use any model passed via props or the closest context
  *      model, without specifying any particular class. {@see HoistModel.matchesSelector()}
  * @param {Object} [flags]
- * @param {boolean} [flags.optional] - true if model should be optional. If false (default) and no
- *      suitable model can be sourced, the component will throw on mount.
  * @param {boolean} [flags.fromContext] - true (default) to look for a suitable model in context if
  *      not sourced via props.
  * @param {boolean} [flags.toContext] - true (default) to publish model in props for consumption as
@@ -44,13 +42,12 @@ import {ModelSpec} from './ModelSpec';
  */
 export function uses(
     selector, {
-        optional = false,
         fromContext = true,
         toContext = true,
         createFromConfig = true,
         createDefault = false
     } = {}) {
-    return new UsesSpec(selector, optional, fromContext, toContext, createFromConfig, createDefault);
+    return new UsesSpec(selector, fromContext, toContext, createFromConfig, createDefault);
 }
 
 
@@ -58,16 +55,14 @@ export function uses(
 export class UsesSpec extends ModelSpec  {
 
     selector;
-    optional;
     createFromConfig;
     createDefault;
 
-    constructor(selector, optional, fromContext, toContext, createFromConfig, createDefault) {
+    constructor(selector, fromContext, toContext, createFromConfig, createDefault) {
         super(fromContext, toContext);
         throwIf(!selector, 'Must specify selector in uses().');
 
         this.selector = selector;
-        this.optional = optional;
         this.createFromConfig = createFromConfig;
         this.createDefault = createDefault;
     }

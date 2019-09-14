@@ -14,7 +14,7 @@ import './PanelHeader.scss';
 /** @private */
 export const panelHeader = hoistCmpFactory(
     ({model, ...props}) => {
-        const {collapsed, vertical, side, showHeaderCollapseButton} = model || {},
+        const {collapsed, vertical, side, showHeaderCollapseButton} = model,
             {title, icon, compact, headerItems = []} = props;
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;

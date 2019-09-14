@@ -6,9 +6,8 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getClassName} from '@xh/hoist/utils/react';
@@ -23,7 +22,6 @@ import './Mask.scss';
  */
 export const [Mask, mask] = hoistCmpAndFactory({
     displayName: 'Mask',
-    model: uses(PendingTaskModel, {fromContext: false, optional: true}),
 
     render({model, ...props}) {
         const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
