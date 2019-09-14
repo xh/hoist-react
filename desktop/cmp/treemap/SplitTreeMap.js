@@ -7,7 +7,7 @@
 import React from 'react';
 import PT from 'prop-types';
 import {hoistCmpAndFactory, hoistCmpFactory, uses} from '@xh/hoist/core';
-import {hframe, vframe, frame} from '@xh/hoist/cmp/layout';
+import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
 import {getLayoutProps, getClassName} from '@xh/hoist/utils/react';
@@ -60,7 +60,7 @@ const childMaps = hoistCmpFactory(
             pFlex = 0;
         }
 
-        return [
+        return fragment([
             panel({
                 title: mapTitleFn ? mapTitleFn(primaryMapModel, true) : undefined,
                 compactHeader: true,
@@ -73,7 +73,7 @@ const childMaps = hoistCmpFactory(
                 item: treeMap({model: secondaryMapModel}),
                 flex: sFlex
             })
-        ];
+        ]);
     }
 );
 
