@@ -164,15 +164,17 @@ Panel.propTypes = {
     icon: PT.element,
 
     /**
-     * Specify the context menu for this object.
-     *
-     * An element representing the ContextMenu. Or an Array of ContextMenuItems, configs to
-     * create them, Elements, or '-' (divider).  Or a function that receives the context event
-     * triggering the context menu and returns the same.
-     *
-     * A value of null will result in no value being shown.
+     * Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).  Or a function
+     * that receives the triggering event and returns such an array.
+     * A value of null will result in no value being shown. A ContextMenu element may also be returned.
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
+
+    /**
+     * An array of hotkeys, or configs for hotkeys, as prescribed by blueprint.
+     * A value of null will result in no keys being registered.
+     */
+    hotkeys: PT.oneOfType([PT.func, PT.array, PT.node]),
 
     /**
      * Message to render unobtrusively on panel corner. Set to:

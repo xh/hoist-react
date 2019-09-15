@@ -18,9 +18,7 @@ import PT from 'prop-types';
  * Component supporting a ContextMenu for its contents.
  *
  * See also Panel's 'contextMenu' prop, which will delegate to this component
- * For many usages this will provide a more convenient interface.
- *
- * See the BlueprintJS docs for more information about the implementation of this mixin.
+ * For many usages this will provide the most convenient interface.
  */
 export const ContextMenuHost = ContextMenuTarget(
     class extends Component {
@@ -42,15 +40,12 @@ export const ContextMenuHost = ContextMenuTarget(
 ContextMenuHost.propTypes = {
 
     /**
-     * Specify the context menu for this object.
-     *
-     * An element representing the ContextMenu. Or an Array of ContextMenuItems, configs to
-     * create them, Elements, or '-' (divider).  Or a function that receives the context event
-     * triggering the context menu and returns the same.
-     *
-     * A value of null will result in no value being shown.
+     * Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).  Or a function
+     * that receives the triggering event and returns such an array.
+     * A value of null will result in no value being shown. A ContextMenu element may also be returned.
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node])
 };
+
 export const contextMenuHost = elemFactory(ContextMenuHost);
 
