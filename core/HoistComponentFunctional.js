@@ -139,7 +139,7 @@ function wrapWithContextModel(render, spec, displayName) {
         const [newLookup] = useState(
             () => model && spec.toContext && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
         );
-        if (model) props = {...props, model};
+        if (model && model !== props.model) props = {...props, model};
         const rendering = render(props, ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
@@ -148,7 +148,7 @@ function wrapWithContextModel(render, spec, displayName) {
 function wrapWithSimpleModel(render, spec, displayName) {
     return (props, ref) => {
         const model = useResolvedModel(spec, props, null, displayName);
-        if (model) props = {...props, model};
+        if (model && model !== props.model) props = {...props, model};
         return render(props, ref);
     };
 }

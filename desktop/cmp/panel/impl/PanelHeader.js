@@ -6,21 +6,24 @@
  */
 import {hoistCmpFactory} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
-import {headerCollapseButton} from './HeaderCollapseButton';
 import {getClassName} from '@xh/hoist/utils/react';
 
 import './PanelHeader.scss';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 
-/** @private */
-export const panelHeader = hoistCmpFactory(
-    ({model, ...props}) => {
+export const panelHeader = hoistCmpFactory({
+    displayName: 'PanelHeader',
+    model: false,
+
+    render({model, ...props}) {
         const {collapsed, vertical, side, showHeaderCollapseButton} = model,
             {title, icon, compact, headerItems = []} = props;
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
         const onDoubleClick = () => {
-            if (model && model.collapsible) model.toggleCollapsed();
+            if (model.collapsible) model.toggleCollapsed();
         };
 
         const baseCls = 'xh-panel-header',
@@ -41,7 +44,7 @@ export const panelHeader = hoistCmpFactory(
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    renderHeaderCollapseButton(model)
+                    collapseButton({model})
                 ],
                 onDoubleClick
             });
@@ -52,7 +55,7 @@ export const panelHeader = hoistCmpFactory(
                 className: getClassName(baseCls, props, sideCls, compactCls),
                 flex: 1,
                 items: [
-                    isLeft ? filler() : renderHeaderCollapseButton(model),
+                    isLeft ? filler() : collapseButton({model}),
                     icon || null,
                     title ?
                         box({
@@ -60,18 +63,31 @@ export const panelHeader = hoistCmpFactory(
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : renderHeaderCollapseButton(model)
+                    !isLeft ? filler() : collapseButton({model})
                 ],
                 onDoubleClick
             });
         }
     }
-);
+});
 
-function renderHeaderCollapseButton(model) {
-    if (!model) return null;
 
-    return model.showHeaderCollapseButton && model.collapsible ?
-        headerCollapseButton({model}) :
-        null;
-}
+const collapseButton = hoistCmpFactory({
+    displayName: 'CollapseButton',
+    model: false,
+
+    render({model}) {
+        if (!model.showHeaderCollapseButton || !model.collapsible) return null;
+
+        const {vertical, collapsed, contentFirst} = model,
+            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+            idx = (contentFirst != collapsed ? 0 : 1),
+            chevron = directions[idx];
+
+        return button({
+            icon: Icon[chevron](),
+            onClick: () => model.toggleCollapsed(),
+            minimal: true
+        });
+    }
+});
