@@ -12,17 +12,23 @@ import {hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import './Splitter.scss';
 
-/** @private */
-export const splitter = hoistCmpFactory(
-    ({model}) => {
-        const {vertical, showSplitterCollapseButton, collapsible} = model;
+
+export const splitter = hoistCmpFactory({
+    displayName: 'Splitter',
+    model: false,
+
+    render({model}) {
+        const {vertical, collapsed, contentFirst, showSplitterCollapseButton, collapsible} = model,
+            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+            idx = (contentFirst != collapsed ? 0 : 1),
+            chevron = directions[idx];
 
         const cmp = vertical ? hbox : vbox,
             cfg = {
                 className: `xh-resizable-splitter ${vertical ? 'vertical' : 'horizontal'}`,
                 item: button({
                     className: 'xh-resizable-collapser-btn',
-                    icon: Icon[getChevron(model)](),
+                    icon: Icon[chevron](),
                     onClick: () => model.toggleCollapsed(),
                     omit: !showSplitterCollapseButton || !collapsible
                 })
@@ -30,11 +36,4 @@ export const splitter = hoistCmpFactory(
 
         return cmp(cfg);
     }
-);
-
-function getChevron(model) {
-    const {vertical, collapsed, contentFirst} = model,
-        directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
-        idx = (contentFirst != collapsed ? 0 : 1);
-    return directions[idx];
-}
+});

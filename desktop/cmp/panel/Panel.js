@@ -18,6 +18,7 @@ import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {contextMenuHost} from '@xh/hoist/desktop/cmp/contextmenu';
 
 
 import './Panel.scss';
@@ -57,6 +58,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
+            contextMenu,
             children,
             ...rest
         } = nonLayoutProps;
@@ -102,6 +104,11 @@ export const [Panel, panel] = hoistCmpAndFactory({
                     parseToolbar(bbar)
                 ]
             });
+
+            // Wrap with functionality-only boxes
+            if (contextMenu) {
+                coreContents = contextMenuHost({contextMenu, items: coreContents});
+            }
         }
         if (!collapsed) flags.wasDisplayed = true;
 
@@ -155,6 +162,17 @@ Panel.propTypes = {
 
     /** An icon placed at the left-side of the panel's header. */
     icon: PT.element,
+
+    /**
+     * Specify the context menu for this object.
+     *
+     * An element representing the ContextMenu. Or an Array of ContextMenuItems, configs to
+     * create them, Elements, or '-' (divider).  Or a function that receives the context event
+     * triggering the context menu and returns the same.
+     *
+     * A value of null will result in no value being shown.
+     */
+    contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
 
     /**
      * Message to render unobtrusively on panel corner. Set to:

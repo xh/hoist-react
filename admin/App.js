@@ -13,26 +13,24 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {ContextMenuItem, ContextMenuSupport} from '@xh/hoist/desktop/cmp/contextmenu';
+import {ContextMenuItem} from '@xh/hoist/desktop/cmp/contextmenu';
 
 import './App.scss';
 
 @HoistComponent
-@ContextMenuSupport
 export class App extends Component {
 
+
     render() {
+        const Item = ContextMenuItem;
         return panel({
             tbar: this.renderAppBar(),
+            contextMenu: [Item.reloadApp(), Item.about(), Item.logout()],
             className: 'xh-admin-app-frame',
             item: tabContainer({model: this.model.tabModel})
         });
     }
 
-    getContextMenuItems() {
-        const Item = ContextMenuItem;
-        return [Item.reloadApp(), Item.about(), Item.logout()];
-    }
 
     //------------------
     // Implementation
