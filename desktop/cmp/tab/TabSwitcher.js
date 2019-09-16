@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
-import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {omit} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
+
+import classNames from 'classnames';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -22,12 +22,13 @@ import {withDefault} from '@xh/hoist/utils/js';
  * @see TabContainer
  * @see TabContainerModel
  */
-export const TabSwitcher = hoistComponent({
+export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     displayName: 'TabSwitcher',
+    model: uses(TabContainerModel),
+    className: 'xh-tab-switcher',
 
-    render(props) {
-        const model = useProvidedModel(TabContainerModel, props),
-            {id, tabs, activeTabId} = model;
+    render({model, className, ...props}) {
+        const {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),
             vertical = ['left', 'right'].includes(orientation);
@@ -45,18 +46,16 @@ export const TabSwitcher = hoistComponent({
                     items: [icon, title]
                 });
             }),
-            ...omit(props, 'model'),
-            className: getClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
+            ...props,
+            className: classNames(className, `xh-tab-switcher--${orientation}`)
         });
     }
 });
 
 TabSwitcher.propTypes = {
     /** Primary component model instance. */
-    model: PT.instanceOf(TabContainerModel).isRequired,
+    model: PT.instanceOf(TabContainerModel),
 
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation: PT.oneOf(['top', 'bottom', 'left', 'right'])
 };
-
-export const tabSwitcher = elemFactory(TabSwitcher);

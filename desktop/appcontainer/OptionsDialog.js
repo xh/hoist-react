@@ -4,15 +4,15 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {dialog, dialogBody, HotkeysTarget, hotkeys, hotkey} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {hoistCmp, XH, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import './OptionsDialog.scss';
 
@@ -22,42 +22,39 @@ import './OptionsDialog.scss';
  *
  * @private
  */
-@HoistComponent
-@HotkeysTarget
-export class OptionsDialog extends Component {
+export const optionsDialog = hoistCmp.factory({
+    displayName: 'OptionsDialog',
+    model: uses(OptionsDialogModel),
+    className: 'xh-options-dialog',
 
-    static modelClass = OptionsDialogModel;
-
-    baseClassName = 'xh-options-dialog';
-
-    renderHotkeys() {
-        return hotkeys(
-            hotkey({
+    render({model, className}) {
+        if (!model.hasOptions) return null;
+        return hotkeysHost({
+            hotkeys: [{
                 global: true,
                 combo: 'shift + o',
                 label: 'Open Options Dialog',
-                onKeyDown: this.onHotKey
-            })
-        );
+                onKeyDown: () => model.show()
+            }],
+            item: model.isOpen ? displayedDialog({className}) : null
+        });
     }
+});
 
-    render() {
-        const {model} = this,
-            {isOpen, loadModel, formModel, reloadRequired} = model;
-
-        if (!model.hasOptions) return null;
-        if (!isOpen) return span();  // *Not* null, so hotkeys get rendered.
+const displayedDialog = hoistCmp.factory({
+    render({model, className}) {
+        const {reloadRequired, formModel} = model;
 
         return dialog({
             title: `${XH.clientAppName} Options`,
             icon: Icon.options(),
-            className: this.getClassName(),
+            className,
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
             item: [
                 panel({
-                    mask: loadModel,
+                    mask: model.loadModel,
                     item: dialogBody(
                         form({
                             model: formModel,
@@ -86,10 +83,4 @@ export class OptionsDialog extends Component {
             ]
         });
     }
-
-    onHotKey = () => {
-        this.model.show();
-    }
-}
-
-export const optionsDialog = elemFactory(OptionsDialog);
+});

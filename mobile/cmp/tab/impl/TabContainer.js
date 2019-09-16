@@ -5,13 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {throwIf} from '@xh/hoist/utils/js';
 import {tab} from './Tab';
+import classNames from 'classnames';
 
 import './Tabs.scss';
 
@@ -20,50 +18,38 @@ import './Tabs.scss';
  *
  * @private
  */
-@HoistComponent
-export class TabContainer extends Component {
+export function tabContainerImpl({model, ...props}) {
+    throwIf(
+        !['top', 'bottom', 'none'].includes(model.switcherPosition),
+        "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
+    );
 
-    static modelClass = TabContainerModel;
+    const {activeTab, switcherPosition} = model,
+        tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
-    baseClassName = 'xh-tabbar';
-
-    constructor(props) {
-        super(props);
-        throwIf(
-            !['top', 'bottom', 'none'].includes(this.model.switcherPosition),
-            "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
-        );
-    }
-
-    render() {
-        const {model} = this,
-            {activeTab, switcherPosition} = model,
-            tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
-
-        return tabbar({
-            className: this.getClassName(`xh-tabbar-${switcherPosition}`),
-            position: switcherPosition,
-            index: activeTab ? tabs.indexOf(activeTab) : 0,
-            renderTabs: () => tabs.map(tabModel => this.renderTab(tabModel)),
-            onPreChange: (e) => model.activateTab(tabs[e.index].id),
-            visible: switcherPosition !== 'none'
-        });
-    }
-
-    renderTab(tabModel) {
-        const {id, title, icon} = tabModel;
-
-        return {
-            content: tab({key: id, model: tabModel}),
-            tab: onsenTab({
-                key: id,
-                className: 'xh-tab',
-                items: [
-                    div({className: 'xh-tab-icon', item: icon, omit: !icon}),
-                    div({className: 'xh-tab-label', item: title})
-                ]
-            })
-        };
-    }
+    // TODO:  This should use the standard TabContainer className.
+    return tabbar({
+        className: classNames('xh-tabbar', props, `xh-tabbar-${switcherPosition}`),
+        position: switcherPosition,
+        index: activeTab ? tabs.indexOf(activeTab) : 0,
+        renderTabs: () => tabs.map(renderTabModel),
+        onPreChange: (e) => model.activateTab(tabs[e.index].id),
+        visible: switcherPosition !== 'none'
+    });
 }
-export const tabContainer = elemFactory(TabContainer);
+
+function renderTabModel(tabModel) {
+    const {id, title, icon} = tabModel;
+
+    return {
+        content: tab({key: id, model: tabModel}),
+        tab: onsenTab({
+            key: id,
+            className: 'xh-tab',
+            items: [
+                div({className: 'xh-tab-icon', item: icon, omit: !icon}),
+                div({className: 'xh-tab-label', item: title})
+            ]
+        })
+    };
+}

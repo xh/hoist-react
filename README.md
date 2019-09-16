@@ -115,7 +115,6 @@ as such have been extended in a few key ways. See [`Promise.js`](promise/Promise
 documentation comments and implementations of Promise-related utilities and direct extensions to the
 Promise prototype, including:
 
-+ `allSettled` - for coordinating multiple promises
 + `catchDefault` - to add standardized exception handling and alerting to a Promise chain, including
   a configurable and end-user-focused error dialog to display an exception message with support for
   disclosing any stack trace and/or reporting user-supplied notes back to the server.
@@ -179,14 +178,15 @@ and functionality.
 Finally all of these decorators rely on a set of utility functions defined within `ClassUtils` to
 add their particular functionality, behaviors, and methods to the decorated classes.
 
-|     Class/File      |                                  Note                                  |             Link              |
-|---------------------|------------------------------------------------------------------------|:-----------------------------:|
-| `HoistModel.js`     | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
-| `HoistComponent.js` | Mixin for adding core Component support.                               | [⚛️](core/HoistComponent.js) |
-| `HoistService.js`   | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
-| `HoistAppModel.js`  | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistAppModel.js)    |
-| `XH.js`             | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
-| `ClassUtils.js`     | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
+|     Class/File                |                                  Note                                  |             Link              |
+|-------------------------------|------------------------------------------------------------------------|:-----------------------------:|
+| `HoistModel.js`               | Mixin for adding core Model support.                                   |   [⚛️](core/HoistModel.js)   |
+| `HoistComponentClass.js`      | Mixin for creating class Components                                    | [⚛️](core/HoistComponentClass.js) |
+| `HoistComponentFunctional.js` | Factory for creating functional Components                             | [⚛️](core/HoistComponentFunctional.js) |
+| `HoistService.js`             | Mixin for adding core Service support.                                 |  [⚛️](core/HoistService.js)  |
+| `HoistAppModel.js`            | Mixin for adding additional support to an App's primary Model class.   |    [⚛️](core/HoistAppModel.js)    |
+| `XH.js`                       | Hoist's top-level Model / framework API entry-point, exported as `XH`. |       [⚛️](core/XH.js)       |
+| `ClassUtils.js`               | Library methods for providing and extending methods on core classes.   | [⚛️](utils/js/ClassUtils.js) |
 
 ### HoistModel
 

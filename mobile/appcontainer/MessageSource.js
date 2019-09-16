@@ -4,22 +4,24 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
+
+import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
 
 /**
  *  Support for hosting multiple global Messages in the DOM.
  *
  *  @private
  */
-@HoistComponent
-export class MessageSource extends Component {
-    render() {
-        const models = this.model.msgModels,
-            children = models.map(model => message({model, key: model.xhId}));
+export const messageSource = hoistCmp.factory({
+    displayName: 'MessageSource',
+    model: uses(MessageSourceModel),
+
+    render({model}) {
+        const models = model.msgModels,
+            children = models.map(m => message({model: m,  key: m.xhId}));
         return children.length ? fragment(...children) : null;
     }
-}
-export const messageSource = elemFactory(MessageSource);
+});

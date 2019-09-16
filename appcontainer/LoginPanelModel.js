@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, action} from '@xh/hoist/mobx';
+import {observable, computed, bindable} from '@xh/hoist/mobx';
 
 /**
  * Support for Forms-based Login.
@@ -15,23 +15,13 @@ import {observable, computed, action} from '@xh/hoist/mobx';
 @HoistModel
 export class LoginPanelModel {
 
-    @observable username = '';
-    @observable password = '';
+    @bindable username = '';
+    @bindable password = '';
     @observable warning = '';
 
     @computed
     get isValid() {
         return this.username && this.password;
-    }
-
-    @action
-    setUsername(username) {
-        this.username = username;
-    }
-
-    @action
-    setPassword(password) {
-        this.password = password;
     }
 
     submit() {

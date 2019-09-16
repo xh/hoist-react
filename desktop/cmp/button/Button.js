@@ -6,9 +6,10 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useLayoutProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
-import {getClassName} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import './Button.scss';
 
@@ -18,12 +19,13 @@ import './Button.scss';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const Button = hoistComponent({
+export const [Button, button] = hoistCmp.withFactory({
     displayName: 'Button',
+    model: false,
+    className: 'xh-button',
 
     render(props) {
-        const [layoutProps, nonLayoutProps] = useLayoutProps(props),
-            {icon, text, onClick, minimal = true, style, autoFocus, ...rest} = nonLayoutProps,
+        const [layoutProps, {icon, text, onClick, minimal = true, style, autoFocus, className, ...rest}] = splitLayoutProps(props),
             classes = [];
 
         if (minimal) classes.push('xh-button--minimal');
@@ -42,7 +44,7 @@ export const Button = hoistComponent({
             },
 
             ...rest,
-            className: getClassName('xh-button', props, classes)
+            className: classNames(props.className, classes)
         });
     }
 });
@@ -55,6 +57,4 @@ Button.propTypes = {
     text: PT.string,
     title: PT.string
 };
-
-export const button = elemFactory(Button);
 

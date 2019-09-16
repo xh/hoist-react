@@ -6,7 +6,7 @@
  */
 
 /**
- * Options for how Tabs should be refreshed via their built-in RefreshContextView when they receive
+ * Options for how Tabs should be refreshed via their built-in RefreshContextModel when they receive
  * a refresh request while inactive/hidden or are (re)activated by their parent TabContainer.
  *
  * @enum {TabRefreshMode}

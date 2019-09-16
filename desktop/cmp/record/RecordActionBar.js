@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -27,35 +26,12 @@ import {recordActionButton} from './impl/RecordActionButton';
  *
  * @see RecordAction
  */
-@HoistComponent
-export class RecordActionBar extends Component {
-    baseClassName = 'xh-record-action-bar';
+export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory({
+    displayName: 'RecordActionBar',
+    className: 'xh-record-action-bar',
 
-    static propTypes = {
-        /** RecordAction configs. */
-        actions: PT.arrayOf(PT.object).isRequired,
-
-        /** The data Record to associate with the actions. Required if selModel is omitted. */
-        record: PT.oneOfType([PT.object, Record]),
-
-        /** The selection model used to determine the selected records. Required if record is omitted. */
-        selModel: PT.instanceOf(StoreSelectionModel),
-
-        /** The grid model which contains the records we may act on. */
-        gridModel: PT.instanceOf(GridModel),
-
-        /** The column in a grid where this button is displayed. */
-        column: PT.instanceOf(Column),
-
-        /** Props to pass to the button components. */
-        buttonProps: PT.object,
-
-        /** Set to true to stack the buttons vertically. */
-        vertical: PT.bool
-    };
-
-    render() {
-        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = this.props;
+    render(props) {
+        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = props;
 
         throwIf(!record && !selModel, 'You must provide either the record or selModel to RecordActionBar!');
 
@@ -71,10 +47,30 @@ export class RecordActionBar extends Component {
                 column,
                 ...buttonProps
             })),
-            ...rest,
-            className: this.getClassName()
+            ...rest
         });
     }
-}
+});
 
-export const recordActionBar = elemFactory(RecordActionBar);
+RecordActionBar.propTypes = {
+    /** RecordAction configs. */
+    actions: PT.arrayOf(PT.object).isRequired,
+
+    /** The data Record to associate with the actions. Required if selModel is omitted. */
+    record: PT.oneOfType([PT.object, Record]),
+
+    /** The selection model used to determine the selected records. Required if record is omitted. */
+    selModel: PT.instanceOf(StoreSelectionModel),
+
+    /** The grid model which contains the records we may act on. */
+    gridModel: PT.instanceOf(GridModel),
+
+    /** The column in a grid where this button is displayed. */
+    column: PT.instanceOf(Column),
+
+    /** Props to pass to the button components. */
+    buttonProps: PT.object,
+
+    /** Set to true to stack the buttons vertically. */
+    vertical: PT.bool
+};

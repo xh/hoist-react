@@ -4,7 +4,7 @@
 *
 * Copyright © 2019 Extremely Heavy Industries Inc.
 */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,11 +14,11 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-export const EhCachePanel = hoistComponent(
-    () => {
-        const model = useLocalModel(EhCacheModel),
-            {gridModel} = model;
+export const EhCachePanel = hoistCmp({
 
+    model: creates(EhCacheModel),
+
+    render({model}) {
         return panel({
             mask: model.loadModel,
             tbar: [
@@ -29,11 +29,11 @@ export const EhCachePanel = hoistComponent(
                     onClick: () => model.clearAll()
                 }),
                 filler(),
-                gridCountLabel({gridModel, unit: 'cache'}),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                gridCountLabel({unit: 'cache'}),
+                storeFilterField(),
+                exportButton()
             ],
-            item: grid({model: gridModel})
+            item: grid()
         });
     }
-);
+});

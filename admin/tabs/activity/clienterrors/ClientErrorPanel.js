@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -17,65 +17,60 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-export const ClientErrorPanel = hoistComponent(
-    () => {
-        const model = useLocalModel(ClientErrorModel);
+export const ClientErrorPanel = hoistCmp({
+    model: creates(ClientErrorModel),
+
+    render({model}) {
         return panel({
             mask: model.loadModel,
-            tbar: renderToolbar(model),
+            tbar: tbar(),
             items: [
                 grid({
-                    model: model.gridModel,
                     onRowDoubleClicked: (e) => model.openDetail(e.data)
                 }),
-                clientErrorDetail({model})
+                clientErrorDetail()
             ]
         });
     }
+});
+
+const tbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            button({
+                icon: Icon.angleLeft(),
+                onClick: () => model.adjustDates('subtract')
+            }),
+            dateInput({bind: 'startDate', ...dateProps}),
+            Icon.caretRight(),
+            dateInput({bind: 'endDate', ...dateProps}),
+            button({
+                icon: Icon.angleRight(),
+                onClick: () => model.adjustDates('add'),
+                disabled: model.endDate >= LocalDate.today()
+            }),
+            button({
+                icon: Icon.angleDoubleRight(),
+                onClick: () => model.adjustDates('subtract', true)
+            }),
+            toolbarSep(),
+            textInput({bind: 'username', placeholder: 'Username', ...textProps}),
+            textInput({bind: 'error', placeholder: 'Error', ...textProps}),
+            refreshButton(),
+            filler(),
+            gridCountLabel({unit: 'error'}),
+            exportButton()
+        );
+    }
 );
 
-function renderToolbar(model) {
-    const {gridModel} = model;
+const dateProps = {
+    popoverPosition: 'bottom',
+    valueType: 'localDate',
+    width: 120
+};
 
-    return [
-        button({
-            icon: Icon.angleLeft(),
-            onClick: () => model.adjustDates('subtract')
-        }),
-        renderDateInput({model, bind: 'startDate'}),
-        Icon.caretRight(),
-        renderDateInput({model, bind: 'endDate'}),
-        button({
-            icon: Icon.angleRight(),
-            onClick: () => model.adjustDates('add'),
-            disabled: model.endDate >= LocalDate.today()
-        }),
-        button({
-            icon: Icon.angleDoubleRight(),
-            onClick: () => model.adjustDates('subtract', true)
-        }),
-        toolbarSep(),
-        renderTextInput({model, bind: 'username', placeholder: 'Username', enableClear: true}),
-        renderTextInput({model, bind: 'error', placeholder: 'Error', enableClear: true}),
-        refreshButton({model}),
-        filler(),
-        gridCountLabel({gridModel, unit: 'error'}),
-        exportButton({gridModel})
-    ];
-}
-
-function renderDateInput(args) {
-    return dateInput({
-        popoverPosition: 'bottom',
-        valueType: 'localDate',
-        width: 120,
-        ...args
-    });
-}
-
-function renderTextInput(args) {
-    return textInput({
-        width: 150,
-        ...args
-    });
-}
+const textProps = {
+    width: 150,
+    enableClear: true
+};

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistComponent, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,11 +14,10 @@ import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-export const ServicePanel = hoistComponent(
-    () => {
-        const model = useLocalModel(ServiceModel),
-            {gridModel} = model;
+export const ServicePanel = hoistCmp({
+    model: creates(ServiceModel),
 
+    render({model}) {
         return panel({
             mask: model.loadModel,
             tbar: [
@@ -27,15 +26,14 @@ export const ServicePanel = hoistComponent(
                     text: 'Clear Selected',
                     intent: 'danger',
                     onClick: () => model.clearCaches(),
-                    disabled: gridModel.selModel.isEmpty
+                    disabled: model.gridModel.selModel.isEmpty
                 }),
                 filler(),
-                gridCountLabel({gridModel, unit: 'service'}),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                gridCountLabel({unit: 'service'}),
+                storeFilterField(),
+                exportButton()
             ],
             item: grid({
-                model: gridModel,
                 hideHeaders: true,
                 agOptions: {
                     groupRowInnerRenderer: (params) => params.value + ' Services'
@@ -43,4 +41,4 @@ export const ServicePanel = hoistComponent(
             })
         });
     }
-);
+});

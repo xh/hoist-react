@@ -6,12 +6,11 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {getClassName} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
 
@@ -23,8 +22,10 @@ import './AppBar.scss';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const AppBar = hoistComponent({
+export const [AppBar, appBar] = hoistCmp.withFactory({
     displayName: 'AppBar',
+    model: false,
+    className: 'xh-appbar',
 
     render(props) {
         const {
@@ -34,11 +35,12 @@ export const AppBar = hoistComponent({
             rightItems,
             hideRefreshButton,
             hideAppMenuButton,
+            className,
             appMenuButtonOptions = {}
         } = props;
 
         return navbar({
-            className: getClassName('xh-appbar', props),
+            className,
             items: [
                 navbarGroup({
                     align: 'left',
@@ -86,5 +88,3 @@ AppBar.propTypes = {
     /** Options to pass to the AppMenuButton. */
     appMenuButtonOptions: PT.object
 };
-
-export const appBar = elemFactory(AppBar);

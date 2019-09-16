@@ -4,9 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import PT from 'prop-types';
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
@@ -21,21 +22,30 @@ import {colChooser} from '@xh/hoist/desktop/cmp/grid';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-export const ColChooserButton = hoistComponent({
+export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
+    model: false,
 
     render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
-        const {colChooserModel} = gridModel;
+        gridModel = withDefault(gridModel, useContextModel(GridModel));
 
+        const displayButton = button({
+            icon: withDefault(icon, Icon.gridPanel()),
+            title: withDefault(title, 'Choose grid columns...'),
+            ...rest
+        });
+
+        if (!gridModel) {
+            console.error("No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context.");
+            return cloneElement(displayButton, {disabled: true});
+        }
+
+        const {colChooserModel} = gridModel;
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: button({
-                icon: withDefault(icon, Icon.gridPanel()),
-                title: withDefault(title, 'Choose grid columns...'),
-                ...rest
-            }),
+            target: displayButton,
             content: vbox(
                 div({
                     className: 'xh-popup__title',
@@ -61,7 +71,7 @@ ColChooserButton.propTypes = {
     ...Button.propTypes,
 
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel: PT.instanceOf(GridModel).isRequired,
+    gridModel: PT.instanceOf(GridModel),
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition: PT.oneOf([
@@ -78,7 +88,5 @@ ColChooserButton.propTypes = {
     /** Height for the opened chooser */
     chooserHeight: PT.number
 };
-
-export const colChooserButton = elemFactory(ColChooserButton);
 
 

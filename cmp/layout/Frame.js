@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {elemFactory, hoistComponent} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmp} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -17,42 +16,41 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const Frame = hoistComponent({
+export const [Frame, frame] = hoistCmp.withFactory({
     displayName: 'Frame',
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
         return box({ref, ...props, flex: 'auto'});
     }
 });
 
-export const VFrame = hoistComponent({
+export const [VFrame, vframe] = hoistCmp.withFactory({
     displayName: 'VFrame',
+    model: false, memo: false, observer: false,
+    className: 'xh-vframe',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
             flex: 'auto',
-            flexDirection: 'column',
-            className: getClassName('xh-vframe', props)
+            flexDirection: 'column'
         });
     }
 });
 
-export const HFrame = hoistComponent({
+export const [HFrame, hframe] = hoistCmp.withFactory({
     displayName: 'HFrame',
+    model: false, memo: false, observer: false,
+    className: 'xh-hframe',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
             flex: 'auto',
-            flexDirection: 'row',
-            className: getClassName('xh-hframe', props)
+            flexDirection: 'row'
         });
     }
 });
-
-export const frame = elemFactory(Frame);
-export const vframe = elemFactory(VFrame);
-export const hframe = elemFactory(HFrame);

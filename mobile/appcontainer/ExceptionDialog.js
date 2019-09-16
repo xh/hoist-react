@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
-import {fragment, filler} from '@xh/hoist/cmp/layout';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,14 +21,12 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  *
  * @private
  */
-@HoistComponent
-export class ExceptionDialog extends Component {
+export const exceptionDialog = hoistCmp.factory({
+    displayName: 'ExceptionDialog',
+    model: uses(ExceptionDialogModel),
 
-    static modelClass = ExceptionDialogModel;
-
-    render() {
-        const {model} = this,
-            {exception, options} = model;
+    render({model}) {
+        const {exception, options} = model;
 
         if (!exception) return null;
 
@@ -40,13 +37,13 @@ export class ExceptionDialog extends Component {
                 className: 'xh-exception-dialog',
                 icon: Icon.warning(),
                 content: options.message,
-                onCancel: !options.requireReload ? this.onCloseClick : null,
+                onCancel: !options.requireReload ? () => model.close() : null,
                 buttons: [
                     button({
                         icon: Icon.search(),
                         text: 'Show/Report Details',
-                        onClick: this.onShowDetailsClick,
-                        omit: !model.options.showAsError
+                        onClick: () => model.openDetails(),
+                        omit: !options.showAsError
                     }),
                     filler(),
                     dismissButton({model})
@@ -55,49 +52,28 @@ export class ExceptionDialog extends Component {
             exceptionDialogDetails({model})
         );
     }
-
-    onShowDetailsClick = () => {
-        this.model.openDetails();
-    }
-
-    onCloseClick = () => {
-        this.model.close();
-    }
-
-}
-export const exceptionDialog = elemFactory(ExceptionDialog);
+});
 
 /**
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-@HoistComponent
-class DismissButton extends Component {
-    render() {
-        return this.model.options.requireReload ?
+export const dismissButton = hoistCmp.factory(
+    ({model}) => {
+        return model.options.requireReload ?
             button({
                 icon: Icon.refresh(),
-                text: this.sessionExpired() ? 'Login' : 'Reload App',
-                onClick: this.onReloadClick
+                text: sessionExpired(model.exception) ? 'Login' : 'Reload App',
+                onClick: () => XH.reloadApp()
             }) :
             button({
                 text: 'Close',
-                onClick: this.onCloseClick
+                onClick: () => model.close()
             });
     }
+);
 
-    onCloseClick = () => {
-        this.model.close();
-    }
-
-    onReloadClick = () => {
-        XH.reloadApp();
-    }
-
-    sessionExpired() {
-        const e = this.model.exception;
-        return e && e.httpStatus === 401;
-    }
+function sessionExpired(e) {
+    return e && e.httpStatus === 401;
 }
-export const dismissButton = elemFactory(DismissButton);
 

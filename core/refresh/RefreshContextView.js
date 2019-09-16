@@ -4,42 +4,32 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {RefreshContext} from './RefreshContext';
-
-
-const refreshContextProvider = elemFactory(RefreshContext.Provider);
+import {useEffect} from 'react';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {useContextModel} from '@xh/hoist/core/index';
 
 /**
- * Establishes an area of the application with an independent RefreshContext and RefreshContextModel.
+ * Establishes an area of the application with an independent RefreshContextModel.
  *
  * The model established by this view will be refreshed by its parent context but may also be refreshed
  * independently.
  *
- * @see RefreshContext
  * @see RefreshContextModel
  */
-@HoistComponent
-export class RefreshContextView extends Component {
+export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
+    displayName: 'RefreshContextView',
+    model: uses('RefreshContextModel'),
 
-    static contextType = RefreshContext;
+    render({model, children}) {
+        const parent = useContextModel(m => m.isRefreshContextModel && m != model);
 
-    render() {
-        return refreshContextProvider({
-            value: this.model,
-            items: this.props.children
+        useEffect(() => {
+            if (model && parent) {
+                parent.register(model);
+                return () => parent.unregister(model);
+            }
         });
-    }
 
-    componentDidMount() {
-        const {context, model} = this;
-        if (context && model) context.register(model);
+        return children;
     }
-
-    componentWillUnmount() {
-        const {context, model} = this;
-        if (context && model) context.unregister(model);
-    }
-}
-export const refreshContextView = elemFactory(RefreshContextView);
+});

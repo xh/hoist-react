@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -14,6 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
@@ -21,18 +21,17 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-@HoistComponent
-export class ExceptionDialogDetails extends Component {
+export const exceptionDialogDetails = hoistCmp.factory({
+    model: uses(ExceptionDialogModel),
 
-    render() {
-        const {model} = this,
-            {detailsIsOpen, exception, options} = model,
+    render({model}) {
+        const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
         if (!detailsIsOpen || !exception) return null;
 
-        this.errorStr = stringifyErrorSafely(exception);
+        const errorStr = stringifyErrorSafely(exception);
         const header = table(
             tbody(
                 row('Name', exception.name),
@@ -47,14 +46,14 @@ export class ExceptionDialogDetails extends Component {
             icon: Icon.search(),
             isOpen: true,
             isCloseButtonShown: !requireReload,
-            onCancel: !requireReload ? this.onCloseClick : null,
+            onCancel: !requireReload ? () => model.close() : null,
             content: fragment(
                 header,
-                pre(this.errorStr),
+                pre(errorStr),
                 textArea({
                     placeholder: 'Add message here...',
-                    model: model,
-                    bind: 'userMessage'
+                    bind: 'userMessage',
+                    model
                 })
             ),
             buttons: [
@@ -62,25 +61,11 @@ export class ExceptionDialogDetails extends Component {
                     icon: Icon.envelope(),
                     text: 'Send',
                     disabled: !model.userMessage,
-                    onClick: this.onSendClick
+                    onClick: () => model.sendReportAsync()
                 }),
                 filler(),
                 dismissButton({model})
             ]
         });
     }
-
-
-    //------------------------
-    // Implementation
-    //------------------------
-    onSendClick = () => {
-        this.model.sendReportAsync();
-    }
-
-    onCloseClick = () => {
-        this.model.close();
-    }
-}
-
-export const exceptionDialogDetails = elemFactory(ExceptionDialogDetails);
+});

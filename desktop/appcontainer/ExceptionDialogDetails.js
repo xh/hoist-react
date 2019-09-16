@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -15,7 +15,6 @@ import {Icon} from '@xh/hoist/icon';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 
 import {dismissButton} from './ExceptionDialog';
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an
@@ -23,10 +22,9 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  *
  * @private
  */
-export const exceptionDialogDetails = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ExceptionDialogModel, props),
-            {detailsIsOpen, exception, options} = model,
+export const exceptionDialogDetails = hoistCmp.factory(
+    ({model}) => {
+        const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
@@ -59,7 +57,6 @@ export const exceptionDialogDetails = hoistElemFactory(
                         header,
                         pre(errorStr),
                         textArea({
-                            model,
                             bind: 'userMessage',
                             commitOnChange: true,
                             placeholder: 'Add message here...',
@@ -81,7 +78,7 @@ export const exceptionDialogDetails = hoistElemFactory(
                         getCopyText: () => errorStr,
                         successMessage: 'Error details copied to clipboard.'
                     }),
-                    dismissButton({model})
+                    dismissButton()
                 ])
             ]
         });

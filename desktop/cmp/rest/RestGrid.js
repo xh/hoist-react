@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component, cloneElement} from 'react';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-
+import {cloneElement} from 'react';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
@@ -17,91 +16,82 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
 import {RestGridModel} from './RestGridModel';
 import PT from 'prop-types';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
-@HoistComponent
-@LayoutSupport
-export class RestGrid extends Component {
+export const [RestGrid, restGrid] = hoistCmp.withFactory({
+    displayName: 'RestGrid',
+    model: uses(RestGridModel),
+    className: 'xh-rest-grid',
 
-    static modelClass = RestGridModel;
+    render({model, className, onRowDoubleClicked, ...props}) {
 
-    static propTypes = {
-        /**
-         *
-         * This constitutes an 'escape hatch' for applications that need to get to the underlying
-         * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
-         * interfere with the implementation of this component and its use of the ag-Grid API.
-         */
-        agOptions: PT.object,
+        if (!onRowDoubleClicked)  {
+            onRowDoubleClicked = (row) => {
+                if (!row.data) return;
 
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]).isRequired,
-
-        /** Optional components rendered adjacent to the top toolbar's action buttons */
-        extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
-
-        /**
-         * Mask to render on this Component. Defaults to true, which renders a standard
-         * Hoist mask. Also can be set to false for no mask, or passed an element
-         * specifying a Mask instance.
-         */
-        mask: PT.oneOfType([PT.element, PT.bool]),
-
-        /**
-         * Callback to call when a row is double clicked. Function will receive an event
-         * with a data node containing the row's data.
-         */
-        onRowDoubleClicked: PT.func
-    };
-
-    baseClassName = 'xh-rest-grid';
-
-    render() {
-        const {model, props} = this,
-            onRowDoubleClicked = withDefault(props.onRowDoubleClicked, this.onRowDoubleClicked);
+                if (!model.readonly) {
+                    model.formModel.openEdit(row.data);
+                } else {
+                    model.formModel.openView(row.data);
+                }
+            };
+        }
 
         return fragment(
             panel({
-                ...this.getLayoutProps(),
-                className: this.getClassName(),
+                ...getLayoutProps(props),
+                className,
                 tbar: restGridToolbar({
-                    model,
                     extraToolbarItems: props.extraToolbarItems
                 }),
                 item: grid({
-                    model: model.gridModel,
                     agOptions: props.agOptions,
                     onRowDoubleClicked
                 }),
-                mask: this.getMaskFromProps()
+                mask: getMaskFromProps(model, props)
             }),
-            restForm({model: model.formModel})
+            restForm()
         );
     }
+});
 
-    //------------------------
-    // Implementation
-    //------------------------
-    onRowDoubleClicked = (row) => {
-        if (!row.data) return;
+RestGrid.propTypes = {
+    /**
+     *
+     * This constitutes an 'escape hatch' for applications that need to get to the underlying
+     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+     * interfere with the implementation of this component and its use of the ag-Grid API.
+     */
+    agOptions: PT.object,
 
-        const {readonly, formModel} = this.model;
-        if (!readonly) {
-            formModel.openEdit(row.data);
-        } else {
-            formModel.openView(row.data);
-        }
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]),
+
+    /** Optional components rendered adjacent to the top toolbar's action buttons */
+    extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
+
+    /**
+     * Mask to render on this Component. Defaults to true, which renders a standard
+     * Hoist mask. Also can be set to false for no mask, or passed an element
+     * specifying a Mask instance.
+     */
+    mask: PT.oneOfType([PT.element, PT.bool]),
+
+    /**
+     * Callback to call when a row is double clicked. Function will receive an event
+     * with a data node containing the row's data.
+     */
+    onRowDoubleClicked: PT.func
+};
+
+
+function getMaskFromProps(model, props) {
+    let mask = withDefault(props.mask, true);
+
+    if (isReactElement(mask)) {
+        mask = cloneElement(mask, {model: model.loadModel});
+    } else if (mask === true) {
+        mask = model.loadModel;
     }
-
-    getMaskFromProps() {
-        const {model, props} = this;
-        let mask = withDefault(props.mask, true);
-
-        if (isReactElement(mask)) {
-            mask = cloneElement(mask, {model: model.loadModel});
-        } else if (mask === true) {
-            mask = model.loadModel;
-        }
-        return mask;
-    }
+    return mask;
 }
-export const restGrid = elemFactory(RestGrid);

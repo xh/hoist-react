@@ -10,9 +10,10 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {pickBy, filter} from 'lodash';
+import {pickBy, filter, isPlainObject} from 'lodash';
 
 import {RestFormModel} from './impl/RestFormModel';
+import {RestStore} from './data/RestStore';
 
 export const addAction = {
     text: 'Add',
@@ -123,6 +124,7 @@ export class RestGridModel {
         filterFields,
         enhanceToolbar,
         editors = [],
+        store,
         ...rest
     }) {
         this.readonly = readonly;
@@ -143,6 +145,7 @@ export class RestGridModel {
             contextMenuFn: this.contextMenuFn,
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
+            store: this.parseStore(store),
             ...rest
         });
 
@@ -238,6 +241,14 @@ export class RestGridModel {
 
     async exportAsync(...args) {
         return this.gridModel.exportAsync(...args);
+    }
+
+
+    //-----------------
+    // Implementation
+    //-----------------
+    parseStore(store) {
+        return isPlainObject(store) ? this.markManaged(new RestStore(store)) : store;
     }
 }
 

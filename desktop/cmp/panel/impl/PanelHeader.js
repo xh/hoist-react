@@ -4,35 +4,36 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
-import {headerCollapseButton} from './HeaderCollapseButton';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import './PanelHeader.scss';
-import {PanelModel} from '../PanelModel';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import classNames from 'classnames';
 
-/** @private */
-export const panelHeader = hoistElemFactory(
-    (props) => {
-        const model = useProvidedModel(PanelModel, props),
-            {title, icon, compact, headerItems = []} = props,
-            {collapsed, vertical, side, showHeaderCollapseButton} = model || {};
+export const panelHeader = hoistCmp.factory({
+    displayName: 'PanelHeader',
+    model: false,
+    className: 'xh-panel-header',
+
+    render({model, className, ...props}) {
+        const {collapsed, vertical, side, showHeaderCollapseButton} = model,
+            {title, icon, compact, headerItems = []} = props;
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
         const onDoubleClick = () => {
-            if (model && model.collapsible) model.toggleCollapsed();
+            if (model.collapsible) model.toggleCollapsed();
         };
 
-        const baseCls = 'xh-panel-header',
-            titleCls = 'xh-panel-header__title',
+        const titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
         if (!collapsed || vertical) {
             return hbox({
-                className: getClassName(baseCls, props, compactCls),
+                className: classNames(className, compactCls),
                 items: [
                     icon || null,
                     title ?
@@ -43,7 +44,7 @@ export const panelHeader = hoistElemFactory(
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    renderHeaderCollapseButton(model)
+                    collapseButton({model})
                 ],
                 onDoubleClick
             });
@@ -51,10 +52,10 @@ export const panelHeader = hoistElemFactory(
             // For vertical layout, skip header items.
             const isLeft = side === 'left';
             return vbox({
-                className: getClassName(baseCls, props, sideCls, compactCls),
+                className: classNames(className, sideCls, compactCls),
                 flex: 1,
                 items: [
-                    isLeft ? filler() : renderHeaderCollapseButton(model),
+                    isLeft ? filler() : collapseButton({model}),
                     icon || null,
                     title ?
                         box({
@@ -62,18 +63,31 @@ export const panelHeader = hoistElemFactory(
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : renderHeaderCollapseButton(model)
+                    !isLeft ? filler() : collapseButton({model})
                 ],
                 onDoubleClick
             });
         }
     }
-);
+});
 
-function renderHeaderCollapseButton(model) {
-    if (!model) return null;
 
-    return model.showHeaderCollapseButton && model.collapsible ?
-        headerCollapseButton({model}) :
-        null;
-}
+const collapseButton = hoistCmp.factory({
+    displayName: 'CollapseButton',
+    model: false,
+
+    render({model}) {
+        if (!model.showHeaderCollapseButton || !model.collapsible) return null;
+
+        const {vertical, collapsed, contentFirst} = model,
+            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+            idx = (contentFirst != collapsed ? 0 : 1),
+            chevron = directions[idx];
+
+        return button({
+            icon: Icon[chevron](),
+            onClick: () => model.toggleCollapsed(),
+            minimal: true
+        });
+    }
+});

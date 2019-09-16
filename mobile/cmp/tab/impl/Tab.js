@@ -4,12 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {useRef} from 'react';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {TabRenderMode} from '@xh/hoist/enums';
-import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * @private
@@ -20,36 +19,30 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *   - Mount/unmount its contents according to `TabModel.renderMode`.
  *   - Track and trigger refreshes according to `TabModel.refreshMode`.
  */
-@HoistComponent
-export class Tab extends Component {
+export const tab = hoistCmp.factory({
+    displayName: 'Tab',
 
-    static modelClass = TabModel;
+    render({model}) {
+        let {content, isActive, renderMode, refreshContextModel} = model,
+            wasActivated = useRef(false);
 
-    wasActivated = false;
-
-    render() {
-        const {content, isActive, renderMode, refreshContextModel} = this.model;
-
-        this.wasActivated = this.wasActivated || isActive;
+        if (!wasActivated.current && isActive) wasActivated.current = true;
 
         if (
             !isActive &&
             (
                 (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !this.wasActivated)
+                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
             )
         ) {
-            // Note: We must render an empty placeholder Onsen page
-            // to work with Onsen's tabbar.
+            // Note: We must render an empty placeholder Onsen page to work with Onsen's tabbar.
             return onsenPage();
         }
-
-        const contentElem = content.isHoistComponent? elem(content) : content();
+        const contentElem = content.isHoistComponent ? elem(content) : content();
 
         return refreshContextView({
             model: refreshContextModel,
             item: contentElem
         });
     }
-}
-export const tab = elemFactory(Tab);
+});

@@ -4,11 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {DockContainerModel} from '@xh/hoist/cmp/dock';
 
+import classNames from 'classnames';
 import {dockView} from './DockView';
 import './Dock.scss';
 
@@ -17,31 +15,17 @@ import './Dock.scss';
  *
  * @private
  */
-@HoistComponent
-@LayoutSupport
-export class DockContainer extends Component {
 
-    static modelClass = DockContainerModel;
-
-    baseClassName = 'xh-dock-container';
-
-    render() {
-        const {direction} = this.model,
-            {compactHeaders} = this.props;
-
-        return hbox({
-            className: this.getClassName(`xh-dock-container--${direction}`),
-            items: this.model.views.map(model => {
-                return dockView({
-                    key: model.xhId,
-                    model,
-                    compactHeader: compactHeaders
-                });
-            }),
-            ...this.getLayoutProps()
-        });
-    }
-
+export function dockContainerImpl({model, className, compactHeaders, ...props}) {
+    return hbox({
+        className: classNames(className, `xh-dock-container--${model.direction}`),
+        items: model.views.map(viewModel => {
+            return dockView({
+                key: viewModel.xhId,
+                model: viewModel,
+                compactHeaders
+            });
+        }),
+        ...props
+    });
 }
-
-export const dockContainer = elemFactory(DockContainer);
