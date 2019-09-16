@@ -5,11 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory, elem, AppState, XH, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, hoistCmpFactory, elem, AppState, XH, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
+import {errorBoundary} from '@xh/hoist/core/impl';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
@@ -31,6 +31,7 @@ import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {useOnMount} from '@xh/hoist/utils/react';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -48,32 +49,24 @@ installDesktopImpls({
  * popup message support, and exception rendering.
  *
  * This component will kick off the Hoist application lifecycle when mounted.
- * It also handles the high-level error boundary (and therefore must remain a class component)
  */
-@HoistComponent
-export class AppContainer extends Component {
-
-    static modelClass = AppContainerModel;
-
-    constructor() {
-        super();
-        XH.initAsync();
-    }
+export const AppContainer = hoistCmp({
+    displayName: 'AppContainer',
+    model: uses(AppContainerModel),
 
     render() {
-        const {model} = this;
-        return div(
-            appContainerView({model}),
-            exceptionDialog({model: model.exceptionDialogModel})
+
+        useOnMount(() => XH.initAsync());
+
+        return fragment(
+            errorBoundary({
+                item: appContainerView(),
+                onError: (e) => XH.handleException(e, {requireReload: true})
+            }),
+            exceptionDialog()
         );
     }
-
-    componentDidCatch(e, info) {
-        this.model.setCaughtException(e);
-        XH.handleException(e, {requireReload: true});
-    }
-}
-export const appContainer = elemFactory(AppContainer);
+});
 
 
 //-----------------------------------------
@@ -81,11 +74,8 @@ export const appContainer = elemFactory(AppContainer);
 //-----------------------------------------
 const appContainerView = hoistCmpFactory({
     displayName: 'AppContainerView',
-    model: uses(AppContainerModel),
 
     render({model}) {
-        if (model.caughtException) return null;
-
         const S = AppState;
         switch (XH.appState) {
             case S.PRE_AUTH:

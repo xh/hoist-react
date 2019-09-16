@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {RootRefreshContextModel} from '@xh/hoist/core/refresh';
-import {observable, action, bindable} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
@@ -70,10 +70,6 @@ export class AppContainerModel {
 
     /** Text to show if initial auth check fails. */
     @observable accessDeniedMessage = null;
-
-
-    /** React exception caught by the highest level boundary. */
-    @bindable.ref caughtException
 
 
     /**

@@ -7,4 +7,4 @@
 
 export * from './ModelLookup';
 export * from './UseOwnedModelLinker';
-
+export * from './ErrorBoundary';

@@ -19,7 +19,7 @@ import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {contextMenuHost} from '@xh/hoist/desktop/cmp/contextmenu';
-
+import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 
 import './Panel.scss';
 
@@ -59,6 +59,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
             contextMenu,
+            hotkeys,
             children,
             ...rest
         } = nonLayoutProps;
@@ -107,7 +108,10 @@ export const [Panel, panel] = hoistCmpAndFactory({
 
             // Wrap with functionality-only boxes
             if (contextMenu) {
-                coreContents = contextMenuHost({contextMenu, items: coreContents});
+                coreContents = contextMenuHost({contextMenu, item: coreContents});
+            }
+            if (hotkeys) {
+                coreContents = hotkeysHost({hotkeys, item: coreContents});
             }
         }
         if (!collapsed) flags.wasDisplayed = true;

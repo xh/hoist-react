@@ -4,11 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {Component} from 'react';
-import {HoistComponent, elem, elemFactory, AppState, XH, uses, hoistCmpFactory} from '@xh/hoist/core';
+import {elem, AppState, XH, uses, hoistCmpFactory, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
@@ -29,6 +27,8 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+import {errorBoundary} from '@xh/hoist/core/impl';
+import {useOnMount} from '@xh/hoist/utils/react';
 
 installMobileImpls({
     tabContainerImpl,
@@ -46,30 +46,23 @@ installMobileImpls({
  *
  * @see AppSpec.containerClass
  */
-@HoistComponent
-export class AppContainer extends Component {
-
-    static modelClass = AppContainerModel;
-
-    constructor() {
-        super();
-        XH.initAsync();
-    }
+export const AppContainer = hoistCmp({
+    displayName: 'AppContainer',
+    model: uses(AppContainerModel),
 
     render() {
-        const {model} = this;
-        return div(
-            appContainerView({model}),
-            exceptionDialog({model: model.exceptionDialogModel})
+
+        useOnMount(() => XH.initAsync());
+
+        return fragment(
+            errorBoundary({
+                item: appContainerView(),
+                onError: (e) => XH.handleException(e, {requireReload: true})
+            }),
+            exceptionDialog()
         );
     }
-
-    componentDidCatch(e, info) {
-        this.model.setCaughtException(e);
-        XH.handleException(e, {requireReload: true});
-    }
-}
-export const appContainer = elemFactory(AppContainer);
+});
 
 
 //-------------------
@@ -120,14 +113,16 @@ const appContainerView = hoistCmpFactory({
 });
 
 
-const appMenu = hoistCmpFactory(
-    () => {
-        const model = XH.appModel.appMenuModel;
-        if (!model) return null;
+const appMenu = hoistCmpFactory({
+    displayName: 'AppMenu',
+
+    render() {
+        const menuModel = XH.appModel.appMenuModel;
+        if (!menuModel) return null;
         return menu({
-            model,
+            model: menuModel,
             width: 260,
             align: 'right'
         });
     }
-);
+});
