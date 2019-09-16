@@ -6,7 +6,7 @@
  */
 import {merge, castArray} from 'lodash';
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {div} from './Tags';
 
 
@@ -44,13 +44,13 @@ export const [Box, box] = hoistCmpAndFactory({
 export const [VBox, vbox] = hoistCmpAndFactory({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
+    className: 'xh-vbox',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
-            flexDirection: 'column',
-            className: getClassName('xh-vbox', props)
+            flexDirection: 'column'
         });
     }
 });
@@ -58,13 +58,13 @@ export const [VBox, vbox] = hoistCmpAndFactory({
 export const [HBox, hbox] = hoistCmpAndFactory({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
+    className: 'xh-hbox',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
-            flexDirection: 'row',
-            className: getClassName('xh-hbox', props)
+            flexDirection: 'row'
         });
     }
 });

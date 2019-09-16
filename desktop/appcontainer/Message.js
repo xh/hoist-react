@@ -15,7 +15,6 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import './Message.scss';
 
@@ -26,6 +25,7 @@ import './Message.scss';
  */
 export const message = hoistCmpFactory({
     model: uses(MessageModel),
+    className: 'xh-message',
 
     render({model, ...props}) {
 
@@ -36,7 +36,6 @@ export const message = hoistCmpFactory({
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
-            className: getClassName('xh-message', props),
             items: [
                 dialogBody(
                     model.message,

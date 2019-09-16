@@ -6,8 +6,8 @@
  */
 import PT from 'prop-types';
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
+import classNames from 'classnames';
 
 import './Toolbar.scss';
 
@@ -18,13 +18,14 @@ import './Toolbar.scss';
 export const [Toolbar, toolbar] = hoistCmpAndFactory({
     displayName: 'Toolbar',
     model: false, memo: false, observable: false,
+    className: 'xh-toolbar',
 
     render(props) {
-        const {vertical, ...rest} = props;
+        const {vertical, className, ...rest} = props;
 
         return (vertical ? vbox : hbox)({
             ...rest,
-            className: getClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
+            className: classNames(className, vertical ? 'xh-toolbar--vertical' : null)
         });
     }
 });

@@ -7,19 +7,17 @@
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {hoistCmpFactory, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
 export const colChooserDialog = hoistCmpFactory({
     model: uses(ColChooserModel),
+    className: 'xh-col-chooser-dialog',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
 
         if (!model.isOpen) return null;
-
-        const className = getClassName('xh-col-chooser-dialog', props);
 
         return dialog({
             icon: Icon.gridPanel(),

@@ -31,6 +31,7 @@ import {TabContainerModel} from './TabContainerModel';
 export const [TabContainer, tabContainer] = hoistCmpAndFactory({
     displayName: 'TabContainer',
     model: uses(TabContainerModel),
+    className: 'xh-tab-container',
 
     render(props) {
         throwIf(

@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
 import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
@@ -15,13 +14,11 @@ import './Toolbar.scss';
  */
 export const [ToolbarSeparator, toolbarSeparator] = hoistCmpAndFactory({
     displayName: 'ToolbarSeparator',
-    model: false, memo: false, observable: false,
+    model: false, observable: false,
+    className: 'xh-toolbar__separator',
 
     render(props) {
-        return span({
-            ...props,
-            className: getClassName('xh-toolbar__separator', props)
-        });
+        return span({...props});
     }
 });
 

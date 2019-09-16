@@ -23,7 +23,6 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {Store} from '@xh/hoist/data';
 import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
@@ -44,6 +43,7 @@ import {getClassName} from '@xh/hoist/utils/react';
  */
 export const [StoreFilterField, storeFilterField] = hoistCmpAndFactory({
     displayName: 'StoreFilterField',
+    className: 'xh-store-filter-field',
 
     render({gridModel, store, ...props}) {
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
@@ -76,7 +76,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmpAndFactory({
             enableClear: true,
 
             placeholder: withDefault(props.placeholder, 'Quick filter'),
-            className: getClassName('xh-store-filter-field', props),
+            className: props.className,
             style: props.style,
             width: withDefault(props.width, 180),
 

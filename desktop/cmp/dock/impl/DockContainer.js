@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {getClassName} from '@xh/hoist/utils/react';
 
+import classNames from 'classnames';
 import {dockView} from './DockView';
 import './Dock.scss';
 
@@ -16,10 +16,9 @@ import './Dock.scss';
  * @private
  */
 
-export function dockContainerImpl({model, compactHeaders, ...props}) {
-    const className = getClassName('xh-dock-container', props, `xh-dock-container--${model.direction}`);
+export function dockContainerImpl({model, className, compactHeaders, ...props}) {
     return hbox({
-        className,
+        className: classNames(className, `xh-dock-container--${model.direction}`),
         items: model.views.map(viewModel => {
             return dockView({
                 key: viewModel.xhId,

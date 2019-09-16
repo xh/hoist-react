@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
 
@@ -17,6 +16,8 @@ export const [Viewport, viewport] = hoistCmpAndFactory({
     displayName: 'Viewport',
     model: false, memo: false, observer: false,
 
+    className: 'xh-viewport',
+
     render(props) {
         return box({
             ...props,
@@ -24,8 +25,7 @@ export const [Viewport, viewport] = hoistCmpAndFactory({
             left: 0,
             position: 'fixed',
             width: '100%',
-            height: '100%',
-            className: getClassName('xh-viewport', props)
+            height: '100%'
         });
     }
 });

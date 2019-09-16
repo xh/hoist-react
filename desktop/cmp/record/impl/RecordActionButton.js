@@ -4,9 +4,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Column} from '@xh/hoist/cmp/grid';
-import {first, omit} from 'lodash';
-
-import {getClassName} from '@xh/hoist/utils/react';
+import {first} from 'lodash';
 
 /**
  * Button component used by RecordActionBar and in grid action columns.
@@ -17,11 +15,12 @@ import {getClassName} from '@xh/hoist/utils/react';
  */
 export const [RecordActionButton, recordActionButton] = hoistCmpAndFactory({
     displayName: 'RecordActionButton',
+    className: 'xh-record-action-button',
 
     render(props) {
-        const {action, minimal, gridModel, selModel, column, ...rest} = props;
+        let {action, minimal, gridModel, selModel, column, record, ...rest} = props;
 
-        let {record} = props, selectedRecords = record ? [record] : null;
+        let selectedRecords = record ? [record] : null;
         if (selModel) {
             selectedRecords = selModel.records;
 
@@ -42,7 +41,6 @@ export const [RecordActionButton, recordActionButton] = hoistCmpAndFactory({
         if (hidden) return null;
 
         return button({
-            className: getClassName('xh-record-action-button', props),
             minimal,
             text: minimal ? null : text,
             icon,
@@ -50,7 +48,7 @@ export const [RecordActionButton, recordActionButton] = hoistCmpAndFactory({
             title,
             disabled,
             onClick: () => action.call({record, selection: selectedRecords, gridModel, column}),
-            ...omit(rest, 'record')
+            ...rest
         });
     }
 });

@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import {box} from './Box';
 
@@ -29,14 +28,14 @@ export const [Frame, frame] = hoistCmpAndFactory({
 export const [VFrame, vframe] = hoistCmpAndFactory({
     displayName: 'VFrame',
     model: false, memo: false, observer: false,
+    className: 'xh-vframe',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
             flex: 'auto',
-            flexDirection: 'column',
-            className: getClassName('xh-vframe', props)
+            flexDirection: 'column'
         });
     }
 });
@@ -44,14 +43,14 @@ export const [VFrame, vframe] = hoistCmpAndFactory({
 export const [HFrame, hframe] = hoistCmpAndFactory({
     displayName: 'HFrame',
     model: false, memo: false, observer: false,
+    className: 'xh-hframe',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
             flex: 'auto',
-            flexDirection: 'row',
-            className: getClassName('xh-hframe', props)
+            flexDirection: 'row'
         });
     }
 });

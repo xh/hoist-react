@@ -14,7 +14,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
@@ -22,17 +21,17 @@ import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 
 export const restForm = hoistCmpFactory({
     displayName: 'RestForm',
-
     model: uses(RestFormModel),
+    className: 'xh-rest-form',
 
-    render({model, ...props}) {
+    render({model, className}) {
         const {isAdd, readonly, isOpen} = model;
         if (!isOpen) return null;
 
         return dialog({
             title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
-            className: getClassName('xh-rest-form', props),
+            className,
             isOpen: true,
             isCloseButtonShown: false,
             items: [

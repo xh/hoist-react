@@ -10,7 +10,7 @@ import {hoistCmpAndFactory, hoistCmpFactory, uses} from '@xh/hoist/core';
 import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
-import {getLayoutProps, getClassName} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {treeMap} from './TreeMap';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
@@ -22,16 +22,16 @@ import {SplitTreeMapModel} from './SplitTreeMapModel';
  */
 export const [SplitTreeMap, splitTreeMap]  = hoistCmpAndFactory({
     displayName: 'SplitTreeMap',
-
     model: uses(SplitTreeMapModel),
+    className: 'xh-split-treemap',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
-            className: getClassName('xh-split-treemap', props),
+            className,
             items: errors.length ? errorPanel({errors}) : childMaps(),
             ...getLayoutProps(props)
         });
@@ -79,7 +79,7 @@ const childMaps = hoistCmpFactory(
 
 const errorPanel = hoistCmpFactory(
     ({errors}) => frame({
-        className: getClassName('xh-split-treemap__error-message'),
+        className: 'xh-split-treemap__error-message',
         items: errors.map(e => <p>{e}</p>)
     })
 );

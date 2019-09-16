@@ -32,8 +32,9 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
-import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isDisplayed} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -54,17 +55,17 @@ import {isDisplayed} from '@xh/hoist/utils/js';
 export const [Grid, grid] = hoistCmpAndFactory({
     displayName: 'GridModel',
     model: uses(GridModel),
+    className: 'xh-grid',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
 
         const implModel = useLocalModel(() => new GridImplModel(model, props)),
-            className = getClassName('xh-grid', props, implModel.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
             platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
             frame({
-                className,
+                className: classNames(className, implModel.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
                 item: agGrid({
                     ...getLayoutProps(props),
                     ...implModel.agOptions

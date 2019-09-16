@@ -9,15 +9,15 @@ import PT from 'prop-types';
 import {hoistCmpAndFactory, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {getClassName} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
 
 export const [AppMenuButton, appMenuButton] = hoistCmpAndFactory({
     displayName: 'AppMenuButton',
     model: false,
+    className: 'xh-app-menu',
 
     render(props) {
-        let {hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
+        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
         extraItems = extraItems ?
             [...extraItems.map(m => menuItem(m)), menuDivider()] :
             [];
@@ -28,7 +28,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmpAndFactory({
 
         // TODO:  Need logic from context menu to remove duplicate seperators!
         return popover({
-            className: getClassName('xh-app-menu', props),
+            className,
             position: 'bottom-right',
             minimal: true,
             target: button({

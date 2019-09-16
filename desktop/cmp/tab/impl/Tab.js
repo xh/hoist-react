@@ -7,7 +7,6 @@
 import {useRef} from 'react';
 import {elem, hoistCmpFactory} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
 
@@ -23,11 +22,11 @@ import {TabRenderMode} from '@xh/hoist/enums';
  */
 export const tab = hoistCmpFactory({
     displayName: 'Tab',
+    className: 'xh-tab',
 
-    render({model, ...props}) {
+    render({model, className}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
-            wasActivated = useRef(false),
-            className = getClassName('xh-tab', props);
+            wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
 

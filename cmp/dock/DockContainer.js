@@ -30,6 +30,7 @@ import {DockContainerModel} from './DockContainerModel';
  */
 export const [DockContainer, dockContainer] = hoistCmpAndFactory({
     model: uses(DockContainerModel),
+    className: 'xh-dock-container',
 
     render(props) {
         throwIf(XH.isMobile, 'DockContainer is not implemented on mobile');

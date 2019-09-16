@@ -16,14 +16,14 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
 import {RestGridModel} from './RestGridModel';
 import PT from 'prop-types';
-import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 export const [RestGrid, restGrid] = hoistCmpAndFactory({
     displayName: 'RestGrid',
-
     model: uses(RestGridModel),
+    className: 'xh-rest-grid',
 
-    render({model, onRowDoubleClicked, ...props}) {
+    render({model, className, onRowDoubleClicked, ...props}) {
 
         if (!onRowDoubleClicked)  {
             onRowDoubleClicked = (row) => {
@@ -40,7 +40,7 @@ export const [RestGrid, restGrid] = hoistCmpAndFactory({
         return fragment(
             panel({
                 ...getLayoutProps(props),
-                className: getClassName('xh-rest-grid', props),
+                className,
                 tbar: restGridToolbar({
                     extraToolbarItems: props.extraToolbarItems
                 }),

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {tab} from './Tab';
@@ -15,7 +15,7 @@ import '../Tabs.scss';
  * Desktop implementation of TabContainer.
  * @private
  */
-export function tabContainerImpl({model, ...props}) {
+export function tabContainerImpl({model, className, ...props}) {
     const {activeTabId, tabs, switcherPosition} = model,
         layoutProps = getLayoutProps(props),
         switcherBefore = ['left', 'top'].includes(switcherPosition),
@@ -30,7 +30,7 @@ export function tabContainerImpl({model, ...props}) {
 
     return container({
         ...layoutProps,
-        className: getClassName('xh-tab-container', props),
+        className,
         items: [
             switcherBefore ? tabSwitcher({key: 'switcher', orientation: switcherPosition}) : null,
             ...tabs.map(tabModel => {

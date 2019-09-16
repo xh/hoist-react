@@ -10,7 +10,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
-import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 
 /**
@@ -20,6 +20,7 @@ import PT from 'prop-types';
  */
 export const [GridCountLabel, gridCountLabel] = hoistCmpAndFactory({
     displayName: 'GridCountLabel',
+    className: 'xh-grid-count-label',
 
     render(props) {
         const gridModel = withDefault(props.gridModel, useContextModel(GridModel));
@@ -51,7 +52,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmpAndFactory({
 
         return box({
             ...getLayoutProps(props),
-            className: getClassName('xh-grid-count-label', props),
+            className: props.className,
             item: `${recCountString()} ${selCountString()}`
         });
     }

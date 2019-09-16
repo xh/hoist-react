@@ -14,7 +14,6 @@ import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
-import {getClassName} from '@xh/hoist/utils/react';
 import './OptionsDialog.scss';
 
 /**
@@ -26,8 +25,9 @@ import './OptionsDialog.scss';
 export const optionsDialog = hoistCmpFactory({
     displayName: 'OptionsDialog',
     model: uses(OptionsDialogModel),
+    className: 'xh-options-dialog',
 
-    render({model}) {
+    render({model, className}) {
         if (!model.hasOptions) return null;
         return hotkeysHost({
             hotkeys: [{
@@ -36,19 +36,19 @@ export const optionsDialog = hoistCmpFactory({
                 label: 'Open Options Dialog',
                 onKeyDown: () => model.show()
             }],
-            item: model.isOpen ? displayedDialog() : null
+            item: model.isOpen ? displayedDialog({className}) : null
         });
     }
 });
 
 const displayedDialog = hoistCmpFactory({
-    render({model, ...props}) {
+    render({model, className}) {
         const {reloadRequired, formModel} = model;
 
         return dialog({
             title: `${XH.clientAppName} Options`,
             icon: Icon.options(),
-            className: getClassName('xh-options-dialog', props),
+            className,
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,

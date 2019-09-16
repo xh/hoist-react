@@ -13,7 +13,6 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Column} from '@xh/hoist/cmp/grid';
 import {isEmpty} from 'lodash';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import {recordActionButton} from './impl/RecordActionButton';
 
@@ -29,6 +28,7 @@ import {recordActionButton} from './impl/RecordActionButton';
  */
 export const [RecordActionBar, recordActionBar] = hoistCmpAndFactory({
     displayName: 'RecordActionBar',
+    className: 'xh-record-action-bar',
 
     render(props) {
         const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = props;
@@ -47,8 +47,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmpAndFactory({
                 column,
                 ...buttonProps
             })),
-            ...rest,
-            className: getClassName('xh-record-action-bar', props)
+            ...rest
         });
     }
 });

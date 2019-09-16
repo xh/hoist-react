@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {uses, hoistCmpAndFactory} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
-import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
 
 /**
@@ -18,10 +18,10 @@ import {DataViewModel} from './DataViewModel';
 export const [DataView, dataView] = hoistCmpAndFactory({
     displayName: 'DataView',
     model: uses(DataViewModel),
+    className: 'xh-data-view',
 
-    render({model, ...props}) {
-        const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props),
-            className = getClassName('xh-data-view', props);
+    render({model, className, ...props}) {
+        const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
 
         return grid({
             ...layoutProps,

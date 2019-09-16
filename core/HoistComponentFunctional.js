@@ -16,6 +16,7 @@ import {
     useOwnedModelLinker
 } from './impl';
 import {CreatesSpec, ModelSpec, uses} from './modelspec';
+import classNames from 'classnames';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -45,6 +46,8 @@ import {CreatesSpec, ModelSpec, uses} from './modelspec';
  *      {@see uses()} and {@see creates()} - these two factory functions can be used to create an
  *      appropriate spec for either externally-provided or internally-created models. Defaults to
  *      `uses('*')` for render functions taking props, otherwise false.
+ * @param {String} [config.className] - base css classname for this component.  Will be combined with any
+ *      className in props, and the combined string  will be made available to the render function via props.
  * @param {string} [config.displayName] - component name for debugging/inspection.
  * @param {boolean} [config.memo] - true (default) to wrap component in a call to `React.memo()`.
  *      Components that are known to be unable to make effective use of memo (e.g. container
@@ -60,6 +63,7 @@ export function hoistComponent(config) {
 
     const render = config.render,
         argCount = render.length,
+        className = config.className,
         displayName = config.displayName ? config.displayName : 'HoistCmp',
         isMemo = withDefault(config.memo, true),
         isObserver = withDefault(config.observer, true),
@@ -78,8 +82,10 @@ export function hoistComponent(config) {
         ret = (props, ref) => useObserver(() => render(props, ref));
     }
     if (modelSpec) {
-        const wrap = (modelSpec.fromContext || modelSpec.toContext) ? wrapWithContextModel : wrapWithSimpleModel;
-        ret = wrap(ret, modelSpec, displayName);
+        ret = wrapWithModel(ret,  modelSpec, displayName);
+    }
+    if (className) {
+        ret = wrapWithClassName(ret, className);
     }
     if (isForwardRef) {
         ret = forwardRef(ret);
@@ -128,10 +134,22 @@ export function hoistCmpAndFactory(config) {
     return [ret, elemFactory(ret)];
 }
 
-
 //------------------------
 // Implementation
 //------------------------
+function wrapWithClassName(render, baseName) {
+    return (props, ref) => {
+        const className = classNames(baseName, props.className);
+        props = enhanceProps(props, 'className', className);
+        return render(props, ref);
+    };
+}
+
+function wrapWithModel(render, spec, displayName) {
+    const wrap = (spec.fromContext || spec.toContext) ? wrapWithContextModel : wrapWithSimpleModel;
+    return wrap(render, spec, displayName);
+}
+
 function wrapWithContextModel(render, spec, displayName) {
     return (props, ref) => {
         const lookup = useContext(ModelLookupContext);
@@ -139,7 +157,7 @@ function wrapWithContextModel(render, spec, displayName) {
         const [newLookup] = useState(
             () => model && spec.toContext && (!lookup || lookup.model !== model) ? new ModelLookup(model, lookup) : null
         );
-        if (model && model !== props.model) props = {...props, model};
+        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
         const rendering = render(props, ref);
         return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
     };
@@ -148,7 +166,7 @@ function wrapWithContextModel(render, spec, displayName) {
 function wrapWithSimpleModel(render, spec, displayName) {
     return (props, ref) => {
         const model = useResolvedModel(spec, props, null, displayName);
-        if (model && model !== props.model) props = {...props, model};
+        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
         return render(props, ref);
     };
 }
@@ -208,4 +226,12 @@ function formatSelector(selector) {
     if (isString(selector)) return selector;
     if (isFunction(selector)  && selector.isHoistModel) return selector.name;
     return '[Selector]';
+}
+
+function enhanceProps(props, name, value) {
+    if (!Object.isExtensible(props)) {
+        props = {...props};
+    }
+    props[name] = value;
+    return props;
 }

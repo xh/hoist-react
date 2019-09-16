@@ -10,7 +10,7 @@ import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import './Mask.scss';
 
@@ -22,10 +22,10 @@ import './Mask.scss';
  */
 export const [Mask, mask] = hoistCmpAndFactory({
     displayName: 'Mask',
+    className: 'xh-mask',
 
-    render({model, ...props}) {
-        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
-            className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
+    render({model, className, ...props}) {
+        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
 
         if (!isDisplayed) return null;
 
@@ -34,7 +34,7 @@ export const [Mask, mask] = hoistCmpAndFactory({
             showSpinner = withDefault(props.spinner, false);
 
         return overlay({
-            className,
+            className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,

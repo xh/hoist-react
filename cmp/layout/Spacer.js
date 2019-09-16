@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmpAndFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
 import {box} from './Box';
 
 /**
@@ -16,11 +15,12 @@ export const [Spacer, spacer] = hoistCmpAndFactory({
     displayName: 'Spacer',
     model: false, observer: false,
 
+    className: 'xh-spacer',
+
     render(props) {
         return box({
             ...props,
-            flex: 'none',
-            className: getClassName('xh-spacer', props)
+            flex: 'none'
         });
     }
 });
@@ -31,12 +31,12 @@ export const [Spacer, spacer] = hoistCmpAndFactory({
 export const [Filler, filler] = hoistCmpAndFactory({
     displayName: 'Filler',
     model: false, observer: false,
+    className: 'xh-filler',
 
     render(props) {
         return box({
             ...props,
-            flex: 'auto',
-            className: getClassName('xh-filler', props)
+            flex: 'auto'
         });
     }
 });

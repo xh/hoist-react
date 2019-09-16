@@ -8,7 +8,8 @@
 import PT from 'prop-types';
 import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
-import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import './Button.scss';
 
@@ -21,9 +22,10 @@ import './Button.scss';
 export const [Button, button] = hoistCmpAndFactory({
     displayName: 'Button',
     model: false,
+    className: 'xh-button',
 
     render(props) {
-        const [layoutProps, {icon, text, onClick, minimal = true, style, autoFocus, ...rest}] = splitLayoutProps(props),
+        const [layoutProps, {icon, text, onClick, minimal = true, style, autoFocus, className, ...rest}] = splitLayoutProps(props),
             classes = [];
 
         if (minimal) classes.push('xh-button--minimal');
@@ -42,7 +44,7 @@ export const [Button, button] = hoistCmpAndFactory({
             },
 
             ...rest,
-            className: getClassName('xh-button', props, classes)
+            className: classNames(props.className, classes)
         });
     }
 });

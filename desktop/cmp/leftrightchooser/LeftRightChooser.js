@@ -9,7 +9,7 @@ import {cloneDeep} from 'lodash';
 import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
-import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
@@ -26,10 +26,10 @@ import './LeftRightChooser.scss';
 export const [LeftRightChooser, leftRightChooser] = hoistCmpAndFactory({
     displayName: 'LeftRightChooser',
     model: uses(LeftRightChooserModel),
+    className: 'xh-lr-chooser',
 
-    render({model, ...props}) {
-        const className = getClassName('xh-lr-chooser', props),
-            {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
+    render({model, className, ...props}) {
+        const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
                     if (e.data) model.moveRows([e.data]);

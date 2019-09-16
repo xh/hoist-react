@@ -11,7 +11,6 @@ import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {getClassName} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './AppBar.scss';
 
@@ -26,6 +25,7 @@ import './AppBar.scss';
 export const [AppBar, appBar] = hoistCmpAndFactory({
     displayName: 'AppBar',
     model: false,
+    className: 'xh-appbar',
 
     render(props) {
         const {
@@ -35,11 +35,12 @@ export const [AppBar, appBar] = hoistCmpAndFactory({
             rightItems,
             hideRefreshButton,
             hideAppMenuButton,
+            className,
             appMenuButtonOptions = {}
         } = props;
 
         return navbar({
-            className: getClassName('xh-appbar', props),
+            className,
             items: [
                 navbarGroup({
                     align: 'left',

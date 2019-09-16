@@ -7,9 +7,10 @@
 import PT from 'prop-types';
 import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
-import {getClassName} from '@xh/hoist/utils/react';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {withDefault} from '@xh/hoist/utils/js';
+
+import classNames from 'classnames';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -24,8 +25,9 @@ import {withDefault} from '@xh/hoist/utils/js';
 export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
     displayName: 'TabSwitcher',
     model: uses(TabContainerModel),
+    className: 'xh-tab-switcher',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
         const {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),
@@ -45,7 +47,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
                 });
             }),
             ...props,
-            className: getClassName('xh-tab-switcher', props, `xh-tab-switcher--${orientation}`)
+            className: classNames(className, `xh-tab-switcher--${orientation}`)
         });
     }
 });

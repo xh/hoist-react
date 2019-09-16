@@ -13,7 +13,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 
-import {getLayoutProps, getClassName} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import './FileChooser.scss';
 
@@ -34,10 +34,10 @@ import './FileChooser.scss';
  */
 export const [FileChooser, fileChooser] = hoistCmpAndFactory({
     displayName: 'FileChooser',
-
     model: uses(FileChooserModel),
+    className: 'xh-file-chooser',
 
-    render({model, accept, maxSize, minSize, targetText, ...props}) {
+    render({model, className, accept, maxSize, minSize, targetText, ...props}) {
         const {lastRejectedCount} = model,
             enableMulti = withDefault(props.enableMulti, true),
             enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
@@ -46,7 +46,7 @@ export const [FileChooser, fileChooser] = hoistCmpAndFactory({
         const fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
 
         return hbox({
-            className: getClassName('xh-file-chooser', props),
+            className,
             ...getLayoutProps(props),
             items: [
                 dropzone({

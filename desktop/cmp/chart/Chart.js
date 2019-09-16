@@ -13,7 +13,7 @@ import {XH, hoistCmpAndFactory, uses, useLocalModel, HoistModel} from '@xh/hoist
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
-import {getLayoutProps, getClassName} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -30,8 +30,9 @@ installZoomoutGesture(Highcharts);
 export const [Chart, chart] = hoistCmpAndFactory({
     displayName: 'Chart',
     model: uses(ChartModel),
+    className: 'xh-chart',
 
-    render({model, aspectRatio, ...props}) {
+    render({model, className, aspectRatio, ...props}) {
 
         const localModel = useLocalModel(() => new LocalModel(model));
         localModel.setAspectRatio(aspectRatio);
@@ -51,7 +52,7 @@ export const [Chart, chart] = hoistCmpAndFactory({
             onResize: (e) => localModel.resizeChart(e),
             item: box({
                 ...layoutProps,
-                className: getClassName('xh-chart', props),
+                className,
                 item: div({
                     style: {margin: 'auto'},
                     ref: localModel.chartRef

@@ -17,7 +17,7 @@ import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {createObservableRef, getLayoutProps, getClassName} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 
 import './TreeMap.scss';
 
@@ -34,8 +34,9 @@ import {TreeMapModel} from './TreeMapModel';
 export const [TreeMap, treeMap] = hoistCmpAndFactory({
     displayName: 'TreeMapModel',
     model: uses(TreeMapModel),
+    className: 'xh-treemap',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
 
         const localModel = useLocalModel(() => new LocalModel(model));
 
@@ -76,7 +77,7 @@ export const [TreeMap, treeMap] = hoistCmpAndFactory({
             onResize: debounce((e) => localModel.resizeChartAsync(e), 100),
             item: box({
                 ...layoutProps,
-                className: getClassName('xh-treemap', props),
+                className,
                 item
             })
         });

@@ -12,7 +12,6 @@ import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/le
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
 import {ColChooserModel} from './ColChooserModel';
 
 /**
@@ -30,13 +29,13 @@ import {ColChooserModel} from './ColChooserModel';
  */
 export const colChooser = hoistCmpFactory({
     model: uses(ColChooserModel),
+    className: 'xh-col-chooser',
 
-    render({model, ...props}) {
-        const {gridModel, lrModel, isPopoverOpen} = model,
-            {width, height} = props;
+    render({model, className, width, height}) {
+        const {gridModel, lrModel, isPopoverOpen} = model;
 
         return panel({
-            className: getClassName('xh-col-chooser', props),
+            className,
             items: [
                 leftRightChooser({
                     model: lrModel,

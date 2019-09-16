@@ -6,17 +6,18 @@
  */
 import {hoistCmpFactory} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import './PanelHeader.scss';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import classNames from 'classnames';
 
 export const panelHeader = hoistCmpFactory({
     displayName: 'PanelHeader',
     model: false,
+    className: 'xh-panel-header',
 
-    render({model, ...props}) {
+    render({model, className, ...props}) {
         const {collapsed, vertical, side, showHeaderCollapseButton} = model,
             {title, icon, compact, headerItems = []} = props;
 
@@ -26,14 +27,13 @@ export const panelHeader = hoistCmpFactory({
             if (model.collapsible) model.toggleCollapsed();
         };
 
-        const baseCls = 'xh-panel-header',
-            titleCls = 'xh-panel-header__title',
+        const titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
         if (!collapsed || vertical) {
             return hbox({
-                className: getClassName(baseCls, props, compactCls),
+                className: classNames(className, compactCls),
                 items: [
                     icon || null,
                     title ?
@@ -52,7 +52,7 @@ export const panelHeader = hoistCmpFactory({
             // For vertical layout, skip header items.
             const isLeft = side === 'left';
             return vbox({
-                className: getClassName(baseCls, props, sideCls, compactCls),
+                className: classNames(className, sideCls, compactCls),
                 flex: 1,
                 items: [
                     isLeft ? filler() : collapseButton({model}),

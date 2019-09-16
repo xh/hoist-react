@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {hoistCmpAndFactory} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
-import {getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './ButtonGroup.scss';
 
@@ -18,6 +18,7 @@ import './ButtonGroup.scss';
 export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
     displayName: 'ButtonGroup',
     model: false,
+    className: 'xh-button-group',
 
     render(props) {
         const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
@@ -30,8 +31,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
                 ...style,
                 ...layoutProps
             },
-            ...rest,
-            className: getClassName('xh-button-group', props)
+            ...rest
         });
     }
 });

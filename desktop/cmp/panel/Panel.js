@@ -12,7 +12,7 @@ import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {isReactElement, getClassName, splitLayoutProps} from '@xh/hoist/utils/react';
+import {isReactElement, splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -41,12 +41,11 @@ export const [Panel, panel] = hoistCmpAndFactory({
         toContext: false,
         createDefault: () => new PanelModel({collapsible: false, resizable: false})
     }),
-
     memo: false,
+    className: 'xh-panel',
 
     render({model, ...props}, ref) {
         let [flags] = useState({wasDisplayed: true}),
-            className = getClassName('xh-panel', props),
             [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
         const {
@@ -131,8 +130,7 @@ export const [Panel, panel] = hoistCmpAndFactory({
                 parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
-            ...layoutProps,
-            className
+            ...layoutProps
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.

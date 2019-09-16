@@ -8,8 +8,8 @@
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
 import {tab} from './Tab';
+import classNames from 'classnames';
 
 import './Tabs.scss';
 
@@ -27,8 +27,9 @@ export function tabContainerImpl({model, ...props}) {
     const {activeTab, switcherPosition} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
+    // TODO:  This should use the standard TabContainer className.
     return tabbar({
-        className: getClassName('xh-tabbar', props, `xh-tabbar-${switcherPosition}`),
+        className: classNames('xh-tabbar', props, `xh-tabbar-${switcherPosition}`),
         position: switcherPosition,
         index: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: () => tabs.map(renderTabModel),
