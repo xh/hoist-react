@@ -26,6 +26,9 @@ _"The one with the hooks."_
 * `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
   creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
   fully observable. With this change the `Ref` class in the same package is now obsolete.
+* Hoist now establishes a proper react "error boundary" around all application code. This means that
+  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
+  and stack traces for rendering errors should be signifigantly less verbose.       
 
 ### 💥 Breaking Changes
 
