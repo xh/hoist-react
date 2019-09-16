@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isValidElement} from 'react';
+import {isValidElement, createRef} from 'react';
 import PT from 'prop-types';
 import {
     isNil,
@@ -33,6 +33,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
 import {getClassName, getLayoutProps} from '@xh/hoist/utils/react';
+import {isDisplayed} from '@xh/hoist/utils/js';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -68,7 +69,8 @@ export const [Grid, grid] = hoistCmpAndFactory({
                     ...getLayoutProps(props),
                     ...implModel.agOptions
                 }),
-                onKeyDown: implModel.onKeyDown
+                onKeyDown: implModel.onKeyDown,
+                ref: implModel.viewRef
             }),
             (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
         );
@@ -145,6 +147,7 @@ class GridImplModel {
     model;
     agOptions;
     propsKeyDown;
+    viewRef = createRef()
 
     // The minimum required row height specified by the columns (if any) */
     @computed
@@ -594,7 +597,7 @@ class GridImplModel {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
+        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };
@@ -626,7 +629,7 @@ class GridImplModel {
     };
 
     onGridSizeChanged = (ev) => {
-        if (this.isDisplayed) {
+        if (isDisplayed(this.viewRef.current)) {
             ev.api.sizeColumnsToFit();
         }
     };

@@ -45,8 +45,7 @@ export class MonitorResultsModel {
     }
 
     async doLoadAsync(loadSpec) {
-        const view = this.viewRef.current;
-        if (!view || !isDisplayed(view)) return;
+        if (!isDisplayed(this.viewRef.current)) return;
 
         return XH
             .fetchJson({url: 'monitorAdmin/results', loadSpec})
