@@ -4,11 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 
 import {form} from '@xh/hoist/cmp/form';
 import {filler} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmpFactory, uses} from '@xh/hoist/core';
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -16,6 +15,7 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './Message.scss';
 
@@ -24,38 +24,35 @@ import './Message.scss';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistComponent
-export class Message extends Component {
+export const message = hoistCmpFactory({
+    model: uses(MessageModel),
 
-    static modelClass = MessageModel;
-    baseClassName = 'xh-message';
+    render({model, ...props}) {
 
-    render() {
-        const model = this.model,
-            isOpen = model && model.isOpen;
-
-        if (!isOpen) return null;
+        if (!model.isOpen) return null;
 
         return dialog({
             isOpen: true,
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
-            className: this.getClassName(),
+            className: getClassName('xh-message', props),
             items: [
                 dialogBody(
                     model.message,
-                    this.renderInput()
+                    inputCmp()
                 ),
-                toolbar(this.renderButtons())
+                bbar()
             ],
             onClose: () => {if (model.cancelProps) model.doCancel();},
-            ...this.props
+            ...props
         });
     }
+});
 
-    renderInput() {
-        const {formModel, input} = this.model;
+const inputCmp = hoistCmpFactory(
+    ({model}) => {
+        const {formModel, input} = model;
         if (!formModel) return null;
         return form({
             model: formModel,
@@ -65,14 +62,16 @@ export class Message extends Component {
                 item: withDefault(input.item, textInput({
                     autoFocus: true,
                     selectOnFocus: true,
-                    onKeyDown: evt => {if (evt.key == 'Enter') this.model.doConfirmAsync();}
+                    onKeyDown: evt => {if (evt.key == 'Enter') model.doConfirmAsync();}
                 }))
             })
         });
     }
+);
 
-    renderButtons() {
-        const {confirmProps, cancelProps, formModel} = this.model,
+const bbar = hoistCmpFactory(
+    ({model}) => {
+        const {confirmProps, cancelProps, formModel} = model,
             ret = [filler()];
 
         if (cancelProps) {
@@ -87,8 +86,6 @@ export class Message extends Component {
             );
         }
 
-        return ret;
+        return toolbar(ret);
     }
-
-}
-export const message = elemFactory(Message);
+);
