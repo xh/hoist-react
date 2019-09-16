@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmpFactory, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
@@ -15,42 +14,39 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {getClassName} from '@xh/hoist/utils/react';
 
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
+import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 
-@HoistComponent
-export class RestForm extends Component {
+export const restForm = hoistCmpFactory({
+    displayName: 'RestForm',
 
-    baseClassName = 'xh-rest-form';
+    model: uses(RestFormModel),
 
-    render() {
-        const {model} = this,
-            {isAdd, readonly, isOpen} = this.model;
+    render({model, ...props}) {
+        const {isAdd, readonly, isOpen} = model;
         if (!isOpen) return null;
 
         return dialog({
             title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
             icon: isAdd ? Icon.add() : Icon.edit(),
-            className: this.getClassName(),
+            className: getClassName('xh-rest-form', props),
             isOpen: true,
             isCloseButtonShown: false,
             items: [
-                this.renderForm(),
-                this.renderToolbar(),
+                formDisplay(),
+                tbar(),
                 mask({model: model.loadModel, spinner: true})
             ]
         });
     }
+});
 
-    //------------------------
-    // Implementation
-    //------------------------
-    renderForm() {
-        const {model} = this,
-            formFields = model.editors.map(editor => {
-                return restFormField({editor, model});
-            });
+const formDisplay = hoistCmpFactory(
+    ({model}) => {
+        const formFields = model.editors.map(editor => restFormField({editor}));
 
         return dialogBody(
             form({
@@ -66,10 +62,11 @@ export class RestForm extends Component {
             })
         );
     }
+);
 
-    renderToolbar() {
-        const {model} = this,
-            {formModel} = model;
+const tbar = hoistCmpFactory(
+    ({model}) => {
+        const {formModel} = model;
         return toolbar(
             recordActionBar({
                 actions: model.actions,
@@ -91,5 +88,4 @@ export class RestForm extends Component {
             })
         );
     }
-}
-export const restForm = elemFactory(RestForm);
+);
