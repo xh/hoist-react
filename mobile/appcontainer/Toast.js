@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {toast as onsenToast} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
@@ -18,7 +18,7 @@ import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
  *
  * @private
  */
-export const toast = hoistCmpFactory({
+export const toast = hoistCmp.factory({
     displayName: 'Toast',
     model: uses(ToastModel),
 

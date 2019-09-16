@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import PT from 'prop-types';
-import {hoistCmpAndFactory, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
@@ -20,7 +20,7 @@ import {SplitTreeMapModel} from './SplitTreeMapModel';
  *
  * @see SplitTreeMapModel
  */
-export const [SplitTreeMap, splitTreeMap]  = hoistCmpAndFactory({
+export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
@@ -43,7 +43,7 @@ SplitTreeMap.propTypes = {
 };
 
 
-const childMaps = hoistCmpFactory(
+const childMaps = hoistCmp.factory(
     ({model}) => {
         const {primaryMapModel, secondaryMapModel, mapTitleFn} = model,
             pTotal = primaryMapModel.total,
@@ -77,7 +77,7 @@ const childMaps = hoistCmpFactory(
     }
 );
 
-const errorPanel = hoistCmpFactory(
+const errorPanel = hoistCmp.factory(
     ({errors}) => frame({
         className: 'xh-split-treemap__error-message',
         items: errors.map(e => <p>{e}</p>)

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -21,7 +21,7 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  *
  * @private
  */
-export const exceptionDialog = hoistCmpFactory({
+export const exceptionDialog = hoistCmp.factory({
     displayName: 'ExceptionDialog',
     model: uses(ExceptionDialogModel),
 
@@ -58,7 +58,7 @@ export const exceptionDialog = hoistCmpFactory({
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistCmpFactory(
+export const dismissButton = hoistCmp.factory(
     ({model}) => {
         return model.options.requireReload ?
             button({

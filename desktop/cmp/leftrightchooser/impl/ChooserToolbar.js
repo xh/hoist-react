@@ -4,14 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {vspacer} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 /** @private */
-export const chooserToolbar = hoistCmpFactory(
+export const chooserToolbar = hoistCmp.factory(
     ({model}) => {
         const leftSel = model.leftModel.selModel,
             rightSel = model.rightModel.selModel;

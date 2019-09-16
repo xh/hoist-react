@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -28,7 +28,7 @@ import {TabContainerModel} from './TabContainerModel';
  *
  * @see TabContainerModel
  */
-export const [TabContainer, tabContainer] = hoistCmpAndFactory({
+export const [TabContainer, tabContainer] = hoistCmp.withFactory({
     displayName: 'TabContainer',
     model: uses(TabContainerModel),
     className: 'xh-tab-container',

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {
     jsonInput,
     select,
@@ -20,7 +20,7 @@ import {RestFormModel} from './RestFormModel';
 import {assign} from 'lodash';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 
-export const restFormField = hoistCmpFactory({
+export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
     model: uses(RestFormModel),
 

@@ -16,7 +16,7 @@ import {
     upperFirst,
     isFunction
 } from 'lodash';
-import {hoistCmpAndFactory, useLocalModel, HoistModel, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel, useContextModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -41,7 +41,7 @@ import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
  * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
  * customized via the include/excludeFields props. See prop comments for details.
  */
-export const [StoreFilterField, storeFilterField] = hoistCmpAndFactory({
+export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
     displayName: 'StoreFilterField',
     className: 'xh-store-filter-field',
 

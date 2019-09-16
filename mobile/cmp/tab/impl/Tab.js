@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useRef} from 'react';
-import {elem, hoistCmpFactory} from '@xh/hoist/core';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {TabRenderMode} from '@xh/hoist/enums';
@@ -19,7 +19,7 @@ import {TabRenderMode} from '@xh/hoist/enums';
  *   - Mount/unmount its contents according to `TabModel.renderMode`.
  *   - Track and trigger refreshes according to `TabModel.refreshMode`.
  */
-export const tab = hoistCmpFactory({
+export const tab = hoistCmp.factory({
     displayName: 'Tab',
 
     render({model}) {

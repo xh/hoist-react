@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {keys, toString} from 'lodash';
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -15,7 +15,7 @@ import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
 
-export const configDifferDetail = hoistCmpFactory({
+export const configDifferDetail = hoistCmp.factory({
     model: uses(ConfigDifferDetailModel),
 
     render({model}) {
@@ -45,7 +45,7 @@ export const configDifferDetail = hoistCmpFactory({
     }
 });
 
-const diffTable = hoistCmpFactory(
+const diffTable = hoistCmp.factory(
     ({model}) => {
         const rec = model.record,
             local = rec.localValue,

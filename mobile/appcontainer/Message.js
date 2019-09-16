@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
@@ -21,7 +21,7 @@ import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
  *
  * @private
  */
-export const message = hoistCmpFactory({
+export const message = hoistCmp.factory({
     displayName: 'Message',
     model: uses(MessageModel),
 
@@ -64,7 +64,7 @@ export const message = hoistCmpFactory({
 });
 
 
-const inputCmp = hoistCmpFactory(
+const inputCmp = hoistCmp.factory(
     ({model}) => {
         const {formModel, input} = model;
         if (!formModel) return null;

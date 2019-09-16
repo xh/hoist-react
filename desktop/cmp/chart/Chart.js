@@ -9,7 +9,7 @@ import {assign, castArray, clone, merge} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
-import {XH, hoistCmpAndFactory, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
@@ -27,7 +27,7 @@ installZoomoutGesture(Highcharts);
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-export const [Chart, chart] = hoistCmpAndFactory({
+export const [Chart, chart] = hoistCmp.withFactory({
     displayName: 'Chart',
     model: uses(ChartModel),
     className: 'xh-chart',

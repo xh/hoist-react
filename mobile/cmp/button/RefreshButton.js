@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
@@ -18,7 +18,7 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
  * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
  * for this button will be used.
  */
-export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 

@@ -7,7 +7,7 @@
 
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -18,7 +18,7 @@ import PT from 'prop-types';
  *
  * Alternative to more general {@see StoreFilterField}.
  */
-export const [GridCountLabel, gridCountLabel] = hoistCmpAndFactory({
+export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
     displayName: 'GridCountLabel',
     className: 'xh-grid-count-label',
 

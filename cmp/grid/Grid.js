@@ -20,7 +20,7 @@ import {
     isFinite
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {hoistCmpAndFactory, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -52,7 +52,7 @@ import classNames from 'classnames';
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-export const [Grid, grid] = hoistCmpAndFactory({
+export const [Grid, grid] = hoistCmp.withFactory({
     displayName: 'GridModel',
     model: uses(GridModel),
     className: 'xh-grid',

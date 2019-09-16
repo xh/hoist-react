@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -13,7 +13,7 @@ import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import './Splitter.scss';
 
 
-export const splitter = hoistCmpFactory({
+export const splitter = hoistCmp.factory({
     displayName: 'Splitter',
     model: false,
 

@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {uses, hoistCmpAndFactory} from '@xh/hoist/core';
+import {uses, hoistCmp} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -15,7 +15,7 @@ import {DataViewModel} from './DataViewModel';
  * A DataView is a specialized version of the Grid component. It displays its data within a
  * single column, using a configured component for rendering each item.
  */
-export const [DataView, dataView] = hoistCmpAndFactory({
+export const [DataView, dataView] = hoistCmp.withFactory({
     displayName: 'DataView',
     model: uses(DataViewModel),
     className: 'xh-data-view',

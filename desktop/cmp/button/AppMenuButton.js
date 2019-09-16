@@ -6,12 +6,12 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-export const [AppMenuButton, appMenuButton] = hoistCmpAndFactory({
+export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',
     model: false,
     className: 'xh-app-menu',

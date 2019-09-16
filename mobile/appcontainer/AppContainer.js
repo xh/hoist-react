@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {elem, AppState, XH, uses, hoistCmpFactory, hoistCmp} from '@xh/hoist/core';
+import {elem, AppState, XH, uses, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -68,7 +68,7 @@ export const AppContainer = hoistCmp({
 //-------------------
 // Implementation
 //-------------------
-const appContainerView = hoistCmpFactory({
+const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
     model: uses(AppContainerModel),
 
@@ -113,7 +113,7 @@ const appContainerView = hoistCmpFactory({
 });
 
 
-const appMenu = hoistCmpFactory({
+const appMenu = hoistCmp.factory({
     displayName: 'AppMenu',
 
     render() {

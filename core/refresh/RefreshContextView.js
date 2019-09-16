@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
-import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {useContextModel} from '@xh/hoist/core/index';
 
 /**
@@ -16,7 +16,7 @@ import {useContextModel} from '@xh/hoist/core/index';
  *
  * @see RefreshContextModel
  */
-export const [RefreshContextView, refreshContextView] = hoistCmpAndFactory({
+export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
     displayName: 'RefreshContextView',
     model: uses('RefreshContextModel'),
 

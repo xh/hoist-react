@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmpAndFactory, XH} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
@@ -14,7 +14,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 /**
  * Provides a visual indicator of connection status for {@see WebSocketService}.
  */
-export const [WebSocketIndicator, webSocketIndicator] = hoistCmpAndFactory({
+export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
     displayName: 'WebSocketIndicator',
 
     render(props) {

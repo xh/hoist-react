@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -28,7 +28,7 @@ import {DockContainerModel} from './DockContainerModel';
  *
  * @see DockContainerModel
  */
-export const [DockContainer, dockContainer] = hoistCmpAndFactory({
+export const [DockContainer, dockContainer] = hoistCmp.withFactory({
     model: uses(DockContainerModel),
     className: 'xh-dock-container',
 

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {head} from 'lodash';
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {toast} from './Toast';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
@@ -18,7 +18,7 @@ import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
  *
  *  @private
  */
-export const toastSource = hoistCmpFactory({
+export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
 

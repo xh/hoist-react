@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -33,7 +33,7 @@ export const App = hoistCmp({
 });
 
 
-const tbar = hoistCmpFactory(
+const tbar = hoistCmp.factory(
     () => appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [

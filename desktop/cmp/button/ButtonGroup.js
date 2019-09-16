@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
@@ -15,7 +15,7 @@ import './ButtonGroup.scss';
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-export const [ButtonGroup, buttonGroup] = hoistCmpAndFactory({
+export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     displayName: 'ButtonGroup',
     model: false,
     className: 'xh-button-group',

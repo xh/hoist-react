@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -22,7 +22,7 @@ import classNames from 'classnames';
  * @see TabContainer
  * @see TabContainerModel
  */
-export const [TabSwitcher, tabSwitcher] = hoistCmpAndFactory({
+export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     displayName: 'TabSwitcher',
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',

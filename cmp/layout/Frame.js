@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -16,7 +16,7 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Frame, frame] = hoistCmpAndFactory({
+export const [Frame, frame] = hoistCmp.withFactory({
     displayName: 'Frame',
     model: false, memo: false, observer: false,
 
@@ -25,7 +25,7 @@ export const [Frame, frame] = hoistCmpAndFactory({
     }
 });
 
-export const [VFrame, vframe] = hoistCmpAndFactory({
+export const [VFrame, vframe] = hoistCmp.withFactory({
     displayName: 'VFrame',
     model: false, memo: false, observer: false,
     className: 'xh-vframe',
@@ -40,7 +40,7 @@ export const [VFrame, vframe] = hoistCmpAndFactory({
     }
 });
 
-export const [HFrame, hframe] = hoistCmpAndFactory({
+export const [HFrame, hframe] = hoistCmp.withFactory({
     displayName: 'HFrame',
     model: false, memo: false, observer: false,
     className: 'xh-hframe',

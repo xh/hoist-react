@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {hoistCmpFactory, XH, uses} from '@xh/hoist/core';
+import {hoistCmp, XH, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -22,7 +22,7 @@ import './OptionsDialog.scss';
  *
  * @private
  */
-export const optionsDialog = hoistCmpFactory({
+export const optionsDialog = hoistCmp.factory({
     displayName: 'OptionsDialog',
     model: uses(OptionsDialogModel),
     className: 'xh-options-dialog',
@@ -41,7 +41,7 @@ export const optionsDialog = hoistCmpFactory({
     }
 });
 
-const displayedDialog = hoistCmpFactory({
+const displayedDialog = hoistCmp.factory({
     render({model, className}) {
         const {reloadRequired, formModel} = model;
 

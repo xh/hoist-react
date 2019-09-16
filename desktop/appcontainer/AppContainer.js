@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, hoistCmpFactory, elem, AppState, XH, uses} from '@xh/hoist/core';
+import {hoistCmp, elem, AppState, XH, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {errorBoundary} from '@xh/hoist/core/impl';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -72,7 +72,7 @@ export const AppContainer = hoistCmp({
 //-----------------------------------------
 // Implementation
 //-----------------------------------------
-const appContainerView = hoistCmpFactory({
+const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
@@ -113,7 +113,7 @@ const appContainerView = hoistCmpFactory({
     }
 });
 
-const idleDialog = hoistCmpFactory({
+const idleDialog = hoistCmp.factory({
     displayName: 'IdleDialog',
     render() {
         const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;

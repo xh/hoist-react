@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -22,7 +22,7 @@ import {dismissButton} from './ExceptionDialog';
  *
  * @private
  */
-export const exceptionDialogDetails = hoistCmpFactory(
+export const exceptionDialogDetails = hoistCmp.factory(
     ({model}) => {
         const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,

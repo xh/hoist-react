@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmpFactory, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -21,7 +21,7 @@ import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarMode
  *
  * @private
  */
-export const impersonationBar = hoistCmpFactory({
+export const impersonationBar = hoistCmp.factory({
     displayName: 'ImpersonationBar',
     model: uses(ImpersonationBarModel),
 
@@ -41,7 +41,7 @@ export const impersonationBar = hoistCmpFactory({
 });
 
 
-const displayBar = hoistCmpFactory({
+const displayBar = hoistCmp.factory({
     render({model}) {
         const {isImpersonating, targets} = model,
             localModel = useLocalModel(() => new LocalModel(model));

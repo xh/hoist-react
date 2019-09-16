@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Button, button} from './Button';
 import {errorIf} from '@xh/hoist/utils/js';
@@ -18,7 +18,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  * be linked to any model in props implementing LoadSupport, or the contextual
  * RefreshContextModel.
  */
-export const [RefreshButton, refreshButton] = hoistCmpAndFactory({
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 

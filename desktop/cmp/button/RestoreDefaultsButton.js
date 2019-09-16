@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {XH, hoistCmpAndFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {Icon} from '@xh/hoist/icon';
 
@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmpAndFactory({
+export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory({
     displayName: 'RestoreDefaultsButton',
     model: false,
 

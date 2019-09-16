@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {HoistModel, uses, hoistCmpFactory, useLocalModel} from '@xh/hoist/core';
+import {HoistModel, uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {defaultTo, defaults, isElement} from 'lodash';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
@@ -22,7 +22,7 @@ import './Toast.scss';
  *
  *  @private
  */
-export const toastSource = hoistCmpFactory({
+export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
 

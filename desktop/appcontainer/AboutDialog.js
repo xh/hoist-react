@@ -6,7 +6,7 @@
  */
 
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -22,7 +22,7 @@ import './AboutDialog.scss';
  *
  * @private
  */
-export const aboutDialog = hoistCmpFactory({
+export const aboutDialog = hoistCmp.factory({
     displayName: 'AboutDialog',
     model: uses(AboutDialogModel),
 

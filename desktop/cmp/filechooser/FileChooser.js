@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import classNames from 'classnames';
-import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {hbox, div, input} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -32,7 +32,7 @@ import './FileChooser.scss';
  *
  * @see FileChooserModel
  */
-export const [FileChooser, fileChooser] = hoistCmpAndFactory({
+export const [FileChooser, fileChooser] = hoistCmp.withFactory({
     displayName: 'FileChooser',
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',

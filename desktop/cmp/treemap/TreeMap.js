@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {box, div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmpAndFactory, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
@@ -31,7 +31,7 @@ import {TreeMapModel} from './TreeMapModel';
  *
  * @see TreeMapModel
  */
-export const [TreeMap, treeMap] = hoistCmpAndFactory({
+export const [TreeMap, treeMap] = hoistCmp.withFactory({
     displayName: 'TreeMapModel',
     model: uses(TreeMapModel),
     className: 'xh-treemap',

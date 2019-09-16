@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -12,7 +12,7 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
-export const [Viewport, viewport] = hoistCmpAndFactory({
+export const [Viewport, viewport] = hoistCmp.withFactory({
     displayName: 'Viewport',
     model: false, memo: false, observer: false,
 

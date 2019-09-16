@@ -7,7 +7,7 @@
 import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
@@ -22,7 +22,7 @@ import {colChooser} from '@xh/hoist/desktop/cmp/grid';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-export const [ColChooserButton, colChooserButton] = hoistCmpAndFactory({
+export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 

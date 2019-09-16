@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -26,7 +26,7 @@ import {recordActionButton} from './impl/RecordActionButton';
  *
  * @see RecordAction
  */
-export const [RecordActionBar, recordActionBar] = hoistCmpAndFactory({
+export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory({
     displayName: 'RecordActionBar',
     className: 'xh-record-action-bar',
 

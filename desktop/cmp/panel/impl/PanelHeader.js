@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
@@ -12,7 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 
-export const panelHeader = hoistCmpFactory({
+export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
     model: false,
     className: 'xh-panel-header',
@@ -72,7 +72,7 @@ export const panelHeader = hoistCmpFactory({
 });
 
 
-const collapseButton = hoistCmpFactory({
+const collapseButton = hoistCmp.factory({
     displayName: 'CollapseButton',
     model: false,
 

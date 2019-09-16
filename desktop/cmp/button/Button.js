@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -19,7 +19,7 @@ import './Button.scss';
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistCmpAndFactory({
+export const [Button, button] = hoistCmp.withFactory({
     displayName: 'Button',
     model: false,
     className: 'xh-button',

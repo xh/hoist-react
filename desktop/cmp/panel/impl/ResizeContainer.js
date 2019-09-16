@@ -5,14 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './Dragger';
 import {splitter} from './Splitter';
 
 
-export const resizeContainer = hoistCmpFactory({
+export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
     model: false, memo: false,
     className: 'xh-resizable',

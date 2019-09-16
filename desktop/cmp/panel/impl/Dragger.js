@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmpFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {throttle} from 'lodash';
 
 import './Dragger.scss';
 
-export const dragger = hoistCmpFactory({
+export const dragger = hoistCmp.factory({
     displayName: 'Dragger',
     model: false,
 

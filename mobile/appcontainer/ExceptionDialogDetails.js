@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -21,7 +21,7 @@ import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel'
  *
  * @private
  */
-export const exceptionDialogDetails = hoistCmpFactory({
+export const exceptionDialogDetails = hoistCmp.factory({
     model: uses(ExceptionDialogModel),
 
     render({model}) {

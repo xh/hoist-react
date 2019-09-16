@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
 import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
@@ -14,7 +14,7 @@ import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
  *
  *  @private
  */
-export const messageSource = hoistCmpFactory({
+export const messageSource = hoistCmp.factory({
     displayName: 'MessageSource',
     model: uses(MessageSourceModel),
 

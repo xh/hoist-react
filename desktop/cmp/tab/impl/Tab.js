@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useRef} from 'react';
-import {elem, hoistCmpFactory} from '@xh/hoist/core';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
@@ -20,7 +20,7 @@ import {TabRenderMode} from '@xh/hoist/enums';
  *
  * @private
  */
-export const tab = hoistCmpFactory({
+export const tab = hoistCmp.factory({
     displayName: 'Tab',
     className: 'xh-tab',
 

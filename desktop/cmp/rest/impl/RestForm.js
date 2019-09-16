@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
@@ -19,7 +19,7 @@ import './RestForm.scss';
 import {restFormField} from './RestFormField';
 import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 
-export const restForm = hoistCmpFactory({
+export const restForm = hoistCmp.factory({
     displayName: 'RestForm',
     model: uses(RestFormModel),
     className: 'xh-rest-form',
@@ -43,7 +43,7 @@ export const restForm = hoistCmpFactory({
     }
 });
 
-const formDisplay = hoistCmpFactory(
+const formDisplay = hoistCmp.factory(
     ({model}) => {
         const formFields = model.editors.map(editor => restFormField({editor}));
 
@@ -63,7 +63,7 @@ const formDisplay = hoistCmpFactory(
     }
 );
 
-const tbar = hoistCmpFactory(
+const tbar = hoistCmp.factory(
     ({model}) => {
         const {formModel} = model;
         return toolbar(

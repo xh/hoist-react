@@ -35,8 +35,6 @@ import classNames from 'classnames';
  * ref, and this utility will apply `React.forwardRef` as required.
  *
  * @see hoistCmp - a shorthand alias to this function.
- * @see hoistCmpFactory - a variant that calls this function but returns an elemFactory for the
- *      newly defined component, instead of the component itself.
  * @see HoistComponent - decorator for an alternate, class-based approach to defining Components.
  *
  * @param {(Object|function)} config - config object, or a render function defining the component.
@@ -56,6 +54,12 @@ import classNames from 'classnames';
  *      `useObserver()` hook from mobx-react. Components that are known to dereference no
  *      observable state may set this to `false`. Not typically set by application code.
  * @returns {function} - a functional Component for use within Hoist apps.
+ *
+ * This function also has two convenience "sub-functions" that are properties of it:
+ *
+ *   hoistComponent.factory - returns an elemFactory for the newly defined component, instead of the component itself.
+ *   hoistComponent.withFactory - returns a 2-element list containing both the newly defined component and
+ *          an elemFactory for it.
  */
 export function hoistComponent(config) {
     // 0) Pre-process/parse args.
@@ -113,26 +117,23 @@ export const hoistCmp = hoistComponent;
  * apps written using elemFactory (vs. JSX) that do not need to export any direct references to the
  * Component itself.
  *
- * @see hoistComponent
- * @see elemFactory
  * @returns {function} - an elementFactory function for use within parent comp render() functions.
  */
-export function hoistCmpFactory(config) {
-    return elemFactory(hoistCmp(config));
-}
+hoistComponent.factory = (config) => {
+    return elemFactory(hoistComponent(config));
+};
 
 /**
  * Create a new Hoist functional component and return it *and* a corresponding element factory.
  *
- * @see hoistComponent
- * @see elemFactory
  * @returns {[]} - two-element Array, with the Component as the first element and its
  *      elementFactory function as the second.
  */
-export function hoistCmpAndFactory(config) {
-    const ret = hoistCmp(config);
+hoistComponent.withFactory = (config) =>  {
+    const ret = hoistComponent(config);
     return [ret, elemFactory(ret)];
-}
+};
+
 
 //------------------------
 // Implementation

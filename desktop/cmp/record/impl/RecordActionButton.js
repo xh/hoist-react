@@ -1,5 +1,5 @@
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -13,7 +13,7 @@ import {first} from 'lodash';
  *
  * @private
  */
-export const [RecordActionButton, recordActionButton] = hoistCmpAndFactory({
+export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
     displayName: 'RecordActionButton',
     className: 'xh-record-action-button',
 

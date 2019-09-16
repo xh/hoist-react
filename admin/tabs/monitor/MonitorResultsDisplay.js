@@ -4,11 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {tile} from './Tile';
 
-export const monitorResultsDisplay = hoistCmpFactory(
+export const monitorResultsDisplay = hoistCmp.factory(
     ({model}) => hbox({
         className: 'xh-monitor-status-display',
         items: model.results.map((check, idx) => tile({

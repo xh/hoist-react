@@ -7,7 +7,7 @@
 
 import {form} from '@xh/hoist/cmp/form';
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -23,7 +23,7 @@ import './Message.scss';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-export const message = hoistCmpFactory({
+export const message = hoistCmp.factory({
     model: uses(MessageModel),
     className: 'xh-message',
 
@@ -49,7 +49,7 @@ export const message = hoistCmpFactory({
     }
 });
 
-const inputCmp = hoistCmpFactory(
+const inputCmp = hoistCmp.factory(
     ({model}) => {
         const {formModel, input} = model;
         if (!formModel) return null;
@@ -68,7 +68,7 @@ const inputCmp = hoistCmpFactory(
     }
 );
 
-const bbar = hoistCmpFactory(
+const bbar = hoistCmp.factory(
     ({model}) => {
         const {confirmProps, cancelProps, formModel} = model,
             ret = [filler()];

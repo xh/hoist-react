@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpAndFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 
@@ -14,7 +14,7 @@ import {button, Button} from './Button';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-export const [LogoutButton, logoutButton] = hoistCmpAndFactory({
+export const [LogoutButton, logoutButton] = hoistCmp.withFactory({
     displayName: 'LogoutButton',
     model: false,
 

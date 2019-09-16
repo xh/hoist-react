@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmpFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -13,7 +13,7 @@ import './VersionBar.scss';
 /**
  * @private
  */
-export const versionBar = hoistCmpFactory({
+export const versionBar = hoistCmp.factory({
 
     render() {
         if (!isShowing()) return null;

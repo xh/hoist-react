@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {merge, castArray} from 'lodash';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {div} from './Tags';
 
@@ -20,7 +20,7 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistCmpAndFactory({
+export const [Box, box] = hoistCmp.withFactory({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
@@ -41,7 +41,7 @@ export const [Box, box] = hoistCmpAndFactory({
     }
 });
 
-export const [VBox, vbox] = hoistCmpAndFactory({
+export const [VBox, vbox] = hoistCmp.withFactory({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
@@ -55,7 +55,7 @@ export const [VBox, vbox] = hoistCmpAndFactory({
     }
 });
 
-export const [HBox, hbox] = hoistCmpAndFactory({
+export const [HBox, hbox] = hoistCmp.withFactory({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
     className: 'xh-hbox',

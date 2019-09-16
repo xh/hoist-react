@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {frame, table, tbody, td, tr} from '@xh/hoist/cmp/layout';
@@ -15,7 +15,7 @@ import {LogDisplayModel} from './LogDisplayModel';
 /**
  * @private
  */
-export const logDisplay = hoistCmpFactory({
+export const logDisplay = hoistCmp.factory({
     model: uses(LogDisplayModel),
 
     render({model}) {
@@ -57,7 +57,7 @@ export const logDisplay = hoistCmpFactory({
 });
 
 
-const tableRows = hoistCmpFactory(
+const tableRows = hoistCmp.factory(
     ({model}) => {
         const {rows} = model;
         return table(tbody(

@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmpFactory, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -20,7 +20,7 @@ import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarMode
  *
  * @private
  */
-export const impersonationBar = hoistCmpFactory({
+export const impersonationBar = hoistCmp.factory({
     displayName: 'ImpersonationBar',
     model: uses(ImpersonationBarModel),
 

@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {hoistCmpFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
-export const colChooserDialog = hoistCmpFactory({
+export const colChooserDialog = hoistCmp.factory({
     model: uses(ColChooserModel),
     className: 'xh-col-chooser-dialog',
 

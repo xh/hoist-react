@@ -6,7 +6,7 @@
  */
 
 import {cloneElement} from 'react';
-import {hoistCmpAndFactory, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
@@ -18,7 +18,7 @@ import {RestGridModel} from './RestGridModel';
 import PT from 'prop-types';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 
-export const [RestGrid, restGrid] = hoistCmpAndFactory({
+export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
     model: uses(RestGridModel),
     className: 'xh-rest-grid',

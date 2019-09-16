@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
@@ -12,7 +12,7 @@ import './Toolbar.scss';
 /**
  * Convenience component to insert a pre-styled separator | between Toolbar items.
  */
-export const [ToolbarSeparator, toolbarSeparator] = hoistCmpAndFactory({
+export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
     displayName: 'ToolbarSeparator',
     model: false, observable: false,
     className: 'xh-toolbar__separator',

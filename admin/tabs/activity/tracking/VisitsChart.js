@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmpFactory, creates} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -14,7 +14,7 @@ import {VisitsChartModel} from './VisitsChartModel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 
-export const visitsChart = hoistCmpFactory({
+export const visitsChart = hoistCmp.factory({
     model: creates(VisitsChartModel),
 
     render({model}) {
@@ -33,7 +33,7 @@ export const visitsChart = hoistCmpFactory({
     }
 });
 
-const bbar = hoistCmpFactory(
+const bbar = hoistCmp.factory(
     () => toolbar(
         dateInput({bind: 'startDate', dateProps}),
         Icon.angleRight(),

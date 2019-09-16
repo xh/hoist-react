@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import React from 'react';
-import {hoistCmpFactory, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -18,7 +18,7 @@ import {identity} from 'lodash';
 import {ConfigDifferModel} from './ConfigDifferModel';
 import {configDifferDetail} from './ConfigDifferDetail';
 
-export const configDiffer = hoistCmpFactory({
+export const configDiffer = hoistCmp.factory({
     model: uses(ConfigDifferModel),
 
     render({model}) {
@@ -35,7 +35,7 @@ export const configDiffer = hoistCmpFactory({
     }
 });
 
-const contents = hoistCmpFactory(
+const contents = hoistCmp.factory(
     ({model}) => {
         const {store} = model.gridModel;
         return panel({

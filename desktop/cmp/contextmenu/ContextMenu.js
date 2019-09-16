@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
 import {isReactElement} from '@xh/hoist/utils/react';
@@ -22,7 +22,7 @@ import {ContextMenuItem} from './ContextMenuItem';
  * @see StoreContextMenu to specify a context menu on store enabled components.
  * That API will receive specific information about the current selection
  */
-export const [ContextMenu, contextMenu] = hoistCmpAndFactory({
+export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
     displayName: 'ContextMenu',
     memo: false, model: false, observer: false,
 

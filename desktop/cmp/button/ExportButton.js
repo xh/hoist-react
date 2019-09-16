@@ -6,7 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmpAndFactory, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, Button} from './Button';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -24,7 +24,7 @@ import {errorIf, withDefault} from '@xh/hoist/utils/js';
  *
  * Requires the `GridModel.enableExport` config option to be true.
  */
-export const [ExportButton, exportButton] = hoistCmpAndFactory({
+export const [ExportButton, exportButton] = hoistCmp.withFactory({
     displayName: 'ExportButton',
     model: false,
 
