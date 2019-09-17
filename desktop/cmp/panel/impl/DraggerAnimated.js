@@ -11,7 +11,7 @@ import {throttle} from 'lodash';
 
 import './Dragger.scss';
 
-export const dragger = hoistCmp.factory({
+export const draggerAnimated = hoistCmp.factory({
     displayName: 'DraggerAnimated',
     model: false,
 
