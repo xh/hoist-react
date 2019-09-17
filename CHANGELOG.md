@@ -37,12 +37,11 @@ _"The one with the hooks."_
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
-* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need
-  to set the `store` or `gridModel` property explicitly to null.
+* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need 
+  to set the `store` or `gridModel` property explicitly to null. 
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer supported.
   Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this functionality
   has also been made available directly on `Panel` via the `contextMenu` and `hotkeys` props.
-
 
 ### 🐞 Bug Fixes
 

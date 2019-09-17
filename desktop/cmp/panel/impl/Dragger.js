@@ -10,6 +10,7 @@ import {div} from '@xh/hoist/cmp/layout';
 
 import './Dragger.scss';
 
+
 export const dragger = hoistCmp.factory({
     displayName: 'Dragger',
     model: false,
