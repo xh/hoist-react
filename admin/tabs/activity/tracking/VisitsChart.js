@@ -4,25 +4,26 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {chart} from '@xh/hoist/desktop/cmp/chart';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 
-export const visitsChart = hoistElemFactory(
-    () => {
-        const model = useLocalModel(VisitsChartModel);
+export const visitsChart = hoistCmp.factory({
+    model: creates(VisitsChartModel),
+
+    render({model}) {
         return panel({
             mask: model.loadModel,
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
-            item: chart({model: model.chartModel}),
-            bbar: renderToolbar(model),
+            item: chart(),
+            bbar: bbar(),
             model: {
                 defaultSize: 500,
                 side: 'bottom',
@@ -30,30 +31,26 @@ export const visitsChart = hoistElemFactory(
             }
         });
     }
-);
+});
 
-function renderToolbar(model) {
-    return [
-        renderDateInput({model, bind: 'startDate'}),
+const bbar = hoistCmp.factory(
+    () => toolbar(
+        dateInput({bind: 'startDate', dateProps}),
         Icon.angleRight(),
-        renderDateInput({model, bind: 'endDate'}),
+        dateInput({bind: 'endDate', ...dateProps}),
         toolbarSep(),
         textInput({
-            model,
             bind: 'username',
             placeholder: 'Username',
             enableClear: true,
             width: 150
         }),
-        refreshButton({model})
-    ];
-}
+        refreshButton()
+    )
+);
 
-function renderDateInput(args) {
-    return dateInput({
-        popoverPosition: 'top-left',
-        valueType: 'localDate',
-        width: 120,
-        ...args
-    });
-}
+const dateProps = {
+    popoverPosition: 'top-left',
+    valueType: 'localDate',
+    width: 120
+};

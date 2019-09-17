@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmp} from '@xh/hoist/core';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
+import classNames from 'classnames';
 
 import './Toolbar.scss';
 
@@ -15,15 +15,17 @@ import './Toolbar.scss';
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
  */
-export const Toolbar = hoistComponent({
+export const [Toolbar, toolbar] = hoistCmp.withFactory({
     displayName: 'Toolbar',
+    model: false, memo: false, observable: false,
+    className: 'xh-toolbar',
 
     render(props) {
-        const {vertical, ...rest} = props;
+        const {vertical, className, ...rest} = props;
 
         return (vertical ? vbox : hbox)({
             ...rest,
-            className: getClassName('xh-toolbar', props, vertical ? 'xh-toolbar--vertical' : null)
+            className: classNames(className, vertical ? 'xh-toolbar--vertical' : null)
         });
     }
 });
@@ -35,5 +37,3 @@ Toolbar.propTypes = {
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool
 };
-
-export const toolbar = elemFactory(Toolbar);

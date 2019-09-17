@@ -5,25 +5,23 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {hbox, filler} from '@xh/hoist/cmp/layout';
 import {label} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
-import {MonitorResultsModel} from './MonitorResultsModel';
 
-export const monitorResultsToolbar = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(MonitorResultsModel, props),
-            {passed, warned, failed, forceRunAllMonitors, lastRun} = model;
+export const monitorResultsToolbar = hoistCmp.factory(
+    ({model}) => {
+        const {passed, warned, failed, lastRun} = model;
 
         return toolbar(
             button({
                 icon: Icon.refresh(),
                 text: 'Run all now',
-                onClick: forceRunAllMonitors
+                onClick: () => model.forceRunAllMonitors()
             }),
             hbox({
                 className: !failed ? 'hidden' : '',

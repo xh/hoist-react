@@ -7,7 +7,7 @@
 
 import {XH, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {isNil} from 'lodash';
 
@@ -36,7 +36,7 @@ export class PanelModel {
     // Observable State
     //---------------------
     /** Is the Panel rendering in a collapsed state? */
-    @observable collapsed;
+    @observable collapsed = false;
 
     /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
     @observable size = null;
@@ -73,7 +73,13 @@ export class PanelModel {
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true
     }) {
-        throwIf(isNil(defaultSize) || isNil(side), "Must specify 'defaultSize' and 'side' for PanelModel");
+        if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
+            console.error(
+                "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."
+            );
+            collapsible = false;
+            resizable = false;
+        }
 
         // Set immutables
         this.collapsible = collapsible;
@@ -142,7 +148,7 @@ export class PanelModel {
     get contentFirst() {
         return this.side === 'top' || this.side === 'left';
     }
-    
+
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------

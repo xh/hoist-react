@@ -8,7 +8,7 @@
 import {Component} from 'react';
 import {HoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {Ref} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {clone, remove} from 'lodash';
@@ -29,7 +29,7 @@ export class ColumnHeader extends Component {
     agColumn;
     colId;
 
-    menuButton = new Ref();
+    menuButtonRef = createObservableRef();
 
     baseClassName = 'xh-grid-header';
 
@@ -110,10 +110,10 @@ export class ColumnHeader extends Component {
         return div({
             className: 'xh-grid-header-menu-icon',
             item: this.isFiltered ? Icon.filter() : Icon.bars(),
-            ref: this.menuButton.ref,
+            ref: this.menuButtonRef,
             onClick: (e) => {
                 e.stopPropagation();
-                showColumnMenu(this.menuButton.value);
+                showColumnMenu(this.menuButtonRef.current);
             }
         });
     }

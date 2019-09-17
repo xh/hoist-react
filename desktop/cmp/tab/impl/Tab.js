@@ -4,13 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {useState} from 'react';
-import {elem, elemFactory,  hoistComponent, useProvidedModel} from '@xh/hoist/core';
+import {useRef} from 'react';
+import {elem, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {getClassName} from '@xh/hoist/utils/react';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabRenderMode} from '@xh/hoist/enums';
-import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
@@ -22,22 +20,21 @@ import {TabModel} from '@xh/hoist/cmp/tab';
  *
  * @private
  */
-export const Tab = hoistComponent({
+export const tab = hoistCmp.factory({
     displayName: 'Tab',
+    className: 'xh-tab',
 
-    render(props) {
-        let model = useProvidedModel(TabModel, props),
-            {content, isActive, renderMode, refreshContextModel} = model,
-            [flags] = useState({wasActivated: false}),
-            className = getClassName('xh-tab', props);
+    render({model, className}) {
+        let {content, isActive, renderMode, refreshContextModel} = model,
+            wasActivated = useRef(false);
 
-        if (!flags.wasActivated && isActive) flags.wasActivated = true;
+        if (!wasActivated.current && isActive) wasActivated.current = true;
 
         if (
             !isActive &&
             (
                 (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !flags.wasActivated)
+                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;
@@ -55,5 +52,3 @@ export const Tab = hoistComponent({
         });
     }
 });
-
-export const tab = elemFactory(Tab);

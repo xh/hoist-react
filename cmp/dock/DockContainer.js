@@ -4,12 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {throwIf} from '@xh/hoist/utils/js';
 
-import {dockContainer as desktopDockContainer} from '@xh/hoist/dynamics/desktop';
+import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {DockContainerModel} from './DockContainerModel';
 
 /**
@@ -29,23 +28,20 @@ import {DockContainerModel} from './DockContainerModel';
  *
  * @see DockContainerModel
  */
-@HoistComponent
-export class DockContainer extends Component {
+export const [DockContainer, dockContainer] = hoistCmp.withFactory({
+    model: uses(DockContainerModel),
+    className: 'xh-dock-container',
 
-    static propTypes = {
-        /** True to style docked headers with reduced padding and font-size. */
-        compactHeaders: PT.bool,
-
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object]).isRequired
-    }
-    static modelClass = DockContainerModel;
-
-    render() {
+    render(props) {
         throwIf(XH.isMobile, 'DockContainer is not implemented on mobile');
-        return desktopDockContainer(this.props);
+        return desktopDockContainerImpl(props);
     }
 
-}
+});
+DockContainer.propTypes = {
+    /** True to style docked headers with reduced padding and font-size. */
+    compactHeaders: PT.bool,
 
-export const dockContainer = elemFactory(DockContainer);
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(DockContainerModel), PT.object])
+};

@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {createRef} from 'react';
 import {required} from '@xh/hoist/cmp/form';
 import {compactDateCol, emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
@@ -12,10 +13,13 @@ import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {isDisplayed} from '@xh/hoist/utils/js';
 
 @HoistModel
 @LoadSupport
 export class WebSocketModel {
+
+    viewRef = createRef();
 
     @observable
     lastRefresh;
@@ -65,10 +69,10 @@ export class WebSocketModel {
     @managed
     _timer;
 
-    constructor(cmp) {
+    constructor() {
         this._timer = Timer.create({
             runFn: () => {
-                if (cmp.isDisplayed) {
+                if (isDisplayed(this.viewRef.current)) {
                     this.loadAsync({isAutoRefresh: true});
                 }
             },

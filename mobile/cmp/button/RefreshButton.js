@@ -5,13 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
-import {RefreshContext} from '@xh/hoist/core/refresh';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {warnIf} from '@xh/hoist/utils/js';
+import {errorIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -20,47 +18,33 @@ import {warnIf} from '@xh/hoist/utils/js';
  * may be provided.  If neither of these props are provided, the contextual RefreshContextModel
  * for this button will be used.
  */
-@HoistComponent
-export class RefreshButton extends Component {
+export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
+    displayName: 'RefreshButton',
+    model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
-    static contextType = RefreshContext;
-    
-    static propTypes = {
-        icon: PT.element,
+    render({model, onClick, ...props}) {
+        const refreshContextModel = useContextModel('RefreshContextModel');
 
-        /** Function to call when the button is clicked. */
-        onClick: PT.func,
-
-        /** HoistModel to refresh. */
-        model: PT.object
-    };
-
-    render() {
-        warnIf(
-            this.props.model && this.props.onClick,
-            'RefreshButton may be provided either a model or an onClick handler to call (but not both).'
-        );
-
-        const {
-            icon = Icon.sync(),
-            onClick = this.defaultOnClick,
-            model,
-            ...rest
-        } = this.props;
+        if (!onClick) {
+            errorIf(model && !model.isLoadSupport, 'Provided model to RefreshButton must be decorated with LoadSupport.');
+            model = withDefault(model, refreshContextModel);
+            onClick = model ? () => model.refreshAsync() : null;
+        }
 
         return button({
-            icon: icon,
+            icon: Icon.sync(),
             onClick,
-            ...rest
+            ...props
         });
     }
+});
 
-    //---------------------------
-    // Implementation
-    //---------------------------
-    defaultOnClick = () => {
-        const target = this.model || this.context;
-        if (target) target.refreshAsync();
-    };
-}
-export const refreshButton = elemFactory(RefreshButton);
+RefreshButton.propTypes = {
+    icon: PT.element,
+
+    /** Function to call when the button is clicked. */
+    onClick: PT.func,
+
+    /** HoistModel to refresh. */
+    model: PT.object
+};

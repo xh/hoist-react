@@ -4,37 +4,28 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 
 import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
-@HoistComponent
-export class ColChooserDialog extends Component {
+export const colChooserDialog = hoistCmp.factory({
+    model: uses(ColChooserModel),
+    className: 'xh-col-chooser-dialog',
 
-    static modelClass = ColChooserModel;
+    render({model, className, ...props}) {
 
-    baseClassName = 'xh-col-chooser-dialog';
-
-    render() {
-        const {model} = this;
         if (!model.isOpen) return null;
 
         return dialog({
             icon: Icon.gridPanel(),
             title: 'Choose Columns',
             isOpen: true,
-            onClose: this.onClose,
+            onClose: () => model.close(),
             item: colChooser({model}),
-            className: this.getClassName()
+            className
         });
     }
-
-    onClose = () => {this.model.close()};
-
-}
-
-export const colChooserDialog = elemFactory(ColChooserDialog);
+});

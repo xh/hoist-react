@@ -9,41 +9,37 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {Component} from 'react';
 
-@HoistComponent
-export class WebSocketPanel extends Component {
+export const WebSocketPanel = hoistCmp({
 
-    model = new WebSocketModel(this);
+    model: creates(WebSocketModel),
 
-    render() {
-        const {model} = this,
-            {gridModel} = model;
-
+    render({model}) {
         return panel({
             tbar: [
                 button({
                     text: 'Send test alert',
                     icon: Icon.bullhorn(),
                     intent: 'primary',
-                    disabled: !gridModel.selectedRecord,
+                    disabled: !model.gridModel.selectedRecord,
                     onClick: () => model.sendAlertToSelectedAsync()
                 }),
                 filler(),
                 relativeTimestamp({timestamp: model.lastRefresh}),
                 toolbarSep(),
-                gridCountLabel({gridModel, unit: 'client'}),
+                gridCountLabel({unit: 'client'}),
                 toolbarSep(),
-                storeFilterField({gridModel}),
-                exportButton({gridModel})
+                storeFilterField(),
+                exportButton()
             ],
-            item: grid({model: gridModel}),
-            mask: model.loadModel
+            item: grid(),
+            mask: model.loadModel,
+            ref: model.viewRef
         });
     }
-}
+});

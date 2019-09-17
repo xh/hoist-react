@@ -16,7 +16,7 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let tabContainer = null;
+export let tabContainerImpl = null;
 export let ColChooserModel = null;
 export let colChooser = null;
 
@@ -26,7 +26,7 @@ export let colChooser = null;
  * Not for Application use.
  */
 export function installMobileImpls(impls) {
-    tabContainer = impls.tabContainer;
+    tabContainerImpl = impls.tabContainerImpl;
     ColChooserModel = impls.ColChooserModel;
     colChooser = impls.colChooser;
 }

@@ -71,6 +71,7 @@ export class AppContainerModel {
     /** Text to show if initial auth check fails. */
     @observable accessDeniedMessage = null;
 
+
     /**
      * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.

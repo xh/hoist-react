@@ -6,7 +6,7 @@
  */
 
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -23,10 +23,12 @@ import './ExceptionDialog.scss';
  *
  * @private
  */
-export const exceptionDialog = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ExceptionDialogModel, props),
-            {exception, options} = model;
+export const exceptionDialog = hoistCmp.factory({
+    displayName: 'Exception Dialog',
+    model: uses(ExceptionDialogModel),
+
+    render({model}) {
+        const {exception, options} = model;
 
         if (!exception) return null;
 
@@ -41,19 +43,19 @@ export const exceptionDialog = hoistElemFactory(
                 icon: Icon.warning({size: 'lg'}),
                 items: [
                     dialogBody(options.message),
-                    toolbar(getButtons(model))
+                    bbar()
                 ]
             }),
-            exceptionDialogDetails({model})
+            exceptionDialogDetails()
         );
     }
-);
+});
 
 //--------------------------------
 // Implementation
 //--------------------------------
-function getButtons(model) {
-    return [
+const bbar = hoistCmp.factory(
+    ({model}) => toolbar(
         filler(),
         button({
             icon: Icon.search(),
@@ -61,24 +63,23 @@ function getButtons(model) {
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
         }),
-        dismissButton({model})
-    ];
-}
+        dismissButton()
+    )
+);
 
 
 /**
  * A Dismiss button that either forces reload, or allows close.
  * @private
  */
-export const dismissButton = hoistElemFactory(
-    (props) => {
-        const model = useProvidedModel(ExceptionDialogModel, props);
+export const dismissButton = hoistCmp.factory(
+    ({model}) => {
         return model.options.requireReload ?
             button({
                 icon: Icon.refresh(),
                 text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
                 autoFocus: true,
-                onClick:  () => XH.reloadApp()
+                onClick: () => XH.reloadApp()
             }) :
             button({
                 text: 'Close',

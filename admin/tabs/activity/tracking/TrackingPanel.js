@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {vframe} from '@xh/hoist/cmp/layout';
 
 import {activityGrid} from './ActivityGrid';
 import {visitsChart} from './VisitsChart';
 
-export const TrackingPanel = hoistComponent(
+export const TrackingPanel = hoistCmp(
     () => vframe(activityGrid(), visitsChart())
 );

@@ -7,88 +7,73 @@
 
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {box} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import {Component} from 'react';
 
 /**
  * Displays the number of records loaded into a grid's store + (configurable) selection count.
  *
  * Alternative to more general {@see StoreFilterField}.
  */
-@HoistComponent
-@LayoutSupport
-export class GridCountLabel extends Component {
+export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
+    displayName: 'GridCountLabel',
+    className: 'xh-grid-count-label',
 
-    static propTypes = {
+    render(props) {
+        const gridModel = withDefault(props.gridModel, useContextModel(GridModel));
 
-        /** GridModel to which this component should bind. */
-        gridModel: PT.instanceOf(GridModel),
+        if (!gridModel) {
+            console.error("No GridModel available to GridCountLabel.  Provide via a 'gridModel' prop, or context.");
+            return '';
+        }
 
-        /**
-         * True to count nested child records.
-         * If false (default) only root records will be included in count.
-         */
-        includeChildren: PT.bool,
+        const {store, selection} = gridModel,
+            unit = withDefault(props.unit, 'record'),
+            includeChildren = withDefault(props.includeChildren, false),
+            showSelectionCount = withDefault(props.showSelectionCount, 'auto');
 
-        /**
-         * Control display of selection count after overall records count: auto (default) to display
-         * count when > 1, or always/never to show/hide regardless of current count.
-         */
-        showSelectionCount: PT.oneOf(['always', 'never', 'auto']),
+        const fmtCount = (count) => fmtNumber(count, {precision: 0}),
+            recCountString = () => {
+                const count = includeChildren ? store.count : store.rootCount,
+                    unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
 
-        /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
-        unit: PT.string
-    };
+                return `${fmtCount(count)} ${unitLabel}`;
+            },
+            selCountString = () => {
+                const count = selection.length,
+                    countStr = count ? fmtCount(count) : 'none',
+                    showCount = showSelectionCount == 'always' || (showSelectionCount == 'auto' && count > 1);
 
-    defaultUnit = 'record';
-    baseClassName = 'xh-grid-count-label';
+                return showCount ? ` (${countStr} selected)` : '';
+            };
 
-    constructor(props) {
-        super(props);
-
-        const unit = withDefault(props.unit, this.defaultUnit);
-        this._oneUnit = singularize(unit);
-        this._manyUnits = pluralize(unit);
-    }
-
-    get gridModel() {return this.props.gridModel}
-    get store() {return this.gridModel.store}
-
-    render() {
         return box({
-            ...this.getLayoutProps(),
-            className: this.getClassName(),
-            item: `${this.getRecCountString()} ${this.getSelCountString()}`
+            ...getLayoutProps(props),
+            className: props.className,
+            item: `${recCountString()} ${selCountString()}`
         });
     }
+});
+GridCountLabel.propTypes = {
 
+    /** GridModel to which this component should bind. */
+    gridModel: PT.instanceOf(GridModel),
 
-    //------------------------
-    // Implementation
-    //------------------------
-    getRecCountString() {
-        const {store} = this,
-            includeChildren = withDefault(this.props.includeChildren, false),
-            count = includeChildren ? store.count : store.rootCount,
-            unitLabel = count === 1 ? this._oneUnit : this._manyUnits;
+    /**
+     * True to count nested child records.
+     * If false (default) only root records will be included in count.
+     */
+    includeChildren: PT.bool,
 
-        return `${this.fmtCount(count)} ${unitLabel}`;
-    }
+    /**
+     * Control display of selection count after overall records count: auto (default) to display
+     * count when > 1, or always/never to show/hide regardless of current count.
+     */
+    showSelectionCount: PT.oneOf(['always', 'never', 'auto']),
 
-    getSelCountString() {
-        const count = this.gridModel.selection.length,
-            countStr = count ? this.fmtCount(count) : 'none',
-            showCountProp = withDefault(this.props.showSelectionCount, 'auto'),
-            showCount = showCountProp == 'always' || (showCountProp == 'auto' && count > 1);
-
-        return showCount ? ` (${countStr} selected)` : '';
-    }
-
-    fmtCount(count) {
-        return fmtNumber(count, {precision: 0});
-    }
-}
-export const gridCountLabel = elemFactory(GridCountLabel);
+    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
+    unit: PT.string
+};

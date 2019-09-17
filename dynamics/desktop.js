@@ -16,11 +16,12 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let tabContainer = null;
-export let dockContainer = null;
+export let tabContainerImpl = null;
+export let dockContainerImpl = null;
+export let colChooser = null;
+
 export let StoreContextMenu = null;
 export let ColChooserModel = null;
-export let colChooser = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -28,9 +29,10 @@ export let colChooser = null;
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    tabContainer = impls.tabContainer;
-    dockContainer = impls.dockContainer;
+    tabContainerImpl = impls.tabContainerImpl;
+    dockContainerImpl= impls.dockContainerImpl;
+    colChooser = impls.colChooser;
+
     StoreContextMenu = impls.StoreContextMenu;
     ColChooserModel = impls.ColChooserModel;
-    colChooser = impls.colChooser;
 }

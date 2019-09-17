@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
@@ -15,7 +15,7 @@ import {ServicePanel} from './services/ServicePanel';
 import {UserPanel} from './users/UserPanel';
 import {WebSocketPanel} from './websocket/WebSocketPanel';
 
-export const GeneralTab = hoistComponent(
+export const GeneralTab = hoistCmp(
     () => tabContainer({
         model: {
             route: 'default.general',

@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, creates} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -16,20 +15,13 @@ import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
-/**
- * @private
- */
-@HoistComponent
-export class LogViewer extends Component {
+export const LogViewer = hoistCmp({
+    model: creates(LogViewerModel),
 
-    model = new LogViewerModel(this);
-
-    render() {
-        const {model} = this,
-            {filesGridModel, logDisplayModel, loadModel} = model;
-
+    render({model}) {
         return hframe({
             className: 'xh-log-viewer',
+            ref: model.viewRef,
             items: [
                 panel({
                     model: {
@@ -37,18 +29,18 @@ export class LogViewer extends Component {
                         defaultSize: 250,
                         showHeaderCollapseButton: false
                     },
-                    item: grid({model: filesGridModel}),
+                    item: grid(),
                     bbar: [
                         filler(),
-                        storeFilterField({gridModel: filesGridModel})
+                        storeFilterField()
                     ]
                 }),
                 panel({
-                    tbar: logViewerToolbar({model}),
-                    item: logDisplay({model: logDisplayModel}),
-                    mask: loadModel
+                    tbar: logViewerToolbar(),
+                    item: logDisplay(),
+                    mask: model.loadModel
                 })
             ]
         });
     }
-}
+});

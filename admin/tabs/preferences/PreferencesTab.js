@@ -4,13 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
 
-export const PreferencesTab = hoistComponent(
+export const PreferencesTab = hoistCmp(
     () => tabContainer({
         model: {
             route: 'default.preferences',

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
 import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
@@ -14,11 +14,13 @@ import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
  *
  *  @private
  */
-export const messageSource = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(MessageSourceModel, props),
-            models = model.msgModels,
+export const messageSource = hoistCmp.factory({
+    displayName: 'MessageSource',
+    model: uses(MessageSourceModel),
+
+    render({model}) {
+        const models = model.msgModels,
             children = models.map(model => message({model, key: model.xhId}));
         return children.length ? fragment(...children) : null;
     }
-);
+});

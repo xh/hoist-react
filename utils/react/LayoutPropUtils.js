@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {pick, isNumber, isString, forOwn, omit} from 'lodash';
+import {pick, isNumber, isString, forOwn, omit, isEmpty} from 'lodash';
 
 
 /**
@@ -68,6 +68,18 @@ export function getLayoutProps(props) {
  */
 export function getNonLayoutProps(props) {
     return omit(props, allKeys);
+}
+
+
+/**
+ * Split a set of props into layout and non-layout props.
+ */
+export function splitLayoutProps(props) {
+    const layoutProps = getLayoutProps(props);
+    return [
+        layoutProps,
+        isEmpty(layoutProps) ? props : getNonLayoutProps(props)
+    ];
 }
 
 

@@ -6,14 +6,14 @@
  */
 
 import React from 'react';
-import {XH, hoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
-export const AboutPanel = hoistComponent(
+export const AboutPanel = hoistCmp(
     () => div({
         className: 'xh-admin-about-panel xh-tiled-bg',
         items: [

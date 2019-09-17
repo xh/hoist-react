@@ -4,14 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistComponent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {FeedbackPanel} from './feedback/FeedbackPanel';
 import {TrackingPanel} from './tracking/TrackingPanel';
 
-export const ActivityTab = hoistComponent(
+export const ActivityTab = hoistCmp(
     () => tabContainer({
         model: {
             route: 'default.activity',

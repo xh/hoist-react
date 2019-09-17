@@ -5,8 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {merge, castArray} from 'lodash';
-import {hoistComponent, useLayoutProps, elemFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmp} from '@xh/hoist/core';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {div} from './Tags';
 
 
@@ -20,11 +20,12 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const Box = hoistComponent({
+export const [Box, box] = hoistCmp.withFactory({
     displayName: 'Box',
+    model: false, memo: false, observer: false,
 
     render(props, ref) {
-        let [layoutProps, {children, ...restProps}] = useLayoutProps(props);
+        let [layoutProps, {children, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
@@ -40,32 +41,30 @@ export const Box = hoistComponent({
     }
 });
 
-export const VBox = hoistComponent({
+export const [VBox, vbox] = hoistCmp.withFactory({
     displayName: 'VBox',
+    model: false, memo: false, observer: false,
+    className: 'xh-vbox',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
-            flexDirection: 'column',
-            className: getClassName('xh-vbox', props)
+            flexDirection: 'column'
         });
     }
 });
 
-export const HBox = hoistComponent({
+export const [HBox, hbox] = hoistCmp.withFactory({
     displayName: 'HBox',
+    model: false, memo: false, observer: false,
+    className: 'xh-hbox',
 
     render(props, ref) {
         return box({
             ref,
             ...props,
-            flexDirection: 'row',
-            className: getClassName('xh-hbox', props)
+            flexDirection: 'row'
         });
     }
 });
-
-export const box = elemFactory(Box);
-export const vbox = elemFactory(VBox);
-export const hbox = elemFactory(HBox);

@@ -4,15 +4,16 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import PT from 'prop-types';
 import {assign, castArray, clone, merge} from 'lodash';
+import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
-import {Ref} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {resizeSensor} from '@xh/hoist/kit/blueprint';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -26,60 +27,67 @@ installZoomoutGesture(Highcharts);
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
  * from a ChartModel prop passed to this component.
  */
-@HoistComponent
-@LayoutSupport
-export class Chart extends Component {
+export const [Chart, chart] = hoistCmp.withFactory({
+    displayName: 'Chart',
+    model: uses(ChartModel),
+    className: 'xh-chart',
 
-    static propTypes = {
-        /**
-         * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
-         * respect this ratio within the available space.  Otherwise, the chart will stretch on both
-         * dimensions to take up all available space.
-         */
-        aspectRatio: PT.number,
+    render({model, className, aspectRatio, ...props}) {
 
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object]).isRequired
-    };
-    
-    static modelClass = ChartModel;
+        const localModel = useLocalModel(() => new LocalModel(model));
+        localModel.setAspectRatio(aspectRatio);
 
-    baseClassName = 'xh-chart';
-
-    _chartElem = new Ref();
-    _chart = null;
-
-    render() {
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
-        const layoutProps = this.getLayoutProps();
+        const layoutProps = getLayoutProps(props);
 
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
 
-        // No-op on first render - will re-render upon setting the _chartElem Ref
-        this.renderHighChart();
+        // No-op on first render - will re-render upon setting the chartRef
+        localModel.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return resizeSensor({
-            onResize: (e) => this.resizeChart(e),
+            onResize: (e) => localModel.resizeChart(e),
             item: box({
                 ...layoutProps,
-                className: this.getClassName(),
+                className,
                 item: div({
                     style: {margin: 'auto'},
-                    ref: this._chartElem.ref
+                    ref: localModel.chartRef
                 })
             })
         });
     }
+});
+Chart.propTypes = {
+    /**
+     * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
+     * respect this ratio within the available space.  Otherwise, the chart will stretch on both
+     * dimensions to take up all available space.
+     */
+    aspectRatio: PT.number,
 
-    //-------------------
-    // Implementation
-    //-------------------
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(ChartModel), PT.object])
+};
+
+
+@HoistModel
+class LocalModel {
+    @bindable aspectRatio;
+    chartRef = createObservableRef();
+    chart = null;
+    model;
+
+    constructor(model) {
+        this.model = model;
+    }
+
     renderHighChart() {
         this.destroyHighChart();
-        const chartElem = this._chartElem.value;
+        const chartElem = this.chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement;
@@ -90,17 +98,17 @@ export class Chart extends Component {
             }));
 
             config.chart.renderTo = chartElem;
-            this._chart = Highcharts.chart(config);
+            this.chart = Highcharts.chart(config);
         }
     }
 
     resizeChart(e) {
         const {width, height} = this.getChartDims(e[0].contentRect);
-        this._chart.setSize(width, height, false);
+        this.chart.setSize(width, height, false);
     }
 
     getChartDims({width, height}) {
-        const {aspectRatio} = this.props;
+        const {aspectRatio} = this;
 
         if (!aspectRatio || aspectRatio <= 0) return {width, height};
 
@@ -133,11 +141,11 @@ export class Chart extends Component {
     destroy() {
         this.destroyHighChart();
     }
-    
+
     destroyHighChart() {
-        if (this._chart) {
-            this._chart.destroy();
-            this._chart = null;
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
         }
     }
 
@@ -224,4 +232,3 @@ export class Chart extends Component {
 
     }
 }
-export const chart = elemFactory(Chart);

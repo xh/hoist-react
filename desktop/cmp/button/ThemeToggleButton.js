@@ -4,15 +4,17 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, Button} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-export const ThemeToggleButton = hoistComponent({
+export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
     displayName: 'ThemeToggleButton',
+    model: false,
+
     render(props) {
         return button({
             icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
@@ -22,7 +24,6 @@ export const ThemeToggleButton = hoistComponent({
         });
     }
 });
-export const themeToggleButton = elemFactory(ThemeToggleButton);
 
 ThemeToggleButton.propTypes = {...Button.propTypes};
 

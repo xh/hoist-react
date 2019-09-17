@@ -5,21 +5,23 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {getClassName} from '@xh/hoist/utils/react';
 
 import {dragger} from './Dragger';
 import {splitter} from './Splitter';
-import {PanelModel} from '../PanelModel';
 
-/** @private */
-export const resizeContainer = hoistElemFactory(
-    (props, ref) => {
-        let model = useProvidedModel(PanelModel, props),
-            className = getClassName('xh-resizable', props),
-            {resizable, collapsed, vertical, contentFirst, showSplitter} = model,
-            items = [renderChild(model, Children.only(props.children))];
+
+export const resizeContainer = hoistCmp.factory({
+    displayName: 'ResizeContainer',
+    model: false, memo: false,
+    className: 'xh-resizable',
+
+    render({model, className, children}, ref) {
+        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+            dim = vertical ? 'height' : 'width',
+            child = Children.only(children),
+            items = [collapsed ? box(child) : box({item: child, [dim]: size})];
 
         if (showSplitter) {
             const splitterCmp = splitter({model});
@@ -41,13 +43,4 @@ export const resizeContainer = hoistElemFactory(
             items
         });
     }
-);
-
-function renderChild(model, child) {
-    const {vertical, size, collapsed} = model,
-        dim = vertical ? 'height' : 'width';
-
-    return collapsed ?
-        box(child) :
-        box({item: child, [dim]: size});
-}
+});

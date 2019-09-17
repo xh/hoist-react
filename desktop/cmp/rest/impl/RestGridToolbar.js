@@ -6,44 +6,33 @@
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {castArray, isEmpty, isFunction} from 'lodash';
-import {Component} from 'react';
 import {RestGridModel} from '../RestGridModel';
 
-@HoistComponent
-export class RestGridToolbar extends Component {
+export const restGridToolbar = hoistCmp.factory({
 
-    static modelClass = RestGridModel;
+    model: uses(RestGridModel),
 
-    render() {
-        return toolbar(
-            this.renderToolbarItems()
-        );
-    }
+    render({model, extraToolbarItems, ...props}) {
+        const {unit, toolbarActions: actions, gridModel} = model;
 
-    renderToolbarItems() {
-        const {model} = this,
-            {unit, toolbarActions: actions, gridModel} = model;
-
-        let extraItems = this.props.extraToolbarItems;
+        let extraItems = extraToolbarItems;
         if (isFunction(extraItems)) extraItems = extraItems();
         extraItems = extraItems ? castArray(extraItems) : [];
 
-        return [
+        return toolbar(
             recordActionBar({actions, gridModel, selModel: gridModel.selModel}),
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),
-            gridCountLabel({gridModel, unit}),
-            storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({gridModel})
-        ];
+            gridCountLabel({unit}),
+            storeFilterField({includeFields: model.filterFields}),
+            exportButton()
+        );
     }
-}
-
-export const restGridToolbar = elemFactory(RestGridToolbar);
+});

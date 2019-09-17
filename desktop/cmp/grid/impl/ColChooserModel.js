@@ -79,6 +79,15 @@ export class ColChooserModel {
         gridModel.applyColumnStateChanges(colChanges);
     }
 
+    restoreDefaults() {
+        const {stateModel} = this.gridModel;
+
+        stateModel.resetStateAsync().then(() => {
+            this.syncChooserData();
+            if (this.isPopoverOpen) this.commit();
+        });
+    }
+
     //------------------------
     // Implementation
     //------------------------
