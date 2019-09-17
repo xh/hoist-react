@@ -1613,12 +1613,10 @@ resizing and collapsing behavior** (#534).
   * For consistency, we have also renamed `EventTarget -> EventSupport` and `Reactive ->
     ReactiveSupport` mixins. These both continue to be auto-applied to HoistModel and HoistService
     classes, and ReactiveSupport enabled by default in HoistComponent.
-* **The Context menu API has changed.** The
-  [`ContextMenuSupport` mixin](https://github.com/exhi/hoist-react/blob/develop/desktop/cmp/contextmenu/ContextMenuSupport.js)
-  now specifies an abstract `getContextMenuItems()` method for component implementation (replacing
-  the previous `renderContextMenu()` method). See the new
-  [`ContextMenuItem` class](https://github.com/exhi/hoist-react/blob/develop/desktop/cmp/contextmenu/ContextMenuItem.js)
-  for what these items support, as well as several static default items that can be used.
+* **The Context menu API has changed.** The `ContextMenuSupport` mixin now specifies an abstract
+  `getContextMenuItems()` method for component implementation (replacing the previous
+  `renderContextMenu()` method). See the new [`ContextMenuItem` class for what these items support,
+  as well as several static default items that can be used.
   * The top-level `AppContainer` no longer provides a default context menu, instead allowing the
     browser's own context menu to show unless an app / component author has implemented custom
     context-menu handling at any level of their component hierarchy.
