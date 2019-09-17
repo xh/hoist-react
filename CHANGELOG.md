@@ -59,7 +59,7 @@ _"The one with the hooks."_
 
 ### 📚 Libraries
 
-* @xh/hoist-dev-utils `3.8 -> 4.0` (multiple transitive updates to build tooling)
+* @xh/hoist-dev-utils `3.8 -> 4.1` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * rsvp (removed)
 
