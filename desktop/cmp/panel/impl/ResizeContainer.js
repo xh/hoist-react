@@ -8,8 +8,7 @@ import {Children} from 'react';
 import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
-import {draggerAnimated} from './DraggerAnimated';
-import {dragger} from './Dragger';
+import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
 
@@ -19,7 +18,7 @@ export const resizeContainer = hoistCmp.factory({
     className: 'xh-resizable',
 
     render({model, className, children}, ref) {
-        let {animateResize, size, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
             items = [collapsed ? box(child) : box({item: child, [dim]: size})];
@@ -30,8 +29,7 @@ export const resizeContainer = hoistCmp.factory({
         }
 
         if (!collapsed && resizable) {
-            const drg = animateResize ? draggerAnimated({model}) : dragger({model});
-            items.push(drg);
+            items.push(dragger({model}));
         }
 
         const cmp = vertical ? vbox : hbox,

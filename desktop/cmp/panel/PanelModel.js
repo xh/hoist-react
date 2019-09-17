@@ -142,11 +142,6 @@ export class PanelModel {
         this.setCollapsed(!this.collapsed);
     }
 
-    @action
-    setAnimateResize(animateResize) {
-        this.animateResize = animateResize;
-    }
-
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
