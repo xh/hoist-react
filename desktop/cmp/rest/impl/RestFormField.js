@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {
     jsonInput,
     select,
@@ -21,85 +20,74 @@ import {RestFormModel} from './RestFormModel';
 import {assign} from 'lodash';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 
-@HoistComponent
-export class RestFormField extends Component {
+export const restFormField = hoistCmp.factory({
+    displayName: 'RestFormField',
+    model: uses(RestFormModel),
 
-    static modelClass = RestFormModel;
+    render({model, editor, ...props}) {
+        const name = editor.field;
 
-    render() {
-        const {editor} = this.props,
-            name = editor.field;
-
-        if (this.isBlankMetaData(name)) return null;
+        // Skip blank metadata
+        if (!model.formModel.values[name] && ['lastUpdatedBy', 'lastUpdated'].includes(name)) {
+            return null;
+        }
 
         let config = assign({field: name, flex: 1}, editor.formField);
 
         if (!config.item && !config.items) {
-            config = {item: this.renderDefaultInput(name), ...config};
+            config = {item: renderDefaultInput(name, model), ...config};
         }
 
         return formField(config);
     }
+});
 
-    renderDefaultInput() {
-        const {model} = this,
-            name = this.props.editor.field,
-            type = model.types[name],
-            storeField = model.store.getField(name),
-            fieldModel = model.formModel.fields[name];
-        
-        if (storeField.lookup) {
-            return this.renderSelect({
-                options: [...storeField.lookup],
-                enableClear: !fieldModel.isRequired,
-                enableCreate: storeField.enableCreate
-            });
-        }
+function renderDefaultInput(name, model) {
+    const type = model.types[name],
+        storeField = model.store.getField(name),
+        fieldModel = model.formModel.fields[name];
 
-        switch (type) {
-            case 'bool':
-                return this.renderBoolean(fieldModel);
-            case 'int':
-            case 'number':
-                return numberInput();
-            case 'json':
-                return jsonInput();
-            case 'date':
-                return dateInput();
-            case 'localDate':
-                return dateInput({valueType: 'localDate'});
-            case 'pwd':
-                // Key to force re-creation of DOM elements so Chrome stops suggesting passwords
-                return textInput({type: 'password', key: '_' + type});
-            default:
-                return textInput();
-        }
+    if (storeField.lookup) {
+        return select({
+            options: [...storeField.lookup],
+            enableClear: !fieldModel.isRequired,
+            enableCreate: storeField.enableCreate
+        });
     }
 
-    renderBoolean(fieldModel) {
-        // Favor switch, when we are not in a tri-state situation w/null
-        // Otherwise, use a clearly nullable select.
-
-        const {isRequired, value, initialValue} = fieldModel,
-            useSwitch = isRequired && value != null && initialValue != null;
-        
-        return useSwitch ?
-            switchInput() :
-            this.renderSelect({
-                options: [true, false],
-                enableClear: !isRequired,
-                enableCreate: false
-            });
-    }
-
-    renderSelect(args) {
-        return select({...args});
-    }
-
-    isBlankMetaData(name) {
-        const {formModel} = this.model;
-        return !formModel.values[name] && ['lastUpdatedBy', 'lastUpdated'].includes(name);
+    switch (type) {
+        case 'bool':
+            return renderBoolean(fieldModel);
+        case 'int':
+        case 'number':
+            return numberInput();
+        case 'json':
+            return jsonInput();
+        case 'date':
+            return dateInput();
+        case 'localDate':
+            return dateInput({valueType: 'localDate'});
+        case 'pwd':
+            // Key to force re-creation of DOM elements so Chrome stops suggesting passwords
+            return textInput({type: 'password', key: '_' + type});
+        default:
+            return textInput();
     }
 }
-export const restFormField = elemFactory(RestFormField);
+
+function renderBoolean(fieldModel) {
+    // Favor switch, when we are not in a tri-state situation w/null
+    // Otherwise, use a clearly nullable select.
+
+    const {isRequired, value, initialValue} = fieldModel,
+        useSwitch = isRequired && value != null && initialValue != null;
+
+    return useSwitch ?
+        switchInput() :
+        select({
+            options: [true, false],
+            enableClear: !isRequired,
+            enableCreate: false
+        });
+}
 

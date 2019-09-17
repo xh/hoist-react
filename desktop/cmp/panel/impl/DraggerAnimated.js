@@ -5,39 +5,39 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import {PanelModel} from '../PanelModel';
 import {throttle} from 'lodash';
 
 import './Dragger.scss';
 
-/** This is an implementation class private to Hoist
- * @private
- */
-@HoistComponent
-export class DraggerAnimated extends Component {
+export const dragger = hoistCmp.factory({
+    displayName: 'DraggerAnimated',
+    model: false,
 
-    static modelClass = PanelModel;
+    render({model}) {
+        const dragModel = useLocalModel(() => new DragAnimatedModel(model));
 
+        return div({
+            className: `xh-resizable-dragger ${model.side}`,
+            onDrag: dragModel.onDrag,
+            onDragStart: dragModel.onDragStart,
+            onDragEnd: dragModel.onDragEnd,
+            draggable: true
+        });
+    }
+});
+
+@HoistModel
+class DragAnimatedModel {
+
+    model;
     resizeState = null;
     startSize = null;
 
-    constructor(props) {
-        super(props);
-        this.throttledSetSize = throttle(size => this.model.setSize(size), 50);
-    }
-
-    render() {
-        const {side} = this.model;
-        return div({
-            className: `xh-resizable-dragger ${side}`,
-            onDrag: this.onDrag,
-            onDragStart: this.onDragStart,
-            onDragEnd: this.onDragEnd,
-            draggable: true
-        });
+    constructor(model) {
+        this.model = model;
+        this.throttledSetSize = throttle(size => model.setSize(size), 50);
     }
 
     onDragStart = (e) => {
@@ -82,4 +82,3 @@ export class DraggerAnimated extends Component {
         this.model.setIsResizing(false);
     }
 }
-export const draggerAnimated = elemFactory(DraggerAnimated);

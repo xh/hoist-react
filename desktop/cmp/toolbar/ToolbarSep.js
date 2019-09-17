@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmp} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
@@ -13,21 +12,17 @@ import './Toolbar.scss';
 /**
  * Convenience component to insert a pre-styled separator | between Toolbar items.
  */
-export const ToolbarSeparator = hoistComponent({
-    displayName: 'ToolbarSeperator',
+export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
+    displayName: 'ToolbarSeparator',
+    model: false, observable: false,
+    className: 'xh-toolbar__separator',
 
     render(props) {
-        return span({
-            ...props,
-            className: getClassName('xh-toolbar__separator', props)
-        });
+        return span({...props});
     }
 });
-export const toolbarSeparator = elemFactory(ToolbarSeparator);
-
 
 /**
  * Abbreviated alias for ToolbarSeparator
  */
-export const ToolbarSep = ToolbarSeparator;
-export const toolbarSep = toolbarSeparator;
+export const [ToolbarSep, toolbarSep] = [ToolbarSeparator, toolbarSeparator];

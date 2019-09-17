@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {toast as onsenToast} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
@@ -19,13 +18,12 @@ import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
  *
  * @private
  */
-@HoistComponent
-export class Toast extends Component {
+export const toast = hoistCmp.factory({
+    displayName: 'Toast',
+    model: uses(ToastModel),
 
-    static modelClass = ToastModel;
-
-    render() {
-        const {icon, message, intent} = this.model,
+    render({model}) {
+        const {icon, message, intent} = model,
             cls = `xh-toast xh-intent-${intent}`;
 
         return onsenToast({
@@ -38,13 +36,9 @@ export class Toast extends Component {
                 button({
                     icon: Icon.cross(),
                     modifier: 'quiet',
-                    onClick: this.onDismissClick
+                    onClick: () => model.dismiss()
                 })
             ]
         });
     }
-
-    onDismissClick = () => this.model.dismiss()
-
-}
-export const toast = elemFactory(Toast);
+});

@@ -4,15 +4,16 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import PT from 'prop-types';
 import classNames from 'classnames';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {hbox, div, input} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
+
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import './FileChooser.scss';
 
@@ -31,55 +32,22 @@ import './FileChooser.scss';
  *
  * @see FileChooserModel
  */
-@LayoutSupport
-@HoistComponent
-export class FileChooser extends Component {
+export const [FileChooser, fileChooser] = hoistCmp.withFactory({
+    displayName: 'FileChooser',
+    model: uses(FileChooserModel),
+    className: 'xh-file-chooser',
 
-    static propTypes = {
-
-        /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
-        accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
-
-        /** True (default) to allow multiple files in a single upload. */
-        enableMulti: PT.bool,
-
-        /**
-         * True to allow user to drop multiple files into the dropzone at once.  True also allows for selection of
-         * multiple files within the OS pop-up window.  Defaults to enableMulti. */
-        enableAddMulti: PT.bool,
-
-        /** Maximum accepted file size in bytes. */
-        maxSize: PT.number,
-
-        /** Minimum accepted file size in bytes. */
-        minSize: PT.number,
-
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(FileChooserModel), PT.object]).isRequired,
-
-        /**
-         * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
-         * that, if false, the component will not provide any built-in indication of its selection.
-         */
-        showFileGrid: PT.bool,
-
-        /** Intro/help text to display within the dropzone target. */
-        targetText: PT.node
-    };
-
-    static modelClass = FileChooserModel;
-
-    baseClassName = 'xh-file-chooser';
-
-    render() {
-        const {model, props, fileNoun} = this,
-            {gridModel, lastRejectedCount} = model,
-            {accept, maxSize, minSize} = props,
+    render({model, className, accept, maxSize, minSize, targetText, ...props}) {
+        const {lastRejectedCount} = model,
             enableMulti = withDefault(props.enableMulti, true),
             enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
             showFileGrid = withDefault(props.showFileGrid, true);
-        
+
+        const fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
+
         return hbox({
+            className,
+            ...getLayoutProps(props),
             items: [
                 dropzone({
                     accept,
@@ -111,26 +79,48 @@ export class FileChooser extends Component {
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) => this.model.onDrop(accepted, rejected, enableMulti)
+                    onDrop: (accepted, rejected) => model.onDrop(accepted, rejected, enableMulti)
                 }),
                 grid({
-                    model: gridModel,
                     flex: 1,
                     hideHeaders: true,
                     className: 'xh-file-chooser__grid',
                     omit: !showFileGrid
                 })
-            ],
-
-            className: this.getClassName(),
-            ...this.getLayoutProps()
+            ]
         });
     }
+});
 
-    fileNoun(count) {
-        return `${count} ${count == 1 ? 'file' : 'files'}`;
-    }
 
-}
+FileChooser.propTypes = {
 
-export const fileChooser = elemFactory(FileChooser);
+    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
+    accept: PT.oneOfType([PT.string, PT.arrayOf(PT.string)]),
+
+    /** True (default) to allow multiple files in a single upload. */
+    enableMulti: PT.bool,
+
+    /**
+     * True to allow user to drop multiple files into the dropzone at once.  True also allows for selection of
+     * multiple files within the OS pop-up window.  Defaults to enableMulti. */
+    enableAddMulti: PT.bool,
+
+    /** Maximum accepted file size in bytes. */
+    maxSize: PT.number,
+
+    /** Minimum accepted file size in bytes. */
+    minSize: PT.number,
+
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(FileChooserModel), PT.object]),
+
+    /**
+     * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
+     * that, if false, the component will not provide any built-in indication of its selection.
+     */
+    showFileGrid: PT.bool,
+
+    /** Intro/help text to display within the dropzone target. */
+    targetText: PT.node
+};

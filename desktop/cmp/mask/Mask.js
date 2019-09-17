@@ -6,12 +6,11 @@
  */
 
 import PT from 'prop-types';
-import {hoistComponent, elemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {Classes, overlay, spinner} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getClassName} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 
 import './Mask.scss';
 
@@ -21,13 +20,12 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const Mask = hoistComponent({
+export const [Mask, mask] = hoistCmp.withFactory({
     displayName: 'Mask',
+    className: 'xh-mask',
 
-    render(props) {
-        const model = useProvidedModel(PendingTaskModel, props),
-            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false),
-            className = getClassName('xh-mask', props, Classes.OVERLAY_SCROLL_CONTAINER);
+    render({model, className, ...props}) {
+        const isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
 
         if (!isDisplayed) return null;
 
@@ -36,7 +34,7 @@ export const Mask = hoistComponent({
             showSpinner = withDefault(props.spinner, false);
 
         return overlay({
-            className,
+            className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
@@ -71,5 +69,3 @@ Mask.propTypes = {
     /** Click handler **/
     onClick: PT.func
 };
-
-export const mask = elemFactory(Mask);

@@ -15,7 +15,7 @@ import {TabModel} from './TabModel';
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
  *
  * This object provides support for routing based navigation, customizable (lazy) mounting and
- * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContext.
+ * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContextModel.
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
@@ -150,10 +150,10 @@ export class TabContainerModel {
             XH.router.forward(route, route + '.' + id);
         }
     }
-    
+
     initialActiveTabId(tabConfigs, defaultTabId) {
         let ret;
-        
+
         // try route
         const {route} = this, {router} = XH;
         if (route && router.isActive(route)) {

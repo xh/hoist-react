@@ -4,15 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {callout} from '@xh/hoist/kit/blueprint';
-import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @private */
-export const description = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(LeftRightChooserModel, props),
-            {hasDescription, leftModel, rightModel} = model,
+export const description = hoistCmp.factory(
+    ({model}) => {
+        const {hasDescription, leftModel, rightModel} = model,
             selected = leftModel.selectedRecord || rightModel.selectedRecord;
 
         if (!hasDescription || !(selected && selected.description)) return null;

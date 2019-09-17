@@ -4,9 +4,8 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 import {head} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {toast} from './Toast';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
@@ -19,13 +18,12 @@ import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
  *
  *  @private
  */
-@HoistComponent
-export class ToastSource extends Component {
+export const toastSource = hoistCmp.factory({
+    displayName: 'ToastSource',
+    model: uses(ToastSourceModel),
 
-    static modelClass = ToastSourceModel;
-
-    render() {
-        const pending = this.model.toastModels.filter(it => it.isOpen),
+    render({model}) {
+        const pending = model.toastModels.filter(it => it.isOpen),
             next = head(pending);
 
         if (!next) return null;
@@ -36,5 +34,4 @@ export class ToastSource extends Component {
         }
         return toast({model: next, key: next.xhId});
     }
-}
-export const toastSource = elemFactory(ToastSource);
+});

@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistComponent, elemFactory} from '@xh/hoist/core';
-import {getClassName} from '@xh/hoist/utils/react';
+import {hoistCmp} from '@xh/hoist/core';
 
 import {box} from './Box';
 
@@ -13,8 +12,11 @@ import {box} from './Box';
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
-export const Viewport = hoistComponent({
+export const [Viewport, viewport] = hoistCmp.withFactory({
     displayName: 'Viewport',
+    model: false, memo: false, observer: false,
+
+    className: 'xh-viewport',
 
     render(props) {
         return box({
@@ -23,9 +25,7 @@ export const Viewport = hoistComponent({
             left: 0,
             position: 'fixed',
             width: '100%',
-            height: '100%',
-            className: getClassName('xh-viewport', props)
+            height: '100%'
         });
     }
 });
-export const viewport = elemFactory(Viewport);

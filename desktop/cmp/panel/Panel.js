@@ -8,17 +8,18 @@
 import {useState} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistComponent, elemFactory, useLayoutProps, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {isReactElement, getClassName} from '@xh/hoist/utils/react';
+import {isReactElement, splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-
+import {contextMenuHost} from '@xh/hoist/desktop/cmp/contextmenu';
+import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 
 import './Panel.scss';
 
@@ -33,14 +34,19 @@ import './Panel.scss';
  *
  * @see PanelModel
  */
-export const Panel = hoistComponent({
+export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
+    model: uses(PanelModel, {
+        fromContext: false,
+        toContext: false,
+        createDefault: () => new PanelModel({collapsible: false, resizable: false})
+    }),
+    memo: false,
+    className: 'xh-panel',
 
-    render(props, ref) {
-        let model = useProvidedModel(PanelModel, props),
-            [flags] = useState({wasDisplayed: true}),
-            className = getClassName('xh-panel', props),
-            [layoutProps, nonLayoutProps] = useLayoutProps(props);
+    render({model, ...props}, ref) {
+        let [flags] = useState({wasDisplayed: true}),
+            [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
         const {
             tbar,
@@ -51,8 +57,9 @@ export const Panel = hoistComponent({
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
+            contextMenu,
+            hotkeys,
             children,
-            model: modelProp,
             ...rest
         } = nonLayoutProps;
 
@@ -68,13 +75,13 @@ export const Panel = hoistComponent({
 
         // 2) Prepare 'core' contents according to collapsed state
         const {
-            resizable = false,
-            collapsible = false,
-            collapsed = false,
-            collapsedRenderMode = null,
-            vertical = false,
-            showSplitter = false
-        } = model || {};
+            resizable,
+            collapsible,
+            collapsed,
+            collapsedRenderMode,
+            vertical,
+            showSplitter
+        } = model;
 
         const requiresContainer = resizable || collapsible || showSplitter;
 
@@ -97,12 +104,20 @@ export const Panel = hoistComponent({
                     parseToolbar(bbar)
                 ]
             });
+
+            // Wrap with functionality-only boxes
+            if (contextMenu) {
+                coreContents = contextMenuHost({contextMenu, item: coreContents});
+            }
+            if (hotkeys) {
+                coreContents = hotkeysHost({hotkeys, item: coreContents});
+            }
         }
         if (!collapsed) flags.wasDisplayed = true;
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({title, icon, compact: compactHeader, headerItems, model}) :
+            panelHeader({model, title, icon, compact: compactHeader, headerItems}) :
             null;
 
 
@@ -115,13 +130,12 @@ export const Panel = hoistComponent({
                 parseLoadDecorator(loadingIndicatorProp, loadingIndicator)
             ],
             ...rest,
-            ...layoutProps,
-            className
+            ...layoutProps
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
-            resizeContainer({ref, item, model}) :
+            resizeContainer({model, ref, item}) :
             item;
     }
 });
@@ -150,6 +164,19 @@ Panel.propTypes = {
 
     /** An icon placed at the left-side of the panel's header. */
     icon: PT.element,
+
+    /**
+     * Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).  Or a function
+     * that receives the triggering event and returns such an array.
+     * A value of null will result in no value being shown. A ContextMenu element may also be returned.
+     */
+    contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
+
+    /**
+     * An array of hotkeys, or configs for hotkeys, as prescribed by blueprint.
+     * A value of null will result in no keys being registered.
+     */
+    hotkeys: PT.oneOfType([PT.func, PT.array, PT.node]),
 
     /**
      * Message to render unobtrusively on panel corner. Set to:
@@ -185,5 +212,3 @@ Panel.propTypes = {
     /** Title text added to the panel's header. */
     title: PT.oneOfType([PT.string, PT.node])
 };
-
-export const panel = elemFactory(Panel);

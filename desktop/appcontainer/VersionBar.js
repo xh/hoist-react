@@ -4,15 +4,15 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, hoistElemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
 
 /** @private */
-export const versionBar = hoistElemFactory(
-    () => {
-
+export const versionBar = hoistCmp.factory({
+    displayName: 'VersionBar',
+    render() {
         if (!isShowing()) return null;
 
         const env = XH.getEnv('appEnvironment'),
@@ -31,7 +31,7 @@ export const versionBar = hoistElemFactory(
             ]
         });
     }
-);
+});
 
 
 //----------------------

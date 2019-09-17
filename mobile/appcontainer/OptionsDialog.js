@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {vframe, filler} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
@@ -14,6 +13,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {button} from '@xh/hoist/mobile/cmp/button';
 
+import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import './OptionsDialog.scss';
 
 /**
@@ -21,12 +21,12 @@ import './OptionsDialog.scss';
  *
  * @private
  */
-@HoistComponent
-export class OptionsDialog extends Component {
+export const optionsDialog = hoistCmp.factory({
+    displayName: 'OptionsDialog',
+    model: uses(OptionsDialogModel),
 
-    render() {
-        const {model} = this,
-            {isOpen, loadModel, formModel, reloadRequired} = model;
+    render({model}) {
+        const {isOpen, loadModel, formModel, reloadRequired} = model;
 
         if (!isOpen) return null;
 
@@ -69,5 +69,4 @@ export class OptionsDialog extends Component {
             ]
         });
     }
-}
-export const optionsDialog = elemFactory(OptionsDialog);
+});

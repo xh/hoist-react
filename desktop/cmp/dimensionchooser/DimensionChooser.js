@@ -25,6 +25,7 @@ import './DimensionChooser.scss';
 @HoistComponent
 export class DimensionChooser extends Component {
 
+    static supportModelFromContext = true;
     static modelClass = DimensionChooserModel;
 
     static propTypes = {
@@ -47,7 +48,7 @@ export class DimensionChooser extends Component {
         emptyText: PT.string,
 
         /** Primary component model instance. */
-        model: PT.instanceOf(DimensionChooserModel).isRequired,
+        model: PT.instanceOf(DimensionChooserModel),
 
         /** Title for popover (default "GROUP BY") or null to suppress. */
         popoverTitle: PT.string,

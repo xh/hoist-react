@@ -5,20 +5,20 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {keys, toString} from 'lodash';
-import {hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
 
-export const configDifferDetail = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(ConfigDifferDetailModel, props);
+export const configDifferDetail = hoistCmp.factory({
+    model: uses(ConfigDifferDetailModel),
+
+    render({model}) {
         if (!model.record) return null;
 
         return dialog({
@@ -26,7 +26,7 @@ export const configDifferDetail = hoistElemFactory(
             isOpen: model.record,
             onClose: () => model.close(),
             item: panel({
-                item: renderDiffTable(),
+                item: diffTable(),
                 bbar: [
                     filler(),
                     button({
@@ -43,30 +43,32 @@ export const configDifferDetail = hoistElemFactory(
             })
         });
     }
+});
+
+const diffTable = hoistCmp.factory(
+    ({model}) => {
+        const rec = model.record,
+            local = rec.localValue,
+            remote = rec.remoteValue,
+            fields = keys(local || remote);
+
+        const rows = fields.map(field => {
+            const cls = model.createDiffClass(field, local, remote),
+                localCell = local ? toString(local[field]) : '',
+                remoteCell = remote ? {className: cls, item: toString(remote[field])} : '';
+            return tr(td(field), td(localCell), td(remoteCell));
+        });
+
+        return table({
+            className: 'config-diff-table',
+            item: tbody(
+                tr(
+                    th('Property'),
+                    th('Local'),
+                    th('Remote')
+                ),
+                ...rows
+            )
+        });
+    }
 );
-
-function renderDiffTable(model) {
-    const rec = model.record,
-        local = rec.localValue,
-        remote = rec.remoteValue,
-        fields = keys(local || remote);
-
-    const rows = fields.map(field => {
-        const cls = this.model.createDiffClass(field, local, remote),
-            localCell = local ? toString(local[field]) : '',
-            remoteCell = remote ? {className: cls, item: toString(remote[field])} : '';
-        return tr(td(field), td(localCell), td(remoteCell));
-    });
-
-    return table({
-        className: 'config-diff-table',
-        item: tbody(
-            tr(
-                th('Property'),
-                th('Local'),
-                th('Remote')
-            ),
-            ...rows
-        )
-    });
-}

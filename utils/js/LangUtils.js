@@ -91,6 +91,17 @@ export function warnIf(condition, message) {
 }
 
 /**
+ * Log an error to the console if a condition evaluates as truthy.
+ * @param {*} condition
+ * @param {string} message
+ */
+export function errorIf(condition, message) {
+    if (condition) {
+        console.error(message);
+    }
+}
+
+/**
  * Throw an exception if the provided object or collection is empty, as per lodash isEmpty().
  * @link https://lodash.com/docs/latest#isEmpty
  *

@@ -4,12 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {Component} from 'react';
-import {observable, runInAction} from '@xh/hoist/mobx';
-import {HoistComponent, elem, elemFactory, AppState, XH} from '@xh/hoist/core';
+import {elem, AppState, XH, uses, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {div, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
 
@@ -27,12 +24,14 @@ import {messageSource} from './MessageSource';
 
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
-import {tabContainer} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+import {errorBoundary} from '@xh/hoist/core/impl';
+import {useOnMount} from '@xh/hoist/utils/react';
 
 installMobileImpls({
-    tabContainer,
+    tabContainerImpl,
     colChooser,
     ColChooserModel
 });
@@ -47,84 +46,83 @@ installMobileImpls({
  *
  * @see AppSpec.containerClass
  */
-@HoistComponent
-export class AppContainer extends Component {
-
-    static modelClass = AppContainerModel;
-
-    @observable.ref caughtException = null;
-
-    constructor() {
-        super();
-        XH.initAsync();
-    }
+export const AppContainer = hoistCmp({
+    displayName: 'AppContainer',
+    model: uses(AppContainerModel),
 
     render() {
-        return div(
-            this.renderContent(),
-            // Always be prepared to render exceptions :-(
-            exceptionDialog({
-                model: this.model.exceptionDialogModel
-            })
+
+        useOnMount(() => XH.initAsync());
+
+        return fragment(
+            errorBoundary({
+                item: appContainerView(),
+                onError: (e) => XH.handleException(e, {requireReload: true})
+            }),
+            exceptionDialog()
         );
     }
+});
 
-    renderContent() {
-        const S = AppState,
-            {model} = this;
-        if (this.caughtException) return null;
 
+//-------------------
+// Implementation
+//-------------------
+const appContainerView = hoistCmp.factory({
+    displayName: 'AppContainerView',
+    model: uses(AppContainerModel),
+
+    render({model}) {
+        if (model.caughtException) return null;
+
+        const S = AppState;
         switch (XH.appState) {
             case S.PRE_AUTH:
             case S.INITIALIZING:
                 return viewport(mask({isDisplayed: true, spinner: true}));
             case S.LOGIN_REQUIRED:
-                return loginPanel({model: model.loginPanelModel});
+                return loginPanel();
             case S.ACCESS_DENIED:
-                return lockoutPanel({model});
+                return lockoutPanel();
             case S.LOAD_FAILED:
                 return null;
             case S.RUNNING:
             case S.SUSPENDED:
                 return viewport(
                     vframe(
-                        impersonationBar({model: model.impersonationBarModel}),
-                        updateBar({model}),
+                        impersonationBar(),
+                        updateBar(),
                         refreshContextView({
                             model: model.refreshContextModel,
                             item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                         }),
-                        versionBar({model}),
-                        this.renderAppMenu()
+                        versionBar(),
+                        appMenu()
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
-                    messageSource({model: model.messageSourceModel}),
-                    toastSource({model: model.toastSourceModel}),
-                    feedbackDialog({model: model.feedbackDialogModel}),
-                    optionsDialog({model: model.optionsDialogModel}),
-                    aboutDialog({model: model.aboutDialogModel})
+                    messageSource(),
+                    toastSource(),
+                    feedbackDialog(),
+                    optionsDialog(),
+                    aboutDialog()
                 );
             default:
                 return null;
         }
     }
+});
 
-    componentDidCatch(e, info) {
-        runInAction(() => this.caughtException = e);
-        XH.handleException(e, {requireReload: true});
-    }
 
-    //------------------------
-    // Implementation
-    //------------------------
-    renderAppMenu() {
-        const model = XH.appModel.appMenuModel;
-        if (!model) return null;
+const appMenu = hoistCmp.factory({
+    displayName: 'AppMenu',
+
+    render() {
+        const menuModel = XH.appModel.appMenuModel;
+        if (!menuModel) return null;
         return menu({
-            model: model,
+            model: menuModel,
             width: 260,
             align: 'right'
         });
     }
-}
-export const appContainer = elemFactory(AppContainer);
+});

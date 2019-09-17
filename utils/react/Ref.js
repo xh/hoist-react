@@ -11,9 +11,15 @@ import {observable, action} from '@xh/hoist/mobx';
  * Shorthand object for creating an observable ref, supporting reactive
  * monitoring of a child element through re-renders.
  *
- * https://reactjs.org/docs/refs-and-the-dom.html
+ * Deprecated.  @see createObservableRef instead.
  */
 export class Ref {
+
+    constructor() {
+        console.warn(
+            "The Ref class has been deprecated.  Use React.createRef(), or Hoist's createObservableRef() instead."
+        );
+    }
 
     /**
      * Component or element of interest.

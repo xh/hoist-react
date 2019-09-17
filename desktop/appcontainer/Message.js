@@ -4,11 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
 
 import {form} from '@xh/hoist/cmp/form';
 import {filler} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -24,38 +23,35 @@ import './Message.scss';
  * Not intended for direct application use. {@see XHClass#message()} and related for the public API.
  * @private
  */
-@HoistComponent
-export class Message extends Component {
+export const message = hoistCmp.factory({
+    model: uses(MessageModel),
+    className: 'xh-message',
 
-    static modelClass = MessageModel;
-    baseClassName = 'xh-message';
+    render({model, ...props}) {
 
-    render() {
-        const model = this.model,
-            isOpen = model && model.isOpen;
-
-        if (!isOpen) return null;
+        if (!model.isOpen) return null;
 
         return dialog({
             isOpen: true,
             isCloseButtonShown: false,
             title: model.title,
             icon: model.icon,
-            className: this.getClassName(),
             items: [
                 dialogBody(
                     model.message,
-                    this.renderInput()
+                    inputCmp()
                 ),
-                toolbar(this.renderButtons())
+                bbar()
             ],
             onClose: () => {if (model.cancelProps) model.doCancel();},
-            ...this.props
+            ...props
         });
     }
+});
 
-    renderInput() {
-        const {formModel, input} = this.model;
+const inputCmp = hoistCmp.factory(
+    ({model}) => {
+        const {formModel, input} = model;
         if (!formModel) return null;
         return form({
             model: formModel,
@@ -65,14 +61,16 @@ export class Message extends Component {
                 item: withDefault(input.item, textInput({
                     autoFocus: true,
                     selectOnFocus: true,
-                    onKeyDown: evt => {if (evt.key == 'Enter') this.model.doConfirmAsync();}
+                    onKeyDown: evt => {if (evt.key == 'Enter') model.doConfirmAsync();}
                 }))
             })
         });
     }
+);
 
-    renderButtons() {
-        const {confirmProps, cancelProps, formModel} = this.model,
+const bbar = hoistCmp.factory(
+    ({model}) => {
+        const {confirmProps, cancelProps, formModel} = model,
             ret = [filler()];
 
         if (cancelProps) {
@@ -87,8 +85,6 @@ export class Message extends Component {
             );
         }
 
-        return ret;
+        return toolbar(ret);
     }
-
-}
-export const message = elemFactory(Message);
+);

@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -21,13 +20,12 @@ import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarMode
  *
  * @private
  */
-@HoistComponent
-export class ImpersonationBar extends Component {
+export const impersonationBar = hoistCmp.factory({
+    displayName: 'ImpersonationBar',
+    model: uses(ImpersonationBarModel),
 
-    static modelClass = ImpersonationBarModel;
-
-    render() {
-        const {isOpen, targets} = this.model;
+    render({model}) {
+        const {isOpen, targets} = model;
 
         if (!isOpen) return null;
 
@@ -42,30 +40,13 @@ export class ImpersonationBar extends Component {
                     value: username,
                     options: options,
                     commitOnChange: true,
-                    onCommit: this.onCommit
+                    onCommit: (target) => model.impersonateAsync(target)
                 }),
                 button({
                     icon: Icon.close(),
-                    onClick: this.onExitClick
+                    onClick: () => (model.isImpersonating ? model.endImpersonateAsync() : model.hide())
                 })
             ]
         });
     }
-
-    //---------------------
-    // Implementation
-    //---------------------
-    onCommit = (target) => {
-        this.model.impersonateAsync(target);
-    }
-
-    onExitClick = () => {
-        const {model} = this;
-        if (model.isImpersonating) {
-            model.endImpersonateAsync();
-        } else {
-            model.hide();
-        }
-    }
-}
-export const impersonationBar = elemFactory(ImpersonationBar);
+});

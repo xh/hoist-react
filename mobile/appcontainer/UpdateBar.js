@@ -4,21 +4,22 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import './UpdateBar.scss';
 
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+
 /**
  * @private
  */
-@HoistComponent
-export class UpdateBar extends Component {
+export const updateBar = hoistCmp.factory({
+    model: uses(AppContainerModel),
 
-    render() {
-        const {updateVersion} = this.model;
+    render({model}) {
+        const {updateVersion} = model;
 
         if (!updateVersion) return null;
 
@@ -31,15 +32,9 @@ export class UpdateBar extends Component {
                 button({
                     icon: Icon.refresh(),
                     text: updateVersion,
-                    onClick: this.reloadApp
+                    onClick: () => XH.reloadApp()
                 })
             ]
         });
     }
-
-    reloadApp() {
-        XH.reloadApp();
-    }
-
-}
-export const updateBar = elemFactory(UpdateBar);
+});

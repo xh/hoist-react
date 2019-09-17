@@ -6,7 +6,7 @@
  */
 
 import {text} from '@xh/hoist/kit/blueprint';
-import {XH, hoistElemFactory, useProvidedModel} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -23,10 +23,12 @@ import './LoginPanel.scss';
  *
  * @private
  */
-export const loginPanel = hoistElemFactory(
-    props => {
-        const model = useProvidedModel(LoginPanelModel, props),
-            {loginMessage} = XH.appSpec;
+export const loginPanel = hoistCmp.factory({
+    displayName: 'LoginPanel',
+    model: uses(LoginPanelModel),
+
+    render({model}) {
+        const {loginMessage} = XH.appSpec;
 
         const onKeyDown = (ev) => {
             if (ev.key === 'Enter') model.submit();
@@ -44,7 +46,6 @@ export const loginPanel = hoistElemFactory(
                 items: [
                     vspacer(10),
                     textInput({
-                        model,
                         bind: 'username',
                         placeholder: 'Username...',
                         autoFocus: true,
@@ -54,7 +55,6 @@ export const loginPanel = hoistElemFactory(
                         width: null
                     }),
                     textInput({
-                        model,
                         bind: 'password',
                         placeholder: 'Password...',
                         type: 'password',
@@ -87,4 +87,4 @@ export const loginPanel = hoistElemFactory(
             })
         });
     }
-);
+});

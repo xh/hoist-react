@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -13,7 +12,6 @@ import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/le
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
-
 import {ColChooserModel} from './ColChooserModel';
 
 /**
@@ -29,18 +27,15 @@ import {ColChooserModel} from './ColChooserModel';
  *
  * It is not necessary to manually create instances of this component within an application.
  */
-@HoistComponent
-export class ColChooser extends Component {
+export const colChooser = hoistCmp.factory({
+    model: uses(ColChooserModel),
+    className: 'xh-col-chooser',
 
-    static modelClass = ColChooserModel;
-
-    baseClassName = 'xh-col-chooser';
-
-    render() {
-        const {gridModel, lrModel, isPopoverOpen} = this.model,
-            {width, height} = this.props;
+    render({model, className, width, height}) {
+        const {gridModel, lrModel, isPopoverOpen} = model;
 
         return panel({
+            className,
             items: [
                 leftRightChooser({
                     model: lrModel,
@@ -54,43 +49,26 @@ export class ColChooser extends Component {
                         text: 'Reset',
                         icon: Icon.undo({className: 'xh-red'}),
                         omit: !gridModel.stateModel,
-                        onClick: this.restoreDefaults
+                        onClick: () => model.restoreDefaults()
                     }),
                     toolbarSep({
                         omit: !gridModel.stateModel
                     }),
                     button({
                         text: isPopoverOpen ? 'Close' : 'Cancel',
-                        onClick: this.onClose
+                        onClick: () => model.close()
                     }),
                     button({
                         omit: isPopoverOpen,
                         text: 'Save',
                         icon: Icon.check({className: 'xh-green'}),
-                        onClick: this.onOK
+                        onClick: () => {
+                            model.commit();
+                            model.close();
+                        }
                     })
                 )
-            ],
-            className: this.getClassName()
+            ]
         });
     }
-
-    onClose = () => {this.model.close()};
-
-    onOK = () => {
-        this.model.commit();
-        this.onClose();
-    };
-
-    restoreDefaults = () => {
-        const {model} = this,
-            {stateModel} = model.gridModel;
-
-        stateModel.resetStateAsync().then(() => {
-            model.syncChooserData();
-            if (model.isPopoverOpen) model.commit();
-        });
-    }
-
-}
-export const colChooser = elemFactory(ColChooser);
+});

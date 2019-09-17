@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component, isValidElement} from 'react';
+import {isValidElement, createRef} from 'react';
 import PT from 'prop-types';
 import {
     isNil,
@@ -20,7 +20,7 @@ import {
     isFinite
 } from 'lodash';
 import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -32,6 +32,9 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 
 import './Grid.scss';
+import {getLayoutProps} from '@xh/hoist/utils/react';
+import {isDisplayed} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -49,71 +52,103 @@ import './Grid.scss';
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-@HoistComponent
-@LayoutSupport
-export class Grid extends Component {
+export const [Grid, grid] = hoistCmp.withFactory({
+    displayName: 'GridModel',
+    model: uses(GridModel),
+    className: 'xh-grid',
 
-    static modelClass = GridModel;
+    render({model, className, ...props}) {
 
-    static propTypes = {
-        /**
-         * Options for ag-Grid's API.
-         *
-         * This constitutes an 'escape hatch' for applications that need to get to the underlying
-         * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
-         * interfere with the implementation of this component and its use of the ag-Grid API.
-         *
-         * Note that changes to these options after the component's initial render will be ignored.
-         */
-        agOptions: PT.object,
+        const implModel = useLocalModel(() => new GridImplModel(model, props)),
+            platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
 
-        /** True to suppress display of the grid's header row. */
-        hideHeaders: PT.bool,
+        // Don't render the agGridReact element with data or columns. Instead rely on API methods
+        return fragment(
+            frame({
+                className: classNames(className, implModel.isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'),
+                item: agGrid({
+                    ...getLayoutProps(props),
+                    ...implModel.agOptions
+                }),
+                onKeyDown: implModel.onKeyDown,
+                ref: implModel.viewRef
+            }),
+            (model.colChooserModel ? platformColChooser({model: model.colChooserModel}) : null)
+        );
+    }
+});
 
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]).isRequired,
+Grid.propTypes = {
+    /**
+     * Options for ag-Grid's API.
+     *
+     * This constitutes an 'escape hatch' for applications that need to get to the underlying
+     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+     * interfere with the implementation of this component and its use of the ag-Grid API.
+     *
+     * Note that changes to these options after the component's initial render will be ignored.
+     */
+    agOptions: PT.object,
 
-        /**
-         * Callback when the grid has initialized. The component will call this with the ag-Grid
-         * event after running its internal handler to associate the ag-Grid APIs with its model.
-         */
-        onGridReady: PT.func,
+    /** True to suppress display of the grid's header row. */
+    hideHeaders: PT.bool,
 
-        /**
-         * Callback when a key down event is detected on this component. Function will receive an
-         * event with the standard 'target' element.
-         *
-         * Note that the ag-Grid API provides limited ability to customize keyboard handling.
-         * This handler is designed to allow application to workaround this.
-         */
-        onKeyDown: PT.func,
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
 
-        /**
-         * Callback when a row is clicked. Function will receive an event with a data node
-         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-         */
-        onRowClicked: PT.func,
+    /**
+     * Callback when the grid has initialized. The component will call this with the ag-Grid
+     * event after running its internal handler to associate the ag-Grid APIs with its model.
+     */
+    onGridReady: PT.func,
 
-        /**
-         * Callback when a row is double clicked. Function will receive an event with a data node
-         * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
-         */
-        onRowDoubleClicked: PT.func,
+    /**
+     * Callback when a key down event is detected on this component. Function will receive an
+     * event with the standard 'target' element.
+     *
+     * Note that the ag-Grid API provides limited ability to customize keyboard handling.
+     * This handler is designed to allow application to workaround this.
+     */
+    onKeyDown: PT.func,
 
-        /**
-         * Callback when a cell is clicked. Function will receive an event with a data node, cell
-         * value, and column.
-         */
-        onCellClicked: PT.func,
+    /**
+     * Callback when a row is clicked. Function will receive an event with a data node
+     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
+     */
+    onRowClicked: PT.func,
 
-        /**
-         * Callback when a cell is double clicked. Function will receive an event with a data node,
-         * cell value, and column.
-         */
-        onCellDoubleClicked: PT.func
-    };
+    /**
+     * Callback when a row is double clicked. Function will receive an event with a data node
+     * containing the row's data. (Note that this may be null - e.g. for clicks on group rows.)
+     */
+    onRowDoubleClicked: PT.func,
+
+    /**
+     * Callback when a cell is clicked. Function will receive an event with a data node, cell
+     * value, and column.
+     */
+    onCellClicked: PT.func,
+
+    /**
+     * Callback when a cell is double clicked. Function will receive an event with a data node,
+     * cell value, and column.
+     */
+    onCellDoubleClicked: PT.func
+};
+
+
+//------------------------
+// Implementation
+//------------------------
+@HoistModel
+class GridImplModel {
 
     static MULTIFIELD_ROW_HEIGHT = 38;
+
+    model;
+    agOptions;
+    propsKeyDown;
+    viewRef = createRef()
 
     // The minimum required row height specified by the columns (if any) */
     @computed
@@ -128,12 +163,11 @@ export class Grid extends Component {
     @observable _dataVersion = 0;
 
     // Do any root level records have children?
-    @observable _isHierarchical = false;
+    @observable isHierarchical = false;
 
-    baseClassName = 'xh-grid';
 
-    constructor(props) {
-        super(props);
+    constructor(model, props) {
+        this.model = model;
         this.addReaction(this.selectionReaction());
         this.addReaction(this.sortReaction());
         this.addReaction(this.columnsReaction());
@@ -141,46 +175,16 @@ export class Grid extends Component {
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
 
-        this.agOptions = merge(this.createDefaultAgOptions(), props.agOptions || {});
+        this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
+        this.propsKeyDown = props.onKeyDown;
     }
 
-    render() {
-        const {model, agOptions, onKeyDown} = this,
-            {treeMode, agGridModel} = model;
-
-        // Note that we intentionally do *not* render the agGridReact element below with either the data
-        // or the columns. These two bits are the most volatile in our GridModel, and this causes
-        // extra re-rendering and jumpiness.  Instead, we rely on the API methods to keep these in sync.
-        return fragment(
-            frame({
-                className: this.getClassName(
-                    treeMode && this._isHierarchical ? 'xh-grid--hierarchical' : 'xh-grid--flat'
-                ),
-                item: agGrid({
-                    model: agGridModel,
-                    ...this.getLayoutProps(),
-                    ...agOptions
-                }),
-                onKeyDown
-            }),
-            this.renderColChooser()
-        );
-    }
-
-    renderColChooser() {
-        const {colChooserModel} = this.model,
-            cmp = XH.isMobile ? mobileColChooser : desktopColChooser;
-        return colChooserModel ? cmp({model: colChooserModel}) : null;
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    createDefaultAgOptions() {
-        const {model, props} = this,
+    createDefaultAgOptions(props) {
+        const {model} = this,
             {useDeltaSort, useTransactions} = model.experimental;
 
         let ret = {
+            model: model.agGridModel,
             deltaSort: useDeltaSort && !model.treeMode,
             deltaRowDataMode: !useTransactions,
             getRowNodeId: (data) => data.id,
@@ -392,7 +396,7 @@ export class Grid extends Component {
                     this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
-                    this._isHierarchical = store.allRootCount != store.allCount;
+                    this.isHierarchical = model.treeMode && store.allRootCount != store.allCount;
 
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
@@ -594,7 +598,7 @@ export class Grid extends Component {
 
     // Catches column resizing on call to autoSize API.
     onColumnResized = (ev) => {
-        if (this.isDisplayed && ev.finished && ev.source == 'autosizeColumns') {
+        if (isDisplayed(this.viewRef.current) && ev.finished && ev.source == 'autosizeColumns') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };
@@ -626,7 +630,7 @@ export class Grid extends Component {
     };
 
     onGridSizeChanged = (ev) => {
-        if (this.isDisplayed) {
+        if (isDisplayed(this.viewRef.current)) {
             ev.api.sizeColumnsToFit();
         }
     };
@@ -666,7 +670,6 @@ export class Grid extends Component {
             return;
         }
 
-        if (this.props.onKeyDown) this.props.onKeyDown(evt);
+        if (this.propsKeyDown) this.propsKeyDown(evt);
     }
 }
-export const grid = elemFactory(Grid);
