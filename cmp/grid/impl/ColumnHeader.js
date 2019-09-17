@@ -38,7 +38,7 @@ export class ColumnHeader extends Component {
     // Get any active sortBy for this column, or null
     @computed
     get activeGridSorter() {
-        if (!this.gridModel) return; // ag-grid auto group column wont have a gridModel
+        if (!this.gridModel) return undefined; // ag-grid auto group column wont have a gridModel
 
         return this.gridModel.sortBy.find(it => {
             return it.colId === this.colId;

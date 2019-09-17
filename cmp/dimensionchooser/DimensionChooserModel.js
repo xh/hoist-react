@@ -48,8 +48,8 @@ export class DimensionChooserModel {
     enableClear = false;
 
     // Internal state
-    history = null;
-    @observable.ref pendingValue = null;
+    history = [];
+    @observable.ref pendingValue = [];
 
     //-------------------------
     // Popover rendering
@@ -83,7 +83,7 @@ export class DimensionChooserModel {
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
         this.preference = preference;
-        
+
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
 
@@ -154,7 +154,7 @@ export class DimensionChooserModel {
     // True if a leaf-level dim has been specified via the editor - any further child groupings
     // would be derivative at this point and should not be allowed by the UI.
     get leafInPending() {
-        this.pendingValue.some(dim => this.dimensions[dim].leaf);
+        return this.pendingValue.some(dim => this.dimensions[dim].leaf);
     }
 
     // Returns options passed to the select control at each level of the add menu.

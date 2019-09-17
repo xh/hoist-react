@@ -75,7 +75,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
                             className: classNames(
                                 'xh-file-chooser__target',
                                 isDragActive ? 'xh-file-chooser__target--active' : null,
-                                showFileGrid ? 'xh-file-chooser__target--withGrid' : null,
+                                showFileGrid ? 'xh-file-chooser__target--withGrid' : null
                             )
                         });
                     },

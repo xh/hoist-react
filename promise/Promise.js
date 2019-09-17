@@ -8,7 +8,6 @@ import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {action} from '@xh/hoist/mobx';
 import {isFunction, isNumber, isPlainObject, castArray} from 'lodash';
-import RSVP from 'rsvp';
 
 /**
  * Start a new promise chain.
@@ -57,20 +56,6 @@ export async function resolve(value) {
  */
 export async function never() {
     return new Promise(() => {});
-}
-
-/**
- * Resolve when all promises are settled.
- * Inspired and implemented by RSVP.allSettled, but returns a native Promise.
- *
- * @param {Promise[]} promises
- * @returns {Array} - Array of Promise results, each of form
- *      {state: 'fulfilled'||'rejected', reason: exception||null, value: value||null}
- */
-export async function allSettled(promises) {
-    return new Promise((resolve, reject) => {
-        RSVP.allSettled(promises).then(it => resolve(it), it => reject(it));
-    });
 }
 
 
