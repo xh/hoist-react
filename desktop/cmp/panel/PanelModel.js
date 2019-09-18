@@ -22,6 +22,7 @@ export class PanelModel {
     // Immutable Properties
     //-----------------------
     resizable;
+    resizeWhileDragging;
     collapsible;
     defaultSize;
     defaultCollapsed;
@@ -47,6 +48,7 @@ export class PanelModel {
     /**
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can panel be resized?
+     * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {number} config.defaultSize - Default size of content (in pixels).
      * @param {number} [config.defaultCollapsed] - Default collapsed state.
@@ -64,6 +66,7 @@ export class PanelModel {
     constructor({
         collapsible = true,
         resizable = true,
+        resizeWhileDragging = false,
         defaultSize,
         defaultCollapsed = false,
         side,
@@ -84,6 +87,7 @@ export class PanelModel {
         // Set immutables
         this.collapsible = collapsible;
         this.resizable = resizable;
+        this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -122,6 +126,7 @@ export class PanelModel {
         this.collapsed = collapsed;
         this.dispatchResize();
     }
+
     @action
     setSize(v) {
         this.size = v;

@@ -26,9 +26,15 @@ _"The one with the hooks."_
 * `DateInput` will now accept LocalDates as `value`, `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
+* Resizable panels now default to not redrawing their content when resized until the resize bar is
+  dropped.  This offers an improved user experience for most situations, especially when layouts are complex.
+  To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging` to `true`.
 * `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
   creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
   fully observable. With this change the `Ref` class in the same package is now obsolete.
+* Hoist now establishes a proper react "error boundary" around all application code. This means that
+  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
+  and stack traces for rendering errors should be signifigantly less verbose.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
   support for the nullsafe operator `let foo = bar?.baz` via the
   `@babel/plugin-proposal-optional-chaining` plugin.

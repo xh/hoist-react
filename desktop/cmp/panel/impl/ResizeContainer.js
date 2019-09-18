@@ -8,7 +8,7 @@ import {Children} from 'react';
 import {hoistCmp} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
-import {dragger} from './Dragger';
+import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
 
