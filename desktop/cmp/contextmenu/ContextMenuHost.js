@@ -5,20 +5,19 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {elemFactory} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-
-import {isArray, isFunction} from 'lodash';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
 import {isReactElement} from '@xh/hoist/utils/react';
+import {isArray, isFunction} from 'lodash';
 import PT from 'prop-types';
+import {Component} from 'react';
 
 /**
- * Component supporting a ContextMenu for its contents.
+ * Component supporting a right-click ContextMenu on its contents.
  *
- * See also Panel's 'contextMenu' prop, which will delegate to this component
- * For many usages this will provide the most convenient interface.
+ * See also Panel's 'contextMenu' prop, which will delegate to this component and offers the most
+ * convenient interface for many application use cases.
  */
 export const ContextMenuHost = ContextMenuTarget(
     class extends Component {
@@ -37,12 +36,12 @@ export const ContextMenuHost = ContextMenuTarget(
         }
     }
 );
-ContextMenuHost.propTypes = {
 
+ContextMenuHost.propTypes = {
     /**
-     * Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).  Or a function
-     * that receives the triggering event and returns such an array.
-     * A value of null will result in no value being shown. A ContextMenu element may also be returned.
+     * Array of ContextMenuItems, configs to create them, Elements, or the string '-' (divider).
+     * Also accepts a function that receives the triggering event and returns such an array or a
+     * ContextMenu element directly. A value/return of null will result in no menu being shown.
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node])
 };
