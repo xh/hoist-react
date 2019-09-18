@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {XH, HoistComponent, LayoutSupport, elemFactory, managed} from '@xh/hoist/core';
+import {XH, hoistCmp, useLocalModel, managed, HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {span} from '@xh/hoist/cmp/layout';
@@ -16,6 +15,8 @@ import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
 import {fmtDateTime} from '@xh/hoist/format';
 import {flow} from 'lodash';
 import {pluralize} from '@xh/hoist/utils/js';
+
+import {getLayoutProps} from '@xh/hoist/utils/react';
 
 const FORMAT_STRINGS = {
     seconds: '<1 minute',
@@ -51,55 +52,59 @@ const SHORT_FORMAT_STRINGS = {
  * Displays the approximate amount of time between a given timestamp and the present moment
  * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
  */
-@HoistComponent
-@LayoutSupport
-export class RelativeTimestamp extends Component {
+export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
+    displayName: 'RelativeTimestamp',
+    className: 'xh-relative-timestamp',
 
-    static propTypes = {
-        /** Date object that will be used as reference, can also be specified in milliseconds*/
-        timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
+    render({className, timestamp, options, ...props}) {
+        const impl = useLocalModel(LocalModel);
+        impl.setData(timestamp, options);
 
-        /** @see getRelativeTimestamp options */
-        options: PT.object
-    };
-
-    baseClassName = 'xh-relative-timestamp';
-
-    @observable relativeTimeString;
-    @managed timer = Timer.create({
-        runFn: () => this.refreshLabel(),
-        interval: 10 * SECONDS
-    });
-
-    render() {
-        const {relativeTimeString, props} = this;
         return box({
-            ...this.getLayoutProps(),
-            className: this.getClassName(),
+            ...getLayoutProps(props),
+            className,
             item: span({
                 className: 'xh-title-tip',
-                item: relativeTimeString,
-                title: fmtDateTime(props.timestamp)
+                item: impl.display,
+                title: fmtDateTime(timestamp)
             })
         });
     }
+});
+RelativeTimestamp.propTypes = {
+    /** Date object that will be used as reference, can also be specified in milliseconds*/
+    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
 
-    refreshLabel() {
-        this.updateRelativeTimeString(this.props);
+    /** @see getRelativeTimestamp options */
+    options: PT.object
+};
+
+@HoistModel
+class LocalModel {
+
+    options;
+    timestamp;
+
+    @observable display = '';
+
+    @managed
+    timer = Timer.create({
+        runFn: () => this.refreshDisplay(),
+        interval: 10 * SECONDS
+    });
+
+    setData(timestamp, options) {
+        this.timestamp = timestamp;
+        this.options = options;
+        this.refreshDisplay();
     }
 
     @action
-    updateRelativeTimeString(props) {
-        const {timestamp, options} = props;
-        this.relativeTimeString = getRelativeTimestamp(timestamp, options);
+    refreshDisplay() {
+        this.display = getRelativeTimestamp(this.timestamp, this.options);
     }
-    
-    componentWillReceiveProps(nextProps) {
-        this.updateRelativeTimeString(nextProps);
-    }
-}
 
-export const relativeTimestamp = elemFactory(RelativeTimestamp);
+}
 
 /**
  * Returns a String relative to the Timestamp provided

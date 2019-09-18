@@ -23,7 +23,7 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory({
 
         if (!onClick) {
             onClick = async (e) => {
-                const {successMessage, getCopyText} = this.props;
+                const {successMessage, getCopyText} = props;
 
                 try {
                     await copy(getCopyText());

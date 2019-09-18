@@ -15,6 +15,6 @@ import 'ag-grid-community/dist/styles/ag-theme-balham-dark.css';
 // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);
 
-export * from './AgGrid';
 export * from './AgGridModel';
+export * from './AgGrid';
 export const agGridReact = elemFactory(AgGridReact);

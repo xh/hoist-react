@@ -4,14 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elem, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {elem, hoistCmp, uses} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isReactElement} from '@xh/hoist/utils/react';
 import {DockViewModel} from '@xh/hoist/cmp/dock';
+import classNames from 'classnames';
 
 import './Dock.scss';
 
@@ -20,107 +20,82 @@ import './Dock.scss';
  *
  * @private
  */
-@HoistComponent
-export class DockView extends Component {
+export const dockView = hoistCmp.factory({
+    displayName: 'DockView',
+    model: uses(DockViewModel),
+    className: 'xh-dock-view',
 
-    static modelClass = DockViewModel;
+    render({model, className, compactHeaders}) {
+        const {collapsed, docked} = model;
 
-    baseClassName = 'xh-dock-view';
+        // 1) Render docked
+        if (collapsed || docked) {
+            return vbox({
+                className: classNames(className, collapsed ? 'xh-dock-view--collapsed' : null),
+                items: [header({compactHeaders}), body()]
+            });
+        }
 
-    render() {
-        const {model} = this;
-        return model.collapsed || model.docked ? this.renderInDock() : this.renderInDialog();
-    }
-
-    renderInDock() {
-        const {collapsed} = this.model;
-
-        return vbox({
-            className: this.getClassName(collapsed ? 'xh-dock-view--collapsed' : null),
-            items: [
-                this.renderHeader(),
-                this.renderBody()
-            ]
-        });
-    }
-
-    renderInDialog() {
+        // 2) Render in Dialog
         return dialog({
-            className: this.getClassName('xh-dock-view--dialog'),
+            className: classNames(className, 'xh-dock-view--dialog'),
             isOpen: true,
-            onClose: () => this.onClose(),
+            onClose: () => model.onClose(),
             canOutsideClickClose: false,
-            items: [
-                this.renderHeader(),
-                this.renderBody()
-            ]
+            items: [header({compactHeaders}), body()]
         });
     }
+});
 
-    renderHeader() {
-        const {icon, title, collapsed, docked, allowClose, allowDialog} = this.model,
-            {compactHeader} = this.props;
+
+const header = hoistCmp.factory(
+    ({model, compactHeaders}) => {
+        const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
 
         return hbox({
-            className: `xh-dock-view__header ${compactHeader ? 'xh-dock-view__header--compact' : ''}`,
+            className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
             items: [
                 span({
                     omit: !icon,
                     item: icon,
                     className: 'xh-dock-view__header__icon',
-                    onDoubleClick: () => this.onToggleCollapsed()
+                    onDoubleClick: () => model.toggleCollapsed()
                 }),
                 span({
                     omit: !title,
                     item: title,
                     className: 'xh-dock-view__header__title',
-                    onDoubleClick: () => this.onToggleCollapsed()
+                    onDoubleClick: () => model.toggleCollapsed()
                 }),
                 filler(),
                 button({
                     icon: collapsed ? Icon.angleUp() : Icon.angleDown(),
-                    onClick: () => this.onToggleCollapsed()
+                    onClick: () => model.toggleCollapsed()
                 }),
                 button({
                     omit: collapsed || !allowDialog,
                     icon: docked ? Icon.expand() : Icon.collapse(),
-                    onClick: () => this.onToggleDocked()
+                    onClick: () => model.toggleDocked()
                 }),
                 button({
                     omit: !allowClose,
                     icon: Icon.close(),
-                    onClick: () => this.onClose()
+                    onClick: () => model.close()
                 })
             ]
         });
     }
+);
 
-    renderBody() {
-        return div({
-            className: 'xh-dock-view__body',
-            item: this.renderContent()
-        });
+const body = hoistCmp.factory(
+    ({model}) => {
+        let {content} = model,
+            contentEl = content.isHoistComponent ? elem(content) : content;
+        if (!isReactElement(contentEl)) {
+            console.error("Please specify a React element, or a Component for the 'content' of a DockedView");
+            contentEl = null;
+        }
+
+        return div({className: 'xh-dock-view__body', item: contentEl});
     }
-
-    renderContent() {
-        const {content} = this.model;
-        if (isReactElement(content)) return content;
-        if (content.prototype.render) return elem(content);
-        return content();
-    }
-
-    onToggleDocked() {
-        this.model.toggleDocked();
-    }
-
-    onToggleCollapsed() {
-        this.model.toggleCollapsed();
-    }
-
-    onClose() {
-        this.model.close();
-    }
-
-}
-
-export const dockView = elemFactory(DockView);
+);

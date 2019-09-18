@@ -4,10 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {omit} from 'lodash';
-import {HoistComponent, elemFactory, LayoutSupport, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, XH, uses, useLocalModel} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {useOnUnmount} from '@xh/hoist/utils/react';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
@@ -30,24 +31,29 @@ import './AgGrid.scss';
  * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
  * managed option would conflict with or complicate access to those features.
  */
-@HoistComponent
-@LayoutSupport
-export class AgGrid extends Component {
-    baseClassName = 'xh-ag-grid';
-    static modelClass = AgGridModel;
+export const AG_ROW_HEIGHTS = {mobile: 34, desktop: 28};
+export const AG_COMPACT_ROW_HEIGHTS = {mobile: 30, desktop: 24};
 
-    static get ROW_HEIGHT() {return XH.isMobile ? 34 : 28}
-    static get COMPACT_ROW_HEIGHT() {return XH.isMobile ? 30 : 24}
+export const [AgGrid, agGrid] = hoistCmp.withFactory({
+    displayName: 'AgGrid',
+    className: 'xh-ag-grid',
+    model: uses(AgGridModel),
 
-    render() {
-        const layoutProps = this.getLayoutProps(),
-            agGridProps = omit(this.getNonLayoutProps(), ['model', 'key']);
-
-        const {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = this.model,
+    render({model, key, className, onGridReady, ...props}) {
+        const [layoutProps, agGridProps] = splitLayoutProps(props),
+            {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isMobile} = XH;
 
+        const impl = useLocalModel(() => new LocalModel(model));
+        impl.onGridReady = onGridReady;
+
+        useOnUnmount(() => {
+            if (model) model.handleGridUnmount();
+        });
+
         return frame({
-            className: this.getClassName(
+            className: classNames(
+                className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
@@ -59,32 +65,40 @@ export class AgGrid extends Component {
             ...layoutProps,
             item: agGridReact({
                 // Default some ag-grid props, but allow overriding.
-                getRowHeight: this.getRowHeight,
-                navigateToNextCell: this.navigateToNextCell,
+                getRowHeight: impl.getRowHeight,
+                navigateToNextCell: impl.navigateToNextCell,
 
                 // Pass others on directly.
                 ...agGridProps,
 
                 // Always specify an onGridReady handler to wire the model to the ag APIs, but note
                 // the implementation will also call any onGridReady passed via props.
-                onGridReady: this.onGridReady
+                onGridReady: impl.noteGridReady
             })
         });
     }
+});
 
-    componentWillUnmount() {
-        if (this.model) this.model.handleGridUnmount();
+@HoistModel
+class LocalModel {
+
+    model;
+    onGridReady;
+
+    constructor(model) {
+        this.model = model;
     }
 
-    onGridReady = (agParams) => {
+    noteGridReady = (agParams) => {
         this.model.handleGridReady(agParams);
-        if (this.props.onGridReady) {
-            this.props.onGridReady(agParams);
+        if (this.onGridReady) {
+            this.onGridReady(agParams);
         }
     };
 
     getRowHeight = () => {
-        return this.model.compact ? AgGrid.COMPACT_ROW_HEIGHT : AgGrid.ROW_HEIGHT;
+        const heights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS;
+        return XH.isMobile ? heights.mobile : heights.desktop;
     };
 
     navigateToNextCell = (agParams) => {
@@ -127,5 +141,3 @@ export class AgGrid extends Component {
         }
     };
 }
-
-export const agGrid = elemFactory(AgGrid);
