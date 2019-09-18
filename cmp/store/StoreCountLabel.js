@@ -6,74 +6,46 @@
  */
 
 import {box} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
-import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {pluralize, singularize} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import {Component} from 'react';
 
 /**
  * Displays the number of (post-filtered) records loaded into a Store.
  *
  * Using with a Grid? {@see GridCountLabel} for an alternative that also displays selection count.
  */
-@HoistComponent
-@LayoutSupport
-export class StoreCountLabel extends Component {
+export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
 
-    static propTypes = {
+    className: 'xh-store-count-label',
 
-        /** Store to which this component should bind. */
-        store: PT.instanceOf(Store),
+    render({store, unit = 'record', includeChildren = false, className, ...props}) {
+        const count = includeChildren ? store.count : store.rootCount,
+            unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
+            item = `${fmtNumber(count, {precision: 0})} ${unitLabel}`;
 
-        /**
-         * True to count nested child records.
-         * If false (default) only root records will be included in count.
-         */
-        includeChildren: PT.bool,
-
-        /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
-        unit: PT.string
-    };
-
-    defaultUnit = 'record';
-    baseClassName = 'xh-store-count-label';
-
-    constructor(props) {
-        super(props);
-
-        const unit = withDefault(props.unit, this.defaultUnit);
-        this._oneUnit = singularize(unit);
-        this._manyUnits = pluralize(unit);
-    }
-
-    get store() {return this.props.store}
-
-    render() {
         return box({
-            ...this.getLayoutProps(),
-            className: this.getClassName(),
-            item: `${this.getRecCountString()}`
+            ...getLayoutProps(props),
+            className,
+            item
         });
     }
+});
 
+StoreCountLabel.propTypes = {
 
-    //------------------------
-    // Implementation
-    //------------------------
-    getRecCountString() {
-        const {store} = this,
-            includeChildren = withDefault(this.props.includeChildren, false),
-            count = includeChildren ? store.count : store.rootCount,
-            unitLabel = count === 1 ? this._oneUnit : this._manyUnits;
+    /** Store to which this component should bind. */
+    store: PT.instanceOf(Store),
 
-        return `${this.fmtCount(count)} ${unitLabel}`;
-    }
+    /**
+     * True to count nested child records.
+     * If false (default) only root records will be included in count.
+     */
+    includeChildren: PT.bool,
 
-    fmtCount(count) {
-        return fmtNumber(count, {precision: 0});
-    }
-
-}
-export const storeCountLabel = elemFactory(StoreCountLabel);
+    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
+    unit: PT.string
+};
