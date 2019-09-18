@@ -10,6 +10,9 @@
   "scripts": {
     "lint": "yarn run eslint ."
   },
+  "sideEffects": [
+    "./static/polyfills.js"
+  ],
   "dependencies": {
     "@blueprintjs/core": "~3.18.0",
     "@blueprintjs/datetime": "~3.12.0",
@@ -25,6 +28,7 @@
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
     "codemirror": "~5.48.4",
+    "core-js": "~3.2.1",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~2.0.1",
@@ -44,9 +48,9 @@
     "react-onsenui": "~1.11.2",
     "react-select": "~3.0.4",
     "react-transition-group": "~4.2.2",
+    "regenerator-runtime": "~0.13.3",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "rsvp": "~4.8.4",
     "store2": "~2.9.0"
   },
   "peerDependencies": {
@@ -55,7 +59,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~3.8.1",
+    "@xh/hoist-dev-utils": "~4.1.1",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2"

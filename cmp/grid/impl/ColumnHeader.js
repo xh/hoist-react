@@ -102,7 +102,6 @@ class LocalModel {
     @computed
     get activeGridSorter() {
         if (!this.gridModel || !this.enableSorting) return null; // ag-grid auto group column wont have a gridModel
-
         return this.gridModel.sortBy.find(it => it.colId === this.colId);
     }
 

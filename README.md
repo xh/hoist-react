@@ -139,7 +139,7 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 
 |      Class/File      |                               Note                                |                 Link                  |
 |----------------------|-------------------------------------------------------------------|:-------------------------------------:|
-| `ReactiveSupport.js` | Mixin to add MobX reactivity to Components, Models, and Services. | [⚛️](core/mixins/ReactiveSupport.js) |
+| `ReactiveSupport.js` | Mixin to add MobX reactivity to Components, Models, and Services. | [⚛️](core/mixins/ReactiveSupport.js)  |
 
 MobX is an essential building block of Hoist React, providing an application state management
 solution with "smart' reactivity, tight integration with React Components, and a general API for
@@ -147,8 +147,9 @@ reactive programming that extends beyond Components. Please review and familiari
 MobX documentation to make the best use of Hoist React.
 
 All Hoist Components (functional or class-based) include 'observer' support from the 'mobx-react'
-project.  This means that these Components are automatically re-rendered when any observable state they 
-used during their last render is modified.  This support provides the core engine of reactivity in Hoist.
+project. This means that these Components are automatically re-rendered when any observable state
+they used during their last render is modified. This support provides the core engine of reactivity
+in Hoist.
 
 In addition to Components, MobX is an essential tool for use by Models and Services within Hoist.
 The `ReactiveSupport` mixin (decorator, linked above) adds two key methods by default to these core
@@ -213,10 +214,10 @@ Components can accept one or more models as props, reference properties of these
 render methods, and call methods on these Models in response to user actions or inputs. This can
 help to structure or encapsulate a Component's API, but also works with MobX to minimize extra
 render cycles and respond to state changes as efficiently as possible. The
-[`GridModel`](cmp/grid/GridModel.js) class is a notable example of managing a complex
-Component's configuration, state, and API surface via a Model. Hoist's `LeftRightChooser` Component
-is managed via its [dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js),
-which includes nested GridModels.
+[`GridModel`](cmp/grid/GridModel.js) class is a notable example of managing a complex Component's
+configuration, state, and API surface via a Model. Hoist's `LeftRightChooser` Component is managed
+via its [dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js), which
+includes nested GridModels.
 
 Models can also exist entirely independent of Components, or be generalized enough to be used as
 state sources for multiple, different Components. The
@@ -239,11 +240,11 @@ aliases on itself for the most common framework service calls, e.g. `XH.getConf(
 #### HoistAppModel
 
 Each client application must define a top-level Model class using
-[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core Model
-support as well as several additional methods specific to the high-level lifecycle of the
-application, including those dealing with init, and routing. This class instance is
-available via an import of the `XH` (as `XH.appModel`) and can be a useful place to hang global state
-specific to your application.
+[the specialized `@HoistAppModel` decorator](core/HoistAppModel.js). This decorator installs core
+Model support as well as several additional methods specific to the high-level lifecycle of the
+application, including those dealing with init, and routing. This class instance is available via an
+import of the `XH` (as `XH.appModel`) and can be a useful place to hang global state specific to
+your application.
 
 Please review the inline documentation on the decorator for additional detailed information on what
 it provides and how an Application should provide concrete implementations for certain key methods.
@@ -260,18 +261,19 @@ typically done by passing to model to `XH.safeDestroy()`.
 ### HoistComponent
 
 ⚛️ Components are the most familiar artifacts in React development, and are likely what come to
-mind first when most developers think of React. Functional components are the preferred method of 
-defining components in React and Hoist.  To define a functional component in Hoist, simply wrap a render
-function with the `hoistComponent` function.  This will apply core Hoist support, including MobX observability, 
-and support for Forwards refs, and will return the Component.
+mind first when most developers think of React. Functional components are the preferred method of
+defining components in React and Hoist. To define a functional component in Hoist, simply wrap a
+render function with the `hoistComponent` function. This will apply core Hoist support, including
+MobX observability, and support for Forwards refs, and will return the Component.
 
-Alternatively, Hoist continues to fully support ES6 class-based Components.  These can be specified using 
-the '@HoistComponent' decorator.  This decorator will enable MobX reactivity and augment a Component with
-several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`. 
+Alternatively, Hoist continues to fully support ES6 class-based Components. These can be specified
+using the '@HoistComponent' decorator. This decorator will enable MobX reactivity and augment a
+Component with several useful convenience methods/getters such as `getDOMNode()` and `isDisplayed`.
 
-Note that many layout related HoistComponents provide "LayoutSupport".  HoistComponents supporting this feature 
-promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first class props on the component 
-itself.  This allows many layout operations to be done in declarative Javascript.    
+Note that many layout related HoistComponents provide "LayoutSupport". HoistComponents supporting
+this feature promote most flexbox layout properties (e.g. 'width', 'height', 'flex') to being first
+class props on the component itself. This allows many layout operations to be done in declarative
+Javascript.
 
 ### HoistService
 
@@ -285,14 +287,14 @@ Model and Component classes that's tailored to their needs.
 Service instances persist for the life of the app and have a defined initialization process. By
 convention they are stored within an `svc/` package within an app's file structure.
 
-Use the `@HoistService` decorator to mark a class as a global service within. As with the
-other decorators, this installs MobX and Event support and defines an empty `initAsync()` lifecycle
-method. To instantiate and make services available to application code, use the `XH.installServicesAsync()` 
-method.  This method will construct, initialize, and install the services as a property on the XH object. 
-Note that there is a strict expectation that service classes will be named ending with the word
-'Service', e.g. `MyCustomService.`.  The installed instance in this case would then be made available  
-to application code as `XH.myCustomService'. 
- 
+Use the `@HoistService` decorator to mark a class as a global service within. As with the other
+decorators, this installs MobX and Event support and defines an empty `initAsync()` lifecycle
+method. To instantiate and make services available to application code, use the
+`XH.installServicesAsync()` method. This method will construct, initialize, and install the services
+as a property on the XH object. Note that there is a strict expectation that service classes will be
+named ending with the word 'Service', e.g. `MyCustomService.`. The installed instance in this case
+would then be made available to application code as `XH.myCustomService'.
+
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
 tasks and code patterns commonly used within Service classes.
@@ -305,19 +307,22 @@ tasks and code patterns commonly used within Service classes.
 | `elem.js`  | Utils for creating elements and element factories. | [⚛️](core/elem.js) |
 
 
-Hoist encourages the use of Element factories to create element trees in render functions using pure Javascript.  These
-factory methods take a configuration object where properties and child elements are specified without any wrapping 
-braces or additional syntax. All Hoist API components have predefined element factories available for import alongside
-the core Component.  We also provide an `elemFactory()` function which can be used to create such a factory from any 
-third-party or application Component.    
+Hoist encourages the use of Element factories to create element trees in render functions using pure
+Javascript. These factory methods take a configuration object where properties and child elements
+are specified without any wrapping braces or additional syntax. All Hoist API components have
+predefined element factories available for import alongside the core Component. We also provide an
+`elemFactory()` function which can be used to create such a factory from any third-party or
+application Component.
 
-We believe that this factory approach excels for declarative specification of code-heavy element trees.  New users of 
-Hoist are invited to examine the source code of our core components to see examples of its use.  Its probably
-the most notable hallmark of our internal code, and where Hoist diverges most visibly from other React projects.  
+We believe that this factory approach excels for declarative specification of code-heavy element
+trees. New users of Hoist are invited to examine the source code of our core components to see
+examples of its use. Its probably the most notable hallmark of our internal code, and where Hoist
+diverges most visibly from other React projects.
 
-It's worth noting that this approach is based on an extremely thin layer (<20 lines of code) around the core React 
-`createElement()` API, and does not impose or rely on any special requirements or additional libraries.  Its also worth
-noting that this approach is only superficially different from JSX (see below).
+It's worth noting that this approach is based on an extremely thin layer (<20 lines of code) around
+the core React `createElement()` API, and does not impose or rely on any special requirements or
+additional libraries. Its also worth noting that this approach is only superficially different from
+JSX (see below).
 
 ## What about JSX?
 
@@ -326,15 +331,17 @@ components. While it's syntax and appearance within otherwise "vanilla" Javascri
 strange to non-React developers, JSX syntax and conventions are a de-facto standard in the React
 community, familiar to React developers, and found in all React guides and tutorials.
 
-**Hoist fully supports JSX.** 
+**Hoist fully supports JSX.**
 
-All Hoist components can be created with JSX tags, and developers of Hoist-based 
-applications can exclusively use JSX if they wish.  In fact, for element trees with a significant amount of hypertext, 
-JSX might be a better choice then element factories, and we frequently make internal use of it for that purpose.  Also, 
-JSX can be used interchangably with element factories, even within the same render method.
+All Hoist components can be created with JSX tags, and developers of Hoist-based applications can
+exclusively use JSX if they wish. In fact, for element trees with a significant amount of hypertext,
+JSX might be a better choice then element factories, and we frequently make internal use of it for
+that purpose. Also, JSX can be used interchangably with element factories, even within the same
+render method.
 
-Note that JSX is pre-processed (via Babel) into calls to React.createElement() before running in the browser.  
-Ultimately this produces similar runtime Javascript to the element factory approach reccomended above.  
+Note that JSX is pre-processed (via Babel) into calls to React.createElement() before running in the
+browser. Ultimately this produces similar runtime Javascript to the element factory approach
+reccomended above.
 
 
 ## Bundled and Managed Components
@@ -401,7 +408,7 @@ to bundle up and somewhat abstract away the two-part nature of full-stack Hoist 
 assigned to your application. This is a short, camelCased variant of the longer `appName` and is set
 within the application source code via both the Gradle and Webpack configs.
 
-### 1) Setup/Prep
+### 1\) Setup/Prep
 
 ####  1.1) Refresh and Lint JS Client
 
@@ -441,7 +448,7 @@ special plugin development setup outlined above, manually deleting or renaming i
 to not check that change into source control). In many cases, in-line Grails plugin development will
 be a rarity or limited to ExHI or a smaller set of developers.
 
-### 2) Server and Client Builds
+### 2\) Server and Client Builds
 
 #### 2.1) Build (and optionally publish) Grails server WAR with Gradle
 
@@ -520,7 +527,7 @@ yarn build --env.appVersion=$appVersion --env.appBuild=$appBuild
 
 The output is a set of files within `/client-app/build/` .
 
-### 3) Docker images
+### 3\) Docker images
 
 🐳 The primary outputs of the overall build process are a pair of Docker containers, one for the
 Grails server and one for the client JS assets. These include the build assets and are tagged with
@@ -714,7 +721,7 @@ made more targeted if desired:
 sudo docker system prune -af
 ```
 
-### 4) Docker deployment
+### 4\) Docker deployment
 
 🚢 We typically setup distinct targets for build vs. deploy, and configure deployment targets to
 prompt for the version number and/or Docker hostname. This process will differ significantly
@@ -790,6 +797,7 @@ sudo docker system prune -af
 🙏 Thanks for your patience as we continue to build out this documentation.
 
 ------------------------------------------
+
 📫☎️🌎 info@xh.io | https://xh.io/contact
 
 Copyright © 2019 Extremely Heavy Industries Inc.
