@@ -18,7 +18,7 @@ export const dragger = hoistCmp.factory({
     model: false,
 
     render({model}) {
-        const dragModel = useLocalModel(() => model.animateResize ?
+        const dragModel = useLocalModel(() => model.resizeWhileDragging ?
             new DraggerAnimatedModel(model) :
             new DraggerModel(model));
 

@@ -24,7 +24,7 @@ _"The one with the hooks."_
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Resizable panels now default to not redrawing their content when resized until the resize bar is dropped.
-  To force a panel to redraw while the resize bar is being dragged, set `animateResize:true` on the PanelModel config.
+  To force a panel to redraw while the resize bar is being dragged, set `resizeWhileDragging:true` on the PanelModel config.
 * `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
   creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
   fully observable. With this change the `Ref` class in the same package is now obsolete.
@@ -37,8 +37,8 @@ _"The one with the hooks."_
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
-* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need 
-  to set the `store` or `gridModel` property explicitly to null. 
+* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need
+  to set the `store` or `gridModel` property explicitly to null.
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer supported.
   Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this functionality
   has also been made available directly on `Panel` via the `contextMenu` and `hotkeys` props.
