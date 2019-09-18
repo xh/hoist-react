@@ -24,6 +24,7 @@ import classNames from 'classnames';
 export const ColumnHeader = hoistCmp({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
+    model: false,
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));

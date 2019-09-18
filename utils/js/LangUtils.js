@@ -4,9 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {isEmpty, isObject, isObjectLike, forOwn, mixin, uniq, uniqBy} from 'lodash';
 import _inflection from 'lodash-inflection';
+import {Exception} from '@xh/hoist/exception';
 
 mixin(_inflection);
 
@@ -75,7 +75,7 @@ export function isJSON(obj) {
  */
 export function throwIf(condition, message) {
     if (condition) {
-        throw XH.exception(message);
+        throw Exception.create(message);
     }
 }
 

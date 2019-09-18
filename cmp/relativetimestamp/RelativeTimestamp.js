@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {XH, hoistCmp, useLocalModel, managed, HoistModel} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {box} from '@xh/hoist/cmp/layout';
 import {span} from '@xh/hoist/cmp/layout';
 import {Timer} from '@xh/hoist/utils/async';
