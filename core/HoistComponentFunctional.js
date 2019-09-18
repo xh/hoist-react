@@ -206,7 +206,8 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 3) context
     if (modelLookup && spec.fromContext) {
-        return {model: modelLookup.lookupModel(selector), isOwned: false};
+        const contextModel = modelLookup.lookupModel(selector);
+        if (contextModel) return {model: contextModel, isOwned: false};
     }
 
     // 4) default create
