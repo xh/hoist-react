@@ -26,8 +26,9 @@ _"The one with the hooks."_
 * `DateInput` will now accept LocalDates as `value`, `minDate` and `maxDate` props.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
-* Resizable panels now default to not redrawing their content when resized until the resize bar is dropped.
-  To force a panel to redraw while the resize bar is being dragged, set `resizeWhileDragging:true` on the PanelModel config.
+* Resizable panels now default to not redrawing their content when resized until the resize bar is
+  dropped.  This offers an improved user experience for most situations, especially when layouts are complex.
+  To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging` to `true`.
 * `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
   creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
   fully observable. With this change the `Ref` class in the same package is now obsolete.
