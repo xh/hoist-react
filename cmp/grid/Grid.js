@@ -23,7 +23,7 @@ import {observable, computed, runInAction} from '@xh/hoist/mobx';
 import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
+import {agGrid, AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS} from '@xh/hoist/cmp/ag-grid';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
 import {withShortDebug} from '@xh/hoist/utils/js';
@@ -153,7 +153,8 @@ class GridImplModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const modelHeight = this.model.compact ? AgGrid.COMPACT_ROW_HEIGHT : AgGrid.ROW_HEIGHT,
+        const agHeights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS,
+            modelHeight = XH.isMobile ? agHeights.mobile : agHeights.desktop,
             columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
         return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
     }

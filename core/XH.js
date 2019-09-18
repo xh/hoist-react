@@ -5,15 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import ReactDOM from 'react-dom';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
-
-import {elem, AppState, AppSpec, ReactiveSupport} from '@xh/hoist/core';
+import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {observable, action} from '@xh/hoist/mobx';
-import {never, wait, allSettled} from '@xh/hoist/promise';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
-
+import {action, observable} from '@xh/hoist/mobx';
+import {never, wait} from '@xh/hoist/promise';
 import {
     AutoRefreshService,
     ConfigService,
@@ -27,11 +22,13 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
+import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import ReactDOM from 'react-dom';
 
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
-import {RouterModel} from './RouterModel';
 import {ExceptionHandler} from './ExceptionHandler';
-
+import {RouterModel} from './RouterModel';
 import '../styles/XH.scss';
 
 /**
@@ -204,8 +201,7 @@ class XHClass {
      * Trigger a full reload of the current application.
      *
      * This method will reload the entire application document in the browser.
-     *
-     * To simply trigger a refresh of the loadable content within the application
+     * To simply trigger a refresh of the loadable content within the application,
      * see XH.refreshAppAsync() instead.
      **/
     @action
@@ -230,8 +226,7 @@ class XHClass {
 
     /**
      * Tracks globally loading promises.
-     *
-     * Applications should link any async operations that should mask the entire viewport to this model.
+     * Apps should link any async operations that should mask the entire viewport to this model.
      */
     get appLoadModel() {
         return this.acm.appLoadModel;
@@ -373,9 +368,10 @@ class XHClass {
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
      * @param {string} [config.intent] - The Blueprint intent (desktop only)
-     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint Position enum (desktop only).
-     * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.  If null, the Toast
-     *      will appear at the edges of the document (desktop only).
+     * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
+     *     Position enum (desktop only).
+     * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
+     *      If null, the Toast will appear at the edges of the document (desktop only).
      */
     toast(config) {
         return this.acm.toastSourceModel.show(config);
@@ -624,8 +620,8 @@ class XHClass {
             }, 'XH');
         });
 
-        const results = await allSettled(promises),
-            errs = results.filter(it => it.state === 'rejected');
+        const results = await Promise.allSettled(promises),
+            errs = results.filter(it => it.status === 'rejected');
 
         if (errs.length > 0) {
             // Enhance entire result col w/class name, we care about errs only

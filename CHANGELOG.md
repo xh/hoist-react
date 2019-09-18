@@ -13,6 +13,9 @@ _"The one with the hooks."_
 * Hoist components are now be able to read their models from context, allowing a much less verbose
   specification of application code. Currently only functional components can publish models to
   context.
+* Hoist now establishes a proper react "error boundary" around all application code. This means that
+  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
+  and stack traces for rendering errors should be significantly less verbose.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an `<enter>` keypress (same as clicking 'OK').
 * `stringExcludes` function added to form validation constraints. This allows an input value to
@@ -31,17 +34,28 @@ _"The one with the hooks."_
 * Hoist now establishes a proper react "error boundary" around all application code. This means that
   errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
   and stack traces for rendering errors should be signifigantly less verbose.
+* Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
+  support for the nullsafe operator `let foo = bar?.baz` via the
+  `@babel/plugin-proposal-optional-chaining` plugin.
 
 ### 💥 Breaking Changes
 
+* Apps must update their dev dependencies to the latest `@xh/hoist-dev-utils` package: v4.0+. This
+  updates the versions of Babel / Webpack used in builds and swaps to the updated Babel
+  recommendation of `core-js` for polyfills.
+* The `allSettled` function in `@xh/promise` has been removed. Applications using this method should
+  use the ECMA standard (stage-2) `Promise.allSettled` instead. This method is now fully available
+  in Hoist via bundled polyfills. Note that the standard method returns an array of objects of the
+  form `{status: [rejected|fulfilled], ...}`, rather than `{state: [rejected|fulfilled], ...}`.
 * The `containerRef` argument for `XH.toast()` should now be a DOM element. Component instances are
   no longer supported types for this value. This is required to support functional Components
   throughout the toolkit.
-* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need
-  to set the `store` or `gridModel` property explicitly to null.
-* The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer supported.
-  Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this functionality
-  has also been made available directly on `Panel` via the `contextMenu` and `hotkeys` props.
+* Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need to
+  set the `store` or `gridModel` property explicitly to null.
+* The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer
+  supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
+  functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
+  props.
 
 ### 🐞 Bug Fixes
 
@@ -50,7 +64,9 @@ _"The one with the hooks."_
 
 ### 📚 Libraries
 
+* @xh/hoist-dev-utils `3.8 -> 4.1` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
+* rsvp (removed)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
 
@@ -1602,12 +1618,10 @@ resizing and collapsing behavior** (#534).
   * For consistency, we have also renamed `EventTarget -> EventSupport` and `Reactive ->
     ReactiveSupport` mixins. These both continue to be auto-applied to HoistModel and HoistService
     classes, and ReactiveSupport enabled by default in HoistComponent.
-* **The Context menu API has changed.** The
-  [`ContextMenuSupport` mixin](https://github.com/exhi/hoist-react/blob/develop/desktop/cmp/contextmenu/ContextMenuSupport.js)
-  now specifies an abstract `getContextMenuItems()` method for component implementation (replacing
-  the previous `renderContextMenu()` method). See the new
-  [`ContextMenuItem` class](https://github.com/exhi/hoist-react/blob/develop/desktop/cmp/contextmenu/ContextMenuItem.js)
-  for what these items support, as well as several static default items that can be used.
+* **The Context menu API has changed.** The `ContextMenuSupport` mixin now specifies an abstract
+  `getContextMenuItems()` method for component implementation (replacing the previous
+  `renderContextMenu()` method). See the new [`ContextMenuItem` class for what these items support,
+  as well as several static default items that can be used.
   * The top-level `AppContainer` no longer provides a default context menu, instead allowing the
     browser's own context menu to show unless an app / component author has implemented custom
     context-menu handling at any level of their component hierarchy.

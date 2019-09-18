@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {observable, computed, action} from '@xh/hoist/mobx';
 import {clone, remove} from 'lodash';
+import classNames from 'classnames';
 
 /**
  * A custom ag-Grid header component.
@@ -21,28 +21,88 @@ import {clone, remove} from 'lodash';
  *
  * @private
  */
-@HoistComponent
-export class ColumnHeader extends Component {
+export const ColumnHeader = hoistCmp({
+    displayName: 'ColumnHeader',
+    className: 'xh-grid-header',
+    model: false,
+
+    render(props) {
+        const impl = useLocalModel(() => new LocalModel(props));
+
+        const sortIcon = () => {
+            const activeGridSorter = impl.activeGridSorter;
+            if (!activeGridSorter) return null;
+
+            let icon;
+            if (activeGridSorter.abs) {
+                icon = Icon.arrowToBottom();
+            } else if (activeGridSorter.sort === 'asc') {
+                icon = Icon.arrowUp({size: 'sm'});
+            } else if (activeGridSorter.sort === 'desc') {
+                icon = Icon.arrowDown({size: 'sm'});
+            }
+            return div({className: 'xh-grid-header-sort-icon', item: icon});
+        };
+
+        const menuIcon = () => {
+            if (!props.enableMenu) return null;
+            return div({
+                className: 'xh-grid-header-menu-icon',
+                item: impl.isFiltered ? Icon.filter() : Icon.bars(),
+                ref: impl.menuButtonRef,
+                onClick: (e) => {
+                    e.stopPropagation();
+                    props.showColumnMenu(impl.menuButtonRef.current);
+                }
+            });
+        };
+
+        const extraClasses = [
+            impl.isFiltered ? 'xh-grid-header-filtered' : null,
+            impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
+            impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
+        ];
+
+        return div({
+            className: classNames(props.className, extraClasses),
+            onClick: impl.onClick,
+            onTouchEnd: impl.onClick,
+            items: [
+                span(props.displayName),
+                sortIcon(),
+                menuIcon()
+            ]
+        });
+    }
+});
+
+
+@HoistModel
+class LocalModel {
 
     gridModel;
     xhColumn;
     agColumn;
     colId;
-
     menuButtonRef = createObservableRef();
-
-    baseClassName = 'xh-grid-header';
-
     @observable isFiltered = false;
+    enableSorting;
+
+    constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
+        this.gridModel = gridModel;
+        this.xhColumn = xhColumn;
+        this.agColumn = agColumn;
+        this.colId = agColumn.colId;
+        this.isFiltered = agColumn.isFilterActive();
+        this.enableSorting = enableSorting;
+        agColumn.addEventListener('filterChanged', () => this.onFilterChanged());
+    }
 
     // Get any active sortBy for this column, or null
     @computed
     get activeGridSorter() {
-        if (!this.gridModel) return; // ag-grid auto group column wont have a gridModel
-
-        return this.gridModel.sortBy.find(it => {
-            return it.colId === this.colId;
-        });
+        if (!this.gridModel || !this.enableSorting) return null; // ag-grid auto group column wont have a gridModel
+        return this.gridModel.sortBy.find(it => it.colId === this.colId);
     }
 
     @computed
@@ -51,78 +111,8 @@ export class ColumnHeader extends Component {
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
     }
 
-    constructor(props) {
-        super(props);
-        const {gridModel, xhColumn, column} = this.props;
-        this.gridModel = gridModel;
-        this.xhColumn = xhColumn;
-        this.agColumn = column;
-        this.colId = column.colId;
-        this.isFiltered = column.isFilterActive();
-        column.addEventListener('filterChanged', () => this.onFilterChanged());
-    }
-
-    render() {
-        const {displayName} = this.props,
-            classNames = [
-                this.isFiltered ? 'xh-grid-header-filtered' : null,
-                this.activeGridSorter ? 'xh-grid-header-sorted' : null,
-                this.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
-            ];
-
-        return div({
-            className: this.getClassName(...classNames),
-            onClick: this.onClick,
-            onTouchEnd: this.onClick,
-            items: [
-                span(displayName),
-                this.renderSortIcon(),
-                this.renderMenuIcon()
-            ]
-        });
-    }
-
-    renderSortIcon() {
-        const {props, activeGridSorter} = this,
-            {enableSorting} = props;
-
-        if (!enableSorting || !activeGridSorter) return null;
-
-        let icon;
-        if (activeGridSorter.abs) {
-            icon = Icon.arrowToBottom();
-        } else if (activeGridSorter.sort === 'asc') {
-            icon = Icon.arrowUp({size: 'sm'});
-        } else if (activeGridSorter.sort === 'desc') {
-            icon = Icon.arrowDown({size: 'sm'});
-        }
-
-        return div({
-            className: 'xh-grid-header-sort-icon',
-            item: icon
-        });
-    }
-
-    renderMenuIcon() {
-        const {enableMenu, showColumnMenu} = this.props;
-        if (!enableMenu) return null;
-
-        return div({
-            className: 'xh-grid-header-menu-icon',
-            item: this.isFiltered ? Icon.filter() : Icon.bars(),
-            ref: this.menuButtonRef,
-            onClick: (e) => {
-                e.stopPropagation();
-                showColumnMenu(this.menuButtonRef.current);
-            }
-        });
-    }
-
-    //--------------------
-    // Implementation
-    //--------------------
     onClick = (e) => {
-        if (!this.props.enableSorting || !this.gridModel) return;
+        if (!this.enableSorting || !this.gridModel) return;
 
         const {gridModel, activeGridSorter, colId} = this,
             nextSortBy = this.getNextSortBy();
@@ -136,7 +126,7 @@ export class ColumnHeader extends Component {
             sortBy.push(nextSortBy);
         }
 
-        this.gridModel.setSortBy(sortBy);
+        gridModel.setSortBy(sortBy);
     }
 
     @action
@@ -156,5 +146,4 @@ export class ColumnHeader extends Component {
             return {colId, sort: 'asc', abs: false};
         }
     }
-
 }
