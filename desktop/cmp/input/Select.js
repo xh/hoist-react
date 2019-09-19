@@ -7,7 +7,7 @@
 import React from 'react';
 import PT from 'prop-types';
 import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {castArray, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
+import {castArray, isNil, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
 import debouncePromise from 'debounce-promise';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
@@ -309,10 +309,10 @@ export class Select extends HoistInput {
     toInternal(external) {
         if (this.multiMode) {
             if (external == null) external = [];  // avoid [null]
-            return castArray(external).map(it => this.findOption(it, !isEmpty(it)));
+            return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
 
-        return this.findOption(external, !isEmpty(external));
+        return this.findOption(external, !isNil(external));
     }
 
     findOption(val, createIfNotFound) {
@@ -323,10 +323,14 @@ export class Select extends HoistInput {
     }
 
     toExternal(internal) {
-        if (isEmpty(internal)) return null;
-        return this.multiMode ?
-            castArray(internal).map(it => it.value) :
-            internal.value;
+        if (isNil(internal)) return null;
+
+        if (this.multiMode) {
+            if (isEmpty(internal)) return null;
+            return castArray(internal).map(it => it.value);
+        }
+
+        return internal.value;
     }
 
     normalizeOptions(options) {
