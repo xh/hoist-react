@@ -323,6 +323,8 @@ export class Select extends HoistInput {
     }
 
     toExternal(internal) {
+        if (isNil(internal)) return null;
+
         if (this.multiMode) {
             if (isEmpty(internal)) return null;
             return castArray(internal).map(it => it.value);
