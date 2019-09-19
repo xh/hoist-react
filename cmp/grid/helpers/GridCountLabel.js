@@ -16,7 +16,7 @@ import PT from 'prop-types';
 /**
  * Displays the number of records loaded into a grid's store + (configurable) selection count.
  *
- * Alternative to more general {@see StoreFilterField}.
+ * Alternative to more general {@see StoreCountLabel}.
  */
 export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
     displayName: 'GridCountLabel',
