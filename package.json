@@ -2,9 +2,9 @@
   "name": "@xh/hoist",
   "version": "28.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
-  "repository": "github:exhi/hoist-react",
+  "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
-  "bugs": "https://github.com/exhi/hoist-react/issues",
+  "bugs": "https://github.com/xh/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {

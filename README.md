@@ -8,7 +8,7 @@ client components that work together to provide an integrated set of tools and u
 constructing sophisticated front-end interfaces - or entire applications - with a strong focus on
 building for the enterprise.
 
-Please refer to the [Hoist Core](https://github.com/exhi/hoist-core) repository readme for an
+Please refer to the [Hoist Core](https://github.com/xh/hoist-core) repository readme for an
 overview of Hoist as a whole: its reason for existing, server-side tech stack, general features and
 capabilities.
 
@@ -42,7 +42,7 @@ for use by clients of Extremely Heavy Industries who are working with us to deve
 applications for their enterprise.
 
 Please refer to the
-[Hoist Core readme](https://github.com/exhi/hoist-core#hoist-usage-licensing-and-support) for
+[Hoist Core readme](https://github.com/xh/hoist-core#hoist-usage-licensing-and-support) for
 additional terms and conditions, all of which apply equally and entirely to Hoist React.
 
 ## Key Libraries and Dependencies
@@ -75,7 +75,7 @@ only features, including row grouping and tree grids. Ag-Grid offers several
 included with the application codebase to verify compliance and avoid console warnings. An
 appropriate key can be installed in any Hoist React application by via the `agGridLicenseKey`
 parameter to `configureWebpack()` within
-[hoist-dev-utils](https://github.com/exhi/hoist-dev-utils/blob/master/configureWebpack.js).
+[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js).
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
@@ -106,7 +106,7 @@ Key features of modern Javascript (and a bit of "BabelScript") used throughout H
   Mobx and used within Hoist to mixin key behaviors to several core artifacts. Decorator support is
   provided via the `transform-decorators-legacy` Babel plugin, which is specified as a dev
   dependency and enabled by `configureWebpack()` within
-  [hoist-dev-utils](https://github.com/exhi/hoist-dev-utils/blob/master/configureWebpack.js).
+  [hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js).
 
 ### Promises
 
@@ -119,7 +119,7 @@ Promise prototype, including:
   a configurable and end-user-focused error dialog to display an exception message with support for
   disclosing any stack trace and/or reporting user-supplied notes back to the server.
 + `track` - to integrate a Promise-based call with Hoist
-  [activity tracking](https://github.com/exhi/hoist-core#activity-tracking-and-client-error-reporting),
+  [activity tracking](https://github.com/xh/hoist-core#activity-tracking-and-client-error-reporting),
   timing the duration of a promise-based chain and reporting it back to the server tagged with a
   developer-supplied category, message, and optional extra data.
 + `timeout` - to cut (overly) long running Promises short
@@ -133,9 +133,9 @@ behaviors, but we have found it to be a helpful indicator of any Promise-based, 
 
 ## MobX - Reactive State Management
 
-+ Homepage: https://mobx.js.org/
-+ Docs: https://mobx.js.org/refguide/api.html
-+ Source: https://github.com/mobxjs/mobx
++ Homepage: <https://mobx.js.org/>
++ Docs: <https://mobx.js.org/refguide/api.html>
++ Source: <https://github.com/mobxjs/mobx>
 
 |      Class/File      |                               Note                                |                 Link                  |
 |----------------------|-------------------------------------------------------------------|:-------------------------------------:|
@@ -384,7 +384,7 @@ will be filled in as soon as possible. These include planned notes on:
 application. We consider the Grails-based back-end and React-based front-end to be two sides of the
 same application. We build and deploy them together, and so the below includes info on building the
 Grails / Gradle based server. That is technically the domain of
-[Hoist Core](https://github.com/exhi/hoist-core) but is detailed here to provide a consolidated look
+[Hoist Core](https://github.com/xh/hoist-core) but is detailed here to provide a consolidated look
 at the build process.
 
 ***At a high level, the build process:***
@@ -428,7 +428,7 @@ the containing directory, which in a CI build is probably a random hash.
 
 Project names can be set via a `settings.gradle`in the project root, but we often don’t want to
 check in a `settings.gradle` with each app project. as we commonly build and test [custom Grails
-plugins](https://github.com/exhi/hoist-core#custom-plugins-for-enterprise-deployments) by running in
+plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments) by running in
 a [multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html)
 with an under-development Grails plugin and the app checked out as siblings in a parent wrapper
 directory. That parent directory (which is local to the developer’s machine and not in source
@@ -472,7 +472,7 @@ source control when a new major release moves us to a new snapshot.
 
 When publishing, the build script is typically also setup to accept credentials w/deploy rights to
 the internal Maven repository. The
-[Toolbox build script](https://github.com/exhi/toolbox/blob/develop/build.gradle) provides an
+[Toolbox build script](https://github.com/xh/toolbox/blob/develop/build.gradle) provides an
 example - see the `publishing` section.
 
 Teamcity can use its dedicated “Gradle runner” to provide a more customized view on the task, or a
@@ -499,7 +499,7 @@ preferred.
 This step takes several arguments that are passed via a script in `package.json` to Webpack. Each
 project has a `webpack.config.js` file checked into the root of its `client-app` directory that
 accepts any args and runs them through a script provided by
-[hoist-dev-utils](https://github.com/exhi/hoist-dev-utils/blob/master/configureWebpack.js) to
+[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js) to
 produce a fully-based Webpack configuration object. The two args typically set during the build
 process (as opposed to being checked in to the app's `webpack.config.js`) are:
 
@@ -536,7 +536,7 @@ the desired version, making them (as a pair) a complete and deployable instance 
 Applications should be checked in with a `/docker/` directory containing Dockerfiles and configs for
 both the server and client containers. Both can be based on
 [public images published by ExHI](https://hub.docker.com/r/xhio/), although an inspection of
-[those](https://github.com/exhi/xh-tomcat) [images](https://github.com/exhi/xh-nginx) will show that
+[those](https://github.com/xh/xh-tomcat) [images](https://github.com/xh/xh-nginx) will show that
 they are very thin layers on top of the official Tomcat and nginx images on Docker Hub.
 
 #### 3.1) Build and Publish Tomcat Docker image
@@ -676,7 +676,7 @@ server {
 * Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
   builds!
 * Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
-  image also copies in [an overall config](https://github.com/exhi/xh-nginx/blob/master/xh.conf)
+  image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf)
   that enables gzip compression and sets the `$expires` variable referenced above.
 * Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
   sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
@@ -688,7 +688,7 @@ server {
 * Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
   files if they exist, but otherwise falling back to `index.html` within that path. This allows for
   the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
-  of a traditional `#` symbol (e.g. http://host/app/details/123).
+  of a traditional `#` symbol (e.g. <http://host/app/details/123>).
 * Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
   expected by the JS client, which will automatically prepend it to the path of any local/relative
   Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
@@ -798,6 +798,6 @@ sudo docker system prune -af
 
 ------------------------------------------
 
-📫☎️🌎 info@xh.io | https://xh.io/contact
+📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
 Copyright © 2019 Extremely Heavy Industries Inc.

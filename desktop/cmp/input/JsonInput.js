@@ -33,7 +33,7 @@ import './JsonInput.scss';
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
  *
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
- * Reconcile LayoutSupport with width/height props. https://github.com/exhi/hoist-react/issues/327
+ * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
 @HoistComponent
 @LayoutSupport
