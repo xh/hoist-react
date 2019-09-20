@@ -32,18 +32,17 @@ export const colChooser = hoistCmp.factory({
     className: 'xh-col-chooser',
 
     render({model, className, width, height}) {
-        const {gridModel, lrModel, isPopoverOpen} = model;
+        const {gridModel, isPopoverOpen} = model;
 
         return panel({
             className,
             items: [
                 leftRightChooser({
-                    model: lrModel,
                     width: withDefault(width, 500),
                     height: withDefault(height, 300)
                 }),
                 toolbar(
-                    leftRightChooserFilter({model: lrModel, fields: ['text']}),
+                    leftRightChooserFilter({fields: ['text']}),
                     filler(),
                     button({
                         text: 'Reset',
