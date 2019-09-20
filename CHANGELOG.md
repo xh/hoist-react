@@ -27,8 +27,9 @@ _"The one with the hooks."_
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Resizable panels now default to not redrawing their content when resized until the resize bar is
-  dropped.  This offers an improved user experience for most situations, especially when layouts are complex.
-  To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging` to `true`.
+  dropped. This offers an improved user experience for most situations, especially when layouts are
+  complex. To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging` to
+  `true`.
 * `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
   creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
   fully observable. With this change the `Ref` class in the same package is now obsolete.
@@ -65,8 +66,12 @@ _"The one with the hooks."_
 
 ### 📚 Libraries
 
+* @blueprintjs/datetime `3.12 -> 3.13`
+* @fortawesome/fontawesome-pro `5.10 -> 5.11`
 * @xh/hoist-dev-utils `3.8 -> 4.1` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
+* highcharts `7.1 -> 7.2`
+* react-transition-group `4.2 -> 4.3`
 * rsvp (removed)
 
 [Commit Log](https://github.com/exhi/hoist-react/compare/v27.1.0...develop)
