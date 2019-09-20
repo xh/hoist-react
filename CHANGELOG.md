@@ -58,6 +58,8 @@ _"The one with the hooks."_
   supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
   functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
   props.
+* `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform
+  package `/cmp/dataview`.
 
 ### 🐞 Bug Fixes
 
