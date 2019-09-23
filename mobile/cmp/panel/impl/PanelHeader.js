@@ -4,24 +4,24 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {hbox, div, filler} from '@xh/hoist/cmp/layout';
 
 /**
  * A standardized header for a Panel component
  * @private
  */
-@HoistComponent
-export class PanelHeader extends Component {
+export const panelHeader = hoistCmp.factory({
+    displayName: 'PanelHeader',
+    className: 'xh-panel-header',
+    model: false, memo: false, observer: false,
 
-    render() {
-        let {title, icon, headerItems = []} = this.props;
+    render({className, title, icon, headerItems = []}) {
 
         if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
-            className: 'xh-panel-header',
+            className,
             items: [
                 icon || null,
                 title ?
@@ -35,7 +35,4 @@ export class PanelHeader extends Component {
             ]
         });
     }
-
-}
-
-export const panelHeader = elemFactory(PanelHeader);
+});
