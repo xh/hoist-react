@@ -65,5 +65,5 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
 });
 LeftRightChooser.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object]).isRequired
+    model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object])
 };
