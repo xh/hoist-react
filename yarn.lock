@@ -280,6 +280,14 @@
     "@babel/helper-plugin-utils" "^7.0.0"
     "@babel/plugin-syntax-json-strings" "^7.2.0"
 
+"@babel/plugin-proposal-nullish-coalescing-operator@~7.4.4":
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-nullish-coalescing-operator/-/plugin-proposal-nullish-coalescing-operator-7.4.4.tgz#41c360d59481d88e0ce3a3f837df10121a769b39"
+  integrity sha512-Amph7Epui1Dh/xxUxS2+K22/MUi6+6JVTvy3P58tja3B6yKTSjwwx0/d83rF7551D6PVSSoplQb8GCwqec7HRw==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.0.0"
+    "@babel/plugin-syntax-nullish-coalescing-operator" "^7.2.0"
+
 "@babel/plugin-proposal-object-rest-spread@^7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-object-rest-spread/-/plugin-proposal-object-rest-spread-7.5.5.tgz#61939744f71ba76a3ae46b5eea18a54c16d22e58"
@@ -345,6 +353,13 @@
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-jsx/-/plugin-syntax-jsx-7.2.0.tgz#0b85a3b4bc7cdf4cc4b8bf236335b907ca22e7c7"
   integrity sha512-VyN4QANJkRW6lDBmENzRszvZf3/4AXaj9YR7GwrWeeN9tEBPuXbmDYVU9bYBN0D70zCWVwUy0HWq2553VCb6Hw==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.0.0"
+
+"@babel/plugin-syntax-nullish-coalescing-operator@^7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-nullish-coalescing-operator/-/plugin-syntax-nullish-coalescing-operator-7.2.0.tgz#f75083dfd5ade73e783db729bbd87e7b9efb7624"
+  integrity sha512-lRCEaKE+LTxDQtgbYajI04ddt6WW0WJq57xqkAZ+s11h4YgfRHhVA/Y2VhfPzzFD4qeLHWg32DMp9HooY4Kqlg==
   dependencies:
     "@babel/helper-plugin-utils" "^7.0.0"
 
@@ -1427,14 +1442,15 @@
     eslint-plugin-react "~7.14.3"
     eslint-plugin-react-hooks "~2.0.1"
 
-"@xh/hoist-dev-utils@~4.1.2":
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.1.2.tgz#0a4cdaa1994f44d739e06631860d85b764589472"
-  integrity sha512-OR13IUl0BCCJ0SSeM58tPbR5X7DMt9Dj44Tx0n5kViDnsyFx4PGa+9xHEmJYoG+LxJTzBvQb1VO2y4CVKczF7A==
+"@xh/hoist-dev-utils@~4.2.0":
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.2.0.tgz#4a1f35857324e80dc0cb235742c145384fdc84fc"
+  integrity sha512-4LtnlmjB3stGUvdAqbU96kO1Ad2swEsAAbMlzmHfJ45l42M9Vu9YwsxdDevKGM4RoX5SamwZnq3G/GVxj7Y9mw==
   dependencies:
     "@babel/core" "~7.6.0"
     "@babel/plugin-proposal-class-properties" "~7.5.5"
     "@babel/plugin-proposal-decorators" "~7.6.0"
+    "@babel/plugin-proposal-nullish-coalescing-operator" "~7.4.4"
     "@babel/plugin-proposal-optional-chaining" "~7.6.0"
     "@babel/preset-env" "~7.6.0"
     "@babel/preset-react" "~7.0.0"

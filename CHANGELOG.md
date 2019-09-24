@@ -35,10 +35,12 @@ _"The one with the hooks."_
   fully observable. With this change the `Ref` class in the same package is now obsolete.
 * Hoist now establishes a proper react "error boundary" around all application code. This means that
   errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
-  and stack traces for rendering errors should be signifigantly less verbose.
+  and stack traces for rendering errors should be significantly less verbose.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
-  support for the nullsafe operator `let foo = bar?.baz` via the
-  `@babel/plugin-proposal-optional-chaining` plugin.
+  support for the `optional chaining` (aka null safe) and `nullish coalescing` operators via their
+  Babel proposal plugins. Developers are encouraged to make good use of the new syntax below:
+  *  conditional-chaining: `let foo = bar?.baz?.qux;`
+  *  nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
 
 ### 💥 Breaking Changes
 
@@ -70,7 +72,7 @@ _"The one with the hooks."_
 
 * @blueprintjs/datetime `3.12 -> 3.13`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
-* @xh/hoist-dev-utils `3.8 -> 4.1` (multiple transitive updates to build tooling)
+* @xh/hoist-dev-utils `3.8 -> 4.2` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
 * react-transition-group `4.2 -> 4.3`
