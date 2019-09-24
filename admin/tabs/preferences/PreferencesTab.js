@@ -6,6 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import {PreferencePanel} from './PreferencePanel';
 import {UserPreferencePanel} from './UserPreferencePanel';
@@ -16,8 +17,8 @@ export const PreferencesTab = hoistCmp(
             route: 'default.preferences',
             switcherPosition: 'left',
             tabs: [
-                {id: 'prefs', content: PreferencePanel},
-                {id: 'userPrefs', content: UserPreferencePanel, reloadOnShow: true}
+                {id: 'prefs', icon: Icon.bookmark(), content: PreferencePanel},
+                {id: 'userPrefs', icon: Icon.users(), content: UserPreferencePanel, reloadOnShow: true}
             ]
         }
     })

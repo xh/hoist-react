@@ -11,4 +11,4 @@ The files in this directory are used / referenced by the `@xh/hoist-dev-utils` p
   this project are the ones used / imported for the app. The app should not need to specify its own
   dependency on either library.
 
-See [Hoist Dev Utils](https://github.com/exhi/hoist-dev-utils) for additional details.
+See [Hoist Dev Utils](https://github.com/xh/hoist-dev-utils) for additional details.
