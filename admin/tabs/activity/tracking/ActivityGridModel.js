@@ -18,7 +18,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 export class ActivityGridModel {
 
     @bindable.ref startDate = LocalDate.today().subtract(7);
-    @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/exhi/hoist-react/issues/400
+    @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
     @bindable username = '';
     @bindable msg = '';
     @bindable category = '';
@@ -93,7 +93,7 @@ export class ActivityGridModel {
         this.setEndDate(newEnd);
         this.loadAsync();
     }
-    
+
     @action
     openDetail(rec) {
         this.detailRecord = rec;

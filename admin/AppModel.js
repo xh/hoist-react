@@ -56,7 +56,7 @@ export class AppModel {
                 path: '/logging',
                 children: [
                     {name: 'viewer', path: '/viewer'},
-                    {name: 'levels', path: '/levels'}
+                    {name: 'config', path: '/config'}
                 ]
             },
             {
@@ -64,7 +64,7 @@ export class AppModel {
                 path: '/monitor',
                 children: [
                     {name: 'status', path: '/status'},
-                    {name: 'editMonitors', path: '/editMonitors'}
+                    {name: 'config', path: '/config'}
                 ]
             },
             {

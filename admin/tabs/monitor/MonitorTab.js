@@ -7,6 +7,7 @@
 
 import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import {MonitorResultsPanel} from './MonitorResultsPanel';
 import {MonitorEditorPanel} from './MonitorEditorPanel';
@@ -17,8 +18,8 @@ export const MonitorTab = hoistCmp(
             route: 'default.monitor',
             switcherPosition: 'left',
             tabs: [
-                {id: 'status', content: MonitorResultsPanel},
-                {id: 'editMonitors', content: MonitorEditorPanel}
+                {id: 'status', icon: Icon.shieldCheck(), content: MonitorResultsPanel},
+                {id: 'config', icon: Icon.settings(), content: MonitorEditorPanel}
             ]
         }
     })
