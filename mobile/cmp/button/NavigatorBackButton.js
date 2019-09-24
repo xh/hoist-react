@@ -5,23 +5,25 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {XH, HoistComponent, elemFactory} from '@xh/hoist/core';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
 
-@HoistComponent
-export class NavigatorBackButton extends Component {
+/**
+ * Convenience Button preconfigured to use navigate back one page.
+ */
+export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
+    displayName: 'NavigatorBackButton',
+    model: uses(NavigatorModel),
 
-    render() {
-        if (this.model.pages.length < 2) return null;
+    render({model, ...rest}) {
+        if (model.pages.length < 2) return null;
         return button({
             icon: Icon.chevronLeft(),
             onClick: () => XH.popRoute(),
-            ...this.props
+            ...rest
         });
     }
-
-}
-
-export const navigatorBackButton = elemFactory(NavigatorBackButton);
+});
+NavigatorBackButton.propTypes = {...Button.propTypes};

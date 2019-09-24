@@ -72,7 +72,6 @@ export class AppBar extends Component {
             leftItems,
             rightItems,
             navigatorModel,
-            appMenuModel,
             hideAppMenuButton,
             hideBackButton,
             hideRefreshButton,
@@ -88,8 +87,7 @@ export class AppBar extends Component {
                     className: 'xh-appbar-left',
                     items: [
                         navigatorBackButton({
-                            omit: hideBackButton || !navigatorModel,
-                            model: navigatorModel,
+                            omit: hideBackButton,
                             ...backButtonProps
                         }),
                         ...leftItems || []
@@ -114,12 +112,11 @@ export class AppBar extends Component {
                         ...rightItems || [],
                         refreshButton({
                             omit: hideRefreshButton,
-                            disabled: navigatorModel.disableAppRefreshButton,
+                            disabled: navigatorModel?.disableAppRefreshButton,
                             ...refreshButtonProps
                         }),
                         menuButton({
-                            omit: hideAppMenuButton || !appMenuModel,
-                            model: appMenuModel,
+                            omit: hideAppMenuButton,
                             ...appMenuButtonProps
                         })
                     ]

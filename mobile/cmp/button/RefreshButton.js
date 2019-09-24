@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 
 /**
@@ -40,10 +40,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
 });
 
 RefreshButton.propTypes = {
-    icon: PT.element,
-
-    /** Function to call when the button is clicked. */
-    onClick: PT.func,
+    ...Button.propTypes,
 
     /** HoistModel to refresh. */
     model: PT.object

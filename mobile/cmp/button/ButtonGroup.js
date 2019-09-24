@@ -5,26 +5,26 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import PT from 'prop-types';
+import {hoistCmp} from '@xh/hoist/core';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 import {hbox} from '@xh/hoist/cmp/layout';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
-import {Button} from '@xh/hoist/mobile/cmp/button';
 
 import './ButtonGroup.scss';
 
 /**
  * A segmented group of buttons. Should receive a list of Buttons as a children.
  */
-@HoistComponent
-@LayoutSupport
-export class ButtonGroup extends Component {
+export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
+    displayName: 'ButtonGroup',
+    model: false,
+    className: 'xh-button-group',
 
-    baseClassName = 'xh-button-group';
-
-    render() {
-        const {children, ...rest} = this.getNonLayoutProps(),
+    render(props) {
+        const [layoutProps, {children, style, ...rest}] = splitLayoutProps(props),
             buttons = castArray(children);
 
         buttons.forEach(button => {
@@ -33,11 +33,14 @@ export class ButtonGroup extends Component {
 
         return hbox({
             items: buttons,
-            ...rest,
-            ...this.getLayoutProps(),
-            className: this.getClassName()
+            style: {
+                ...style,
+                ...layoutProps
+            },
+            ...rest
         });
     }
-}
-
-export const buttonGroup = elemFactory(ButtonGroup);
+});
+ButtonGroup.propTypes = {
+    style: PT.object
+};

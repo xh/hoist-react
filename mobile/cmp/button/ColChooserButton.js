@@ -5,12 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
-import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection,
@@ -18,30 +17,36 @@ import {button} from '@xh/hoist/mobile/cmp/button';
  *
  * Requires the `GridModel.enableColChooser` config option to be true.
  */
-@HoistComponent
-export class ColChooserButton extends Component {
+export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
+    displayName: 'ColChooserButton',
+    model: false,
 
-    static propTypes = {
-        /** GridModel of the grid for which this button should show a chooser. */
-        model: PT.instanceOf(GridModel)
-    };
+    render({icon, onClick, gridModel, ...rest}) {
+        gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-    static modelClass = GridModel;
+        if (!gridModel) {
+            console.error("No GridModel available to ColChooserButton. Provide via a 'gridModel' prop, or context.");
+            return button({
+                icon: withDefault(icon, Icon.gridPanel()),
+                disabled: true,
+                ...rest
+            });
+        }
 
-    render() {
-        const {icon, onClick, model, ...rest} = this.props;
+        if (!onClick) {
+            onClick = () => gridModel.showColChooser();
+        }
 
         return button({
             icon: withDefault(icon, Icon.gridPanel()),
-            onClick: withDefault(onClick, this.showChooser),
+            onClick,
             ...rest
         });
     }
+});
+ColChooserButton.propTypes = {
+    ...Button.propTypes,
 
-    showChooser = () => {
-        this.model.showColChooser();
-    }
-
-}
-
-export const colChooserButton = elemFactory(ColChooserButton);
+    /** GridModel of the grid for which this button should show a chooser. */
+    gridModel: PT.instanceOf(GridModel)
+};
