@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
+import {Component, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
@@ -12,7 +12,6 @@ import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
-import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 
@@ -119,7 +118,7 @@ export class Panel extends Component {
             ret = cmp({isDisplayed: true});
         } else if (prop instanceof PendingTaskModel) {
             ret = cmp({model: prop, spinner: true});
-        } else if (isReactElement(prop)) {
+        } else if (isValidElement(prop)) {
             ret = prop;
         }
 
