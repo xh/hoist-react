@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {useState} from 'react';
+import {useRef} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -45,7 +45,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
     className: 'xh-panel',
 
     render({model, ...props}, ref) {
-        let [flags] = useState({wasDisplayed: true}),
+
+        let wasDisplayed = useRef(false),
             [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
         const {
@@ -91,7 +92,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && flags.wasDisplayed)) {
+        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -113,7 +114,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 coreContents = hotkeysHost({hotkeys, item: coreContents});
             }
         }
-        if (!collapsed) flags.wasDisplayed = true;
+        if (!collapsed) wasDisplayed.current = true;
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
