@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import React, {cloneElement, useContext, Children} from 'react';
+import React, {cloneElement, useContext, useState, Children} from 'react';
 import PT from 'prop-types';
 import {isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
@@ -63,7 +63,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
 
         // Child related props
         const child = getValidChild(children),
-            childId = child.props.id || XH.genId(),
+            [stableId] = useState(XH.genId()),
+            childId = child.props.id || stableId,
             childIsSizeable = child.type?.hasLayoutSupport || false,
             childCssName = `xh-form-field-${kebabCase(getReactElementName(child))}`;
 
