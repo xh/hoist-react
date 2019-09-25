@@ -6,8 +6,7 @@
  */
 
 import PT from 'prop-types';
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import {castArray} from 'lodash';
 
@@ -20,31 +19,30 @@ import {panel, Panel} from './Panel';
  * These views do not participate in navigation or routing, and are used for showing fullscreen
  * views outside of the Navigator / TabContainer context.
  */
-@HoistComponent
-export class DialogPanel extends Component {
+export const [DialogPanel, dialogPanel] = hoistCmp.withFactory({
+    displayName: 'DialogPanel',
+    className: 'xh-dialog xh-dialog-panel',
+    memo: false, model: false, observer: false,
 
-    static propTypes = {
-        ...Panel.propTypes,
 
-        /** Is the dialog panel shown.  */
-        isOpen: PT.bool
-    };
-
-    render() {
-        const {isOpen, children, ...rest} = this.props;
+    render({className, isOpen, children, ...rest}) {
 
         if (!isOpen) return null;
 
         return dialog({
             isOpen: true,
             isCancelable: false,
-            className: 'xh-dialog xh-dialog-panel',
+            className,
             items: panel({
                 items: castArray(children),
                 ...rest
             })
         });
     }
-}
+});
+DialogPanel.propTypes = {
+    ...Panel.propTypes,
 
-export const dialogPanel = elemFactory(DialogPanel);
+    /** Is the dialog panel shown.  */
+    isOpen: PT.bool
+};
