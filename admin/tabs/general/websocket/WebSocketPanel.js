@@ -38,7 +38,7 @@ export const WebSocketPanel = hoistCmp({
                 exportButton()
             ],
             item: grid(),
-            mask: model.loadModel,
+            mask: 'onLoad',
             ref: model.viewRef
         });
     }

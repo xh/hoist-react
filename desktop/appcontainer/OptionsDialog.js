@@ -54,7 +54,7 @@ const displayedDialog = hoistCmp.factory({
             canOutsideClickClose: false,
             item: [
                 panel({
-                    mask: model.loadModel,
+                    mask: 'onLoad',
                     item: dialogBody(
                         form({
                             model: formModel,

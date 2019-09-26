@@ -22,7 +22,7 @@ export const ClientErrorPanel = hoistCmp({
 
     render({model}) {
         return panel({
-            mask: model.loadModel,
+            mask: 'onLoad',
             tbar: tbar(),
             items: [
                 grid({

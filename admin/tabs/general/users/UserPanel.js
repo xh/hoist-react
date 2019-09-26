@@ -18,9 +18,9 @@ import {UserModel} from './UserModel';
 export const UserPanel = hoistCmp({
     model: creates(UserModel),
 
-    render({model}) {
+    render() {
         return panel({
-            mask: model.loadModel,
+            mask: 'onLoad',
             tbar: [
                 switchInput({
                     bind: 'activeOnly',

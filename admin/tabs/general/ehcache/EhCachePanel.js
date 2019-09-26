@@ -20,7 +20,7 @@ export const EhCachePanel = hoistCmp({
 
     render({model}) {
         return panel({
-            mask: model.loadModel,
+            mask: 'onLoad',
             tbar: [
                 button({
                     icon: Icon.reset(),
