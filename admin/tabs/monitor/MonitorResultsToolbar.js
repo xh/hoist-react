@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 
 export const monitorResultsToolbar = hoistCmp.factory(
     ({model}) => {
-        const {passed, warned, failed, lastRun} = model;
+        const {passed, warned, failed} = model;
 
         return toolbar(
             button({
@@ -45,7 +45,7 @@ export const monitorResultsToolbar = hoistCmp.factory(
                 ]
             }),
             filler(),
-            relativeTimestamp({timestamp: lastRun, options: {emptyResult: 'No results available!'}})
+            relativeTimestamp({bind: 'lastRun', options: {emptyResult: 'No results available!'}})
         );
     }
 );

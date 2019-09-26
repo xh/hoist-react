@@ -30,7 +30,7 @@ export const WebSocketPanel = hoistCmp({
                     onClick: () => model.sendAlertToSelectedAsync()
                 }),
                 filler(),
-                relativeTimestamp({timestamp: model.lastRefresh}),
+                relativeTimestamp({bind: 'lastRefresh'}),
                 toolbarSep(),
                 gridCountLabel({unit: 'client'}),
                 toolbarSep(),
