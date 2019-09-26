@@ -279,7 +279,7 @@
 .ag-theme-balham-dark {
     &.ag-popup {
         .ag-tooltip {
-            z-index: 9999 !important; // always show tooltips above other content, e.g. context menus
+            z-index: 99999 !important; // always show tooltips above other content, e.g. context menus
         }
     }
 }
