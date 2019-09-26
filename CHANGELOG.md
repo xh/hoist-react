@@ -10,13 +10,13 @@ factories. See that (within [HoistComponentFunctional.js](core/HoistComponentFun
 new `useLocalModel()` and `useContextModel()` hooks (within [core/hooks](core/hooks)) for more
 information.
 
+Along with the performance benefits, and the ability to use React hooks, Hoist functional components are designed to 
+read and write their models via context.  This allows a much less verbose specification of component element trees.        
+
 Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
 familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
-is now strongly encouraged.
-
-Hoist components are now be able to read their models from context, allowing a much less verbose
-specification of application code. Note that currently only functional components can publish models
-to context.
+is now strongly encouraged.  In particular note that Class-based Components will *not* be able to 
+leverage the context for model support discussed above.
 
 ### 🎁 New Features
 
