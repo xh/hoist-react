@@ -14,7 +14,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
 import {fmtDateTime} from '@xh/hoist/format';
 import {flow} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, withDefault} from '@xh/hoist/utils/js';
 
 import {getLayoutProps} from '@xh/hoist/utils/react';
 
@@ -56,8 +56,11 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, timestamp, options, ...props}) {
+    render({model, className, timestamp, bind, options, ...props}) {
         const impl = useLocalModel(LocalModel);
+
+        timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
+
         impl.setData(timestamp, options);
 
         return box({
@@ -72,8 +75,18 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     }
 });
 RelativeTimestamp.propTypes = {
-    /** Date object that will be used as reference, can also be specified in milliseconds*/
+    /**
+     * Date or milliseconds representing time to be displayed.
+     *
+     * See also 'bind' as an alternativ
+     */
     timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
+
+    /**
+     * Property on context model containing timestamp.
+     * Specify as an alternative to an explicit 'timestamp'
+     */
+    bind: PT.string,
 
     /** @see getRelativeTimestamp options */
     options: PT.object
