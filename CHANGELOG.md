@@ -79,6 +79,7 @@ to context.
   reset to underlying value.)
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
+* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear above the context menu.
 
 ### 📚 Libraries
 
