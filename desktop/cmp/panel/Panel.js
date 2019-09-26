@@ -183,7 +183,7 @@ Panel.propTypes = {
     hotkeys: PT.oneOfType([PT.func, PT.array, PT.node]),
 
     /**
-     * Mask to render on this panel. Set to:
+     * LoadingIndicator to render on this panel. Set to:
      *   + a ReactElement specifying a LoadingIndicator,
      *   + true for a default LoadingIndicator,
      *   + a PendingTaskModel for a default LoadingIndicator bound to a pending task,
