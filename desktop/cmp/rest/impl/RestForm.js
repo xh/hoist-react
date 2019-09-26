@@ -49,7 +49,6 @@ const formDisplay = hoistCmp.factory(
 
         return dialogBody(
             form({
-                model: model.formModel,
                 fieldDefaults: {
                     commitOnChange: true,
                     minimal: true,

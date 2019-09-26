@@ -218,9 +218,6 @@ function lookupModel(spec, props, modelLookup, displayName) {
     }
 
     //  Component are encouraged to handle a missing model gently. Could also be error
-    console.warn(
-        `Unable to find specified model for '${displayName}'. Expected: ${formatSelector(selector)}`
-    );
     return {model: null, isOwned: false};
 }
 
