@@ -8,10 +8,9 @@
 import {span} from '@xh/hoist/cmp/layout';
 import {elemFactory} from '@xh/hoist/core';
 import {hotkey, hotkeys, HotkeysTarget} from '@xh/hoist/kit/blueprint';
-import {isReactElement} from '@xh/hoist/utils/react';
 import {isPlainObject} from 'lodash';
 import PT from 'prop-types';
-import React, {Component} from 'react';
+import React, {Component, isValidElement} from 'react';
 
 /**
  * Component supporting Keypress support for its contents.
@@ -32,7 +31,7 @@ export const HotkeysHost = HotkeysTarget(
         renderHotkeys() {
             let spec = this.props.hotkeys;
             if (!spec) return null;
-            if (isReactElement(spec)) return spec;
+            if (isValidElement(spec)) return spec;
 
             return hotkeys(
                 spec.map(it => isPlainObject(it) ? hotkey(it) : it)

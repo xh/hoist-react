@@ -8,10 +8,9 @@
 import {elemFactory} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
-import {isReactElement} from '@xh/hoist/utils/react';
 import {isArray, isFunction} from 'lodash';
 import PT from 'prop-types';
-import {Component} from 'react';
+import {Component, isValidElement} from 'react';
 
 /**
  * Component supporting a right-click ContextMenu on its contents.
@@ -30,7 +29,7 @@ export const ContextMenuHost = ContextMenuTarget(
             if (isFunction(spec)) spec = spec(e);
 
             if (isArray(spec)) return contextMenu({menuItems: spec});
-            if (isReactElement(spec)) return spec;
+            if (isValidElement(spec)) return spec;
 
             return null;
         }

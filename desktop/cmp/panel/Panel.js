@@ -5,14 +5,14 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {useRef} from 'react';
+import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {isReactElement, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -147,7 +147,7 @@ function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
     if (prop === true)                      return cmp({isDisplayed: true});
     if (prop instanceof PendingTaskModel)   return cmp({model: prop, spinner: true});
-    if (isReactElement(prop))               return prop;
+    if (isValidElement(prop))               return prop;
     if (prop === 'onLoad') {
         if (!contextModel.isLoadSupport) {
             console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement @LoadSupport.`);
@@ -158,7 +158,6 @@ function parseLoadDecorator(prop, name, contextModel) {
 
     return null;
 }
-
 
 Panel.propTypes = {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
