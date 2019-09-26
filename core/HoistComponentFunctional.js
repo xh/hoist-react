@@ -42,8 +42,7 @@ import classNames from 'classnames';
  * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
  *      Specify as false for components that don't require a primary model. Otherwise,
  *      {@see uses()} and {@see creates()} - these two factory functions can be used to create an
- *      appropriate spec for either externally-provided or internally-created models. Defaults to
- *      `uses('*')` for render functions taking props, otherwise false.
+ *      appropriate spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
  * @param {String} [config.className] - base css classname for this component.  Will be combined with any
  *      className in props, and the combined string  will be made available to the render function via props.
  * @param {string} [config.displayName] - component name for debugging/inspection.
@@ -66,15 +65,14 @@ export function hoistComponent(config) {
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
     const render = config.render,
-        argCount = render.length,
         className = config.className,
         displayName = config.displayName ? config.displayName : 'HoistCmp',
         isMemo = withDefault(config.memo, true),
         isObserver = withDefault(config.observer, true),
-        isForwardRef = argCount == 2;
+        isForwardRef = (render.length === 2);
 
-    // 1) Default and validate the modelSpec -- note the default based on presence of props arg.
-    const modelSpec = withDefault(config.model, argCount > 0 ? uses('*') : null);
+    // 1) Default and validate the modelSpec
+    const modelSpec = withDefault(config.model, uses('*'));
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
