@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {elemFactory} from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {ContextMenuTarget} from '@xh/hoist/kit/blueprint';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import {contextMenu as contextMenuEl} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
+import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {isArray, isFunction} from 'lodash';
 import PT from 'prop-types';
-import {Component, isValidElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 
 /**
  * Component supporting a right-click ContextMenu on its contents.
@@ -18,23 +18,34 @@ import {Component, isValidElement} from 'react';
  * See also Panel's 'contextMenu' prop, which will delegate to this component and offers the most
  * convenient interface for many application use cases.
  */
-export const ContextMenuHost = ContextMenuTarget(
-    class extends Component {
-        render() {
-            return this.props.children;
-        }
+export const [ContextMenuHost, contextMenuHost] = hoistCmp.withFactory({
+    displayName: 'ContextMenuHost',
+    observer: false, memo: false, model: false,
 
-        renderContextMenu(e) {
-            let spec  = this.props.contextMenu;
-            if (isFunction(spec)) spec = spec(e);
+    render({children, contextMenu, ...props}) {
 
-            if (isArray(spec)) return contextMenu({menuItems: spec});
-            if (isValidElement(spec)) return spec;
+        const onContextMenu = (e) => {
+            if (isFunction(contextMenu)) {
+                contextMenu = contextMenu(e);
+            }
+            if (isArray(contextMenu)) {
+                contextMenu = contextMenuEl({menuItems: contextMenu});
+            }
 
-            return null;
-        }
+            if (!isValidElement(contextMenu)) {
+                console.error('Incorrect specification of ContextMenu in ContextMenuHost');
+                return;
+            }
+
+            // Adapted from Blueprint 'ContextMenuTarget'
+            if (e.defaultPrevented) return;
+            e.preventDefault();
+            ContextMenu.show(contextMenu, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
+        };
+
+        return cloneElement(Children.only(children), {onContextMenu});
     }
-);
+});
 
 ContextMenuHost.propTypes = {
     /**
@@ -44,6 +55,4 @@ ContextMenuHost.propTypes = {
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node])
 };
-
-export const contextMenuHost = elemFactory(ContextMenuHost);
 

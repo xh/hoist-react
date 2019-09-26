@@ -24,7 +24,6 @@ Popover.defaultProps.transitionDuration = 0;
 
 export {
     ContextMenu,
-    ContextMenuTarget,
     Classes,
     HotkeysTarget,
     PopoverInteractionKind,
