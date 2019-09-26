@@ -78,13 +78,13 @@ RelativeTimestamp.propTypes = {
     /**
      * Date or milliseconds representing time to be displayed.
      *
-     * See also 'bind' as an alternativ
+     * See also 'bind' as an alternative.
      */
     timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
 
     /**
      * Property on context model containing timestamp.
-     * Specify as an alternative to an explicit 'timestamp'
+     * Specify as an alternative to an explicit 'timestamp' prop.
      */
     bind: PT.string,
 
