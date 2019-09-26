@@ -274,3 +274,12 @@
     padding-right: 8px;
   }
 }
+
+.ag-theme-balham,
+.ag-theme-balham-dark {
+    &.ag-popup {
+        .ag-tooltip {
+            z-index: 9999 !important; // always show tooltips above other content, e.g. context menus
+        }
+    }
+}
