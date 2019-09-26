@@ -40,7 +40,7 @@ export class RecordSet {
         return this.recordMap.get(id);
     }
 
-    getDescendentsById(id) {
+    getDescendantsById(id) {
         const idSet = new Set();
         this.gatherDescendantIds(id, idSet);
         return Array.from(idSet).map(id => this.getById(id));

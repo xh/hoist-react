@@ -64,18 +64,34 @@ export class Record {
         return this.store.getChildrenById(this.id, false);
     }
 
-    get descendents() {
+    /**
+     * The descendants of this record, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
+    get descendants() {
         return this.store.getDescendantsById(this.id, true);
     }
 
-    get allDescendents() {
+    /**
+     * All descendants of this record unfiltered.
+     * @returns {Record[]}
+     */
+    get allDescendants() {
         return this.store.getDescendantsById(this.id, false);
     }
 
+    /**
+     * The ancestors of this record, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
     get ancestors() {
         return this.store.getAncestorsById(this.id, true);
     }
 
+    /**
+     * All ancestors of this record unfiltered.
+     * @returns {Record[]}
+     */
     get allAncestors() {
         return this.store.getAncestorsById(this.id, false);
     }
@@ -134,14 +150,29 @@ export class Record {
         );
     }
 
+    /**
+     * Calls 'fn' for each child record of this record.
+     * @param {function} fn - the function to call.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     */
     forEachChild(fn, fromFiltered = false) {
         this.store.getChildrenById(this.id, fromFiltered).forEach(it => it.fn);
     }
 
+    /**
+     * Calls 'fn' for each descendant record of this record.
+     * @param {function} fn - the function to call.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     */
     forEachDescendant(fn, fromFiltered = false) {
         this.store.getDescendantsById(this.id, fromFiltered).forEach(it => fn(it));
     }
 
+    /**
+     * Calls 'fn' for each ancestor record of this record.
+     * @param {function} fn - the function to call.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     */
     forEachAncestor(fn, fromFiltered = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
     }
