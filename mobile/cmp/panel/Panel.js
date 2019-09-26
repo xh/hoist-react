@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp} from '@xh/hoist/core';
@@ -11,7 +12,6 @@ import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
-import {isReactElement} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {panelHeader} from './impl/PanelHeader';
 
@@ -119,10 +119,10 @@ function parseLoadDecorator(prop, cmp) {
         ret = cmp({isDisplayed: true});
     } else if (prop instanceof PendingTaskModel) {
         ret = cmp({model: prop, spinner: true});
-    } else if (isReactElement(prop)) {
+    } else if (isValidElement(prop)) {
         ret = prop;
     }
-
+  
     return ret;
 }
 

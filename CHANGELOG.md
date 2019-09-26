@@ -62,6 +62,8 @@ _"The one with the hooks."_
   props.
 * `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform
   package `/cmp/dataview`.
+* `isReactElement` has been removed.  Applications should use the native react API `React.isValidElement` 
+  instead.  
 
 ### 🐞 Bug Fixes
 

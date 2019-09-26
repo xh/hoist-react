@@ -5,10 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-export function isReactElement(obj) {
-    return obj && obj.$$typeof;
-}
-
 export function getReactElementName(obj) {
     return obj.type.name || obj.type.displayName;  // Support for class-based and functional cmps, respectively
 }

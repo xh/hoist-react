@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {isValidElement} from 'react';
 import {elem, hoistCmp, uses} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {isReactElement} from '@xh/hoist/utils/react';
 import {DockViewModel} from '@xh/hoist/cmp/dock';
 import classNames from 'classnames';
 
@@ -91,7 +91,7 @@ const body = hoistCmp.factory(
     ({model}) => {
         let {content} = model,
             contentEl = content.isHoistComponent ? elem(content) : content;
-        if (!isReactElement(contentEl)) {
+        if (!isValidElement(contentEl)) {
             console.error("Please specify a React element, or a Component for the 'content' of a DockedView");
             contentEl = null;
         }
