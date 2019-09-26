@@ -64,6 +64,22 @@ export class Record {
         return this.store.getChildrenById(this.id, false);
     }
 
+    get descendents() {
+        return this.store.getDescendantsById(this.id, true);
+    }
+
+    get allDescendents() {
+        return this.store.getDescendantsById(this.id, false);
+    }
+
+    get ancestors() {
+        return this.store.getAncestorsById(this.id, true);
+    }
+
+    get allAncestors() {
+        return this.store.getAncestorsById(this.id, false);
+    }
+
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all
      * Fields defined on the given Store and install them as top-level properties on the new Record.
@@ -116,6 +132,18 @@ export class Record {
             this.store == rec.store &&
             this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
         );
+    }
+
+    forEachChild(fn, fromFiltered = false) {
+        this.store.getChildrenById(this.id, fromFiltered).forEach(it => it.fn);
+    }
+
+    forEachDescendant(fn, fromFiltered = false) {
+        this.store.getDescendantsById(this.id, fromFiltered).forEach(it => fn(it));
+    }
+
+    forEachAncestor(fn, fromFiltered = false) {
+        this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
     }
 
 }

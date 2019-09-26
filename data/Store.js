@@ -303,6 +303,18 @@ export class Store {
         return ret ? ret : [];
     }
 
+    getDescendantsById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all,
+            ret = rs.getDescendentsById(id);
+        return ret ? ret : [];
+    }
+
+    getAncestorsById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all,
+            ret = rs.getAncestorsById(id);
+        return ret ? ret : [];
+    }
+
     /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
