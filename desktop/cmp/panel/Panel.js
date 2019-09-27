@@ -144,13 +144,13 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop instanceof PendingTaskModel)   return cmp({model: prop, spinner: true});
     if (isValidElement(prop))               return prop;
     if (prop === 'onLoad') {
-        if (!contextModel.isLoadSupport) {
-            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement @LoadSupport.`);
+        const loadModel = contextModel?.loadModel;
+        if (!loadModel) {
+            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model is not an instance of @LoadSupport or have a 'loadModel' property.`);
             return null;
         }
-        return cmp({model: contextModel.loadModel, spinner: true});
+        return cmp({model: loadModel, spinner: true});
     }
-
     return null;
 }
 
