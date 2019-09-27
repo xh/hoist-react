@@ -51,7 +51,7 @@ leverage the context for model support discussed above.
 * Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need to
   set the `store` or `gridModel` property explicitly to null.
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer
-  supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
+  supported. Use the new hooks `useContextMenu` or `UseHotkeys` instead. For convenience, this
   functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
   props.
 * `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform

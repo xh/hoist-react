@@ -4,4 +4,5 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './HotkeysHost';
+export * from './UseHotkeys';
+export * from './UseContextMenu';

@@ -12,7 +12,6 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys/HotkeysHost';
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 
 /**
@@ -26,25 +25,12 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        if (!model.canImpersonate) return null;
+        const localModel = useLocalModel(LocalModel);
+        localModel.model = model;
 
-        return hotkeysHost({
-            hotkeys: [{
-                global: true,
-                combo: 'shift + i',
-                label: 'Open Impersonation Dialog',
-                onKeyDown: () => model.toggleVisibility()
-            }],
-            item: model.isOpen ? displayBar() : null
-        });
-    }
-});
+        if (!model.canImpersonate || !model.isOpen) return null;
 
-
-const displayBar = hoistCmp.factory({
-    render({model}) {
-        const {isImpersonating, targets} = model,
-            localModel = useLocalModel(() => new LocalModel(model));
+        const {isImpersonating, targets} = model;
 
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
