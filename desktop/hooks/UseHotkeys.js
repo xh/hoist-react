@@ -66,6 +66,8 @@ class Model {
     destroy() {
         document.removeEventListener('keydown', this.globalHotkeysEvents.handleKeyDown);
         document.removeEventListener('keyup', this.globalHotkeysEvents.handleKeyUp);
+        this.globalHotkeysEvents.clear();
+        this.localHotkeysEvents.clear();
     }
 }
 
