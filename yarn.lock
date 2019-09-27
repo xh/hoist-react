@@ -1531,20 +1531,20 @@ adm-zip@^0.4.9:
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.13.tgz#597e2f8cc3672151e1307d3e95cddbc75672314a"
   integrity sha512-fERNJX8sOXfel6qCBCMPvZLzENBEhZTzKqg6vrOW5pvoEaQuJhRU4ndTAh6lHOxn1I6jnz2NHra56ZODM751uw==
 
-ag-grid-community@~21.2.1:
-  version "21.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-21.2.1.tgz#0d8ab868f2fe8da302e19d14ef99669ef00d3b28"
-  integrity sha512-UmS0j7pOz6SqN++Thg1a82LghW1zKk0k30kpPWxlOzC5On5b8MyKVsYZbGFtpdIHyJlPH3qbkw+PcFWSK168sw==
+ag-grid-community@~21.2.2:
+  version "21.2.2"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-21.2.2.tgz#a5696a303fa04d03d26e4c9e09e114d308ff4ad4"
+  integrity sha512-x8kQmynYM/7zoigs7wIe7DkK1TIlUP5N1TYrGPsK8vO2gN+rqOok9csGPy4YamggWTcSxpy7wji/Kcz/gUp8/w==
 
-ag-grid-enterprise@~21.2.1:
-  version "21.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-21.2.1.tgz#2005f07f6ace847ce8e31b16f6cda5b327b97c94"
-  integrity sha512-4be91bGte+n26Lzuvxz2i9NNlNnrNGZhxPxmeLdRkJP8exrY9J9iuaytCWXluLy8jxWajFpyopEU6orXtxpkVw==
+ag-grid-enterprise@~21.2.2:
+  version "21.2.2"
+  resolved "https://registry.yarnpkg.com/ag-grid-enterprise/-/ag-grid-enterprise-21.2.2.tgz#9e32b6cee5a13e644c9b174f245c96ff63b7b37b"
+  integrity sha512-tmJh9bjSuAFg4CtQ+o+ygl/uXqPZg13p+heR73DxT20WhkA+/WYljQRBzyNyjs4C1GbdkPqWj9pSIu2klOU6Bw==
 
-ag-grid-react@~21.2.1:
-  version "21.2.1"
-  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-21.2.1.tgz#f1c97cb673ef8c30ae39b4774772a5a7b83593c1"
-  integrity sha512-cEDFOZF0GXolW60QCGwikToJxyacuUPEhb7x0vfK4XiHrT9aQ0+0l+KcmvvqWfN2sK78oRgKpjFI2wQjw2QYuA==
+ag-grid-react@~21.2.2:
+  version "21.2.2"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-21.2.2.tgz#55f19eb3bb14a3beddd642adb0bb03da1249ae59"
+  integrity sha512-QlTtLMsBgLMPzqP95KoOUxXfCwVoYpLOF0uiZeVouHXUR/WxZXlsgtcyOPueKwDGWKBQ+qxB0+3JV5q+mSrPXw==
   dependencies:
     prop-types "^15.6.2"
 
@@ -2626,10 +2626,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codemirror@~5.48.4:
-  version "5.48.4"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.48.4.tgz#4210fbe92be79a88f0eea348fab3ae78da85ce47"
-  integrity sha512-pUhZXDQ6qXSpWdwlgAwHEkd4imA0kf83hINmUEzJpmG80T/XLtDDEzZo8f6PQLuRCcUQhmzqqIo3ZPTRaWByRA==
+codemirror@~5.49.0:
+  version "5.49.0"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.49.0.tgz#adedbffcc81091e4a0334bcb96b1ae3b7ada5e3f"
+  integrity sha512-Hyzr0HToBdZpLBN9dYFO/KlJAsKH37/cXVHPAqa+imml0R92tb9AkmsvjnXL+SluEvjjdfkDgRjc65NG5jnMYA==
 
 collection-visit@^1.0.0:
   version "1.0.0"
@@ -3982,10 +3982,10 @@ filesize@^3.6.1:
   resolved "https://registry.yarnpkg.com/filesize/-/filesize-3.6.1.tgz#090bb3ee01b6f801a8a8be99d31710b3422bb317"
   integrity sha512-7KjR1vv6qnicaPMi1iiTcI85CyYwRO/PSFCu6SvqL8jN2Wjt/NIYQTFtFs7fSDCYOstUkEWIQGFUg5YZQfjlcg==
 
-filesize@~4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/filesize/-/filesize-4.2.0.tgz#a8c989a179ca3a895cc32eab4abc64ebf6d34d44"
-  integrity sha512-bdS2UP98MZzLyTZzhuSH5ctAWyDt81n5xMti9BSdmgPXjjENLDz5Bmbk2R7ATVw/HRysZzWA2JIPgcSAOimWpw==
+filesize@~4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/filesize/-/filesize-4.2.1.tgz#ab1cb2069db5d415911c1a13e144c0e743bc89bc"
+  integrity sha512-bP82Hi8VRZX/TUBKfE24iiUGsB/sfm2WUrwTQyAzQrhO3V9IhcBBNBXMyzLY5orACxRyYJ3d2HeRVX+eFv4lmA==
 
 fill-range@^4.0.0:
   version "4.0.0"
@@ -7153,10 +7153,10 @@ qs@~6.5.2:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
 
-qs@~6.8.0:
-  version "6.8.0"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.8.0.tgz#87b763f0d37ca54200334cd57bb2ef8f68a1d081"
-  integrity sha512-tPSkj8y92PfZVbinY1n84i1Qdx75lZjMQYx9WZhnkofyxzw2r7Ho39G3/aEvSUdebxpnnM4LZJCtvE/Aq3+s9w==
+qs@~6.9.0:
+  version "6.9.0"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.0.tgz#d1297e2a049c53119cb49cca366adbbacc80b409"
+  integrity sha512-27RP4UotQORTpmNQDX8BHPukOnBP3p1uUJY5UnDhaJB+rMt9iMsok724XL+UHU23bEFOHRMQ2ZhI99qOWUMGFA==
 
 query-string@^4.1.0:
   version "4.3.4"
