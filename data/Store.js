@@ -124,7 +124,10 @@ export class Store {
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
         if (update) {
-            updateRecs = update.map(it => this.createRecord(it));
+            updateRecs = update.map(it => {
+                const rec = this.getById(it.id);
+                return this.createRecord({...rec.raw, ...it});
+            });
         }
         if (add) {
             addRecs = new Map();
@@ -161,6 +164,16 @@ export class Store {
         }
 
         if (didUpdate) this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Update data for an individual Record
+     * @param {string|number} id - id of the Record to update
+     * @param {Object} data - updated raw data for the record. This will be merged into the original
+     *      raw data for the Record.
+     */
+    updateRecordData(id, data) {
+        this.updateData({update: [{id, ...data}]});
     }
 
     /** Remove all records from the store. */
