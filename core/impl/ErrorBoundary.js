@@ -9,13 +9,12 @@ import {Component} from 'react';
 import {elemFactory} from '@xh/hoist/core';
 
 /**
- *
- * @private
- *
  * A minimal component implementing a React error boundary.
  *
- * Any errors occuring during rendering will yield a simple error
+ * Any errors occurring during rendering will yield a simple error
  * string, and a call to the onError callback.
+ *
+ * @private
  */
 export class ErrorBoundary extends Component {
 
