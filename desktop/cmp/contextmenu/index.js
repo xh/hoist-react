@@ -4,7 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './ContextMenuHost';
 export * from './ContextMenu';
 export * from './ContextMenuItem';
 export * from './StoreContextMenu';

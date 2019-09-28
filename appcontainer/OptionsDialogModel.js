@@ -68,6 +68,16 @@ export class OptionsDialogModel {
         this.isOpen = false;
     }
 
+
+    @action
+    toggleVisibility() {
+        if (this.isOpen) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    }
+
     async initAsync() {
         const {formModel} = this;
         const promises = this.options.map(option => {

@@ -10,12 +10,13 @@ factories. See that (within [HoistComponentFunctional.js](core/HoistComponentFun
 new `useLocalModel()` and `useContextModel()` hooks (within [core/hooks](core/hooks)) for more
 information.
 
-Along with the performance benefits, and the ability to use React hooks, Hoist functional components are designed to 
-read and write their models via context.  This allows a much less verbose specification of component element trees.        
+Along with the performance benefits and the ability to use React hooks, Hoist functional components
+are designed to read and write their models via context. This allows a much less verbose
+specification of component element trees.
 
 Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
 familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
-is now strongly encouraged.  In particular note that Class-based Components will *not* be able to 
+is now strongly encouraged.  In particular note that Class-based Components will *not* be able to
 leverage the context for model support discussed above.
 
 ### 🎁 New Features
@@ -51,7 +52,7 @@ leverage the context for model support discussed above.
 * Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need to
   set the `store` or `gridModel` property explicitly to null.
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer
-  supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
+  supported. Use the new hooks `useContextMenu()` and `useHotkeys()` instead. For convenience, this
   functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
   props.
 * `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform

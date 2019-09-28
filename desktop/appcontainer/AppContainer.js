@@ -32,6 +32,7 @@ import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount} from '@xh/hoist/utils/react';
+import {useHotkeys} from '@xh/hoist/desktop/hooks';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -55,12 +56,11 @@ export const AppContainer = hoistCmp({
     model: uses(AppContainerModel),
 
     render() {
-
         useOnMount(() => XH.initAsync());
 
         return fragment(
             errorBoundary({
-                item: appContainerView(),
+                item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
             exceptionDialog()
@@ -68,50 +68,78 @@ export const AppContainer = hoistCmp({
     }
 });
 
-
 //-----------------------------------------
 // Implementation
 //-----------------------------------------
+function viewForState() {
+    const S = AppState;
+    switch (XH.appState) {
+        case S.PRE_AUTH:
+        case S.INITIALIZING:
+            return viewport(mask({isDisplayed: true, spinner: true}));
+        case S.LOGIN_REQUIRED:
+            return loginPanel();
+        case S.ACCESS_DENIED:
+            return lockoutPanel();
+        case S.RUNNING:
+        case S.SUSPENDED:
+            return appContainerView();
+        case S.LOAD_FAILED:
+        default:
+            return null;
+    }
+}
+
 const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
-        const S = AppState;
-        switch (XH.appState) {
-            case S.PRE_AUTH:
-            case S.INITIALIZING:
-                return viewport(mask({isDisplayed: true, spinner: true}));
-            case S.LOGIN_REQUIRED:
-                return loginPanel();
-            case S.ACCESS_DENIED:
-                return lockoutPanel();
-            case S.LOAD_FAILED:
-                return null;
-            case S.RUNNING:
-            case S.SUSPENDED:
-                return viewport(
-                    vframe(
-                        impersonationBar(),
-                        updateBar(),
-                        refreshContextView({
-                            model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                        }),
-                        versionBar()
-                    ),
-                    mask({model: model.appLoadModel, spinner: true}),
-                    messageSource(),
-                    toastSource(),
-                    optionsDialog(),
-                    feedbackDialog(),
-                    aboutDialog(),
-                    idleDialog()
-                );
-            default:
-                return null;
-        }
+        return useHotkeys(
+            viewport(
+                vframe(
+                    impersonationBar(),
+                    updateBar(),
+                    refreshContextView({
+                        model: model.refreshContextModel,
+                        item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                    }),
+                    versionBar()
+                ),
+                mask({model: model.appLoadModel, spinner: true}),
+                messageSource(),
+                toastSource(),
+                optionsDialog(),
+                feedbackDialog(),
+                aboutDialog(),
+                idleDialog()
+            ),
+            globalHotKeys(model)
+        );
     }
 });
+
+function globalHotKeys(model) {
+    const {impersonationBarModel, optionsDialogModel} = model,
+        ret = [];
+
+    if (impersonationBarModel.canImpersonate) {
+        ret.push({
+            global: true,
+            combo: 'shift + i',
+            label: 'Open Impersonation Dialog',
+            onKeyDown: () => impersonationBarModel.toggleVisibility()
+        });
+    }
+    if (optionsDialogModel.hasOptions) {
+        ret.push({
+            global: true,
+            combo: 'shift + o',
+            label: 'Open Options Dialog',
+            onKeyDown: () => optionsDialogModel.toggleVisibility()
+        });
+    }
+    return ret;
+}
 
 const idleDialog = hoistCmp.factory({
     displayName: 'IdleDialog',
