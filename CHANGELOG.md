@@ -86,7 +86,7 @@ leverage the context for model support discussed above.
 
 * @blueprintjs/datetime `3.12 -> 3.13`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
-* @xh/hoist-dev-utils `3.8 -> 4.2` (multiple transitive updates to build tooling)
+* @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
 * react-transition-group `4.2 -> 4.3`
