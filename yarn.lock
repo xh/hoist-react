@@ -9,7 +9,7 @@
   dependencies:
     "@babel/highlight" "^7.0.0"
 
-"@babel/core@~7.6.0":
+"@babel/core@~7.6.2":
   version "7.6.2"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.6.2.tgz#069a776e8d5e9eefff76236bc8845566bd31dd91"
   integrity sha512-l8zto/fuoZIbncm+01p8zPSDZu/VuuJhAfA7d/AbzM09WR7iVhavvfNDYCNpo1VvLk6E6xgAoP9P+/EMJHuRkQ==
@@ -669,7 +669,7 @@
     core-js "^2.6.5"
     regenerator-runtime "^0.13.2"
 
-"@babel/preset-env@~7.6.0":
+"@babel/preset-env@~7.6.2":
   version "7.6.2"
   resolved "https://registry.yarnpkg.com/@babel/preset-env/-/preset-env-7.6.2.tgz#abbb3ed785c7fe4220d4c82a53621d71fc0c75d3"
   integrity sha512-Ru7+mfzy9M1/YTEtlDS8CD45jd22ngb9tXnn64DvQK3ooyqSw9K4K9DUWmYknTTVk4TqygL9dqCrZgm1HMea/Q==
@@ -1441,17 +1441,17 @@
     eslint-plugin-react "~7.14.3"
     eslint-plugin-react-hooks "~2.0.1"
 
-"@xh/hoist-dev-utils@~4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.2.0.tgz#4a1f35857324e80dc0cb235742c145384fdc84fc"
-  integrity sha512-4LtnlmjB3stGUvdAqbU96kO1Ad2swEsAAbMlzmHfJ45l42M9Vu9YwsxdDevKGM4RoX5SamwZnq3G/GVxj7Y9mw==
+"@xh/hoist-dev-utils@^4.0.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-4.3.0.tgz#07a268cfb19da00952786d9fc1c7c658c7de85ec"
+  integrity sha512-KB2sAp/irjLL6VbbR1K60JZ9BrmBO03Qm1hmJbwuPHfArtEai+E7Otn/FA541E3raiM/4JIW6DrsKG3rcMlP6A==
   dependencies:
-    "@babel/core" "~7.6.0"
+    "@babel/core" "~7.6.2"
     "@babel/plugin-proposal-class-properties" "~7.5.5"
     "@babel/plugin-proposal-decorators" "~7.6.0"
     "@babel/plugin-proposal-nullish-coalescing-operator" "~7.4.4"
     "@babel/plugin-proposal-optional-chaining" "~7.6.0"
-    "@babel/preset-env" "~7.6.0"
+    "@babel/preset-env" "~7.6.2"
     "@babel/preset-react" "~7.0.0"
     "@xh/eslint-config" "~2.1.1"
     autoprefixer "~9.6.1"
@@ -1474,10 +1474,10 @@
     sass-loader "~8.0.0"
     sass-material-colors "~0.0.5"
     style-loader "~1.0.0"
-    terser-webpack-plugin "~2.1.0"
+    terser-webpack-plugin "~2.1.1"
     url-loader "~2.1.0"
-    webpack "~4.40.2"
-    webpack-bundle-analyzer "~3.5.0"
+    webpack "~4.41.0"
+    webpack-bundle-analyzer "~3.5.2"
     webpack-cli "~3.3.9"
     webpack-dev-server "~3.8.1"
     webpackbar "~4.0.0"
@@ -8695,7 +8695,7 @@ terser-webpack-plugin@^1.4.1:
     webpack-sources "^1.4.0"
     worker-farm "^1.7.0"
 
-terser-webpack-plugin@~2.1.0:
+terser-webpack-plugin@~2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/terser-webpack-plugin/-/terser-webpack-plugin-2.1.1.tgz#ce84a39124bff59b56895642dd803e73bfca007f"
   integrity sha512-JhKx1aWtb0woicUwG7VJgunyNigRDKgeriOgh1bAZVSwu3raBuP/jTF9zpFWwoLzuTaoj0TwxcK/nA/PauEe+A==
@@ -9205,7 +9205,7 @@ webdriver-manager@^12.0.6:
     semver "^5.3.0"
     xml2js "^0.4.17"
 
-webpack-bundle-analyzer@~3.5.0:
+webpack-bundle-analyzer@~3.5.2:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/webpack-bundle-analyzer/-/webpack-bundle-analyzer-3.5.2.tgz#ac02834f4b31de8e27d71e6c7a612301ebddb79f"
   integrity sha512-g9spCNe25QYUVqHRDkwG414GTok2m7pTTP0wr6l0J50Z3YLS04+BGodTqqoVBL7QfU/U/9p/oiI5XFOyfZ7S/A==
@@ -9307,10 +9307,10 @@ webpack-sources@^1.1.0, webpack-sources@^1.4.0, webpack-sources@^1.4.1, webpack-
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@~4.40.2:
-  version "4.40.3"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.40.3.tgz#2407e5070d366fad9be81d0efe4f38e1f54302f3"
-  integrity sha512-sCHHpNE9XLpK4XZ/eGdjiwXBJY7KVdeVymqia1KKO3eVXNI3hwmfwEGA8vJIKop6loBbrEccysPyrtzCSwH2vw==
+webpack@~4.41.0:
+  version "4.41.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.41.0.tgz#db6a254bde671769f7c14e90a1a55e73602fc70b"
+  integrity sha512-yNV98U4r7wX1VJAj5kyMsu36T8RPPQntcb5fJLOsMz/pt/WrKC0Vp1bAlqPLkA1LegSwQwf6P+kAbyhRKVQ72g==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"
