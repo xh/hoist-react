@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component {
     render() {
         return this.state.caughtError ?
             'An error occurred while rendering this Component.' :
-            this.props.children;
+            (this.props.children || null);
     }
 
     componentDidCatch(e, info) {
