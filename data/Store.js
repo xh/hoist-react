@@ -303,6 +303,39 @@ export class Store {
         return ret ? ret : [];
     }
 
+    /**
+     * Get descendant records for a record.
+     *
+     * See also the 'descendants' and 'allDescendants' properties on Record - those getters will likely
+     * be more convenient for most app-level callers.
+     *
+     * @param {(string|number)} id - id of record to be queried.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @return {Record[]}
+     */
+    getDescendantsById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all,
+            ret = rs.getDescendantsById(id);
+        return ret ? ret : [];
+    }
+
+
+    /**
+     * Get ancestor records for a record.
+     *
+     * See also the 'ancestors' and 'allAncestors' properties on Record - those getters will likely
+     * be more convenient for most app-level callers.
+     *
+     * @param {(string|number)} id - id of record to be queried.
+     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @return {Record[]}
+     */
+    getAncestorsById(id, fromFiltered = false) {
+        const rs = fromFiltered ? this._filtered : this._all,
+            ret = rs.getAncestorsById(id);
+        return ret ? ret : [];
+    }
+
     /** Destroy this store, cleaning up any resources used. */
     destroy() {}
 
