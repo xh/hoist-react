@@ -69,15 +69,16 @@ export class ExceptionDialogModel {
         });
 
         if (success) {
-            await XH.alert({message: 'Your message has been sent.'});
+            await XH.alert({title: 'Message Sent', message: 'Your error has been reported.'});
+            this.setUserMessage(null);
             if (!options.requireReload) this.close();
         } else {
-            const email = XH.configService.get('xhEmailSupport'),
+            const email = XH.configService.get('xhEmailSupport', 'none'),
                 message = email && email != 'none' ?
-                    `Failed to send message.  Please seek out additional support by contacting: ${email}` :
+                    `Failed to send message.  Please seek out additional support by contacting: '${email}'.` :
                     `Failed to send message.  Please contact support directly.`;
 
-            await XH.alert({message});
+            await XH.alert({title: 'Error', message});
         }
     }
 }
