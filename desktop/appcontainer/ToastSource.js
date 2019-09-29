@@ -27,7 +27,7 @@ export const toastSource = hoistCmp.factory({
     model: uses(ToastSourceModel),
 
     render({model}) {
-        useLocalModel(() => new BlueprintToastModel(model));
+        useLocalModel(() => new LocalModel(model));
 
         return null;
     }
@@ -35,7 +35,7 @@ export const toastSource = hoistCmp.factory({
 
 
 @HoistModel
-class BlueprintToastModel {
+class LocalModel {
 
     _toasterMap = new Map();
 

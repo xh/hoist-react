@@ -25,8 +25,8 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const localModel = useLocalModel(LocalModel);
-        localModel.model = model;
+        const impl = useLocalModel(LocalModel);
+        impl.model = model;
 
         if (!model.canImpersonate || !model.isOpen) return null;
 
@@ -39,18 +39,18 @@ export const impersonationBar = hoistCmp.factory({
                 span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
                 filler(),
                 select({
-                    model: localModel,
+                    model: impl,
                     bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
                     width: 200,
-                    onCommit: localModel.onCommit
+                    onCommit: impl.onCommit
                 }),
                 button({
                     text: isImpersonating ? 'Exit Impersonation' : 'Cancel',
                     style: {color: 'white'},
-                    onClick: localModel.onExitClick
+                    onClick: impl.onExitClick
                 })
             ]
         });
@@ -63,10 +63,6 @@ class LocalModel {
 
     model;
     @bindable pendingTarget = null;
-
-    constructor(model) {
-        this.model = model;
-    }
 
     onCommit = () => {
         if (this.pendingTarget) {

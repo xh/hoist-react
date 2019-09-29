@@ -23,7 +23,7 @@ import {cloneElement, isValidElement} from 'react';
  */
 export function useHotkeys(child, hotkeys) {
     const impl = useLocalModel(() => {
-        return !isEmpty(hotkeys) ? new Model(hotkeys): null;
+        return !isEmpty(hotkeys) ? new LocalModel(hotkeys): null;
     });
     if (!child || !impl) return child;
 
@@ -34,7 +34,7 @@ export function useHotkeys(child, hotkeys) {
 }
 
 @HoistModel
-class Model {
+class LocalModel {
 
     localHotkeysEvents = new HotkeysEvents('local');
     globalHotkeysEvents = new HotkeysEvents('global');

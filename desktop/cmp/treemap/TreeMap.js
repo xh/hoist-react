@@ -38,7 +38,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
 
-        const localModel = useLocalModel(() => new LocalModel(model));
+        const impl = useLocalModel(() => new LocalModel(model));
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -52,7 +52,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         const renderChartHolder = () => div({
             className: 'xh-treemap__chart-holder',
-            ref: localModel.chartRef
+            ref:  impl.chartRef
         });
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
@@ -74,7 +74,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
         }
 
         return resizeSensor({
-            onResize: debounce((e) => localModel.resizeChartAsync(e), 100),
+            onResize: debounce((e) => impl.resizeChartAsync(e), 100),
             item: box({
                 ...layoutProps,
                 className,
@@ -97,7 +97,6 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     clickCount = 0;
-
 
     constructor(model) {
         this.model = model;
