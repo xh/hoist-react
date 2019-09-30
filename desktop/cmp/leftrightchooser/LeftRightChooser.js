@@ -9,7 +9,6 @@ import {cloneDeep} from 'lodash';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
@@ -28,7 +27,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
 
-    render({model, className, ...props}) {
+    render({model, ...props}) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
             gridOptions = {
                 onRowDoubleClicked: (e) => {
@@ -58,8 +57,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
                 }),
                 description()
             ],
-            className,
-            ...getLayoutProps(props)
+            ...props
         });
     }
 });
