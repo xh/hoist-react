@@ -4,18 +4,26 @@
 
 _"The one with the hooks."_
 
+**Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
+function is now the recommended method for defining new components and their corresponding element
+factories. See that (within [HoistComponentFunctional.js](core/HoistComponentFunctional.js)) and the
+new `useLocalModel()` and `useContextModel()` hooks (within [core/hooks](core/hooks)) for more
+information.
+
+Along with the performance benefits and the ability to use React hooks, Hoist functional components
+are designed to read and write their models via context. This allows a much less verbose
+specification of component element trees.
+
+Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
+familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
+is now strongly encouraged.  In particular note that Class-based Components will *not* be able to
+leverage the context for model support discussed above.
+
 ### 🎁 New Features
 
-* **Hoist now fully supports React functional components and hooks.** See the new function
-  `hoistComponent`, `useLocalModel()`, and `useContextModel()` for more information. (Note that
-  Class-based Components remain fully supported (by both Hoist and React) using the familiar
-  `@HoistComponent` decorator.
-* Hoist components are now be able to read their models from context, allowing a much less verbose
-  specification of application code. Currently only functional components can publish models to
-  context.
-* Hoist now establishes a proper react "error boundary" around all application code. This means that
-  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
-  and stack traces for rendering errors should be significantly less verbose.
+* Resizable panels now default to not redrawing their content when resized until the resize bar is
+  dropped. This offers an improved user experience for most situations, especially when layouts are
+  complex. To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging: true`.
 * The default text input shown by `XH.prompt()` now has `selectOnFocus: true` and will confirm the
   user's entry on an `<enter>` keypress (same as clicking 'OK').
 * `stringExcludes` function added to form validation constraints. This allows an input value to
@@ -23,30 +31,20 @@ _"The one with the hooks."_
 * `constrainAll` function added to form validation constraints. This takes another constraint as its
   only argument, and applies that constraint to an array of values, rather than just to one value.
   This is useful for applying a constraint to inputs that produce arrays, such as tag pickers.
-* `DateInput` will now accept LocalDates as `value`, `minDate` and `maxDate` props.
-* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
-  respect the overall `ButtonGroupInput`'s disabled prop.
-* Resizable panels now default to not redrawing their content when resized until the resize bar is
-  dropped. This offers an improved user experience for most situations, especially when layouts are
-  complex. To re-enable the previous dynamic behavior, set `PanelModel.resizeWhileDragging` to
-  `true`.
-* `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
-  creating ref's that are functionally equivalent to refs created with `React.createRef()`, yet
-  fully observable. With this change the `Ref` class in the same package is now obsolete.
-* Hoist now establishes a proper react "error boundary" around all application code. This means that
-  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
-  and stack traces for rendering errors should be significantly less verbose.
-* Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
-  support for the `optional chaining` (aka null safe) and `nullish coalescing` operators via their
-  Babel proposal plugins. Developers are encouraged to make good use of the new syntax below:
-  *  conditional-chaining: `let foo = bar?.baz?.qux;`
-  *  nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
+* `DateInput` now accepts LocalDates as `value`, `minDate` and `maxDate` props.
+* `RelativeTimestamp` now accepts a `bind` prop to specify a model field name from which it can pull
+  its timestamp. The model itself can either be passed as a prop or (better) sourced automatically
+  from the parent context. Developers are encouraged to take this change to minimize re-renders of
+  parent components (which often contain grids and other intensive layouts).
+* `Record` now has properties and methods for accessing and iterating over children, descendants, 
+  and ancestors
+* `Store` now has methods for retrieving the descendants and ancestors of a given Record
 
 ### 💥 Breaking Changes
 
-* Apps must update their dev dependencies to the latest `@xh/hoist-dev-utils` package: v4.0+. This
-  updates the versions of Babel / Webpack used in builds and swaps to the updated Babel
-  recommendation of `core-js` for polyfills.
+* **Apps must update their dev dependencies** to the latest `@xh/hoist-dev-utils` package: v4.0+.
+  This updates the versions of Babel / Webpack used in builds to their latest / current versions and
+  swaps to the updated Babel recommendation of `core-js` for polyfills.
 * The `allSettled` function in `@xh/promise` has been removed. Applications using this method should
   use the ECMA standard (stage-2) `Promise.allSettled` instead. This method is now fully available
   in Hoist via bundled polyfills. Note that the standard method returns an array of objects of the
@@ -57,22 +55,41 @@ _"The one with the hooks."_
 * Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need to
   set the `store` or `gridModel` property explicitly to null.
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer
-  supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
+  supported. Use the new hooks `useContextMenu()` and `useHotkeys()` instead. For convenience, this
   functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
   props.
 * `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform
   package `/cmp/dataview`.
+* `isReactElement` has been removed. Applications should use the native React API method
+  `React.isValidElement` instead.
+
+### ⚙️ Technical
+
+* `createObservableRef()` is now available in `@xh/hoist/utils/react` package. Use this function for
+  creating refs that are functionally equivalent to refs created with `React.createRef()`, yet fully
+  observable. With this change the `Ref` class in the same package is now obsolete.
+* Hoist now establishes a proper react "error boundary" around all application code. This means that
+  errors throw when rendering will be caught and displayed in the standard Hoist exception dialog,
+  and stack traces for rendering errors should be significantly less verbose.
+* Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
+  support for the `optional chaining` (aka null safe) and `nullish coalescing` operators via their
+  Babel proposal plugins. Developers are encouraged to make good use of the new syntax below:
+  *  conditional-chaining: `let foo = bar?.baz?.qux;`
+  *  nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
 
 ### 🐞 Bug Fixes
 
 * Date picker month and year controls will now work properly in `localDate` mode. (Previously would
   reset to underlying value.)
+* Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
+  respect the overall `ButtonGroupInput`'s disabled prop.
+* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear above the context menu.
 
 ### 📚 Libraries
 
 * @blueprintjs/datetime `3.12 -> 3.13`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
-* @xh/hoist-dev-utils `3.8 -> 4.2` (multiple transitive updates to build tooling)
+* @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
 * react-transition-group `4.2 -> 4.3`

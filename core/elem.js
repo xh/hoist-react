@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import React from 'react';
+import React, {isValidElement} from 'react';
 import {castArray, isArray, isPlainObject} from 'lodash';
-import {isReactElement} from '@xh/hoist/utils/react';
 
 /**
  * Convenience method for creating React Elements. This method is designed to provide a well-
@@ -86,7 +85,7 @@ function normalizeArgs(args) {
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
-        if (isPlainObject(arg) && !isReactElement(arg)) return arg;
+        if (isPlainObject(arg) && !isValidElement(arg)) return arg;
         if (isArray(arg)) return {items: arg};
     }
     // Assume > 1 args or single, non-config, non-array args are children.

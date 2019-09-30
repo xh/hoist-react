@@ -12,7 +12,6 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import './OptionsDialog.scss';
 
@@ -28,21 +27,8 @@ export const optionsDialog = hoistCmp.factory({
     className: 'xh-options-dialog',
 
     render({model, className}) {
-        if (!model.hasOptions) return null;
-        return hotkeysHost({
-            hotkeys: [{
-                global: true,
-                combo: 'shift + o',
-                label: 'Open Options Dialog',
-                onKeyDown: () => model.show()
-            }],
-            item: model.isOpen ? displayedDialog({className}) : null
-        });
-    }
-});
+        if (!model.hasOptions || !model.isOpen) return null;
 
-const displayedDialog = hoistCmp.factory({
-    render({model, className}) {
         const {reloadRequired, formModel} = model;
 
         return dialog({
@@ -54,7 +40,7 @@ const displayedDialog = hoistCmp.factory({
             canOutsideClickClose: false,
             item: [
                 panel({
-                    mask: model.loadModel,
+                    mask: 'onLoad',
                     item: dialogBody(
                         form({
                             model: formModel,
@@ -84,3 +70,4 @@ const displayedDialog = hoistCmp.factory({
         });
     }
 });
+

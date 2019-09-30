@@ -19,7 +19,7 @@ export const MonitorResultsPanel = hoistCmp({
     render({model}) {
         return panel({
             ref: model.viewRef,
-            mask: model.loadModel,
+            mask: 'onLoad',
             className: 'xh-monitor-results-panel',
             tbar: monitorResultsToolbar(),
             item: monitorResultsDisplay()

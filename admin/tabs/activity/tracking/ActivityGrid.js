@@ -22,7 +22,7 @@ export const activityGrid = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            mask: model.loadModel,
+            mask: 'onLoad',
             tbar: tbar(),
             items: [
                 grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),

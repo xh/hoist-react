@@ -5,59 +5,32 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {XH, hoistCmp, useLocalModel, managed, HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {box} from '@xh/hoist/cmp/layout';
-import {span} from '@xh/hoist/cmp/layout';
-import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS, MINUTES, HOURS, DAYS} from '@xh/hoist/utils/datetime';
+import {box, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
-import {flow} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/js';
-
+import {action, observable} from '@xh/hoist/mobx';
+import {Timer} from '@xh/hoist/utils/async';
+import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
+import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-
-const FORMAT_STRINGS = {
-    seconds: '<1 minute',
-    minute: '1 minute',
-    minutes: '%d minutes',
-    hour: 'about an hour',
-    hours: 'about %d hours',
-    day: 'a day',
-    days: '%d days',
-    month: 'about a month',
-    months: '%d months',
-    year: 'about a year',
-    years: '%d years'
-};
-
-const SHORT_FORMAT_STRINGS = {
-    seconds: '<1 min',
-    minute: '1 min',
-    minutes: '%d mins',
-    hour: '~1 hour',
-    hours: '~%d hours',
-    day: 'a day',
-    days: '%d days',
-    month: 'a month',
-    months: '%d months',
-    year: 'a year',
-    years: '%d years'
-};
+import {flow} from 'lodash';
+import PT from 'prop-types';
 
 /**
- * A RelativeTimestamp component
+ * A component to display the approximate amount of time between a given timestamp and now in a
+ * friendly, human readable format (e.g. '6 minutes ago' or 'two hours from now').
  *
- * Displays the approximate amount of time between a given timestamp and the present moment
- * in a friendly, human readable form. Automatically updates on a regular interval to stay current.
+ * Automatically updates on a regular interval to stay current.
  */
 export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, timestamp, options, ...props}) {
+    render({model, className, timestamp, bind, options, ...props}) {
         const impl = useLocalModel(LocalModel);
+
+        timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
+
         impl.setData(timestamp, options);
 
         return box({
@@ -72,10 +45,19 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     }
 });
 RelativeTimestamp.propTypes = {
-    /** Date object that will be used as reference, can also be specified in milliseconds*/
+    /**
+     * Date or milliseconds representing the starting / reference time.
+     * See also `bind` as an alternative.
+     */
     timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
 
-    /** @see getRelativeTimestamp options */
+    /**
+     * Property on context model containing timestamp.
+     * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
+     */
+    bind: PT.string,
+
+    /** @see getRelativeTimestamp options. */
     options: PT.object
 };
 
@@ -106,24 +88,26 @@ class LocalModel {
 
 }
 
+
 /**
- * Returns a String relative to the Timestamp provided
+ * Returns a string describing the approximate amount of time between a given timestamp and the
+ * present moment in a friendly, human readable format.
  *
- * @param {(Date|int)} timestamp - Date object or milliseconds that will be used as reference for this component
+ * @param {(Date|int)} timestamp - Date or milliseconds representing the starting / reference time.
  * @param {Object} [options]
- * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now()
- * @param {boolean} [options.short] - Use shorter timestamp text, defaulted to true on mobile client
- * @param {string} [options.prefix] - Label preceding timestamp
- * @param {string} [options.futureSuffix] - Appended to future timestamps
- * @param {string} [options.pastSuffix] - Appended to past timestamps
- * @param {number} [options.nowEpsilon] - Interval (in seconds) that will serve as threshold for the nowString.
- * @param {string} [options.nowString] - Returned as display property when timestamp is within the nowEpsilon interval.
- * @param {string} [options.emptyResult] - Returned when timestamp is undefined
+ * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now().
+ * @param {boolean} [options.short] - Use shorter timestamp text, default true for mobile clients.
+ * @param {string} [options.prefix] - Label preceding timestamp.
+ * @param {string} [options.futureSuffix] - appended to future timestamps.
+ * @param {string} [options.pastSuffix] - appended to past timestamps.
+ * @param {string} [options.nowString] - string to return when timestamp is within `nowEpsilon`.
+ * @param {number} [options.nowEpsilon] - threshold interval (in seconds) for `nowString`.
+ * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
  */
 export function getRelativeTimestamp(timestamp, options) {
     const defaultOptions = {
             allowFuture: false,
-            short: XH.isMobile ? true : false,
+            short: XH.isMobile,
             futureSuffix: 'from now',
             pastSuffix: 'ago',
             nowString: null,
@@ -146,9 +130,10 @@ export function getRelativeTimestamp(timestamp, options) {
     )(opts);
 }
 
-//----------------------------
+
+//------------------------
 // Implementation
-//-----------------------------
+//------------------------
 const getNow = opts => ({...opts, now: Date.now()});
 
 const getElapsedTime = opts => {
@@ -172,7 +157,7 @@ const normalizeAndValidate = opts => {
 
 const getMillisAndUnit = opts => {
     const {isInvalid, elapsedTime} = opts;
-    // by default the smallest possible unit should be used
+    // By default the smallest possible unit should be used
     opts.unit = 'seconds';
     opts.millis = 0;
 
@@ -228,11 +213,38 @@ const getResult = opts => {
     const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix, short} = opts;
     if (isInvalid) return '[???]';
 
-    // if elapsedTime was normalized to 0 (smaller than nowEpsilon)
-    // then return the nowString if it's present, otherwise return the
-    // default FORMAT for seconds.
+    // if elapsedTime was normalized to 0 (smaller than nowEpsilon) then return the nowString
+    // if specified, otherwise return the default FORMAT for seconds.
     if (!elapsedTime && useNowString) return suffix;
 
     const fmtString = short ? SHORT_FORMAT_STRINGS[unit] : FORMAT_STRINGS[unit];
     return `${prefix}${fmtString.replace('%d', millis)} ${suffix}`;
+};
+
+const FORMAT_STRINGS = {
+    seconds: '<1 minute',
+    minute: '1 minute',
+    minutes: '%d minutes',
+    hour: 'about an hour',
+    hours: 'about %d hours',
+    day: 'a day',
+    days: '%d days',
+    month: 'about a month',
+    months: '%d months',
+    year: 'about a year',
+    years: '%d years'
+};
+
+const SHORT_FORMAT_STRINGS = {
+    seconds: '<1 min',
+    minute: '1 min',
+    minutes: '%d mins',
+    hour: '~1 hour',
+    hours: '~%d hours',
+    day: 'a day',
+    days: '%d days',
+    month: 'a month',
+    months: '%d months',
+    year: 'a year',
+    years: '%d years'
 };

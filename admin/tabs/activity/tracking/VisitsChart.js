@@ -17,9 +17,9 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 export const visitsChart = hoistCmp.factory({
     model: creates(VisitsChartModel),
 
-    render({model}) {
+    render() {
         return panel({
-            mask: model.loadModel,
+            mask: 'onLoad',
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart(),

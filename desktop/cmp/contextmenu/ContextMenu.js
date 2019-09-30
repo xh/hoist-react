@@ -5,11 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {isValidElement} from 'react';
 import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
-import {isReactElement} from '@xh/hoist/utils/react';
 
 import {ContextMenuItem} from './ContextMenuItem';
 
@@ -43,7 +43,7 @@ ContextMenu.propTypes = {
 //---------------------------
 function parseMenuItems(items) {
     items = items.map(item => {
-        if (item === '-' || isReactElement(item)) return item;
+        if (item === '-' || isValidElement(item)) return item;
 
         if (!(item instanceof ContextMenuItem)) {
             item = new ContextMenuItem(item);
@@ -66,7 +66,7 @@ function parseMenuItems(items) {
         return true;
     }).map(item => {
         if (item === '-') return menuDivider();
-        if (isReactElement(item)) {
+        if (isValidElement(item)) {
             return menuItem({text: item});
         }
 

@@ -38,7 +38,7 @@ export const LogViewer = hoistCmp({
                 panel({
                     tbar: logViewerToolbar(),
                     item: logDisplay(),
-                    mask: model.loadModel
+                    mask: 'onLoad'
                 })
             ]
         });

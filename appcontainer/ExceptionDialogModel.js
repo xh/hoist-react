@@ -58,16 +58,27 @@ export class ExceptionDialogModel {
     setUserMessage(userMessage) {
         this.userMessage = userMessage;
     }
-    
+
     async sendReportAsync() {
         const {exception, userMessage, options} = this;
 
-        await XH.exceptionHandler.logOnServerAsync({
+        const success = await XH.exceptionHandler.logOnServerAsync({
             exception,
             userMessage,
             userAlerted: true
         });
 
-        if (!options.requireReload) this.close();
+        if (success) {
+            await XH.alert({title: 'Message Sent', message: 'Your error has been reported.'});
+            this.setUserMessage(null);
+            if (!options.requireReload) this.close();
+        } else {
+            const email = XH.configService.get('xhEmailSupport', 'none'),
+                message = email && email != 'none' ?
+                    `Failed to send message.  Please seek out additional support by contacting: '${email}'.` :
+                    `Failed to send message.  Please contact support directly.`;
+
+            await XH.alert({title: 'Error', message});
+        }
     }
 }
