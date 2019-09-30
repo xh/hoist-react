@@ -58,17 +58,17 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
                     multiple: enableAddMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
-                            targetText = isDragActive ? `Drop to add ${fileNoun(draggedCount)}.` : targetText,
-                            rejectText = lastRejectedCount && !isDragActive ?
+                            targetTxt = isDragActive ? `Drop to add ${fileNoun(draggedCount)}.` : targetText,
+                            rejectTxt = lastRejectedCount && !isDragActive ?
                                 `Unable to accept ${fileNoun(lastRejectedCount)} for upload.` : '';
 
                         return div({
                             ...getRootProps(),
                             items: [
-                                targetText,
+                                targetTxt,
                                 div({
                                     className: 'xh-file-chooser__reject-warning',
-                                    item: rejectText
+                                    item: rejectTxt
                                 }),
                                 input({...getInputProps()})
                             ],
