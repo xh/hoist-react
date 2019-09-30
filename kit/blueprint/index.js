@@ -24,14 +24,14 @@ Popover.defaultProps.transitionDuration = 0;
 
 export {
     ContextMenu,
-    ContextMenuTarget,
     Classes,
-    HotkeysTarget,
     PopoverInteractionKind,
     Position,
     Toaster
 } from '@blueprintjs/core';
 
+// Yikes -- require two non-published classes.
+export {HotkeysEvents} from '@blueprintjs/core/lib/cjs/components/hotkeys/hotkeysEvents';
 
 export * from './Wrappers';
 export * from './Dialog';

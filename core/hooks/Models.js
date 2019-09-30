@@ -33,10 +33,13 @@ export function useContextModel(selector) {
  * Create a new model that will be maintained for lifetime of component and destroyed
  * when component is unmounted.
  *
- * @param spec
+ * @param {(Class|function)} [spec] - class of HoistModel to create, or a function to call to generate one.
  */
 export function useLocalModel(spec) {
-    const [ret] = useState(() => spec.isHoistModel ? new spec() : spec.call());
+    const [ret] = useState(() => {
+        if (!spec) return null;
+        return spec.isHoistModel ? new spec() : spec.call();
+    });
     useOnUnmount(() => XH.safeDestroy(ret));
     return ret;
 }

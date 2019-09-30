@@ -34,8 +34,9 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
 
-        const localModel = useLocalModel(() => new LocalModel(model));
-        localModel.setAspectRatio(aspectRatio);
+        const impl = useLocalModel(LocalModel);
+        impl.setAspectRatio(aspectRatio);
+        impl.model = model;
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -45,17 +46,17 @@ export const [Chart, chart] = hoistCmp.withFactory({
         }
 
         // No-op on first render - will re-render upon setting the chartRef
-        localModel.renderHighChart();
+        impl.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return resizeSensor({
-            onResize: (e) => localModel.resizeChart(e),
+            onResize: (e) => impl.resizeChart(e),
             item: box({
                 ...layoutProps,
                 className,
                 item: div({
                     style: {margin: 'auto'},
-                    ref: localModel.chartRef
+                    ref: impl.chartRef
                 })
             })
         });
@@ -80,10 +81,6 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
-
-    constructor(model) {
-        this.model = model;
-    }
 
     renderHighChart() {
         this.destroyHighChart();

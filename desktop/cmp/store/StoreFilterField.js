@@ -55,7 +55,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 
         // Right now we freeze the initial props -- could be more dynamic.
         // TODO: Build dependencies arg to useLocalModel?
-        const localModel = useLocalModel(
+        const impl = useLocalModel(
             () => new LocalModel({
                 gridModel,
                 store,
@@ -70,7 +70,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
         );
 
         return textInput({
-            value: localModel.value,
+            value: impl.value,
 
             leftIcon: Icon.filter(),
             enableClear: true,
@@ -80,7 +80,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
             style: props.style,
             width: withDefault(props.width, 180),
 
-            onChange: (v) => localModel.setValue(v, {applyImmediately: false})
+            onChange: (v) => impl.setValue(v, {applyImmediately: false})
         });
     }
 });

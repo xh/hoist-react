@@ -10,12 +10,13 @@ factories. See that (within [HoistComponentFunctional.js](core/HoistComponentFun
 new `useLocalModel()` and `useContextModel()` hooks (within [core/hooks](core/hooks)) for more
 information.
 
-Along with the performance benefits, and the ability to use React hooks, Hoist functional components are designed to 
-read and write their models via context.  This allows a much less verbose specification of component element trees.        
+Along with the performance benefits and the ability to use React hooks, Hoist functional components
+are designed to read and write their models via context. This allows a much less verbose
+specification of component element trees.
 
 Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
 familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
-is now strongly encouraged.  In particular note that Class-based Components will *not* be able to 
+is now strongly encouraged.  In particular note that Class-based Components will *not* be able to
 leverage the context for model support discussed above.
 
 ### 🎁 New Features
@@ -35,6 +36,9 @@ leverage the context for model support discussed above.
   its timestamp. The model itself can either be passed as a prop or (better) sourced automatically
   from the parent context. Developers are encouraged to take this change to minimize re-renders of
   parent components (which often contain grids and other intensive layouts).
+* `Record` now has properties and methods for accessing and iterating over children, descendants,
+  and ancestors
+* `Store` now has methods for retrieving the descendants and ancestors of a given Record
 
 ### 💥 Breaking Changes
 
@@ -51,7 +55,7 @@ leverage the context for model support discussed above.
 * Apps that need to prevent a `StoreFilterField` from binding to a `GridModel` in context, need to
   set the `store` or `gridModel` property explicitly to null.
 * The Blueprint non-standard decorators `ContextMenuTarget` and `HotkeysTarget` are no longer
-  supported. Use the components `ContextMenuHost` or `HotkeysHost` instead. For convenience, this
+  supported. Use the new hooks `useContextMenu()` and `useHotkeys()` instead. For convenience, this
   functionality has also been made available directly on `Panel` via the `contextMenu` and `hotkeys`
   props.
 * `DataView` and `DataViewModel` have been moved from `/desktop/cmp/dataview` to the cross-platform
@@ -85,11 +89,12 @@ leverage the context for model support discussed above.
 
 * @blueprintjs/datetime `3.12 -> 3.13`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
-* @xh/hoist-dev-utils `3.8 -> 4.2` (multiple transitive updates to build tooling)
+* @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
 * react-transition-group `4.2 -> 4.3`
 * rsvp (removed)
+* store2 `2.9 -> 2.10`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v27.1.0...develop)
 

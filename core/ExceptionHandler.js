@@ -59,7 +59,7 @@ export class ExceptionHandler {
         if (options.showAlert) {
             XH.appContainerModel.exceptionDialogModel.show(exception, options);
         }
-        
+
         if (options.logOnServer) {
             this.logOnServerAsync({exception, userAlerted: options.showAlert});
         }
@@ -69,15 +69,18 @@ export class ExceptionHandler {
     /**
      * Create a server-side exception entry. Client metadata will be set automatically.
      *
+     * This method will swallow exceptions and fail  silently to avoid letting problems
+     * here mask/confuse the triggering problem itself.
+     *
      * @param {Object} [options] - an options object:
      * @param {string} [options.exception] - an instance of the Javascript Error object.  Not strictly required, but hard to see when it would be omitted.
      * @param {boolean} [options.userAlerted] - flag to track whether the user was shown an alert detailing the error (optional)
      * @param {string} [options.userMessage] - the message the user has written when deliberately sending in the error (optional)
      *
+     * @returns {boolean} -- true if message was successfully sent to server.
      * Note: App version is POSTed to reflect the version the client is running (vs the version on the server)
      */
     async logOnServerAsync({exception, userAlerted, userMessage}) {
-        // Fail somewhat silently to avoid letting problems here mask/confuse the underlying problem.
         try {
             const error = exception ? stringifyErrorSafely(exception) : null,
                 username = XH.getUsername();
@@ -97,11 +100,13 @@ export class ExceptionHandler {
                     clientUsername: username
                 }
             });
+            return true;
         } catch (e) {
             console.error('Failed sending error to server:', e);
+            return false;
         }
     }
-    
+
     //--------------------------------
     // Implementation
     //--------------------------------

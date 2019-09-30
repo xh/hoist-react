@@ -40,6 +40,23 @@ export class RecordSet {
         return this.recordMap.get(id);
     }
 
+    getDescendantsById(id) {
+        const idSet = new Set();
+        this.gatherDescendantIds(id, idSet);
+        return Array.from(idSet).map(id => this.getById(id));
+    }
+
+    getAncestorsById(id) {
+        const ret = [];
+        let cur = this.getById(id);
+        while (cur && cur.parent) {
+            ret.push(cur.parent);
+            cur = cur.parent;
+        }
+
+        return ret;
+    }
+
     //----------------------------------------------------------
     // Lazy getters
     // Avoid memory allocation and work -- in many cases
@@ -143,7 +160,7 @@ export class RecordSet {
                     console.debug(`Attempted to remove non-existent record: ${id}`);
                     return;
                 }
-                this.gatherDescendants(id, allRemoves);
+                this.gatherDescendantIds(id, allRemoves);
             });
             allRemoves.forEach(it => newRecords.delete(it));
         }
@@ -179,7 +196,6 @@ export class RecordSet {
         return new RecordSet(this.store, newRecords);
     }
 
-
     //------------------------
     // Implementation
     //------------------------
@@ -207,12 +223,12 @@ export class RecordSet {
         return ret;
     }
 
-    gatherDescendants(id, idSet) {
+    gatherDescendantIds(id, idSet) {
         if (!idSet.has(id)) {
             idSet.add(id);
             const children = this.childrenMap.get(id);
             if (children) {
-                children.forEach(child => this.gatherDescendants(child.id, idSet));
+                children.forEach(child => this.gatherDescendantIds(child.id, idSet));
             }
         }
 

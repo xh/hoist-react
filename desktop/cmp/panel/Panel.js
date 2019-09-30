@@ -14,12 +14,11 @@ import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {contextMenuHost} from '@xh/hoist/desktop/cmp/contextmenu';
-import {hotkeysHost} from '@xh/hoist/desktop/cmp/hotkeys';
 
 import './Panel.scss';
 
@@ -107,16 +106,12 @@ export const [Panel, panel] = hoistCmp.withFactory({
                     parseToolbar(bbar)
                 ]
             });
-
-            // Wrap with functionality-only boxes
-            if (contextMenu) {
-                coreContents = contextMenuHost({contextMenu, item: coreContents});
-            }
-            if (hotkeys) {
-                coreContents = hotkeysHost({hotkeys, item: coreContents});
-            }
         }
         if (!collapsed) wasDisplayed.current = true;
+
+        // decorate with hooks (internally conditional, of course)
+        coreContents = useContextMenu(coreContents, contextMenu);
+        coreContents = useHotkeys(coreContents, hotkeys);
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
@@ -149,13 +144,13 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop instanceof PendingTaskModel)   return cmp({model: prop, spinner: true});
     if (isValidElement(prop))               return prop;
     if (prop === 'onLoad') {
-        if (!contextModel.isLoadSupport) {
-            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement @LoadSupport.`);
+        const loadModel = contextModel?.loadModel;
+        if (!loadModel) {
+            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model is not an instance of @LoadSupport or have a 'loadModel' property.`);
             return null;
         }
-        return cmp({model: contextModel.loadModel, spinner: true});
+        return cmp({model: loadModel, spinner: true});
     }
-
     return null;
 }
 
@@ -170,17 +165,16 @@ Panel.propTypes = {
     icon: PT.element,
 
     /**
-     * Array of ContextMenuItems, configs to create them, Elements, or '-' (divider).  Or a function
-     * that receives the triggering event and returns such an array.
-     * A value of null will result in no value being shown. A ContextMenu element may also be returned.
+     * Specification of a context menu.
+     *  @see useContextMenu() for more information on accepted values for this prop.
      */
     contextMenu: PT.oneOfType([PT.func, PT.array, PT.node]),
 
     /**
-     * An array of hotkeys, or configs for hotkeys, as prescribed by blueprint.
-     * A value of null will result in no keys being registered.
+     * Specification of hotkeys as prescribed by blueprint.
+     * @see useHotkeys() for more information on accepted values for this prop.
      */
-    hotkeys: PT.oneOfType([PT.func, PT.array, PT.node]),
+    hotkeys: PT.oneOfType([PT.array, PT.node]),
 
     /**
      * LoadingIndicator to render on this panel. Set to:
