@@ -10,7 +10,6 @@ import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 
 /**
@@ -22,18 +21,22 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
     displayName: 'GridCountLabel',
     className: 'xh-grid-count-label',
 
-    render(props) {
-        const gridModel = withDefault(props.gridModel, useContextModel(GridModel));
+    render({
+        gridModel,
+        includeChildren = false,
+        showSelectionCount = 'auto',
+        unit = 'record',
+        ...props
+    }) {
+
+        gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
             console.error("No GridModel available to GridCountLabel.  Provide via a 'gridModel' prop, or context.");
             return '';
         }
 
-        const {store, selection} = gridModel,
-            unit = withDefault(props.unit, 'record'),
-            includeChildren = withDefault(props.includeChildren, false),
-            showSelectionCount = withDefault(props.showSelectionCount, 'auto');
+        const {store, selection} = gridModel;
 
         const fmtCount = (count) => fmtNumber(count, {precision: 0}),
             recCountString = () => {
@@ -51,8 +54,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
             };
 
         return box({
-            ...getLayoutProps(props),
-            className: props.className,
+            ...props,
             item: `${recCountString()} ${selCountString()}`
         });
     }

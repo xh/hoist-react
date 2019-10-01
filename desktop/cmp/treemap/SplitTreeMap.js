@@ -10,7 +10,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {treeMap} from './TreeMap';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
@@ -25,15 +24,14 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory({
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
 
-    render({model, className, ...props}) {
+    render({model, ...props}) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
-            className,
             items: errors.length ? errorPanel({errors}) : childMaps(),
-            ...getLayoutProps(props)
+            ...props
         });
     }
 });
