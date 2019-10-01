@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {panel, Panel} from '@xh/hoist/mobile/cmp/panel';
 import {castArray} from 'lodash';
@@ -16,27 +15,20 @@ import './Page.scss';
 /**
  * Wraps a Panel in an Onsen Page, suitable for inclusion in the navigator.
  */
-@HoistComponent
-export class Page extends Component {
+export const [Page, page] = hoistCmp.withFactory({
+    displayName: 'Page',
+    className: 'xh-page',
+    memo: false, model: false,
 
-    static propTypes = {
-        ...Panel.propTypes
-    };
-
-    render() {
-        const {
-            children,
-            ...rest
-        } = this.props;
+    render({children, className, ...props}) {
 
         return onsenPage({
-            className: 'xh-page',
+            className,
             item: panel({
                 items: castArray(children),
-                ...rest
+                ...props
             })
         });
     }
-}
-
-export const page = elemFactory(Page);
+});
+Page.propTypes = Panel.propTypes;

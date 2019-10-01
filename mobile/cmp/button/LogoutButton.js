@@ -5,11 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import PT from 'prop-types';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
@@ -17,32 +15,17 @@ import {button} from '@xh/hoist/mobile/cmp/button';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-@HoistComponent
-export class LogoutButton extends Component {
+export const [LogoutButton, logoutButton] = hoistCmp.withFactory({
+    displayName: 'LogoutButton',
+    model: false,
 
-    static propTypes = {
-        icon: PT.element,
-        onClick: PT.func
-    };
-
-    render() {
+    render({
+        icon = Icon.logout(),
+        onClick = () => XH.identityService.logoutAsync(),
+        ...props
+    }) {
         if (XH.appSpec.isSSO) return null;
-
-        const {icon, onClick, ...rest} = this.props;
-        return button({
-            icon: icon || Icon.logout(),
-            onClick: onClick || this.onClick,
-            ...rest
-        });
+        return button({icon, onClick, props});
     }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onClick = () => {
-        XH.identityService.logoutAsync();
-    }
-
-}
-
-export const logoutButton = elemFactory(LogoutButton);
+});
+LogoutButton.propTypes = Button.propTypes;

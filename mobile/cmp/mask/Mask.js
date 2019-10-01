@@ -6,12 +6,9 @@
  */
 
 import PT from 'prop-types';
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {progressCircular} from '@xh/hoist/kit/onsen';
-import {withDefault} from '@xh/hoist/utils/js';
 
 import './Mask.scss';
 
@@ -20,50 +17,45 @@ import './Mask.scss';
  *
  * The mask can be explicitly shown or reactively bound to a PendingTaskModel.
  */
-@HoistComponent
-export class Mask extends Component {
+export const [Mask, mask] = hoistCmp.withFactory({
+    displayName: 'Mask',
+    className: 'xh-mask',
 
-    static modelClass = PendingTaskModel;
-
-    static propTypes = {
-        /** True to display the mask. */
-        isDisplayed: PT.bool,
-
-        /** Text to be displayed under the loading spinner image */
-        message: PT.string,
-
-        /** Callback when mask is tapped, relayed to underlying div element. */
-        onClick: PT.func,
-
-        /** True (default) to display a spinning image. */
-        spinner: PT.bool
-    };
-
-    baseClassName = 'xh-mask';
-
-    render() {
-        const {props} = this,
-            {model} = props,
-            isDisplayed = withDefault(props.isDisplayed, model && model.isPending, false);
-
+    render({
+        model,
+        className,
+        message = model?.message,
+        isDisplayed = model?.isPending || false,
+        spinner = false,
+        onClick
+    }) {
         if (!isDisplayed) return null;
-
-        const message = withDefault(props.message, model && model.message),
-            showSpinner = withDefault(props.spinner, false),
-            onClick = props.onClick;
 
         return div({
             onClick,
-            className: this.getClassName(),
+            className,
             item: vbox({
                 className: 'xh-mask-body',
                 items: [
-                    showSpinner ? progressCircular({indeterminate: true}) : null,
-                    showSpinner ? vspacer(10) : null,
+                    spinner ? progressCircular({indeterminate: true}) : null,
+                    spinner ? vspacer(10) : null,
                     message ? box({className: 'xh-mask-text', item: message}) : null
                 ]
             })
         });
     }
-}
-export const mask = elemFactory(Mask);
+});
+
+Mask.propTypes = {
+    /** True to display the mask. */
+    isDisplayed: PT.bool,
+
+    /** Text to be displayed under the loading spinner image */
+    message: PT.string,
+
+    /** Callback when mask is tapped, relayed to underlying div element. */
+    onClick: PT.func,
+
+    /** True (default) to display a spinning image. */
+    spinner: PT.bool
+};

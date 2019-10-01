@@ -5,40 +5,24 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import PT from 'prop-types';
-import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {XH, hoistCmp} from '@xh/hoist/core';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for the XH feedback dialog.
- *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
-@HoistComponent
-export class FeedbackButton extends Component {
+export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
+    displayName: 'FeedbackButton',
+    model: false,
 
-    static propTypes = {
-        icon: PT.element,
-        onClick: PT.func
-    };
-
-    render() {
-        const {icon, onClick, ...rest} = this.props;
-        return button({
-            icon: icon || Icon.comment({className: 'fa-flip-horizontal'}),
-            onClick: onClick || this.onFeedbackClick,
-            ...rest
-        });
+    render({
+        icon = Icon.comment({className: 'fa-flip-horizontal'}),
+        onClick = () => XH.showFeedbackDialog(),
+        ...props
+    }) {
+        return button({icon, onClick, ...props});
     }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onFeedbackClick = () => {
-        XH.showFeedbackDialog();
-    }
-
-}
-export const feedbackButton = elemFactory(FeedbackButton);
+});
+FeedbackButton.propTypes = Button.propTypes;

@@ -37,7 +37,7 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory({
 
             errorIf(
                 !gridModel || !gridModel.enableExport,
-                'ExportButton must be bound to GridModel with enableExport != true - exports will not work.'
+                'ExportButton must be bound to GridModel with enableExport == true, otherwise exports will not work.'
             );
             onClick = gridModel ? () => exportGridData(gridModel, exportOptions) : null;
         }

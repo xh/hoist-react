@@ -184,7 +184,7 @@ export class NavigatorModel {
             if (onsenIdx !== ourIdx) return null;
         }
 
-        return content.prototype.render ? elem(content, {key, ...props}) : content({key, ...props});
+        return content.isHoistComponent ? elem(content, {key, ...props}) : content({key, ...props});
     }
 
     @action

@@ -8,8 +8,8 @@
 import PT from 'prop-types';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {errorIf, withDefault} from '@xh/hoist/utils/js';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {errorIf} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -22,28 +22,21 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory({
     displayName: 'RefreshButton',
     model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
-    render({model, onClick, ...props}) {
+    render({model, icon = Icon.sync(), onClick, ...props}) {
         const refreshContextModel = useContextModel('RefreshContextModel');
 
         if (!onClick) {
             errorIf(model && !model.isLoadSupport, 'Provided model to RefreshButton must be decorated with LoadSupport.');
-            model = withDefault(model, refreshContextModel);
+            model = model ?? refreshContextModel;
             onClick = model ? () => model.refreshAsync() : null;
         }
 
-        return button({
-            icon: Icon.sync(),
-            onClick,
-            ...props
-        });
+        return button({icon, onClick, ...props});
     }
 });
 
 RefreshButton.propTypes = {
-    icon: PT.element,
-
-    /** Function to call when the button is clicked. */
-    onClick: PT.func,
+    ...Button.propTypes,
 
     /** HoistModel to refresh. */
     model: PT.object
