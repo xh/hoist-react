@@ -17,13 +17,14 @@ export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
     displayName: 'NavigatorBackButton',
     model: uses(NavigatorModel),
 
-    render({model, ...rest}) {
+    render({
+        model,
+        icon = Icon.chevronLeft(),
+        onClick = () => XH.popRoute(),
+        ...props
+    }) {
         if (model.pages.length < 2) return null;
-        return button({
-            icon: Icon.chevronLeft(),
-            onClick: () => XH.popRoute(),
-            ...rest
-        });
+        return button({icon, onClick, ...props});
     }
 });
-NavigatorBackButton.propTypes = {...Button.propTypes};
+NavigatorBackButton.propTypes = Button.propTypes;

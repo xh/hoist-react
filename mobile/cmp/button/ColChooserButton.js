@@ -21,27 +21,22 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, onClick, gridModel, ...rest}) {
+    render({
+        gridModel,
+        icon = Icon.gridPanel(),
+        onClick,
+        ...props
+    }) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
             console.error("No GridModel available to ColChooserButton. Provide via a 'gridModel' prop, or context.");
-            return button({
-                icon: withDefault(icon, Icon.gridPanel()),
-                disabled: true,
-                ...rest
-            });
+            return button({icon, disabled: true, ...props});
         }
 
-        if (!onClick) {
-            onClick = () => gridModel.showColChooser();
-        }
+        onClick = onClick ?? (() => gridModel.showColChooser());
 
-        return button({
-            icon: withDefault(icon, Icon.gridPanel()),
-            onClick,
-            ...rest
-        });
+        return button({icon, onClick, ...props});
     }
 });
 ColChooserButton.propTypes = {

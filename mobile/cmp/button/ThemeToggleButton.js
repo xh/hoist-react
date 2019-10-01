@@ -16,12 +16,12 @@ export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
     displayName: 'ThemeToggleButton',
     model: false,
 
-    render(props) {
-        return button({
-            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            onClick: () => XH.toggleTheme(),
-            ...props
-        });
+    render({
+        icon = XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+        onClick = () => XH.toggleTheme(),
+        ...props
+    }) {
+        return button(icon, onClick, ...props);
     }
 });
-ThemeToggleButton.propTypes = {...Button.propTypes};
+ThemeToggleButton.propTypes = Button.propTypes;

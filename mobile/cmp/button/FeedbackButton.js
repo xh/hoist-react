@@ -17,12 +17,12 @@ export const [FeedbackButton, feedbackButton] = hoistCmp.withFactory({
     displayName: 'FeedbackButton',
     model: false,
 
-    render(props) {
-        return button({
-            icon: Icon.comment({className: 'fa-flip-horizontal'}),
-            onClick: () => XH.showFeedbackDialog(),
-            ...props
-        });
+    render({
+        icon = Icon.comment({className: 'fa-flip-horizontal'}),
+        onClick = () => XH.showFeedbackDialog(),
+        ...props
+    }) {
+        return button({icon, onClick, ...props});
     }
 });
-FeedbackButton.propTypes = {...Button.propTypes};
+FeedbackButton.propTypes = Button.propTypes;

@@ -20,7 +20,7 @@ import './ButtonGroup.scss';
  */
 export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
     displayName: 'ButtonGroup',
-    model: false,
+    model: false, memo: false,
     className: 'xh-button-group',
 
     render(props) {

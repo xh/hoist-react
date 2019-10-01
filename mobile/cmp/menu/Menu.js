@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
@@ -18,37 +17,33 @@ import './Menu.scss';
 /**
  * Menu Component
  */
-@HoistComponent
-export class Menu extends Component {
+export const [Menu, menu] = hoistCmp.withFactory({
+    displayName: 'Menu',
+    model: uses(MenuModel),
+    className: 'xh-menu',
 
-    static modelClass = MenuModel;
-
-    static propTypes = {
-        /** Width of the menu. */
-        width: PT.number,
-
-        /** How to interpret the provided xPos when showing. */
-        align: PT.oneOf(['left', 'right']),
-
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object]).isRequired
-    };
-
-    render() {
-        const {model} = this,
-            {isOpen, xPos, yPos} = model,
-            {width, align = 'left'} = this.props,
-            style = {};
+    render({model, className, width, align = 'left'}) {
+        const {isOpen, xPos, yPos} = model,
+            style = {top: yPos, [align]: xPos};
 
         if (!isOpen) return null;
 
         const items = model.itemModels.map((it, idx) => {
             if (it.prepareFn) it.prepareFn(it);
-            return this.renderItem(it, idx);
-        });
+            const {text, icon, action, hidden} = it,
+                labelItems = icon ? [icon, hspacer(10), text] : [text];
 
-        style.top = yPos;
-        style[align] = xPos;
+            return listItem({
+                key: idx,
+                tappable: true,
+                item: div({className: 'center', items: labelItems}),
+                omit: hidden,
+                onClick: () => {
+                    if (action) action();
+                    model.close();
+                }
+            });
+        });
 
         return fragment(
             mask({
@@ -56,29 +51,22 @@ export class Menu extends Component {
                 onClick: () => model.close()
             }),
             vbox({
-                className: 'xh-menu',
+                className,
                 width,
                 style,
                 items
             })
         );
     }
+});
 
-    renderItem(itemModel, idx) {
-        const {text, icon, action, hidden} = itemModel,
-            labelItems = icon ? [icon, hspacer(10), text] : [text];
+Menu.propTypes = {
+    /** Width of the menu. */
+    width: PT.number,
 
-        return listItem({
-            key: idx,
-            tappable: true,
-            item: div({className: 'center', items: labelItems}),
-            omit: hidden,
-            onClick: () => {
-                if (action) action();
-                this.model.close();
-            }
-        });
-    }
-}
+    /** How to interpret the provided xPos when showing. */
+    align: PT.oneOf(['left', 'right']),
 
-export const menu = elemFactory(Menu);
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(MenuModel), PT.object]).isRequired
+};

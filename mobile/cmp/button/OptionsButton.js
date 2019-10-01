@@ -18,12 +18,12 @@ export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
     displayName: 'OptionsButton',
     model: false,
 
-    render(props) {
-        return button({
-            icon: Icon.gear(),
-            onClick: () => XH.showOptionsDialog(),
-            ...props
-        });
+    render({
+        icon = Icon.gear(),
+        onClick = () => XH.showOptionsDialog(),
+        ...props
+    }) {
+        return button(icon, onClick, props);
     }
 });
-OptionsButton.propTypes = {...Button.propTypes};
+OptionsButton.propTypes = Button.propTypes;

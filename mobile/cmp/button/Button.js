@@ -24,7 +24,7 @@ export const [Button, button] = hoistCmp.withFactory({
     className: 'xh-button',
 
     render(props) {
-        const [layoutProps, {icon, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
+        const [layoutProps, {icon, className, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
             items = [];
 
         if (icon && text) {
@@ -46,7 +46,7 @@ export const [Button, button] = hoistCmp.withFactory({
             },
 
             ...rest,
-            className: classNames(props.className, active ? 'xh-button-active' : null)
+            className: classNames(className, active ? 'xh-button-active' : null)
         });
     }
 });
