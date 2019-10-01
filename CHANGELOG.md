@@ -36,7 +36,7 @@ leverage the context for model support discussed above.
   its timestamp. The model itself can either be passed as a prop or (better) sourced automatically
   from the parent context. Developers are encouraged to take this change to minimize re-renders of
   parent components (which often contain grids and other intensive layouts).
-* `Record` now has properties and methods for accessing and iterating over children, descendants, 
+* `Record` now has properties and methods for accessing and iterating over children, descendants,
   and ancestors
 * `Store` now has methods for retrieving the descendants and ancestors of a given Record
 
@@ -94,6 +94,7 @@ leverage the context for model support discussed above.
 * highcharts `7.1 -> 7.2`
 * react-transition-group `4.2 -> 4.3`
 * rsvp (removed)
+* store2 `2.9 -> 2.10`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v27.1.0...develop)
 
