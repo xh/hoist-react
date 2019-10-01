@@ -7,13 +7,10 @@
 import PT from 'prop-types';
 import classNames from 'classnames';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {withDefault} from '@xh/hoist/utils/js';
 import {hbox, div, input} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
-
-import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import './FileChooser.scss';
 
@@ -37,17 +34,22 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render({model, className, accept, maxSize, minSize, targetText, ...props}) {
+    render({
+        model,
+        accept,
+        maxSize,
+        minSize,
+        targetText = 'Drag and drop files here, or click to browse...',
+        enableMulti = true,
+        enableAddMulti = enableMulti,
+        showFileGrid = true,
+        ...props
+    }) {
         const {lastRejectedCount} = model,
-            enableMulti = withDefault(props.enableMulti, true),
-            enableAddMulti = withDefault(props.enableAddMulti, enableMulti),
-            showFileGrid = withDefault(props.showFileGrid, true);
-
-        const fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
+            fileNoun = (count) => `${count} ${count == 1 ? 'file' : 'files'}`;
 
         return hbox({
-            className,
-            ...getLayoutProps(props),
+            ...props,
             items: [
                 dropzone({
                     accept,
@@ -56,19 +58,17 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
                     multiple: enableAddMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
-                            targetText = isDragActive ?
-                                `Drop to add ${fileNoun(draggedCount)}.` :
-                                withDefault(props.targetText, 'Drag and drop files here, or click to browse...'),
-                            rejectText = lastRejectedCount && !isDragActive ?
+                            targetTxt = isDragActive ? `Drop to add ${fileNoun(draggedCount)}.` : targetText,
+                            rejectTxt = lastRejectedCount && !isDragActive ?
                                 `Unable to accept ${fileNoun(lastRejectedCount)} for upload.` : '';
 
                         return div({
                             ...getRootProps(),
                             items: [
-                                targetText,
+                                targetTxt,
                                 div({
                                     className: 'xh-file-chooser__reject-warning',
-                                    item: rejectText
+                                    item: rejectTxt
                                 }),
                                 input({...getInputProps()})
                             ],

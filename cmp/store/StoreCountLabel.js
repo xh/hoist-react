@@ -10,7 +10,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 
 /**
@@ -22,16 +21,17 @@ export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory({
 
     className: 'xh-store-count-label',
 
-    render({store, unit = 'record', includeChildren = false, className, ...props}) {
+    render({
+        store,
+        unit = 'record',
+        includeChildren = false,
+        ...props
+    }) {
         const count = includeChildren ? store.count : store.rootCount,
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
             item = `${fmtNumber(count, {precision: 0})} ${unitLabel}`;
 
-        return box({
-            ...getLayoutProps(props),
-            className,
-            item
-        });
+        return box({...props, item});
     }
 });
 

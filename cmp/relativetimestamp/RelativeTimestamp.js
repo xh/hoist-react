@@ -12,7 +12,6 @@ import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import {flow} from 'lodash';
 import PT from 'prop-types';
 
@@ -26,7 +25,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({model, className, timestamp, bind, options, ...props}) {
+    render({model, timestamp, bind, options, ...props}) {
         const impl = useLocalModel(LocalModel);
 
         timestamp = withDefault(timestamp, (model && bind ? model[bind] : null));
@@ -34,8 +33,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
         impl.setData(timestamp, options);
 
         return box({
-            ...getLayoutProps(props),
-            className,
+            ...props,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
