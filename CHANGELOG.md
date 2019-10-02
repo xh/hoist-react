@@ -36,9 +36,15 @@ leverage the context for model support discussed above.
   its timestamp. The model itself can either be passed as a prop or (better) sourced automatically
   from the parent context. Developers are encouraged to take this change to minimize re-renders of
   parent components (which often contain grids and other intensive layouts).
-* `Record` now has properties and methods for accessing and iterating over children, descendants,
-  and ancestors
-* `Store` now has methods for retrieving the descendants and ancestors of a given Record
+* The following properties and methods have been added to `Record` and Store to make it easier to
+  work with hierarchical data:
+  * Record Properties: `descendants`, `allDescendants`, `ancestors`, `allAncestors`
+  * Record Methods: `forEachChild`, `forEachDescendant`, `forEachAncestor`
+  * Store Methods: `getDescendantsById`, `getAncestorsById`
+* `Store.updateRecordData()` has been added to allow updating a single record without needing to
+  build a `StoreUpdate` object.
+* `Store.updateData()` and `Store.updateRecordData()` now accept partial raw data updates. The
+  updated data will be merged with the original raw data for the Record.
 
 ### 💥 Breaking Changes
 
