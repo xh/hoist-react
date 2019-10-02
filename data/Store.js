@@ -434,6 +434,9 @@ export class Store {
  *      children property will be ignored, and any existing children for the record being updated
  *      will be preserved. If the record is a child, the new updated instance will be assigned to
  *      the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
+ *      The update objects will be merged with the current raw data for the Record being updated,
+ *      it is only necessary to include values which have changed since the last update/initial
+ *      load.
  * @property {Object[]} [add] - list of raw data representing records to be added, Each top-level
  *      item in the array must be either a rawData object of the form passed to loadData or
  *      a wrapper object of the form `{parentId: x, rawData: {}}`, where `parentId` provides
