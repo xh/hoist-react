@@ -5,31 +5,23 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {XH, elemFactory, HoistComponent} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.
  */
-@HoistComponent
-export class ThemeToggleButton extends Component {
+export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory({
+    displayName: 'ThemeToggleButton',
+    model: false,
 
-    render() {
-        return button({
-            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            onClick: this.onThemeToggleClick,
-            ...this.props
-        });
+    render({
+        icon = XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+        onClick = () => XH.toggleTheme(),
+        ...props
+    }) {
+        return button(icon, onClick, ...props);
     }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onThemeToggleClick = () => {
-        XH.toggleTheme();
-    }
-}
-
-export const themeToggleButton = elemFactory(ThemeToggleButton);
+});
+ThemeToggleButton.propTypes = Button.propTypes;

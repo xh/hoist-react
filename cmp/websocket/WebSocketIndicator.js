@@ -9,15 +9,15 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import PT from 'prop-types';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 
 /**
  * Provides a visual indicator of connection status for {@see WebSocketService}.
  */
 export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
     displayName: 'WebSocketIndicator',
+    model: false,
 
-    render(props) {
+    render({iconOnly, ...props}) {
         const {enabled, connected, lastMessageTime} = XH.webSocketService;
         let icon, txt, tooltip;
 
@@ -40,13 +40,13 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory({
                 icon,
                 span({
                     item: txt,
-                    omit: props.iconOnly,
+                    omit: iconOnly,
                     style: {margin: 8, cursor: 'help'}
                 })
             ],
             title: tooltip,
             alignItems: 'center',
-            ...getLayoutProps(props)
+            ...props
         });
     }
 });

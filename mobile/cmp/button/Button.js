@@ -5,33 +5,26 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button as onsenButton, Button as OnsenButton} from '@xh/hoist/kit/onsen';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {hspacer} from '@xh/hoist/cmp/layout';
+import classNames from 'classnames';
 
 import './Button.scss';
 
 /**
- * Wrapper around Onsen's Button component. Adds LayoutSupport for top-level sizing and
+ * Wrapper around Onsen's Button component. Adds layout support for top-level sizing and
  * margin/padding props. Relays all other props supported by Onsen's Button.
  */
-@HoistComponent
-@LayoutSupport
-export class Button extends Component {
+export const [Button, button] = hoistCmp.withFactory({
+    displayName: 'Button',
+    model: false,
+    className: 'xh-button',
 
-    static propTypes = {
-        ...OnsenButton.propTypes,
-        active: PT.bool,
-        icon: PT.element,
-        text: PT.string
-    };
-
-    baseClassName = 'xh-button';
-
-    render() {
-        const {icon, text, modifier, active, onClick, style, ...rest} = this.getNonLayoutProps(),
+    render(props) {
+        const [layoutProps, {icon, className, text, modifier, active, onClick, style, ...rest}] = splitLayoutProps(props),
             items = [];
 
         if (icon && text) {
@@ -49,13 +42,18 @@ export class Button extends Component {
 
             style: {
                 ...style,
-                ...this.getLayoutProps()
+                ...layoutProps
             },
 
             ...rest,
-            className: this.getClassName(active ? 'xh-button-active' : null)
+            className: classNames(className, active ? 'xh-button-active' : null)
         });
     }
+});
 
-}
-export const button = elemFactory(Button);
+Button.propTypes = {
+    ...OnsenButton.propTypes,
+    active: PT.bool,
+    icon: PT.element,
+    text: PT.string
+};

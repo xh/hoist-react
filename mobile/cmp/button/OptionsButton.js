@@ -5,10 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {PropTypes as PT} from 'prop-types';
-import {elemFactory, HoistComponent, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {XH, hoistCmp} from '@xh/hoist/core';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -16,30 +14,16 @@ import {Icon} from '@xh/hoist/icon';
  *
  * Can be provided an onClick handler, otherwise will use default action provided by framework.
  */
-@HoistComponent
-export class OptionsButton extends Component {
+export const [OptionsButton, optionsButton] = hoistCmp.withFactory({
+    displayName: 'OptionsButton',
+    model: false,
 
-    static propTypes = {
-        icon: PT.element,
-        onClick: PT.func
-    };
-
-    render() {
-        if (!XH.acm.optionsDialogModel.hasOptions) return null;
-        const {icon, onClick, ...rest} = this.props;
-        return button({
-            icon: icon || Icon.gear(),
-            onClick: onClick || this.onOptionsClick,
-            ...rest
-        });
+    render({
+        icon = Icon.gear(),
+        onClick = () => XH.showOptionsDialog(),
+        ...props
+    }) {
+        return button(icon, onClick, props);
     }
-
-    //---------------------------
-    // Implementation
-    //---------------------------
-    onOptionsClick = () => {
-        XH.showOptionsDialog();
-    }
-
-}
-export const optionsButton = elemFactory(OptionsButton);
+});
+OptionsButton.propTypes = Button.propTypes;

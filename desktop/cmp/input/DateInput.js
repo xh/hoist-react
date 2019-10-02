@@ -60,6 +60,15 @@ export class DateInput extends HoistInput {
          */
         formatString: PT.string,
 
+        /**
+         * Month to display in calendar popover on first render.
+         *
+         * If unspecified, BP's component will default to the month of the current value (if present), or today
+         * (if within min/max), or to the mid-point between min/max. Note that falling through to
+         * that last case can result in an unexpectedly far-future default!
+         */
+        initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
@@ -129,6 +138,11 @@ export class DateInput extends HoistInput {
         return isLocalDate(minDate) ? minDate.date : minDate;
     }
 
+    get initialMonth() {
+        const {initialMonth} = this.props;
+        return isLocalDate(initialMonth) ? initialMonth.date : initialMonth;
+    }
+
     get valueType() {return withDefault(this.props.valueType, 'date')}
     get timePrecision() {return this.valueType === 'localDate' ? null : this.props.timePrecision}
 
@@ -170,6 +184,7 @@ export class DateInput extends HoistInput {
                     onChange: this.onDatePickerChange,
                     maxDate: this.maxDate,
                     minDate: this.minDate,
+                    initialMonth: this.initialMonth,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
                     timePrecision: this.timePrecision,

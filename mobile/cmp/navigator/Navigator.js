@@ -5,9 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import {NavigatorModel} from './NavigatorModel';
 
@@ -17,23 +16,14 @@ import './Navigator.scss';
  * Top-level Component within an application, responsible for rendering pages and managing
  * transitions between pages.
  */
-@HoistComponent
-export class Navigator extends Component {
+export const [Navigator, navigator] = hoistCmp.withFactory({
+    displayName: 'Navigator',
+    model: uses(NavigatorModel),
+    className: 'xh-navigator',
 
-    static modelClass = NavigatorModel;
-
-    static propTypes = {
-        /** Primary component model instance. */
-        model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]).isRequired
-    };
-
-    baseClassName = 'xh-navigator';
-    
-    render() {
-        const {model} = this;
-
+    render({model, className}) {
         return onsenNavigator({
-            className: this.getClassName(),
+            className,
             initialRoute: {init: true},
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
             renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
@@ -41,7 +31,9 @@ export class Navigator extends Component {
             onPostPop: () => model.onPageChange()
         });
     }
+});
 
-}
-
-export const navigator = elemFactory(Navigator);
+Navigator.propTypes = {
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]).isRequired
+};
