@@ -122,11 +122,12 @@ export class Store {
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
+        const {summaryRecord} = this;
         let updateRecs, addRecs;
         if (update) {
             updateRecs = update.map(it => {
-                const rec = this.getById(it.id);
-                return this.createRecord({...rec.raw, ...it});
+                const rec = it.id === summaryRecord?.id ? summaryRecord : this.getById(it.id);
+                return this.createRecord({...rec?.raw, ...it});
             });
         }
         if (add) {
@@ -141,12 +142,11 @@ export class Store {
         }
 
         // 2) Pre-process summary record, peeling it out of updates if needed
-        let {summaryRecord} = this,
-            summaryUpdateRec;
+        let summaryUpdateRec;
         if (summaryRecord) {
             [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
             if (!summaryUpdateRec && rawSummaryData) {
-                summaryUpdateRec = this.createRecord(rawSummaryData);
+                summaryUpdateRec = this.createRecord({...this.summaryRecord.raw, ...rawSummaryData});
             }
         }
 
@@ -167,12 +167,13 @@ export class Store {
     }
 
     /**
-     * Update data for an individual Record
-     * @param {string|number} id - id of the Record to update
+     * Update data for a single Record
+     * @param {string|number|Record} rec - Record or id of Record to update
      * @param {Object} data - updated raw data for the record. This will be merged into the original
      *      raw data for the Record.
      */
-    updateRecordData(id, data) {
+    updateRecordData(rec, data) {
+        const id = (rec instanceof Record) ? rec.id : rec;
         this.updateData({update: [{id, ...data}]});
     }
 
