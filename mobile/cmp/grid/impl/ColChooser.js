@@ -138,16 +138,17 @@ const columnList = hoistCmp.factory({
     }
 });
 
-const draggableRow = hoistCmp.factory(
-    ({col, idx}) => {
+const draggableRow = hoistCmp.factory({
+    render({col, idx}) {
         const {colId, exclude, pinned} = col;
-        if (exclude) return;
+        if (exclude) return null;
         return draggable({
             key: colId,
             draggableId: colId,
             index: idx,
             isDragDisabled: !!pinned,
             item: (dndProps, dndState) => row({
+                key: colId,
                 col,
                 isDragging: dndState.isDragging,
                 ref: dndProps.innerRef,
@@ -156,13 +157,12 @@ const draggableRow = hoistCmp.factory(
             })
         });
     }
-);
+});
 
-const row = hoistCmp.factory(
-    ({model, col, isDragging, ...props}, ref) => {
-        const {colId, text, pinned, hidden, locked, exclude} = col;
-
-        if (exclude) return;
+const row = hoistCmp.factory({
+    render({model, col, isDragging, ...props}, ref) {
+        let {colId, text, pinned, hidden, locked, exclude} = col;
+        if (exclude) return null;
 
         const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
@@ -196,7 +196,7 @@ const row = hoistCmp.factory(
             ref
         });
     }
-);
+});
 
 
 @HoistModel
