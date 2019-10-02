@@ -1,6 +1,3 @@
 {
-  "extends": ["@xh/eslint-config"],
-  "rules": {
-      "react-hooks/rules-of-hooks": 0
-  }
+  "extends": ["@xh/eslint-config"]
 }
