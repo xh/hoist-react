@@ -67,18 +67,17 @@ export class ColChooserModel {
     }
 
     updatePinnedColumn() {
-        const columns = [...this.columns];
 
         // Loop through and, if applicable, pin the first
         // non-excluded visible column encountered
         let shouldPinFirst = this.pinFirst;
-        columns.forEach(it => {
-            if (it.exclude) return;
+        const columns = this.columns.map(it => {
+            if (it.exclude) return it;
             if (!it.hidden && shouldPinFirst) {
-                it.pinned = 'left';
                 shouldPinFirst = false;
+                return {...it, pinned: 'left'};
             } else {
-                it.pinned = null;
+                return {...it, pinned: null};
             }
         });
 
@@ -86,12 +85,11 @@ export class ColChooserModel {
     }
 
     setHidden(colId, hidden) {
-        const columns = clone(this.columns),
-            col = find(columns, {colId});
-
-        if (!col || col.locked || col.exclude) return;
-
-        col.hidden = hidden;
+        const columns = this.columns.map(col => {
+            return (col.colId === colId && !col.locked && !col.exclude) ?
+                {...col, hidden} :
+                col;
+        });
         this.setColumns(columns);
     }
 

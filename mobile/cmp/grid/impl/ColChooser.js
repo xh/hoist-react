@@ -4,8 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, uses, useLocalModel} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -33,24 +32,25 @@ import {ColChooserModel} from './ColChooserModel';
  *
  * It is not necessary to manually create instances of this component within an application.
  */
-@HoistComponent
-export class ColChooser extends Component {
+export const [ColChooser, colChooser] = hoistCmp.withFactory({
+    displayName: 'ColChooser',
+    model: uses(ColChooserModel),
+    className: 'xh-col-chooser',
 
-    static modelClass = ColChooserModel;
-
-    render() {
-        const {model} = this,
-            {isOpen, gridModel, visibleColumns, hiddenColumns} = model;
+    render({model, className}) {
+        const {isOpen, gridModel, visibleColumns, hiddenColumns} = model;
+        const impl = useLocalModel(LocalModel);
+        impl.model = model;
 
         return dialogPanel({
             isOpen,
             title: 'Choose Columns',
             icon: Icon.gridPanel(),
-            className: 'xh-col-chooser',
+            className,
             item: div({
                 className: 'xh-col-chooser-internal',
                 item: dragDropContext({
-                    onDragEnd: this.onDragEnd,
+                    onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
                             className: 'xh-col-chooser-section',
@@ -58,13 +58,13 @@ export class ColChooser extends Component {
                             items: [
                                 droppable({
                                     droppableId: 'visible-columns',
-                                    item: (dndProps) => {
-                                        return this.renderColumnList(visibleColumns, {
-                                            className: 'visible-columns',
-                                            ref: dndProps.innerRef,
-                                            placeholder: dndProps.placeholder
-                                        });
-                                    }
+                                    item: (dndProps) => columnList({
+                                        model: impl,
+                                        cols: visibleColumns,
+                                        className: 'visible-columns',
+                                        ref: dndProps.innerRef,
+                                        placeholder: dndProps.placeholder
+                                    })
                                 })
                             ],
                             bbar: toolbar({
@@ -72,10 +72,7 @@ export class ColChooser extends Component {
                                 items: [
                                     label('Pin first column'),
                                     filler(),
-                                    switchInput({
-                                        model: model,
-                                        bind: 'pinFirst'
-                                    })
+                                    switchInput({model, bind: 'pinFirst'})
                                 ]
                             })
                         }),
@@ -86,13 +83,13 @@ export class ColChooser extends Component {
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
-                                item: (dndProps) => {
-                                    return this.renderColumnList(hiddenColumns, {
-                                        className: 'hidden-columns',
-                                        ref: dndProps.innerRef,
-                                        placeholder: dndProps.placeholder
-                                    });
-                                }
+                                item: (dndProps) => columnList({
+                                    model: impl,
+                                    cols: hiddenColumns,
+                                    className: 'hidden-columns',
+                                    ref: dndProps.innerRef,
+                                    placeholder: dndProps.placeholder
+                                })
                             })
                         })
                     ]
@@ -114,56 +111,58 @@ export class ColChooser extends Component {
                 button({
                     text: 'Save',
                     icon: Icon.check(),
-                    onClick: this.onOK
+                    onClick: () => {
+                        model.commit();
+                        model.close();
+                    }
                 })
             ]
         });
     }
+});
 
-    //------------------------
-    // Implementation
-    //------------------------
-    renderColumnList(columns, props = {}) {
-        const {placeholder, className, ...rest} = props;
-
+//------------------------
+// Implementation
+//------------------------
+const columnList = hoistCmp.factory({
+    render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser-list', className),
             items: [
-                ...columns.map((col, idx) => {
-                    return this.renderDraggableRow(col, idx);
-                }),
+                ...cols.map((col, idx) => draggableRow({col, idx})),
                 placeholder
             ],
-            ...rest
+            ...props,
+            ref
         });
     }
+});
 
-    renderDraggableRow(col, idx) {
+const draggableRow = hoistCmp.factory({
+    render({col, idx}) {
         const {colId, exclude, pinned} = col;
-
-        if (exclude) return;
-
+        if (exclude) return null;
         return draggable({
             key: colId,
             draggableId: colId,
             index: idx,
             isDragDisabled: !!pinned,
-            item: (dndProps, dndState) => {
-                return this.renderRow(col, {
-                    isDragging: dndState.isDragging,
-                    ref: dndProps.innerRef,
-                    ...dndProps.dragHandleProps,
-                    ...dndProps.draggableProps
-                });
-            }
+            item: (dndProps, dndState) => row({
+                key: colId,
+                col,
+                isDragging: dndState.isDragging,
+                ref: dndProps.innerRef,
+                ...dndProps.dragHandleProps,
+                ...dndProps.draggableProps
+            })
         });
     }
+});
 
-    renderRow(col, props = {}) {
-        const {colId, text, pinned, hidden, locked, exclude} = col,
-            {isDragging, ...rest} = props;
-
-        if (exclude) return;
+const row = hoistCmp.factory({
+    render({model, col, isDragging, ...props}, ref) {
+        let {colId, text, pinned, hidden, locked, exclude} = col;
+        if (exclude) return null;
 
         const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
@@ -190,17 +189,20 @@ export class ColChooser extends Component {
                     icon: getButtonIcon(locked, hidden),
                     disabled: locked,
                     modifier: 'quiet',
-                    onClick: () => this.onHiddenToggleClick(colId, !hidden)
+                    onClick: () => model.onHiddenToggleClick(colId, !hidden)
                 })
             ],
-            ...rest
+            ...props,
+            ref
         });
     }
+});
 
-    onOK = () => {
-        this.model.commit();
-        this.model.close();
-    };
+
+@HoistModel
+class LocalModel {
+
+    model;
 
     onDragEnd = (result) => {
         const {model} = this,
@@ -234,7 +236,4 @@ export class ColChooser extends Component {
         model.setHidden(colId, hide);
         model.updatePinnedColumn();
     };
-
 }
-
-export const colChooser = elemFactory(ColChooser);

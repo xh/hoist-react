@@ -5,8 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
 
 import {fragment, div, span, filler} from '@xh/hoist/cmp/layout';
@@ -14,170 +13,127 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
 import {size, isEmpty} from 'lodash';
 import classNames from 'classnames';
 
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
 
+
+const INDENT = 10;        // Indentation applied at each level.
+const X_BTN_WIDTH = 26;   // Width of 'x' buttons.
+const LEFT_PAD = 5;       // Left-padding for inputs.
+
 /**
  * Control for selecting a list of dimensions for grouping APIs.
  */
-@HoistComponent
-export class DimensionChooser extends Component {
+export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
+    displayName: 'DimensionChooser',
+    model: uses(DimensionChooserModel),
+    className: 'xh-dim-chooser',
 
-    static modelClass = DimensionChooserModel;
-
-    static propTypes = {
-        /** Width in pixels of the target button (that triggers show of popover). */
-        buttonWidth: PT.number,
-
-        /** Width in pixels of the popover menu itself. */
-        dialogWidth: PT.number,
-
-        /** Text to represent empty state (i.e. value = null or [])*/
-        emptyText: PT.string,
-
-        /** Primary component model instance. */
-        model: PT.instanceOf(DimensionChooserModel).isRequired
-    };
-
-    baseClassName = 'xh-dim-chooser';
-
-    INDENT = 10;        // Indentation applied at each level.
-    X_BTN_WIDTH = 26;   // Width of 'x' buttons.
-    LEFT_PAD = 5;       // Left-padding for inputs.
-
-    get dialogWidth() {
-        return withDefault(this.props.dialogWidth, 250);
-    }
-
-    get buttonWidth() {
-        return withDefault(this.props.buttonWidth, 150);
-    }
-
-    get emptyText() {
-        return withDefault(this.props.emptyText, '[Ungrouped]');
-    }
-
-    render() {
-        const {model} = this,
-            {value, dimensions} = model;
-
-        const labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
+    render({
+        model,
+        dialogWidth = 250,
+        buttonWidth = 150,
+        emptyText = '[Ungrouped]'
+    }) {
+        const {value, dimensions} = model,
+            labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
 
         return div(
-            this.renderDialog(),
+            dialogCmp({dialogWidth, emptyText}),
             button({
                 className: 'xh-dim-button',
                 item: span(labels.join(' \u203a ')),
-                width: this.buttonWidth,
+                width: buttonWidth,
                 onClick: () => model.showMenu()
             })
         );
     }
+});
+DimensionChooser.propTypes = {
+    /** Width in pixels of the target button (that triggers show of popover). */
+    buttonWidth: PT.number,
 
-    //--------------------
-    // Event Handlers
-    //--------------------
-    onDimChange = (dim, i) => {
-        this.model.addPendingDim(dim, i);
-    };
+    /** Width in pixels of the popover menu itself. */
+    dialogWidth: PT.number,
 
-    onSetFromHistory = (value) => {
-        this.model.setValue(value);
-        this.model.closeMenu();
-    };
+    /** Text to represent empty state (i.e. value = null or [])*/
+    emptyText: PT.string,
 
-    //---------------------------
-    // Rendering dialog
-    //---------------------------
-    renderDialog() {
-        const {model} = this;
-        if (!model) return null;
+    /** Primary component model instance. */
+    model: PT.instanceOf(DimensionChooserModel)
+};
+
+//---------------------------
+// Rendering dialog
+//---------------------------
+const dialogCmp = hoistCmp.factory(
+    ({model, dialogWidth, emptyText}) => {
+        const isHistory = (model.activeMode === 'history'),
+            buttons = isHistory ? [
+                button({icon: Icon.x(), flex: 1, onClick: () => model.closeMenu()}),
+                button({icon: Icon.edit(), flex: 1, onClick: () => model.showEditor()})
+            ]: [
+                button({icon: Icon.arrowLeft(), flex: 1, onClick: () => model.showHistory(), omit: isEmpty(model.history)}),
+                button({icon: Icon.check(), flex: 1, onClick: () => model.commitPendingValueAndClose()})
+            ];
 
         return dialog({
-            className: this.getClassName('xh-dim-dialog'),
+            className: classNames(model, 'xh-dim-dialog'),
             title: 'Group By',
             icon: Icon.treeList(),
             isOpen: model.isMenuOpen,
             onCancel: () => model.commitPendingValueAndClose(),
-            width: this.dialogWidth,
+            width: dialogWidth,
             align: 'left',
-            ...this.getDialogPropsForMode(model.activeMode)
+            content: isHistory ? historyMenu({model, emptyText}) : selectMenu({model, dialogWidth, emptyText}),
+            buttons
         });
     }
+);
 
-    getDialogPropsForMode(mode) {
-        return mode === 'history' ?
-            {
-                content: this.renderHistoryMenu(),
-                buttons: this.renderHistoryButtons()
-            } :
-            {
-                content: this.renderSelectMenu(),
-                buttons: this.renderSelectButtons()
-            };
-    }
+//---------------------------
+// Rendering history mode
+//---------------------------
+const historyMenu = hoistCmp.factory(
+    ({model, emptyText}) => {
+        const {history, dimensions} = model,
+            historyItems = history.map((value, i) => {
+                const isActive = value === model.value,
+                    labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
 
-    //---------------------------
-    // Rendering history mode
-    //---------------------------
-    renderHistoryMenu() {
-        const {model} = this,
-            {history, dimensions} = model;
-
-        const historyItems = history.map((value, i) => {
-            const isActive = value === model.value,
-                labels = isEmpty(value) ? [this.emptyText] : value.map(h => dimensions[h].label);
-
-            return button({
-                className: classNames('dim-history-btn',
-                    isActive ? 'dim-history-btn--active' : null),
-                key: `dim-history-${i}`,
-                modifier: 'quiet',
-                items: [
-                    span(` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`),
-                    filler(),
-                    div({item: isActive ? Icon.check() : null, style: {width: 25}})
-                ],
-                onClick: () => {
-                    this.onSetFromHistory(value);
-                }
+                return button({
+                    className: classNames('dim-history-btn', isActive ? 'dim-history-btn--active' : null),
+                    key: `dim-history-${i}`,
+                    modifier: 'quiet',
+                    items: [
+                        span(` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`),
+                        filler(),
+                        div({item: isActive ? Icon.check() : null, style: {width: 25}})
+                    ],
+                    onClick: () => {
+                        model.setValue(value);
+                        model.closeMenu();
+                    }
+                });
             });
-        });
-
-        return fragment(...historyItems);
+        return fragment(historyItems);
     }
+);
 
-    renderHistoryButtons() {
-        const {model} = this;
-        return [
-            button({
-                icon: Icon.x(),
-                flex: 1,
-                onClick: () => model.closeMenu()
-            }),
-            button({
-                icon: Icon.edit(),
-                flex: 1,
-                onClick: () => model.showEditor()
-            })
-        ];
-    }
-
-    //---------------------------
-    // Rendering select mode
-    //---------------------------
-    renderSelectMenu() {
-        const {LEFT_PAD, INDENT, X_BTN_WIDTH, model} = this,
-            {showAddSelect, pendingValue, dimensions, maxDepth, leafInPending, enableClear} = model;
+//---------------------------
+// Rendering select mode
+//---------------------------
+const selectMenu = hoistCmp.factory(
+    ({model, dialogWidth, emptyText}) => {
+        const {showAddSelect, pendingValue, dimensions, maxDepth, leafInPending, enableClear} = model;
 
         const children = pendingValue.map((dim, i) => {
             const options = model.dimOptionsForLevel(i, dim),
                 marginLeft = LEFT_PAD + (INDENT * i),
-                width = this.dialogWidth - marginLeft - X_BTN_WIDTH;
+                width = dialogWidth - marginLeft - X_BTN_WIDTH;
 
             return div({
                 className: 'xh-dim-dialog-select-row',
@@ -187,7 +143,7 @@ export class DimensionChooser extends Component {
                         width,
                         marginLeft,
                         value: dim,
-                        onChange: val => this.onDimChange(val, i)
+                        onChange: (val) => model.addPendingDim(val, i)
                     }),
                     button({
                         icon: Icon.x({className: 'xh-red'}),
@@ -206,33 +162,34 @@ export class DimensionChooser extends Component {
             children.push(
                 div({
                     className: 'xh-dim-dialog-select-row',
-                    items: [filler(), this.emptyText, filler()]
+                    items: [filler(), emptyText, filler()]
                 })
             );
         }
 
         const atMaxDepth = (pendingValue.length === Math.min(maxDepth, size(dimensions)));
         if (!atMaxDepth && !leafInPending) {
-            children.push(this.renderAddOrSelectButton());
+            children.push(addOrSelectButton({dialogWidth}));
         }
 
         return children;
     }
+);
 
-    renderAddOrSelectButton() {
+const addOrSelectButton = hoistCmp.factory(
+    ({model, dialogWidth}) => {
         // can update to match dimension chooser add/select logic
-        const {model, LEFT_PAD, INDENT, X_BTN_WIDTH} = this,
-            {pendingValue} = model,
+        const {pendingValue} = model,
             pendingCount = pendingValue.length,
             marginLeft = LEFT_PAD + (pendingCount * INDENT),
-            width = this.dialogWidth - marginLeft - X_BTN_WIDTH;
+            width = dialogWidth - marginLeft - X_BTN_WIDTH;
 
         return model.showAddSelect ?
             select({
                 options: model.dimOptionsForLevel(pendingCount),
                 width,
                 marginLeft,
-                onChange: val => this.onDimChange(val, pendingCount)
+                onChange: val => model.addPendingDim(val, pendingCount)
             }) :
             button({
                 text: 'Add grouping...',
@@ -242,23 +199,4 @@ export class DimensionChooser extends Component {
                 onClick: () => model.setShowAddSelect(true)
             });
     }
-
-    renderSelectButtons() {
-        const {model} = this;
-        return [
-            button({
-                icon: Icon.arrowLeft(),
-                omit: isEmpty(model.history),
-                flex: 1,
-                onClick: () => model.showHistory()
-            }),
-            button({
-                icon: Icon.check(),
-                flex: 1,
-                onClick: () => model.commitPendingValueAndClose()
-            })
-        ];
-    }
-}
-
-export const dimensionChooser = elemFactory(DimensionChooser);
+);
