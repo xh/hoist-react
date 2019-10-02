@@ -35,5 +35,5 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
 
 Navigator.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]).isRequired
+    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object])
 };
