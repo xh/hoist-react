@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {XH} from '@xh/hoist/core';
-import {castArray, startCase, isFunction, clone, find} from 'lodash';
-import {ExportFormat} from './ExportFormat';
-import {withDefault, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
+import {castArray, clone, find, isFunction, startCase} from 'lodash';
+import {Component} from 'react';
+import {ExportFormat} from './ExportFormat';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -27,7 +27,12 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {string} [c.headerName] - display text for grid header.
+     * @param {Column~headerNameFn|string} [c.headerName] - display text for grid header. Supports
+     *      both a string value or a function to generate a string. Note that using a function here
+     *      will ignore any ag-Grid functionality for decorating the header name, the return value
+     *      of the function will be used as-is.
+     *      The function should be treated like an autorun - any observable properties referenced
+     *      during the first execution of the function will trigger a re-render of the column header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
      *      to the column header. Supports both string values or function to generate strings.
@@ -198,12 +203,16 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field} = this,
+        const {gridModel, field, headerName} = this,
             me = this,
             ret = {
                 field,
                 colId: this.colId,
-                headerName: this.headerName,
+                headerValueGetter: (agParams) => {
+                    return agParams.location === 'header' ?
+                        isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
+                        this.chooserName;
+                },
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
                 minWidth: this.minWidth,
@@ -216,13 +225,9 @@ export class Column {
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressToolPanel: this.excludeFromChooser,
-                enableCellChangeFlash: this.highlightOnChange,
-                headerValueGetter: ({location}) => {
-                    return location === 'header' ?
-                        this.headerName:
-                        this.chooserName;
-                }
+                enableCellChangeFlash: this.highlightOnChange
             };
+
 
         // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
         // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
@@ -425,5 +430,14 @@ export class Column {
  * @typedef {Object} TooltipMetadata
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
- * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
+ * @property {ITooltipParams} [agParams] - the ag-grid tooltip params.
+ */
+
+/**
+ * @callback Column~headerNameFn - function to generate a Column header name.
+ * @param {Column} column - column for the header name being generated.
+ * @param {GridModel} gridModel - gridModel for the grid.
+ * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
+ *      during ColumnHeader rendering.
+ * @return {string} - the header name to render in the Column header
  */

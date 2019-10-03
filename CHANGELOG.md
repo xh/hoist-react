@@ -39,6 +39,8 @@ leverage the context for model support discussed above.
 * `Record` now has properties and methods for accessing and iterating over children, descendants,
   and ancestors
 * `Store` now has methods for retrieving the descendants and ancestors of a given Record
+* `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be automatically 
+  re-rendered when any observable properties referenced by the `headerName` function are modified.
 
 ### 💥 Breaking Changes
 
@@ -62,6 +64,9 @@ leverage the context for model support discussed above.
   package `/cmp/dataview`.
 * `isReactElement` has been removed. Applications should use the native React API method
   `React.isValidElement` instead.
+* `ColumnGroup` now requires a `groupId` instead of a `headerName`. If you were previously just
+  setting `headerName` on `ColumnGroup` specs then all that is needed is to change `headerName` to
+  `groupId`.
 
 ### ⚙️ Technical
 

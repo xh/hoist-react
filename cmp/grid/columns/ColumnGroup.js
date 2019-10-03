@@ -6,7 +6,7 @@
  */
 
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {startCase, isEmpty, castArray, clone} from 'lodash';
+import {startCase, isEmpty, castArray, clone, isFunction} from 'lodash';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
@@ -16,8 +16,13 @@ import {startCase, isEmpty, castArray, clone} from 'lodash';
 export class ColumnGroup {
     /**
      * @param {Object} c - ColumnGroup configuration.
-     * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
-     * @param {string} [c.headerName] - display text for grid header.
+     * @param {string} c.groupId - unique identifier for the ColumnGroup within its grid.
+     * @param {ColumnGroup~headerNameFn|string} [c.headerName] - display text for column group header.
+     *      Supports both a string value or a function to generate a string. Note that using a
+     *      function here will ignore any ag-Grid functionality for decorating the header name, the
+     *      return value of the function will be used as-is.
+     *      The function should be treated like an autorun - any observable properties referenced
+     *      during the first execution of the function will trigger a re-render of the column group header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
@@ -36,28 +41,40 @@ export class ColumnGroup {
         ...rest
     }, gridModel) {
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
+        throwIf(isEmpty(groupId), 'Must specify groupId for a ColumnGroup.');
 
         Object.assign(this, rest);
 
-        this.groupId = withDefault(groupId, headerName);
-        throwIf(!this.groupId, 'Must specify groupId or headerName for a ColumnGroup.');
+        this.groupId = groupId;
 
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = castArray(headerClass);
 
         this.children = children.map(c => gridModel.buildColumn(c));
 
+        this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
     getAgSpec() {
+        const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerName: this.headerName,
+            headerValueGetter: (agParams) => isFunction(headerName) ? headerName({columnGroup: this, gridModel, agParams}) : headerName,
             headerClass: this.headerClass,
+            headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: true, // enforce 'sealed' column groups
             ...this.agOptions
         };
     }
 }
+
+/**
+ * @callback ColumnGroup~headerNameFn - function to generate a ColumnGroup header name.
+ * @param {ColumnGroup} columnGroup - column group for the header name being generated.
+ * @param {GridModel} gridModel - gridModel for the grid.
+ * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
+ *      during ColumnHeaderGroup rendering.
+ * @return {string} - the header name to render in the ColumnGroup header
+ */
