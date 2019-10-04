@@ -4,7 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {filler, span} from '@xh/hoist/cmp/layout';
@@ -25,12 +24,14 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
+        const {isImpersonating, canImpersonate} = XH.identityService;
+
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
-        if (!model.canImpersonate || !model.isOpen) return null;
+        if (!canImpersonate || !model.isOpen) return null;
 
-        const {isImpersonating, targets} = model;
+        const {targets} = model;
 
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
@@ -66,7 +67,7 @@ class LocalModel {
 
     onCommit = () => {
         if (this.pendingTarget) {
-            this.model.impersonateAsync(
+            XH.identityService.impersonateAsync(
                 this.pendingTarget
             ).catch(e => {
                 this.setPendingTarget('');
@@ -76,11 +77,11 @@ class LocalModel {
     };
 
     onExitClick = () => {
-        const {model} = this;
-        if (model.isImpersonating) {
-            model.endImpersonateAsync();
+        const {identityService} = XH;
+        if (identityService.isImpersonating) {
+            identityService.endImpersonateAsync();
         } else {
-            model.hide();
+            this.model.hide();
         }
     };
 }

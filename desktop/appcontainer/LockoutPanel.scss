@@ -7,4 +7,8 @@
   align-items: center;
   max-width: 800px;
   margin: 0 auto;
+
+  .xh-button {
+    background-color: var(--xh-red-muted) !important;
+  }
 }
