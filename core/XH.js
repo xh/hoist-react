@@ -122,6 +122,7 @@ class XHClass {
     //---------------------------
     // Other State
     //---------------------------
+    accessDeniedMessage = null;
     exceptionHandler = new ExceptionHandler();
 
     /** State of app - see AppState for valid values. */
@@ -544,7 +545,7 @@ class XHClass {
             await this.installServicesAsync(IdentityService);
             const access = this.checkAccess();
             if (!access.hasAccess) {
-                this.acm.showAccessDenied(access.message || 'Access denied.');
+                this.accessDeniedMessage = access.message || 'Access denied.';
                 this.setAppState(S.ACCESS_DENIED);
                 return;
             }
@@ -556,7 +557,7 @@ class XHClass {
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridExportService, WebSocketService
             );
-            this.initModels();
+            this.acm.init();
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
@@ -599,10 +600,6 @@ class XHClass {
                 // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
                 throw e;
             });
-    }
-
-    initModels() {
-        this.acm.init();
     }
 
     startRouter() {
