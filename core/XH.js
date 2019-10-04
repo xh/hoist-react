@@ -538,9 +538,19 @@ class XHClass {
     async completeInitAsync() {
         const S = AppState;
 
-        this.setAppState(S.INITIALIZING);
         try {
+
+            // Install identity service and confirm access
             await this.installServicesAsync(IdentityService);
+            const access = this.checkAccess();
+            if (!access.hasAccess) {
+                this.acm.showAccessDenied(access.message || 'Access denied.');
+                this.setAppState(S.ACCESS_DENIED);
+                return;
+            }
+
+            // Complete initialization process
+            this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
             await this.installServicesAsync(
@@ -550,13 +560,6 @@ class XHClass {
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
-
-            const access = this.checkAccess();
-            if (!access.hasAccess) {
-                this.acm.showAccessDenied(access.message || 'Access denied.');
-                this.setAppState(S.ACCESS_DENIED);
-                return;
-            }
 
             this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
