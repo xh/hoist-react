@@ -7,8 +7,7 @@
 import {isEmpty} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import {XH, hoistCmp, uses} from '@xh/hoist/core';
-import {box, hbox, filler, vframe, viewport, p, hspacer} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {box, hbox, filler, vframe, viewport, p, hspacer, div} from '@xh/hoist/cmp/layout';
 import {logoutButton, button} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
@@ -42,27 +41,25 @@ function unauthorizedMessage() {
         user = XH.getUser(),
         roleMsg = isEmpty(user.roles) ? 'no roles assigned' : `the roles [${user.roles.join(', ')}]`;
 
-    return panel({
-        items: [
-            p(XH.accessDeniedMessage ?? ''),
-            p(`You are logged in as ${user.username} and have ${roleMsg}.`),
-            p({
-                item: appSpec.lockoutMessage,
-                omit: !appSpec.lockoutMessage
+    return div(
+        p(XH.accessDeniedMessage ?? ''),
+        p(`You are logged in as ${user.username} and have ${roleMsg}.`),
+        p({
+            item: appSpec.lockoutMessage,
+            omit: !appSpec.lockoutMessage
+        }),
+        hbox(
+            filler(),
+            logoutButton({text: 'Logout'}),
+            hspacer(5),
+            button({
+                omit: !identityService.isImpersonating,
+                icon: Icon.logout(),
+                text: 'End Impersonation',
+                intent: 'danger',
+                onClick: () => identityService.endImpersonateAsync()
             }),
-            hbox(
-                filler(),
-                logoutButton({text: 'Logout'}),
-                hspacer(5),
-                button({
-                    omit: !identityService.isImpersonating,
-                    icon: Icon.logout(),
-                    text: 'End Impersonation',
-                    intent: 'danger',
-                    onClick: () => identityService.endImpersonateAsync()
-                }),
-                filler()
-            )
-        ]
-    });
+            filler()
+        )
+    );
 }
