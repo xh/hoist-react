@@ -92,6 +92,7 @@ leverage the context for model support discussed above.
 * @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
+* mobx `5.13 -> 5.14`
 * react-transition-group `4.2 -> 4.3`
 * rsvp (removed)
 * store2 `2.9 -> 2.10`
