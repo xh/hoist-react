@@ -50,13 +50,17 @@ function unauthorizedMessage() {
         }),
         hbox(
             filler(),
-            logoutButton({text: 'Logout'}),
+            logoutButton({
+                text: 'Logout',
+                intent: null,
+                minimal: false
+            }),
             hspacer(5),
             button({
                 omit: !identityService.isImpersonating,
-                icon: Icon.logout(),
+                icon: Icon.impersonate(),
                 text: 'End Impersonation',
-                intent: 'danger',
+                minimal: false,
                 onClick: () => identityService.endImpersonateAsync()
             }),
             filler()

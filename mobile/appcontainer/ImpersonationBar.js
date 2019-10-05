@@ -36,7 +36,7 @@ export const impersonationBar = hoistCmp.factory({
         return div({
             className: 'xh-impersonation-bar',
             items: [
-                Icon.user({size: 'lg'}),
+                Icon.impersonate({size: 'lg'}),
                 select({
                     value: username,
                     options: options,

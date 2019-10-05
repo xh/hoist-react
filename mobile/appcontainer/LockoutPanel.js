@@ -42,7 +42,7 @@ export const lockoutPanel = hoistCmp.factory({
                     }),
                     vspacer(10),
                     button({
-                        icon: Icon.logout(),
+                        icon: Icon.impersonate(),
                         text: 'End Impersonation',
                         omit: !identityService.isImpersonating,
                         onClick: () => identityService.endImpersonateAsync()

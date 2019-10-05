@@ -6,7 +6,7 @@
  */
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler, hspacer, span} from '@xh/hoist/cmp/layout';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -24,7 +24,7 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isImpersonating, canImpersonate} = XH.identityService;
+        const {isImpersonating, canImpersonate, authUsername, username} = XH.identityService;
 
         const impl = useLocalModel(LocalModel);
         impl.model = model;
@@ -33,11 +33,17 @@ export const impersonationBar = hoistCmp.factory({
 
         const {targets} = model;
 
+        let msg = `Logged in as ${authUsername}`;
+        if (isImpersonating) {
+            msg += ` › impersonating ${username}`;
+        }
+
         return toolbar({
             style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
             items: [
-                Icon.user(),
-                span(`${isImpersonating ? 'Impersonating' : ''} ${XH.getUsername()}`),
+                hspacer(5),
+                Icon.impersonate(),
+                span(msg),
                 filler(),
                 select({
                     model: impl,
