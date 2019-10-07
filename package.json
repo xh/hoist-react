@@ -14,8 +14,8 @@
     "./static/polyfills.js"
   ],
   "dependencies": {
-    "@blueprintjs/core": "~3.18.1",
-    "@blueprintjs/datetime": "~3.13.0",
+    "@blueprintjs/core": "~3.19.0",
+    "@blueprintjs/datetime": "~3.14.0",
     "@fortawesome/fontawesome-pro": "~5.11.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.25",
     "@fortawesome/pro-light-svg-icons": "~5.11.2",

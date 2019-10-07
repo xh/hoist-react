@@ -87,7 +87,8 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/datetime `3.12 -> 3.13`
+* @blueprintjs/core `3.18 -> 3.19`
+* @blueprintjs/datetime `3.12 -> 3.14`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
 * @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
