@@ -1,11 +1,25 @@
 # Changelog
 
+## v29.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* `DateInput` supports a new `strictInputParsing` prop to enforce strict parsing of keyed-in entries
+  by the underlying moment library. The default value is false, maintained the existing behavior
+  where [moment will do its best](https://momentjs.com/guides/#/parsing/) to parse an entered date
+  string that doesn't exactly match the specified format
+* Any `DateInput` values entered that exceed any specified max/minDate will now be reset to null,
+  instead of being set to the boundary date (which was surprising and potentially much less obvious
+  to a user that their input had been adjusted automatically).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
+
 ## v28.0.0 - 2019-10-07
 
 ----
 
-⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser is
-a transitive dependency used to minify code for production builds.) Apps are advised to fix the
+⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser
+is a transitive dependency used to minify code for production builds.) Apps are advised to fix the
 version of terser used for compilation by specifying the following in their `package.json` file:
 
 ```
