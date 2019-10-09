@@ -126,7 +126,7 @@ export class Store {
         let updateRecs, addRecs;
         if (update) {
             updateRecs = update.map(it => {
-                const rec = it.id === summaryRecord?.id ? summaryRecord : this.getById(it.id);
+                const rec = this.getById(it.id);
                 return this.createRecord({...rec?.raw, ...it});
             });
         }
@@ -297,6 +297,8 @@ export class Store {
      * @return {Record}
      */
     getById(id, fromFiltered = false) {
+        if (id == this.summaryRecord?.id) return this.summaryRecord;
+
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.getById(id);
     }
