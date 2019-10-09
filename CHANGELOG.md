@@ -15,7 +15,9 @@
 ### 🐞 Bug Fixes
 
 * Tree columns can now specify `renderer` or `elementRenderer` configs without breaking the standard
-  ag-Grid group cell renderer auto-applied to tree columns.
+  ag-Grid group cell renderer auto-applied to tree columns (#1397).
+* Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
+  filter menus (#1400).
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
 
