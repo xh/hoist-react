@@ -27,7 +27,7 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {Column~headerNameFn|string} [c.headerName] - display text for grid header. Supports
+     * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header. Supports
      *      both a string value or a function to generate a string. Note that using a function here
      *      will ignore any ag-Grid functionality for decorating the header name, the return value
      *      of the function will be used as-is.

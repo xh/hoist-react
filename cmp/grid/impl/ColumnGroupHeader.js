@@ -16,7 +16,6 @@ export const ColumnGroupHeader = hoistCmp({
     model: false,
 
     render(props) {
-        console.log('Rendering ColumnGroupHeader', props);
         const impl = useLocalModel(() => new LocalModel(props)),
             expandIcon = () => {
                 if (!impl.isExpandable) return null;
