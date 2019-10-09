@@ -168,9 +168,9 @@ export class Store {
 
     /**
      * Update data for a single Record
-     * @param {string|number|Record} rec - Record or id of Record to update
-     * @param {Object} data - updated raw data for the record. This will be merged into the original
-     *      raw data for the Record.
+     * @param {(string|number|Record)} rec - Record or id of Record to update
+     * @param {Object} data - updated raw data for the Record. Can be a partial update that includes
+     *      only fields which have changed - Store will merge with the Record's original raw data.
      */
     updateRecordData(rec, data) {
         const id = (rec instanceof Record) ? rec.id : rec;
