@@ -328,11 +328,13 @@ export class Column {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
                 const {gridModel, colId} = this,
+                    // Note: sortCfg and agNodes can be undefined if comparator called during show
+                    // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
-                    sortDir = sortCfg.sort,
-                    abs = sortCfg.abs,
-                    recordA = agNodeA.data,
-                    recordB = agNodeB.data,
+                    sortDir = sortCfg?.sort || 'asc',
+                    abs = sortCfg?.abs || false,
+                    recordA = agNodeA?.data,
+                    recordB = agNodeB?.data,
                     params = {
                         recordA,
                         recordB,
@@ -362,16 +364,18 @@ export class Column {
 }
 
 /**
- * @callback Column~comparatorFn - sort comparator function for a grid column.
+ * @callback Column~comparatorFn - sort comparator function for a grid column. Note that this
+ *      comparator will also be called if agGrid-provided column filtering is enabled: it is used
+ *      to sort values shown for set filter options. In that case, some extra params will be null.
  * @param {*} valueA - cell data valueA to be compared
  * @param {*} valueB - cell data valueB to be compared
  * @param {string} sortDir - either 'asc' or 'desc'
  * @param {boolean} abs - true to sort by absolute value
  * @param {Object} params - extra parameters devs might want
- * @param {Record} params.recordA - data Record for valueA
- * @param {Record} params.recordB - data Record for valueB
- * @param {Object} params.agNodeA - row node provided by ag-grid
- * @param {Object} params.agNodeB - row node provided by ag-grid
+ * @param {?Record} params.recordA - data Record for valueA
+ * @param {?Record} params.recordB - data Record for valueB
+ * @param {?Object} params.agNodeA - row node provided by ag-grid
+ * @param {?Object} params.agNodeB - row node provided by ag-grid
  * @param {Column} params.column - column for the cell being rendered
  * @param {GridModel} params.gridModel - gridModel for the grid
  * @param {function} params.defaultComparator - default comparator provided by Hoist for this column.
@@ -437,5 +441,5 @@ export class Column {
  * @typedef {Object} TooltipMetadata
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
- * @property {TooltipParams} [agParams] - the ag-grid tooltip params.
+ * @property {ITooltipParams} [agParams] - the ag-grid tooltip params.
  */
