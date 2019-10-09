@@ -12,6 +12,11 @@
   instead of being set to the boundary date (which was surprising and potentially much less obvious
   to a user that their input had been adjusted automatically).
 
+### 🐞 Bug Fixes
+
+* Tree columns can now specify `renderer` or `elementRenderer` configs without breaking the standard
+  ag-Grid group cell renderer auto-applied to tree columns.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
 
 ## v28.0.0 - 2019-10-07
@@ -44,7 +49,7 @@ specification of component element trees.
 
 Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
 familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
-is now strongly encouraged.  In particular note that Class-based Components will *not* be able to
+is now strongly encouraged. In particular note that Class-based Components will *not* be able to
 leverage the context for model support discussed above.
 
 ### 🎁 New Features
@@ -111,9 +116,8 @@ leverage the context for model support discussed above.
   reset to underlying value.)
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
-* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear above the context menu.
-* Tree columns can now use `renderer` and `elementRenderer` without causing issues with the standard
-  ag-Grid group cell renderer
+* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear
+  above the context menu.
 
 ### 📚 Libraries
 
