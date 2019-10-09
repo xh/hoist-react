@@ -4,23 +4,23 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import PT from 'prop-types';
-import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {castArray, isNil, isEmpty, isPlainObject, keyBy, find, assign} from 'lodash';
-import debouncePromise from 'debounce-promise';
-import {observable, action} from '@xh/hoist/mobx';
-import {box, hbox, div, span} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
+import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {
-    reactSelect,
-    reactCreatableSelect,
+    reactAsyncCreatableSelect,
     reactAsyncSelect,
-    reactAsyncCreatableSelect
+    reactCreatableSelect,
+    reactSelect
 } from '@xh/hoist/kit/react-select';
+import {action, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import debouncePromise from 'debounce-promise';
+import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import PT from 'prop-types';
+import React from 'react';
 import {createFilter} from 'react-select';
 
 import './Select.scss';
@@ -52,6 +52,9 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
+        /** True to show a "clear" button at the right of the control.  Defaults to false. */
+        enableClear: PT.bool,
+
         /** True to accept and commit input values not present in options or returned by a query. */
         enableCreate: PT.bool,
 
@@ -82,8 +85,12 @@ export class Select extends HoistInput {
         /** True to auto-open the dropdown menu on input focus. */
         openMenuOnFocus: PT.bool,
 
-        /** True to show a "clear" button at the right of the control.  Defaults to false. */
-        enableClear: PT.bool,
+        /**
+         * Function to render options in the dropdown list. Called for each option object (which
+         * will contain at minimum a value and label field, as well as any other fields present in
+         * the source objects). Returns a React.node.
+         */
+        optionRenderer: PT.func,
 
         /**
          * Preset list of options for selection. Objects must contain a `value` property; a `label`
@@ -93,26 +100,19 @@ export class Select extends HoistInput {
          */
         options: PT.array,
 
-        /**
-         * Function to render options in the dropdown list. Called for each option object (which
-         * will contain at minimum a value and label field, as well as any other fields present in
-         * the source objects). Returns a React.node.
-         */
-        optionRenderer: PT.func,
-
         /** Text to display when control is empty. */
         placeholder: PT.string,
+
+        /**
+         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
+         */
+        queryBuffer: PT.number,
 
         /**
          * Async function to return a list of options for a given query string input.
          * Replaces the `options` prop - use one or the other.
          */
         queryFn: PT.func,
-
-        /**
-         * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
-         */
-        queryBuffer: PT.number,
 
         /**
          * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -157,7 +157,7 @@ export class Select extends HoistInput {
     _defaultLocalFilterFn = createFilter();
     _localFilterFn = (opt, inputVal) => {
         return !this.inputValue || !this._inputChangedSinceSelect || this._defaultLocalFilterFn(opt, inputVal);
-    }
+    };
 
     constructor(props) {
         super(props);
