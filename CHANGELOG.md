@@ -112,6 +112,8 @@ leverage the context for model support discussed above.
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
 * Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear above the context menu.
+* Tree columns can now use `renderer` and `elementRenderer` without causing issues with the standard
+  ag-Grid group cell renderer
 
 ### 📚 Libraries
 
