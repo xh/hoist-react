@@ -25,7 +25,8 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isOpen, targets} = model;
+        const {isOpen, targets} = model,
+            {identityService} = XH;
 
         if (!isOpen) return null;
 
@@ -35,16 +36,16 @@ export const impersonationBar = hoistCmp.factory({
         return div({
             className: 'xh-impersonation-bar',
             items: [
-                Icon.user({size: 'lg'}),
+                Icon.impersonate({size: 'lg'}),
                 select({
                     value: username,
                     options: options,
                     commitOnChange: true,
-                    onCommit: (target) => model.impersonateAsync(target)
+                    onCommit: (target) => identityService.impersonateAsync(target)
                 }),
                 button({
                     icon: Icon.close(),
-                    onClick: () => (model.isImpersonating ? model.endImpersonateAsync() : model.hide())
+                    onClick: () => (identityService.isImpersonating ? identityService.endImpersonateAsync() : model.hide())
                 })
             ]
         });

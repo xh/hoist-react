@@ -56,7 +56,7 @@ export const message = hoistCmp.factory({
             className: 'xh-message',
             content: div(
                 div({omit: !message, className: 'xh-message-content', item: message}),
-                inputCmp({model})
+                inputCmp()
             ),
             onCancel: () => model.doCancel()
         });
@@ -69,7 +69,6 @@ const inputCmp = hoistCmp.factory(
         const {formModel, input} = model;
         if (!formModel) return null;
         return form({
-            model: formModel,
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',

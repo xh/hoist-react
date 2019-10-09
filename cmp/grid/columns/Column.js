@@ -229,6 +229,12 @@ export class Column {
             };
 
 
+        // We will change these setters as needed to install the renderers in the proper location
+        // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
+        // group cell renderer, instead of on the top-level column itself
+        let setRenderer = (r) => ret.cellRenderer = r,
+            setElementRenderer = (r) => ret.cellRendererFramework = r;
+
         // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
         // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
         // Add valueGetters below to correct + additional fixes for sorting below.
@@ -242,6 +248,12 @@ export class Column {
             };
             ret.valueGetter = (v) => v.data[field];
             ret.filterValueGetter = (v) => v.data[field];
+
+            setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
+            setElementRenderer = (r) => {
+                ret.cellRendererParams.innerRenderer = null;
+                ret.cellRendererParams.innerRendererFramework = r;
+            };
         }
 
         if (this.tooltip) {
@@ -293,11 +305,11 @@ export class Column {
 
         const {renderer, elementRenderer} = this;
         if (renderer) {
-            ret.cellRenderer = (agParams) => {
+            setRenderer((agParams) => {
                 return renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams});
-            };
+            });
         } else if (elementRenderer) {
-            ret.cellRendererFramework = class extends Component {
+            setElementRenderer(class extends Component {
                 render() {
                     const agParams = this.props,
                         {value, data: record} = agParams;
@@ -305,7 +317,7 @@ export class Column {
                 }
 
                 refresh() {return false}
-            };
+            });
         }
 
         const sortCfg = find(gridModel.sortBy, {colId: ret.colId});

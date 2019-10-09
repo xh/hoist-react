@@ -88,7 +88,7 @@ const dialogCmp = hoistCmp.factory(
             onCancel: () => model.commitPendingValueAndClose(),
             width: dialogWidth,
             align: 'left',
-            content: isHistory ? historyMenu({model, emptyText}) : selectMenu({model, dialogWidth, emptyText}),
+            content: isHistory ? historyMenu({emptyText}) : selectMenu({dialogWidth, emptyText}),
             buttons
         });
     }

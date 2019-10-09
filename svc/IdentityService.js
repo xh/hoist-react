@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
-import {deepFreeze} from '@xh/hoist/utils/js';
+import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -19,7 +19,7 @@ export class IdentityService {
 
     _authUser = null;
     _apparentUser = null;
-    
+
     async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
         if (data.user) {
@@ -85,6 +85,44 @@ export class IdentityService {
     /** Is an impersonation session currently active? */
     get isImpersonating() {
         return this._authUser !== this._apparentUser;
+    }
+
+    /** Can the unerlying user impersonate other users? */
+    get canImpersonate() {
+        return this._authUser.isHoistAdmin;
+    }
+
+    /**
+     * Begin an impersonation session to act as another user. The UI server will allow this only
+     * if the actual authenticated user has the HOIST_ADMIN role, and is attempting to impersonate
+     * a known user who has permission to and has accessed the app themselves. If successful,
+     * the application will reload and the admin will now be acting as the other user.
+     *
+     * @param {string} username - the end-user to impersonate
+     */
+    async impersonateAsync(username) {
+        throwIf(!this.canImpersonate, 'User does not have right to impersonate.');
+        return XH.fetchJson({
+            url: 'xh/impersonate',
+            params: {
+                username: username
+            }
+        }).then(() => {
+            XH.reloadApp();
+        });
+    }
+
+    /**
+     * Exit any active impersonation, reloading the app to resume normal day-to-day life as yourself.
+     */
+    async endImpersonateAsync() {
+        return XH.fetchJson({
+            url: 'xh/endImpersonate'
+        }).then(() => {
+            XH.reloadApp();
+        }).catchDefault({
+            message: 'Failed to end impersonation'
+        });
     }
 
     //------------------------

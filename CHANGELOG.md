@@ -1,6 +1,47 @@
 # Changelog
 
-## v28.0.0-SNAPSHOT - Unreleased
+## v29.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* `DateInput` supports a new `strictInputParsing` prop to enforce strict parsing of keyed-in entries
+  by the underlying moment library. The default value is false, maintained the existing behavior
+  where [moment will do its best](https://momentjs.com/guides/#/parsing/) to parse an entered date
+  string that doesn't exactly match the specified format
+* Any `DateInput` values entered that exceed any specified max/minDate will now be reset to null,
+  instead of being set to the boundary date (which was surprising and potentially much less obvious
+  to a user that their input had been adjusted automatically).
+* `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be
+  automatically re-rendered when any observable properties referenced by the `headerName` function
+  are modified.
+
+### 💥 Breaking Changes
+
+* `ColumnGroup` now requires a `groupId` instead of a `headerName`. If you were previously setting
+  `headerName` on `ColumnGroup` specs, simply change `headerName` to `groupId` in your config.
+
+### 🐞 Bug Fixes
+
+* Tree columns can now specify `renderer` or `elementRenderer` configs without breaking the standard
+  ag-Grid group cell renderer auto-applied to tree columns.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
+
+## v28.0.0 - 2019-10-07
+
+----
+
+⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser
+is a transitive dependency used to minify code for production builds.) Apps are advised to fix the
+version of terser used for compilation by specifying the following in their `package.json` file:
+
+```
+"resolutions": {"terser": "4.3.4"}
+```
+
+ExHI will track https://github.com/terser/terser/issues/486 and test any fixes when available.
+
+---
 
 _"The one with the hooks."_
 
@@ -16,7 +57,7 @@ specification of component element trees.
 
 Note that **Class-based Components remain fully supported** (by both Hoist and React) using the
 familiar `@HoistComponent` decorator, but transitioning to functional components within Hoist apps
-is now strongly encouraged.  In particular note that Class-based Components will *not* be able to
+is now strongly encouraged. In particular note that Class-based Components will *not* be able to
 leverage the context for model support discussed above.
 
 ### 🎁 New Features
@@ -39,8 +80,6 @@ leverage the context for model support discussed above.
 * `Record` now has properties and methods for accessing and iterating over children, descendants,
   and ancestors
 * `Store` now has methods for retrieving the descendants and ancestors of a given Record
-* `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be automatically 
-  re-rendered when any observable properties referenced by the `headerName` function are modified.
 
 ### 💥 Breaking Changes
 
@@ -64,9 +103,6 @@ leverage the context for model support discussed above.
   package `/cmp/dataview`.
 * `isReactElement` has been removed. Applications should use the native React API method
   `React.isValidElement` instead.
-* `ColumnGroup` now requires a `groupId` instead of a `headerName`. If you were previously just
-  setting `headerName` on `ColumnGroup` specs then all that is needed is to change `headerName` to
-  `groupId`.
 
 ### ⚙️ Technical
 
@@ -88,20 +124,23 @@ leverage the context for model support discussed above.
   reset to underlying value.)
 * Individual `Buttons` within a `ButtonGroupInput` will accept a disabled prop while continuing to
   respect the overall `ButtonGroupInput`'s disabled prop.
-* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear above the context menu.
+* Raised z-index level of AG-Grid tooltip to ensure tooltips for AG-Grid context menu items appear
+  above the context menu.
 
 ### 📚 Libraries
 
-* @blueprintjs/datetime `3.12 -> 3.13`
+* @blueprintjs/core `3.18 -> 3.19`
+* @blueprintjs/datetime `3.12 -> 3.14`
 * @fortawesome/fontawesome-pro `5.10 -> 5.11`
 * @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
 * ag-grid `21.1 -> 21.2`
 * highcharts `7.1 -> 7.2`
+* mobx `5.13 -> 5.14`
 * react-transition-group `4.2 -> 4.3`
 * rsvp (removed)
 * store2 `2.9 -> 2.10`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v27.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v27.1.0...v28.0.0)
 
 ## v27.1.0 - 2019-09-05
 
