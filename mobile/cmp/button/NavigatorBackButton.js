@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {Icon} from '@xh/hoist/icon';
@@ -15,15 +15,16 @@ import {Icon} from '@xh/hoist/icon';
  */
 export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
     displayName: 'NavigatorBackButton',
-    model: uses(NavigatorModel),
+    model: false,
 
     render({
-        model,
         icon = Icon.chevronLeft(),
         onClick = () => XH.popRoute(),
         ...props
     }) {
-        if (model.pages.length < 2) return null;
+        const model = useContextModel(NavigatorModel);
+
+        if (!model || model.pages.length < 2) return null;
         return button({icon, onClick, ...props});
     }
 });

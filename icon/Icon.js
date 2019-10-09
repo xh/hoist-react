@@ -169,6 +169,7 @@ import {
     faUserCheck,
     faUserCircle,
     faUserClock,
+    faUserFriends,
     faUsers,
     faWindow,
     faWrench
@@ -331,6 +332,7 @@ import {
     faUserCheck as faUserCheckLight,
     faUserCircle as faUserCircleLight,
     faUserClock as faUserClockLight,
+    faUserFriends as faUserFriendsLight,
     faUsers as faUsersLight,
     faWindow as faWindowLight,
     faWrench as faWrenchLight
@@ -493,6 +495,7 @@ import {
     faUserCheck as faUserCheckSolid,
     faUserCircle as faUserCircleSolid,
     faUserClock as faUserClockSolid,
+    faUserFriends as faUserFriendsSolid,
     faUsers as faUsersSolid,
     faWindow as faWindowSolid,
     faWrench as faWrenchSolid
@@ -657,6 +660,7 @@ library.add(
     faUserCheck, faUserCheckLight, faUserCheckSolid,
     faUserCircle, faUserCircleLight, faUserCircleSolid,
     faUserClock, faUserClockLight, faUserClockSolid,
+    faUserFriends, faUserFriendsLight, faUserFriendsSolid,
     faUsers, faUsersLight, faUsersSolid,
     faWindow, faWindowLight, faWindowSolid,
     faWrench, faWrenchLight, faWrenchSolid
@@ -777,6 +781,7 @@ export const Icon = {
     health(p)           {return fa(p, 'stethoscope')},
     history(p)          {return fa(p, 'history')},
     home(p)             {return fa(p, 'home')},
+    impersonate(p)      {return fa(p, 'user-friends')},
     inbox(p)            {return fa(p, 'inbox')},
     info(p)             {return fa(p, 'info-circle')},
     institution(p)      {return fa(p, 'university')},

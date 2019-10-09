@@ -5,8 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import PT from 'prop-types';
-import {XH, hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {button, navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
@@ -32,7 +33,6 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         title,
         leftItems,
         rightItems,
-        navigatorModel,
         hideAppMenuButton,
         hideBackButton,
         hideRefreshButton,
@@ -40,6 +40,9 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         backButtonProps = {},
         refreshButtonProps = {}
     }) {
+
+        const navigatorModel = useContextModel(NavigatorModel);
+
         return toolbar({
             className,
             items: [
@@ -98,13 +101,7 @@ AppBar.propTypes = {
 
     /** Items to be added to the right side of the AppBar, before the refresh button. */
     rightItems: PT.node,
-
-    /** NavigatorModel. Bound to back button. */
-    navigatorModel: PT.object,
-
-    /** AppMenuModel. Used to populate main menu. */
-    appMenuModel: PT.object,
-
+    
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 

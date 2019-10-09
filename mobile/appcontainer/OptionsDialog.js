@@ -39,7 +39,6 @@ export const optionsDialog = hoistCmp.factory({
             content: [
                 mask({model: loadModel, spinner: true}),
                 form({
-                    model: formModel,
                     item: vframe(
                         ...model.options.map(option => {
                             return formField({field: option.name, ...option.formField});

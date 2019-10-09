@@ -46,10 +46,10 @@ export const exceptionDialog = hoistCmp.factory({
                         omit: !options.showAsError
                     }),
                     filler(),
-                    dismissButton({model})
+                    dismissButton()
                 ]
             }),
-            exceptionDialogDetails({model})
+            exceptionDialogDetails()
         );
     }
 });

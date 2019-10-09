@@ -5,10 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {useOwnedModelLinker} from '@xh/hoist/core/impl';
 import {useState, useContext} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
-import {useOnUnmount} from '@xh/hoist/utils/react';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
@@ -40,6 +39,6 @@ export function useLocalModel(spec) {
         if (!spec) return null;
         return spec.isHoistModel ? new spec() : spec.call();
     });
-    useOnUnmount(() => XH.safeDestroy(ret));
+    useOwnedModelLinker(ret);
     return ret;
 }

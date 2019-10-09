@@ -5,12 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
+import {Icon} from '@xh/hoist/icon';
 import {XH, hoistCmp, uses} from '@xh/hoist/core';
-import {div, box, filler, vframe, viewport, p} from '@xh/hoist/cmp/layout';
-import {logoutButton} from '@xh/hoist/desktop/cmp/button';
+import {box, hbox, filler, vframe, viewport, p, hspacer, div} from '@xh/hoist/cmp/layout';
+import {logoutButton, button} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
-import {impersonationBar} from './ImpersonationBar';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /**
@@ -25,11 +25,10 @@ export const lockoutPanel = hoistCmp.factory({
     render({model}) {
         return viewport(
             vframe(
-                impersonationBar(),
                 filler(),
                 box({
                     className: 'xh-lockout-panel',
-                    item: unauthorizedMessage(model.accessDeniedMessage)
+                    item: unauthorizedMessage()
                 }),
                 filler()
             )
@@ -37,21 +36,34 @@ export const lockoutPanel = hoistCmp.factory({
     }
 });
 
-function unauthorizedMessage(msg) {
-    const {appSpec} = XH,
+function unauthorizedMessage() {
+    const {appSpec, identityService} = XH,
         user = XH.getUser(),
         roleMsg = isEmpty(user.roles) ? 'no roles assigned' : `the roles [${user.roles.join(', ')}]`;
 
     return div(
-        p(msg),
+        p(XH.accessDeniedMessage ?? ''),
         p(`You are logged in as ${user.username} and have ${roleMsg}.`),
         p({
             item: appSpec.lockoutMessage,
             omit: !appSpec.lockoutMessage
         }),
-        logoutButton({
-            text: 'Logout',
-            omit: appSpec.isSSO
-        })
+        hbox(
+            filler(),
+            logoutButton({
+                text: 'Logout',
+                intent: null,
+                minimal: false
+            }),
+            hspacer(5),
+            button({
+                omit: !identityService.isImpersonating,
+                icon: Icon.impersonate(),
+                text: 'End Impersonation',
+                minimal: false,
+                onClick: () => identityService.endImpersonateAsync()
+            }),
+            filler()
+        )
     );
 }

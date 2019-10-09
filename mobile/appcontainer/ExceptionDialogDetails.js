@@ -52,8 +52,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                 pre(errorStr),
                 textArea({
                     placeholder: 'Add message here...',
-                    bind: 'userMessage',
-                    model
+                    bind: 'userMessage'
                 })
             ),
             buttons: [
@@ -64,7 +63,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                     onClick: () => model.sendReportAsync()
                 }),
                 filler(),
-                dismissButton({model})
+                dismissButton()
             ]
         });
     }
