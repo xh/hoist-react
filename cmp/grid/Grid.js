@@ -24,6 +24,7 @@ import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {agGrid, AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS} from '@xh/hoist/cmp/ag-grid';
+import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
 import {withShortDebug} from '@xh/hoist/utils/js';
@@ -207,7 +208,7 @@ class LocalModel {
                 ),
                 clipboardCopy: convertIconToSvg(Icon.copy())
             },
-            frameworkComponents: {agColumnHeader: ColumnHeader},
+            frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: () => this.rowHeight,

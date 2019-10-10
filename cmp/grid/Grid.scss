@@ -3,8 +3,32 @@
   //------------------------
   // Core Header Classes
   //------------------------
-  .ag-header-cell > .ag-react-container {
-    width: 100%;
+
+  .ag-header-cell, .ag-header-group-cell {
+    > .ag-react-container {
+      width: 100%;
+    }
+  }
+
+  .xh-grid-group-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 32px;
+
+    &--expandable {
+      cursor: pointer;
+    }
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    svg {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-grid-header-icon-color);
+    }
   }
 
   .xh-grid-header {
