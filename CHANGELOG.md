@@ -11,6 +11,9 @@
 * Any `DateInput` values entered that exceed any specified max/minDate will now be reset to null,
   instead of being set to the boundary date (which was surprising and potentially much less obvious
   to a user that their input had been adjusted automatically).
+* `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be
+  automatically re-rendered when any observable properties referenced by the `headerName` function
+  are modified.
 * New `Clock` component has been added for displaying the current time for a given timezone.
 
 ### 🐞 Bug Fixes

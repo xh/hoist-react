@@ -9,8 +9,8 @@ import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {observable, computed, action} from '@xh/hoist/mobx';
-import {clone, remove} from 'lodash';
+import {bindable, computed} from '@xh/hoist/mobx';
+import {clone, isFunction, remove} from 'lodash';
 import classNames from 'classnames';
 
 /**
@@ -63,12 +63,18 @@ export const ColumnHeader = hoistCmp({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
+        let headerName = props.displayName;
+        if (isFunction(impl.xhColumn.headerName)) {
+            const {xhColumn, gridModel} = impl;
+            headerName = xhColumn.headerName({column: xhColumn, gridModel});
+        }
+
         return div({
             className: classNames(props.className, extraClasses),
             onClick: impl.onClick,
             onTouchEnd: impl.onClick,
             items: [
-                span(props.displayName),
+                span(headerName),
                 sortIcon(),
                 menuIcon()
             ]
@@ -85,7 +91,7 @@ class LocalModel {
     agColumn;
     colId;
     menuButtonRef = createObservableRef();
-    @observable isFiltered = false;
+    @bindable isFiltered = false;
     enableSorting;
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
@@ -95,7 +101,11 @@ class LocalModel {
         this.colId = agColumn.colId;
         this.isFiltered = agColumn.isFilterActive();
         this.enableSorting = enableSorting;
-        agColumn.addEventListener('filterChanged', () => this.onFilterChanged());
+        agColumn.addEventListener('filterChanged', this.onFilterChanged);
+    }
+
+    destroy() {
+        this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
     }
 
     // Get any active sortBy for this column, or null
@@ -127,12 +137,9 @@ class LocalModel {
         }
 
         gridModel.setSortBy(sortBy);
-    }
-
-    @action
-    onFilterChanged = () => {
-        this.isFiltered = this.agColumn.isFilterActive();
     };
+
+    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
 
     getNextSortBy() {
         const {colId, xhColumn, activeGridSorter} = this,

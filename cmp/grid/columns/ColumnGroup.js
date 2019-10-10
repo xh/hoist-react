@@ -6,7 +6,7 @@
  */
 
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {startCase, isEmpty, castArray, clone} from 'lodash';
+import {startCase, isEmpty, castArray, clone, isFunction, isString} from 'lodash';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
@@ -17,7 +17,7 @@ export class ColumnGroup {
     /**
      * @param {Object} c - ColumnGroup configuration.
      * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
-     * @param {string} [c.headerName] - display text for grid header.
+     * @param {Column~headerNameFn|string} [c.headerName] - display text for column group header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
@@ -36,25 +36,28 @@ export class ColumnGroup {
         ...rest
     }, gridModel) {
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
+        throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 
         Object.assign(this, rest);
 
         this.groupId = withDefault(groupId, headerName);
-        throwIf(!this.groupId, 'Must specify groupId or headerName for a ColumnGroup.');
 
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = castArray(headerClass);
 
         this.children = children.map(c => gridModel.buildColumn(c));
 
+        this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
     getAgSpec() {
+        const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerName: this.headerName,
+            headerValueGetter: (agParams) => isFunction(headerName) ? headerName({columnGroup: this, gridModel, agParams}) : headerName,
             headerClass: this.headerClass,
+            headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: true, // enforce 'sealed' column groups
             ...this.agOptions
