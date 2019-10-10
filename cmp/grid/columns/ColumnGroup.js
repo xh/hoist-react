@@ -17,7 +17,7 @@ export class ColumnGroup {
     /**
      * @param {Object} c - ColumnGroup configuration.
      * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
-     * @param {ColumnGroup~headerNameFn|string} [c.headerName] - display text for column group header.
+     * @param {Column~headerNameFn|string} [c.headerName] - display text for column group header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
@@ -64,17 +64,3 @@ export class ColumnGroup {
         };
     }
 }
-
-/**
- * @callback ColumnGroup~headerNameFn - function to generate a ColumnGroup header name.
- *      Note that using function for the header name will ignore any ag-Grid functionality for decorating
- *      the header name, the return value of the function will be used as-is.
- *      The function should be treated like an autorun - any subsequent changes observable
- *      properties referenced during the previous execution of the function will trigger a re-render
- *      of the column group header.
- * @param {ColumnGroup} columnGroup - column group for the header name being generated.
- * @param {GridModel} gridModel - gridModel for the grid.
- * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
- *      during ColumnHeaderGroup rendering.
- * @return {string} - the header name to render in the ColumnGroup header
- */
