@@ -27,12 +27,7 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header. Supports
-     *      both a string value or a function to generate a string. Note that using a function here
-     *      will ignore any ag-Grid functionality for decorating the header name, the return value
-     *      of the function will be used as-is.
-     *      The function should be treated like an autorun - any observable properties referenced
-     *      during the first execution of the function will trigger a re-render of the column header.
+     * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
      *      to the column header. Supports both string values or function to generate strings.
@@ -451,6 +446,11 @@ export class Column {
 
 /**
  * @callback Column~headerNameFn - function to generate a Column header name.
+ *      Note that using function for the header name will ignore any ag-Grid functionality for decorating
+ *      the header name, the return value of the function will be used as-is.
+ *      The function should be treated like an autorun - any subsequent changes observable
+ *      properties referenced during the previous execution of the function will trigger a re-render
+ *      of the column group header.
  * @param {Column} column - column for the header name being generated.
  * @param {GridModel} gridModel - gridModel for the grid.
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
