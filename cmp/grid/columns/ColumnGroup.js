@@ -6,7 +6,7 @@
  */
 
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {startCase, isEmpty, castArray, clone, isFunction} from 'lodash';
+import {startCase, isEmpty, castArray, clone, isFunction, isString} from 'lodash';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
@@ -16,7 +16,7 @@ import {startCase, isEmpty, castArray, clone, isFunction} from 'lodash';
 export class ColumnGroup {
     /**
      * @param {Object} c - ColumnGroup configuration.
-     * @param {string} c.groupId - unique identifier for the ColumnGroup within its grid.
+     * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
      * @param {ColumnGroup~headerNameFn|string} [c.headerName] - display text for column group header.
      * @param {(string|string[])} [c.headerClass] - additional css classes to add to the column group header.
      * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
@@ -36,11 +36,11 @@ export class ColumnGroup {
         ...rest
     }, gridModel) {
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
-        throwIf(isEmpty(groupId), 'Must specify groupId for a ColumnGroup.');
+        throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 
         Object.assign(this, rest);
 
-        this.groupId = groupId;
+        this.groupId = withDefault(groupId, headerName);
 
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = castArray(headerClass);

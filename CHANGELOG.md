@@ -15,11 +15,6 @@
   automatically re-rendered when any observable properties referenced by the `headerName` function
   are modified.
 
-### 💥 Breaking Changes
-
-* `ColumnGroup` now requires a `groupId` instead of a `headerName`. If you were previously setting
-  `headerName` on `ColumnGroup` specs, simply change `headerName` to `groupId` in your config.
-
 ### 🐞 Bug Fixes
 
 * Tree columns can now specify `renderer` or `elementRenderer` configs without breaking the standard
