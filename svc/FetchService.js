@@ -96,7 +96,6 @@ export class FetchService {
 
         // 3) Prepare merged options
         const fetchOpts = Object.assign({
-            cors: true,
             credentials: 'include',
             redirect: 'follow'
         }, {
