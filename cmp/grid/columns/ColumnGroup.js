@@ -5,19 +5,18 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
-import {startCase, isEmpty, castArray, clone, isFunction, isString} from 'lodash';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {clone, isEmpty, isFunction, isString, startCase} from 'lodash';
 import {getAgHeaderClassFn} from './Column';
 
 /**
  * Cross-platform definition and API for a standardized Grid column group.
  * Provided to GridModels as plain configuration objects.
- * @alias HoistColumnGroup
  */
 export class ColumnGroup {
     /**
      * @param {Object} c - ColumnGroup configuration.
-     * @param {Object[]} c.children - Column or ColumnGroup configurations for children of this group.
+     * @param {Object[]} c.children - Column or ColumnGroup configs for children of this group.
      * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
      * @param {Column~headerNameFn|string} [c.headerName] - display text for column group header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the

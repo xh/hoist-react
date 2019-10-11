@@ -15,7 +15,7 @@ import {castArray, isArray, isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
- * @see HoistColumn API for options to control exported values and formats.
+ * @see Column API for options to control exported values and formats.
  */
 @HoistService
 export class GridExportService {

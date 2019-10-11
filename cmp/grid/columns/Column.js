@@ -15,7 +15,6 @@ import {ExportFormat} from './ExportFormat';
 /**
  * Cross-platform definition and API for a standardized Grid column.
  * Provided to GridModels as plain configuration objects.
- * @alias HoistColumn
  */
 export class Column {
 
