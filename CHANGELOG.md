@@ -14,6 +14,7 @@
 * `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be
   automatically re-rendered when any observable properties referenced by the `headerName` function
   are modified.
+* `ColumnGroup` now accepts an `align` config for setting the header text alignment
 
 ### 🐞 Bug Fixes
 
@@ -21,6 +22,14 @@
   ag-Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
+  
+### ⚙️ Technical
+
+* Grid column group headers now use a custom React component instead of the default ag-Grid column
+  header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the 
+  ag-Grid column group headers may need to be updated to work with the new structure/classes.
+  
+  
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
 
