@@ -164,7 +164,13 @@ export class FetchService {
                 ...opts.headers
             }
         });
-        return ret.status === 204 ? null : ret.json();
+        switch (ret.status) {
+            case 204:
+            case 205:
+                return null;
+            default:
+                return ret.json();
+        }
     }
 
     /**
