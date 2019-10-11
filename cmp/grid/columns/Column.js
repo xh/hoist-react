@@ -29,8 +29,8 @@ export class Column {
      *      Defaults to field name - one of these two properties must be specified.
      * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
-     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
-     *      to the column header. Supports both string values or function to generate strings.
+     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
+     *      header. Supports both string values or a function to generate strings.
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
      *      to each cell in the column. Supports both string values or function to generate strings.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
