@@ -10,6 +10,7 @@ import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -165,8 +166,8 @@ export class FetchService {
             }
         });
         switch (ret.status) {
-            case 204:
-            case 205:
+            case NO_CONTENT:
+            case RESET_CONTENT:
                 return null;
             default:
                 return ret.json();
@@ -258,5 +259,3 @@ export class FetchService {
         return value;
     }
 }
-
-
