@@ -22,14 +22,18 @@
   ag-Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
-  
+
 ### ⚙️ Technical
 
 * Grid column group headers now use a custom React component instead of the default ag-Grid column
-  header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the 
+  header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the
   ag-Grid column group headers may need to be updated to work with the new structure/classes.
-  
-  
+
+### 📚 Libraries
+
+* core-js `3.2 -> 3.3`
+* filesize `4.2 -> 5.0`
+* http-status-codes `added @ 1.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
 
