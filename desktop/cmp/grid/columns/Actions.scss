@@ -6,8 +6,10 @@
  */
 
 $action-col-pad: 5;
-$action-col-pad-px: $action-col-pad + 0;
+$action-col-pad-px: $action-col-pad * 1px;
 
+// This CSS-modules export makes this value accessible from JS -note the import in Actions.js.
+//noinspection CssInvalidPseudoSelector
 :export {
   actioncolpad: $action-col-pad;
 }
@@ -23,14 +25,13 @@ $action-col-pad-px: $action-col-pad + 0;
     }
   }
 
+  // Keep the buttons in the action column a consistent size so we can calc the column width
   button.xh-record-action-button {
-    // Keep the buttons in the action column a consistent size so we can calc the column width
     max-width: 24px;
   }
 }
 
 // Tighten up buttons in compact grids to avoid clipping/overflow.
-
 .xh-ag-grid--compact {
   .xh-action-col-cell {
     button.xh-record-action-button {
