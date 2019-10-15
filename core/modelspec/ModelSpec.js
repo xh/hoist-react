@@ -17,7 +17,6 @@ export class ModelSpec {
     fromContext;
     toContext;
 
-
     constructor(fromContext, toContext) {
         this.fromContext = fromContext;
         this.toContext = toContext;

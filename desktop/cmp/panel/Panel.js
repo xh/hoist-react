@@ -37,7 +37,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
-        toContext: false,
         createDefault: () => new PanelModel({collapsible: false, resizable: false})
     }),
     memo: false,
@@ -115,7 +114,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
         // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
         const processedPanelHeader = (title || icon || headerItems) ?
-            panelHeader({model, title, icon, compact: compactHeader, headerItems}) :
+            panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
 
@@ -133,7 +132,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
-            resizeContainer({model, ref, item}) :
+            resizeContainer({ref, item}) :
             item;
     }
 });

@@ -5,17 +5,18 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
 import {DraggerAnimatedModel} from './DraggerAnimatedModel';
 import {DraggerModel} from './DraggerModel';
+import {PanelModel} from '../../PanelModel';
 
 import './Dragger.scss';
 
 
 export const dragger = hoistCmp.factory({
     displayName: 'Dragger',
-    model: false,
+    model: uses(PanelModel),
 
     render({model}) {
         const dragModel = useLocalModel(() => model.resizeWhileDragging ?

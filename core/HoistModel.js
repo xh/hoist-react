@@ -33,6 +33,7 @@ export function HoistModel(C) {
         provides: {
             lookupModel(selector) {
                 if (this.matchesSelector(selector)) return this;
+                if (this.isComponentModel()) return null;
 
                 let ret = null;
                 forOwn(this, (value, key) => {
@@ -44,12 +45,21 @@ export function HoistModel(C) {
                 return ret;
             },
 
-            // TODO: normalize this into a single 'function' selector at the beginning of the lookup? selector could
-            // flag whether it is interested in sub-model lookups.
             matchesSelector(selector) {
-                if (selector == '*')        return true;
-                if (isFunction(selector))   return selector.isHoistModel ? this instanceof selector : selector(this);
-                if (isString(selector))     return this['is' + selector];
+                if (selector == '*' && !this.isComponentModel()) return true;
+                if (isFunction(selector)) return selector.isHoistModel ? this instanceof selector : selector(this);
+                if (isString(selector)) return this['is' + selector];
+            }
+        },
+
+        defaults: {
+            /**
+             * Is the model for a component?  If true, this model will not be returned during lookup
+             * as a "default" model (i.e. via an empty or wildcard selector), or searched internally
+             * for matching sub-models.
+             */
+            isComponentModel() {
+                return false;
             }
         }
     });

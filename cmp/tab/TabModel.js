@@ -72,6 +72,10 @@ export class TabModel {
         this.refreshContextModel = new TabRefreshContextModel(this);
     }
 
+    isComponentModel() {
+        return true;
+    }
+
     activate() {
         this.containerModel.activateTab(this.id);
     }

@@ -112,6 +112,10 @@ export class PanelModel {
         }
     }
 
+    isComponentModel() {
+        return true;
+    }
+
     //----------------------
     // Actions
     //----------------------

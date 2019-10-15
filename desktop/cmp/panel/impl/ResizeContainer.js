@@ -5,16 +5,17 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
-
+import {PanelModel} from '../PanelModel';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
-    model: false, memo: false,
+    model: uses(PanelModel),
+    memo: false,
     className: 'xh-resizable',
 
     render({model, className, children}, ref) {
@@ -24,12 +25,12 @@ export const resizeContainer = hoistCmp.factory({
             items = [collapsed ? box(child) : box({item: child, [dim]: size})];
 
         if (showSplitter) {
-            const splitterCmp = splitter({model});
+            const splitterCmp = splitter();
             items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
         }
 
         if (!collapsed && resizable) {
-            items.push(dragger({model}));
+            items.push(dragger());
         }
 
         const cmp = vertical ? vbox : hbox,
