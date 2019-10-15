@@ -6,8 +6,16 @@
         "stylelint-config-standard"
     ],
     "rules": {
-        "at-rule-no-unknown": [true, {
-            "ignoreAtRules": ["each", "for", "function", "if", "include", "return"]
-        }]
+        "at-rule-no-unknown": null,
+        "no-descending-specificity": null,
+        "property-no-unknown": [
+            true,
+            {"ignoreSelectors": [":export"]}
+        ],
+        "scss/at-rule-no-unknown": true,
+        "selector-pseudo-class-no-unknown": [
+            true,
+            {"ignorePseudoClasses": ["export"]}
+        ]
     }
 }

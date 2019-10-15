@@ -3,7 +3,6 @@
 body.xh-app.xh-mobile {
 
   // Background
-
   .page,
   .page__content,
   .page__background,
@@ -19,7 +18,6 @@ body.xh-app.xh-mobile {
   }
 
   // Title bars
-
   .toolbar,
   .toolbar__bg {
     background-color: var(--xh-title-bg);
@@ -41,7 +39,6 @@ body.xh-app.xh-mobile {
   }
 
   // Borders
-
   .toolbar,
   .tabbar,
   .list,
@@ -59,10 +56,6 @@ body.xh-app.xh-mobile {
     border-bottom: var(--xh-border-solid);
   }
 
-  .list {
-    border-top: var(--xh-border-solid);
-  }
-
   .list--inset,
   .textarea {
     border: var(--xh-border-solid);
@@ -73,8 +66,8 @@ body.xh-app.xh-mobile {
   }
 
   // Grids
-
   .list {
+    border-top: var(--xh-border-solid);
     background-color: var(--xh-grid-bg);
   }
 
@@ -83,8 +76,9 @@ body.xh-app.xh-mobile {
   }
 
   .list-item {
-    margin-top: 1px;
     border-color: var(--xh-grid-border-color);
+    color: var(--xh-text-color);
+    margin-top: 1px;
   }
 
   .list-item:nth-child(odd) {
@@ -96,7 +90,6 @@ body.xh-app.xh-mobile {
   }
 
   // Buttons
-
   .button:not(.button--outline):not(.button--quiet):not(.button--light) {
     background-color: var(--xh-btn-color);
 
@@ -126,13 +119,11 @@ body.xh-app.xh-mobile {
   }
 
   // Dialogs
-
   .dialog-container {
     border: var(--xh-border-solid);
   }
 
   // Accented
-
   .alert-dialog-button,
   :checked + .tabbar__button {
     color: var(--xh-accent-color);
@@ -156,7 +147,6 @@ body.xh-app.xh-mobile {
   }
 
   // Spinners
-
   .progress-bar__primary,
   .progress-bar__secondary,
   .progress-bar--indeterminate::before,
@@ -170,9 +160,7 @@ body.xh-app.xh-mobile {
   }
 
   // Text
-
   .page,
-  .list-item,
   .list-header,
   .dialog-container,
   .dialog-container--material,
@@ -194,7 +182,6 @@ body.xh-app.xh-mobile {
   }
 
   // Remove outlines
-
   .tabbar__button:focus {
     outline: none;
   }

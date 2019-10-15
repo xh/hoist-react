@@ -15,7 +15,8 @@
     "./static/polyfills.js"
   ],
   "lint-staged": {
-    "*.{js,jsx}": "eslint"
+    "*.{js,jsx}": "eslint",
+    "*.s?(a|c)ss": "stylelint"
   },
   "husky": {
     "hooks": {

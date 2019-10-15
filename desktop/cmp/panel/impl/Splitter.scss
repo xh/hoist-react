@@ -3,6 +3,13 @@
   justify-content: center;
   align-items: center;
 
+  .xh-resizable-collapser-btn {
+    color: var(--xh-resizable-button-icon-color) !important;
+    margin: 0;
+    padding: 0;
+    z-index: 10;
+  }
+
   &.vertical {
     height: var(--xh-resizable-size-px);
     border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
@@ -29,12 +36,5 @@
       border-bottom: 1px solid var(--xh-resizable-border-color);
       border-top: 1px solid var(--xh-resizable-border-color);
     }
-  }
-
-  .xh-resizable-collapser-btn {
-    color: var(--xh-resizable-button-icon-color) !important;
-    margin: 0;
-    padding: 0;
-    z-index: 10;
   }
 }
