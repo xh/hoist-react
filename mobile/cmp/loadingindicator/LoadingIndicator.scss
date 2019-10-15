@@ -16,42 +16,49 @@
     border-bottom-width: var(--border-width);
     border-right-width: var(--border-width);
     border-radius: 0 0 4px 0;
+
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
         margin-left: var(--xh-pad-px);
       }
     }
   }
+
   &--tr {
     top: 0;
     right: 0;
     border-bottom-width: var(--border-width);
     border-left-width: var(--border-width);
     border-radius: 0 0 0 4px;
+
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
         margin-right: var(--xh-pad-px);
       }
     }
   }
+
   &--bl {
     bottom: 0;
     left: 0;
     border-top-width: var(--border-width);
     border-right-width: var(--border-width);
     border-radius: 0 4px 0 0;
+
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
         margin-left: var(--xh-pad-px);
       }
     }
   }
+
   &--br {
     bottom: 0;
     right: 0;
     border-top-width: var(--border-width);
     border-left-width: var(--border-width);
     border-radius: 4px 0 0 0;
+
     &.xh-loading-indicator--has-spinner {
       .xh-loading-indicator__message {
         margin-right: var(--xh-pad-px);

@@ -6,14 +6,17 @@
 @function mc($color-name, $color-variant) {
   @return material-color($color-name, $color-variant);
 }
+
 @function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
   @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
 }
+
 @function mc-trans($color-name, $color-variant, $amount:0.5) {
   @return transparentize(material-color($color-name, $color-variant), $amount);
 }
 
 // Core variable declarations - non-color-related + light-theme color defaults
+
 body {
   // Core colors
   --xh-black: var(--black, #{mc('grey', '900')});
@@ -57,7 +60,7 @@ body {
 
   // Focus indicator outline for interactive components - apps can use `--focus-outline: 0;` if
   // they wish to disable completely. Note form inputs provide their own dedicated props.
-  --xh-focus-outline-width-px: var(--focus-outline-width-px, .5px);
+  --xh-focus-outline-width-px: var(--focus-outline-width-px, 0.5px);
   --xh-focus-outline-offset-px: var(--focus-outline-offset-px, -1px);
   --xh-focus-outline-color: var(--focus-outline-color, rgba(19, 124, 189, 0.6));
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
@@ -236,7 +239,6 @@ body {
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
   --xh-title-pad: var(--title-pad, var(--xh-pad-half));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
-
   --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));
   --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
   --xh-title-compact-height: var(--title-compact-height, 28);
@@ -252,10 +254,10 @@ body {
   --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '100')});
 }
 
-
 //------------------------
 // Dark Theme
 //------------------------
+
 body.xh-dark {
   // Colors
   --xh-black: var(--black, #12171a);
@@ -332,10 +334,10 @@ body.xh-dark {
   --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '600')});
 }
 
-
 //------------------------
 // Mobile
 //------------------------
+
 body.xh-mobile {
   --xh-accent-color: var(--accent-color, var(--xh-blue-light));
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));

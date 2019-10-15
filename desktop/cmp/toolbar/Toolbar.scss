@@ -20,6 +20,7 @@
     min-height: var(--xh-tbar-min-size-px);
 
     // Selected via not-last to account for panels, which dock a header above the tbar.
+
     &:not(:last-child) {
       border-bottom: 1px solid var(--xh-tbar-border-color);
     }
@@ -60,6 +61,7 @@
   }
 
   // Form field margins (if set) are not desired within Toolbars.
+
   .bp3-control {
     margin-bottom: 0;
 
@@ -67,5 +69,4 @@
       margin-right: 0;
     }
   }
-
 }

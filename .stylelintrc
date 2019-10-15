@@ -1,0 +1,13 @@
+{
+    "plugins": [
+        "stylelint-scss"
+    ],
+    "extends": [
+        "stylelint-config-standard"
+    ],
+    "rules": {
+        "at-rule-no-unknown": [true, {
+            "ignoreAtRules": ["each", "for", "function", "if", "include", "return"]
+        }]
+    }
+}

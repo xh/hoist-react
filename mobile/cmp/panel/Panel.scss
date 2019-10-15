@@ -23,11 +23,13 @@
     }
 
     // Header glyph.
+
     & > .svg-inline--fa {
       margin: 0 5px 0 0;
     }
 
     // Header "tool" buttons.
+
     .button--quiet,
     .button--quiet:active {
       color: var(--xh-title-text-color) !important;

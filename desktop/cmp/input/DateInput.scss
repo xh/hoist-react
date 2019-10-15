@@ -1,5 +1,6 @@
 .xh-date-input {
   // Style input in picker-only mode
+
   &--picker-only {
     input {
       color: var(--xh-input-text-color) !important;
@@ -10,16 +11,17 @@
     .bp3-input-group.bp3-disabled {
       cursor: pointer !important;
     }
-
   }
 
   // Style picker icon in input-only mode
+
   &__picker-icon--disabled:hover {
     background-color: transparent !important;
     cursor: not-allowed;
   }
 
   // Style buttons when disabled
+
   &.xh-input-disabled:not(.xh-date-input--picker-only) button:hover {
     background-color: transparent !important;
     cursor: not-allowed;

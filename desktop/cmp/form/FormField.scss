@@ -18,7 +18,9 @@
       .bp3-input-group {
         width: 100%;
       }
-      &.bp3-popover-target, .bp3-popover-target {
+
+      &.bp3-popover-target,
+      .bp3-popover-target {
         display: block;
       }
     }
@@ -104,6 +106,7 @@ ul.xh-form-field-error-tooltip {
 }
 
 // Toolbar specific style
+
 .xh-toolbar .xh-form-field {
   padding: 0;
   margin: 0 var(--xh-pad-half-px);

@@ -6,10 +6,10 @@
  */
 
 $action-col-pad: 5;
-$action-col-pad-px: $action-col-pad + 0px;
+$action-col-pad-px: $action-col-pad + 0;
 
 :export {
-  actionColPad: $action-col-pad;
+  actioncolpad: $action-col-pad;
 }
 
 .xh-action-col-cell {
@@ -30,6 +30,7 @@ $action-col-pad-px: $action-col-pad + 0px;
 }
 
 // Tighten up buttons in compact grids to avoid clipping/overflow.
+
 .xh-ag-grid--compact {
   .xh-action-col-cell {
     button.xh-record-action-button {
