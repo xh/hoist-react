@@ -28,6 +28,11 @@
 * Grid column group headers now use a custom React component instead of the default ag-Grid column
   header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the
   ag-Grid column group headers may need to be updated to work with the new structure/classes.
+* We have configured `stylelint` to enforce greater consistency in our stylesheets within this
+  project. The initial linting run resulted in a large number of updates to our SASS files, almost
+  exclusively whitespace changes. No functional changes are intended/expected. We have also enabled
+  hooks to run both JS and style linting on pre-commit. Neither of these updates directly affects
+  applications, but the same tools could be configured for apps if desired.
 
 ### 📚 Libraries
 
