@@ -95,5 +95,5 @@ export class SplitTreeMapModel {
  * @callback SplitTreeMapTitleFn
  * @param {TreeMapModel} treeMapModel - model for the region's inner TreeMap.
  * @param {boolean} isPrimary - true if the region is the primary (top/left) map in the pair.
- * @return {(String|Node)} - the region title to display.
+ * @return {(String|ReactNode)} - the region title to display.
  */

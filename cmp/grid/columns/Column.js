@@ -8,14 +8,13 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFunction, startCase} from 'lodash';
+import {castArray, clone, find, isFunction, startCase, isString} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
  * Provided to GridModels as plain configuration objects.
- * @alias HoistColumn
  */
 export class Column {
 
@@ -29,8 +28,8 @@ export class Column {
      *      Defaults to field name - one of these two properties must be specified.
      * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
-     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
-     *      to the column header. Supports both string values or function to generate strings.
+     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
+     *      header. Supports both string values or a function to generate strings.
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
      *      to each cell in the column. Supports both string values or function to generate strings.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
@@ -177,7 +176,7 @@ export class Column {
             'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
         );
 
-        this.chooserName = chooserName || this.headerName || this.colId;
+        this.chooserName = withDefault(chooserName, isString(headerName) ? headerName : undefined, startCase(this.colId));
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
@@ -208,6 +207,7 @@ export class Column {
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
                         this.chooserName;
                 },
+                headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
                 minWidth: this.minWidth,
@@ -258,23 +258,9 @@ export class Column {
                 ({value}) => value;
         }
 
-        // Generate CSS classes for headers and cells.
+        // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
         const {align} = this;
-        ret.headerClass = (agParams) => {
-            let r = [];
-            if (this.headerClass) {
-                r = castArray(
-                    isFunction(this.headerClass) ?
-                        this.headerClass({column: this, gridModel, agParams}) :
-                        this.headerClass
-                );
-            }
-            if (align === 'center' || align === 'right') {
-                r.push('xh-column-header-align-' + align);
-            }
-            return r;
-        };
         ret.cellClass = (agParams) => {
             let r = [];
             if (this.cellClass) {
@@ -360,7 +346,28 @@ export class Column {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
+}
 
+export function getAgHeaderClassFn(column) {
+    // Generate CSS classes for headers.
+    // Default alignment classes are mixed in with any provided custom classes.
+    const {headerClass, align, gridModel} = column;
+    return (agParams) => {
+        let r = [];
+        if (headerClass) {
+            r = castArray(
+                isFunction(headerClass) ?
+                    headerClass({column, gridModel, agParams}) :
+                    headerClass
+            );
+        }
+
+        if (align === 'center' || align === 'right') {
+            r.push('xh-column-header-align-' + align);
+        }
+
+        return r;
+    };
 }
 
 /**
