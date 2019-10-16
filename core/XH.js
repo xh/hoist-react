@@ -98,13 +98,23 @@ class XHClass {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    track(opts)                 {return this.trackService.track(opts)}
+    /**
+     * @param {FetchOptions} opts
+     * @return {Promise<Response>}
+     */
     fetch(opts)                 {return this.fetchService.fetch(opts)}
+
+    /**
+     * @param {FetchOptions} opts
+     * @return {Promise}
+     */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
     getEnv(key)                 {return this.environmentService.get(key)}
+    track(opts)                 {return this.trackService.track(opts)}
 
     getUser()                   {return this.identityService ? this.identityService.getUser() : null}
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
