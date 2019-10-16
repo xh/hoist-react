@@ -14,19 +14,16 @@
   }
 
   // Header glyph.
-
   & > .svg-inline--fa {
     margin: 0 6px 0 2px;
   }
 
   // Header "tool" buttons.
-
   .xh-button--minimal {
     color: var(--xh-title-text-color) !important;
   }
 
   // Compact mode
-
   &--compact {
     height: var(--xh-title-compact-height-px);
     font-size: var(--xh-title-compact-font-size-px);
@@ -43,7 +40,6 @@
   }
 
   // Vertical mode - collapsed to left or right
-
   &.xh-vbox {
     .xh-panel-header__title {
       writing-mode: vertical-lr;

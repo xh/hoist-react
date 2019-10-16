@@ -16,7 +16,6 @@
 }
 
 // Core variable declarations - non-color-related + light-theme color defaults
-
 body {
   // Core colors
   --xh-black: var(--black, #{mc('grey', '900')});
@@ -257,7 +256,6 @@ body {
 //------------------------
 // Dark Theme
 //------------------------
-
 body.xh-dark {
   // Colors
   --xh-black: var(--black, #12171a);
@@ -337,7 +335,6 @@ body.xh-dark {
 //------------------------
 // Mobile
 //------------------------
-
 body.xh-mobile {
   --xh-accent-color: var(--accent-color, var(--xh-blue-light));
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));

@@ -134,7 +134,6 @@ body.xh-app {
 }
 
 // Lightly patterned background with light and dark theme variants.
-
 .xh-tiled-bg {
   background-image: inline-svg('<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #F5F5F5;" /></svg>');
 
@@ -145,7 +144,6 @@ body.xh-app {
 
 .xh-popup {
   // Support "framed" popovers with border and border-colored arrow
-
   &--framed {
     border: 1px solid var(--xh-popup-border-color);
 
@@ -156,7 +154,6 @@ body.xh-app {
   }
 
   // Minimal title style for a header div within a popover - used for e.g column and dimension choosers.
-
   &__title {
     text-align: center;
     text-transform: uppercase;

@@ -1,5 +1,4 @@
 // Host div for Select option menu portal.
-
 #xh-select-input-portal {
   z-index: 999;
   position: absolute;
@@ -7,7 +6,6 @@
 
 .xh-select {
   // Outer div of the actual react-select control, causing it to fill its box.
-
   > div {
     width: 100%;
   }
@@ -15,7 +13,6 @@
   color: var(--xh-input-text-color);
 
   // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
-
   .xh-select {
     &__control {
       background: var(--xh-input-bg);
@@ -83,7 +80,6 @@
 }
 
 // The menu is rendered under the xh-app body, not within the control DOM.
-
 .xh-app {
   .xh-select {
     &__menu {
@@ -109,7 +105,6 @@
 }
 
 // Ensure multi-value selects don't overflow vertically in the toolbar
-
 .xh-toolbar {
   .xh-select {
     &__value-container--is-multi {

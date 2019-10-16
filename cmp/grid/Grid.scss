@@ -1,9 +1,7 @@
-
 .xh-grid {
   //------------------------
   // Core Header Classes
   //------------------------
-
   .ag-header-cell,
   .ag-header-group-cell {
     > .ag-react-container {
@@ -79,7 +77,6 @@
   //------------------------
 
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
-
   .ag-cell.xh-align-center {
     padding-left: 0;
     padding-right: 0;
@@ -88,7 +85,6 @@
   //------------------------
   // Trees and Grouping
   //------------------------
-
   &--hierarchical {
     // Generate indentations for tree grids with hierarchical data.
     // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
@@ -110,7 +106,6 @@
   }
 
   // Suppress default indenting when grid is in tree mode but no root records have children.
-
   &--flat {
     .ag-ltr .ag-row-group-leaf-indent {
       margin-left: 0;
@@ -121,7 +116,6 @@
 //------------------------
 // Multi-field (mobile)
 //------------------------
-
 .xh-multifield-renderer {
   line-height: var(--xh-grid-multifield-line-height-px);
 

@@ -10,7 +10,6 @@
   // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
   // the top and bottom floating divs. On mobile we do not render scrollbars for the center viewport, so force hiding
   // in the top and bottom floating divs.
-
   .ag-floating-top,
   .ag-floating-bottom {
     overflow-y: hidden !important;
@@ -18,7 +17,6 @@
 }
 
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-
 .ag-theme-balham.xh-ag-grid,
 .ag-theme-balham-dark.xh-ag-grid {
   font-family: var(--xh-grid-font-family);
@@ -31,7 +29,6 @@
 
   // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
   // scrollbar
-
   .ag-center-cols-container {
     min-width: 100%;
   }
@@ -39,7 +36,6 @@
   //------------------------
   // Core Header Classes
   //------------------------
-
   .ag-header {
     color: var(--xh-grid-header-text-color);
     background-color: var(--xh-grid-header-bg);
@@ -50,7 +46,6 @@
   //------------------------
   // Core Row Classes
   //------------------------
-
   .ag-row {
     background-color: var(--xh-grid-bg);
 
@@ -73,7 +68,6 @@
   }
 
   // Row borders
-
   &--row-borders {
     .ag-row {
       border-color: var(--xh-grid-border-color);
@@ -90,7 +84,6 @@
 
       // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
-
       &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
@@ -98,7 +91,6 @@
   }
 
   // Row zebra striping
-
   &--stripe-rows {
     .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg-odd);
@@ -112,7 +104,6 @@
   }
 
   // Hover highlight
-
   &--show-hover {
     .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg-hover);
@@ -122,7 +113,6 @@
   //------------------------
   // Core Cell Classes
   //------------------------
-
   .ag-cell,
   .ag-header-cell,
   .ag-header-group-cell {
@@ -139,7 +129,6 @@
   }
 
   // Cell borders
-
   &--cell-borders {
     .ag-cell {
       border-right-color: var(--xh-grid-border-color) !important;
@@ -157,7 +146,6 @@
   }
 
   // Cell focus
-
   &--no-cell-focus {
     .ag-has-focus {
       .ag-cell-focus:not(.ag-cell-range-selected) {
@@ -173,7 +161,6 @@
   }
 
   // Change highlighting
-
   .ag-cell-data-changed {
     background-color: var(--xh-grid-cell-change-bg-highlight) !important;
   }
@@ -181,7 +168,6 @@
   //------------------------
   // Compact Mode
   //------------------------
-
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
 
@@ -208,13 +194,10 @@
   //------------------------
   // Tree Mode
   //------------------------
-
   .xh-grid--hierarchical & {
-
     // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
     // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
     // (and in general tighter padding preferred here vs. full-width groups).
-
     .ag-row {
       .group-header-icon-expanded {
         margin: 0 var(--xh-pad-half-px) 0 0;
@@ -231,14 +214,12 @@
   //------------------------
   // As of agGrid 20, the group row always reserve space for a grouping checkbox.
   // We remove this to tighten up the spacing.
-
   .ag-group-checkbox.ag-invisible {
     display: none;
   }
 
   // Restore right border on cells - not included by default with ag-grid but
   // causes right-aligned content to shift by one pixel when focused.
-
   .ag-cell.ag-cell-no-focus {
     border-right: 1px solid transparent;
   }
@@ -246,23 +227,19 @@
   // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
   // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
   // want to override and restore borders.
-
   .ag-side-bar { border: none; }
 
   .ag-status-bar { border: none; }
 
   // Disabling the "row loading" render overlay
-
   .ag-bl-overlay { display: none; }
 }
 
 //------------------------
 // Overlay masks
 //------------------------
-
 .ag-overlay {
   // Match loading overlay color to mask, suppress display of text in center.
-
   .ag-overlay-loading-wrapper {
     background-color: var(--xh-mask-bg);
 
@@ -272,7 +249,6 @@
   }
 
   // Reduce default contrast of emptyText.
-
   .ag-overlay-no-rows-wrapper {
     color: var(--xh-grid-empty-text-color);
   }
@@ -281,7 +257,6 @@
 //------------------------
 // Context Menu (matching ag-Grid provided menus to BP menus)
 //------------------------
-
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
   z-index: 9999 !important; // always show context menus above other content, e.g. dialog
