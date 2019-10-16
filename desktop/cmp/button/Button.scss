@@ -1,9 +1,9 @@
 .xh-button--autofocus-enabled {
-    // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
-    // unless a component has been tabbed into via keyboard. Override here to always show a focus
-    // indicator for an autoFocus button so it's clear that it has focus.
-    &:focus {
-        outline: var(--xh-focus-outline) !important;
-        outline-offset: var(--xh-focus-outline-offset-px) !important;
-    }
+  // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
+  // unless a component has been tabbed into via keyboard. Override here to always show a focus
+  // indicator for an autoFocus button so it's clear that it has focus.
+  &:focus {
+    outline: var(--xh-focus-outline) !important;
+    outline-offset: var(--xh-focus-outline-offset-px) !important;
+  }
 }

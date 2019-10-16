@@ -1,5 +1,6 @@
 .xh-dim-button.xh-button {
   justify-content: left;
+
   span {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -19,6 +20,7 @@
       &:not(:last-of-type) {
         margin-bottom: 5px;
       }
+
       span {
         text-overflow: ellipsis;
         overflow: hidden;
@@ -26,6 +28,7 @@
 
       &--active {
         background-color: var(--xh-bg-highlight);
+
         div:last-child {
           padding-left: 10px;
         }

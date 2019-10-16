@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+
 .xh-admin-about-panel {
   padding: 0 0 0 var(--xh-pad-double-px);
   flex: 1;
@@ -12,7 +13,8 @@
     margin-right: 6px;
   }
 
-  h1, h2 {
+  h1,
+  h2 {
     font-weight: 300;
   }
 
@@ -43,5 +45,4 @@
   &__blurb {
     margin: var(--xh-pad-px);
   }
-
 }

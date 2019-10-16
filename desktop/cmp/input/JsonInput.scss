@@ -11,6 +11,7 @@
       border: var(--xh-form-field-invalid-border);
     }
   }
+
   &.xh-input-disabled {
     .CodeMirror {
       background-color: var(--xh-input-disabled-bg);

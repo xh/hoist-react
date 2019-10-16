@@ -37,7 +37,6 @@
       padding: 0;
       flex: none;
     }
-
   }
 }
 
@@ -46,6 +45,7 @@
 
   .xh-dim-history-items {
     padding: var(--xh-pad-half-px) 0;
+
     button {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -66,6 +66,7 @@
 
 .xh-dim-nav-row {
   background-color: var(--xh-tbar-bg);
+
   .xh-button {
     border-radius: 0;
     border-top: var(--xh-border-solid);

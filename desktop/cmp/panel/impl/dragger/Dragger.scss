@@ -1,39 +1,44 @@
 .xh-resizable-dragger {
-    position: absolute;
-    background-color: transparent;
-    z-index: 5;
+  position: absolute;
+  background-color: transparent;
+  z-index: 5;
 
-    &.top, &.bottom {
-        width: 100%;
-        height: 8px;
-        left: 0;
-        cursor: ns-resize;
-    }
+  &.top,
+  &.bottom {
+    width: 100%;
+    height: 8px;
+    left: 0;
+    cursor: ns-resize;
+  }
 
-    &.right, &.left {
-        width: 8px;
-        height: 100%;
-        top: 0;
-        cursor: ew-resize;
-    }
+  &.right,
+  &.left {
+    width: 8px;
+    height: 100%;
+    top: 0;
+    cursor: ew-resize;
+  }
 
-    /** The reversal here is intentional.  Side here refers to 'side' of PanelModel we are shown within.*/
-    &.top {bottom: 0;}
-    &.bottom {top: 0;}
-    &.right {left: 0;}
-    &.left {right: 0;}
+  /** The reversal here is intentional.  Side here refers to 'side' of PanelModel we are shown within. */
+  &.top { bottom: 0; }
+
+  &.bottom { top: 0; }
+
+  &.right { left: 0; }
+
+  &.left { right: 0; }
 }
 
 .xh-resizable-dragger-visible {
-    display: none;
-    z-index: 1;
-    opacity: .75;
+  display: none;
+  z-index: 1;
+  opacity: 0.75;
 
-    &.vertical {
-        width: 100%;
-    }
+  &.vertical {
+    width: 100%;
+  }
 
-    &.horizontal {
-        height: 100%;
-    }
+  &.horizontal {
+    height: 100%;
+  }
 }

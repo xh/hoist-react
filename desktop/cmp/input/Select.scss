@@ -86,13 +86,16 @@
       background-color: var(--xh-bg);
       box-shadow: 0 0 0 1px var(--xh-form-field-box-shadow-color-top);
     }
+
     &__option {
       padding-left: 0;
+
       &--is-selected {
         // Suppress default highlighting - checkmark indicate selection.
         color: var(--xh-text-color);
         background: none;
       }
+
       &--is-focused {
         color: var(--xh-text-color-highlight);
         background: var(--xh-bg-alt);
