@@ -525,7 +525,7 @@ class LocalModel {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = (data) => !data.xhIsSummary,
+            filterSummaryFn = (record) => !record.xhIsSummary,
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 

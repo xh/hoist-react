@@ -4,9 +4,10 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
+import {XH} from '@xh/hoist/core';
+import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {isNil} from 'lodash';
+import {forEach, isNil, isEqual} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}.
@@ -20,27 +21,42 @@ export class Record {
     id;
     /** @member {(string|number)} */
     parentId;
-    /** @member {Store} */
-    store;
+    /** @member {Record} */
+    originalRecord;
     /** @member {Object} */
     raw;
+    /** @member {Object} */
+    data;
+    /** @member {Store} */
+    store;
     /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
     xhIsSummary;
+    /** @member {String[]} - unique path within hierarchy - for ag-Grid impl. */
+    xhTreePath;
 
-    _xhTreePath = null;
+    /** @returns {boolean} */
+    get isDirty() {
+        return !!this.originalRecord;
+    }
+
+    /** @returns {Object} */
+    get dirtyFields() {
+        if (!this.originalRecord) return {};
+
+        const ret = {},
+            rec = this.originalRecord;
+
+        forEach(this.data, (value, key) => {
+            const originalValue = rec[key];
+            if (!isEqual(value, originalValue)) ret[key] = {value, originalValue};
+        });
+
+        return ret;
+    }
 
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
-    }
-
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid impl. */
-    get xhTreePath() {
-        if (this._xhTreePath === null) {
-            const {parent} = this;
-            this._xhTreePath = parent ? [...parent.xhTreePath, this.id] : [this.id];
-        }
-        return this._xhTreePath;
     }
 
     /** @member {Field[]} */
@@ -114,24 +130,31 @@ export class Record {
      * @param {Store} c.store - store containing this record.
      * @param {string} [c.parentId] - id of parent record, if any.
      */
-    constructor({data, raw, store, parentId}) {
+    constructor({data, raw, store, parentId, isSummary, originalRecord}) {
         const id = store.idSpec(data);
 
-        throwIf(isNil(id), "Record has an undefined ID. Use 'Store.idSpec' to resolve a unique ID for each record.");
+        throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
-        this.store = store;
-        this.raw = raw;
         this.parentId = parentId;
+        this.originalRecord = originalRecord;
+        this.raw = raw;
+        this.data = data;
+        this.store = store;
+        this.xhTreePath = this.parent ? [...this.parent.xhTreePath, id] : [id];
+        this.xhIsSummary = isSummary;
 
-        store.fields.forEach(f => {
-            const {name} = f;
-            throwIf(
-                name in this,
-                `Field name "${name}" cannot be used for data. It is reserved as a top-level property of the Record class.`
-            );
-            this[name] = f.parseVal(data[name]);
+        forEach(data, (v, key) => {
+            Object.defineProperty(this, key, {
+                get: () => this.data[key],
+                set: () => {
+                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.updateData() or Store.updateFields().`);
+                }
+            });
         });
+        deepFreeze(this.data);
+
+        Object.freeze(this);
     }
 
     /**
@@ -146,8 +169,15 @@ export class Record {
             this.parentId == rec.parentId &&
             equal(this.xhTreePath, rec.xhTreePath) &&
             this.store == rec.store &&
-            this.store.fields.every(f => f.isEqual(this[f.name], rec[f.name]))
+            equal(this.data, rec.data)
         );
+    }
+
+    isFieldDirty(name) {
+        if (!this.isDirty) return false;
+
+        const value = this.data[name], originalValue = this.originalRecord.data[name];
+        return !isEqual(value, originalValue);
     }
 
     /**

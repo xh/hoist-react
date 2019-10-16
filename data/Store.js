@@ -7,7 +7,14 @@
 
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isFunction, isPlainObject, isString, remove as lodashRemove} from 'lodash';
+import {
+    isEmpty,
+    isFunction,
+    isPlainObject,
+    isString,
+    mapValues,
+    remove as lodashRemove
+} from 'lodash';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -108,7 +115,9 @@ export class Store {
         const recordMap = this.createRecords(rawData, null);
         this._all = this._all.loadRecords(recordMap);
         this.rebuildFiltered();
-        this.setSummaryRecordInternal(rawSummaryData ? this.createRecord(rawSummaryData) : null);
+
+        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
+
         this.lastLoaded = this.lastUpdated = Date.now();
     }
 
@@ -118,16 +127,23 @@ export class Store {
      */
     @action
     updateData(changes) {
-        const {update, add, remove, rawSummaryData, ...other} = changes;
+        const {update, updateOpts, add, remove, rawSummaryData, ...other} = changes;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
-        const {summaryRecord} = this;
         let updateRecs, addRecs;
         if (update) {
-            updateRecs = update.map(it => {
-                const rec = this.getById(it.id);
-                return this.createRecord({...rec?.raw, ...it});
+            const {isFieldUpdate} = updateOpts || {};
+            updateRecs = update.map(data => {
+                const rec = this.getById(data.id);
+                throwIf(!rec, `Could not find Record with id '${data.id}' to update`);
+
+                if (isFieldUpdate) {
+                    return this.createUpdatedRecord(rec, data);
+                } else {
+                    return this.createRecord({...rec?.raw, ...data}, rec.parentId, rec.xhIsSummary);
+                }
+
             });
         }
         if (add) {
@@ -142,11 +158,12 @@ export class Store {
         }
 
         // 2) Pre-process summary record, peeling it out of updates if needed
+        const {summaryRecord} = this;
         let summaryUpdateRec;
         if (summaryRecord) {
             [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
             if (!summaryUpdateRec && rawSummaryData) {
-                summaryUpdateRec = this.createRecord({...this.summaryRecord.raw, ...rawSummaryData});
+                summaryUpdateRec = this.createRecord({...this.summaryRecord.raw, ...rawSummaryData}, null, true);
             }
         }
 
@@ -159,7 +176,7 @@ export class Store {
         }
 
         if (summaryUpdateRec) {
-            this.setSummaryRecordInternal(summaryUpdateRec);
+            this.summaryRecord = summaryUpdateRec;
             didUpdate = true;
         }
 
@@ -175,6 +192,11 @@ export class Store {
     updateRecordData(rec, data) {
         const id = (rec instanceof Record) ? rec.id : rec;
         this.updateData({update: [{id, ...data}]});
+    }
+
+    updateRecordFields(rec, data) {
+        const id = (rec instanceof Record) ? rec.id : rec;
+        this.updateData({update: [{id, ...data}], updateOpts: {isRawDataUpdate: false}});
     }
 
     /** Remove all records from the store. */
@@ -257,7 +279,9 @@ export class Store {
     }
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
-    get filter() {return this._filter}
+    get filter() {
+        return this._filter;
+    }
 
     /** Get the count of the filtered records in the store. */
     get count() {
@@ -297,7 +321,7 @@ export class Store {
      * @return {Record}
      */
     getById(id, fromFiltered = false) {
-        if (id == this.summaryRecord?.id) return this.summaryRecord;
+        if (id === this.summaryRecord?.id) return this.summaryRecord;
 
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.getById(id);
@@ -385,17 +409,10 @@ export class Store {
         return ret;
     }
 
-    setSummaryRecordInternal(record) {
-        if (record) {
-            record.xhIsSummary = true;
-        }
-        this.summaryRecord = record;
-    }
-
     //---------------------------------------
     // Record Generation
     //---------------------------------------
-    createRecord(raw, parentId) {
+    createRecord(raw, parentId, isSummary) {
         const {processRawData} = this;
 
         let data = raw;
@@ -404,7 +421,19 @@ export class Store {
             throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
-        return new Record({data, raw, parentId, store: this});
+        data = this.parseFieldValues(data);
+        return new Record({data, raw, parentId, store: this, isSummary});
+    }
+
+    createUpdatedRecord(rec, data) {
+        return new Record({
+            raw: rec.raw,
+            data: Object.assign({}, rec.data, data),
+            parentId: rec.parentId,
+            store: rec.store,
+            isSummary: rec.xhIsSummary,
+            originalRecord: rec
+        });
     }
 
     createRecords(rawRecs, parentId, recordMap = new Map()) {
@@ -424,6 +453,15 @@ export class Store {
             }
         });
         return recordMap;
+    }
+
+    parseFieldValues(data) {
+        return mapValues(data, (value, key) => {
+            const field = this.fields.find(it => it.name === key);
+            if (field) return field.parseVal(value);
+
+            return value;
+        });
     }
 }
 

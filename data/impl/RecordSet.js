@@ -176,7 +176,6 @@ export class RecordSet {
                     console.debug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
-                rec.parentId = existing.parentId;
                 newRecords.set(id, rec);
             });
         }
