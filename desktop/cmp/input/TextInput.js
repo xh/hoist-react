@@ -30,11 +30,12 @@ export class TextInput extends HoistInput {
          *
          *  Defaults to non-valid value 'nope' for fields of type text and 'new-password' for fields
          *  of type 'password' to defeat browser auto-completion, which is typically not desired in
-         *  Hoist applications. Set to 'on' to enable.
+         *  Hoist applications. Set to 'on' or a more specific autocomplete token to enable.
          *
-         *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
+         * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
+         * @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
-        autoComplete: PT.oneOf(['on', 'new-password', 'nope']),
+        autoComplete: PT.string,
 
         /** True to focus the control on render. */
         autoFocus: PT.bool,
