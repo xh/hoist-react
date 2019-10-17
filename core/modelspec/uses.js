@@ -6,7 +6,7 @@
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
-import {ModelSpec} from './ModelSpec';
+import {ModelPublishMode, ModelSpec} from './ModelSpec';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing
@@ -32,8 +32,7 @@ import {ModelSpec} from './ModelSpec';
  * @param {Object} [flags]
  * @param {boolean} [flags.fromContext] - true (default) to look for a suitable model in context if
  *      not sourced via props.
- * @param {boolean} [flags.toContext] - true (default) to publish model in props for consumption as
- *      primary model by descendant components.
+ * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
  * @param {boolean} [flags.createFromConfig] - true (default) to accept model config from props and
  *      construct an instance on-demand. Selector must be a HoistModel Class.
  * @params {(boolean|function)} [flags.createDefault] - true create a model if none provided.
@@ -43,11 +42,11 @@ import {ModelSpec} from './ModelSpec';
 export function uses(
     selector, {
         fromContext = true,
-        toContext = true,
+        publishMode = ModelPublishMode.DEFAULT,
         createFromConfig = true,
         createDefault = false
     } = {}) {
-    return new UsesSpec(selector, fromContext, toContext, createFromConfig, createDefault);
+    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault);
 }
 
 
@@ -58,8 +57,8 @@ export class UsesSpec extends ModelSpec  {
     createFromConfig;
     createDefault;
 
-    constructor(selector, fromContext, toContext, createFromConfig, createDefault) {
-        super(fromContext, toContext);
+    constructor(selector, fromContext, publishMode, createFromConfig, createDefault) {
+        super(fromContext, publishMode);
         throwIf(!selector, 'Must specify selector in uses().');
 
         this.selector = selector;

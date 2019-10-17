@@ -18,13 +18,7 @@ import {ModelLookupContext} from '../impl/ModelLookup';
  */
 export function useContextModel(selector = '*') {
     const modelLookup = useContext(ModelLookupContext),
-        [ret] = useState(() => {
-            if (modelLookup) {
-                return modelLookup.lookupModel(selector);
-            }
-            return null;
-        });
-
+        [ret] = useState(() => modelLookup?.lookupModel(selector) ?? null);
     return ret;
 }
 

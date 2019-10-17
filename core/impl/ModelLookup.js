@@ -4,8 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {forOwn} from 'lodash';
 import {createContext} from 'react';
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 
 /**
  * @private
@@ -19,29 +20,50 @@ import {elemFactory} from '@xh/hoist/core';
 export class ModelLookup {
     model;
     parent;
+    publishMode;
 
     /**
      * @param {Object} model -  model provided by this object.
      * @param {ModelLookup} parent - parent instance of this class.
+     * @param {ModelPublishMode} publishMode - mode for publishing this model to context.
      */
-    constructor(model, parent) {
+    constructor(model, parent, publishMode) {
         this.model = model;
         this.parent = parent;
+        this.publishMode = publishMode;
     }
 
     /**
-     * Lookup a model in the object, or one of its parents.
+     * Lookup a model in the context hierarchy
      *
      * @param {(Class|string)} selector - class or name of mixin applied to class of
      *      model to be returned, or '*' to return the default model.
      * @returns {*} model or null if no matching model found.
      */
-    lookupModel(selector) {
-        const ret = this.model.lookupModel(selector);
-        if (ret) return ret;
+    lookupModel(selector = '*') {
+        const {model, publishMode, parent} = this,
+            modeIsDefault = (publishMode === ModelPublishMode.DEFAULT),
+            isWildcard = (selector === '*');
 
-        const {parent} = this;
-        return parent ? parent.lookupModel(selector) : null;
+        // Try this model
+        if ((isWildcard && modeIsDefault) || (!isWildcard && model.matchesSelector(selector))) {
+            return model;
+        }
+
+        // Potentially try this model's direct children
+        if (modeIsDefault) {
+            let ret = null;
+            forOwn(model, (value, key) => {
+                if (value && value.isHoistModel && value.matchesSelector(selector)) {
+                    ret = value;
+                    return false;
+                }
+            });
+            if (ret) return ret;
+        }
+
+        // Try parent
+        return parent?.lookupModel(selector) ?? null;
     }
 }
 

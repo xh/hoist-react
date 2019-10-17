@@ -18,7 +18,6 @@ import {BaseFieldModel} from './BaseFieldModel';
  */
 @HoistModel
 export class FieldModel extends BaseFieldModel {
-    isComponentModel() {
-        return true;
-    }
+
+
 }

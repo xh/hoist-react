@@ -6,7 +6,7 @@
  */
 import {ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
 import {applyMixin} from '@xh/hoist/utils/js';
-import {isString, isFunction, forOwn} from 'lodash';
+import {isString, isFunction} from 'lodash';
 
 
 /**
@@ -31,34 +31,9 @@ export function HoistModel(C) {
         includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
 
         provides: {
-            lookupModel(selector) {
-                if (this.matchesSelector(selector)) return this;
-                if (this.isComponentModel()) return null;
-
-                let ret = null;
-                forOwn(this, (value, key) => {
-                    if (value && value.isHoistModel && value.matchesSelector(selector)) {
-                        ret = value;
-                        return false;
-                    }
-                });
-                return ret;
-            },
-
             matchesSelector(selector) {
-                if (selector == '*' && !this.isComponentModel()) return true;
                 if (isFunction(selector)) return selector.isHoistModel ? this instanceof selector : selector(this);
-                if (isString(selector)) return this['is' + selector];
-            }
-        },
-
-        defaults: {
-            /**
-             * Is the model for a component?  If true, this model will not be returned during lookup
-             * as a "default" model (i.e. via an empty or wildcard selector), or searched internally
-             * for matching sub-models.
-             */
-            isComponentModel() {
+                if (isString(selector)) return !!this['is' + selector];
                 return false;
             }
         }

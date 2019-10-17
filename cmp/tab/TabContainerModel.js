@@ -90,10 +90,6 @@ export class TabContainerModel {
         }
     }
 
-    isComponentModel() {
-        return true;
-    }
-
     /** @type TabModel */
     get activeTab() {
         return find(this.tabs, {id: this.activeTabId});

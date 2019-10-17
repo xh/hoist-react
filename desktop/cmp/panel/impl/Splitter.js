@@ -18,7 +18,6 @@ export const splitter = hoistCmp.factory({
     displayName: 'Splitter',
     model: uses(PanelModel),
 
-
     render({model}) {
         const {vertical, collapsed, contentFirst, showSplitterCollapseButton, collapsible} = model,
             directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
@@ -145,20 +145,30 @@ function wrapWithClassName(render, baseName) {
 }
 
 function wrapWithModel(render, spec, displayName) {
-    const wrap = (spec.fromContext || spec.toContext) ? wrapWithContextModel : wrapWithSimpleModel;
-    return wrap(render, spec, displayName);
+    return spec.publishMode === ModelPublishMode.NONE ?
+        wrapWithSimpleModel(render, spec, displayName) :
+        wrapWithPublishedModel(render, spec, displayName);
 }
 
-function wrapWithContextModel(render, spec, displayName) {
+function wrapWithSimpleModel(render, spec, displayName) {
+    return (props, ref) => {
+        const lookup = spec.fromContext ? useContext(ModelLookupContext) : null;
+        const {model} = useResolvedModel(spec, props, lookup, displayName);
+        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
+        return render(props, ref);
+    };
+}
+
+function wrapWithPublishedModel(render, spec, displayName) {
     return (props, ref) => {
         const lookup = useContext(ModelLookupContext);
-        const model = useResolvedModel(spec, props, lookup, displayName);
+        const {model, fromContext} = useResolvedModel(spec, props, lookup, displayName),
+            publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);
         const createLookup = () => {
             return (
                 model &&
-                spec.toContext &&
-                (!lookup || lookup.model !== model || lookup.lookupModel('*') !== model)
-            ) ? new ModelLookup(model, lookup) : null;
+                (!lookup || !fromContext || (publishDefault && lookup.lookupModel('*') !== model))
+            ) ? new ModelLookup(model, lookup, spec.publishMode) : null;
         };
         const [newLookup] = useState(createLookup);
         if (model && model !== props.model) props = enhanceProps(props, 'model', model);
@@ -167,22 +177,14 @@ function wrapWithContextModel(render, spec, displayName) {
     };
 }
 
-function wrapWithSimpleModel(render, spec, displayName) {
-    return (props, ref) => {
-        const model = useResolvedModel(spec, props, null, displayName);
-        if (model && model !== props.model) props = enhanceProps(props, 'model', model);
-        return render(props, ref);
-    };
-}
-
 function useResolvedModel(spec, props, lookup, displayName) {
-    const [{model, isOwned}] = useState(() => {
+    const [{model, isOwned, fromContext}] = useState(() => {
         return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
     });
     useOwnedModelLinker(isOwned ? model : null);
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
 
-    return model;
+    return {model, fromContext};
 }
 
 function createModel(spec) {
@@ -195,33 +197,33 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     // 1) props - config
     if (model && isPlainObject(model) && spec.createFromConfig) {
-        return {model: new selector(model), isOwned: true};
+        return {model: new selector(model), isOwned: true, fromContext: false};
     }
 
     // 2) props - instance
     if (model) {
         throwIf(!model.isHoistModel, `Model for '${displayName}' must be a HoistModel.`);
-        throwIf(!model.matchesSelector(selector),
+        throwIf(selector !== '*' && !model.matchesSelector(selector),
             `Incorrect model passed to '${displayName}'. Expected: ${formatSelector(selector)} Received: ${model.constructor.name}`
         );
-        return {model, isOwned: false};
+        return {model, isOwned: false, fromContext: false};
     }
 
     // 3) context
     if (modelLookup && spec.fromContext) {
         const contextModel = modelLookup.lookupModel(selector);
-        if (contextModel) return {model: contextModel, isOwned: false};
+        if (contextModel) return {model: contextModel, isOwned: false, fromContext: true};
     }
 
     // 4) default create
     const create = spec.createDefault;
     if (create) {
         const model = (isFunction(create) ? create() : new selector());
-        return {model, isOwned: true};
+        return {model, isOwned: true, fromContext: false};
     }
 
     //  Component are encouraged to handle a missing model gently. Could also be error
-    return {model: null, isOwned: false};
+    return {model: null, isOwned: false, fromContext: false};
 }
 
 function formatSelector(selector) {

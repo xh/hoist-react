@@ -8,7 +8,7 @@
 import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistCmp, uses, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -37,6 +37,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
+        publishMode: ModelPublishMode.LIMITED,
         createDefault: () => new PanelModel({collapsible: false, resizable: false})
     }),
     memo: false,

@@ -73,11 +73,8 @@ export const panelHeader = hoistCmp.factory({
 });
 
 
-const collapseButton = hoistCmp.factory({
-    displayName: 'CollapseButton',
-    model: uses(PanelModel),
-
-    render({model}) {
+const collapseButton = hoistCmp.factory(
+    ({model}) => {
         if (!model.showHeaderCollapseButton || !model.collapsible) return null;
 
         const {vertical, collapsed, contentFirst} = model,
@@ -91,4 +88,4 @@ const collapseButton = hoistCmp.factory({
             minimal: true
         });
     }
-});
+);
