@@ -136,7 +136,7 @@ export class RecordAction {
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
         if (!this.actionFn) return;
-        this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
+        this.actionFn({action: this, record, selectedRecords, store: record.store, gridModel, column, ...rest});
     }
 
     meetsRecordRequirement(count) {

@@ -196,7 +196,7 @@ export class Store {
 
     updateRecordFields(rec, data) {
         const id = (rec instanceof Record) ? rec.id : rec;
-        this.updateData({update: [{id, ...data}], updateOpts: {isRawDataUpdate: false}});
+        this.updateData({update: [{id, ...data}], updateOpts: {isFieldUpdate: true}});
     }
 
     /** Remove all records from the store. */
@@ -426,6 +426,7 @@ export class Store {
     }
 
     createUpdatedRecord(rec, data) {
+        data = this.parseFieldValues(data);
         return new Record({
             raw: rec.raw,
             data: Object.assign({}, rec.data, data),

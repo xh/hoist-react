@@ -126,6 +126,8 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
+        editable,
+        updateFieldFn,
         agOptions,
         ...rest
     }, gridModel) {
@@ -189,6 +191,10 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
+
+        this.editable = editable;
+        this.updateFieldFn = withDefault(updateFieldFn, this.defaultUpdateFieldFn);
+
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
@@ -220,9 +226,21 @@ export class Column {
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressToolPanel: this.excludeFromChooser,
-                enableCellChangeFlash: this.highlightOnChange
-            };
+                enableCellChangeFlash: this.highlightOnChange,
+                editable: (agParams) => {
+                    const {editable} = this;
+                    if (isFunction(editable)) {
+                        const record = agParams.node.data;
+                        return editable({record, store: record.store, gridModel, column: this, agParams});
+                    }
 
+                    return editable;
+                },
+                valueSetter: (agParams) => {
+                    const {newValue: value, data: record} = agParams;
+                    this.updateFieldFn({value, record, store: record.store, gridModel, field, column: this, agParams});
+                }
+            };
 
         // We will change these setters as needed to install the renderers in the proper location
         // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
@@ -346,6 +364,12 @@ export class Column {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
+
+    defaultUpdateFieldFn = ({value, record, store, field}) => {
+        const data = {};
+        data[field] = value;
+        store.updateRecordFields(record, data);
+    }
 }
 
 export function getAgHeaderClassFn(column) {

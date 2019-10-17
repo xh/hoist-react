@@ -74,7 +74,10 @@ export class RestStore extends UrlStore {
 
         // Only include editable fields in the request data
         const editableFields = filter(this.fields, 'editable').map(it => it.name),
-            data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
+            data = {
+                id: rec.id,
+                ...pickBy(rec.data, (v, k) => editableFields.includes(k))
+            };
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}});

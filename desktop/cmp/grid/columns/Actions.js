@@ -73,7 +73,7 @@ export const actionCol = {
             actionButtonEl.innerHTML = convertIconToSvg(icon);
             actionButtonEl.addEventListener('click', (ev) => {
                 ev.stopPropagation();
-                action.actionFn({record, selectedRecords: [record], gridModel, column});
+                action.call({record, selectedRecords: [record], gridModel, column});
             });
 
             buttonGroupEl.appendChild(actionButtonEl);
