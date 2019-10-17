@@ -12,7 +12,9 @@
     background-color: var(--xh-purple);
   }
 
-  &--staging, &--beta, &--uat {
+  &--staging,
+  &--beta,
+  &--uat {
     background-color: var(--xh-blue);
   }
 

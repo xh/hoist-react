@@ -5,15 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {text} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmp, creates} from '@xh/hoist/core';
-import {vspacer, box, filler, viewport} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
-
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
+import {div, filler, form, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {Icon} from '@xh/hoist/icon';
 
 import './LoginPanel.scss';
 
@@ -28,7 +26,8 @@ export const loginPanel = hoistCmp.factory({
     model: creates(LoginPanelModel),
 
     render({model}) {
-        const {loginMessage} = XH.appSpec;
+        const {loginMessage} = XH.appSpec,
+            {warning} = model;
 
         const onKeyDown = (ev) => {
             if (ev.key === 'Enter') model.submit();
@@ -45,34 +44,36 @@ export const loginPanel = hoistCmp.factory({
                 width: 300,
                 items: [
                     vspacer(10),
-                    textInput({
-                        bind: 'username',
-                        placeholder: 'Username...',
-                        autoFocus: true,
-                        commitOnChange: true,
-                        onKeyDown,
-                        autoComplete: 'on',
-                        width: null
+                    form(
+                        textInput({
+                            bind: 'username',
+                            placeholder: 'Username',
+                            autoComplete: 'username',
+                            autoFocus: true,
+                            commitOnChange: true,
+                            onKeyDown,
+                            width: null
+                        }),
+                        textInput({
+                            bind: 'password',
+                            placeholder: 'Password...',
+                            autoComplete: 'current-password',
+                            type: 'password',
+                            commitOnChange: true,
+                            onKeyDown,
+                            width: null
+                        })
+                    ),
+                    div({
+                        item: loginMessage,
+                        omit: !loginMessage,
+                        className: 'xh-login__message'
                     }),
-                    textInput({
-                        bind: 'password',
-                        placeholder: 'Password...',
-                        type: 'password',
-                        commitOnChange: true,
-                        onKeyDown,
-                        autoComplete: 'on',
-                        width: null
-                    }),
-                    text({
-                        omit: !model.warning,
-                        item: model.warning,
-                        ellipsize: true,
+                    div({
+                        item: warning,
+                        omit: !warning,
                         className: 'xh-login__warning'
-                    }),
-                    loginMessage ? box({
-                        className: 'xh-login__message',
-                        item: loginMessage
-                    }) : null
+                    })
                 ],
                 bbar: [
                     filler(),

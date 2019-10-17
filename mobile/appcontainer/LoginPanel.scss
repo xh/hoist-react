@@ -9,29 +9,30 @@
     margin: 40px;
   }
 
-  &__fields {
-    margin-bottom: 20px;
+  .xh-input {
+    width: 100%;
+    margin-bottom: var(--xh-pad-px);
+    padding: 4px 8px;
+  }
 
-    .xh-input {
-      margin: 0 0 8px;
-      padding: 4px 8px;
-    }
+  &__warning,
+  &__message {
+    text-align: center;
+    margin-bottom: var(--xh-pad-px);
+    padding: var(--xh-pad-px);
+    border-radius: var(--xh-border-radius-px);
   }
 
   &__warning {
-    margin-bottom: 20px;
     background-color: var(--xh-red-muted);
-    padding: var(--xh-pad-px);
-    border-radius: var(--xh-border-radius-px);
     color: white;
-    text-align: center;
   }
 
   &__message {
-    margin-bottom: 20px;
     background-color: var(--xh-bg-alt);
-    padding: var(--xh-pad-px);
-    border-radius: var(--xh-border-radius-px);
   }
 
+  .xh-button {
+    padding: 1.5em 0;
+  }
 }

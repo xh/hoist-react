@@ -2,6 +2,7 @@
   .hidden {
     display: none !important;
   }
+
   .xh-monitor-status-display {
     flex-wrap: wrap;
     height: 100%;
@@ -14,6 +15,7 @@
     > div {
       align-items: center;
       margin-left: 20px;
+
       svg {
         margin-right: var(--xh-pad-px);
       }

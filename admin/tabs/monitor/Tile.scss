@@ -4,25 +4,32 @@
   flex-shrink: 1;
   flex-basis: calc(25% - 10px);
   max-width: calc(25% - 10px);
+
   @media only screen and (max-width: 1350px) {
     flex-basis: calc(50% - 10px);
     max-width: calc(50% - 10px);
   }
+
   @media only screen and (max-width: 700px) {
     flex-basis: calc(100% - 10px);
     max-width: calc(100% - 10px);
   }
+
   height: 160px;
   border: 1px solid white;
   border-radius: var(--xh-border-radius);
   overflow: hidden;
   margin: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
-  &-ok        { background-color: var(--xh-green)}
-  &-warn      { background-color: var(--xh-orange)}
-  &-fail      { background-color: var(--xh-red)}
-  &-inactive  { background-color: var(--xh-gray-dark)}
-  &-unknown   { background-color: var(--xh-gray-dark)}
+  &-ok { background-color: var(--xh-green); }
+
+  &-warn { background-color: var(--xh-orange); }
+
+  &-fail { background-color: var(--xh-red); }
+
+  &-inactive { background-color: var(--xh-gray-dark); }
+
+  &-unknown { background-color: var(--xh-gray-dark); }
 
   &__name {
     padding: var(--xh-pad-px);
@@ -34,6 +41,7 @@
   &__content {
     padding: var(--xh-pad-px);
     flex: 1;
+
     svg {
       position: absolute;
       right: -20px;
@@ -47,9 +55,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: calc(100% - 80px);
+
     @media only screen and (max-width: 1350px) {
       width: calc(100% - 90px);
     }
+
     @media only screen and (max-width: 700px) {
       width: calc(100% - 110px);
     }

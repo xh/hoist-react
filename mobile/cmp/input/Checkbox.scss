@@ -1,6 +1,7 @@
 .xh-input.xh-check-box {
   border: none;
-  :checked + .checkbox__checkmark:before {
+
+  :checked + .checkbox__checkmark::before {
     background-color: var(--xh-accent-color);
   }
 }

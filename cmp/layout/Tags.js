@@ -19,6 +19,7 @@ export const a = elemFactory('a');
 export const br = elemFactory('br');
 export const code = elemFactory('code');
 export const div = elemFactory('div');
+export const form = elemFactory('form');
 export const h1 = elemFactory('h1');
 export const h2 = elemFactory('h2');
 export const h3 = elemFactory('h3');

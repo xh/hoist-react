@@ -8,10 +8,10 @@
   > .bp3-tabs > .bp3-tab-panel {
     border-top: var(--xh-border-solid);
   }
-
 }
 
-.xh-admin-activity-detail, .xh-admin-error-detail {
+.xh-admin-activity-detail,
+.xh-admin-error-detail {
   padding: var(--xh-pad-half-px);
   border-bottom: var(--xh-border-solid);
 
@@ -19,6 +19,4 @@
     text-align: left;
     vertical-align: top;
   }
-
-
 }

@@ -15,6 +15,10 @@
 * Any `DateInput` values entered that exceed any specified max/minDate will now be reset to null,
   instead of being set to the boundary date (which was surprising and potentially much less obvious
   to a user that their input had been adjusted automatically).
+* `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be
+  automatically re-rendered when any observable properties referenced by the `headerName` function
+  are modified.
+* `ColumnGroup` now accepts an `align` config for setting the header text alignment
 
 ### 🐞 Bug Fixes
 
@@ -22,6 +26,26 @@
   ag-Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
+* The return of `XH.fetchJson()` and other JSON-related `FetchService` methods is now wrapped if
+  required to ensure it is a fully-featured Promise. In the MS Edge browser it was not, meaning the
+  required polyfills and prototype extensions were missing and would throw if called (#1411).
+
+### ⚙️ Technical
+
+* Grid column group headers now use a custom React component instead of the default ag-Grid column
+  header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the
+  ag-Grid column group headers may need to be updated to work with the new structure/classes.
+* We have configured `stylelint` to enforce greater consistency in our stylesheets within this
+  project. The initial linting run resulted in a large number of updates to our SASS files, almost
+  exclusively whitespace changes. No functional changes are intended/expected. We have also enabled
+  hooks to run both JS and style linting on pre-commit. Neither of these updates directly affects
+  applications, but the same tools could be configured for apps if desired.
+
+### 📚 Libraries
+
+* core-js `3.2 -> 3.3`
+* filesize `4.2 -> 5.0`
+* http-status-codes `added @ 1.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
 

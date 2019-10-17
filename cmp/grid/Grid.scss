@@ -1,10 +1,34 @@
-
 .xh-grid {
   //------------------------
   // Core Header Classes
   //------------------------
-  .ag-header-cell > .ag-react-container {
-    width: 100%;
+  .ag-header-cell,
+  .ag-header-group-cell {
+    > .ag-react-container {
+      width: 100%;
+    }
+  }
+
+  .xh-grid-group-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 32px;
+
+    &--expandable {
+      cursor: pointer;
+    }
+
+    span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    svg {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-grid-header-icon-color);
+    }
   }
 
   .xh-grid-header {
@@ -34,12 +58,18 @@
     }
   }
 
-  .xh-column-header-align-right .xh-grid-header {
-    text-align: right;
+  .xh-column-header-align-right {
+    .xh-grid-header,
+    .xh-grid-group-header {
+      text-align: right;
+    }
   }
 
-  .xh-column-header-align-center .xh-grid-header {
-    text-align: center;
+  .xh-column-header-align-center {
+    .xh-grid-header,
+    .xh-grid-group-header {
+      text-align: center;
+    }
   }
 
   //------------------------
@@ -59,6 +89,7 @@
     // Generate indentations for tree grids with hierarchical data.
     // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
     $xh-tree-indent: 10px !default;
+
     @for $i from 0 to 50 {
       .ag-ltr .ag-row-group-indent-#{$i} {
         padding-left: $i * $xh-tree-indent;
@@ -80,7 +111,6 @@
       margin-left: 0;
     }
   }
-
 }
 
 //------------------------
@@ -96,12 +126,14 @@
       padding: 4px 0 0;
       font-size: var(--xh-grid-multifield-top-font-size-px);
     }
+
     &.xh-multifield-renderer-bottom {
       font-size: var(--xh-grid-multifield-bottom-font-size-px);
       color: var(--xh-text-color-muted);
     }
 
-    .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
+    .xh-multifield-renderer-field,
+    .xh-multifield-renderer-delimiter {
       margin: 0 2px 0 0;
     }
   }
@@ -110,7 +142,8 @@
 .xh-align-right .xh-multifield-renderer .xh-multifield-renderer-row {
   justify-content: flex-end;
 
-  .xh-multifield-renderer-field, .xh-multifield-renderer-delimiter {
+  .xh-multifield-renderer-field,
+  .xh-multifield-renderer-delimiter {
     margin: 0 0 0 2px;
   }
 }

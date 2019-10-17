@@ -6,17 +6,20 @@
     margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
   }
 
-  &__warning {
-    color: var(--xh-red);
-    margin-bottom: var(--xh-pad-px);
-    text-align: center;
-  }
-
+  &__warning,
   &__message {
-    background-color: var(--xh-bg-alt);
+    text-align: center;
     margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
     padding: var(--xh-pad-px);
     border-radius: var(--xh-border-radius-px);
   }
-}
 
+  &__warning {
+    color: white;
+    background-color: var(--xh-red-muted);
+  }
+
+  &__message {
+    background-color: var(--xh-bg-alt);
+  }
+}
