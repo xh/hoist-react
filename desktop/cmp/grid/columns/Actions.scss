@@ -11,7 +11,8 @@ $action-col-pad-px: $action-col-pad * 1px;
 // This CSS-modules export makes this value accessible from JS -note the import in Actions.js.
 //noinspection CssInvalidPseudoSelector
 :export {
-  actioncolpad: $action-col-pad;
+  /* stylelint-disable-next-line property-case */
+  actionColPad: $action-col-pad;
 }
 
 .xh-action-col-cell {
