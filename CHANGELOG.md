@@ -25,6 +25,8 @@
 * The return of `XH.fetchJson()` and other JSON-related `FetchService` methods is now wrapped if
   required to ensure it is a fully-featured Promise. In the MS Edge browser it was not, meaning the
   required polyfills and prototype extensions were missing and would throw if called (#1411).
+* Async `Select` combobox queries are now properly debounced as per the `queryBuffer` prop (#1416).
+
 
 ### ⚙️ Technical
 
