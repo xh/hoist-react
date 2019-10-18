@@ -22,9 +22,9 @@
   ag-Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
-* The return of `XH.fetchJson()` and other JSON-related `FetchService` methods is now wrapped if
-  required to ensure it is a fully-featured Promise. In the MS Edge browser it was not, meaning the
-  required polyfills and prototype extensions were missing and would throw if called (#1411).
+* The MS Edge browser does not return a standard Promise from `async` functions, so the the return
+  of those functions did not previously have the required Hoist extensions installed on its
+  prototype. Edge "native" Promises are now also polyfilled / extended as required. (#1411).
 
 ### ⚙️ Technical
 
