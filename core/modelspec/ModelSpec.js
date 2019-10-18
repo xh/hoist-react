@@ -15,11 +15,40 @@
  */
 export class ModelSpec {
     fromContext;
-    toContext;
+    publishMode;
 
-
-    constructor(fromContext, toContext) {
+    constructor(fromContext, publishMode) {
         this.fromContext = fromContext;
-        this.toContext = toContext;
+        this.publishMode = publishMode;
     }
 }
+
+/**
+ * Options for how a Model should be published to context.
+ *
+ * @enum {ModelPublishMode}
+ * @see {uses}
+ * @see {creates}
+ */
+export const ModelPublishMode = Object.freeze({
+
+    /**
+     * Model may be looked up from context using wildcard ('*') and model's top-level
+     * properties will also be searched for an appropriate model during lookup.  This is the
+     * default mode and typical mode used by application models.
+     */
+    DEFAULT: 'default',
+
+    /**
+     *  Model may be looked up via context using an explicit selector, but NOT wildcard (*).
+     *  Model's internal properties will never be searched for matching models during lookup.
+     *  Useful for component or toolkit models that should be available for querying via context,
+     *  but are not intended to serve as default models or model providers.
+     */
+    LIMITED: 'limited',
+
+    /**
+     * Do not publish the model to context.
+     */
+    NONE: 'none'
+});

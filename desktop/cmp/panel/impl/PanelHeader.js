@@ -4,17 +4,18 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
+import {PanelModel} from '../PanelModel';
 
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
-    model: false,
+    model: uses(PanelModel),
     className: 'xh-panel-header',
 
     render({model, className, ...props}) {
@@ -44,7 +45,7 @@ export const panelHeader = hoistCmp.factory({
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    collapseButton({model})
+                    collapseButton()
                 ],
                 onDoubleClick
             });
@@ -55,7 +56,7 @@ export const panelHeader = hoistCmp.factory({
                 className: classNames(className, sideCls, compactCls),
                 flex: 1,
                 items: [
-                    isLeft ? filler() : collapseButton({model}),
+                    isLeft ? filler() : collapseButton(),
                     icon || null,
                     title ?
                         box({
@@ -63,7 +64,7 @@ export const panelHeader = hoistCmp.factory({
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : collapseButton({model})
+                    !isLeft ? filler() : collapseButton()
                 ],
                 onDoubleClick
             });
@@ -72,11 +73,8 @@ export const panelHeader = hoistCmp.factory({
 });
 
 
-const collapseButton = hoistCmp.factory({
-    displayName: 'CollapseButton',
-    model: false,
-
-    render({model}) {
+const collapseButton = hoistCmp.factory(
+    ({model}) => {
         if (!model.showHeaderCollapseButton || !model.collapsible) return null;
 
         const {vertical, collapsed, contentFirst} = model,
@@ -90,4 +88,4 @@ const collapseButton = hoistCmp.factory({
             minimal: true
         });
     }
-});
+);

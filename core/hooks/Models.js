@@ -13,18 +13,12 @@ import {ModelLookupContext} from '../impl/ModelLookup';
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.
  *
  * @param {(Class|string)} [selector] - class or name of mixin applied to class of
- *      model to be returned.  If not provided the 'closest' inherited model will be returned.
+ *      model to be returned.  Use '*' to return the default model.
  * @returns model or null if no matching model found.
  */
-export function useContextModel(selector) {
+export function useContextModel(selector = '*') {
     const modelLookup = useContext(ModelLookupContext),
-        [ret] = useState(() => {
-            if (modelLookup) {
-                return modelLookup.lookupModel(selector);
-            }
-            return null;
-        });
-
+        [ret] = useState(() => modelLookup?.lookupModel(selector) ?? null);
     return ret;
 }
 
