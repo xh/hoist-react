@@ -51,7 +51,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 
-import {DatePicker} from '@blueprintjs/datetime';
+import {DatePicker, TimePicker} from '@blueprintjs/datetime';
 
 //---------------------
 // Re-exports
@@ -95,6 +95,7 @@ export {
     TagInput,
     TextArea,
     Text,
+    TimePicker,
     Tooltip,
     Tree
 };
@@ -138,5 +139,6 @@ export const
     tagInput = elemFactory(TagInput),
     text = elemFactory(Text),
     textArea = elemFactory(TextArea),
+    timePicker = elemFactory(TimePicker),
     tooltip = elemFactory(Tooltip),
     tree = elemFactory(Tree);
