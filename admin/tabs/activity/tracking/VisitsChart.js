@@ -35,7 +35,7 @@ export const visitsChart = hoistCmp.factory({
 
 const bbar = hoistCmp.factory(
     () => toolbar(
-        dateInput({bind: 'startDate', dateProps}),
+        dateInput({bind: 'startDate', ...dateProps}),
         Icon.angleRight(),
         dateInput({bind: 'endDate', ...dateProps}),
         toolbarSep(),

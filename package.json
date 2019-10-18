@@ -9,7 +9,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "lint": "eslint --ext .js,.jsx .",
-    "lint:styles": "stylelint '**/*.s?(a|c)ss'"
+    "lint:styles": "stylelint \"**/*.s?(a|c)ss\""
   },
   "sideEffects": [
     "./static/polyfills.js"
