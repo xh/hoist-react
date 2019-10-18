@@ -162,6 +162,9 @@ export class Select extends HoistInput {
     constructor(props) {
         super(props);
 
+        const queryBuffer = withDefault(props.queryBuffer, 300);
+        if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -214,7 +217,7 @@ export class Select extends HoistInput {
         }
 
         if (this.asyncMode) {
-            rsProps.loadOptions = this.debouncedDoQueryAsync;
+            rsProps.loadOptions = this.doQueryAsync;
             rsProps.loadingMessage = this.loadingMessageFn;
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
@@ -357,21 +360,9 @@ export class Select extends HoistInput {
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
-
     //------------------------
     // Async
     //------------------------
-    _debouncedDoQueryAsync;
-    get debouncedDoQueryAsync() {
-        const queryBuffer = withDefault(this.props.queryBuffer, 300);
-        if (!queryBuffer) return this.doQueryAsync;
-
-        if (!this._debouncedDoQueryAsync) {
-            this._debouncedDoQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
-        }
-        return this._debouncedDoQueryAsync;
-    }
-
     doQueryAsync = (query) => {
         return this.props
             .queryFn(query)
