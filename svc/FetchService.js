@@ -139,22 +139,17 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        const fetchResponse = await this.fetch({
+        const ret = await this.fetch({
             ...opts,
             headers: {'Accept': 'application/json', ...opts.headers}
         });
-
-        // Cleanly return null from empty responses.
-        const {status} = fetchResponse;
-        if (status == NO_CONTENT || status == RESET_CONTENT) {
-            return null;
+        switch (ret.status) {
+            case NO_CONTENT:
+            case RESET_CONTENT:
+                return null;
+            default:
+                return ret.json();
         }
-
-        // Check to ensure json() return is a real Promise (with polyfills + prototype extensions).
-        // In MS Edge it is not - see https://github.com/xh/hoist-react/issues/1411.
-        const ret = fetchResponse.json();
-        return (ret instanceof Promise) ?
-            ret : new Promise((resolve, reject) => ret.then(resolve, reject));
     }
 
     /**
