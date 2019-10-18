@@ -52,20 +52,6 @@
 
 ## v28.0.0 - 2019-10-07
 
-----
-
-⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser
-is a transitive dependency used to minify code for production builds.) Apps are advised to fix the
-version of terser used for compilation by specifying the following in their `package.json` file:
-
-```
-"resolutions": {"terser": "4.3.4"}
-```
-
-ExHI will track https://github.com/terser/terser/issues/486 and test any fixes when available.
-
----
-
 _"The one with the hooks."_
 
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
