@@ -25,6 +25,8 @@
 * The MS Edge browser does not return a standard Promise from `async` functions, so the the return
   of those functions did not previously have the required Hoist extensions installed on its
   prototype. Edge "native" Promises are now also polyfilled / extended as required. (#1411).
+* Async `Select` combobox queries are now properly debounced as per the `queryBuffer` prop (#1416).
+
 
 ### ⚙️ Technical
 
