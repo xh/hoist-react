@@ -15,10 +15,10 @@
   automatically re-rendered when any observable properties referenced by the `headerName` function
   are modified.
 * `ColumnGroup` now accepts an `align` config for setting the header text alignment
-* The flag `toContext` for `uses` and `creates` has been replaced with a new flag `publishMode`,
-  that exposes multiple modes of publishing.  This change accommodates the new mode 
-  `ModelPublishMode.LIMITED` which is useful for components that would like to make their models
-   available for contained components without becoming the default model, or exposing their sub-models.
+* The flag `toContext` for `uses` and `creates` has been replaced with a new flag `publishMode` that
+  provides more granular control over how models are published and looked up via context. Components
+  can specify `ModelPublishMode.LIMITED` to make their model available for contained components
+  without it becoming the default model or exposing its sub-models.
 
 ### 🐞 Bug Fixes
 

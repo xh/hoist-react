@@ -41,10 +41,10 @@ import classNames from 'classnames';
  * @param {function} [config.render] - render function defining the component.
  * @param {ModelSpec} [config.model] - spec defining the model to be rendered by this component.
  *      Specify as false for components that don't require a primary model. Otherwise,
- *      {@see uses()} and {@see creates()} - these two factory functions can be used to create an
- *      appropriate spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
- * @param {String} [config.className] - base css classname for this component.  Will be combined with any
- *      className in props, and the combined string  will be made available to the render function via props.
+ *      {@see uses()} and {@see creates()} - these two factory functions will create an appropriate
+ *      spec for either externally-provided or internally-created models. Defaults to `uses('*')`.
+ * @param {string} [config.className] - base CSS class for this component. Will be combined with any
+ *      className in props, with the combined string passed into render as a prop.
  * @param {string} [config.displayName] - component name for debugging/inspection.
  * @param {boolean} [config.memo] - true (default) to wrap component in a call to `React.memo()`.
  *      Components that are known to be unable to make effective use of memo (e.g. container
@@ -55,10 +55,10 @@ import classNames from 'classnames';
  * @returns {function} - a functional Component for use within Hoist apps.
  *
  * This function also has two convenience "sub-functions" that are properties of it:
- *
- *   hoistComponent.factory - returns an elemFactory for the newly defined component, instead of the component itself.
- *   hoistComponent.withFactory - returns a 2-element list containing both the newly defined component and
- *          an elemFactory for it.
+ *   - `hoistComponent.factory` - returns an elemFactory for the newly defined component,
+ *           instead of the Component itself.
+ *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
+ *          Component and an elemFactory for it.
  */
 export function hoistComponent(config) {
     // 0) Pre-process/parse args.
@@ -188,7 +188,7 @@ function useResolvedModel(spec, props, lookup, displayName) {
 }
 
 function createModel(spec) {
-    return {model: spec.createFn(), isOwned: true};
+    return {model: spec.createFn(), isOwned: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
