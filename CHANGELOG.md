@@ -1,6 +1,6 @@
 # Changelog
 
-## v29.0.0-SNAPSHOT - under development
+## v28.1.0 - 2019-10-18
 
 ### 🎁 New Features
 
@@ -31,7 +31,6 @@
   prototype. Edge "native" Promises are now also polyfilled / extended as required. (#1411).
 * Async `Select` combobox queries are now properly debounced as per the `queryBuffer` prop (#1416).
 
-
 ### ⚙️ Technical
 
 * Grid column group headers now use a custom React component instead of the default ag-Grid column
@@ -49,7 +48,7 @@
 * filesize `4.2 -> 5.0`
 * http-status-codes `added @ 1.3`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...v28.1.0)
 
 ## v28.0.0 - 2019-10-07
 
