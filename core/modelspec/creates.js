@@ -21,8 +21,8 @@ import {ModelSpec, ModelPublishMode} from './ModelSpec';
  * `@LoadSupport` it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
- * @param {Class|function} spec - HoistModel Class to construct, or a function returning a concrete
- *      HoistModel instance.
+ * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a
+ *      concrete HoistModel instance.
  * @param {Object} [flags]
  * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
  * @returns {ModelSpec}
