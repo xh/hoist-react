@@ -12,10 +12,9 @@ import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
  * @private
  *
  * Support for making models available to components via React context.
- *
- * Not created directly by applications.  Components that need to *provide* models to
- * their descendants should use the WithModel component, which will create an instance
- * of this class.
+ * Not created directly by applications. Components specify how/if they publish/source their
+ * models from context via the `model` config option passed into the `hoistCmp()` factory.
+ * Hoist will in turn create and manage instances of this class to power those links.
  */
 export class ModelLookup {
     model;
