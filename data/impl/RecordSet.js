@@ -145,7 +145,7 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    updateData({update, add, remove}) {
+    loadRecordTransaction({update, add, remove}) {
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 

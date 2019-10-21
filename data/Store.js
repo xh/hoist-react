@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -13,7 +14,10 @@ import {
     isPlainObject,
     isString,
     mapValues,
-    remove as lodashRemove
+    remove as lodashRemove,
+    castArray,
+    isNil,
+    difference
 } from 'lodash';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
@@ -42,6 +46,7 @@ export class Store {
     @observable.ref summaryRecord = null;
 
     @observable.ref _all;
+    @observable.ref _current;
     @observable.ref _filtered;
     _filter = null;
     _loadRootAsSummary = false;
@@ -72,7 +77,7 @@ export class Store {
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
-        this._filtered = this._all = new RecordSet(this);
+        this._filtered = this._all = this._current = new RecordSet(this);
         this.setFilter(filter);
         this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
         this.processRawData = processRawData;
@@ -113,7 +118,7 @@ export class Store {
         }
 
         const recordMap = this.createRecords(rawData, null);
-        this._all = this._all.loadRecords(recordMap);
+        this._all = this._current = this._all.loadRecords(recordMap);
         this.rebuildFiltered();
 
         this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
@@ -123,28 +128,17 @@ export class Store {
 
     /**
      * Add, update, or delete records in this store.
-     * @param {StoreUpdate} changes - data changes to process
+     * @param {StoreTransaction} transaction - data changes to process
      */
     @action
-    updateData(changes) {
-        const {update, updateOpts, add, remove, rawSummaryData, ...other} = changes;
-        throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
+    loadDataTransaction(transaction) {
+        const {update, add, remove, rawSummaryData, ...other} = transaction;
+        throwIf(!isEmpty(other), 'Unknown argument(s) passed to loadDataTransaction().');
 
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
         if (update) {
-            const {isFieldUpdate} = updateOpts || {};
-            updateRecs = update.map(data => {
-                const rec = this.getById(data.id);
-                throwIf(!rec, `Could not find Record with id '${data.id}' to update`);
-
-                if (isFieldUpdate) {
-                    return this.createUpdatedRecord(rec, data);
-                } else {
-                    return this.createRecord({...rec?.raw, ...data}, rec.parentId, rec.xhIsSummary);
-                }
-
-            });
+            updateRecs = update.map(it => this.createRecord(it));
         }
         if (add) {
             addRecs = new Map();
@@ -170,7 +164,7 @@ export class Store {
         // 3) Apply changes
         let didUpdate = false;
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
-            this._all = this._all.updateData({update: updateRecs, add: addRecs, remove: remove});
+            this._all = this._current = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
             this.rebuildFiltered();
             didUpdate = true;
         }
@@ -183,20 +177,72 @@ export class Store {
         if (didUpdate) this.lastUpdated = Date.now();
     }
 
-    /**
-     * Update data for a single Record
-     * @param {(string|number|Record)} rec - Record or id of Record to update
-     * @param {Object} data - updated raw data for the Record. Can be a partial update that includes
-     *      only fields which have changed - Store will merge with the Record's original raw data.
-     */
-    updateRecordData(rec, data) {
-        const id = (rec instanceof Record) ? rec.id : rec;
-        this.updateData({update: [{id, ...data}]});
+    @action
+    addRecords(data = {}, parentId) {
+        data = castArray(data);
+        const addRecs = data.map(it => {
+            const id = XH.genId(),
+                parsedData = this.parseFieldValues(it);
+
+            return new Record({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
+        });
+
+        this._current = this._current.loadRecordTransaction({add: addRecs});
+        this.noteDataUpdated();
     }
 
-    updateRecordFields(rec, data) {
-        const id = (rec instanceof Record) ? rec.id : rec;
-        this.updateData({update: [{id, ...data}], updateOpts: {isFieldUpdate: true}});
+    @action
+    removeRecords(records) {
+        records = castArray(records);
+        records = records
+            .map(it => (it instanceof Record) ? it : this.getById(it))
+            .filter(it => !isNil(it));
+
+        this._current = this._current.loadRecordTransaction({remove: records});
+        this.noteDataUpdated();
+    }
+
+    @action
+    updateRecords(data) {
+        const updateRecs = data.map(it => {
+            const rec = this.getById(it.id);
+            return this.createUpdatedRecord(rec, it);
+        });
+
+        this._current = this._current.loadRecordTransaction({update: updateRecs});
+        this.noteDataUpdated();
+    }
+
+    @action
+    updateRecord(rec, data) {
+        this.updateRecords([{
+            id: (rec instanceof Record) ? rec.id : rec,
+            ...data
+        }]);
+    }
+
+    get addedRecords() {
+        const allIds = Array.from(this._all.recordMap.keys()),
+            currentIds = Array.from(this._current.recordMap.keys()),
+            addedIds = difference(currentIds, allIds);
+
+        return addedIds.map(it => this.getById(it));
+    }
+
+    get removedRecords() {
+        const allIds = Array.from(this._all.recordMap.keys()),
+            currentIds = Array.from(this._current.recordMap.keys()),
+            removedIds = difference(allIds, currentIds);
+
+        return removedIds.map(it => this.getById(it));
+    }
+
+    get updatedRecords() {
+        return this.records.filter(it => it.isDirty);
+    }
+
+    get allUpdatedRecords() {
+        return this.allRecords.filter(it => it.isDirty);
     }
 
     /** Remove all records from the store. */
@@ -209,7 +255,7 @@ export class Store {
      * and update APIs. An example would be an inline grid editor updating a data field.
      *
      * To change the structure of the data (e.g. deletion, additions, re-parenting of children)
-     * the `updateData()` or `loadData()` methods must be used instead.
+     * the `loadDataTransaction()` or `loadData()` methods must be used instead.
      */
     @action
     noteDataUpdated() {
@@ -239,7 +285,7 @@ export class Store {
      * @return {Record[]}
      */
     get allRecords() {
-        return this._all.list;
+        return this._current.list;
     }
 
     /**
@@ -259,7 +305,7 @@ export class Store {
      * @return {Record[]}
      */
     get allRootRecords() {
-        return this._all.rootList;
+        return this._current.rootList;
     }
 
     /**
@@ -290,7 +336,7 @@ export class Store {
 
     /** Get the count of all records loaded into the store. */
     get allCount() {
-        return this._all.count;
+        return this._current.count;
     }
 
     /** Get the count of the filtered root records in the store. */
@@ -300,7 +346,7 @@ export class Store {
 
     /** Get the count of all root records in the store. */
     get allRootCount() {
-        return this._all.rootCount;
+        return this._current.rootCount;
     }
 
     /** Is the store empty after filters have been applied? */
@@ -310,7 +356,7 @@ export class Store {
 
     /** Is this store empty before filters have been applied? */
     get allEmpty() {
-        return this._all.empty;
+        return this._current.empty;
     }
 
     /**
@@ -323,7 +369,7 @@ export class Store {
     getById(id, fromFiltered = false) {
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._all;
+        const rs = fromFiltered ? this._filtered : this._current;
         return rs.getById(id);
     }
 
@@ -338,7 +384,7 @@ export class Store {
      * @return {Record[]}
      */
     getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -354,7 +400,7 @@ export class Store {
      * @return {Record[]}
      */
     getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
@@ -371,7 +417,7 @@ export class Store {
      * @return {Record[]}
      */
     getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
     }
@@ -391,7 +437,7 @@ export class Store {
     //------------------------
     @action
     rebuildFiltered() {
-        this._filtered = this._all.applyFilter(this.filter);
+        this._filtered = this._current.applyFilter(this.filter);
     }
 
     parseFields(fields) {
@@ -422,18 +468,19 @@ export class Store {
         }
 
         data = this.parseFieldValues(data);
-        return new Record({data, raw, parentId, store: this, isSummary});
+        return new Record({id: this.idSpec(data), data, raw, parentId, store: this, isSummary});
     }
 
     createUpdatedRecord(rec, data) {
         data = this.parseFieldValues(data);
         return new Record({
+            id: rec.id,
             raw: rec.raw,
             data: Object.assign({}, rec.data, data),
             parentId: rec.parentId,
             store: rec.store,
             isSummary: rec.xhIsSummary,
-            originalRecord: rec
+            originalRecord: rec.originalRecord ?? rec
         });
     }
 
@@ -467,7 +514,7 @@ export class Store {
 }
 
 /**
- * @typedef {Object} StoreUpdate - object representing data changes to perform
+ * @typedef {Object} StoreTransaction - object representing data changes to perform
  *      on a Store's data in a single transaction.
  * @property {Object[]} [update] - list of raw data objects representing records to be updated.
  *      Updates must be matched to existing records by id in order to be applied. The form of the

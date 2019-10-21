@@ -49,7 +49,7 @@ export class RestStore extends UrlStore {
             url: `${url}/${rec.id}`,
             method: 'DELETE'
         }).then(() => {
-            this.updateData({remove: [rec.id]});
+            this.loadDataTransaction({remove: [rec.id]});
         }).linkTo(
             this.loadModel
         );
@@ -83,9 +83,9 @@ export class RestStore extends UrlStore {
             response = await XH.fetchService[fetchMethod]({url, body: {data}});
 
         if (isAdd) {
-            this.updateData({add: [response.data]});
+            this.loadDataTransaction({add: [response.data]});
         } else {
-            this.updateData({update: [response.data]});
+            this.loadDataTransaction({update: [response.data]});
         }
         await this.ensureLookupsLoadedAsync();
     }

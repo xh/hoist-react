@@ -7,7 +7,8 @@
 import {XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {forEach, isNil, isEqual} from 'lodash';
+import {forEach, isNil, isEqual, reduce} from 'lodash';
+import {withDefault} from '../utils/js';
 
 /**
  * Wrapper object for each data element within a {@see Store}.
@@ -36,12 +37,15 @@ export class Record {
 
     /** @returns {boolean} */
     get isDirty() {
-        return !!this.originalRecord;
+        return this.originalRecord !== this;
     }
 
-    /** @returns {Object} */
+    /** @returns {Object|null} */
     get dirtyFields() {
-        if (!this.originalRecord) return {};
+        if (!this.isDirty) return null;
+
+        // For "added" records, return just the current values, since there are no originals
+        if (!this.originalRecord) return reduce(this.data, (k, v, ret) => ret[k] = {value: v}, {});
 
         const ret = {},
             rec = this.originalRecord;
@@ -130,14 +134,12 @@ export class Record {
      * @param {Store} c.store - store containing this record.
      * @param {string} [c.parentId] - id of parent record, if any.
      */
-    constructor({data, raw, store, parentId, isSummary, originalRecord}) {
-        const id = store.idSpec(data);
-
+    constructor({id, data, raw, store, parentId, isSummary, originalRecord}) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
         this.parentId = parentId;
-        this.originalRecord = originalRecord;
+        this.originalRecord = withDefault(originalRecord, this);
         this.raw = raw;
         this.data = data;
         this.store = store;
@@ -148,7 +150,7 @@ export class Record {
             Object.defineProperty(this, key, {
                 get: () => this.data[key],
                 set: () => {
-                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.updateData() or Store.updateFields().`);
+                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.loadDataTransaction() or Store.updateFields().`);
                 }
             });
         });

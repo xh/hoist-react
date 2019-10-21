@@ -400,8 +400,8 @@ export class GridModel {
     }
 
     /** Update the underlying store. */
-    updateData(...args) {
-        return this.store.updateData(...args);
+    loadDataTransaction(...args) {
+        return this.store.loadDataTransaction(...args);
     }
 
     /** Clear the underlying store, removing all rows. */
