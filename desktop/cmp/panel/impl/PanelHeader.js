@@ -46,7 +46,7 @@ export const panelHeader = hoistCmp.factory({
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    collapseButton()
+                    collapseButton({panelModel})
                 ],
                 onDoubleClick
             });
