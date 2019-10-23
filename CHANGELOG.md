@@ -1,5 +1,13 @@
 # Changelog
 
+
+## v29.0.0-SNAPSHOT - Unreleased
+
+### 🎁 New Features
+* The factory functions/contructors used to generate models in  `creates()` and `uses()` will now be
+passed the props of the owning component triggering their creation.
+
+
 ## v28.1.0 - 2019-10-18
 
 ### 🎁 New Features
