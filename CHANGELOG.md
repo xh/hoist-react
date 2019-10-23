@@ -3,6 +3,8 @@
 ## v28.1.1 - 2019-10-23
 * Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.0...v28.1.1)
+
 ## v28.1.0 - 2019-10-18
 
 ### 🎁 New Features
