@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {Children} from 'react';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 
 import {dragger} from './dragger/Dragger';
@@ -14,12 +14,13 @@ import {PanelModel} from '../PanelModel';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',
-    model: uses(PanelModel),
     memo: false,
+    model: false,
     className: 'xh-resizable',
 
-    render({model, className, children}, ref) {
-        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = model,
+    render({className, children}, ref) {
+        const panelModel = useContextModel(PanelModel);
+        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
             items = [collapsed ? box(child) : box({item: child, [dim]: size})];
