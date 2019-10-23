@@ -218,7 +218,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
     // 4) default create
     const create = spec.createDefault;
     if (create) {
-        const model = (isFunction(create) ? create() : new selector());
+        const model = (isFunction(create) ? create(props) : new selector(props));
         return {model, isOwned: true, fromContext: false};
     }
 
