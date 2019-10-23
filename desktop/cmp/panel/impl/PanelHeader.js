@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
 
 import './PanelHeader.scss';
@@ -15,17 +15,18 @@ import {PanelModel} from '../PanelModel';
 
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
-    model: uses(PanelModel),
+    model: false,
     className: 'xh-panel-header',
 
-    render({model, className, ...props}) {
-        const {collapsed, vertical, side, showHeaderCollapseButton} = model,
+    render({className, ...props}) {
+        const panelModel = useContextModel(PanelModel),
+            {collapsed, vertical, side, showHeaderCollapseButton} = panelModel,
             {title, icon, compact, headerItems = []} = props;
 
         if (!title && !icon && !headerItems.length && !showHeaderCollapseButton) return null;
 
         const onDoubleClick = () => {
-            if (model.collapsible) model.toggleCollapsed();
+            if (panelModel.collapsible) panelModel.toggleCollapsed();
         };
 
         const titleCls = 'xh-panel-header__title',
@@ -45,7 +46,7 @@ export const panelHeader = hoistCmp.factory({
                         }) :
                         filler(),
                     ...(!collapsed ? headerItems : []),
-                    collapseButton()
+                    collapseButton({panelModel})
                 ],
                 onDoubleClick
             });
@@ -56,7 +57,7 @@ export const panelHeader = hoistCmp.factory({
                 className: classNames(className, sideCls, compactCls),
                 flex: 1,
                 items: [
-                    isLeft ? filler() : collapseButton(),
+                    isLeft ? filler() : collapseButton({panelModel}),
                     icon || null,
                     title ?
                         box({
@@ -64,7 +65,7 @@ export const panelHeader = hoistCmp.factory({
                             item: title
                         }) :
                         null,
-                    !isLeft ? filler() : collapseButton()
+                    !isLeft ? filler() : collapseButton({panelModel})
                 ],
                 onDoubleClick
             });
@@ -74,17 +75,17 @@ export const panelHeader = hoistCmp.factory({
 
 
 const collapseButton = hoistCmp.factory(
-    ({model}) => {
-        if (!model.showHeaderCollapseButton || !model.collapsible) return null;
+    ({panelModel}) => {
+        if (!panelModel.showHeaderCollapseButton || !panelModel.collapsible) return null;
 
-        const {vertical, collapsed, contentFirst} = model,
+        const {vertical, collapsed, contentFirst} = panelModel,
             directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
             idx = (contentFirst != collapsed ? 0 : 1),
             chevron = directions[idx];
 
         return button({
             icon: Icon[chevron](),
-            onClick: () => model.toggleCollapsed(),
+            onClick: () => panelModel.toggleCollapsed(),
             minimal: true
         });
     }
