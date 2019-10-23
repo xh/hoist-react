@@ -179,7 +179,7 @@ function wrapWithPublishedModel(render, spec, displayName) {
 
 function useResolvedModel(spec, props, lookup, displayName) {
     const [{model, isOwned, fromContext}] = useState(() => {
-        return (spec instanceof CreatesSpec) ? createModel(spec) : lookupModel(spec, props, lookup, displayName);
+        return (spec instanceof CreatesSpec) ? createModel(spec, props) : lookupModel(spec, props, lookup, displayName);
     });
     useOwnedModelLinker(isOwned ? model : null);
     useDebugValue(model, m => m.constructor.name + (isOwned ? ' (owned)' : ''));
@@ -187,8 +187,8 @@ function useResolvedModel(spec, props, lookup, displayName) {
     return {model, fromContext};
 }
 
-function createModel(spec) {
-    return {model: spec.createFn(), isOwned: true, fromContext: false};
+function createModel(spec, props) {
+    return {model: spec.createFn(props), isOwned: true, fromContext: false};
 }
 
 function lookupModel(spec, props, modelLookup, displayName) {
