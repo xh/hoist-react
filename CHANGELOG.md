@@ -1,5 +1,14 @@
 # Changelog
 
+## v29.0.0 - TBD
+
+### 🐞 Bug Fixes
+
+* In grid context menus, check that record exists before calling displayFn (#1425)
+
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...v29.0.0)
+
 ## v28.1.1 - 2019-10-23
 * Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
 
