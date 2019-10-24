@@ -107,7 +107,7 @@ export class RecordAction {
             disabled: this.disabled || !this.meetsRecordRequirement(recordCount)
         };
 
-        if (this.displayFn) {
+        if (this.displayFn && record) {
             return {
                 ...defaultDisplay,
                 ...this.displayFn({
