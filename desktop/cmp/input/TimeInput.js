@@ -4,6 +4,8 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
 import {timePicker} from '@xh/hoist/kit/blueprint';
 
+import './TimeInput.scss';
+
 // TODO: Docs here
 @HoistComponent
 @LayoutSupport
@@ -27,10 +29,11 @@ export class TimeInput extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
+            {width, ...layoutProps} = this.getLayoutProps(),
+            {renderValue} = this;
 
         return timePicker({
-            value: this.renderValue,
+            value: renderValue,
             disabled: props.disabled,
             maxTime: this.maxTime,
             minTime: this.minTime,
@@ -39,7 +42,7 @@ export class TimeInput extends HoistInput {
             selectAllOnFocus: props.selectOnFocus,
             showArrowButtons: props.showArrowButtons,
             useAmPm: props.useAmPm,
-            className: this.getClassName(),
+            className: this.getClassName(renderValue == null ? ['null-time'] : null),
             style: {
                 ...props.style,
                 ...layoutProps,
