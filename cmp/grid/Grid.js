@@ -197,6 +197,7 @@ class LocalModel {
             },
             popupParent: document.querySelector('body'),
             headerHeight: props.hideHeaders ? 0 : undefined,
+            suppressAggFuncInHeader: true,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
