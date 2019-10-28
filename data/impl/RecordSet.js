@@ -36,6 +36,10 @@ export class RecordSet {
         return this.count == 0;
     }
 
+    clone() {
+        return new RecordSet(this.store, new Map(this.recordMap));
+    }
+
     getById(id) {
         return this.recordMap.get(id);
     }

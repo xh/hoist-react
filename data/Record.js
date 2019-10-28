@@ -36,8 +36,18 @@ export class Record {
     xhTreePath;
 
     /** @returns {boolean} */
+    get isNew() {
+        return this.originalRecord === null;
+    }
+
+    /** @returns {boolean} */
     get isDirty() {
         return this.originalRecord !== this;
+    }
+
+    /** @returns {boolean} */
+    get isModified() {
+        return !this.isNew && this.isDirty;
     }
 
     /** @returns {Object|null} */

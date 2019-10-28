@@ -368,7 +368,7 @@ export class Column {
     defaultUpdateFieldFn = ({value, record, store, field}) => {
         const data = {};
         data[field] = value;
-        store.updateRecordFields(record, data);
+        store.updateRecord(record, data);
     }
 }
 

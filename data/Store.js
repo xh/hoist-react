@@ -9,15 +9,14 @@ import {XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
+    castArray,
+    differenceBy,
     isEmpty,
     isFunction,
     isPlainObject,
     isString,
     mapValues,
-    remove as lodashRemove,
-    castArray,
-    isNil,
-    difference
+    remove as lodashRemove
 } from 'lodash';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
@@ -45,8 +44,8 @@ export class Store {
     /** @member {Record} - record containing summary data. */
     @observable.ref summaryRecord = null;
 
+    @observable.ref _original;
     @observable.ref _all;
-    @observable.ref _current;
     @observable.ref _filtered;
     _filter = null;
     _loadRootAsSummary = false;
@@ -77,7 +76,7 @@ export class Store {
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
-        this._filtered = this._all = this._current = new RecordSet(this);
+        this._filtered = this._original = this._all = new RecordSet(this);
         this.setFilter(filter);
         this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
         this.processRawData = processRawData;
@@ -118,7 +117,7 @@ export class Store {
         }
 
         const recordMap = this.createRecords(rawData, null);
-        this._all = this._current = this._all.loadRecords(recordMap);
+        this._original = this._all = this._original.loadRecords(recordMap);
         this.rebuildFiltered();
 
         this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
@@ -164,7 +163,8 @@ export class Store {
         // 3) Apply changes
         let didUpdate = false;
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
-            this._all = this._current = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+            this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+            this._all = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
             this.rebuildFiltered();
             didUpdate = true;
         }
@@ -177,8 +177,18 @@ export class Store {
         if (didUpdate) this.lastUpdated = Date.now();
     }
 
+    /** Remove all records from the store. */
+    clear() {
+        this.loadData([], null);
+    }
+
+    /**
+     * Add new Records to the store. The new Records will be assigned an auto-generated id.
+     * @param {Object[]} data - Pre-processed Record data.
+     * @param {string|number} [parentId] - id of the parent record to add the new Records under.
+     */
     @action
-    addRecords(data = {}, parentId) {
+    addRecords(data, parentId) {
         data = castArray(data);
         const addRecs = data.map(it => {
             const id = XH.genId(),
@@ -187,67 +197,70 @@ export class Store {
             return new Record({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
         });
 
-        this._current = this._current.loadRecordTransaction({add: addRecs});
+        this._all = this._all.loadRecordTransaction({add: addRecs});
         this.noteDataUpdated();
     }
 
+    /**
+     * Remove Records from the store.
+     * @param {number[]|string[]|Record[]} records - list of Records or Record ids to remove
+     */
     @action
     removeRecords(records) {
         records = castArray(records);
-        records = records
-            .map(it => (it instanceof Record) ? it : this.getById(it))
-            .filter(it => !isNil(it));
+        records = records.map(it => (it instanceof Record) ? it.id : it);
 
-        this._current = this._current.loadRecordTransaction({remove: records});
+        this._all = this._all.loadRecordTransaction({remove: records});
         this.noteDataUpdated();
     }
 
+    /**
+     * Update Record field values.
+     * @param {Object[]} data - Pre-processed Record data. Each object in the list is expected to
+     *      have an `id` property to use for looking up the Record to update.
+     */
     @action
     updateRecords(data) {
         const updateRecs = data.map(it => {
-            const rec = this.getById(it.id);
-            return this.createUpdatedRecord(rec, it);
+            const {id, ...data} = it,
+                rec = this.getById(id);
+            return this.createUpdatedRecord(rec, data);
         });
 
-        this._current = this._current.loadRecordTransaction({update: updateRecs});
+        this._all = this._all.loadRecordTransaction({update: updateRecs});
         this.noteDataUpdated();
     }
 
+    /**
+     * Update field values for a single Record
+     * @param {number|string|Record} record - Record or id of the Record to update.
+     * @param {Object} data - Pre-processed Record data
+     */
     @action
-    updateRecord(rec, data) {
-        this.updateRecords([{
-            id: (rec instanceof Record) ? rec.id : rec,
-            ...data
-        }]);
+    updateRecord(record, data) {
+        const id = (record instanceof Record) ? record.id : record;
+        this.updateRecords([{id, ...data}]);
     }
 
-    get addedRecords() {
-        const allIds = Array.from(this._all.recordMap.keys()),
-            currentIds = Array.from(this._current.recordMap.keys()),
-            addedIds = difference(currentIds, allIds);
-
-        return addedIds.map(it => this.getById(it));
+    /**
+     * Revert all changes made to the Store since data was last loaded.
+     */
+    @action
+    revert() {
+        this._all = this._original.clone();
+        this.noteDataUpdated();
     }
 
-    get removedRecords() {
-        const allIds = Array.from(this._all.recordMap.keys()),
-            currentIds = Array.from(this._current.recordMap.keys()),
-            removedIds = difference(allIds, currentIds);
-
-        return removedIds.map(it => this.getById(it));
-    }
-
-    get updatedRecords() {
-        return this.records.filter(it => it.isDirty);
-    }
-
-    get allUpdatedRecords() {
-        return this.allRecords.filter(it => it.isDirty);
-    }
-
-    /** Remove all records from the store. */
-    clear() {
-        this.loadData([], null);
+    /**
+     * Revert all changes made to the provided records since they were last loaded
+     * @param {number[]|string[]|Record[]} records - List of records or Record ids to revert
+     */
+    @action
+    revertRecords(records) {
+        records = castArray(records);
+        records = records.map(it => (it instanceof Record) ? it : this._all.getById(it));
+        this._all = this._all.loadRecordTransaction({update: records.map(it => it.originalRecord)});
+        this.noteDataUpdated();
     }
 
     /**
@@ -285,7 +298,15 @@ export class Store {
      * @return {Record[]}
      */
     get allRecords() {
-        return this._current.list;
+        return this._all.list;
+    }
+
+    /**
+     * All records that were originally loaded into this store.
+     * @return {Record[]}
+     */
+    get originalRecords() {
+        return this._original.list;
     }
 
     /**
@@ -305,7 +326,56 @@ export class Store {
      * @return {Record[]}
      */
     get allRootRecords() {
-        return this._current.rootList;
+        return this._all.rootList;
+    }
+
+    /**
+     * Records added to this store since data was last loaded.
+     * @returns {Record[]}
+     */
+    get addedRecords() {
+        return differenceBy(this.allRecords, this.originalRecords, 'id');
+    }
+
+    /**
+     * Records removed from this store since data was last loaded.
+     * @returns {Record[]}
+     */
+    get removedRecords() {
+        return differenceBy(this.originalRecords, this.allRecords, 'id');
+    }
+
+    /**
+     * Records which have been updated since they were last loaded, respecting any filter (if applied).
+     * @returns {Record[]}
+     */
+    get updatedRecords() {
+        return this.records.filter(it => !it.isNew && it.isDirty);
+    }
+
+    /**
+     * Records which have been updated since they were last loaded, unfiltered.
+     * @returns {Record[]}
+     */
+    get allUpdatedRecords() {
+        return this.allRecords.filter(it => !it.isNew && it.isDirty);
+    }
+
+    /**
+     * Records which have been added or updated in the store since data was last loaded, respecting
+     * any filter (if applied).
+     * @returns {Record[]}
+     */
+    get dirtyRecords() {
+        return this.records.filter(it => it.isDirty);
+    }
+
+    /**
+     * Records which have been added or updated in the store since data was last loaded, unfiltered.
+     * @returns {Record[]}
+     */
+    get allDirtyRecords() {
+        return this.allRecords.filter(it => it.isDirty);
     }
 
     /**
@@ -336,7 +406,7 @@ export class Store {
 
     /** Get the count of all records loaded into the store. */
     get allCount() {
-        return this._current.count;
+        return this._all.count;
     }
 
     /** Get the count of the filtered root records in the store. */
@@ -346,7 +416,7 @@ export class Store {
 
     /** Get the count of all root records in the store. */
     get allRootCount() {
-        return this._current.rootCount;
+        return this._all.rootCount;
     }
 
     /** Is the store empty after filters have been applied? */
@@ -356,7 +426,7 @@ export class Store {
 
     /** Is this store empty before filters have been applied? */
     get allEmpty() {
-        return this._current.empty;
+        return this._all.empty;
     }
 
     /**
@@ -369,7 +439,7 @@ export class Store {
     getById(id, fromFiltered = false) {
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._current;
+        const rs = fromFiltered ? this._filtered : this._all;
         return rs.getById(id);
     }
 
@@ -384,7 +454,7 @@ export class Store {
      * @return {Record[]}
      */
     getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+        const rs = fromFiltered ? this._filtered : this._all,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -400,11 +470,10 @@ export class Store {
      * @return {Record[]}
      */
     getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+        const rs = fromFiltered ? this._filtered : this._all,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
-
 
     /**
      * Get ancestor records for a record.
@@ -417,7 +486,7 @@ export class Store {
      * @return {Record[]}
      */
     getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+        const rs = fromFiltered ? this._filtered : this._all,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
     }
@@ -437,7 +506,7 @@ export class Store {
     //------------------------
     @action
     rebuildFiltered() {
-        this._filtered = this._current.applyFilter(this.filter);
+        this._filtered = this._all.applyFilter(this.filter);
     }
 
     parseFields(fields) {
@@ -480,7 +549,7 @@ export class Store {
             parentId: rec.parentId,
             store: rec.store,
             isSummary: rec.xhIsSummary,
-            originalRecord: rec.originalRecord ?? rec
+            originalRecord: rec.originalRecord
         });
     }
 
