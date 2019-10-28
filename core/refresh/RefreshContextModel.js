@@ -44,6 +44,10 @@ export function RefreshContextModel(C) {
 
         defaults: {
 
+            isComponentModel() {
+                return true;
+            },
+
             async doLoadAsync(loadSpec) {
                 return loadAllAsync(this.refreshTargets, loadSpec);
             },

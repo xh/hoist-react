@@ -5,10 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {useRef} from 'react';
-import {elem, hoistCmp} from '@xh/hoist/core';
+import {elem, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {TabRenderMode} from '@xh/hoist/enums';
+
+import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * @private
@@ -21,6 +23,7 @@ import {TabRenderMode} from '@xh/hoist/enums';
  */
 export const tab = hoistCmp.factory({
     displayName: 'Tab',
+    model: uses(TabModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model}) {
         let {content, isActive, renderMode, refreshContextModel} = model,

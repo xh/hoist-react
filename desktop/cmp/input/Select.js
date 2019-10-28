@@ -162,6 +162,9 @@ export class Select extends HoistInput {
     constructor(props) {
         super(props);
 
+        const queryBuffer = withDefault(props.queryBuffer, 300);
+        if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
+
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -214,7 +217,7 @@ export class Select extends HoistInput {
         }
 
         if (this.asyncMode) {
-            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
+            rsProps.loadOptions = this.doQueryAsync;
             rsProps.loadingMessage = this.loadingMessageFn;
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
@@ -356,7 +359,6 @@ export class Select extends HoistInput {
             {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
-
 
     //------------------------
     // Async
