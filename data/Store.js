@@ -15,7 +15,6 @@ import {
     isFunction,
     isPlainObject,
     isString,
-    mapValues,
     remove as lodashRemove
 } from 'lodash';
 import {Field} from './Field';
@@ -184,7 +183,7 @@ export class Store {
 
     /**
      * Add new Records to the store. The new Records will be assigned an auto-generated id.
-     * @param {Object[]} data - Pre-processed Record data.
+     * @param {Object[]} data - Processed Record data.
      * @param {string|number} [parentId] - id of the parent record to add the new Records under.
      */
     @action
@@ -202,6 +201,15 @@ export class Store {
     }
 
     /**
+     * Add a new Record to the store.
+     * @param {Object} [data] - Processed Record data.
+     * @param {string|number} [parentId] - id of the parent record to add the new Record under.
+     */
+    addRecord(data = {}, parentId) {
+        this.addRecords([data], parentId);
+    }
+
+    /**
      * Remove Records from the store.
      * @param {number[]|string[]|Record[]} records - list of Records or Record ids to remove
      */
@@ -216,7 +224,7 @@ export class Store {
 
     /**
      * Update Record field values.
-     * @param {Object[]} data - Pre-processed Record data. Each object in the list is expected to
+     * @param {Object[]} data - Processed Record data. Each object in the list is expected to
      *      have an `id` property to use for looking up the Record to update.
      */
     @action
@@ -234,7 +242,7 @@ export class Store {
     /**
      * Update field values for a single Record
      * @param {number|string|Record} record - Record or id of the Record to update.
-     * @param {Object} data - Pre-processed Record data
+     * @param {Object} data - Processed Record data
      */
     @action
     updateRecord(record, data) {
@@ -573,12 +581,12 @@ export class Store {
     }
 
     parseFieldValues(data) {
-        return mapValues(data, (value, key) => {
-            const field = this.fields.find(it => it.name === key);
-            if (field) return field.parseVal(value);
-
-            return value;
+        const ret = {...data};
+        this.fields.forEach(field => {
+            const {name} = field;
+            ret[name] = field.parseVal(data[name]);
         });
+        return ret;
     }
 }
 
