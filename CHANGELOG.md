@@ -1,5 +1,12 @@
 # Changelog
 
+## v29.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* Added `DateInput` to the mobile toolkit. Its API supports many of the same options as its desktop
+  analog. However, its worth noting that `timePrecision` is not yet supported.
+
 ## v28.1.1 - 2019-10-23
 * Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
 
