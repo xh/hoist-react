@@ -83,6 +83,9 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
+     * @param {boolean|Column~editableFn} editable - true to make cells in this column editable.
+     * @param {Column~updateFieldFn} updateFieldFn - function for updating Record field for this
+     *      column after inline editing.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -237,8 +240,8 @@ export class Column {
                     return editable;
                 },
                 valueSetter: (agParams) => {
-                    const {newValue: value, data: record} = agParams;
-                    this.updateFieldFn({value, record, store: record.store, gridModel, field, column: this, agParams});
+                    const {newValue: value, oldValue, data: record} = agParams;
+                    this.updateFieldFn({value, oldValue, record, store: record.store, gridModel, field, column: this, agParams});
                 }
             };
 
@@ -488,4 +491,29 @@ export function getAgHeaderClassFn(column) {
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
  *      during ColumnHeader rendering.
  * @return {string} - the header name to render in the Column header
+ */
+
+/**
+ * @callback Column~editableFn - function to determine if a Column should be editable or not.
+ *      This function will be called whenever the user takes some action which would initiate inline
+ *      editing of a cell before the actual inline editing session is started.
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {IsColumnFuncParams} params.agParams - the ag-grid column function params.
+ * @return {boolean} - true if cell is editable
+ */
+
+/**
+ * @callback Column~updateFieldFn - function to update the value of a Record field after inline editing
+ * @param {Object} params
+ * @param {*} params.value - the new value for the field.
+ * @param {*} params.oldValue - the previous value for the field.
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {ValueSetterParams} params.agParams - the ag-Grid value setter params.
  */

@@ -162,8 +162,17 @@ export class Store {
         // 3) Apply changes
         let didUpdate = false;
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
+            const isDirty = this._all !== this._original;
             this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
-            this._all = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+
+            // If our current RecordSet has diverged from the original RecordSet, then we need to
+            // load its transaction separately so we do not lose the changes
+            if (isDirty) {
+                this._all = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+            } else {
+                this._all = this._original;
+            }
+
             this.rebuildFiltered();
             didUpdate = true;
         }

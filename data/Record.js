@@ -50,24 +50,6 @@ export class Record {
         return !this.isNew && this.isDirty;
     }
 
-    /** @returns {Object|null} */
-    get dirtyFields() {
-        if (!this.isDirty) return null;
-
-        // For "added" records, return just the current values, since there are no originals
-        if (!this.originalRecord) return reduce(this.data, (k, v, ret) => ret[k] = {value: v}, {});
-
-        const ret = {},
-            rec = this.originalRecord;
-
-        forEach(this.data, (value, key) => {
-            const originalValue = rec[key];
-            if (!isEqual(value, originalValue)) ret[key] = {value, originalValue};
-        });
-
-        return ret;
-    }
-
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
@@ -185,11 +167,37 @@ export class Record {
         );
     }
 
+    /**
+     * Determines if a field value has changed since this Record was originally loaded
+     * @param {string} name - field name to check.
+     * @returns {boolean}
+     */
     isFieldDirty(name) {
         if (!this.isDirty) return false;
 
-        const value = this.data[name], originalValue = this.originalRecord.data[name];
+        const value = this[name], originalValue = this.originalRecord[name];
         return !isEqual(value, originalValue);
+    }
+
+    /**
+     * Gets an object containing all dirty fields in the Record.
+     * @returns {Object.<string, FieldValue>|null}
+     */
+    getDirtyFields() {
+        if (!this.isDirty) return null;
+
+        // For "added" records, return just the current values, since there are no originals
+        if (this.isNew) return reduce(this.data, (k, v, ret) => ret[k] = {value: v}, {});
+
+        const ret = {},
+            rec = this.originalRecord;
+
+        forEach(this.data, (value, key) => {
+            const originalValue = rec[key];
+            if (!isEqual(value, originalValue)) ret[key] = {value, originalValue};
+        });
+
+        return ret;
     }
 
     /**
@@ -218,6 +226,10 @@ export class Record {
     forEachAncestor(fn, fromFiltered = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
     }
-
 }
+
+/** @typedef FieldValue
+ *  @property {*} value - current value of the field
+ *  @property {*} [originalValue] - original value of the field, if there is one.
+ */
 
