@@ -12,19 +12,19 @@ import {throttle} from 'lodash';
 @HoistModel
 export class DraggerAnimatedModel {
 
-    model;
+    panelModel;
     resizeState = null;
     startSize = null;
 
-    constructor(model) {
-        this.model = model;
-        this.throttledSetSize = throttle(size => model.setSize(size), 50);
+    constructor(panelModel) {
+        this.panelModel = panelModel;
+        this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
     }
 
     onDragStart = (e) => {
         this.resizeState = {startX: e.clientX, startY: e.clientY};
-        this.startSize = this.model.size;
-        this.model.setIsResizing(true);
+        this.startSize = this.panelModel.size;
+        this.panelModel.setIsResizing(true);
         e.stopPropagation();
     }
 
@@ -35,7 +35,7 @@ export class DraggerAnimatedModel {
             return;
         }
 
-        const {side} = this.model,
+        const {side, minSize} = this.panelModel,
             {screenX, screenY, clientX, clientY} = e,
             {startX, startY} = this.resizeState;
 
@@ -53,13 +53,13 @@ export class DraggerAnimatedModel {
         }
 
         if (this.startSize !== null) {
-            this.throttledSetSize(this.startSize + diff);
+            this.throttledSetSize(Math.max(this.startSize + diff, minSize));
         }
     }
 
     onDragEnd = () => {
         this.resizeState = null;
         this.startSize = null;
-        this.model.setIsResizing(false);
+        this.panelModel.setIsResizing(false);
     }
 }
