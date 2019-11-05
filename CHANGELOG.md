@@ -4,11 +4,17 @@
 
 ### 🎁 New Features
 
-* Added `DateInput` to the mobile toolkit. Its API supports many of the same options as its desktop
-  analog. However, its worth noting that `timePrecision` is not yet supported.
-* Added `minSize` to panelModel.  A resizable panel can now be prevented from resizing to a size smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
+* Added a `DateInput` component to the mobile toolkit. Its API supports many of the same options as
+  its desktop analog with the exception of `timePrecision`, which is not yet supported.
+* Added `minSize` to panelModel. A resizable panel can now be prevented from resizing to a size
+  smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
 
 ## v28.1.1 - 2019-10-23
+
+### 🐞 Bug Fixes
+
 * Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.0...v28.1.1)
