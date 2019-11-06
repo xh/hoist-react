@@ -24,7 +24,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
-        throwIf((!itemHeight || !isNumber(itemHeight)), 'Must specify a number for itemHeight in DataView.');
+        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
 
         return grid({
             ...layoutProps,
