@@ -6,7 +6,7 @@
  */
 
 import {cloneElement, isValidElement} from 'react';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
@@ -17,7 +17,7 @@ import PT from 'prop-types';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
-    model: uses(RestGridModel),
+    model: uses(RestGridModel, {publishMode: ModelPublishMode.NONE}),
     className: 'xh-rest-grid',
 
     render({
@@ -29,14 +29,15 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         ...props
     }) {
 
+        const {formModel, gridModel} = model;
         if (!onRowDoubleClicked)  {
             onRowDoubleClicked = (row) => {
                 if (!row.data) return;
 
                 if (!model.readonly) {
-                    model.formModel.openEdit(row.data);
+                    formModel.openEdit(row.data);
                 } else {
-                    model.formModel.openView(row.data);
+                    formModel.openView(row.data);
                 }
             };
         }
@@ -44,11 +45,11 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         return fragment(
             panel({
                 ...props,
-                tbar: restGridToolbar({extraToolbarItems}),
-                item: grid({agOptions, onRowDoubleClicked}),
+                tbar: restGridToolbar({model, extraToolbarItems}),
+                item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm()
+            restForm({model: formModel})
         );
     }
 });

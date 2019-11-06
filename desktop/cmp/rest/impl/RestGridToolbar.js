@@ -6,7 +6,7 @@
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
@@ -16,7 +16,7 @@ import {RestGridModel} from '../RestGridModel';
 
 export const restGridToolbar = hoistCmp.factory({
 
-    model: uses(RestGridModel),
+    model: uses(RestGridModel, {publishMode: ModelPublishMode.NONE}),
 
     render({model, extraToolbarItems, ...props}) {
         const {unit, toolbarActions: actions, gridModel} = model;
@@ -30,9 +30,9 @@ export const restGridToolbar = hoistCmp.factory({
             toolbarSep({omit: isEmpty(extraItems)}),
             ...extraItems,
             filler(),
-            gridCountLabel({unit}),
-            storeFilterField({includeFields: model.filterFields}),
-            exportButton()
+            gridCountLabel({gridModel, unit}),
+            storeFilterField({gridModel, includeFields: model.filterFields}),
+            exportButton({gridModel})
         );
     }
 });
