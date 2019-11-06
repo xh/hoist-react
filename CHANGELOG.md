@@ -9,6 +9,10 @@
 * Added `minSize` to panelModel. A resizable panel can now be prevented from resizing to a size
   smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
 
+### 🐞 Bug Fixes
+* Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
+  infinite loop if this value was not set. 
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
 
 ## v28.1.1 - 2019-10-23
