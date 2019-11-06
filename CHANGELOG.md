@@ -10,7 +10,7 @@
   smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
 
 ### 🐞 Bug Fixes
-* Made `itemHeight` a required parameter for DataView. Fixes a bug where agGrid went into an
+* Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
   infinite loop if this value was not set. 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
