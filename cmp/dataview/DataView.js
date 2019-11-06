@@ -44,7 +44,7 @@ DataView.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object]),
 
     /** Row height for each item displayed in the view */
-    itemHeight: PT.number,
+    itemHeight: PT.number.isRequired,
 
     /** CSS class used for each row */
     rowCls: PT.string,
