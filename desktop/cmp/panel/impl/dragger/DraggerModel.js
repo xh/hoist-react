@@ -12,7 +12,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 @HoistModel
 export class DraggerModel {
 
-    model;
+    panelModel;
     resizeState = null;
     startSize = null;
     diff = null;
@@ -21,8 +21,8 @@ export class DraggerModel {
     dragBar = null;
     maxSize = null;
 
-    constructor(model) {
-        this.model = model;
+    constructor(panelModel) {
+        this.panelModel = panelModel;
     }
 
     onDragStart = (e) => {
@@ -36,9 +36,9 @@ export class DraggerModel {
         );
 
         this.resizeState = {startX: e.clientX, startY: e.clientY};
-        this.startSize = this.model.size;
+        this.startSize = this.panelModel.size;
         this.panelParent = panel.parentElement;
-        this.model.setIsResizing(true);
+        this.panelModel.setIsResizing(true);
         this.dragBar = this.getDraggableSplitter(dragger);
         this.panelParent.appendChild(this.dragBar);
         this.diff = 0;
@@ -53,7 +53,7 @@ export class DraggerModel {
             return;
         }
 
-        const {side} = this.model,
+        const {side} = this.panelModel,
             {screenX, screenY, clientX, clientY} = e,
             {startX, startY} = this.resizeState;
 
@@ -73,13 +73,13 @@ export class DraggerModel {
     }
 
     onDragEnd = () => {
-        const {model} = this;
-        if (!model.isResizing) return;
+        const {panelModel} = this;
+        if (!panelModel.isResizing) return;
 
-        const size = Math.min(this.maxSize, Math.max(0, this.startSize + this.diff));
+        const size = Math.min(this.maxSize, Math.max(panelModel.minSize, this.startSize + this.diff));
 
-        model.setSize(size);
-        model.setIsResizing(false);
+        panelModel.setSize(size);
+        panelModel.setIsResizing(false);
 
         this.panelParent.removeChild(this.dragBar);
         this.resizeState = null;
@@ -91,7 +91,7 @@ export class DraggerModel {
         this.dragBar = null;
     }
 
-    getDraggableSplitter(dragger) {
+    getDraggableSplitter() {
         // clone .xh-resizable-splitter to get its styling
         const splitter = this.panelEl.querySelector('.xh-resizable-splitter'),
             ret = splitter.cloneNode();
@@ -104,28 +104,29 @@ export class DraggerModel {
     }
 
     moveDragBar() {
-        const {diff, dragBar, maxSize, model, panelEl: panel, startSize} = this;
+        const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
+            {side, minSize} = panelModel;
         if (!dragBar) return;
 
         const stl = dragBar.style;
         stl.display = 'block';
 
-        if (diff + startSize <= 0) {               // constrain to 0 size
-            switch (model.side) {
-                case 'left':    stl.left =  panel.offsetLeft + 'px'; break;
-                case 'top':     stl.top =   panel.offsetTop + 'px'; break;
-                case 'right':   stl.left =  (panel.offsetLeft + startSize) + 'px'; break;
-                case 'bottom':  stl.top =   (panel.offsetTop + startSize) + 'px'; break;
+        if (diff + startSize <= minSize) {               // constrain to minSize (which could be 0)
+            switch (side) {
+                case 'left':    stl.left =  (panel.offsetLeft + minSize) + 'px'; break;
+                case 'top':     stl.top =   (panel.offsetTop + minSize) + 'px'; break;
+                case 'right':   stl.left =  (panel.offsetLeft + startSize - minSize) + 'px'; break;
+                case 'bottom':  stl.top =   (panel.offsetTop + startSize - minSize) + 'px'; break;
             }
         } else if (diff + startSize >= maxSize) {  // constrain to max-size
-            switch (model.side) {
+            switch (side) {
                 case 'left':    stl.left =  (panel.offsetLeft + maxSize) + 'px'; break;
                 case 'top':     stl.top =   (panel.offsetTop + maxSize) + 'px'; break;
                 case 'right':   stl.left =  (panel.offsetLeft + startSize - maxSize) + 'px'; break;
                 case 'bottom':  stl.top =   (panel.offsetTop + startSize - maxSize) + 'px'; break;
             }
         } else {
-            switch (model.side) {
+            switch (side) {
                 case 'left':    stl.left =  (panel.offsetLeft + startSize + diff) + 'px'; break;
                 case 'top':     stl.top =   (panel.offsetTop + startSize + diff) + 'px'; break;
                 case 'right':   stl.left =  (panel.offsetLeft - diff) + 'px'; break;
@@ -135,16 +136,15 @@ export class DraggerModel {
     }
 
     getSiblingAvailSize() {
-        const {model, panelEl: panel} = this,
-            sib = model.contentFirst ? panel.nextElementSibling : panel.previousElementSibling,
+        const {panelModel, panelEl} = this,
+            sib = panelModel.contentFirst ? panelEl.nextElementSibling : panelEl.previousElementSibling,
             sibIsResizable = sib.classList.contains('xh-resizable'),
             sibSplitter = sibIsResizable ? sib.querySelector('.xh-resizable-splitter') : null;
 
         // Use 'clientWidth/Height', not 'offsetWidth/Height' here, because clientHeight does not count borders.
         // Flexbox does not collapse borders when resizing.
-        return model.vertical ?
+        return panelModel.vertical ?
             sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0):
             sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
-
     }
 }

@@ -4,6 +4,25 @@
 
 ### 🎁 New Features
 
+* Added a `DateInput` component to the mobile toolkit. Its API supports many of the same options as
+  its desktop analog with the exception of `timePrecision`, which is not yet supported.
+* Added `minSize` to panelModel. A resizable panel can now be prevented from resizing to a size
+  smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
+
+## v28.1.1 - 2019-10-23
+
+### 🐞 Bug Fixes
+
+* Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.0...v28.1.1)
+
+## v28.1.0 - 2019-10-18
+
+### 🎁 New Features
+
 * `DateInput` supports a new `strictInputParsing` prop to enforce strict parsing of keyed-in entries
   by the underlying moment library. The default value is false, maintained the existing behavior
   where [moment will do its best](https://momentjs.com/guides/#/parsing/) to parse an entered date
@@ -15,6 +34,10 @@
   automatically re-rendered when any observable properties referenced by the `headerName` function
   are modified.
 * `ColumnGroup` now accepts an `align` config for setting the header text alignment
+* The flag `toContext` for `uses` and `creates` has been replaced with a new flag `publishMode` that
+  provides more granular control over how models are published and looked up via context. Components
+  can specify `ModelPublishMode.LIMITED` to make their model available for contained components
+  without it becoming the default model or exposing its sub-models.
 
 ### 🐞 Bug Fixes
 
@@ -26,7 +49,6 @@
   of those functions did not previously have the required Hoist extensions installed on its
   prototype. Edge "native" Promises are now also polyfilled / extended as required. (#1411).
 * Async `Select` combobox queries are now properly debounced as per the `queryBuffer` prop (#1416).
-
 
 ### ⚙️ Technical
 
@@ -45,23 +67,9 @@
 * filesize `4.2 -> 5.0`
 * http-status-codes `added @ 1.3`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...v28.1.0)
 
 ## v28.0.0 - 2019-10-07
-
-----
-
-⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser
-is a transitive dependency used to minify code for production builds.) Apps are advised to fix the
-version of terser used for compilation by specifying the following in their `package.json` file:
-
-```
-"resolutions": {"terser": "4.3.4"}
-```
-
-ExHI will track https://github.com/terser/terser/issues/486 and test any fixes when available.
-
----
 
 _"The one with the hooks."_
 

@@ -12,11 +12,15 @@ import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
  * StoreContextMenu and RecordActionBar (aka grid context menus and action columns).
  *
  * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
- * and call their `actionFn` when clicked, passing it a data object sourced from the selected row(s)
- * or node(s) on the underlying grid or data view.
+ * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
+ * selected row(s) or node(s) on the underlying grid or data view.
  *
  * The `displayFn` callback allows apps to customize any display properties of the action prior to
  * each render by returning an object with keys/values to override (e.g. `{hidden: true}`).
+ *
+ * NOTE that both `actionFn` and `displayFn` can be called with a null record - e.g. when showing a
+ * context menu on a full-width grid group row, where there is no backing record for the row.
+ * Applications should ensure these callbacks handle their `record` param in a null-safe manner.
  *
  * @see RecordActionBar
  * @see StoreContextMenu

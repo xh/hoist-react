@@ -2,6 +2,7 @@ node_modules
 .editorconfig
 .eslintrc
 .github
+.stylelintrc
 .yarn
 .yarnrc
 webpack.config.intellij.js
