@@ -439,7 +439,6 @@ class XHClass {
             args = flatten(args);
             args.forEach(it => {
                 if (it && it.destroy) {
-                    console.debug('[XH] Destroying', it);
                     it.destroy();
                 }
             });
