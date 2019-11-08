@@ -16,7 +16,7 @@ import {RestGridModel} from '../RestGridModel';
 
 export const restGridToolbar = hoistCmp.factory({
 
-    model: uses(RestGridModel, {publishMode: ModelPublishMode.NONE}),
+    model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, extraToolbarItems, ...props}) {
         const {unit, toolbarActions: actions, gridModel} = model;

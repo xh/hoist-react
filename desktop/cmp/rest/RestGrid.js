@@ -17,7 +17,7 @@ import PT from 'prop-types';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
-    model: uses(RestGridModel, {publishMode: ModelPublishMode.NONE}),
+    model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
     className: 'xh-rest-grid',
 
     render({
