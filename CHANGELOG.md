@@ -1,6 +1,6 @@
 # Changelog
 
-## v29.0.0-SNAPSHOT - under development
+## v28.2.0 - 2019-11-08
 
 ### 🎁 New Features
 
@@ -12,6 +12,8 @@
 ### 🐞 Bug Fixes
 * Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
   infinite loop if this value was not set. 
+  
+* Fixed a problem with `RestStore` behavior when `dataRoot` changed from its default value.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
 
