@@ -15,7 +15,7 @@
   
 * Fixed a problem with `RestStore` behavior when `dataRoot` changed from its default value.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...v28.2.0)
 
 ## v28.1.1 - 2019-10-23
 
