@@ -1,5 +1,18 @@
 # Changelog
 
+## v29.0.0-SNAPSHOT - under development
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.19 -> 3.20`
+* @blueprintjs/datetime `3.14 -> 3.15`
+* core-js `3.3 -> 3.4`
+* filesize `5.0 -> 6.0`
+* mobx `5.14 -> 5.15`
+* react-dates `21.3 -> 21.5`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+
 ## v28.2.0 - 2019-11-08
 
 ### 🎁 New Features
@@ -10,9 +23,9 @@
   smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
 
 ### 🐞 Bug Fixes
+
 * Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
-  infinite loop if this value was not set. 
-  
+  infinite loop if this value was not set.
 * Fixed a problem with `RestStore` behavior when `dataRoot` changed from its default value.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...v28.2.0)
