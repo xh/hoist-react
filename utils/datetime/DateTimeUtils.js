@@ -5,6 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import moment from 'moment';
+
 
 export const
     MILLISECONDS = 1,
@@ -25,3 +27,16 @@ export function olderThan(t, millis) {
     return !t || t < Date.now() - millis;
 }
 
+/**
+* Returns a JS date set to the first millisecond of the current day
+*/
+export function startOfToday() {
+    return moment().set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 1}).toDate();
+}
+
+/**
+* Returns a JS date set to the last millisecond of the current day
+*/
+export function endOfToday() {
+    return moment().set({'hour': 23, 'minute': 59, 'second': 59, 'millisecond': 999}).toDate();
+}

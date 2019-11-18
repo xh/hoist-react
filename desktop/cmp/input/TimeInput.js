@@ -1,7 +1,8 @@
-import moment from 'moment';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {endOfToday, startOfToday} from '@xh/hoist/utils/datetime';
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
 import {timePicker} from '@xh/hoist/kit/blueprint';
 
 import './TimeInput.scss';
@@ -11,43 +12,82 @@ import './TimeInput.scss';
 @LayoutSupport
 export class TimeInput extends HoistInput {
 
-    // TODO: Proptypes here
+    static propTypes = {
+        ...HoistInput.propTypes,
+        value: PT.oneOfType([PT.instanceOf(Date)]), // TODO: Add LocalTime once api is ready
+
+        /** True to show a "clear" button aligned to the right of the control. Default false. */
+        enableClear: PT.bool, // TODO: Implement
+
+        /**
+         * Maximum (inclusive) valid time. Controls which times can be inputted.
+         * Will reset any out-of-bounds input to `null`.
+         *
+         * Note this is distinct in these ways from FormModel based validation, which will leave an
+         * invalid entry in place but flag as invalid via FormField. For cases where it is
+         * possible to use FormField, that is often a better choice.
+         */
+        maxDate: PT.oneOfType([PT.instanceOf(Date)]), // TODO: Add LocalTime once api is ready
+
+        /**
+         * Minimum (inclusive) valid time. Controls which times can be inputted
+         * picker. Will reset any out-of-bounds manually entered input to `null`.
+         *
+         * See note re. validation on maxTime, above.
+         */
+        minDate: PT.oneOfType([PT.instanceOf(Date)]), // TODO: Add LocalTime once api is ready
+
+
+        /**
+         * The precision of time selection. Default to 'second'
+         */
+        precision: PT.oneOf(['millisecond', 'second', 'minute']),
+
+        /** True to select contents when control receives focus. */
+        selectOnFocus: PT.bool
+
+        // TODO: this
+        // /** Type of value to publish. Defaults to 'date'. */
+        // valueType: PT.oneOf(['date', 'localDate'])
+    };
+
 
     baseClassName = 'xh-time-input';
 
     // Prop-backed convenience getters
     get maxTime() {
         const {maxTime} = this.props;
-        if (!maxTime) return moment().set({'hour': 23, 'minute': 59, 'second': 59, 'millisecond': 999}).toDate();
+        if (!maxTime) return startOfToday();
         return maxTime;
     }
     get minTime() {
         const {minTime} = this.props;
-        if (!minTime) return moment().set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 1}).toDate();
+        if (!minTime) return endOfToday();
         return minTime;
     }
 
     render() {
-        const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps(),
-            {renderValue} = this;
+        const {disabled, precision, selectOnFocus, showArrowButtons, style, useAmPm} = this.getNonLayoutProps(),
+            layoutProps = this.getLayoutProps(),
+            {renderValue, maxTime, minTime, onChange} = this;
 
-        return timePicker({
-            value: renderValue,
-            disabled: props.disabled,
-            maxTime: this.maxTime,
-            minTime: this.minTime,
-            onChange: this.onChange,
-            precision: props.precision,
-            selectAllOnFocus: props.selectOnFocus,
-            showArrowButtons: props.showArrowButtons,
-            useAmPm: props.useAmPm,
-            className: this.getClassName(renderValue == null ? ['null-time'] : null),
+        return div({
             style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, 200) // Not sure about this
-            }
+                ...style,
+                ...layoutProps
+            },
+            item: timePicker({
+                value: renderValue,
+                disabled: disabled,
+                maxTime: maxTime,
+                minTime: minTime,
+                onChange: onChange,
+                precision: precision,
+                selectAllOnFocus: selectOnFocus,
+                showArrowButtons: showArrowButtons,
+                useAmPm: useAmPm,
+                className: this.getClassName(renderValue == null ? ['null-time'] : null)
+            })
         });
     }
 
