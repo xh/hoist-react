@@ -14,8 +14,7 @@ import {ModelPublishMode, ModelSpec} from './ModelSpec';
  * provide its model (or a config to create one).
  *
  * Hoist will look for a model instance in either props or context. If required and so specified,
- * the model can also be created one on demand from either a config passed via props or the
- * its class defaults.
+ * the model can also be created on demand from either a config passed via props or its class defaults.
  *
  * The resolved/constructed model instance will be provided to the component via props and placed
  * in context for access by all sub-components.

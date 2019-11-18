@@ -9,9 +9,9 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, sortBy, isArray, isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -106,19 +106,20 @@ export class GridExportService {
             includeAll = toExport.includes('ALL'),
             includeViz = toExport.includes('VISIBLE');
 
-        return gridModel
-            .getLeafColumns()
-            .filter(col => {
-                const {colId, excludeFromExport} = col;
-                return (
-                    !excludeFromExport &&
-                    (
-                        includeAll ||
-                        toExport.includes(colId) ||
-                        (includeViz && gridModel.isColumnVisible(colId))
-                    )
-                );
-            });
+        return sortBy(gridModel.getLeafColumns(), ({colId}) => {
+            const match = gridModel.columnState.find(it => it.colId === colId);
+            return withDefault(match?._sortOrder, 0);
+        }).filter(col => {
+            const {colId, excludeFromExport} = col;
+            return (
+                !excludeFromExport &&
+                (
+                    includeAll ||
+                    toExport.includes(colId) ||
+                    (includeViz && gridModel.isColumnVisible(colId))
+                )
+            );
+        });
     }
 
     getColumnMetadata(columns) {

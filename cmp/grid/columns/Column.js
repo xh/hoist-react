@@ -176,7 +176,7 @@ export class Column {
             'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
         );
 
-        this.chooserName = withDefault(chooserName, isString(headerName) ? headerName : undefined, startCase(this.colId));
+        this.chooserName = withDefault(chooserName, headerName && isString(headerName) ? headerName : undefined, startCase(this.colId));
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
