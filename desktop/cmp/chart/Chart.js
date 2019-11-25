@@ -81,8 +81,6 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
-    min = null;
-    max = null;
 
     renderHighChart() {
         this.destroyHighChart();
@@ -97,7 +95,6 @@ class LocalModel {
             }));
 
             config.chart.renderTo = chartElem;
-
             this.chart = Highcharts.chart(config);
         }
     }
@@ -203,8 +200,6 @@ class LocalModel {
                     month: '%b-%y',
                     year: '%Y'
                 },
-                min: this.min,
-                max: this.max,
                 events: {
                     setExtremes: this.onSetExtremes
                 }
@@ -230,8 +225,7 @@ class LocalModel {
     //---------------------------
     // Handlers
     //---------------------------
-    onSetExtremes = (event) => {
-        this.min = event.min;
-        this.max = event.max;
+    onSetExtremes = () => {
+
     }
 }
