@@ -32,11 +32,24 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}) {
+    render({model, className, xMin, xMax, defaultXMin, defaultXMax, aspectRatio, ...props}) {
 
         const impl = useLocalModel(LocalModel);
         impl.setAspectRatio(aspectRatio);
         impl.model = model;
+
+        if (impl.xMin === undefined) {
+            impl.xMin = props.defaultXMin;
+        }
+        if (impl.xMax === undefined) {
+            impl.xMax = props.defaultXMax;
+        }
+        if (props.xMin !== undefined) {
+            impl.xMin = props.xMin;
+        }
+        if (props.xMax !== undefined) {
+            impl.xMax = props.xMax;
+        }
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -81,8 +94,8 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
-    min = null;
-    max = null;
+    xMin;
+    xMax;
 
     renderHighChart() {
         this.destroyHighChart();
@@ -203,8 +216,8 @@ class LocalModel {
                     month: '%b-%y',
                     year: '%Y'
                 },
-                min: this.min,
-                max: this.max,
+                min: this.xMin,
+                max: this.xMax,
                 events: {
                     setExtremes: this.onSetExtremes
                 }
@@ -231,7 +244,7 @@ class LocalModel {
     // Handlers
     //---------------------------
     onSetExtremes = (event) => {
-        this.min = event.min;
-        this.max = event.max;
+        this.xMin = event.min;
+        this.xMax = event.max;
     }
 }
