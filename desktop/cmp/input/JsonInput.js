@@ -66,8 +66,8 @@ export class JsonInput extends HoistInput {
         return withDefault(this.props.showActionButtons, true);
     }
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {

@@ -2,6 +2,10 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🐞 Bug Fixes
+
+* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.20`
