@@ -38,7 +38,7 @@ export class MonitorResultsModel {
 
     constructor() {
         this.timer = Timer.create({
-            runFn: () => this.refreshAsync(),
+            runFn: () => this.autoRefreshAsync(),
             delay: 10 * SECONDS,
             interval: 10 * SECONDS
         });
