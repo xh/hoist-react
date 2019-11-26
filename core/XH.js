@@ -359,7 +359,7 @@ class XHClass {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
      * @param {Object} config - options for toast instance.
-     * @param {ReactNode} config.message - the message to show in the toast.
+     * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
      * @param {string} [config.intent] - the Blueprint intent (desktop only)
