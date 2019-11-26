@@ -39,16 +39,16 @@ export const [Chart, chart] = hoistCmp.withFactory({
         impl.model = model;
 
         if (impl.xMin === undefined) {
-            impl.xMin = props.defaultXMin;
+            impl.xMin = defaultXMin;
         }
         if (impl.xMax === undefined) {
-            impl.xMax = props.defaultXMax;
+            impl.xMax = defaultXMax;
         }
         if (props.xMin !== undefined) {
-            impl.xMin = props.xMin;
+            impl.xMin = xMin;
         }
         if (props.xMax !== undefined) {
-            impl.xMax = props.xMax;
+            impl.xMax = xMax;
         }
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
