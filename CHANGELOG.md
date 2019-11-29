@@ -8,7 +8,7 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.19 -> 3.20`
+* @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
 * core-js `3.3 -> 3.4`
 * filesize `5.0 -> 6.0`

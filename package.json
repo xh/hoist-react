@@ -24,7 +24,7 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.20.0",
+    "@blueprintjs/core": "~3.22.0",
     "@blueprintjs/datetime": "~3.15.1",
     "@fortawesome/fontawesome-pro": "~5.11.2",
     "@fortawesome/fontawesome-svg-core": "~1.2.25",
@@ -38,7 +38,7 @@
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
     "codemirror": "~5.49.2",
-    "core-js": "~3.4.1",
+    "core-js": "~3.4.5",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~2.0.1",
@@ -72,13 +72,13 @@
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "^4.0.0",
-    "husky": "~3.0.9",
-    "lint-staged": "~9.4.3",
+    "husky": "~3.1.0",
+    "lint-staged": "~9.5.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
-    "stylelint": "~11.1.1",
+    "stylelint": "~12.0.0",
     "stylelint-config-standard": "~19.0.0",
-    "stylelint-scss": "~3.12.1"
+    "stylelint-scss": "~3.13.0"
   }
 }
