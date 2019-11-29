@@ -32,7 +32,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, xMin, xMax, defaultXMin, defaultXMax, aspectRatio, ...props}) {
+    render({model, className, defaultXMin, defaultXMax, aspectRatio, ...props}) {
 
         const impl = useLocalModel(LocalModel);
         impl.setAspectRatio(aspectRatio);
@@ -43,12 +43,6 @@ export const [Chart, chart] = hoistCmp.withFactory({
         }
         if (impl.xMax === undefined) {
             impl.xMax = defaultXMax;
-        }
-        if (props.xMin !== undefined) {
-            impl.xMin = xMin;
-        }
-        if (props.xMax !== undefined) {
-            impl.xMax = xMax;
         }
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
