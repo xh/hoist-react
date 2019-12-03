@@ -2,6 +2,10 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Added `contextMenuItems` prop to GridModel to allow context menus to specifed with just an array of context menu token strings, RecordActions or configs.  A Grid context menu can now be specified with either `contextMenuFn` or `contextMenuItems`, but not both. ([#1419](https://github.com/xh/hoist-react/issues/1419))
+
 ### 🐞 Bug Fixes
 
 * Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
