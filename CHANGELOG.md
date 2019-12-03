@@ -2,9 +2,9 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
-### 🎁 New Features
+### 💥 Breaking Changes
 
-* Added `contextMenuItems` prop to GridModel to allow context menus to specifed with just an array of context menu token strings, RecordActions or configs.  A Grid context menu can now be specified with either `contextMenuFn` or `contextMenuItems`, but not both. ([#1419](https://github.com/xh/hoist-react/issues/1419))
+* Deprecated GridModel `contextMenuFn` prop in favor of `contextMenu` to allow context menus to be specifed with a function (as before) or an array of context menu token strings, RecordActions or configs.
 
 ### 🐞 Bug Fixes
 

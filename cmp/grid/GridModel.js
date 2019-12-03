@@ -25,6 +25,7 @@ import {
     find,
     findLast,
     isArray,
+    isFunction,
     isEmpty,
     isNil,
     isUndefined,
@@ -74,10 +75,10 @@ export class GridModel {
     colChooserModel;
     /** @member {function} */
     rowClassFn;
+    /** @member {(array|function)} */
+    contextMenu;
     /** @member {GridStoreContextMenuFn} */
     contextMenuFn;
-    /** @member {array} */
-    contextMenuItems;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -153,10 +154,11 @@ export class GridModel {
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
-     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     * @param {(array|function)} [c.contextMenu] - array of RecordActions, configs or token strings with which to create
+     *      grid context menu items or function to optionally return a
      *      StoreContextMenu when the grid is right-clicked (desktop only).
-     * @param {Array} [c.contextMenuItems] - array of RecordActions, configs or token strings with which to create
-     *      grid context menu items.
+     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
+     *      StoreContextMenu when the grid is right-clicked (desktop only).  Deprecated.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -185,8 +187,8 @@ export class GridModel {
 
         rowClassFn = null,
         groupSortFn,
+        contextMenu,
         contextMenuFn,
-        contextMenuItems,
         experimental,
         ...rest
     }) {
@@ -196,8 +198,10 @@ export class GridModel {
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
-        this.contextMenuItems = contextMenuItems;
-        this.contextMenuFn = withDefault(contextMenuFn, this.contextMenuItems ? null : this.defaultContextMenuFn);
+        this.contextMenu = withDefault(this.createContextMenuFn(contextMenu), this.defaultContextMenuFn);
+
+        // Deprecation warning added as of 28.2 - remove in future major version.
+        warnIf(contextMenuFn, 'GridModel param "contextMenuFn" has been deprecated and is ignored. Use "contextMenu" instead.');
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
@@ -749,12 +753,26 @@ export class GridModel {
         return this.markManaged(new Model(this));
     }
 
+    createContextMenuFn(contextMenu) {
+        if (isUndefined(contextMenu)) return undefined;
+        if (isEmpty(contextMenu) || XH.isMobile) return null;
+
+        if (isArray(contextMenu)) {
+            return (agParams, gridModel) => {
+                return new StoreContextMenu({
+                    items: contextMenu,
+                    gridModel
+                });
+            };
+        } else if (isFunction(contextMenu)) {
+            return contextMenu;
+        }
+
+        return undefined;
+    }
+
     defaultContextMenuFn = (agParams, gridModel) => {
-        if (XH.isMobile) return null;
-        return new StoreContextMenu({
-            items: GridModel.defaultContextMenuTokens,
-            gridModel
-        });
+        return this.createContextMenuFn(GridModel.defaultContextMenuTokens);
     };
 
     defaultGroupSortFn = (a, b) => {

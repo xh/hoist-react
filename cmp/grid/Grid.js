@@ -27,7 +27,7 @@ import {agGrid, AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS} from '@xh/hoist/cmp/ag-g
 import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {withShortDebug} from '@xh/hoist/utils/js';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -275,27 +275,10 @@ class LocalModel {
     }
 
     getContextMenuItems = (params) => {
-        const {store, selModel, contextMenuItems} = this.model;
-        let contextMenuFn = this.model.contextMenuFn;
+        const {store, selModel, contextMenu} = this.model;
+        if (!contextMenu) return null;
 
-        if (!contextMenuFn && isEmpty(contextMenuItems)) return null;
-
-        throwIf(
-            contextMenuFn && contextMenuItems,
-            'Context Menu must be specified on GridModel by contextMenuFn or contextMenuItems, not both.'
-        );
-
-        if (contextMenuItems?.length) {
-            contextMenuFn = (agParams, gridModel) => {
-                if (XH.isMobile) return null;
-                return new StoreContextMenu({
-                    items: contextMenuItems,
-                    gridModel
-                });
-            };
-        }
-
-        const menu = contextMenuFn(params, this.model),
+        const menu = contextMenu(params, this.model),
             recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
             colId = params.column ? params.column.colId : null,
