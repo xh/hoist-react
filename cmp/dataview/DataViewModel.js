@@ -34,6 +34,7 @@ export class DataViewModel {
      *      config or string `mode` from which to create.
      * @param {string} [c.emptyText] - text/HTML to display if view has no records.
      * @param {function} [c.contextMenuFn] - closure returning a StoreContextMenu().
+     * @param {Object[]} [c.contextMenuItems] - RecordActions, configs or token strings to create StoreContextMenu items.
      */
     constructor({
         itemRenderer,
@@ -41,7 +42,8 @@ export class DataViewModel {
         sortBy = [],
         selModel,
         emptyText,
-        contextMenuFn = null
+        contextMenuFn = null,
+        contextMenuItems = []
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
@@ -63,6 +65,7 @@ export class DataViewModel {
             sortBy,
             selModel,
             contextMenuFn,
+            contextMenuItems,
             emptyText,
             columns: [
                 {

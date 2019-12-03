@@ -76,6 +76,8 @@ export class GridModel {
     rowClassFn;
     /** @member {GridStoreContextMenuFn} */
     contextMenuFn;
+    /** @member {array} */
+    contextMenuItems;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -153,6 +155,8 @@ export class GridModel {
      *      group values to compare, returns a number as per a standard JS comparator.
      * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
      *      StoreContextMenu when the grid is right-clicked (desktop only).
+     * @param {Array} [c.contextMenuItems] - array of RecordActions, configs or token strings with which to create
+     *      grid context menu items.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -182,6 +186,7 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenuFn,
+        contextMenuItems,
         experimental,
         ...rest
     }) {
@@ -191,7 +196,8 @@ export class GridModel {
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
-        this.contextMenuFn = withDefault(contextMenuFn, this.defaultContextMenuFn);
+        this.contextMenuItems = contextMenuItems;
+        this.contextMenuFn = withDefault(contextMenuFn, this.contextMenuItems ? null : this.defaultContextMenuFn);
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
