@@ -14,6 +14,8 @@ import {
     dropRightWhile,
     dropWhile,
     isEmpty,
+    isFunction,
+    isArray,
     last,
     isEqual,
     map,
@@ -275,14 +277,23 @@ class LocalModel {
     }
 
     getContextMenuItems = (params) => {
-        const {store, selModel, contextMenu} = this.model;
-        if (!contextMenu) return null;
+        const {model} = this,
+            {store, selModel, contextMenu} = model;
+        if (!contextMenu || XH.isMobile) return null;
 
-        const menu = contextMenu(params, this.model),
-            recId = params.node ? params.node.id : null,
+        let menu = null;
+        if (isFunction(contextMenu)) {
+            menu = contextMenu(params, model);
+        } else if (isArray(contextMenu) && !isEmpty(contextMenu)) {
+            menu = new StoreContextMenu({items: contextMenu, gridModel: model});
+        }
+        if (!menu) return null;
+
+
+        const recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
             colId = params.column ? params.column.colId : null,
-            column = isNil(colId) ? null : this.model.getColumn(colId),
+            column = isNil(colId) ? null : model.getColumn(colId),
             selectedIds = selModel.ids;
 
         // Adjust selection to target record -- and sync to grid immediately.

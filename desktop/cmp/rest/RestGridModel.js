@@ -7,7 +7,6 @@
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pickBy, filter, isPlainObject} from 'lodash';
@@ -142,7 +141,7 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
 
         this.gridModel = new GridModel({
-            contextMenu: this.contextMenu,
+            contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
@@ -208,17 +207,6 @@ export class RestGridModel {
     viewRecord(record) {
         this.formModel.openView(record);
     }
-
-    contextMenu = () => {
-        return new StoreContextMenu({
-            items: [
-                ...this.menuActions,
-                '-',
-                ...GridModel.defaultContextMenuTokens
-            ],
-            gridModel: this.gridModel
-        });
-    };
 
     confirmDeleteSelection() {
         const record = this.selectedRecord;

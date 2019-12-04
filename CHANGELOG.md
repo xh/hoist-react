@@ -4,7 +4,9 @@
 
 ### 💥 Breaking Changes
 
-* Deprecated GridModel `contextMenuFn` prop in favor of `contextMenu` to allow context menus to be specifed with a function (as before) or an array of context menu token strings, RecordActions or configs.
+* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new 
+parameter will allow context menus to be specifed with a simple array in addition to the function
+specification currently supported. 
 
 ### 🐞 Bug Fixes
 

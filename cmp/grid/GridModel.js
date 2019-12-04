@@ -8,13 +8,10 @@ import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
-import {
-    ColChooserModel as DesktopColChooserModel,
-    StoreContextMenu
-} from '@xh/hoist/dynamics/desktop';
+import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -25,7 +22,6 @@ import {
     find,
     findLast,
     isArray,
-    isFunction,
     isEmpty,
     isNil,
     isUndefined,
@@ -77,8 +73,6 @@ export class GridModel {
     rowClassFn;
     /** @member {(array|function)} */
     contextMenu;
-    /** @member {GridStoreContextMenuFn} */
-    contextMenuFn;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -107,7 +101,7 @@ export class GridModel {
     /** @member {(string|boolean)} */
     @bindable showSummary = false;
 
-    static defaultContextMenuTokens = [
+    static defaultContextMenu = [
         'copy',
         'copyWithHeaders',
         'copyCell',
@@ -154,11 +148,9 @@ export class GridModel {
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
-     * @param {(array|function)} [c.contextMenu] - array of RecordActions, configs or token strings with which to create
-     *      grid context menu items or function to optionally return a
-     *      StoreContextMenu when the grid is right-clicked (desktop only).
-     * @param {GridStoreContextMenuFn} [c.contextMenuFn] - function to optionally return a
-     *      StoreContextMenu when the grid is right-clicked (desktop only).  Deprecated.
+     * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
+     *      strings with which to create grid context menu items.  May also be specified as a
+     *      function returning a StoreContextMenu.  Desktop only.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -188,7 +180,6 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenu,
-        contextMenuFn,
         experimental,
         ...rest
     }) {
@@ -198,19 +189,17 @@ export class GridModel {
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
-        this.contextMenu = withDefault(this.createContextMenuFn(contextMenu), this.defaultContextMenuFn());
+        this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
 
-        // Deprecation warning added as of 28.2 - remove in future major version.
-        warnIf(contextMenuFn, 'GridModel param "contextMenuFn" has been deprecated and is ignored. Use "contextMenu" instead.');
+        errorIf(rest.contextMenuFn,
+            "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
+        );
+        errorIf(exportOptions.includeHiddenCols,
+            "GridModel 'exportOptions.includeHiddenCols' has been removed.  Replace with {columns: 'ALL'}."
+        );
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
-
-        // Deprecation warning added as of 24.2 - remove in future major version.
-        if (exportOptions.includeHiddenCols) {
-            console.warn("GridModel exportOptions.includeHiddenCols no longer supported - replace with {columns: 'ALL'}.");
-            exportOptions.columns = 'ALL';
-        }
         this.exportOptions = exportOptions;
 
         Object.assign(this, rest);
@@ -752,25 +741,6 @@ export class GridModel {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
         return this.markManaged(new Model(this));
     }
-
-    createContextMenuFn(contextMenu) {
-        if (isUndefined(contextMenu)) return undefined;
-        if (isFunction(contextMenu)) return contextMenu;
-        if (isEmpty(contextMenu) || XH.isMobile) return null;
-
-        if (isArray(contextMenu)) {
-            return (agParams, gridModel) => {
-                return new StoreContextMenu({
-                    items: contextMenu,
-                    gridModel
-                });
-            };
-        }
-
-        return undefined;
-    }
-
-    defaultContextMenuFn = () => this.createContextMenuFn(GridModel.defaultContextMenuTokens);
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
