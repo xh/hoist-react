@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed autoFocus on NumberInput.
 * Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
 
 ### 📚 Libraries
