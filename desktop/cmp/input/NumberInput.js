@@ -120,6 +120,7 @@ export class NumberInput extends HoistInput {
             rightElement: props.rightElement,
             stepSize: props.stepSize,
             tabIndex: props.tabIndex,
+            autoFocus: props.autoFocus,
 
             id: props.id,
             className: this.getClassName(),
