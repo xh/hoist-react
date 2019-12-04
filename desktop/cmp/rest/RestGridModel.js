@@ -142,7 +142,7 @@ export class RestGridModel {
         this.enhanceToolbar = enhanceToolbar;
 
         this.gridModel = new GridModel({
-            contextMenuFn: this.contextMenuFn,
+            contextMenu: this.contextMenu,
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
@@ -209,7 +209,7 @@ export class RestGridModel {
         this.formModel.openView(record);
     }
 
-    contextMenuFn = () => {
+    contextMenu = () => {
         return new StoreContextMenu({
             items: [
                 ...this.menuActions,
