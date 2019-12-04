@@ -198,7 +198,7 @@ export class GridModel {
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
-        this.contextMenu = withDefault(this.createContextMenuFn(contextMenu), this.defaultContextMenuFn);
+        this.contextMenu = withDefault(this.createContextMenuFn(contextMenu), this.defaultContextMenuFn());
 
         // Deprecation warning added as of 28.2 - remove in future major version.
         warnIf(contextMenuFn, 'GridModel param "contextMenuFn" has been deprecated and is ignored. Use "contextMenu" instead.');
@@ -755,6 +755,7 @@ export class GridModel {
 
     createContextMenuFn(contextMenu) {
         if (isUndefined(contextMenu)) return undefined;
+        if (isFunction(contextMenu)) return contextMenu;
         if (isEmpty(contextMenu) || XH.isMobile) return null;
 
         if (isArray(contextMenu)) {
@@ -764,16 +765,12 @@ export class GridModel {
                     gridModel
                 });
             };
-        } else if (isFunction(contextMenu)) {
-            return contextMenu;
         }
 
         return undefined;
     }
 
-    defaultContextMenuFn = (agParams, gridModel) => {
-        return this.createContextMenuFn(GridModel.defaultContextMenuTokens);
-    };
+    defaultContextMenuFn = () => this.createContextMenuFn(GridModel.defaultContextMenuTokens);
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
