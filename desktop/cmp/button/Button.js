@@ -50,6 +50,7 @@ export const [Button, button] = hoistCmp.withFactory({
 });
 Button.propTypes = {
     autoFocus: PT.bool,
+    className: PT.string,
     icon: PT.element,
     minimal: PT.bool,
     onClick: PT.func,
