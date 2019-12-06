@@ -19,6 +19,7 @@ specification currently supported.
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
 * core-js `3.3 -> 3.4`
+* fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
