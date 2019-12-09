@@ -7,6 +7,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
+import {isFinite, debounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -33,19 +34,22 @@ export function useOnUnmount(fn) {
 /**
  * Hook to run a function when component is resized.
  * @param {function} fn
+ * @param {number} [delay] - milliseconds to debounce
+ * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn) {
+export function useOnResize(fn, delay) {
     const ref = useRef(null);
 
     useEffect(() => {
-        if (!ref || !ref.current) return;
+        const {current} = ref;
+        if (!current) return;
 
-        const resizeObserver = new ResizeObserver(entries => fn(entries)),
-            {current} = ref;
+        const callbackFn = isFinite(delay) && delay > 0 ? debounce((e) => fn(e), delay) : (e) => fn(e),
+            resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);
         return () => resizeObserver.unobserve(current);
-    }, [ref]);
+    }, [ref.current, delay]);
 
     return ref;
 }
