@@ -8,6 +8,7 @@
 parameter will allow context menus to be specifed with a simple array in addition to the function
 specification currently supported.
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* Charts have been moved from `desktop/cmp/charts` to `cmp/charts`.
 
 ### 🐞 Bug Fixes
 

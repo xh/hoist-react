@@ -12,7 +12,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {resizeSensor} from '@xh/hoist/kit/blueprint';
+import {resizeSensor} from '@xh/hoist/kit/blueprint'; // Todo
 import {getLayoutProps} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';

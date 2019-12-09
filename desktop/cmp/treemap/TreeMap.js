@@ -7,7 +7,7 @@
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {resizeSensor} from '@xh/hoist/kit/blueprint';
+import {resizeSensor} from '@xh/hoist/kit/blueprint'; // Todo
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
