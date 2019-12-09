@@ -2,12 +2,17 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Added an `useOnResize` hook, which runs a function when a component is resized.
+
 ### 💥 Breaking Changes
 
 * The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
 parameter will allow context menus to be specifed with a simple array in addition to the function
 specification currently supported.
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* Charts have been moved from `desktop/cmp/charts` to `cmp/charts`.
 
 ### 🐞 Bug Fixes
 

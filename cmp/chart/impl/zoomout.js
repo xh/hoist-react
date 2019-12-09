@@ -5,7 +5,6 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-
 /**
  * Transform the "select right-to-left" gesture into "zoom out" for charts with x-axis zooming.
  * Gesture can be used in place of the default "reset zoom" button.

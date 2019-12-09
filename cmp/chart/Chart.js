@@ -12,8 +12,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {resizeSensor} from '@xh/hoist/kit/blueprint';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -33,8 +32,9 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
+        const impl = useLocalModel(LocalModel),
+            ref = useOnResize((e) => impl.resizeChart(e));
 
-        const impl = useLocalModel(LocalModel);
         impl.setAspectRatio(aspectRatio);
         impl.model = model;
 
@@ -49,15 +49,13 @@ export const [Chart, chart] = hoistCmp.withFactory({
         impl.renderHighChart();
 
         // Inner div required to be the ref for the chart element
-        return resizeSensor({
-            onResize: (e) => impl.resizeChart(e),
-            item: box({
-                ...layoutProps,
-                className,
-                item: div({
-                    style: {margin: 'auto'},
-                    ref: impl.chartRef
-                })
+        return box({
+            ...layoutProps,
+            className,
+            ref,
+            item: div({
+                style: {margin: 'auto'},
+                ref: impl.chartRef
             })
         });
     }
