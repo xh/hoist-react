@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useEffect} from 'react';
+import {useEffect, useRef} from 'react';
+import ResizeObserver from 'resize-observer-polyfill';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -27,4 +28,24 @@ export function useOnUnmount(fn) {
         () => fn,
         []
     );
+}
+
+/**
+ * Hook to run a function when component is resized.
+ * @param {function} fn
+ */
+export function useOnResize(fn) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        if (!ref || !ref.current) return;
+
+        const resizeObserver = new ResizeObserver(entries => fn(entries)),
+            {current} = ref;
+
+        resizeObserver.observe(current);
+        return () => resizeObserver.unobserve(current);
+    }, [ref]);
+
+    return ref;
 }

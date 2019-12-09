@@ -2,6 +2,10 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🎁 New Features
+
+* Added an `useOnResize` hook, which runs a function when a component is resized.
+
 ### 💥 Breaking Changes
 
 * The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
