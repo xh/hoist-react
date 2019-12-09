@@ -44,7 +44,7 @@ export function useOnResize(fn, delay) {
         const {current} = ref;
         if (!current) return;
 
-        const callbackFn = isFinite(delay) && delay > 0 ? debounce((e) => fn(e), delay) : (e) => fn(e),
+        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(fn, delay) : fn,
             resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);
