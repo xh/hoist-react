@@ -11,6 +11,9 @@ import {wait} from '@xh/hoist/promise';
  */
 export class GridContextMenuKeyNavSupport {
 
+    // see addHoverForChildPopup method in /node_modules/ag-grid-enterprise/dist/lib/menu/menuList.js
+    agGridHoverDelay = 300;
+
     agOptions;
 
     constructor(agOptions) {
@@ -45,7 +48,7 @@ export class GridContextMenuKeyNavSupport {
 
         // if menuitem has submenu, wait till it has been added to the dom,
         // and then add event handlers to the submenu items.
-        wait(300).then(() => this.addEventHandlers());
+        wait(this.agGridHoverDelay).then(() => this.addEventHandlers());
     }
 
     handleContextMenuKeyNavigation(evt) {
@@ -83,7 +86,7 @@ export class GridContextMenuKeyNavSupport {
 
     maybeGoToChildContextMenu(item) {
         if (!this.hasSubMenu(item)) return;
-        wait(300).then(() => this.addContextMenuKeyNavigation());
+        wait(this.agGridHoverDelay).then(() => this.addContextMenuKeyNavigation());
         // wait here is needed to wait for timeout used in showing submenus in AG-Grid
         // see addHoverForChildPopup method in /node_modules/ag-grid-enterprise/dist/lib/menu/menuList.js
     }
