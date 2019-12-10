@@ -9,7 +9,7 @@ import {wait} from '@xh/hoist/promise';
  * /node_modules/ag-grid-enterprise/dist/lib/menu/menuList.js file
  * to activate/deactivate menuitems and their child menus.
  */
-export class XhGridContextMenuKeyNavSupport {
+export class GridContextMenuKeyNavSupport {
 
     agOptions;
 

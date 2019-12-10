@@ -39,7 +39,7 @@ import './Grid.scss';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {XhGridContextMenuKeyNavSupport} from './GridContextMenuKeyNavSupport';
+import {GridContextMenuKeyNavSupport} from './helpers/GridContextMenuKeyNavSupport';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -309,7 +309,7 @@ class LocalModel {
 
         if (!XH.isMobile && model.enableContextMenuKeyNav) {
             wait(1).then(() => {
-                const keyNavSupport = new XhGridContextMenuKeyNavSupport(this.agOptions);
+                const keyNavSupport = new GridContextMenuKeyNavSupport(this.agOptions);
                 keyNavSupport.addContextMenuKeyNavigation();
             });
         }
