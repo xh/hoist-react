@@ -14,30 +14,34 @@ export function XhGridContextMenuKeyNavSupport(C) {
 
         provides: {
             addContextMenuKeyNavigation() {
-                let items;
-                const addEventHandlers = () => {
-                    items = document.querySelectorAll('.ag-popup:last-child .ag-menu-option');
-                    const menuCount = document.querySelectorAll('.ag-popup').length,
-                        base = menuCount * 1000;
-
-                    items.forEach((item, idx) => {
-                        item.setAttribute('tabindex', base + idx); // tabindex is what allows a div to be focusable for keydown event detection
-                        item.addEventListener('keydown', (evt) => this.handleContextMenuKeyNavigation(evt));
-
-                        // when mousing over, focus on menu item
-                        // so that user can seamlessly switch between mouse and keyboard
-                        item.addEventListener('mouseover', (evt) => {
-                            const item = evt.target.closest('.ag-menu-option');
-                            item.focus();
-                            if (!this.hasSubMenu(item)) return;
-                            setTimeout(() => addEventHandlers(), 300);
-                        });
-
-                    });
-                };
-
-                addEventHandlers();
+                const items = this.addEventHandlers();
                 this.callAgMouseEnter(items[0]);
+            },
+
+            addEventHandlers() {
+                const items = document.querySelectorAll('.ag-popup:last-child .ag-menu-option'),
+                    menuCount = document.querySelectorAll('.ag-popup').length,
+                    base = menuCount * 1000;
+
+                items.forEach((item, idx) => {
+                    item.setAttribute('tabindex', base + idx); // tabindex is what allows a div to be focusable for keydown event detection
+                    item.addEventListener('keydown', (evt) => this.handleContextMenuKeyNavigation(evt));
+                    item.addEventListener('mouseover', (evt) => this.handleMenuItemMouseover(evt));
+
+                });
+                return items;
+            },
+
+            handleMenuItemMouseover(evt) {
+                const item = evt.target.closest('.ag-menu-option');
+                // when mousing over, focus on menu item
+                // so that user can seamlessly switch between mouse and keyboard
+                item.focus();
+                if (!this.hasSubMenu(item)) return;
+
+                // if menuitem has submenu, wait till it has been added to the dom,
+                // and then add event handlers to the submenu items.
+                setTimeout(() => this.addEventHandlers(), 300);
             },
 
             handleContextMenuKeyNavigation(evt) {
