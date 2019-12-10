@@ -64,8 +64,10 @@ export function XhGridContextMenuKeyNavSupport(C) {
             },
 
             callAgMouseEnter(item) {
-                const agPopup = this.findCurrentContextMenuPopup(item),
-                    agMenuList = agPopup.element.childNodes[0].__agComponent;
+                const agPopup = this.findCurrentContextMenuPopup(item);
+                if (!agPopup) return;
+
+                const agMenuList = agPopup.element.childNodes[0].__agComponent;
 
                 agMenuList.mouseEnterItem(item.__agComponent.params, item.__agComponent);
                 item.focus(); // needed to put focus on div that has tabindex for keydown event detection to work
