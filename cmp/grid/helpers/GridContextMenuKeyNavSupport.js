@@ -64,7 +64,7 @@ export class GridContextMenuKeyNavSupport {
         }
 
         items.forEach((item, idx) => {
-            if (item.__agComponent.params.disabled && item.tabIndex == nextTabIndex) {
+            if (this.getItemDef(item).disabled && item.tabIndex == nextTabIndex) {
                 evt.key == 'ArrowDown' ? ++nextTabIndex  : --nextTabIndex;
                 evt.key == 'ArrowDown' ? ++idx  : --idx;
                 item = items[idx];
@@ -78,9 +78,7 @@ export class GridContextMenuKeyNavSupport {
         const agPopup = this.findCurrentContextMenuPopup(item);
         if (!agPopup) return;
 
-        const agMenuList = agPopup.element.childNodes[0].__agComponent;
-
-        agMenuList.mouseEnterItem(item.__agComponent.params, item.__agComponent);
+        this.getAgMenuList(agPopup).mouseEnterItem(this.getItemDef(item), item.__agComponent);
         item.focus(); // needed to put focus on div that has tabindex for keydown event detection to work
     }
 
@@ -92,22 +90,18 @@ export class GridContextMenuKeyNavSupport {
     }
 
     maybeFocusOnParentItem(item) {
-        const itemDef = item.__agComponent.params,
+        const itemDef = this.getItemDef(item),
             agPopups = this.agOptions.model.agApi.contextMenuFactory.popupService.popupList,
             currentPopup = this.findCurrentContextMenuPopup(item),
-            currentAgMenuList = currentPopup.element.childNodes[0].__agComponent,
             parentPopup = agPopups[agPopups.indexOf(currentPopup) - 1],
-            agParentMenuList = parentPopup?.element.childNodes[0].__agComponent;
+            agParentMenuList = this.getAgMenuList(parentPopup);
 
-        if (!agParentMenuList) return;
-
-        const parentItem = find(agParentMenuList.eGui.childNodes, (it) => {
-            const nodeDef = it.__agComponent?.params;
-            return !!nodeDef?.subMenu?.find(sm => sm == itemDef);
+        const parentItem = find(agParentMenuList?.eGui.childNodes, (it) => {
+            return !!this.getItemDef(it)?.subMenu?.find(sm => sm == itemDef);
         });
         if (!parentItem) return;
 
-        currentAgMenuList.clearActiveItem();
+        this.getAgMenuList(currentPopup).clearActiveItem();
         this.callAgMouseEnter(parentItem);
     }
 
@@ -118,10 +112,13 @@ export class GridContextMenuKeyNavSupport {
         });
     }
 
+    getAgMenuList = (agPopup) => agPopup?.element.childNodes[0].__agComponent;
+
     hasSubMenu(item) {
-        const {subMenu} = item.__agComponent.params;
-        return subMenu?.length;
+        return this.getItemDef(item).subMenu?.length;
     }
+
+    getItemDef = (item) => item.__agComponent?.params;
 
     closeAllGridContextMenus(item) {
         const {activeMenu} = this.agOptions.model.agApi.contextMenuFactory;
