@@ -147,7 +147,6 @@ Grid.propTypes = {
 // Implementation
 //------------------------
 @HoistModel
-@XhGridContextMenuKeyNavSupport
 class LocalModel {
 
     model;
@@ -308,7 +307,13 @@ class LocalModel {
 
         const ret = this.buildMenuItems(menu.items, record, selModel.records, column, params);
 
-        wait(1).then(() => this.addContextMenuKeyNavigation());
+        if (!XH.isMobile) {
+            wait(1).then(() => {
+                const keyNavSupport = new XhGridContextMenuKeyNavSupport(this.agOptions);
+                keyNavSupport.addContextMenuKeyNavigation();
+            });
+        }
+
         return ret;
     };
 
