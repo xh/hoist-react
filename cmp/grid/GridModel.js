@@ -73,6 +73,8 @@ export class GridModel {
     rowClassFn;
     /** @member {(array|function)} */
     contextMenu;
+    /** @member {boolean} */
+    enableContextMenuKeyNav;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -151,6 +153,8 @@ export class GridModel {
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {boolean} [c.enableContextMenuKeyNav] - true to enable navigating
+     *      an open context menu with the arrow , Enter, and Escape keys.  Desktop only.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -180,6 +184,7 @@ export class GridModel {
         rowClassFn = null,
         groupSortFn,
         contextMenu,
+        enableContextMenuKeyNav = false,
         experimental,
         ...rest
     }) {
@@ -190,6 +195,7 @@ export class GridModel {
         this.rowClassFn = rowClassFn;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.enableContextMenuKeyNav = enableContextMenuKeyNav;
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"

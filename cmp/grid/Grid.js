@@ -307,7 +307,7 @@ class LocalModel {
 
         const ret = this.buildMenuItems(menu.items, record, selModel.records, column, params);
 
-        if (!XH.isMobile) {
+        if (!XH.isMobile && model.enableContextMenuKeyNav) {
             wait(1).then(() => {
                 const keyNavSupport = new XhGridContextMenuKeyNavSupport(this.agOptions);
                 keyNavSupport.addContextMenuKeyNavigation();
