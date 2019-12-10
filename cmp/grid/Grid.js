@@ -30,6 +30,7 @@ import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
 import {withShortDebug} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -307,7 +308,7 @@ class LocalModel {
 
         const ret = this.buildMenuItems(menu.items, record, selModel.records, column, params);
 
-        setTimeout(() => this.addContextMenuKeyNavigation(), 1);
+        wait(1).then(() => this.addContextMenuKeyNavigation());
         return ret;
     };
 

@@ -1,5 +1,5 @@
 import {applyMixin} from '@xh/hoist/utils/js';
-
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Support keyboard navigation on AG-Grid context menus and subMenus
@@ -41,7 +41,7 @@ export function XhGridContextMenuKeyNavSupport(C) {
 
                 // if menuitem has submenu, wait till it has been added to the dom,
                 // and then add event handlers to the submenu items.
-                setTimeout(() => this.addEventHandlers(), 300);
+                wait(300).then(() => this.addEventHandlers());
             },
 
             handleContextMenuKeyNavigation(evt) {
@@ -79,9 +79,8 @@ export function XhGridContextMenuKeyNavSupport(C) {
 
             maybeGoToChildContextMenu(item) {
                 if (!this.hasSubMenu(item)) return;
-
-                setTimeout(() => this.addContextMenuKeyNavigation(), 300);
-                // timeout here is needed to wait for timeout used in showing submenus in AG-Grid
+                wait(300).then(() => this.addContextMenuKeyNavigation());
+                // wait here is needed to wait for timeout used in showing submenus in AG-Grid
                 // see addHoverForChildPopup method in /node_modules/ag-grid-enterprise/dist/lib/menu/menuList.js
             },
 
