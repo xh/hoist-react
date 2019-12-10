@@ -14,15 +14,29 @@ export function XhGridContextMenuKeyNavSupport(C) {
 
         provides: {
             addContextMenuKeyNavigation() {
-                const items = document.querySelectorAll('.ag-popup:last-child .ag-menu-option'),
-                    menuCount = document.querySelectorAll('.ag-popup').length,
-                    base = menuCount * 1000;
+                let items;
+                const addEventHandlers = () => {
+                    items = document.querySelectorAll('.ag-popup:last-child .ag-menu-option');
+                    const menuCount = document.querySelectorAll('.ag-popup').length,
+                        base = menuCount * 1000;
 
-                items.forEach((item, idx) => {
-                    item.setAttribute('tabindex', base + idx); // tabindex is what allows a div to be focusable for keydown event detection
-                    item.addEventListener('keydown', (evt) => this.handleContextMenuKeyNavigation(evt));
-                });
+                    items.forEach((item, idx) => {
+                        item.setAttribute('tabindex', base + idx); // tabindex is what allows a div to be focusable for keydown event detection
+                        item.addEventListener('keydown', (evt) => this.handleContextMenuKeyNavigation(evt));
 
+                        // when mousing over, focus on menu item
+                        // so that user can seamlessly switch between mouse and keyboard
+                        item.addEventListener('mouseover', (evt) => {
+                            const item = evt.target.closest('.ag-menu-option');
+                            item.focus();
+                            if (!this.hasSubMenu(item)) return;
+                            setTimeout(() => addEventHandlers(), 300);
+                        });
+
+                    });
+                };
+
+                addEventHandlers();
                 this.callAgMouseEnter(items[0]);
             },
 
@@ -58,8 +72,7 @@ export function XhGridContextMenuKeyNavSupport(C) {
             },
 
             maybeGoToChildContextMenu(item) {
-                const {subMenu} = item.__agComponent.params;
-                if (!subMenu || !subMenu.length) return;
+                if (!this.hasSubMenu(item)) return;
 
                 setTimeout(() => this.addContextMenuKeyNavigation(), 300);
                 // timeout here is needed to wait for timeout used in showing submenus in AG-Grid
@@ -96,6 +109,11 @@ export function XhGridContextMenuKeyNavSupport(C) {
                     });
                     return found;
                 });
+            },
+
+            hasSubMenu(item) {
+                const {subMenu} = item.__agComponent.params;
+                return subMenu?.length;
             },
 
             closeAllGridContextMenus(item) {
