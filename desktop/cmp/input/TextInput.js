@@ -147,10 +147,8 @@ export class TextInput extends HoistInput {
     }
 
     onFocus = (ev) => {
-        if (ev.target.nodeName === 'INPUT') {
-            if (this.props.selectOnFocus) {
-                ev.target.select();
-            }
+        if (this.props.selectOnFocus && ev.target.nodeName === 'INPUT' ) {
+            ev.target.select();
         }
         
         this.noteFocused();
