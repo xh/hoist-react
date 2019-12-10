@@ -1,3 +1,5 @@
+import {find} from 'lodash';
+
 import {applyMixin} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 
@@ -94,25 +96,20 @@ export function XhGridContextMenuKeyNavSupport(C) {
 
                 if (!agParentMenuList) return;
 
-                let parentItemToFocus;
-                agParentMenuList.eGui.childNodes.forEach(it => {
+                const parentItem = find(agParentMenuList.eGui.childNodes, (it) => {
                     const nodeDef = it.__agComponent?.params;
-                    if (nodeDef?.subMenu?.find(sm => sm == itemDef)) parentItemToFocus = it;
+                    return !!nodeDef?.subMenu?.find(sm => sm == itemDef);
                 });
-                if (!parentItemToFocus) return;
+                if (!parentItem) return;
 
                 currentAgMenuList.clearActiveItem();
-                this.callAgMouseEnter(parentItemToFocus);
+                this.callAgMouseEnter(parentItem);
             },
 
             findCurrentContextMenuPopup(item) {
                 return this.agOptions.model.agApi.contextMenuFactory.popupService.popupList.find(list => {
                     const menu = list.element.childNodes[0];
-                    let found = false;
-                    menu.childNodes.forEach(it => {
-                        if (it == item) found = true;
-                    });
-                    return found;
+                    return !!find(menu.childNodes, (it) => it == item);
                 });
             },
 
