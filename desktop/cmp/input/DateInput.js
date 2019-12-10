@@ -108,6 +108,9 @@ export class DateInput extends HoistInput {
             'auto'
         ]),
 
+        /** True to select contents when control receives focus. */
+        selectOnFocus: PT.bool,
+
         /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
         showActionsBar: PT.bool,
 
@@ -224,6 +227,7 @@ export class DateInput extends HoistInput {
                         tabIndex: props.tabIndex,
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
+                        selectOnFocus: props.selectOnFocus,
                         inputRef: this.inputRef,
                         ...layoutProps
                     }),
@@ -404,5 +408,6 @@ export class DateInput extends HoistInput {
         e.stopPropagation();
     }
 }
+
 
 export const dateInput = elemFactory(DateInput);
