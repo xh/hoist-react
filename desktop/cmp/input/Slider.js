@@ -63,6 +63,11 @@ export class Slider extends HoistInput {
             {width, ...layoutProps} = this.getLayoutProps(),
             sliderType = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
 
+        if (props.labelStepSize <= 0) {
+            throw new Error('Error in Slider: ' +
+                'labelStepSize must be greater than zero, otherwise slider will try to display infinitely many labels.');
+        }
+
         // Set default left / right padding
         if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
         if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
