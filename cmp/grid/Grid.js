@@ -38,6 +38,7 @@ import './Grid.scss';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
+import {XhGridContextMenuKeyNavSupport} from './GridContextMenuKeyNavSupport';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -145,6 +146,7 @@ Grid.propTypes = {
 // Implementation
 //------------------------
 @HoistModel
+@XhGridContextMenuKeyNavSupport
 class LocalModel {
 
     model;
@@ -305,49 +307,9 @@ class LocalModel {
 
         const ret = this.buildMenuItems(menu.items, record, selModel.records, column, params);
 
-        setTimeout(() => this.addKeyNavigation(), 1);
+        setTimeout(() => this.addContextMenuKeyNavigation(), 1);
         return ret;
     };
-
-    addKeyNavigation() {
-        const items = document.querySelectorAll('.ag-menu-option');
-        items.forEach((item, idx) => {
-            item.setAttribute('tabindex', 1000 + idx);
-            item.addEventListener('keydown', (evt) => this.handleKeyNavigation(evt));
-        });
-        this.focusMenuItem(items[0]);
-    }
-
-    handleKeyNavigation(evt) {
-        console.log(evt.target, evt.key);
-        const items = document.querySelectorAll('.ag-menu-option');
-        let nextTabIndex = null;
-        switch (evt.key) {
-            case 'ArrowDown':   nextTabIndex = evt.target.tabIndex + 1; break;
-            case 'ArrowUp':     nextTabIndex = evt.target.tabIndex - 1; break;
-            // case 'ArrowRight':  this.maybeGoToChildMenu(evt.target);    break;
-            case 'Enter':       evt.target.click();                     break;
-            default:
-                break;
-        }
-
-        items.forEach(item => {
-            if (item.tabIndex == nextTabIndex) this.focusMenuItem(item);
-        });
-
-    }
-
-    focusMenuItem(item) {
-        const items = document.querySelectorAll('.ag-menu-option');
-        items.forEach(item => item.classList.remove('ag-menu-option-active'));
-        item.focus(); // needed?
-        const classes = item.classList;
-        if (!classes.contains('ag-menu-option-disabled')) classes.add('ag-menu-option-active');
-    }
-
-    maybeGoToChildMenu(item) {
-        // debugger;
-    }
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
         let items = [];
