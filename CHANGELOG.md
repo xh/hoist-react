@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * Added an `useOnResize` hook, which runs a function when a component is resized.
+* Added Grid Context Menu Key Navigation support to the GridModel.
 
 ### 💥 Breaking Changes
 
