@@ -64,8 +64,9 @@ export class GridContextMenuKeyNavSupport {
 
         items.forEach((item, idx) => {
             if (this.getItemDef(item).disabled && item.tabIndex == nextTabIndex) {
-                evt.key == 'ArrowDown' ? ++nextTabIndex  : --nextTabIndex;
-                evt.key == 'ArrowDown' ? ++idx  : --idx;
+                const incr = evt.key == 'ArrowDown' ? 1 : -1;
+                nextTabIndex += incr;
+                idx += incr;
                 item = items[idx];
             }
 
