@@ -143,7 +143,7 @@ export class NumberInput extends HoistInput {
 
     toExternal(val) {
         val = this.parseValue(val);
-        return isNaN(val) ? null : val;
+        return isNaN(val) ? null : this.enforcePrecision(val);
     }
 
     onKeyDown = (ev) => {
@@ -187,6 +187,12 @@ export class NumberInput extends HoistInput {
         }
 
         return parseFloat(value);
+    }
+
+    enforcePrecision(value) {
+        const {precision} = this.props,
+            precVal = precision != null ? precision : 4;
+        return parseFloat(fmtNumber(value, {precVal}));
     }
 
     onFocus = (ev) => {
