@@ -51,27 +51,14 @@ export class GridContextMenuKeyNavSupport {
     }
 
     handleContextMenuKeyNavigation(evt) {
-        const items = document.querySelectorAll('.ag-menu-option');
-        let nextTabIndex = null;
         switch (evt.key) {
             case 'ArrowRight':  this.maybeGoToChildContextMenu(evt.target);     return;
             case 'ArrowLeft':   this.maybeFocusOnParentItem(evt.target);        return;
-            case 'Enter':       evt.target.click();                             return;
-            case 'Escape':      this.closeAllGridContextMenus(evt.target);      return;
-            case 'ArrowDown':   nextTabIndex = evt.target.tabIndex + 1;         break;
-            case 'ArrowUp':     nextTabIndex = evt.target.tabIndex - 1;         break;
+            case 'Enter':       this.handleEnterKey(evt.target);                return;
+            case 'Escape':      this.handleEscapeKey(evt.target);               return;
+            case 'ArrowDown':
+            case 'ArrowUp':     this.handleUpDownKey(evt);                      return;
         }
-
-        items.forEach((item, idx) => {
-            if (this.getItemDef(item).disabled && item.tabIndex == nextTabIndex) {
-                const incr = evt.key == 'ArrowDown' ? 1 : -1;
-                nextTabIndex += incr;
-                idx += incr;
-                item = items[idx];
-            }
-
-            if (item.tabIndex == nextTabIndex) this.callAgMouseEnter(item);
-        });
     }
 
     callAgMouseEnter(item) {
@@ -103,6 +90,40 @@ export class GridContextMenuKeyNavSupport {
 
         this.getAgMenuList(currentPopup).clearActiveItem();
         this.callAgMouseEnter(parentItem);
+    }
+
+    handleUpDownKey(evt) {
+        const items = document.querySelectorAll('.ag-menu-option'),
+            {key, target: item} = evt,
+            incr = key == 'ArrowDown' ? 1 : -1;
+        let nextTabIndex = item.tabIndex + incr;
+
+        items.forEach((item, idx) => {
+            if (this.getItemDef(item).disabled && item.tabIndex == nextTabIndex) {
+                nextTabIndex += incr;
+                idx += incr;
+                item = items[idx];
+            }
+
+            if (item.tabIndex == nextTabIndex) this.callAgMouseEnter(item);
+        });
+    }
+
+    handleEnterKey(item) {
+        item.click();
+        this.focusBackToGrid();
+    }
+
+    handleEscapeKey(item) {
+        this.closeAllGridContextMenus();
+        this.focusBackToGrid();
+    }
+
+    focusBackToGrid() {
+        const {agApi} = this.agOptions.model,
+            cell = agApi.getFocusedCell();
+
+        agApi.setFocusedCell(cell.rowIndex, cell.column.colId);
     }
 
     findCurrentContextMenuPopup(item) {
