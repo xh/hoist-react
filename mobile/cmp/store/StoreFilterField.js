@@ -9,9 +9,8 @@ import PT from 'prop-types';
 import {hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
 import {StoreFilterFieldModel} from '@xh/hoist/cmp/store';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {Icon} from '@xh/hoist/icon';
 import {Store} from '@xh/hoist/data';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -49,19 +48,15 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 
         return textInput({
             value: impl.value,
-
-            leftIcon: Icon.filter(),
-            enableClear: true,
-
             placeholder: withDefault(props.placeholder, 'Quick filter'),
             className: props.className,
             style: props.style,
             width: withDefault(props.width, 180),
-
             onChange: (v) => impl.setValue(v, {applyImmediately: false})
         });
     }
 });
+
 StoreFilterField.propTypes = {
     /**
      * Field on optional model to which this component should bind its value. Not required
