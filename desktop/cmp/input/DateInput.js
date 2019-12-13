@@ -228,7 +228,7 @@ export class DateInput extends HoistInput {
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
                         selectOnFocus: props.selectOnFocus,
-                        inputRef: this.inputRef,
+                        inputRef: props.inputRef ? props.inputRef : this.inputRef,
                         ...layoutProps
                     }),
                     onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null

@@ -175,6 +175,7 @@ export class Select extends HoistInput {
         });
     }
 
+    // TODO: figure out if I can use this
     reactSelectRef = React.createRef();
 
     render() {
