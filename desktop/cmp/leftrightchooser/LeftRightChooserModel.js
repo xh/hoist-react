@@ -29,6 +29,8 @@ export class LeftRightChooserModel {
     rightGroupingEnabled = false;
     leftGroupingExpanded = false;
     rightGroupingExpanded = false;
+    // TODO: decide where this goes. Does it need an underscore?
+    showCounts = false;
 
     _hasGrouping = null;
     _ungroupedName = null;
@@ -79,6 +81,8 @@ export class LeftRightChooserModel {
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
      * @param {?string} [c.rightEmptyText] - text to display if right grid has no rows.
+     * @param {boolean} [c.showCounts] - true to display the count of items on each side
+     *      in the header
      */
     constructor({
         data = [],
@@ -93,7 +97,8 @@ export class LeftRightChooserModel {
         rightSorted = false,
         rightGroupingEnabled = true,
         rightGroupingExpanded = true,
-        rightEmptyText = null
+        rightEmptyText = null,
+        showCounts = true
     }) {
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
@@ -101,19 +106,20 @@ export class LeftRightChooserModel {
         this.rightGroupingEnabled = rightGroupingEnabled;
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
+        this.showCounts = showCounts;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: leftTitle,
+                headerName: () => {return leftTitle + (this.showCounts ? ` (${this.leftModel.store.count})` : '')},
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: rightTitle,
+                headerName: () => {return rightTitle + (this.showCounts ? ` (${this.rightModel.store.count})` : '')},
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
@@ -201,7 +207,7 @@ export class LeftRightChooserModel {
     syncSelectionReaction() {
         const leftSel = this.leftModel.selModel,
             rightSel = this.rightModel.selModel;
-        
+
         return {
             track: () => [leftSel.singleRecord, rightSel.singleRecord],
             run: () => {
