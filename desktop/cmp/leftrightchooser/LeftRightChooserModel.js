@@ -110,13 +110,13 @@ export class LeftRightChooserModel {
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => {return leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : '')},
+                headerName: () => leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => {return rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : '')},
+                headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
