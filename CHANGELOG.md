@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added prop `enforcePrecision` to NumberInput to force precision to flow through to commited value ([#1305](https://github.com/xh/hoist-react/issues/1305)).
 
