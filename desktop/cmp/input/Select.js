@@ -162,6 +162,9 @@ export class Select extends HoistInput {
     constructor(props, context) {
         super(props, context);
 
+        if (props.inputRef) {
+            this.reactSelectRef = props.inputRef;
+        }
         const queryBuffer = withDefault(props.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
 
