@@ -29,7 +29,6 @@ export class LeftRightChooserModel {
     rightGroupingEnabled = false;
     leftGroupingExpanded = false;
     rightGroupingExpanded = false;
-    showCounts = false;
 
     _hasGrouping = null;
     _ungroupedName = null;
@@ -105,20 +104,19 @@ export class LeftRightChooserModel {
         this.rightGroupingEnabled = rightGroupingEnabled;
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
-        this.showCounts = showCounts;
 
         const fields = ['text', 'value', 'description', 'group', 'side', 'locked', 'exclude'];
 
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => {return leftTitle + (this.showCounts ? ` (${this.leftModel.store.count})` : '')},
+                headerName: () => {return leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : '')},
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => {return rightTitle + (this.showCounts ? ` (${this.rightModel.store.count})` : '')},
+                headerName: () => {return rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : '')},
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
