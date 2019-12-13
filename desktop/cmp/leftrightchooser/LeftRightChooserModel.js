@@ -29,7 +29,6 @@ export class LeftRightChooserModel {
     rightGroupingEnabled = false;
     leftGroupingExpanded = false;
     rightGroupingExpanded = false;
-    // TODO: decide where this goes. Does it need an underscore?
     showCounts = false;
 
     _hasGrouping = null;
