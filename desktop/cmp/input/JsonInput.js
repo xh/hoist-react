@@ -68,6 +68,8 @@ export class JsonInput extends HoistInput {
 
     constructor(props, context) {
         super(props, context);
+
+        this.inputRef = props.inputRef;
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -124,7 +126,7 @@ export class JsonInput extends HoistInput {
             items: [
                 textArea({
                     value: this.renderValue || '',
-                    ref: this.manageJsonEditor,
+                    ref: this.manageRef,
                     onChange: this.onChange
                 }),
                 this.renderActionButtons()
@@ -162,6 +164,13 @@ export class JsonInput extends HoistInput {
     // Implementation
     //------------------
     // TODO: figure out if I can use this
+    manageRef = (ref) => {
+        if (this.inputRef) {
+            this.inputRef(ref);
+        }
+        this.manageJsonEditor(ref);
+    }
+
     manageJsonEditor = (taCmp) => {
         if (taCmp) {
             this.taCmp = taCmp;
