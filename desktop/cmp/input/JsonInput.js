@@ -161,6 +161,7 @@ export class JsonInput extends HoistInput {
     //------------------
     // Implementation
     //------------------
+    // TODO: figure out if I can use this
     manageJsonEditor = (taCmp) => {
         if (taCmp) {
             this.taCmp = taCmp;
