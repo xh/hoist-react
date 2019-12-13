@@ -69,6 +69,9 @@ export class DateInput extends HoistInput {
          */
         initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.func,
+
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 

@@ -70,6 +70,9 @@ export class Select extends HoistInput {
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.func,
+
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
 

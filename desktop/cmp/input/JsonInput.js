@@ -54,6 +54,9 @@ export class JsonInput extends HoistInput {
          */
         editorProps: PT.object,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.func,
+
         /** True to show Fullscreen + Auto-format buttons at top-right of input. */
         showActionButtons: PT.bool
     };
