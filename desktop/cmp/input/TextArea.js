@@ -34,7 +34,7 @@ export class TextArea extends HoistInput {
         fill: PT.bool,
 
         /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.func,
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Callback for normalized keydown event. */
         onKeyDown: PT.func,

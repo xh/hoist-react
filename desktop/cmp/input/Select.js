@@ -71,7 +71,7 @@ export class Select extends HoistInput {
         hideSelectedOptionCheck: PT.bool,
 
         /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.func,
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
