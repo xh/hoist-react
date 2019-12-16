@@ -55,7 +55,7 @@ export class JsonInput extends HoistInput {
         editorProps: PT.object,
 
         /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.func,
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** True to show Fullscreen + Auto-format buttons at top-right of input. */
         showActionButtons: PT.bool
@@ -72,7 +72,7 @@ export class JsonInput extends HoistInput {
     constructor(props, context) {
         super(props, context);
 
-        this.inputRef = props.inputRef;
+        this.parentRef = props.inputRef;
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -94,6 +94,7 @@ export class JsonInput extends HoistInput {
 
     editor = null;
     taCmp = null;
+    parentRef = null;
 
     baseClassName = 'xh-json-input';
 
@@ -129,7 +130,7 @@ export class JsonInput extends HoistInput {
             items: [
                 textArea({
                     value: this.renderValue || '',
-                    ref: this.manageRef,
+                    inputRef: this.handleRefs,
                     onChange: this.onChange
                 }),
                 this.renderActionButtons()
@@ -166,10 +167,9 @@ export class JsonInput extends HoistInput {
     //------------------
     // Implementation
     //------------------
-    // TODO: figure out if I can use this
-    manageRef = (ref) => {
-        if (this.inputRef) {
-            this.inputRef(ref);
+    handleRefs = (ref) => {
+        if (this.parentRef) {
+            this.parentRef(ref);
         }
         this.manageJsonEditor(ref);
     }

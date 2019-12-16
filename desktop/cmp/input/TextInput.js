@@ -47,7 +47,7 @@ export class TextInput extends HoistInput {
         enableClear: PT.bool,
 
         /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.func,
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
