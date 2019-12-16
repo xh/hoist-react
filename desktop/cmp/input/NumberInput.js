@@ -76,6 +76,9 @@ export class NumberInput extends HoistInput {
         /** Max decimal precision of the value, defaults to 4. */
         precision: PT.number,
 
+        /** True for precision to flow through to commited value. */
+        enforcePrecision: PT.bool,
+
         /** Element to display inline on the right side of the input. */
         rightElement: PT.element,
 
@@ -143,7 +146,12 @@ export class NumberInput extends HoistInput {
 
     toExternal(val) {
         val = this.parseValue(val);
-        return isNaN(val) ? null : this.enforcePrecision(val);
+
+        return isNaN(val) ?
+            null :
+            this.props.enforcePrecision ?
+                this.enforcePrecision(val) :
+                val;
     }
 
     onKeyDown = (ev) => {
@@ -156,12 +164,10 @@ export class NumberInput extends HoistInput {
 
         if (this.hasFocus) return value;
 
-        const props = this.props,
-            precision = props.precision != null ? props.precision : 4,
-            zeroPad = !!props.zeroPad,
-            formattedVal = fmtNumber(value, {precision, zeroPad});
+        const {zeroPad, displayWithCommas} = this.props,
+            formattedVal = fmtNumber(value, {precision: this.precision, zeroPad: !!zeroPad});
 
-        return props.displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
+        return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
 
     parseValue(value) {
@@ -190,9 +196,7 @@ export class NumberInput extends HoistInput {
     }
 
     enforcePrecision(value) {
-        const {precision} = this.props,
-            precVal = precision != null ? precision : 4;
-        return parseFloat(fmtNumber(value, {precVal}));
+        return fmtNumber(value, {formatConfig: {mantissa: this.precision, thousandSeparated: false}});
     }
 
     onFocus = (ev) => {
@@ -203,6 +207,11 @@ export class NumberInput extends HoistInput {
             const target = ev.target;
             wait(1).then(() => target.select());
         }
+    }
+
+    get precision() {
+        const {precision} = this.props;
+        return precision != null ? precision : 4;
     }
 }
 export const numberInput = elemFactory(NumberInput);
