@@ -152,7 +152,8 @@ export class TreeMapModel {
                 this.heatField,
                 this.maxDepth
             ],
-            run: ([rawData]) => this.data = this.processData(rawData)
+            run: ([rawData]) => this.data = this.processData(rawData),
+            fireImmediately: true
         });
     }
 
