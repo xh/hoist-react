@@ -9,7 +9,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';

@@ -1,2 +1,2 @@
 export * from './StoreCountLabel';
-export * from './StoreFilterFieldModel';
+export * from './StoreFilterField';

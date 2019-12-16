@@ -20,7 +20,7 @@ import {
 } from 'lodash';
 
 @HoistModel
-export class StoreFilterFieldModel {
+export class StoreFilterFieldImplModel {
 
     gridModel;
     store;

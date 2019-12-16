@@ -6,13 +6,14 @@
  */
 
 import PT from 'prop-types';
-import {hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
-import {StoreFilterFieldModel} from '@xh/hoist/cmp/store';
+import {XH, hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {Icon} from '@xh/hoist/icon';
 import {Store} from '@xh/hoist/data';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
+
+import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
+import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
+import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
@@ -35,7 +36,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
     displayName: 'StoreFilterField',
     className: 'xh-store-filter-field',
 
-    render({model, gridModel, store, ...props}) {
+    render({gridModel, store, ...props}) {
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
 
         if (!store) {
@@ -44,24 +45,11 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
         }
 
         // Right now we freeze the initial props -- could be more dynamic.
-        // TODO: Build dependencies arg to useLocalModel?
-        const impl = useLocalModel(() => new StoreFilterFieldModel({gridModel, store, ...props}));
-
-        return textInput({
-            value: impl.value,
-
-            leftIcon: Icon.filter(),
-            enableClear: true,
-
-            placeholder: withDefault(props.placeholder, 'Quick filter'),
-            className: props.className,
-            style: props.style,
-            width: withDefault(props.width, 180),
-
-            onChange: (v) => impl.setValue(v, {applyImmediately: false})
-        });
+        const implModel = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
+        return XH.isMobile ? mobileStoreFilterFieldImpl({implModel, ...props}) : desktopStoreFilterFieldImpl({implModel, ...props});
     }
 });
+
 StoreFilterField.propTypes = {
     /**
      * Field on optional model to which this component should bind its value. Not required
