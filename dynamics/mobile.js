@@ -17,8 +17,9 @@
  * See the platform specific AppContainer where these implementations are actually provided.
  */
 export let tabContainerImpl = null;
-export let ColChooserModel = null;
+export let storeFilterFieldImpl = null;
 export let colChooser = null;
+export let ColChooserModel = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -27,6 +28,7 @@ export let colChooser = null;
  */
 export function installMobileImpls(impls) {
     tabContainerImpl = impls.tabContainerImpl;
-    ColChooserModel = impls.ColChooserModel;
+    storeFilterFieldImpl = impls.storeFilterFieldImpl;
     colChooser = impls.colChooser;
+    ColChooserModel = impls.ColChooserModel;
 }
