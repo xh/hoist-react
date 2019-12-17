@@ -6,7 +6,8 @@
 
 * Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
 * Added an `useOnResize` hook, which runs a function when a component is resized.
-* Added Grid Context Menu Key Navigation support to the GridModel.
+* Added keyboard support to ag-Grid context menus.
+* Exposed an `inputRef` prop on numberInput, textArea, and textInput
 
 ### 💥 Breaking Changes
 
