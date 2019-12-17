@@ -6,6 +6,7 @@
 
 * Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
 * Added an `useOnResize` hook, which runs a function when a component is resized.
+* Exposed an `inputRef` prop on numberInput, textArea, and textInput
 
 ### 💥 Breaking Changes
 

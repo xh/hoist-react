@@ -52,6 +52,9 @@ export class NumberInput extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
@@ -111,6 +114,7 @@ export class NumberInput extends HoistInput {
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
+            inputRef: props.inputRef,
             leftIcon: props.leftIcon,
             max: props.max,
             majorStepSize: props.majorStepSize,
