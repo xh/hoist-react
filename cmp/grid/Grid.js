@@ -30,7 +30,6 @@ import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
 import {ColumnHeader} from './impl/ColumnHeader';
 import {GridModel} from './GridModel';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
 
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
@@ -39,7 +38,6 @@ import './Grid.scss';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isDisplayed} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {GridContextMenuKeyNavSupport} from './helpers/GridContextMenuKeyNavSupport';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -305,16 +303,7 @@ class LocalModel {
 
         if (!record) selModel.clear();
 
-        const ret = this.buildMenuItems(menu.items, record, selModel.records, column, params);
-
-        if (!XH.isMobile && model.enableContextMenuKeyNav) {
-            wait(1).then(() => {
-                const keyNavSupport = new GridContextMenuKeyNavSupport(this.agOptions);
-                keyNavSupport.addContextMenuKeyNavigation();
-            });
-        }
-
-        return ret;
+        return this.buildMenuItems(menu.items, record, selModel.records, column, params);
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {

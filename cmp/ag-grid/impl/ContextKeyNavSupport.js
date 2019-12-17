@@ -1,5 +1,11 @@
-import {find} from 'lodash';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2019 Extremely Heavy Industries Inc.
+ */
 
+import {find} from 'lodash';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -9,15 +15,19 @@ import {wait} from '@xh/hoist/promise';
  * https://github.com/ag-grid/ag-grid/blob/master/enterprise-modules/menu/src/menu/menuList.ts file
  * to activate/deactivate menuitems and their child menus.
  */
-export class GridContextMenuKeyNavSupport {
+export class ContextKeyNavSupport {
 
-    // see addHoverForChildPopup method in https://github.com/ag-grid/ag-grid/blob/master/enterprise-modules/menu/src/menu/menuList.ts#L102
-    agGridHoverDelay = 300;
+    // see addHoverForChildPopup method in agGrid MenuList
+    HOVER_DELAY = 300;
 
-    agOptions;
+    agGridModel;
 
-    constructor(agOptions) {
-        this.agOptions = agOptions;
+    constructor(agGridModel) {
+        this.agGridModel = agGridModel;
+    }
+
+    get agApi() {
+        return this.agGridModel.agApi;
     }
 
     addContextMenuKeyNavigation() {
@@ -40,24 +50,32 @@ export class GridContextMenuKeyNavSupport {
 
     handleMenuItemMouseover(evt) {
         const item = evt.target.closest('.ag-menu-option');
-        // when mousing over, focus on menu item
-        // so that user can seamlessly switch between mouse and keyboard
+        // when mousing over, focus on menu item so that user can sswitch between mouse and keyboard
         item.focus();
         if (!this.hasSubMenu(item)) return;
 
-        // if menuitem has submenu, wait till it has been added to the dom,
-        // and then add event handlers to the submenu items.
-        wait(this.agGridHoverDelay).then(() => this.addEventHandlersToLatestMenu());
+        // if menuitem has submenu, wait until it has been added to the dom, and then add handlers
+        wait(this.HOVER_DELAY).then(() => this.addEventHandlersToLatestMenu());
     }
 
     handleContextMenuKeyNavigation(evt) {
         switch (evt.key) {
-            case 'ArrowRight':  this.maybeGoToChildContextMenu(evt.target);     return;
-            case 'ArrowLeft':   this.maybeFocusOnParentItem(evt.target);        return;
-            case 'Enter':       this.handleEnterKey(evt.target);                return;
-            case 'Escape':      this.handleEscapeKey(evt.target);               return;
+            case 'ArrowRight':
+                this.maybeGoToChildContextMenu(evt.target);
+                break;
+            case 'ArrowLeft':
+                this.maybeFocusOnParentItem(evt.target);
+                break;
+            case 'Enter':
+                this.handleEnterKey(evt);
+                break;
+            case 'Escape':
+                this.handleEscapeKey(evt);
+                break;
             case 'ArrowDown':
-            case 'ArrowUp':     this.handleUpDownKey(evt);                      return;
+            case 'ArrowUp':
+                this.handleUpDownKey(evt);
+                break;
         }
     }
 
@@ -71,14 +89,14 @@ export class GridContextMenuKeyNavSupport {
 
     maybeGoToChildContextMenu(item) {
         if (!this.hasSubMenu(item)) return;
-        wait(this.agGridHoverDelay).then(() => this.addContextMenuKeyNavigation());
+        wait(this.HOVER_DELAY).then(() => this.addContextMenuKeyNavigation());
         // wait here is needed to wait for timeout used in showing submenus in AG-Grid
         // see addHoverForChildPopup method in https://github.com/ag-grid/ag-grid/blob/master/enterprise-modules/menu/src/menu/menuList.ts#L102
     }
 
     maybeFocusOnParentItem(item) {
         const itemDef = this.getItemDef(item),
-            agPopups = this.agOptions.model.agApi.contextMenuFactory.popupService.popupList,
+            agPopups = this.agApi.contextMenuFactory.popupService.popupList,
             currentPopup = this.findCurrentContextMenuPopup(item),
             parentPopup = agPopups[agPopups.indexOf(currentPopup) - 1],
             agParentMenuList = this.getAgMenuList(parentPopup),
@@ -94,9 +112,9 @@ export class GridContextMenuKeyNavSupport {
 
     handleUpDownKey(evt) {
         const items = document.querySelectorAll('.ag-menu-option'),
-            {key, target: item} = evt,
+            {key, target} = evt,
             incr = key == 'ArrowDown' ? 1 : -1;
-        let nextTabIndex = item.tabIndex + incr;
+        let nextTabIndex = target.tabIndex + incr;
 
         items.forEach((item, idx) => {
             if (this.getItemDef(item).disabled && item.tabIndex == nextTabIndex) {
@@ -109,25 +127,25 @@ export class GridContextMenuKeyNavSupport {
         });
     }
 
-    handleEnterKey(item) {
-        item.click();
+    handleEnterKey(evt) {
+        evt.target.click();
         this.focusBackToGrid();
     }
 
-    handleEscapeKey(item) {
+    handleEscapeKey(evt) {
         this.closeAllGridContextMenus();
         this.focusBackToGrid();
     }
 
     focusBackToGrid() {
-        const {agApi} = this.agOptions.model,
+        const {agApi} = this,
             cell = agApi.getFocusedCell();
 
         agApi.setFocusedCell(cell.rowIndex, cell.column.colId);
     }
 
     findCurrentContextMenuPopup(item) {
-        return this.agOptions.model.agApi.contextMenuFactory.popupService.popupList.find(list => {
+        return this.agApi.contextMenuFactory.popupService.popupList.find(list => {
             const menu = list.element.childNodes[0];
             return !!find(menu.childNodes, (it) => it == item);
         });
@@ -140,7 +158,7 @@ export class GridContextMenuKeyNavSupport {
     getItemDef = (item) => item.__agComponent?.params;
 
     closeAllGridContextMenus(item) {
-        const {activeMenu} = this.agOptions.model.agApi.contextMenuFactory;
-        activeMenu?.destroyFunctions.forEach(it => it());
+        const {activeMenu} = this.agApi.contextMenuFactory;
+        activeMenu?.destroyFunctions.forEach(f => f());
     }
 }
