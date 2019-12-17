@@ -271,7 +271,11 @@ export class DateInput extends HoistInput {
     handleRefs(parentRef) {
         return (ref) => {
             if (parentRef) {
-                parentRef(ref);
+                if (typeof parentRef === 'function') {
+                    parentRef(ref);
+                } else {
+                    parentRef.current = ref;
+                }
             }
             this.inputRef(ref);
         };
