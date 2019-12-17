@@ -169,7 +169,7 @@ export class JsonInput extends HoistInput {
     //------------------
     handleRefs = (ref) => {
         if (this.parentRef) {
-            if (typeof parentRef === 'function') {
+            if (typeof this.parentRef === 'function') {
                 this.parentRef(ref);
             } else {
                 this.parentRef.current = ref;
