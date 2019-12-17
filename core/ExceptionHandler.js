@@ -143,7 +143,7 @@ export class ExceptionHandler {
             ret.showAlert = withDefault(ret.showAlert, false);
         } else {
             ret.showAsError = withDefault(ret.showAsError, true);
-            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError);
+            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError && !isAutoRefresh);
             ret.showAlert = withDefault(ret.showAlert, !isAutoRefresh);
         }
 
