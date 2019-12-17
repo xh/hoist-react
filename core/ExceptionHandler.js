@@ -30,9 +30,10 @@ export class ExceptionHandler {
      *      will be allowed to be created with that key. If one is already created, it will be
      *      replaced with a new instance. Avoids a repeated failure creating a stack of popups.
      * @param {boolean} [options.logOnServer] - send the exception to the server to be stored in DB
-     *      for review in the system admin app. Default true.
+     *      for review in the system admin app. Default true when `showAsError`, excepting
+     *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' request exceptions.
+     *      excepting 'isAutoRefresh' exceptions.
      * @param {boolean} [options.showAsError] - display to user/log as "error" - default true.
      *      If true, error details and reporting options will be shown. Apps should set to false
      *      for "expected" exceptions.
