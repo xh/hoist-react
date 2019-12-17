@@ -8,7 +8,7 @@ import {hoistCmp, creates} from '@xh/hoist/core';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
-import {storeFilterField} from '@xh/hoist/desktop/cmp/store';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 
 import {logDisplay} from './LogDisplay';
 import {LogViewerModel} from './LogViewerModel';
