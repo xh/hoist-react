@@ -46,6 +46,9 @@ export class TextInput extends HoistInput {
         /** True to show a "clear" button as the right element. default false */
         enableClear: PT.bool,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
@@ -93,6 +96,7 @@ export class TextInput extends HoistInput {
                 autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
+                inputRef: props.inputRef,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
