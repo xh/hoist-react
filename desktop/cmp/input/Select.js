@@ -70,9 +70,6 @@ export class Select extends HoistInput {
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
-        /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
-
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
 
@@ -165,9 +162,6 @@ export class Select extends HoistInput {
     constructor(props, context) {
         super(props, context);
 
-        if (props.inputRef) {
-            this.reactSelectRef = props.inputRef;
-        }
         const queryBuffer = withDefault(props.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
 
@@ -181,7 +175,6 @@ export class Select extends HoistInput {
         });
     }
 
-    // TODO: figure out if I can use this
     reactSelectRef = React.createRef();
 
     render() {

@@ -69,9 +69,6 @@ export class DateInput extends HoistInput {
          */
         initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
-        /** Ref handler that receives HTML <input> element backing this component. */
-        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
-
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
 
@@ -231,7 +228,7 @@ export class DateInput extends HoistInput {
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
                         selectOnFocus: props.selectOnFocus,
-                        inputRef: this.handleRefs(props.inputRef),
+                        inputRef: this.inputRef,
                         ...layoutProps
                     }),
                     onClick: !enableTextInput && !props.disabled ? this.onOpenPopoverClick : null
@@ -266,19 +263,6 @@ export class DateInput extends HoistInput {
                 })
             ]
         });
-    }
-
-    handleRefs(parentRef) {
-        return (ref) => {
-            if (parentRef) {
-                if (typeof parentRef === 'function') {
-                    parentRef(ref);
-                } else {
-                    parentRef.current = ref;
-                }
-            }
-            this.inputRef(ref);
-        };
     }
 
     toExternal(internal) {
