@@ -115,11 +115,8 @@ export class Store {
             rawData = rawData[0].children;
         }
 
-        const recordMap = this.createRecords(rawData, null);
-        this._original = this._all = this._original.loadRecords(recordMap);
-        this.rebuildFiltered();
-
-        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
+        this.clear();
+        this.loadDataTransaction({add: rawData, rawSummaryData});
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -186,8 +183,11 @@ export class Store {
     }
 
     /** Remove all records from the store. */
+    @action
     clear() {
-        this.loadData([], null);
+        this._original = this._all = this._filtered = new RecordSet(this);
+        this.summaryRecord = null;
+        this.lastUpdated = this.lastLoaded = Date.now();
     }
 
     /**
@@ -535,7 +535,7 @@ export class Store {
 
         throwIf(
             ret.some(it => it.name == 'id'),
-            `Applications should not specify a field for the id of a record. An id property is created 
+            `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
         return ret;
