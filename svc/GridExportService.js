@@ -55,7 +55,7 @@ export class GridExportService {
             return;
         }
 
-        rows.push(this.getHeaderRow(exportColumns, type));
+        rows.push(this.getHeaderRow(exportColumns, type, gridModel));
         rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
@@ -140,8 +140,12 @@ export class GridExportService {
         });
     }
 
-    getHeaderRow(columns, type) {
-        const headers = columns.map(it => it.exportName);
+    getHeaderRow(columns, type, gridModel) {
+        const headers = columns.map(it =>
+            isString(it.exportName) ?
+                it.exportName :
+                it.exportName({column: it, gridModel})
+        );
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
