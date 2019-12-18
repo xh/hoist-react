@@ -142,11 +142,9 @@ export class GridExportService {
 
     getHeaderRow(columns, type, gridModel) {
         const headers = columns.map(it => {
-            if (isString(it.exportName)) {
-                return it.exportName;
-            } else {
-                return it.exportName({column: it, gridModel});
-            }
+            isString(it.exportName) ?
+                it.exportName :
+                it.exportName({column: it, gridModel});
         });
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');

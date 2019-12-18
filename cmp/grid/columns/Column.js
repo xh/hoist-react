@@ -182,10 +182,6 @@ export class Column {
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
         this.hideable = withDefault(hideable, !this.isTreeColumn);
 
-        warnIf(
-            !exportName && headerName && !isString(headerName),
-            `Using dynamic header name for export on column with ID ${this.colId}.`
-        );
         this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
