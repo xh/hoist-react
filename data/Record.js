@@ -32,8 +32,6 @@ export class Record {
     store;
     /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
     xhIsSummary;
-    /** @member {String[]} - unique path within hierarchy - for ag-Grid impl. */
-    xhTreePath;
 
     /** @returns {boolean} */
     get isNew() {
@@ -53,6 +51,12 @@ export class Record {
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
+    }
+
+    /** @returns {string[]} */
+    get xhTreePath() {
+        const {id} = this;
+        return this.parent ? [...this.parent.xhTreePath, id] : [id];
     }
 
     /** @member {Field[]} */
@@ -135,7 +139,6 @@ export class Record {
         this.raw = raw;
         this.data = data;
         this.store = store;
-        this.xhTreePath = this.parent ? [...this.parent.xhTreePath, id] : [id];
         this.xhIsSummary = isSummary;
 
         forEach(data, (v, key) => {
