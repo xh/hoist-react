@@ -205,6 +205,7 @@ export class Column {
             me = this,
             ret = {
                 field,
+                colId: this.colId,
                 headerValueGetter: (agParams) => {
                     return agParams.location === 'header' ?
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
