@@ -182,7 +182,7 @@ export class Column {
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
         this.hideable = withDefault(hideable, !this.isTreeColumn);
 
-        this.exportName = exportName || this.headerName || this.colId;
+        this.exportName = exportName || (isFunction(this.headerName) ? null : this.headerName) || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.exportWidth = exportWidth || null;
