@@ -1,6 +1,63 @@
 # Changelog
 
+## v29.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
+* Added an `useOnResize` hook, which runs a function when a component is resized.
+* Added keyboard support to ag-Grid context menus.
+* Exposed an `inputRef` prop on numberInput, textArea, and textInput
+
+### 💥 Breaking Changes
+
+* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
+parameter will allow context menus to be specified with a simple array in addition to the function
+specification currently supported.
+* The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
+* `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+
+### 🐞 Bug Fixes
+
+* Fixed autoFocus on NumberInput.
+* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
+  data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.19 -> 3.22`
+* @blueprintjs/datetime `3.14 -> 3.15`
+* core-js `3.3 -> 3.4`
+* fast-deep-equal `2.0 -> 3.1`
+* filesize `5.0 -> 6.0`
+* mobx `5.14 -> 5.15`
+* react-dates `21.3 -> 21.5`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+
+## v28.2.0 - 2019-11-08
+
+### 🎁 New Features
+
+* Added a `DateInput` component to the mobile toolkit. Its API supports many of the same options as
+  its desktop analog with the exception of `timePrecision`, which is not yet supported.
+* Added `minSize` to panelModel. A resizable panel can now be prevented from resizing to a size
+  smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
+
+### 🐞 Bug Fixes
+
+* Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
+  infinite loop if this value was not set.
+* Fixed a problem with `RestStore` behavior when `dataRoot` changed from its default value.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...v28.2.0)
+
 ## v28.1.1 - 2019-10-23
+
+### 🐞 Bug Fixes
+
 * Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.1.0...v28.1.1)

@@ -19,6 +19,7 @@
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
 .ag-theme-balham.xh-ag-grid,
 .ag-theme-balham-dark.xh-ag-grid {
+  color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
@@ -39,8 +40,10 @@
   .ag-header {
     color: var(--xh-grid-header-text-color);
     background-color: var(--xh-grid-header-bg);
-    font-family: var(--xh-grid-font-family);
-    font-size: var(--xh-grid-font-size-px);
+    border-color: var(--xh-grid-header-border-color);
+    font-family: var(--xh-grid-header-font-family);
+    font-size: var(--xh-grid-header-font-size-px);
+    font-weight: var(--xh-grid-header-font-weight);
   }
 
   //------------------------
@@ -65,6 +68,12 @@
     .group-header-icon-contracted {
       margin: 0 var(--xh-pad-half-px);
     }
+  }
+
+  // Docked summary
+  .ag-floating-top,
+  .ag-floating-bottom {
+    border-color: var(--xh-grid-summary-row-border-color);
   }
 
   // Row borders

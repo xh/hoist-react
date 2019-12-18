@@ -1,0 +1,85 @@
+// Input
+.xh-date-input {
+  display: flex;
+  align-items: stretch;
+
+  & > svg {
+    margin: 8px 0;
+
+    &:first-child {
+      margin-left: 6px;
+    }
+
+    &:last-child {
+      margin-right: 6px;
+    }
+  }
+
+  .SingleDatePicker {
+    flex: 1;
+
+    & * {
+      width: 100%;
+      background-color: transparent;
+    }
+
+    .DateInput_input {
+      height: 30px;
+      padding: 0 var(--xh-pad-px);
+    }
+
+    .SingleDatePickerInput_clearDate {
+      margin-right: 0;
+      width: 30px;
+    }
+  }
+}
+
+// Popover and mask
+.SingleDatePicker_picker__portal {
+  background-color: var(--xh-mask-bg);
+
+  .DayPicker {
+    background-color: var(--xh-bg);
+    border: var(--xh-border-solid);
+
+    &_weekHeader {
+      color: var(--xh-text-color-muted);
+    }
+
+    .DayPickerNavigation_button {
+      background-color: transparent;
+      color: var(--xh-text-color-muted);
+      border-color: var(--xh-border-color);
+    }
+
+    .CalendarMonthGrid,
+    .CalendarMonth {
+      background-color: transparent;
+      color: var(--xh-text-color);
+
+      &_caption {
+        color: var(--xh-text-color);
+      }
+
+      .CalendarDay {
+        background-color: transparent;
+        border-color: var(--xh-border-color);
+
+        &__default {
+          color: var(--xh-text-color);
+        }
+
+        &__blocked_out_of_range {
+          color: var(--xh-text-color-muted);
+        }
+
+        &__selected {
+          color: white;
+          background: var(--xh-accent-color);
+          border-color: var(--xh-accent-color);
+        }
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@ import {box} from '@xh/hoist/cmp/layout';
 import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
 import {isArray} from 'lodash';
 import {toJS} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 
 import './Slider.scss';
@@ -62,6 +62,11 @@ export class Slider extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, ...layoutProps} = this.getLayoutProps(),
             sliderType = isArray(toJS(this.renderValue)) ? bpRangeSlider : bpSlider;
+
+        throwIf(
+            props.labelStepSize <= 0,
+            'Error in Slider: labelStepSize must be greater than zero.'
+        );
 
         // Set default left / right padding
         if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;

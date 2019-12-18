@@ -25,6 +25,7 @@ export class PanelModel {
     resizeWhileDragging;
     collapsible;
     defaultSize;
+    minSize;
     defaultCollapsed;
     side;
     collapsedRenderMode;
@@ -50,7 +51,8 @@ export class PanelModel {
      * @param {boolean} [config.resizable] - Can panel be resized?
      * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} config.defaultSize - Default size of content (in pixels).
+     * @param {number} config.defaultSize - Default size of panel (in pixels).
+     * @param {number} config.minSize - Minimum size that panel can be resized to (in pixels).
      * @param {number} [config.defaultCollapsed] - Default collapsed state.
      * @param {string} config.side - Side of panel that it collapses/shrinks toward. This also corresponds
      *      to the position within a parent vbox or hbox in which the panel should be placed.
@@ -68,6 +70,7 @@ export class PanelModel {
         resizable = true,
         resizeWhileDragging = false,
         defaultSize,
+        minSize = 0,
         defaultCollapsed = false,
         side,
         collapsedRenderMode = 'lazy',
@@ -89,6 +92,7 @@ export class PanelModel {
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
+        this.minSize = Math.min(minSize, defaultSize);
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;

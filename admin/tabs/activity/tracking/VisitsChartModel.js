@@ -8,7 +8,7 @@
 import {forOwn} from 'lodash';
 import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {bindable, comparer} from '@xh/hoist/mobx';
-import {ChartModel} from '@xh/hoist/desktop/cmp/chart';
+import {ChartModel} from '@xh/hoist/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
@@ -19,7 +19,7 @@ export class VisitsChartModel {
     @bindable.ref startDate = LocalDate.today().subtract(3, 'months');
     @bindable.ref endDate = LocalDate.today();
     @bindable username = '';
-    
+
     @managed
     chartModel = new ChartModel({
         highchartsConfig: {
@@ -64,7 +64,7 @@ export class VisitsChartModel {
             this.chartModel.setSeries(this.getSeriesData(data));
         }).catchDefault();
     }
-    
+
     //----------------
     // Implementation
     //----------------
@@ -72,7 +72,7 @@ export class VisitsChartModel {
         const {endDate, startDate, username} = this;
         return {startDate, endDate, username};
     }
-    
+
     getSeriesData(visits) {
         const data = [];
 

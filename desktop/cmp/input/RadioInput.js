@@ -45,8 +45,8 @@ export class RadioInput extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -96,7 +96,7 @@ export class RadioInput extends HoistInput {
             return ret;
         });
     }
-    
+
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }
