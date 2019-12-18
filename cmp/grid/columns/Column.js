@@ -182,7 +182,11 @@ export class Column {
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
         this.hideable = withDefault(hideable, !this.isTreeColumn);
 
-        this.exportName = exportName || (isFunction(this.headerName) ? null : this.headerName) || this.colId;
+        warnIf(
+            !exportName && headerName && !isString(headerName),
+            `Using dynamic header name for export on column with ID ${this.colId}.`
+        );
+        this.exportName = exportName || this.headerName || this.colId;
         this.exportValue = exportValue;
         this.exportFormat = withDefault(exportFormat, ExportFormat.DEFAULT);
         this.exportWidth = exportWidth || null;
@@ -201,7 +205,6 @@ export class Column {
             me = this,
             ret = {
                 field,
-                colId: this.colId,
                 headerValueGetter: (agParams) => {
                     return agParams.location === 'header' ?
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
