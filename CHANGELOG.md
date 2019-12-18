@@ -12,7 +12,7 @@
 ### 💥 Breaking Changes
 
 * The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
-parameter will allow context menus to be specifed with a simple array in addition to the function
+parameter will allow context menus to be specified with a simple array in addition to the function
 specification currently supported.
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
