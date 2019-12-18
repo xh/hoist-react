@@ -33,6 +33,9 @@ export class TextArea extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+
         /** Callback for normalized keydown event. */
         onKeyDown: PT.func,
 
@@ -51,7 +54,7 @@ export class TextArea extends HoistInput {
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
-    
+
     render() {
         const props = this.getNonLayoutProps(),
             {width, height, ...layoutProps} = this.getLayoutProps();
@@ -62,6 +65,7 @@ export class TextArea extends HoistInput {
             autoFocus: props.autoFocus,
             disabled: props.disabled,
             fill: props.fill,
+            inputRef: props.inputRef,
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
