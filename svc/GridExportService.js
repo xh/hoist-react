@@ -182,8 +182,10 @@ export class GridExportService {
     getCellData(gridModel, record, column) {
         const {field, exportValue} = column;
 
+        // If ag-grid calculated aggregates, it stores them in aggData.
+        const aggData = gridModel.agApi.getRowNode(record.id).aggData;
+        let value = (aggData && !isNil(aggData[field])) ? aggData[field] : record[field];
         // Modify value using exportValue
-        let value = record[field];
         if (isString(exportValue) && record[exportValue] !== null) {
             // If exportValue points to a different field
             value = record[exportValue];
