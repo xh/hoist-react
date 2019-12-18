@@ -22,6 +22,7 @@ specification currently supported.
 * Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
 * Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
   data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would break with dynamic header names  
 
 ### 📚 Libraries
 
