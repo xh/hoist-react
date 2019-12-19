@@ -175,21 +175,28 @@ export class GridExportService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        const data = columns.map(it => this.getCellData(gridModel, record, it));
+        let aggData = null;
+        if (gridModel.treeMode && record.children.length) {
+            aggData = gridModel.agApi.getRowNode(record.id).aggData;
+        }
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
         return {data, depth};
     }
 
-    getCellData(gridModel, record, column) {
+    getCellData(gridModel, record, column, aggData) {
         const {field, exportValue} = column;
 
-        // Modify value using exportValue
         let value = record[field];
+        // Modify value using exportValue
         if (isString(exportValue) && record[exportValue] !== null) {
             // If exportValue points to a different field
             value = record[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
+        } else if (aggData && !isNil(aggData[field])) {
+            // If we found aggregate data calculated by agGrid
+            value = aggData[field];
         }
 
         if (isNil(value)) return null;
