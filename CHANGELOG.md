@@ -25,6 +25,7 @@ specification currently supported.
 * Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
   data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
 * Fixed issue where export would create malformed file with dynamic header names  
+* Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
 
 ### 📚 Libraries
 
