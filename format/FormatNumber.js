@@ -88,6 +88,54 @@ export function fmtNumber(v, {
 }
 
 /**
+ * "Smart" formatting that will abbreviate a number as much as possible without rounding.
+ *
+ * @param {number} v - value to format
+ * @param {Object} [opts] - @see {@link fmtNumber} method. Also contains an additional maxTrailingZeroes option.
+ * @param {number} [opts.maxTrailingZeroes] - How many trailing zeroes may be displayed before truncating.
+ */
+export function fmtLossless(v, opts = {}) {
+    defaults(opts, {
+        maxTrailingZeroes: 2,
+        precision: MAX_NUMERIC_PRECISION,
+        zeroPad: false
+    });
+
+    let trailingZeroes = 0;
+    for (let i = 10; v % i == 0; i *= 10) {
+        trailingZeroes++;
+    }
+
+    if (trailingZeroes > opts.maxTrailingZeroes) {
+        return fmtShorthand(v, opts);
+    } else {
+        return fmtNumber(v, opts);
+    }
+}
+
+/**
+ * Render a number suffixed with shorthand units- thousands to 'k', millions to 'm', and billions to 'b'
+ *
+ * @param v - value to format.
+ * @param {Object} [opts] - @see {@link fmtNumber} method.
+ */
+export function fmtShorthand(v, opts = {}) {
+    defaults(opts, {
+        label: true
+    });
+
+    const abs = Math.abs(v);
+    if (abs >= BILLION) {
+        return fmtBillions(v, opts);
+    } else if (abs >= MILLION) {
+        return fmtMillions(v, opts);
+    } else if (abs >= THOUSAND) {
+        return fmtThousands(v, opts);
+    }
+    return fmtNumber(v, opts);
+}
+
+/**
  * Render number in thousands.
  *
  * @param {number} v - value to format.
@@ -314,6 +362,7 @@ function buildFormatConfig(v, precision, zeroPad) {
     const config = {thousandSeparated: num >= 1000};
     let mantissa = undefined;
 
+
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
         mantissa = precision === 0 ? 0 : precision;
@@ -355,7 +404,9 @@ export const numberRenderer = createRenderer(fmtNumber),
     billionsRenderer = createRenderer(fmtBillions),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
-    percentRenderer = createRenderer(fmtPercent);
+    percentRenderer = createRenderer(fmtPercent),
+    losslessRenderer = createRenderer(fmtLossless),
+    shorthandRenderer = createRenderer(fmtShorthand);
 
 /**
  * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
