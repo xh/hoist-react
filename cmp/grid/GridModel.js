@@ -274,6 +274,20 @@ export class GridModel {
         if (id) selModel.select(id);
     }
 
+    /**
+     * Scroll to ensure the selected record is visible.
+     * @param {string} position
+     *      One of ['top', 'middle', 'bottom']
+     *      If given, the grid will scroll the row to place the row at that position.
+     *      If undefined or null then grid will do the minimum scrolling to show the row.
+     */
+    scrollToSelected(position = null) {
+        const selected = this.selModel.singleRecord;
+        if (selected) {
+            this.agApi.ensureNodeVisible(this.agApi.getRowNode(selected.id), position);
+        }
+    }
+
     /** Does the grid have any records to show? */
     get empty() {
         return this.store.empty;
