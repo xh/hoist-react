@@ -8,6 +8,8 @@
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
+* Added a `fmtLossless` number formatter, which shortens numbers without losing any precision.
+* Added a `fmtShorthand` number formatter, which displays a number as thousands, millions, or billions
 
 ### 💥 Breaking Changes
 
