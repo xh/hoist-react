@@ -95,6 +95,8 @@ export function fmtNumber(v, {
  * @param {number} [opts.maxTrailingZeroes] - How many trailing zeroes may be displayed before truncating.
  */
 export function fmtLossless(v, opts = {}) {
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
+
     defaults(opts, {
         maxTrailingZeroes: 2,
         precision: MAX_NUMERIC_PRECISION,
@@ -120,6 +122,8 @@ export function fmtLossless(v, opts = {}) {
  * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
 export function fmtShorthand(v, opts = {}) {
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
+
     defaults(opts, {
         label: true
     });
