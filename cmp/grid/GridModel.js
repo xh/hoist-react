@@ -276,15 +276,16 @@ export class GridModel {
 
     /**
      * Scroll to ensure the selected record is visible.
-     * @param {string} position
-     *      One of ['top', 'middle', 'bottom']
+     * @param {('top'|'middle'|'bottom')} position -
      *      If given, the grid will scroll the row to place the row at that position.
      *      If undefined or null then grid will do the minimum scrolling to show the row.
+     *      If multiple records are selected, we scroll the first selected record to the middle.
      */
     scrollToSelected(position = null) {
-        const selected = this.selModel.singleRecord;
-        if (selected) {
-            this.agApi.ensureNodeVisible(this.agApi.getRowNode(selected.id), position);
+        const records = this.selModel.records;
+        if (records.length) {
+            position = records.length == 1 ? position : 'middle';
+            this.agApi.ensureNodeVisible(this.agApi.getRowNode(records[0].id), position);
         }
     }
 
