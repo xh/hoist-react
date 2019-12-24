@@ -8,6 +8,7 @@
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
+* `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 
 ### 💥 Breaking Changes
 
