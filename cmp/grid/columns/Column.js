@@ -76,7 +76,7 @@ export class Column {
      *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
-     * @param {Column~tooltipElementRendererFn} [c.tooltipElementRenderer] - function which returns a React component.
+     * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React component.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
@@ -127,7 +127,7 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
-        tooltipElementRenderer,
+        tooltipElement,
         agOptions,
         ...rest
     }, gridModel) {
@@ -191,7 +191,7 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
-        this.tooltipElementRenderer = tooltipElementRenderer;
+        this.tooltipElement = tooltipElement;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -263,7 +263,7 @@ export class Column {
                 ({value}) => value;
         }
 
-        if (this.tooltipElementRenderer) {
+        if (this.tooltipElement) {
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {return ['xh-grid-tooltip']}
                 render() {
@@ -272,7 +272,7 @@ export class Column {
                         record = api.getDisplayedRowAtIndex(rowIndex).data;
 
                     // ag-Grid encodes the value, so we decode it before passing to the renderer
-                    return me.tooltipElementRenderer(decodeURIComponent(value), {record, column: me, gridModel, agParams});
+                    return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
                 }
             };
         }
@@ -472,10 +472,10 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column~tooltipElementRendererFn - renderer function for a grid cell tooltip returning a React element.
+ * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
  * @param {*} value - tooltip value.
  * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @return {Element} - the React element to render.
+ * @return {Element} - the React element to show as a toooltip.
  */
 
 /**
