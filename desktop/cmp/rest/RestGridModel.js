@@ -107,7 +107,6 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
-     * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
@@ -121,7 +120,6 @@ export class RestGridModel {
         prepareCloneFn,
         unit = 'record',
         filterFields,
-        enhanceToolbar,
         editors = [],
         store,
         ...rest
@@ -138,7 +136,6 @@ export class RestGridModel {
 
         this.unit = unit;
         this.filterFields = filterFields;
-        this.enhanceToolbar = enhanceToolbar;
 
         this.gridModel = new GridModel({
             contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
