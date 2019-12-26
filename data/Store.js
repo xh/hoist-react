@@ -11,6 +11,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     differenceBy,
+    has,
     isEmpty,
     isFunction,
     isPlainObject,
@@ -238,13 +239,16 @@ export class Store {
      */
     @action
     updateRecords(data) {
-        const updateRecs = data.map(it => {
+        const updateRecs = new Map();
+        data.forEach(it => {
             const {id, ...data} = it,
-                rec = this.getById(id);
-            return this.createUpdatedRecord(rec, data);
+                rec = this.getById(id),
+                updatedRec = this.createUpdatedRecord(rec, data);
+
+            updateRecs.set(id, updatedRec);
         });
 
-        this._all = this._all.loadRecordTransaction({update: updateRecs});
+        this._all = this._all.loadRecordTransaction({update: Array.from(updateRecs.values())});
         this.noteDataUpdated();
     }
 
@@ -558,7 +562,7 @@ export class Store {
     }
 
     createUpdatedRecord(rec, data) {
-        data = this.parseFieldValues(data);
+        data = this.parseFieldValues(data, true);
         return new Record({
             id: rec.id,
             raw: rec.raw,
@@ -589,10 +593,17 @@ export class Store {
         return recordMap;
     }
 
-    parseFieldValues(data) {
+    parseFieldValues(data, skipMissingFields = false) {
         const ret = {...data};
         this.fields.forEach(field => {
             const {name} = field;
+
+            // Sometimes we want to ignore fields which are not present in the data to preserve
+            // an undefined value, to allow merging of data with existing data. In these cases we do
+            // not want the configured default value for the field to be used, as we are dealing with
+            // partial data
+            if (skipMissingFields && !has(data, field.name)) return;
+
             ret[name] = field.parseVal(data[name]);
         });
         return ret;
