@@ -5,13 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
-import {DraggerAnimatedModel} from './DraggerAnimatedModel';
-import {DraggerModel} from './DraggerModel';
+import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {PanelModel} from '../../PanelModel';
 
 import './Dragger.scss';
+import {DraggerModel} from './DraggerModel';
 
 
 export const dragger = hoistCmp.factory({
@@ -20,9 +19,7 @@ export const dragger = hoistCmp.factory({
 
     render() {
         const panelModel = useContextModel(PanelModel),
-            dragModel = useLocalModel(() => panelModel.resizeWhileDragging ?
-                new DraggerAnimatedModel(panelModel) :
-                new DraggerModel(panelModel));
+            dragModel = useLocalModel(() => new DraggerModel(panelModel));
 
         return div({
             className: `xh-resizable-dragger ${panelModel.side}`,

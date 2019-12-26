@@ -26,6 +26,7 @@ export class PanelModel {
     collapsible;
     defaultSize;
     minSize;
+    maxSize;
     defaultCollapsed;
     side;
     collapsedRenderMode;
@@ -52,7 +53,8 @@ export class PanelModel {
      * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
      * @param {number} config.defaultSize - Default size of panel (in pixels).
-     * @param {number} config.minSize - Minimum size that panel can be resized to (in pixels).
+     * @param {number} [config.minSize] - Minimum size that panel can be resized to (in pixels).
+     * @param {number|null} [config.maxSize] - Maximum size that panel can be resized to (in pixels).
      * @param {number} [config.defaultCollapsed] - Default collapsed state.
      * @param {string} config.side - Side of panel that it collapses/shrinks toward. This also corresponds
      *      to the position within a parent vbox or hbox in which the panel should be placed.
@@ -71,6 +73,7 @@ export class PanelModel {
         resizeWhileDragging = false,
         defaultSize,
         minSize = 0,
+        maxSize = null,
         defaultCollapsed = false,
         side,
         collapsedRenderMode = 'lazy',
@@ -87,12 +90,18 @@ export class PanelModel {
             resizable = false;
         }
 
+        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
+            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
+            maxSize = null;
+        }
+
         // Set immutables
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
         this.minSize = Math.min(minSize, defaultSize);
+        this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;
