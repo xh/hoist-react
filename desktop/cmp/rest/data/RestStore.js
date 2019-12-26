@@ -88,7 +88,10 @@ export class RestStore extends UrlStore {
         } else {
             this.loadDataTransaction({update: [responseData]});
         }
+
         await this.ensureLookupsLoadedAsync();
+
+        return this.getById(responseData.id);
     }
 
     async ensureLookupsLoadedAsync() {
