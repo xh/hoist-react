@@ -55,7 +55,7 @@ export class GridExportService {
             return;
         }
 
-        rows.push(this.getHeaderRow(exportColumns, type));
+        rows.push(this.getHeaderRow(exportColumns, type, gridModel));
         rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
@@ -140,8 +140,12 @@ export class GridExportService {
         });
     }
 
-    getHeaderRow(columns, type) {
-        const headers = columns.map(it => it.exportName);
+    getHeaderRow(columns, type, gridModel) {
+        const headers = columns.map(it =>
+            isString(it.exportName) ?
+                it.exportName :
+                it.exportName({column: it, gridModel})
+        );
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -171,21 +175,28 @@ export class GridExportService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        const data = columns.map(it => this.getCellData(gridModel, record, it));
+        let aggData = null;
+        if (gridModel.treeMode && record.children.length) {
+            aggData = gridModel.agApi.getRowNode(record.id).aggData;
+        }
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
         return {data, depth};
     }
 
-    getCellData(gridModel, record, column) {
+    getCellData(gridModel, record, column, aggData) {
         const {field, exportValue} = column;
 
-        // Modify value using exportValue
         let value = record[field];
+        // Modify value using exportValue
         if (isString(exportValue) && record[exportValue] !== null) {
             // If exportValue points to a different field
             value = record[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
+        } else if (aggData && !isNil(aggData[field])) {
+            // If we found aggregate data calculated by agGrid
+            value = aggData[field];
         }
 
         if (isNil(value)) return null;
