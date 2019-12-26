@@ -13,9 +13,12 @@ import {
     differenceBy,
     has,
     isEmpty,
+    isEqual,
     isFunction,
     isPlainObject,
     isString,
+    keys,
+    pick,
     remove as lodashRemove
 } from 'lodash';
 import {Field} from './Field';
@@ -241,9 +244,28 @@ export class Store {
     updateRecords(data) {
         const updateRecs = new Map();
         data.forEach(it => {
+            // Ignore duplicate entries to avoid extra unnecessary work
+            // TODO: Log a warning to the console to warn the app dev that they should fix this?
+            if (updateRecs.has(it.id)) return;
+
             const {id, ...data} = it,
                 rec = this.getById(id),
-                updatedRec = this.createUpdatedRecord(rec, data);
+                updatedData = this.parseFieldValues(data, true),
+                currentData = pick(rec.data, keys(data));
+
+            // Don't bother with an update if the record data hasn't changed
+            if (isEqual(updatedData, currentData)) return;
+
+            const updatedRec = new Record({
+                id: rec.id,
+                raw: rec.raw,
+                data: Object.assign({}, rec.data, data),
+                parentId: rec.parentId,
+                store: rec.store,
+                isSummary: rec.xhIsSummary,
+                originalRecord: rec.originalRecord
+            });
+
 
             updateRecs.set(id, updatedRec);
         });
@@ -559,19 +581,6 @@ export class Store {
 
         data = this.parseFieldValues(data);
         return new Record({id: this.idSpec(data), data, raw, parentId, store: this, isSummary});
-    }
-
-    createUpdatedRecord(rec, data) {
-        data = this.parseFieldValues(data, true);
-        return new Record({
-            id: rec.id,
-            raw: rec.raw,
-            data: Object.assign({}, rec.data, data),
-            parentId: rec.parentId,
-            store: rec.store,
-            isSummary: rec.xhIsSummary,
-            originalRecord: rec.originalRecord
-        });
     }
 
     createRecords(rawRecs, parentId, recordMap = new Map()) {
