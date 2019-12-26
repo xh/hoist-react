@@ -11,10 +11,10 @@ import Draggable from 'react-draggable';
 // import {isNil} from 'lodash';
 
 // import {action, bindable} from '@xh/hoist/mobx';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {elemFactory} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
-import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
