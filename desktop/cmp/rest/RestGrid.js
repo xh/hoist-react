@@ -10,6 +10,7 @@ import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
+import {withDefault} from '../../../utils/js';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {restForm} from './impl/RestForm';
 import {RestGridModel} from './RestGridModel';
@@ -30,17 +31,16 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
     }) {
 
         const {formModel, gridModel} = model;
-        if (!onRowDoubleClicked) {
-            onRowDoubleClicked = (row) => {
-                if (!row.data) return;
 
-                if (!model.readonly) {
-                    formModel.openEdit(row.data);
-                } else {
-                    formModel.openView(row.data);
-                }
-            };
-        }
+        onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
+            if (!row.data) return;
+
+            if (!model.readonly) {
+                formModel.openEdit(row.data);
+            } else {
+                formModel.openView(row.data);
+            }
+        });
 
         return fragment(
             panel({
