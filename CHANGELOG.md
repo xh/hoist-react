@@ -9,6 +9,7 @@
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
+* `PanelModel` now accepts a `maxSize` config.
 
 ### 💥 Breaking Changes
 
@@ -25,8 +26,9 @@ specification currently supported.
 * Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
 * Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
   data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
-* Fixed issue where export would create malformed file with dynamic header names  
+* Fixed issue where export would create malformed file with dynamic header names
 * Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired ([#1498](https://github.com/xh/hoist-react/issues/1498))
 
 ### 📚 Libraries
 
