@@ -276,11 +276,26 @@ export class GridModel {
 
     /**
      * Scroll to ensure the selected record is visible.
+     *
+     * If multiple records are selected, scroll to the first record and then the last. This will do
+     * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
      */
     ensureSelectionVisible() {
         const records = this.selModel.records;
         if (records.length) {
-            this.agApi.ensureNodeVisible(this.agApi.getRowNode(records[0].id));
+            let topIndex = this.agApi.getRowNode(records[0].id).rowIndex;
+
+            if (records.length > 1) {
+                let bottomIndex = topIndex;
+                for (let i = 1; i < records.length; i++) {
+                    const currentIndex = this.agApi.getRowNode(records[i].id).rowIndex;
+                    topIndex = Math.min(topIndex, currentIndex);
+                    bottomIndex = Math.max(bottomIndex, currentIndex);
+                }
+                this.agApi.ensureIndexVisible(bottomIndex);
+            }
+
+            this.agApi.ensureIndexVisible(topIndex);
         }
     }
 
