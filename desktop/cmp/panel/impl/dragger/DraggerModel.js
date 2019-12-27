@@ -140,7 +140,7 @@ export class DraggerModel {
         const stl = dragBar.style;
         stl.display = 'block';
 
-        if (diff + startSize <= minSize) {               // constrain to minSize (which could be 0)
+        if (diff + startSize <= minSize) { // constrain to minSize (which could be 0)
             switch (side) {
                 case 'left':    stl.left =  (panel.offsetLeft + minSize) + 'px'; break;
                 case 'top':     stl.top =   (panel.offsetTop + minSize) + 'px'; break;
