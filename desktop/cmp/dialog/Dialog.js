@@ -19,6 +19,7 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
 
+// todo: fix so autoFocus on child works.
 
 // see https://reactjs.org/docs/portals.html#event-bubbling-through-portals
 // and
