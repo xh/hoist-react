@@ -21,6 +21,7 @@ import {
     pick,
     remove as lodashRemove
 } from 'lodash';
+import {warnIf} from '../utils/js';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -243,10 +244,14 @@ export class Store {
     @action
     updateRecords(data) {
         const updateRecs = new Map();
+
+        let hadDupes = false;
         data.forEach(it => {
             // Ignore duplicate entries to avoid extra unnecessary work
-            // TODO: Log a warning to the console to warn the app dev that they should fix this?
-            if (updateRecs.has(it.id)) return;
+            if (updateRecs.has(it.id)) {
+                hadDupes = true;
+                return;
+            }
 
             const {id, ...data} = it,
                 rec = this.getById(id),
@@ -269,6 +274,8 @@ export class Store {
 
             updateRecs.set(id, updatedRec);
         });
+
+        warnIf(hadDupes, 'Store.updateRecords() called with multiple updates for the same Records. Only the first update entries for each Record were processed.');
 
         this._all = this._all.loadRecordTransaction({update: Array.from(updateRecs.values())});
         this.noteDataUpdated();
