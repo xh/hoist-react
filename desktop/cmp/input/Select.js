@@ -21,7 +21,7 @@ import debouncePromise from 'debounce-promise';
 import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
-import {createFilter} from 'react-select';
+import {createFilter} from 'react-windowed-select';
 
 import './Select.scss';
 

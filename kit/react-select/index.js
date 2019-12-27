@@ -5,10 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import Select from 'react-select';
-import AsyncSelect from 'react-select/async';
-import AsyncCreatable from 'react-select/async-creatable';
-import Creatable from 'react-select/creatable';
+import Select from 'react-windowed-select';
+import AsyncSelect from 'react-windowed-select';
+import AsyncCreatable from 'react-windowed-select';
+import Creatable from 'react-windowed-select';
 
 export {
     Select,

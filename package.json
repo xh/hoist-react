@@ -63,7 +63,8 @@
     "regenerator-runtime": "~0.13.3",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "store2": "~2.10.0"
+    "store2": "~2.10.0",
+    "react-windowed-select": "^2.0.1"
   },
   "peerDependencies": {
     "react": "~16.8.0",
