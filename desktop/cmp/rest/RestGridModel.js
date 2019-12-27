@@ -124,7 +124,7 @@ export class RestGridModel {
         enhanceToolbar,
         editors = [],
         store,
-        exportEnabled = true,
+        enableExport = true,
         ...rest
     }) {
         this.readonly = readonly;
@@ -146,7 +146,7 @@ export class RestGridModel {
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
-            exportEnabled,
+            enableExport,
             ...rest
         });
 
