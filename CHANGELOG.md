@@ -9,12 +9,13 @@
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
+* `PanelModel` now accepts a `maxSize` config.
 
 ### 💥 Breaking Changes
 
-* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
-parameter will allow context menus to be specified with a simple array in addition to the function
-specification currently supported.
+* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
+  parameter will allow context menus to be specified with a simple array in addition to the function
+  specification currently supported.
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
@@ -22,11 +23,15 @@ specification currently supported.
 ### 🐞 Bug Fixes
 
 * Fixed autoFocus on NumberInput.
-* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
-* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
-  data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
-* Fixed issue where export would create malformed file with dynamic header names  
-* Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where JsonInput was not receiving its `model` from context
+  ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
+  GridModel data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would create malformed file with dynamic header names
+* Fixed issue where exported tree grids would have incorrect aggregate data
+  ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired
+  ([#1498](https://github.com/xh/hoist-react/issues/1498))
 
 ### 📚 Libraries
 
