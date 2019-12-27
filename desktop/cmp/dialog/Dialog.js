@@ -19,9 +19,6 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
 
-// to add:
-// click outside to close option?
-// centered with backmask (traditional modal)
 
 // see https://reactjs.org/docs/portals.html#event-bubbling-through-portals
 // and
@@ -114,6 +111,8 @@ export class Dialog extends Component {
 
         return div({
             onKeyDown: (evt) => this.handleKeyDown(evt),
+            onClick: (evt) => this.handleMaskClick(evt),
+            onContextMenu: (evt) => this.handleMaskClick(evt),
             tabIndex: '0',
             ref: this.dialogWrapperRef,
             className: 'xh-dialog-root__fixed',
@@ -137,6 +136,14 @@ export class Dialog extends Component {
     handleEscapKey(evt) {
         const {canEscapeKeyClose, close} = this.props;
         if (canEscapeKeyClose) close(evt);
+    }
+
+    handleMaskClick(evt) {
+        const {canMaskClickClose, close} = this.props;
+        console.log(canMaskClickClose);
+
+        if (canMaskClickClose == false) return;
+        close(evt);
     }
 }
 
