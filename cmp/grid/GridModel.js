@@ -79,7 +79,7 @@ export class GridModel {
     enableColumnPinning;
     /** @member {boolean} */
     enableExport;
-    /** @member {object} */
+    /** @member {ExportOptions} */
     exportOptions;
 
     /** @member {AgGridModel} */
@@ -143,7 +143,7 @@ export class GridModel {
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
-     * @param {Object} [c.exportOptions] - default options used in exportAsync().
+     * @param {ExportOptions} [c.exportOptions] - default options used in exportAsync().
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
@@ -234,7 +234,7 @@ export class GridModel {
     /**
      * Export grid data using Hoist's server-side export.
      *
-     * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
+     * @param {ExportOptions} options
      */
     async exportAsync(options = {}) {
         throwIf(!this.enableExport, 'Export not enabled for this grid. See GridModel.enableExport');
