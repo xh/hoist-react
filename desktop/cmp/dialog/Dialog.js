@@ -143,6 +143,8 @@ export class Dialog extends Component {
         console.log(canMaskClickClose);
 
         if (canMaskClickClose == false) return;
+        if (evt.target != this.dialogWrapperRef.current) return;
+
         close(evt);
     }
 }
