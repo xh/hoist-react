@@ -281,7 +281,7 @@ export class GridModel {
      *      If undefined or null then grid will do the minimum scrolling to show the row.
      *      If multiple records are selected, we scroll the first selected record to the middle.
      */
-    scrollToSelected(position = null) {
+    ensureSelectionVisible(position = null) {
         const records = this.selModel.records;
         if (records.length) {
             position = records.length == 1 ? position : 'middle';
