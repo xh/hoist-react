@@ -32,7 +32,7 @@ export const restGridToolbar = hoistCmp.factory({
             filler(),
             gridCountLabel({gridModel, unit}),
             storeFilterField({gridModel, includeFields: model.filterFields}),
-            model.gridModel.enableExport ? exportButton({gridModel}) : undefined
+            exportButton({gridModel, omit: !model.gridModel.enableExport})
         );
     }
 });
