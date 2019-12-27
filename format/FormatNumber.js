@@ -88,7 +88,10 @@ export function fmtNumber(v, {
 }
 
 /**
- * "Smart" formatting that will abbreviate a number as much as possible without rounding.
+ * "Smart" formatting that will abbreviate a number as much as possible without rounding,
+ * using the same logic as @see {@link fmtShorthand}
+ *
+ * The number will only be written as shorthand if doing so will remove trailing zeroes.
  *
  * @param {number} v - value to format
  * @param {Object} [opts] - @see {@link fmtNumber} method. Also contains an additional maxTrailingZeroes option.
@@ -117,6 +120,8 @@ export function fmtLossless(v, opts = {}) {
 
 /**
  * Render a number suffixed with shorthand units- thousands to 'k', millions to 'm', and billions to 'b'
+ * Will use the largest possible units such that the displayed number is at least 1, similar to
+ * Engineering Notation
  *
  * @param v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
