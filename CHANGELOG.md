@@ -37,6 +37,7 @@
 
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
+* @fortawesome/fontawesome-pro `5.11 -> 5.12`
 * core-js `3.3 -> 3.4`
 * fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`
