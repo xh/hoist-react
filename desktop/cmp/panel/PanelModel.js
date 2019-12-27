@@ -95,7 +95,6 @@ export class PanelModel {
             maxSize = null;
         }
 
-        // Set immutables
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
@@ -130,7 +129,7 @@ export class PanelModel {
     }
 
     //----------------------
-    // Actions
+    // Actions + public setters
     //----------------------
     @action
     setCollapsed(collapsed) {
@@ -144,6 +143,10 @@ export class PanelModel {
         this.dispatchResize();
     }
 
+    toggleCollapsed() {
+        this.setCollapsed(!this.collapsed);
+    }
+
     @action
     setSize(v) {
         this.size = v;
@@ -155,8 +158,12 @@ export class PanelModel {
         if (!v) this.dispatchResize();
     }
 
-    toggleCollapsed() {
-        this.setCollapsed(!this.collapsed);
+    /**
+     * Enable/disable dynamic re-rendering of contents while dragging to resize.
+     * @param {boolean} v
+     */
+    setResizeWhileDragging(v) {
+        this.resizeWhileDragging = v;
     }
 
     //---------------------------------------------
