@@ -8,13 +8,15 @@
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
-* Added a `ensureSelectionVisible` method to GridModel to scroll until selected row is in view.
+* Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
+* `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
+* `PanelModel` now accepts a `maxSize` config.
 
 ### 💥 Breaking Changes
 
-* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
-parameter will allow context menus to be specified with a simple array in addition to the function
-specification currently supported.
+* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
+  parameter will allow context menus to be specified with a simple array in addition to the function
+  specification currently supported.
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
@@ -22,16 +24,23 @@ specification currently supported.
 ### 🐞 Bug Fixes
 
 * Fixed autoFocus on NumberInput.
-* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
-* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
-  data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
-* Fixed issue where export would create malformed file with dynamic header names  
-* Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where JsonInput was not receiving its `model` from context
+  ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
+  GridModel data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would create malformed file with dynamic header names
+* Fixed issue where exported tree grids would have incorrect aggregate data
+  ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired
+  ([#1498](https://github.com/xh/hoist-react/issues/1498))
+* Changed RestGrid to only display export button if export is enabled
+  ([#1490](https://github.com/xh/hoist-react/issues/1490))
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
+* @fortawesome/fontawesome-pro `5.11 -> 5.12`
 * core-js `3.3 -> 3.4`
 * fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`

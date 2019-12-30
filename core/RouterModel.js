@@ -21,7 +21,7 @@ import browserPlugin from 'router5-plugin-browser';
 export class RouterModel {
 
     /** Router5 state object representing the current state. */
-    @observable currentState;
+    @observable.ref currentState;
 
     /** Underlying Router5 Router object implementing the routing state. */
     router = this.createRouter();

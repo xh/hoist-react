@@ -19,13 +19,6 @@ body.xh-app {
   height: 100vh;
   margin: 0;
 
-  // Required to override default browser user agent stylesheet.
-  button,
-  input {
-    font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-px);
-  }
-
   ::-webkit-scrollbar {
     -webkit-appearance: none;
     background-color: var(--xh-scrollbar-bg);
