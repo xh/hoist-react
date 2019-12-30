@@ -12,6 +12,7 @@ import {
     castArray,
     differenceBy,
     has,
+    isArray,
     isEmpty,
     isEqual,
     isFunction,
@@ -128,10 +129,23 @@ export class Store {
 
     /**
      * Add, update, or delete records in this store.
-     * @param {StoreTransaction} transaction - data changes to process
+     * @param {StoreTransaction|Object[]} transaction - data changes to process
      */
     @action
     loadDataTransaction(transaction) {
+        if (isArray(transaction)) {
+            const add = [], update = [];
+            transaction.forEach(it => {
+                if (this.getById(it.id)) {
+                    update.push(it);
+                } else {
+                    add.push(it);
+                }
+            });
+
+            transaction = {add, update};
+        }
+
         const {update, add, remove, rawSummaryData, ...other} = transaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to loadDataTransaction().');
 

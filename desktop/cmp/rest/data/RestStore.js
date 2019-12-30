@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {pickBy, filter} from 'lodash';
+import {filter, pickBy} from 'lodash';
 
 import {RestField} from './RestField';
 
@@ -83,11 +83,7 @@ export class RestStore extends UrlStore {
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),
             responseData = (dataRoot) ? response[dataRoot] : response;
 
-        if (isAdd) {
-            this.loadDataTransaction({add: [responseData]});
-        } else {
-            this.loadDataTransaction({update: [responseData]});
-        }
+        this.loadDataTransaction([responseData]);
 
         await this.ensureLookupsLoadedAsync();
 
