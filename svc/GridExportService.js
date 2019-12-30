@@ -24,7 +24,7 @@ export class GridExportService {
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {ExportOptions} [options] - Export options.\
+     * @param {ExportOptions} [options] - Export options.
      */
     async exportAsync(gridModel, {
         filename = 'export',
@@ -232,7 +232,7 @@ export class GridExportService {
 }
 
 /**
- * @typedef {Object} ExportOptions - options for exporting a GridModel to a file
+ * @typedef {Object} ExportOptions - options for exporting grid records to a file.
  * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
  *      Do not include the file extension - that will be appended based on the specified type.
  * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
