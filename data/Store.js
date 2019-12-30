@@ -133,6 +133,7 @@ export class Store {
      */
     @action
     loadDataTransaction(transaction) {
+        // Build a transaction object out of a flat list of data
         if (isArray(transaction)) {
             const add = [], update = [];
             transaction.forEach(it => {
@@ -442,6 +443,11 @@ export class Store {
         return this.allRecords.filter(it => it.isDirty);
     }
 
+    /** @returns {boolean} - true if the store has dirty records (added/updated/removed) */
+    get isDirty() {
+        return this._all !== this._original;
+    }
+
     /**
      * Set filter to be applied.
      * @param {(StoreFilter|Object|function)} filter - StoreFilter to be applied to records, or
@@ -463,34 +469,64 @@ export class Store {
         return this._filter;
     }
 
-    /** Get the count of the filtered records in the store. */
+    /** @returns {number} - the count of the filtered records in the store. */
     get count() {
         return this._filtered.count;
     }
 
-    /** Get the count of all records loaded into the store. */
+    /** @returns {number} - the count of all records in the store. */
     get allCount() {
         return this._all.count;
     }
 
-    /** Get the count of the filtered root records in the store. */
+    /** @returns {number} - the count of all records originally loaded into the store. */
+    get originalCount() {
+        return this._original.count;
+    }
+
+    /** @returns {number} - the count of the filtered root records in the store. */
     get rootCount() {
         return this._filtered.rootCount;
     }
 
-    /** Get the count of all root records in the store. */
+    /** @returns {number} - the count of all root records in the store. */
     get allRootCount() {
         return this._all.rootCount;
     }
 
-    /** Is the store empty after filters have been applied? */
+    /** @returns {number} - the count of all root records originally loaded into the store. */
+    get originalRootCount() {
+        return this._original.rootCount;
+    }
+
+    /** @returns {boolean} - true if the store is empty after filters have been applied */
     get empty() {
         return this._filtered.empty;
     }
 
-    /** Is this store empty before filters have been applied? */
+    /** @returns {boolean} - true if the store is empty before filters have been applied */
     get allEmpty() {
         return this._all.empty;
+    }
+
+    /** @returns {boolean} - true if the store was originally empty */
+    get originalEmpty() {
+        return this._original.empty;
+    }
+
+    /** @returns {RecordSet} - the record set for the current state of the store, filtered */
+    get recordSet() {
+        return this._filtered;
+    }
+
+    /** @returns {RecordSet} - the record set for the current state of the store */
+    get allRecordSet() {
+        return this._all;
+    }
+
+    /** @returns {RecordSet} - the record set for the original state of the store */
+    get originalRecordSet() {
+        return this._original;
     }
 
     /**
@@ -505,6 +541,16 @@ export class Store {
 
         const rs = fromFiltered ? this._filtered : this._all;
         return rs.getById(id);
+    }
+
+    /**
+     * Get an original record by ID, or null if no matching record found.
+     *
+     * @param {string|number} id
+     * @returns {Record}
+     */
+    getOriginalById(id) {
+        return this._original.getById(id);
     }
 
     /**
