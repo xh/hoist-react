@@ -5,7 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, cloneDeep, merge} from 'lodash';
+import {assign, castArray, clone, cloneDeep, merge, omit} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import equal from 'fast-deep-equal';
@@ -79,30 +79,44 @@ class LocalModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     chart = null;
+    prevConfig = null;
     model;
 
     renderHighChart() {
         const chartElem = this.chartRef.current;
-        let {highchartsConfig, prevConfig} = this.model;
-        if (equal(highchartsConfig, prevConfig) && this.chart && this.chart.series.length == this.model.series.length) {
-            for (let i = 0; i < this.model.series.length; i++) {
-                this.chart.series[i].setData(this.model.series[i].data);
+
+        if (chartElem) {
+
+            const {prevConfig} = this;
+            // We need to keep track of properties of series other than data, e.g. name
+            const currentConfig = {
+                ...this.model.highchartsConfig,
+                ...this.model.series.map(it => omit(it, 'data'))
+            };
+
+            // TODO: figure out what to do with multiple series
+            // TODO: figure out what to do with navigator
+            const canUpdateInPlace = this.chart && this.chart.series.length &&
+                equal(currentConfig, prevConfig);
+
+            if (canUpdateInPlace) {
+                this.chart.series[0].setData(this.model.series[0].data);
+            } else {
+                this.destroyHighChart();
+
+                const config = this.getMergedConfig(),
+                    parentEl = chartElem.parentElement;
+
+                assign(config.chart, this.getChartDims({
+                    width: parentEl.offsetWidth,
+                    height: parentEl.offsetHeight
+                }));
+
+                config.chart.renderTo = chartElem;
+                this.chart = Highcharts.chart(config);
             }
-        } else if (chartElem) {
-            this.destroyHighChart();
-
-            const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
-
-            assign(config.chart, this.getChartDims({
-                width: parentEl.offsetWidth,
-                height: parentEl.offsetHeight
-            }));
-
-            config.chart.renderTo = chartElem;
-            this.chart = Highcharts.chart(config);
+            this.prevConfig = cloneDeep(currentConfig);
         }
-        this.model.prevConfig = cloneDeep(highchartsConfig);
     }
 
     resizeChart(e) {
