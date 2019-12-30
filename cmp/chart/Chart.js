@@ -5,9 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, merge} from 'lodash';
+import {assign, castArray, clone, cloneDeep, merge} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
+import equal from 'fast-deep-equal';
 
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
@@ -81,9 +82,15 @@ class LocalModel {
     model;
 
     renderHighChart() {
-        this.destroyHighChart();
         const chartElem = this.chartRef.current;
-        if (chartElem) {
+        let {highchartsConfig, prevConfig} = this.model;
+        if (equal(highchartsConfig, prevConfig) && this.chart && this.chart.series.length == this.model.series.length) {
+            for (let i = 0; i < this.model.series.length; i++) {
+                this.chart.series[i].setData(this.model.series[i].data);
+            }
+        } else if (chartElem) {
+            this.destroyHighChart();
+
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement;
 
@@ -95,6 +102,7 @@ class LocalModel {
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
         }
+        this.model.prevConfig = cloneDeep(highchartsConfig);
     }
 
     resizeChart(e) {
