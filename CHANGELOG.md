@@ -32,6 +32,8 @@
   ([#1447](https://github.com/xh/hoist-react/issues/1447))
 * Fixed issue where resizable Panels could grow larger than desired
   ([#1498](https://github.com/xh/hoist-react/issues/1498))
+* Changed RestGrid to only display export button if export is enabled
+  ([#1490](https://github.com/xh/hoist-react/issues/1490))
 
 ### 📚 Libraries
 

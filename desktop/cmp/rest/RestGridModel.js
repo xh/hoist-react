@@ -142,6 +142,7 @@ export class RestGridModel {
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
+            enableExport: true,
             ...rest
         });
 
