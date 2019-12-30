@@ -29,6 +29,8 @@ import {
     isString,
     last,
     map,
+    max,
+    min,
     pull,
     sortBy,
     uniq,
@@ -281,21 +283,18 @@ export class GridModel {
      * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
      */
     ensureSelectionVisible() {
-        const records = this.selModel.records;
-        if (records.length) {
-            let topIndex = this.agApi.getRowNode(records[0].id).rowIndex;
+        const {records} = this.selModel,
+            {agApi} = this;
 
-            if (records.length > 1) {
-                let bottomIndex = topIndex;
-                for (let i = 1; i < records.length; i++) {
-                    const currentIndex = this.agApi.getRowNode(records[i].id).rowIndex;
-                    topIndex = Math.min(topIndex, currentIndex);
-                    bottomIndex = Math.max(bottomIndex, currentIndex);
-                }
-                this.agApi.ensureIndexVisible(bottomIndex);
-            }
+        if (!agApi) return;
 
-            this.agApi.ensureIndexVisible(topIndex);
+        const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
+
+        if (indices.length == 1) {
+            agApi.ensureIndexVisible(indices[0]);
+        } else if (indices.length > 1) {
+            agApi.ensureIndexVisible(max(indices));
+            agApi.ensureIndexVisible(min(indices));
         }
     }
 
