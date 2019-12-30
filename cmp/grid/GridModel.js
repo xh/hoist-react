@@ -29,6 +29,8 @@ import {
     isString,
     last,
     map,
+    max,
+    min,
     pull,
     sortBy,
     uniq,
@@ -272,6 +274,28 @@ export class GridModel {
         const id = agGridModel.getFirstSelectableRowNodeId();
 
         if (id) selModel.select(id);
+    }
+
+    /**
+     * Scroll to ensure the selected record is visible.
+     *
+     * If multiple records are selected, scroll to the first record and then the last. This will do
+     * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
+     */
+    ensureSelectionVisible() {
+        const {records} = this.selModel,
+            {agApi} = this;
+
+        if (!agApi) return;
+
+        const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
+
+        if (indices.length == 1) {
+            agApi.ensureIndexVisible(indices[0]);
+        } else if (indices.length > 1) {
+            agApi.ensureIndexVisible(max(indices));
+            agApi.ensureIndexVisible(min(indices));
+        }
     }
 
     /** Does the grid have any records to show? */
