@@ -94,13 +94,17 @@ class LocalModel {
                 ...this.model.series.map(it => omit(it, 'data'))
             };
 
-            // TODO: figure out what to do with multiple series
-            // TODO: figure out what to do with navigator
+            // TODO: figure out why the zoom changes slightly on the first refresh
+            // Seems like zoom() causes zoomout slightly past the end of the data
+            // Fixed by changing navigator.adaptToUpdatedData to false. Dunno why
             const canUpdateInPlace = this.chart && this.chart.series.length &&
                 equal(currentConfig, prevConfig);
 
             if (canUpdateInPlace) {
-                this.chart.series[0].setData(this.model.series[0].data);
+                // TODO: figure out whether or not this works reliably. Does every series have a name?
+                const map = new Map();
+                this.chart.series.forEach(series => map.set(series.name, series));
+                this.model.series.forEach(series => map.get(series.name).setData(series.data));
             } else {
                 this.destroyHighChart();
 

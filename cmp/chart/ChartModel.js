@@ -28,5 +28,4 @@ export class ChartModel {
         this.highchartsConfig = highchartsConfig;
         this.series = series;
     }
-
 }
