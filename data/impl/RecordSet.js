@@ -36,10 +36,6 @@ export class RecordSet {
         return this.count == 0;
     }
 
-    clone() {
-        return new RecordSet(this.store, new Map(this.recordMap));
-    }
-
     getById(id) {
         return this.recordMap.get(id);
     }
@@ -59,6 +55,17 @@ export class RecordSet {
         }
 
         return ret;
+    }
+
+    isEqual(other) {
+        if (this.store !== other.store) return false;
+        if (this.count !== other.count) return false;
+
+        for (const [id, rec] of this.recordMap) {
+            if (rec !== other.recordMap.get(id)) return false;
+        }
+
+        return true;
     }
 
     //----------------------------------------------------------

@@ -112,9 +112,9 @@ export class Store {
     @action
     loadData(rawData, rawSummaryData) {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
-        if (rawData.length != 0 && this._loadRootAsSummary) {
+        if (rawData.length !== 0 && this._loadRootAsSummary) {
             throwIf(
-                rawData.length != 1 || isEmpty(rawData[0].children) || rawSummaryData,
+                rawData.length !== 1 || isEmpty(rawData[0].children) || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
             );
             rawSummaryData = rawData[0];
@@ -133,7 +133,7 @@ export class Store {
      */
     @action
     loadDataTransaction(transaction) {
-        // Build a transaction object out of a flat list of data
+        // Build a transaction object out of a flat list of adds and updates
         if (isArray(transaction)) {
             const add = [], update = [];
             transaction.forEach(it => {
@@ -179,13 +179,15 @@ export class Store {
         // 3) Apply changes
         let didUpdate = false;
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
-            const isDirty = this._all !== this._original;
+            const {isDirty: wasDirty} = this;
             this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
 
-            // If our current RecordSet has diverged from the original RecordSet, then we need to
-            // load its transaction separately so we do not lose the changes
-            if (isDirty) {
+            // If we were dirty before loading the data transaction, we need to also load the transaction
+            // into our current state, and then check if we are still dirty or not as the transaction
+            // may have put us back into a clean state
+            if (wasDirty) {
                 this._all = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+                this.checkDirty();
             } else {
                 this._all = this._original;
             }
@@ -249,6 +251,8 @@ export class Store {
 
         this._all = this._all.loadRecordTransaction({remove: records});
         this.noteDataUpdated();
+
+        this.checkDirty();
     }
 
     /**
@@ -276,6 +280,13 @@ export class Store {
             // Don't bother with an update if the record data hasn't changed
             if (isEqual(updatedData, currentData)) return;
 
+            // If the updated data now matches the original record data, then we can just fall back
+            // to the original record
+            if (!rec.isNew && isEqual({...rec.data, ...updatedData}, rec.originalRecord?.data)) {
+                updateRecs.set(id, rec.originalRecord);
+                return;
+            }
+
             const updatedRec = new Record({
                 id: rec.id,
                 raw: rec.raw,
@@ -294,6 +305,8 @@ export class Store {
 
         this._all = this._all.loadRecordTransaction({update: Array.from(updateRecs.values())});
         this.noteDataUpdated();
+
+        this.checkDirty();
     }
 
     /**
@@ -312,7 +325,7 @@ export class Store {
      */
     @action
     revert() {
-        this._all = this._original.clone();
+        this._all = this._original;
         this.noteDataUpdated();
     }
 
@@ -326,6 +339,8 @@ export class Store {
         records = records.map(it => (it instanceof Record) ? it : this._all.getById(it));
         this._all = this._all.loadRecordTransaction({update: records.map(it => it.originalRecord)});
         this.noteDataUpdated();
+
+        this.checkDirty();
     }
 
     /**
@@ -617,6 +632,15 @@ export class Store {
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
+    }
+
+    @action
+    checkDirty() {
+        // If the record sets are equal after loading the transaction, re-set the ref so we
+        // know that we are no longer dirty
+        if (this._all.isEqual(this._original)) {
+            this._all = this._original;
+        }
     }
 
     parseFields(fields) {
