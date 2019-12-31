@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFunction, startCase, isString} from 'lodash';
+import {castArray, clone, find, isFunction, isString, startCase} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -214,7 +214,6 @@ export class Column {
             ret = {
                 field,
                 colId: this.colId,
-                tooltipField: field,
                 headerValueGetter: (agParams) => {
                     return agParams.location === 'header' ?
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :

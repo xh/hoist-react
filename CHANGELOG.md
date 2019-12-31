@@ -8,6 +8,7 @@
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
+* Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 * `PanelModel` now accepts a `maxSize` config.
 
