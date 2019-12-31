@@ -228,7 +228,7 @@ export class Store {
         });
 
         this._all = this._all.loadRecordTransaction({add: addRecs});
-        this.noteDataUpdated();
+        this.onRecordsUpdated();
     }
 
     /**
@@ -250,7 +250,7 @@ export class Store {
         records = records.map(it => (it instanceof Record) ? it.id : it);
 
         this._all = this._all.loadRecordTransaction({remove: records});
-        this.noteDataUpdated();
+        this.onRecordsUpdated();
 
         this.checkDirty();
     }
@@ -304,7 +304,7 @@ export class Store {
         warnIf(hadDupes, 'Store.updateRecords() called with multiple updates for the same Records. Only the first update entries for each Record were processed.');
 
         this._all = this._all.loadRecordTransaction({update: Array.from(updateRecs.values())});
-        this.noteDataUpdated();
+        this.onRecordsUpdated();
 
         this.checkDirty();
     }
@@ -326,7 +326,7 @@ export class Store {
     @action
     revert() {
         this._all = this._original;
-        this.noteDataUpdated();
+        this.onRecordsUpdated();
     }
 
     /**
@@ -338,22 +338,9 @@ export class Store {
         records = castArray(records);
         records = records.map(it => (it instanceof Record) ? it : this._all.getById(it));
         this._all = this._all.loadRecordTransaction({update: records.map(it => it.originalRecord)});
-        this.noteDataUpdated();
+        this.onRecordsUpdated();
 
         this.checkDirty();
-    }
-
-    /**
-     * Call if/when any records have had their data modified directly, outside of this store's load
-     * and update APIs. An example would be an inline grid editor updating a data field.
-     *
-     * To change the structure of the data (e.g. deletion, additions, re-parenting of children)
-     * the `loadDataTransaction()` or `loadData()` methods must be used instead.
-     */
-    @action
-    noteDataUpdated() {
-        this.rebuildFiltered();
-        this.lastUpdated = Date.now();
     }
 
     /**
@@ -632,6 +619,12 @@ export class Store {
     @action
     rebuildFiltered() {
         this._filtered = this._all.applyFilter(this.filter);
+    }
+
+    @action
+    onRecordsUpdated() {
+        this.rebuildFiltered();
+        this.lastUpdated = Date.now();
     }
 
     @action
