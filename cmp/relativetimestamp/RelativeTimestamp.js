@@ -44,7 +44,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 });
 RelativeTimestamp.propTypes = {
     /**
-     * Date or milliseconds representing the starting / reference time.
+     * Date or milliseconds representing the starting / time to compare.
      * See also `bind` as an alternative.
      */
     timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
@@ -83,7 +83,6 @@ class LocalModel {
     refreshDisplay() {
         this.display = getRelativeTimestamp(this.timestamp, this.options);
     }
-
 }
 
 
@@ -101,6 +100,7 @@ class LocalModel {
  * @param {string} [options.nowString] - string to return when timestamp is within `nowEpsilon`.
  * @param {number} [options.nowEpsilon] - threshold interval (in seconds) for `nowString`.
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
+ * @param {(Date|int)} [options.relativeTo] - timestamp to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options) {
     const defaultOptions = {
@@ -110,7 +110,8 @@ export function getRelativeTimestamp(timestamp, options) {
             pastSuffix: 'ago',
             nowString: null,
             nowEpsilon: 30,
-            emptyResult: ''
+            emptyResult: '',
+            relativeTo: Date.now()
         },
         opts = Object.assign({timestamp}, defaultOptions, options);
 
@@ -118,7 +119,6 @@ export function getRelativeTimestamp(timestamp, options) {
 
     // Enhance options with needed info, last function will output result.
     return flow(
-        getNow,
         getElapsedTime,
         normalizeAndValidate,
         getMillisAndUnit,
@@ -128,14 +128,12 @@ export function getRelativeTimestamp(timestamp, options) {
     )(opts);
 }
 
-
 //------------------------
 // Implementation
 //------------------------
-const getNow = opts => ({...opts, now: Date.now()});
 
 const getElapsedTime = opts => {
-    const diff = opts.now - opts.timestamp;
+    const diff = opts.relativeTo - opts.timestamp;
     opts.isFuture = diff < 0;
     opts.elapsedTime = Math.abs(diff);
     return opts;
