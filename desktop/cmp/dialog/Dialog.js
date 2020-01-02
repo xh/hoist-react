@@ -6,30 +6,29 @@
  */
 
 import React, {Component} from 'react';
+
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
-// import {isNil} from 'lodash';
 
-// import {action, bindable} from '@xh/hoist/mobx';
-import {elemFactory} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
-
 import {div} from '@xh/hoist/cmp/layout';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
 
-// todo: fix so autoFocus on child works.
 
-// see https://reactjs.org/docs/portals.html#event-bubbling-through-portals
-// and
-// https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx
-
+@HoistComponent
+@LayoutSupport
 export class Dialog extends Component {
 
+    containerElement = null;
     dialogRootId = 'xh-dialog-root';
 
     dialogWrapperRef = createObservableRef();
+
+    @bindable.ref hasMounted = false;
 
     constructor(props) {
         super(props);
@@ -40,40 +39,36 @@ export class Dialog extends Component {
             document.body.appendChild(this.dialogRoot);
         }
 
-        this.el = document.createElement('div');
+        this.containerElement = document.createElement('div');
     }
 
     componentDidMount() {
-        // The portal element is inserted in the DOM tree after
-        // the Modal's children are mounted, meaning that children
-        // will be mounted on a detached DOM node. If a child
-        // component requires to be attached to the DOM tree
-        // immediately when mounted, for example to measure a
-        // DOM node, or uses 'autoFocus' in a descendant, add
-        // state to Modal and only render the children when Modal
-        // is inserted in the DOM tree.
-        this.dialogRoot.appendChild(this.el);
-
+        /**
+         * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
+         * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
+         */
+        this.dialogRoot.appendChild(this.containerElement);
+        this.setHasMounted(true);
     }
 
     componentDidUpdate() {
-        this.dialogWrapperRef.current?.focus();
+        this.maybeSetFocus();
     }
 
     componentWillUnmount() {
-        this.dialogRoot.removeChild(this.el);
+        this.dialogRoot.removeChild(this.containerElement);
     }
 
     render() {
         const {dragOptions, isDraggable, isOpen} = this.props;
 
-        if (isOpen === false)  return null;
+        if (isOpen === false || !this.hasMounted)  return null;
 
         return ReactDOM.createPortal(
             dragOptions || isDraggable ?
                 this.makeDraggable() :
                 this.makeDialog(),
-            this.el
+            this.containerElement
         );
     }
 
@@ -124,6 +119,30 @@ export class Dialog extends Component {
                 },
                 items: this.props.children
             })
+        });
+    }
+
+    maybeSetFocus() {
+        // always delay focus manipulation to just before repaint to prevent scroll jumping
+        window.requestAnimationFrame(() => {
+            // containerElement may be undefined between component mounting and Portal rendering
+            // activeElement may be undefined in some rare cases in IE
+            if (this.containerElement == null || document.activeElement == null || !this.props.isOpen) {
+                return;
+            }
+
+            const isFocusOutsideModal = !this.containerElement.contains(document.activeElement);
+            if (isFocusOutsideModal) {
+                /**
+                     * @see {@link https://github.com/facebook/react/blob/9fe1031244903e442de179821f1d383a9f2a59f2/packages/react-dom/src/shared/DOMProperty.js#L294}
+                     * @see {@link https://github.com/facebook/react/blob/master/packages/react-dom/src/client/ReactDOMHostConfig.js#L379}
+                     * for why we do not search for autofocus on dom element: TLDR:  it's not there!
+                     */
+                const wrapperElement = this.containerElement.querySelector('[tabindex]');
+                if (wrapperElement != null) {
+                    wrapperElement.focus();
+                }
+            }
         });
     }
 
