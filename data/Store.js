@@ -22,7 +22,7 @@ import {
     pick,
     remove as lodashRemove
 } from 'lodash';
-import {warnIf} from '../utils/js';
+import {warnIf, withDefault} from '../utils/js';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -663,8 +663,15 @@ export class Store {
             throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
+        const id = this.idSpec(data),
+            rec = this.getById(id);
+
+        // If we are creating a record for update, and the parent id was not provided explicitly, then
+        // use the parent id for the record we are updating
+        parentId = withDefault(parentId, rec?.parentId);
+
         data = this.parseFieldValues(data);
-        return new Record({id: this.idSpec(data), data, raw, parentId, store: this, isSummary});
+        return new Record({id, data, raw, parentId, store: this, isSummary});
     }
 
     createRecords(rawRecs, parentId, recordMap = new Map()) {
