@@ -11,6 +11,8 @@
 * Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 * `PanelModel` now accepts a `maxSize` config.
+* Added a `relativeTo` option to `RelativeTimeStamp`, allowing for timestamps relative to times other
+  than now.
 
 ### 💥 Breaking Changes
 
