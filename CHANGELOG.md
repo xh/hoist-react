@@ -78,10 +78,6 @@
 
 ### 🎁 New Features
 
-* `Store.updateRecordData()` has been added to support updating a single record without needing to
-  build a `StoreUpdate` object. Both it and `Store.updateData()` now accept partial raw data
-  updates, where a subset of the Record fields are provided in the update. The updated data will be
-  merged with the original raw data for the Record.
 * `DateInput` supports a new `strictInputParsing` prop to enforce strict parsing of keyed-in entries
   by the underlying moment library. The default value is false, maintained the existing behavior
   where [moment will do its best](https://momentjs.com/guides/#/parsing/) to parse an entered date
@@ -164,11 +160,9 @@ leverage the context for model support discussed above.
   its timestamp. The model itself can either be passed as a prop or (better) sourced automatically
   from the parent context. Developers are encouraged to take this change to minimize re-renders of
   parent components (which often contain grids and other intensive layouts).
-* The following properties and methods have been added to `Record` and `Store` to make working with
-  hierarchical data more convenient:
-  * Record Properties: `descendants`, `allDescendants`, `ancestors`, `allAncestors`
-  * Record Methods: `forEachChild()`, `forEachDescendant()`, `forEachAncestor()`
-  * Store Methods: `getDescendantsById()`, `getAncestorsById()`
+* `Record` now has properties and methods for accessing and iterating over children, descendants,
+  and ancestors
+* `Store` now has methods for retrieving the descendants and ancestors of a given Record
 
 ### 💥 Breaking Changes
 
