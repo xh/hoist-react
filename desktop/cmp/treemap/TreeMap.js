@@ -302,6 +302,8 @@ class LocalModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
+
+        gridModel.ensureSelectionVisible();
     }
 
     //----------------------

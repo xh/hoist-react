@@ -11,6 +11,8 @@
 * Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 * `PanelModel` now accepts a `maxSize` config.
+* If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
+  the map.
 
 ### 💥 Breaking Changes
 
