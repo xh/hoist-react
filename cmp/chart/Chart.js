@@ -96,15 +96,16 @@ class LocalModel {
 
             // TODO: figure out why the zoom changes slightly on the first refresh
             // Seems like zoom() causes zoomout slightly past the end of the data
-            // Fixed by changing navigator.adaptToUpdatedData to false. Dunno why
-            const canUpdateInPlace = this.chart && this.chart.series.length &&
+            // Fixed by changing navigator.adaptToUpdatedData to false. Dunno why. Doesn't seem like we should require that setting on all charts.
+            const canUpdateInPlace = this.chart && this.chart.series.length >= prevConfig.length &&
                 equal(currentConfig, prevConfig);
 
             if (canUpdateInPlace) {
-                // TODO: figure out whether or not this works reliably. Does every series have a name?
-                const map = new Map();
-                this.chart.series.forEach(series => map.set(series.name, series));
-                this.model.series.forEach(series => map.get(series.name).setData(series.data));
+                // TODO: Figure out whether or not this works reliably. I believe the index is constant.
+                // I'm going back and forth on doing this by index or by name.
+                for (let i = 0; i < currentConfig.series.length; i++) {
+                    this.chart.series[i].setData(this.model.series[i].data);
+                }
             } else {
                 this.destroyHighChart();
 
