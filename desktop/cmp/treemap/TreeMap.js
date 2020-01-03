@@ -81,7 +81,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     }
 });
 
-TreeMapModel.propTypes = {
+TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
