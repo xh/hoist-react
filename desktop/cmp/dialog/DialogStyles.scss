@@ -8,9 +8,7 @@
 
 #xh-dialog-root {
     .xh-dialog-root__content {
-        box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.1),
-            0 4px 8px rgba(16, 22, 26, 0.2),
-            0 18px 46px 6px rgba(16, 22, 26, 0.2);
+        box-shadow: var(--xh-dialog-box-shadow);
         border: var(--xh-border-solid);
 
         > .xh-panel > .xh-panel-header {
@@ -18,18 +16,24 @@
         }
     }
 
-    .xh-dialog-root__draggable {
-        z-index: 1;
-        position: absolute;
+    .react-draggable {
+        background-color: var(--xh-bg-alt);
+        box-shadow: var(--xh-dialog-box-shadow);
+        border: var(--xh-border-solid);
 
-        &.xh-dialog-root__content {
+        .react-draggable__container {
+            z-index: 1;
+            width: 100%;
+            height: 100%;
             > .xh-panel > .xh-panel-header {
                 .xh-panel-header__title {
-                    cursor: pointer;
+                    cursor: move;
                 }
             }
+
         }
     }
+
 
     .xh-dialog-root__fixed {
         position: fixed;

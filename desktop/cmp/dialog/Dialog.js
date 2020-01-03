@@ -5,16 +5,15 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import React, {Component} from 'react';
-
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import Draggable from 'react-draggable';
+import {Rnd} from 'react-rnd';
 
-import {bindable} from '@xh/hoist/mobx';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {div} from '@xh/hoist/cmp/layout';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import { bindable } from '@xh/hoist/mobx';
+import { elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
+import { createObservableRef } from '@xh/hoist/utils/react';
+import { div } from '@xh/hoist/cmp/layout';
+import { splitLayoutProps } from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
 
@@ -25,6 +24,7 @@ export class Dialog extends Component {
 
     containerElement = null;
     dialogRootId = 'xh-dialog-root';
+    isDraggable = false;
 
     dialogWrapperRef = createObservableRef();
 
@@ -60,12 +60,19 @@ export class Dialog extends Component {
     }
 
     render() {
-        const {dragOptions, isDraggable, isOpen} = this.props;
+        const { dragOptions, isDraggable, isOpen } = this.props;
+        this.isDraggable = dragOptions || isDraggable;
 
-        if (isOpen === false || !this.hasMounted)  return null;
+        if (isOpen === false || !this.hasMounted) {
+            document.body.style.overflow = null;
+            return null;
+        }
+
+        // do we need to store prior overflow setting to be able to reset it when modal closes?
+        document.body.style.overflow = this.isDraggable ? 'hidden' : null;
 
         return ReactDOM.createPortal(
-            dragOptions || isDraggable ?
+            this.isDraggable ?
                 this.makeDraggable() :
                 this.makeDialog(),
             this.containerElement
@@ -74,32 +81,49 @@ export class Dialog extends Component {
 
     makeDraggable() {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(this.props),
-            {minHeight, height, minWidth, width, ...restLayoutProps} = layoutProps,
-            {dragOptions = {}} = nonLayoutProps;
+            { minHeight, height, minWidth, width, ...restLayoutProps } = layoutProps,
+            startingHeight = parseFloat(height || minHeight),
+            startingWidth = parseFloat(width || minWidth),
+            { RnDOptions = {}, handle} = nonLayoutProps,
+            w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
+            windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
 
-        if (!dragOptions.handle && this.props.children?.type?.displayName == 'Panel') {
-            dragOptions.handle = '.xh-panel-header__title';
-        }
+        RnDOptions.dragHandleClassName = RnDOptions.dragHandleClassName || handle || 'xh-panel-header__title';
 
-        return <Draggable
+
+        return <Rnd
+            default={{
+                x: Math.max((windowWidth - startingWidth) / 2, 0),
+                y: Math.max((windowHeight - startingHeight) / 2, 0),
+                width: Math.min(startingWidth, windowWidth),
+                height: Math.min(startingHeight, windowHeight)
+            }}
+            enableResizing={{
+                bottomLeft: true,
+                bottomRight: true,
+                topLeft: true,
+                topRight: true
+            }}
             bounds='body'
-            {...dragOptions}
+            {...RnDOptions}
         >
             {
                 div({
                     onKeyDown: (evt) => this.handleKeyDown(evt),
                     tabIndex: '0',
                     ref: this.dialogWrapperRef,
-                    className: 'xh-dialog-root__draggable xh-dialog-root__content',
+                    className: 'react-draggable__container',
                     style: {
-                        top: height || minHeight ? 'calc(50vh - ' + parseFloat(height || minHeight)/2 + 'px)' : null,
-                        left: width || minWidth ? 'calc(50vw - ' + parseFloat(width || minWidth)/2 + 'px)' : null,
                         ...restLayoutProps
                     },
                     items: this.props.children
                 })
             }
-        </Draggable>;
+        </Rnd>;
     }
 
     makeDialog() {
@@ -154,14 +178,12 @@ export class Dialog extends Component {
     }
 
     handleEscapKey(evt) {
-        const {canEscapeKeyClose, close} = this.props;
+        const { canEscapeKeyClose, close } = this.props;
         if (canEscapeKeyClose) close(evt);
     }
 
     handleMaskClick(evt) {
-        const {canMaskClickClose, close} = this.props;
-        console.log(canMaskClickClose);
-
+        const { canMaskClickClose, close } = this.props;
         if (canMaskClickClose == false) return;
         if (evt.target != this.dialogWrapperRef.current) return;
 
