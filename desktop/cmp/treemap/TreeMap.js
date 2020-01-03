@@ -303,7 +303,7 @@ class LocalModel {
             node.select(toSelect.has(node.id), true);
         });
 
-        gridModel.ensureSelectionVisible();
+        if (gridModel) gridModel.ensureSelectionVisible();
     }
 
     //----------------------
