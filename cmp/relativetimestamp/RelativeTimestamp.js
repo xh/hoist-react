@@ -97,10 +97,13 @@ class LocalModel {
  * @param {string} [options.prefix] - Label preceding timestamp.
  * @param {string} [options.futureSuffix] - appended to future timestamps.
  * @param {string} [options.pastSuffix] - appended to past timestamps.
- * @param {string} [options.nowString] - string to return when timestamp is within `nowEpsilon`.
- * @param {number} [options.nowEpsilon] - threshold interval (in seconds) for `nowString`.
+ * @param {string} [options.equalString] - string to return when timestamps are within `epsilon`.
+ * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalString`.
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
+ *
+ * deprecated @param {string} [options.nowString] - Deprecated since 29.0 in favor of options.equalString
+ * deprecated @param {number} [options.nowEpsilon] - Deprecated since 29.0 in favor of options.epsilon
  */
 export function getRelativeTimestamp(timestamp, options) {
     const defaultOptions = {
@@ -108,12 +111,22 @@ export function getRelativeTimestamp(timestamp, options) {
             short: XH.isMobile,
             futureSuffix: options.relativeTo ? `from ${fmtCompactDate(options.relativeTo)}` : 'from now',
             pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
-            nowString: null,
-            nowEpsilon: 30,
+            equalString: null,
+            epsilon: 30,
             emptyResult: '',
             relativeTo: Date.now()
         },
         opts = Object.assign({timestamp}, defaultOptions, options);
+
+    if (opts.nowEpsilon) {
+        console.warn('options.nowEpsilon has been deprecated since Hoist version 29.0. Use options.epsilon instead');
+        opts.epsilon = opts.nowEpsilon;
+    }
+
+    if (opts.nowString) {
+        console.warn('options.nowString has been deprecated since Hoist version 29.0. Use options.equalString instead');
+        opts.equalString = opts.nowString;
+    }
 
     if (!timestamp) return opts.emptyResult;
 
@@ -127,13 +140,14 @@ const doFormat = opts => {
     const diff = opts.relativeTo - opts.timestamp;
     const isFuture = diff < 0;
     const elapsed = Math.abs(diff);
+
     if (isFuture && !opts.allowFuture) {
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         return '[???]';
     }
 
-    if (elapsed < opts.nowEpsilon * SECONDS && opts.nowString) {
-        return opts.nowString;
+    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
+        return opts.equalString;
     }
 
     const suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
