@@ -32,6 +32,11 @@
   ([#1447](https://github.com/xh/hoist-react/issues/1447))
 * Fixed issue where resizable Panels could grow larger than desired
   ([#1498](https://github.com/xh/hoist-react/issues/1498))
+  
+### ⚙️ Technical
+
+* Changed selects to use the `react-windowed-select` library for improved performance with large 
+  option lists
 
 ### 📚 Libraries
 
@@ -43,6 +48,7 @@
 * filesize `5.0 -> 6.0`
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
+* react-windowed-select `added @ 2.0.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
 
