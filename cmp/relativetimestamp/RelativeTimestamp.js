@@ -100,7 +100,7 @@ class LocalModel {
  * @param {string} [options.nowString] - string to return when timestamp is within `nowEpsilon`.
  * @param {number} [options.nowEpsilon] - threshold interval (in seconds) for `nowString`.
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
- * @param {(Date|int)} [options.relativeTo] - timestamp to which the input timestamp is compared
+ * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options) {
     const defaultOptions = {
