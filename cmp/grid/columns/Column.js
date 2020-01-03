@@ -211,7 +211,6 @@ export class Column {
             ret = {
                 field,
                 colId: this.colId,
-                tooltipField: field,
                 headerValueGetter: (agParams) => {
                     return agParams.location === 'header' ?
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :

@@ -8,8 +8,11 @@
 * Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
+* Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 * `PanelModel` now accepts a `maxSize` config.
+* If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
+  the map.
 
 ### 💥 Breaking Changes
 
@@ -40,11 +43,14 @@
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
 * @fortawesome/fontawesome-pro `5.11 -> 5.12`
-* core-js `3.3 -> 3.4`
+* codemirror `5.49 -> 5.50`
+* core-js `3.3 -> 3.6`
 * fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`
+* highcharts 7.2 -> 8.0`
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
+* react-dropzone `10.1 -> 10.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
 
