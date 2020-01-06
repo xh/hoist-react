@@ -29,6 +29,8 @@ import {
     isString,
     last,
     map,
+    max,
+    min,
     pull,
     sortBy,
     uniq,
@@ -79,7 +81,7 @@ export class GridModel {
     enableColumnPinning;
     /** @member {boolean} */
     enableExport;
-    /** @member {object} */
+    /** @member {ExportOptions} */
     exportOptions;
 
     /** @member {AgGridModel} */
@@ -145,7 +147,7 @@ export class GridModel {
      *      install a default context menu item to launch the chooser.
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
-     * @param {Object} [c.exportOptions] - default options used in exportAsync().
+     * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
@@ -236,7 +238,7 @@ export class GridModel {
     /**
      * Export grid data using Hoist's server-side export.
      *
-     * @param {Object} options - Export options. See GridExportService.exportAsync() for options.
+     * @param {ExportOptions} options - overrides of default export options to use for this export.
      */
     async exportAsync(options = {}) {
         throwIf(!this.enableExport, 'Export not enabled for this grid. See GridModel.enableExport');
@@ -274,6 +276,28 @@ export class GridModel {
         const id = agGridModel.getFirstSelectableRowNodeId();
 
         if (id) selModel.select(id);
+    }
+
+    /**
+     * Scroll to ensure the selected record is visible.
+     *
+     * If multiple records are selected, scroll to the first record and then the last. This will do
+     * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
+     */
+    ensureSelectionVisible() {
+        const {records} = this.selModel,
+            {agApi} = this;
+
+        if (!agApi) return;
+
+        const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
+
+        if (indices.length == 1) {
+            agApi.ensureIndexVisible(indices[0]);
+        } else if (indices.length > 1) {
+            agApi.ensureIndexVisible(max(indices));
+            agApi.ensureIndexVisible(min(indices));
+        }
     }
 
     /** Does the grid have any records to show? */
