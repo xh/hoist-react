@@ -5,10 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 import ReactDOM from 'react-dom';
-import {Rnd} from 'react-rnd';
 
+import {rnd} from '@xh/hoist/kit/react-rnd';
 import { bindable } from '@xh/hoist/mobx';
 import { elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
 import { createObservableRef } from '@xh/hoist/utils/react';
@@ -93,35 +93,32 @@ export class Dialog extends Component {
         RnDOptions.dragHandleClassName = RnDOptions.dragHandleClassName || handle || 'xh-panel-header__title';
 
 
-        return <Rnd
-            default={{
+        return rnd({
+            default: {
                 x: Math.max((windowWidth - startingWidth) / 2, 0),
                 y: Math.max((windowHeight - startingHeight) / 2, 0),
                 width: Math.min(startingWidth, windowWidth),
                 height: Math.min(startingHeight, windowHeight)
-            }}
-            enableResizing={{
+            },
+            enableResizing: {
                 bottomLeft: true,
                 bottomRight: true,
                 topLeft: true,
                 topRight: true
-            }}
-            bounds='body'
-            {...RnDOptions}
-        >
-            {
-                div({
-                    onKeyDown: (evt) => this.handleKeyDown(evt),
-                    tabIndex: '0',
-                    ref: this.dialogWrapperRef,
-                    className: 'react-draggable__container',
-                    style: {
-                        ...restLayoutProps
-                    },
-                    items: this.props.children
-                })
-            }
-        </Rnd>;
+            },
+            bounds: 'body',
+            ...RnDOptions,
+            item: div({
+                onKeyDown: (evt) => this.handleKeyDown(evt),
+                tabIndex: '0',
+                ref: this.dialogWrapperRef,
+                className: 'react-draggable__container',
+                style: {
+                    ...restLayoutProps
+                },
+                items: this.props.children
+            })
+        });
     }
 
     makeDialog() {
