@@ -96,6 +96,7 @@ export function fmtNumber(v, {
  * @param {number} v - value to format
  * @param {Object} [opts] - @see {@link fmtNumber} method. Also contains an additional maxTrailingZeroes option.
  * @param {number} [opts.maxTrailingZeroes] - How many trailing zeroes may be displayed before truncating.
+ * @param {string} [opts.allowedUnits] - Which suffixes are allowed- defaults to 'mb'
  */
 export function fmtLossless(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -125,20 +126,22 @@ export function fmtLossless(v, opts = {}) {
  *
  * @param v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * @param {string} [opts.allowedUnits] - Which suffixes are allowed- defaults to 'mb'
  */
 export function fmtShorthand(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
     defaults(opts, {
+        allowedUnits: 'mb',
         label: true
     });
 
     const abs = Math.abs(v);
-    if (abs >= BILLION) {
+    if (abs >= BILLION && opts.allowedUnits.includes('b')) {
         return fmtBillions(v, opts);
-    } else if (abs >= MILLION) {
+    } else if (abs >= MILLION && opts.allowedUnits.includes('m')) {
         return fmtMillions(v, opts);
-    } else if (abs >= THOUSAND) {
+    } else if (abs >= THOUSAND && opts.allowedUnits.includes('k')) {
         return fmtThousands(v, opts);
     }
     return fmtNumber(v, opts);
