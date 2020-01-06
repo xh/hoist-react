@@ -200,7 +200,10 @@ class LocalModel {
         return {
             chart: {},
             credits: false,
-            exporting
+            exporting,
+            navigator: {
+                adaptToUpdatedData: false
+            }
         };
     }
 
