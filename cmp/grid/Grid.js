@@ -216,11 +216,7 @@ class LocalModel {
             rowDeselection: true,
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            noRowsOverlayComponentFramework: hoistCmp({
-                render() {
-                    return model.emptyText;
-                }
-            }),
+            noRowsOverlayComponentFramework: hoistCmp(() => model.emptyText),
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
