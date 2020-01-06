@@ -81,7 +81,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     }
 });
 
-TreeMapModel.propTypes = {
+TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
@@ -302,6 +302,8 @@ class LocalModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
+
+        if (gridModel) gridModel.ensureSelectionVisible();
     }
 
     //----------------------

@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFunction, isString, startCase} from 'lodash';
+import {castArray, clone, find, isFinite, isFunction, startCase, isString} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -154,10 +154,15 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
+            `Column specified with both flex = true && width. Width will be ignored. [colId=${this.colId}]`
+        );
+        warnIf(
+            width && !isFinite(width),
+            `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
         );
         this.flex = withDefault(flex, false);
-        this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
+        this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
+
         this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
