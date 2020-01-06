@@ -13,7 +13,6 @@ import { bindable } from '@xh/hoist/mobx';
 import { elemFactory, HoistComponent, LayoutSupport } from '@xh/hoist/core';
 import { createObservableRef } from '@xh/hoist/utils/react';
 import { div } from '@xh/hoist/cmp/layout';
-import { splitLayoutProps } from '@xh/hoist/utils/react';
 
 import './DialogStyles.scss';
 
@@ -80,11 +79,10 @@ export class Dialog extends Component {
     }
 
     makeDraggable() {
-        const [layoutProps, nonLayoutProps] = splitLayoutProps(this.props),
-            { minHeight, height, minWidth, width, ...restLayoutProps } = layoutProps,
+        const { minHeight, height, minWidth, width, ...restLayoutProps } = this.getLayoutProps(),
             startingHeight = parseFloat(height || minHeight),
             startingWidth = parseFloat(width || minWidth),
-            { RnDOptions = {}, handle} = nonLayoutProps,
+            { RnDOptions = {}, handle} = this.getNonLayoutProps(),
             w = window,
             d = document,
             e = d.documentElement,
@@ -127,8 +125,6 @@ export class Dialog extends Component {
     }
 
     makeDialog() {
-        const [layoutProps] = splitLayoutProps(this.props);
-
         return div({
             onKeyDown: (evt) => this.handleKeyDown(evt),
             onClick: (evt) => this.handleMaskClick(evt),
@@ -139,7 +135,7 @@ export class Dialog extends Component {
             item: div({
                 className: 'xh-dialog-root__content',
                 style: {
-                    ...layoutProps
+                    ...this.getLayoutProps()
                 },
                 items: this.props.children
             })
