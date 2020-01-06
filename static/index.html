@@ -11,7 +11,7 @@
       window._xhLoadTimestamp = Date.now();
       (function(W) {
           var D = document,
-              // Mobx 5+ has a hard requirement for Proxy (test w/string access for max safety).              
+              // Mobx 5+ has a hard requirement for Proxy (test w/string access for max safety).
               hasProxy = W['Proxy'];
 
           if (!hasProxy) {
@@ -33,6 +33,7 @@
   </noscript>
 
   <div id="xh-root"></div>
+  <div id="xh-dialog-root"></div>
 
 </body>
 </html>

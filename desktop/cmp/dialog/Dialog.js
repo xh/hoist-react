@@ -29,23 +29,13 @@ export class Dialog extends Component {
 
     @bindable.ref hasMounted = false;
 
-    constructor(props) {
-        super(props);
-        this.dialogRoot = document.getElementById(this.dialogRootId);
-        if (!this.dialogRoot) {
-            this.dialogRoot = document.createElement('div');
-            this.dialogRoot.setAttribute('id', this.dialogRootId);
-            document.body.appendChild(this.dialogRoot);
-        }
-
-        this.containerElement = document.createElement('div');
-    }
-
     componentDidMount() {
         /**
          * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
          * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
          */
+        this.dialogRoot = document.getElementById(this.dialogRootId);
+        this.containerElement = document.createElement('div');
         this.dialogRoot.appendChild(this.containerElement);
         this.setHasMounted(true);
     }
