@@ -99,11 +99,11 @@ export class GridModel {
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
-    @observable groupBy = null;
+    @observable.ref groupBy = null;
     /** @member {(string|boolean)} */
     @bindable showSummary = false;
     /** @member {string} */
-    @bindable emptyText;
+    @observable emptyText;
 
     static defaultContextMenu = [
         'copy',
@@ -384,6 +384,15 @@ export class GridModel {
             agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
+    }
+
+    /**
+     * Set the text displayed when the grid is empty.
+     * @param text The new empty text
+     */
+    @action
+    setEmptyText(text) {
+        this.emptyText = text;
     }
 
     /**
