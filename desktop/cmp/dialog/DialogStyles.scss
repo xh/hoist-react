@@ -31,6 +31,24 @@
                 }
             }
 
+            // overwrite Blueprint's transform: translateZ(0);
+            // which causes jank when inside a component
+            // with overflow: hidden (such as the Hoist Box component)
+            // that itself is inside the react-draggable that also has transform applied to it when dragging.
+            //
+            // translateZ(0) is brought into css by `new-render-layer`
+            // https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/forms/_control-group.scss#L48
+            // which is a mixin defined here:
+            // https://github.com/palantir/blueprint/blob/develop/packages/core/src/common/_mixins.scss#L100
+            // Blueprint's long explanation for using this seems to make it ok to remove just when in
+            // in a draggable dialog.
+            .bp3-control-group {
+                transform: none !important;
+                .bp3-button {
+                    transform: none !important;
+                }
+            }
+
         }
     }
 
