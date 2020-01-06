@@ -13,6 +13,7 @@
 * `PanelModel` now accepts a `maxSize` config.
 * If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
   the map.
+* `GridModel.emptyText` can now be set dynamically, with changes reflected in the grid.
 
 ### 💥 Breaking Changes
 

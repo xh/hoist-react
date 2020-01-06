@@ -4,6 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import {observer} from 'mobx-react';
 import {isValidElement, createRef} from 'react';
 import PT from 'prop-types';
 import {
@@ -216,7 +217,7 @@ class LocalModel {
             rowDeselection: true,
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            overlayNoRowsTemplate: model.emptyText || '<span></span>',
+            noRowsOverlayComponentFramework: observer(() => model.emptyText),
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
