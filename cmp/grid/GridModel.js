@@ -10,7 +10,7 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -101,7 +101,7 @@ export class GridModel {
     /** @member {string[]} */
     @observable.ref groupBy = null;
     /** @member {(string|boolean)} */
-    @bindable showSummary = false;
+    @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
 
@@ -387,12 +387,22 @@ export class GridModel {
     }
 
     /**
-     * Set the text displayed when the grid is empty.
-     * @param text The new empty text
+     * Set the location for a docked summary row. Requires `store.SummaryRecord` to be populated.
+     * @param {(string|boolean)} showSummary - The new location
      */
     @action
-    setEmptyText(text) {
-        this.emptyText = text;
+    setShowSummary(showSummary) {
+        this.showSummary = showSummary;
+    }
+
+    /**
+     * Set the text displayed when the grid is empty.
+     * @param {?string} emptyText - text/HTML to display if grid has no records.
+     *      Defaults to null, in which case no empty text will be shown.
+     */
+    @action
+    setEmptyText(emptyText) {
+        this.emptyText = emptyText;
     }
 
     /**
