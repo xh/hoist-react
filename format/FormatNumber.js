@@ -126,7 +126,7 @@ export function fmtLossless(v, opts = {}) {
  *
  * @param v - value to format.
  * @param {Object} [opts] - @see {@link fmtNumber} method.
- * @param {string} [opts.allowedUnits] - Which suffixes are allowed- defaults to 'mb'
+ * @param {string} [opts.allowedUnits] - Which unit are allowed. If a unit is in the string, it is enabled. Defaults to 'mb'
  */
 export function fmtShorthand(v, opts = {}) {
     if (isInvalidInput(v)) return fmtNumber(v, opts);
