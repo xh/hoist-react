@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {action, observable} from '@xh/hoist/mobx';
@@ -363,7 +363,7 @@ export class Store {
 
         throwIf(
             ret.some(it => it.name == 'id'),
-            `Applications should not specify a field for the id of a record. An id property is created 
+            `Applications should not specify a field for the id of a record. An id property is created
             automatically for all records. See Store.idSpec for more info.`
         );
         return ret;

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS, agGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';

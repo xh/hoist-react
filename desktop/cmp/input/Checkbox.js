@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -23,7 +23,7 @@ export class Checkbox extends HoistInput {
 
         /** True to focus the control on render. */
         autoFocus: PT.bool,
-                
+
         value: PT.bool,
 
         /** True (default) if the control should appear as an inline element. */
@@ -72,7 +72,7 @@ export class Checkbox extends HoistInput {
             onFocus: this.onFocus
         });
     }
-    
+
     onChange = (e) => {
         this.noteValueChange(e.target.checked);
     }

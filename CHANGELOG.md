@@ -2037,3 +2037,11 @@ and ag-Grid upgrade, and more. 🚀
 ### 🐞 Bugfixes
 
 * None
+
+------------------------------------------
+
+Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact
