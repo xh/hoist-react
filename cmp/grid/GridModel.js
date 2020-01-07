@@ -388,7 +388,7 @@ export class GridModel {
 
     /**
      * Set the location for a docked summary row. Requires `store.SummaryRecord` to be populated.
-     * @param {(string|boolean)} showSummary - The new location
+     * @param {(string|boolean)} showSummary - true/'top' or 'bottom' to show summary, false to hide.
      */
     @action
     setShowSummary(showSummary) {
@@ -398,7 +398,6 @@ export class GridModel {
     /**
      * Set the text displayed when the grid is empty.
      * @param {?string} emptyText - text/HTML to display if grid has no records.
-     *      Defaults to null, in which case no empty text will be shown.
      */
     @action
     setEmptyText(emptyText) {
