@@ -117,7 +117,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
 
         const rndDialog = () => {
-            const {height, width} = model,
+            const {height, width, resizable, draggable} = model,
                 startingHeight = parseFloat(height),
                 startingWidth = parseFloat(width),
                 {RnDOptions = {}, handle} = model,
@@ -138,11 +138,16 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
                     width: Math.min(startingWidth, windowWidth),
                     height: Math.min(startingHeight, windowHeight)
                 },
+                disableDragging: !draggable,
                 enableResizing: {
-                    bottomLeft: true,
-                    bottomRight: true,
-                    topLeft: true,
-                    topRight: true
+                    bottom: resizable,
+                    bottomLeft: resizable,
+                    bottomRight: resizable,
+                    left: resizable,
+                    right: resizable,
+                    top: resizable,
+                    topLeft: resizable,
+                    topRight: resizable
                 },
                 bounds: 'body',
                 ...RnDOptions,
@@ -156,7 +161,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             });
         };
 
-        const {draggable, isOpen, hasMounted} = model;
+        const {draggable, resizable, isOpen, hasMounted} = model,
+            isRnd = draggable || resizable;
 
         if (isOpen === false || !hasMounted) {
             document.body.style.overflow = null;
@@ -164,10 +170,10 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         }
 
         // do we need to store prior overflow setting to be able to reset it when modal closes?
-        document.body.style.overflow = draggable ? 'hidden' : null;
+        document.body.style.overflow = isRnd ? 'hidden' : null;
 
         return ReactDOM.createPortal(
-            draggable ?
+            isRnd ?
                 rndDialog() :
                 plainDialog(),
             model.containerElement

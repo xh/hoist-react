@@ -47,8 +47,8 @@ export class DialogModel {
      * @param {boolean} [config.resizable] - Can dialog be resized?
      * @param {boolean} [config.draggable] - Can dialog be dragged?
      * @param {string} [config.prefName] - preference name to store sizing and positioning state.
-     * @param {number} config.width - Dialog width (in pixels).
-     * @param {number} config.height - Dialog height (in pixels).
+     * @param {number} [config.width] - Dialog width. Number that represents px.
+     * @param {number} [config.height] - Dialog height. Number that represents px.
      */
     constructor({
         resizable = false,
