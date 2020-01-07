@@ -5,13 +5,13 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {div, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
-import {clone, isFunction, remove} from 'lodash';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {clone, isFunction, remove} from 'lodash';
 
 /**
  * A custom ag-Grid header component.
@@ -64,7 +64,7 @@ export const ColumnHeader = hoistCmp({
         ];
 
         let headerName = props.displayName;
-        if (isFunction(impl.xhColumn.headerName)) {
+        if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
             const {xhColumn, gridModel} = impl;
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
@@ -85,7 +85,6 @@ export const ColumnHeader = hoistCmp({
 
 @HoistModel
 class LocalModel {
-
     gridModel;
     xhColumn;
     agColumn;
