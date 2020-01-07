@@ -126,7 +126,7 @@ export function getRelativeTimestamp(timestamp, options) {
 //------------------------
 // Implementation
 //------------------------
-const doFormat = opts => {
+function doFormat(opts) {
     const diff = opts.relativeTo - opts.timestamp;
     const isFuture = diff < 0;
 
@@ -149,4 +149,4 @@ const doFormat = opts => {
     }
 
     return `${opts.prefix} ${humanized} ${suffix}`;
-};
+}
