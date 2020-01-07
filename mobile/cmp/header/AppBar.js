@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
@@ -101,7 +101,7 @@ AppBar.propTypes = {
 
     /** Items to be added to the right side of the AppBar, before the refresh button. */
     rightItems: PT.node,
-    
+
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 

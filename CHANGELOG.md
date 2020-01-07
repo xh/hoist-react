@@ -15,6 +15,9 @@
 allowing for timestamps relative to times other than now.
 * `getRelativeTimestamp` and `RelativeTimeStamp` now use a more standard moment.js routine for 
 their underlying implementation. 
+* If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
+  the map.
+* `GridModel.emptyText` can now be set dynamically, with changes reflected in the grid.
 
 ### 💥 Breaking Changes
 
@@ -41,6 +44,8 @@ their underlying implementation.
   ([#1498](https://github.com/xh/hoist-react/issues/1498))
 * Changed RestGrid to only display export button if export is enabled
   ([#1490](https://github.com/xh/hoist-react/issues/1490))
+* Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
+  ([#1520](https://github.com/xh/hoist-react/issues/1520))
 
 ### 📚 Libraries
 
@@ -2038,3 +2043,11 @@ and ag-Grid upgrade, and more. 🚀
 ### 🐞 Bugfixes
 
 * None
+
+------------------------------------------
+
+Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact

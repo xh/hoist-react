@@ -1,6 +1,12 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 // Ag-grid installs an outer div around itself.
 // This should use height: auto rather than height: 100%, to allow layoutConfig to work.
-
 .xh-ag-grid > div {
   width: 100%;
   height: auto !important;
