@@ -38,6 +38,8 @@
   ([#1498](https://github.com/xh/hoist-react/issues/1498))
 * Changed RestGrid to only display export button if export is enabled
   ([#1490](https://github.com/xh/hoist-react/issues/1490))
+* Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
+  ([#1520](https://github.com/xh/hoist-react/issues/1520))
 
 ### 📚 Libraries
 
