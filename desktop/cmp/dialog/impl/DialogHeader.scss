@@ -1,0 +1,25 @@
+.xh-dialog-header {
+  align-items: center;
+  flex: none;
+  user-select: none;
+  height: var(--xh-title-height-px);
+  padding: var(--xh-title-pad-px);
+  background-color: var(--xh-title-bg);
+  color: var(--xh-title-text-color);
+
+  &__title {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--xh-title-font-size-px);
+  }
+
+  // Header glyph.
+  & > .svg-inline--fa {
+    margin: 0 6px 0 2px;
+  }
+
+  // Header "tool" buttons.
+  .xh-button--minimal {
+    color: var(--xh-title-text-color) !important;
+  }
+}

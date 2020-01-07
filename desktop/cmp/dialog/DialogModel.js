@@ -29,6 +29,7 @@ export class DialogModel {
     //-----------------------
     resizable;
     draggable;
+    showCloseButton;
     prefName;
     width;
     height;
@@ -46,6 +47,7 @@ export class DialogModel {
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can dialog be resized?
      * @param {boolean} [config.draggable] - Can dialog be dragged?
+     * @param {boolean} [config.showCloseButton] - Show a close button in dialog header?
      * @param {string} [config.prefName] - preference name to store sizing and positioning state.
      * @param {number} [config.width] - Dialog width. Number that represents px.
      * @param {number} [config.height] - Dialog height. Number that represents px.
@@ -53,6 +55,7 @@ export class DialogModel {
     constructor({
         resizable = false,
         draggable = false,
+        showCloseButton = true,
         prefName = null,
         width = 400,
         height = 400,
@@ -63,6 +66,7 @@ export class DialogModel {
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
+        this.showCloseButton = showCloseButton;
         this.width = width;
         this.height = height;
         this.closeOnMaskClick = closeOnMaskClick;
@@ -75,7 +79,6 @@ export class DialogModel {
         this.prefName = prefName;
 
         // Set observable state
-
     }
 
     isComponentModel() {
@@ -108,5 +111,21 @@ export class DialogModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
+    handleKeyDown(evt) {
+        switch (evt.key) {
+            case 'Escape':
+                this.handleEscapKey(evt); break;
+        }
+    }
 
+    handleEscapKey() {
+        if (this.closeOnEscape) this.hide();
+    }
+
+    handleMaskClick(evt) {
+        if (this.closeOnMaskClick == false) return;
+        if (evt.target != this.dialogWrapperDivRef.current) return;
+
+        this.hide();
+    }
 }
