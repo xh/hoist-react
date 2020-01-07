@@ -58,8 +58,7 @@ export class RecordSet {
     }
 
     isEqual(other) {
-        if (this.store !== other.store) return false;
-        if (this.count !== other.count) return false;
+        if (this.store !== other.store || this.count !== other.count) return false;
 
         for (const [id, rec] of this.recordMap) {
             if (rec !== other.recordMap.get(id)) return false;

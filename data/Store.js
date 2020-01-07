@@ -50,7 +50,7 @@ export class Store {
     @observable.ref summaryRecord = null;
 
     @observable.ref _original;
-    @observable.ref _all;
+    @observable.ref _current;
     @observable.ref _filtered;
     _filter = null;
     _loadRootAsSummary = false;
@@ -81,12 +81,19 @@ export class Store {
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
-        this._filtered = this._original = this._all = new RecordSet(this);
-        this.setFilter(filter);
         this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
+        this.setFilter(filter);
         this.processRawData = processRawData;
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
+
+        this.resetRecords();
+    }
+
+    /** Remove all records from the store. Equivalent to calling `loadData([])`*/
+    @action
+    clear() {
+        this.loadData([]);
     }
 
     /**
@@ -121,22 +128,22 @@ export class Store {
             rawData = rawData[0].children;
         }
 
-        this.clear();
-        this.loadDataTransaction({add: rawData, rawSummaryData});
+        this.resetRecords();
+        this.loadDataUpdates({add: rawData, rawSummaryData});
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
 
     /**
      * Add, update, or delete records in this store.
-     * @param {StoreTransaction|Object[]} transaction - data changes to process
+     * @param {Object[]|StoreTransaction} rawData - data changes to process
      */
     @action
-    loadDataTransaction(transaction) {
+    loadDataUpdates(rawData) {
         // Build a transaction object out of a flat list of adds and updates
-        if (isArray(transaction)) {
+        if (isArray(rawData)) {
             const add = [], update = [];
-            transaction.forEach(it => {
+            rawData.forEach(it => {
                 if (this.getById(it.id)) {
                     update.push(it);
                 } else {
@@ -144,11 +151,11 @@ export class Store {
                 }
             });
 
-            transaction = {add, update};
+            rawData = {add, update};
         }
 
-        const {update, add, remove, rawSummaryData, ...other} = transaction;
-        throwIf(!isEmpty(other), 'Unknown argument(s) passed to loadDataTransaction().');
+        const {update, add, remove, rawSummaryData, ...other} = rawData;
+        throwIf(!isEmpty(other), 'Unknown argument(s) passed to loadDataUpdates().');
 
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
@@ -166,34 +173,17 @@ export class Store {
             });
         }
 
+        let didUpdate = false;
+
         // 2) Pre-process summary record, peeling it out of updates if needed
         const {summaryRecord} = this;
         let summaryUpdateRec;
         if (summaryRecord) {
             [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
-            if (!summaryUpdateRec && rawSummaryData) {
-                summaryUpdateRec = this.createRecord({...this.summaryRecord.raw, ...rawSummaryData}, null, true);
-            }
         }
 
-        // 3) Apply changes
-        let didUpdate = false;
-        if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
-            const {isDirty: wasDirty} = this;
-            this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
-
-            // If we were dirty before loading the data transaction, we need to also load the transaction
-            // into our current state, and then check if we are still dirty or not as the transaction
-            // may have put us back into a clean state
-            if (wasDirty) {
-                this._all = this._all.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
-                this.checkDirty();
-            } else {
-                this._all = this._original;
-            }
-
-            this.rebuildFiltered();
-            didUpdate = true;
+        if (!summaryUpdateRec && rawSummaryData) {
+            summaryUpdateRec = this.createRecord({...summaryRecord.raw, ...rawSummaryData}, null, true);
         }
 
         if (summaryUpdateRec) {
@@ -201,15 +191,26 @@ export class Store {
             didUpdate = true;
         }
 
-        if (didUpdate) this.lastUpdated = Date.now();
-    }
+        // 3) Apply changes
+        if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
+            const {isDirty} = this;
+            this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
 
-    /** Remove all records from the store. */
-    @action
-    clear() {
-        this._original = this._all = this._filtered = new RecordSet(this);
-        this.summaryRecord = null;
-        this.lastUpdated = this.lastLoaded = Date.now();
+            // If we were dirty before loading the data transaction, we need to also load the transaction
+            // into our current state, and then check if we are still dirty or not as the transaction
+            // may have put us back into a clean state
+            if (isDirty) {
+                this._current = this._current.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+                this.normalizeCommittedState();
+            } else {
+                this._current = this._original;
+            }
+
+            this.rebuildFiltered();
+            didUpdate = true;
+        }
+
+        if (didUpdate) this.lastUpdated = Date.now();
     }
 
     /**
@@ -227,7 +228,7 @@ export class Store {
             return new Record({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
         });
 
-        this._all = this._all.loadRecordTransaction({add: addRecs});
+        this._current = this._current.loadRecordTransaction({add: addRecs});
         this.onRecordsUpdated();
     }
 
@@ -249,10 +250,10 @@ export class Store {
         records = castArray(records);
         records = records.map(it => (it instanceof Record) ? it.id : it);
 
-        this._all = this._all.loadRecordTransaction({remove: records});
+        this._current = this._current.loadRecordTransaction({remove: records});
         this.onRecordsUpdated();
 
-        this.checkDirty();
+        this.normalizeCommittedState();
     }
 
     /**
@@ -303,10 +304,10 @@ export class Store {
 
         warnIf(hadDupes, 'Store.updateRecords() called with multiple updates for the same Records. Only the first update entries for each Record were processed.');
 
-        this._all = this._all.loadRecordTransaction({update: Array.from(updateRecs.values())});
+        this._current = this._current.loadRecordTransaction({update: Array.from(updateRecs.values())});
         this.onRecordsUpdated();
 
-        this.checkDirty();
+        this.normalizeCommittedState();
     }
 
     /**
@@ -325,7 +326,7 @@ export class Store {
      */
     @action
     revert() {
-        this._all = this._original;
+        this._current = this._original;
         this.onRecordsUpdated();
     }
 
@@ -336,11 +337,11 @@ export class Store {
     @action
     revertRecords(records) {
         records = castArray(records);
-        records = records.map(it => (it instanceof Record) ? it : this._all.getById(it));
-        this._all = this._all.loadRecordTransaction({update: records.map(it => it.originalRecord)});
+        records = records.map(it => (it instanceof Record) ? it : this._current.getById(it));
+        this._current = this._current.loadRecordTransaction({update: records.map(it => it.originalRecord)});
         this.onRecordsUpdated();
 
-        this.checkDirty();
+        this.normalizeCommittedState();
     }
 
     /**
@@ -365,7 +366,7 @@ export class Store {
      * @return {Record[]}
      */
     get allRecords() {
-        return this._all.list;
+        return this._current.list;
     }
 
     /**
@@ -393,7 +394,7 @@ export class Store {
      * @return {Record[]}
      */
     get allRootRecords() {
-        return this._all.rootList;
+        return this._current.rootList;
     }
 
     /**
@@ -447,7 +448,7 @@ export class Store {
 
     /** @returns {boolean} - true if the store has dirty records (added/updated/removed) */
     get isDirty() {
-        return this._all !== this._original;
+        return this._current !== this._original;
     }
 
     /**
@@ -478,7 +479,7 @@ export class Store {
 
     /** @returns {number} - the count of all records in the store. */
     get allCount() {
-        return this._all.count;
+        return this._current.count;
     }
 
     /** @returns {number} - the count of all records originally loaded into the store. */
@@ -493,7 +494,7 @@ export class Store {
 
     /** @returns {number} - the count of all root records in the store. */
     get allRootCount() {
-        return this._all.rootCount;
+        return this._current.rootCount;
     }
 
     /** @returns {number} - the count of all root records originally loaded into the store. */
@@ -508,7 +509,7 @@ export class Store {
 
     /** @returns {boolean} - true if the store is empty before filters have been applied */
     get allEmpty() {
-        return this._all.empty;
+        return this._current.empty;
     }
 
     /** @returns {boolean} - true if the store was originally empty */
@@ -523,7 +524,7 @@ export class Store {
 
     /** @returns {RecordSet} - the record set for the current state of the store */
     get allRecordSet() {
-        return this._all;
+        return this._current;
     }
 
     /** @returns {RecordSet} - the record set for the original state of the store */
@@ -541,7 +542,7 @@ export class Store {
     getById(id, fromFiltered = false) {
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._all;
+        const rs = fromFiltered ? this._filtered : this._current;
         return rs.getById(id);
     }
 
@@ -566,7 +567,7 @@ export class Store {
      * @return {Record[]}
      */
     getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -582,7 +583,7 @@ export class Store {
      * @return {Record[]}
      */
     getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
@@ -598,7 +599,7 @@ export class Store {
      * @return {Record[]}
      */
     getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._all,
+        const rs = fromFiltered ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
     }
@@ -616,9 +617,15 @@ export class Store {
     //------------------------
     // Private Implementation
     //------------------------
+
+    resetRecords() {
+        this._original = this._current = this._filtered = new RecordSet(this);
+        this.summaryRecord = null;
+    }
+
     @action
     rebuildFiltered() {
-        this._filtered = this._all.applyFilter(this.filter);
+        this._filtered = this._current.applyFilter(this.filter);
     }
 
     @action
@@ -628,11 +635,11 @@ export class Store {
     }
 
     @action
-    checkDirty() {
+    normalizeCommittedState() {
         // If the record sets are equal after loading the transaction, re-set the ref so we
         // know that we are no longer dirty
-        if (this._all.isEqual(this._original)) {
-            this._all = this._original;
+        if (this._current.isEqual(this._original)) {
+            this._current = this._original;
         }
     }
 

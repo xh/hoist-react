@@ -5,9 +5,9 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
 
@@ -115,7 +115,7 @@ export class DataViewModel {
 
     /** Update the underlying store. */
     loadDataTransaction(...args) {
-        return this.store.loadDataTransaction(...args);
+        return this.store.loadDataUpdates(...args);
     }
 
     /** Clear the underlying store, removing all rows. */

@@ -7,8 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {forEach, isNil, isEqual, reduce} from 'lodash';
-import {withDefault} from '../utils/js';
+import {forEach, isNil, reduce} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}.
@@ -125,17 +124,21 @@ export class Record {
      *
      * @param {Object} c - Record configuration
      * @param {Object} c.data - data used to construct this record,
-     *      pre-processed if applicable by `store.processRawData()`.
+     *      pre-processed if applicable by `store.processRawData()` and `Field.parseVal()`.
      * @param {Object} c.raw - the same data, prior to any store pre-processing.
      * @param {Store} c.store - store containing this record.
      * @param {string} [c.parentId] - id of parent record, if any.
+     * @param {boolean} [c.isSummary] - whether this record is a summary record.
+     * @param {Record|null} [c.originalRecord] - the clean Record loaded into the Store. Defaults to
+     *      `this` to indicate that this Record is the original. Pass `null` to indicate that this is
+     *      a "new" Record with no backing original data in the Store data source.
      */
-    constructor({id, data, raw, store, parentId, isSummary, originalRecord}) {
+    constructor({id, data, raw, store, parentId, isSummary, originalRecord = this}) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
         this.parentId = parentId;
-        this.originalRecord = withDefault(originalRecord, this);
+        this.originalRecord;
         this.raw = raw;
         this.data = data;
         this.store = store;
@@ -145,7 +148,7 @@ export class Record {
             Object.defineProperty(this, key, {
                 get: () => this.data[key],
                 set: () => {
-                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.loadDataTransaction() or Store.updateFields().`);
+                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.loadDataTransaction() or Store.updateRecord().`);
                 }
             });
         });
@@ -177,9 +180,10 @@ export class Record {
      */
     isFieldDirty(name) {
         if (!this.isDirty) return false;
+        if (this.isNew) return true;
 
         const value = this[name], originalValue = this.originalRecord[name];
-        return !isEqual(value, originalValue);
+        return !equal(value, originalValue);
     }
 
     /**
@@ -197,7 +201,7 @@ export class Record {
 
         forEach(this.data, (value, key) => {
             const originalValue = rec[key];
-            if (!isEqual(value, originalValue)) ret[key] = {value, originalValue};
+            if (!equal(value, originalValue)) ret[key] = {value, originalValue};
         });
 
         return ret;
