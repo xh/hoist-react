@@ -109,7 +109,7 @@ export function getRelativeTimestamp(timestamp, options) {
     const defaultOptions = {
             allowFuture: false,
             short: XH.isMobile,
-            futureSuffix: options.relativeTo ? `from ${fmtCompactDate(options.relativeTo)}` : 'from now',
+            futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
             pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
             equalString: null,
             epsilon: 30,
