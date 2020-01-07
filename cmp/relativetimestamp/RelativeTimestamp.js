@@ -44,7 +44,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 });
 RelativeTimestamp.propTypes = {
     /**
-     * Date or milliseconds representing the starting / time to compare.
+     * Date or milliseconds representing the starting time / time to compare.
      * See also `bind` as an alternative.
      */
     timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
@@ -90,7 +90,7 @@ class LocalModel {
  * Returns a string describing the approximate amount of time between a given timestamp and the
  * present moment in a friendly, human readable format.
  *
- * @param {(Date|int)} timestamp - Date or milliseconds representing the starting / reference time.
+ * @param {(Date|int)} timestamp - Date or milliseconds representing the starting time / time to compare.
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now().
  * @param {boolean} [options.short] - Use shorter timestamp text, default true for mobile clients.
