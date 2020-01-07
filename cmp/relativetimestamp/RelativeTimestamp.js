@@ -129,18 +129,24 @@ export function getRelativeTimestamp(timestamp, options) {
 const doFormat = opts => {
     const diff = opts.relativeTo - opts.timestamp;
     const isFuture = diff < 0;
-    const elapsed = Math.abs(diff);
 
     if (isFuture && !opts.allowFuture) {
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         return '[???]';
     }
 
+    const elapsed = Math.abs(diff);
     if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
         return opts.equalString;
     }
 
     const suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
 
-    return `${opts.prefix} ${moment.duration(elapsed).humanize()} ${suffix}`;
+    let humanized = (elapsed > 10 * SECONDS && elapsed < 60 * SECONDS) ? '<1 minute' : moment.duration(elapsed).humanize();
+
+    if (opts.short) {
+        humanized = humanized.replace('minute', 'min').replace('second', 'sec');
+    }
+
+    return `${opts.prefix} ${humanized} ${suffix}`;
 };

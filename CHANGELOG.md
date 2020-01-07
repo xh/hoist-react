@@ -22,6 +22,8 @@
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* The options `nowEpsilon` and `nowString` on RelativeTimestamp have been renamed to `epsilon` and 
+  `equalString`, respectively.
 
 ### 🐞 Bug Fixes
 
