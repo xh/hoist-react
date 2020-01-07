@@ -12,7 +12,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
-import * as moment from 'moment';
+import moment from 'moment';
 import PT from 'prop-types';
 
 /**
@@ -103,8 +103,8 @@ class LocalModel {
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options) {
-    apiRemoved(options.nowEpsilon, 'nowEpsilon', 'Use `epsilon` instead.');
-    apiRemoved(options.nowString, 'nowString', 'Use `equalString` instead.');
+    apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
+    apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
 
     const defaultOptions = {
             allowFuture: false,
@@ -127,27 +127,27 @@ export function getRelativeTimestamp(timestamp, options) {
 // Implementation
 //------------------------
 function doFormat(opts) {
-    const diff = opts.relativeTo - opts.timestamp;
-    const isFuture = diff < 0;
+    const diff = opts.relativeTo - opts.timestamp,
+        isFuture = diff < 0,
+        elapsed = Math.abs(diff),
+        suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
 
     if (isFuture && !opts.allowFuture) {
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         return '[???]';
     }
 
-    const elapsed = Math.abs(diff);
     if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
         return opts.equalString;
     }
 
-    const suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
-
-    // Moment defaults to 'a few seconds' for things between 0 and ~50 seconds. We override this here.
-    let humanized = (elapsed > 10 * SECONDS && elapsed < 60 * SECONDS) ? '<1 minute' : moment.duration(elapsed).humanize();
+    let ret = (elapsed > 10 * SECONDS && elapsed < 60 * SECONDS) ?
+        '<1 minute' :  // override weird moment default in this range.
+        moment.duration(elapsed).humanize();
 
     if (opts.short) {
-        humanized = humanized.replace('minute', 'min').replace('second', 'sec');
+        ret = ret.replace('minute', 'min').replace('second', 'sec');
     }
 
-    return `${opts.prefix} ${humanized} ${suffix}`;
+    return `${opts.prefix} ${ret} ${suffix}`;
 }

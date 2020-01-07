@@ -80,13 +80,14 @@ export function throwIf(condition, message) {
 }
 
 /**
- * If a parameter is removed from the API, use this function to document its removal and prevent usage of the removed parameter.
- * @param parameter - a reference to the removed parameter
- * @param {string} name - the name of the removed parameter
- * @param {string} message - an additional message
+ * Document and prevent usage of a removed parameter.
+ *
+ * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
+ * @param {string} paramName - the name of the removed parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
  */
-export function apiRemoved(parameter, name, message) {
-    throwIf(parameter !== undefined, `The use of ${name} was previously allowed but is no longer supported. ${message ? message : ''}`);
+export function apiRemoved(paramValue, paramName, message = '') {
+    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
 }
 
 /**
