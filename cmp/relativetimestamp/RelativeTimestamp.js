@@ -142,6 +142,7 @@ function doFormat(opts) {
 
     const suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
 
+    // Moment defaults to 'a few seconds' for things between 0 and ~50 seconds. We override this here.
     let humanized = (elapsed > 10 * SECONDS && elapsed < 60 * SECONDS) ? '<1 minute' : moment.duration(elapsed).humanize();
 
     if (opts.short) {
