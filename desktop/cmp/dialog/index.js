@@ -5,3 +5,4 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 export * from './Dialog';
+export * from './DialogModel';
