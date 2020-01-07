@@ -11,7 +11,7 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import * as moment from 'moment';
 import PT from 'prop-types';
 
@@ -101,11 +101,11 @@ class LocalModel {
  * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalString`.
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
- *
- * deprecated @param {string} [options.nowString] - Deprecated since 29.0 in favor of options.equalString
- * deprecated @param {number} [options.nowEpsilon] - Deprecated since 29.0 in favor of options.epsilon
  */
 export function getRelativeTimestamp(timestamp, options) {
+    apiRemoved(options.nowEpsilon, 'nowEpsilon', 'Use `epsilon` instead.');
+    apiRemoved(options.nowString, 'nowString', 'Use `equalString` instead.');
+
     const defaultOptions = {
             allowFuture: false,
             short: XH.isMobile,
@@ -117,16 +117,6 @@ export function getRelativeTimestamp(timestamp, options) {
             relativeTo: Date.now()
         },
         opts = Object.assign({timestamp}, defaultOptions, options);
-
-    if (opts.nowEpsilon) {
-        console.warn('options.nowEpsilon has been deprecated since Hoist version 29.0. Use options.epsilon instead');
-        opts.epsilon = opts.nowEpsilon;
-    }
-
-    if (opts.nowString) {
-        console.warn('options.nowString has been deprecated since Hoist version 29.0. Use options.equalString instead');
-        opts.equalString = opts.nowString;
-    }
 
     if (!timestamp) return opts.emptyResult;
 
