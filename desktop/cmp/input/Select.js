@@ -238,10 +238,9 @@ export class Select extends HoistInput {
             item: factory(rsProps),
             className: this.getClassName(),
             onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keydown event
-                // propagation only if react-select already likely to have used for menu management.
-                const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
-                if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
+                // Stop keydown propagation if react-select is likely to use the event
+                // for menu management
+                if (e.key == 'Escape' || e.key == 'Enter') {
                     e.stopPropagation();
                 }
             },
