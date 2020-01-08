@@ -23,17 +23,13 @@
 
         .react-draggable__container {
             z-index: 1;
-            width: 100%;
-            height: 100%;
-            > .xh-panel > .xh-panel-header {
-                .xh-panel-header__title {
-                    cursor: move;
-                }
+            .xh-dialog-header {
+                cursor: move;
             }
         }
     }
 
-    .xh-dialog-root__fixed {
+    .xh-dialog-root__plain {
         position: fixed;
         top: 0;
         right: 0;

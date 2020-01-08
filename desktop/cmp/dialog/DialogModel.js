@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import { createObservableRef} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 
 /**
  * DialogModel supports configuration and state-management for user-driven Dialog resizing and
@@ -23,6 +23,7 @@ export class DialogModel {
     portalContainer = null;
     dialogRootId = 'xh-dialog-root';
     dialogWrapperDivRef = createObservableRef();
+    rndRef = null;
 
     //-----------------------
     // Immutable Properties
@@ -57,11 +58,11 @@ export class DialogModel {
         draggable = false,
         showCloseButton = true,
         prefName = null,
-        width = 400,
-        height = 400,
+        width = null,
+        height = null,
         closeOnMaskClick = true,
         closeOnEscape = true
-    }) {
+    } = {}) {
 
         // Set immutables
         this.resizable = resizable;
@@ -127,5 +128,24 @@ export class DialogModel {
         if (evt.target != this.dialogWrapperDivRef.current) return;
 
         this.hide();
+    }
+
+    centerDraggableDialogOnRender() {
+        if (!this.rndRef) return;
+
+        const {
+                offsetWidth: width,
+                offsetHeight: height
+            } = this.dialogWrapperDivRef.current,
+            w = window, d = document, e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
+            windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
+
+        this.rndRef.updateSize({width, height});
+        this.rndRef.updatePosition({
+            x: Math.max((windowWidth - width) / 2, 0),
+            y: Math.max((windowHeight - height) / 2, 0)
+        });
     }
 }

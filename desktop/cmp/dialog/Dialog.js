@@ -25,8 +25,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Panel',
     model: uses(DialogModel, {
         fromContext: true,
-        publishMode: ModelPublishMode.LIMITED,
-        createDefault: () => new DialogModel({draggable: false, resizable: false})
+        publishMode: ModelPublishMode.LIMITED
     }),
     memo: false,
     className: 'xh-dialog',
@@ -74,9 +73,10 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             model.portalContainer.removeChild(model.containerElement);
         });
 
-        useEffect(
-            maybeSetFocus
-        );
+        useEffect(() => {
+            maybeSetFocus();
+            model.centerDraggableDialogOnRender();
+        });
 
         const {draggable, resizable, isOpen, hasMounted} = model,
             isRnd = draggable || resizable;
@@ -88,7 +88,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
         // do we need to store prior overflow setting to be able to reset it when modal closes?
         document.body.style.overflow = isRnd ? 'hidden' : null;
-        console.log(props);
 
         return ReactDOM.createPortal(
             isRnd ?
@@ -108,13 +107,9 @@ const plainDialog = hoistCmp.factory(
         onContextMenu: (evt) => dialogModel.handleMaskClick(evt),
         tabIndex: 0,
         ref: dialogModel.dialogWrapperDivRef,
-        className: 'xh-dialog-root__fixed',
+        className: 'xh-dialog-root__plain',
         item: div({
             className: 'xh-dialog-root__content',
-            style: {
-                width: dialogModel.width,
-                height: dialogModel.height
-            },
             item: content(props)
         })
     })
@@ -122,21 +117,14 @@ const plainDialog = hoistCmp.factory(
 
 const rndDialog = hoistCmp.factory(
     ({model: dialogModel, props}) => {
-        const {height, width, resizable, draggable, RnDOptions = {}} = dialogModel,
-            w = window, d = document, e = d.documentElement,
-            g = d.getElementsByTagName('body')[0],
-            windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
-            windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
-
-        RnDOptions.dragHandleClassName = 'xh-dialog-header__title';
-
+        const {resizable, draggable, RnDOptions = {}} = dialogModel;
 
         return rnd({
+            ref: c => dialogModel.rndRef = c,
+            ...RnDOptions,
             default: {
-                x: Math.max((windowWidth - width) / 2, 0),
-                y: Math.max((windowHeight - height) / 2, 0),
-                width: Math.min(width, windowWidth),
-                height: Math.min(height, windowHeight)
+                x: 0,
+                y: 0
             },
             disableDragging: !draggable,
             enableResizing: {
@@ -150,7 +138,7 @@ const rndDialog = hoistCmp.factory(
                 topRight: resizable
             },
             bounds: 'body',
-            ...RnDOptions,
+            dragHandleClassName: 'xh-dialog-header',
             item: div({
                 onKeyDown: (evt) => dialogModel.handleKeyDown(evt),
                 tabIndex: 0,
