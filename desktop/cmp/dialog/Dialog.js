@@ -5,18 +5,18 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-import { useEffect } from 'react';
+import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 import {castArray} from 'lodash';
 
-import { rnd } from '@xh/hoist/kit/react-rnd';
-import { hoistCmp, uses, ModelPublishMode } from '@xh/hoist/core';
-import { useOnMount, useOnUnmount } from '@xh/hoist/utils/react';
-import { div, vframe } from '@xh/hoist/cmp/layout';
+import {rnd} from '@xh/hoist/kit/react-rnd';
+import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {div, vframe} from '@xh/hoist/cmp/layout';
 
-import { DialogModel } from './DialogModel';
-import { dialogHeader } from './impl/DialogHeader';
+import {DialogModel} from './DialogModel';
+import {dialogHeader} from './impl/DialogHeader';
 
 import './DialogStyles.scss';
 
@@ -26,18 +26,18 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     model: uses(DialogModel, {
         fromContext: true,
         publishMode: ModelPublishMode.LIMITED,
-        createDefault: () => new DialogModel({ draggable: false, resizable: false })
+        createDefault: () => new DialogModel({draggable: false, resizable: false})
     }),
     memo: false,
     className: 'xh-dialog',
 
-    render({ model, ...props }) {
+    render({model, ...props}) {
 
         const maybeSetFocus = () => {
             // always delay focus manipulation to just before repaint to prevent scroll jumping
             window.requestAnimationFrame(() => {
-                const { containerElement: container, isOpen } = model,
-                    { activeElement } = document;
+                const {containerElement: container, isOpen} = model,
+                    {activeElement} = document;
 
                 // containerElement may be undefined between component mounting and Portal rendering
                 // activeElement may be undefined in some rare cases in IE
@@ -78,7 +78,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             maybeSetFocus
         );
 
-        const { draggable, resizable, isOpen, hasMounted } = model,
+        const {draggable, resizable, isOpen, hasMounted} = model,
             isRnd = draggable || resizable;
 
         if (isOpen === false || !hasMounted) {
@@ -92,8 +92,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
         return ReactDOM.createPortal(
             isRnd ?
-                rndDialog({ model, props }) :
-                plainDialog({ model, props }),
+                rndDialog({model, props}) :
+                plainDialog({model, props}),
             model.containerElement
         );
 
@@ -102,7 +102,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
 
 const plainDialog = hoistCmp.factory(
-    ({ model: dialogModel, props }) => div({
+    ({model: dialogModel, props}) => div({
         onKeyDown: (evt) => dialogModel.handleKeyDown(evt),
         onClick: (evt) => dialogModel.handleMaskClick(evt),
         onContextMenu: (evt) => dialogModel.handleMaskClick(evt),
@@ -121,8 +121,8 @@ const plainDialog = hoistCmp.factory(
 );
 
 const rndDialog = hoistCmp.factory(
-    ({ model: dialogModel, props }) => {
-        const { height, width, resizable, draggable, RnDOptions = {} } = dialogModel,
+    ({model: dialogModel, props}) => {
+        const {height, width, resizable, draggable, RnDOptions = {}} = dialogModel,
             w = window, d = document, e = d.documentElement,
             g = d.getElementsByTagName('body')[0],
             windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
@@ -163,9 +163,9 @@ const rndDialog = hoistCmp.factory(
 );
 
 const content = hoistCmp.factory(
-    ({ icon, title, children }) => vframe({
+    ({icon, title, children}) => vframe({
         items: [
-            dialogHeader({ icon, title }),
+            dialogHeader({icon, title}),
             ...castArray(children)
         ]
     })
