@@ -423,7 +423,7 @@ export class GridModel {
     }
 
     /** Update the underlying store. */
-    loadDataTransaction(...args) {
+    loadDataUpdates(...args) {
         return this.store.loadDataUpdates(...args);
     }
 
