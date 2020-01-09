@@ -13,6 +13,16 @@
   .lm_header {
     background: rgba(0, 0, 0, 0.06);
 
+    .xh-dash-layout-add-button {
+      padding: 5px;
+      color: #999;
+
+      &:hover {
+        cursor: pointer;
+        color: var(--xh-text-color);
+      }
+    }
+
     .lm_tab {
       display: flex;
       align-items: center;

@@ -7,7 +7,7 @@
 import {HoistModel, elem} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {convertIconToSvg} from '@xh/hoist/icon';
+import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject, isString, isArray, castArray} from 'lodash';
@@ -29,8 +29,14 @@ export class DashContainerModel {
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
 
+    /** member {boolean} */
+    @observable dialogIsOpen;
+
     /** @member {Ref} */
     containerRef = createObservableRef();
+
+    /** @member {boolean} */
+    enableAdd;
 
     /**
      * Todo
@@ -38,8 +44,11 @@ export class DashContainerModel {
     constructor({
         views = [],
         layout,
-        settings
+        glSettings,
+        enableAdd = true
     }) {
+        this.enableAdd = enableAdd;
+
         // Add views
         views = views.filter(v => !v.omit);
         ensureUniqueBy(views, 'id');
@@ -48,12 +57,12 @@ export class DashContainerModel {
         // Initialize GoldenLayouts once ref is ready
         this.addReaction({
             track: () => this.containerRef.current,
-            run: () => this.initGoldenLayout({layout, settings})
+            run: () => this.initGoldenLayout({layout, glSettings})
         });
 
         this.addReaction({
             track: () => this.views,
-            run: () => this.registerViews()
+            run: () => this.registerComponents()
         });
     }
 
@@ -61,7 +70,7 @@ export class DashContainerModel {
     // Golden Layouts
     //-----------------
     @action
-    initGoldenLayout({layout, settings}) {
+    initGoldenLayout({layout, glSettings}) {
         // Parse structure and apply settings
         this.goldenLayout = new GoldenLayout({
             content: this.parseLayoutConfig(castArray(layout)),
@@ -70,7 +79,7 @@ export class DashContainerModel {
                 showPopoutIcon: false,
                 showMaximiseIcon: false,
                 showCloseIcon: false,
-                ...settings
+                ...glSettings
             },
             dimensions: {
                 borderWidth: 6,
@@ -78,11 +87,11 @@ export class DashContainerModel {
             }
         }, this.containerRef.current);
 
-        this.registerViews();
-        this.goldenLayout.init();
-
-        // Initialize state management
+        // Initialize GoldenLayout
+        this.registerComponents();
         this.goldenLayout.on('stateChanged', () => this.onStateChanged());
+        this.goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
+        this.goldenLayout.init();
 
         // Todo: Save copy of current state as 'Default state'
     }
@@ -132,7 +141,44 @@ export class DashContainerModel {
         return this.views.find(it => it.id === id);
     }
 
-    registerViews() {
+    //-----------------
+    // Components
+    //-----------------
+    /**
+     * Add a view component to the layout.
+     *
+     * @param {(DashViewModel|string)} view - DashViewModel (or registered id) to add to the layout
+     * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
+     */
+    addComponent(view, container) {
+        const {goldenLayout} = this;
+        if (!goldenLayout) return;
+
+        if (isString(view)) view = this.getView(view);
+        if (!container) container = goldenLayout.root.contentItems[0];
+        container.addChild(view.glConfig);
+    }
+
+    /**
+     * Get all component instances currently rendered in the layout
+     */
+    getComponents() {
+        const {goldenLayout} = this;
+        if (!goldenLayout) return [];
+        return goldenLayout.root.getItemsByType('component');
+    }
+
+    /**
+     * Get all component instances with a given view id
+     */
+    getComponentsById(id) {
+        return this.getComponents().filter(it => it.config.component === id);
+    }
+
+    /**
+     * Called to automatically synchronize GoldenLayouts' component registry with our collection of views
+     */
+    registerComponents() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
         this.views.forEach(view => {
@@ -148,16 +194,11 @@ export class DashContainerModel {
         });
     }
 
-    getRenderedComponents() {
-        const {goldenLayout} = this;
-        if (!goldenLayout) return [];
-        return goldenLayout.root.getItemsByType('component');
-    }
-
     //-----------------
     // State Management
     //-----------------
     onStateChanged() {
+        // Todo: Save an observable model of the state
         console.log('onStateChanged', this.goldenLayout.toConfig());
 
         this.renderIcons();
@@ -168,11 +209,39 @@ export class DashContainerModel {
     }
 
     //-----------------
+    // Add View Dialog
+    //-----------------
+    onStackCreated(stack) {
+        if (!this.enableAdd) return;
+
+        // Add '+' icon and attach click listener for adding components
+        const icon = convertIconToSvg(Icon.add());
+        stack.header.controlsContainer.append(`<div class="xh-dash-layout-add-button">${icon}</div>`);
+        const btn = stack.header.controlsContainer.find('.xh-dash-layout-add-button');
+        btn.click(() => this.openViewDialog(stack));
+    }
+
+    @action
+    openViewDialog(stack) {
+        this._dialogSelectedStack = stack;
+        this.dialogIsOpen = true;
+    }
+
+    @action
+    closeViewDialog() {
+        this.dialogIsOpen = false;
+    }
+
+    submitViewDialog(view) {
+        this.addComponent(view, this._dialogSelectedStack);
+    }
+
+    //-----------------
     // Icons
     //-----------------
     renderIcons() {
         // For each component, insert icon in tab if required
-        const components = this.getRenderedComponents();
+        const components = this.getComponents();
         components.forEach(component => {
             const id = component.config.component,
                 el = component.tab.element,

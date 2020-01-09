@@ -5,11 +5,12 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {frame} from '@xh/hoist/cmp/layout';
+import {frame, fragment} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 
 import {DashContainerModel} from './DashContainerModel';
+import {dashContainerViewDialog} from './impl/DashContainerViewDialog';
 
 /**
  * Display a set of child components in accordance with a DashContainerModel.
@@ -24,7 +25,10 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
     render({model, className}) {
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
-        return frame({className, ref});
+        return fragment(
+            frame({className, ref}),
+            dashContainerViewDialog()
+        );
     }
 });
 
