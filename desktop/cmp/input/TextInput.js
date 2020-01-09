@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -30,11 +30,12 @@ export class TextInput extends HoistInput {
          *
          *  Defaults to non-valid value 'nope' for fields of type text and 'new-password' for fields
          *  of type 'password' to defeat browser auto-completion, which is typically not desired in
-         *  Hoist applications. Set to 'on' to enable.
+         *  Hoist applications. Set to 'on' or a more specific autocomplete token to enable.
          *
-         *  See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
+         * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
+         * @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
          */
-        autoComplete: PT.oneOf(['on', 'new-password', 'nope']),
+        autoComplete: PT.string,
 
         /** True to focus the control on render. */
         autoFocus: PT.bool,
@@ -44,6 +45,9 @@ export class TextInput extends HoistInput {
 
         /** True to show a "clear" button as the right element. default false */
         enableClear: PT.bool,
+
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
@@ -92,6 +96,7 @@ export class TextInput extends HoistInput {
                 autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
+                inputRef: props.inputRef,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
@@ -146,9 +151,10 @@ export class TextInput extends HoistInput {
     }
 
     onFocus = (ev) => {
-        if (this.props.selectOnFocus) {
+        if (this.props.selectOnFocus && ev.target.nodeName === 'INPUT') {
             ev.target.select();
         }
+
         this.noteFocused();
     }
 }

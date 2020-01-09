@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import {elemFactory} from '@xh/hoist/core';
@@ -19,6 +19,7 @@ export const a = elemFactory('a');
 export const br = elemFactory('br');
 export const code = elemFactory('code');
 export const div = elemFactory('div');
+export const form = elemFactory('form');
 export const h1 = elemFactory('h1');
 export const h2 = elemFactory('h2');
 export const h3 = elemFactory('h3');

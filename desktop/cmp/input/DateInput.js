@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -107,6 +107,9 @@ export class DateInput extends HoistInput {
             'left-bottom', 'left', 'left-top',
             'auto'
         ]),
+
+        /** True to select contents when control receives focus. */
+        selectOnFocus: PT.bool,
 
         /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
         showActionsBar: PT.bool,
@@ -224,6 +227,7 @@ export class DateInput extends HoistInput {
                         tabIndex: props.tabIndex,
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
+                        selectOnFocus: props.selectOnFocus,
                         inputRef: this.inputRef,
                         ...layoutProps
                     }),
@@ -404,5 +408,6 @@ export class DateInput extends HoistInput {
         e.stopPropagation();
     }
 }
+
 
 export const dateInput = elemFactory(DateInput);

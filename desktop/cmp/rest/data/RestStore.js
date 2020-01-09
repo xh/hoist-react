@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -23,7 +23,7 @@ export class RestStore extends UrlStore {
     /**
      * @param {Object} c - RestStore configuration.
      * @param {string} c.url - URL from which to load data.
-     * @param {?string} [c.dataRoot] - Key of root node for records in returned data object.
+     * @param {?string} [c.dataRoot] - Key of root node for records in returned data object. Null if data objects are at the root
      * @param {boolean} [c.reloadLookupsOnLoad] - Whether lookups should be loaded each time
      *      new data is loaded or updated by this client.
      * @param {...*} - Additional arguments to pass to UrlStore.
@@ -69,7 +69,7 @@ export class RestStore extends UrlStore {
     // Implementation
     //--------------------------------
     async saveRecordInternalAsync(rec, isAdd) {
-        let {url} = this;
+        let {url, dataRoot} = this;
         if (!isAdd) url += '/' + rec.id;
 
         // Only include editable fields in the request data
@@ -77,12 +77,13 @@ export class RestStore extends UrlStore {
             data = pickBy(rec, (v, k) => k == 'id' || editableFields.includes(k));
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
-            response = await XH.fetchService[fetchMethod]({url, body: {data}});
+            response = await XH.fetchService[fetchMethod]({url, body: {data}}),
+            responseData = (dataRoot) ? response[dataRoot] : response;
 
         if (isAdd) {
-            this.updateData({add: [response.data]});
+            this.updateData({add: [responseData]});
         } else {
-            this.updateData({update: [response.data]});
+            this.updateData({update: [responseData]});
         }
         await this.ensureLookupsLoadedAsync();
     }

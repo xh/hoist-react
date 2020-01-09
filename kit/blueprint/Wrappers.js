@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {elemFactory} from '@xh/hoist/core';
@@ -37,7 +37,6 @@ import {
     Radio,
     RadioGroup,
     RangeSlider,
-    ResizeSensor,
     Slider,
     Spinner,
     Switch,
@@ -85,7 +84,6 @@ export {
     Radio,
     RadioGroup,
     RangeSlider,
-    ResizeSensor,
     Slider,
     Spinner,
     Switch,
@@ -128,7 +126,6 @@ export const
     radio = elemFactory(Radio),
     radioGroup = elemFactory(RadioGroup),
     rangeSlider = elemFactory(RangeSlider),
-    resizeSensor = elemFactory(ResizeSensor),
     slider = elemFactory(Slider),
     spinner = elemFactory(Spinner),
     switchControl = elemFactory(Switch),

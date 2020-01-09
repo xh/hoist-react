@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {isPlainObject} from 'lodash';
+import {decorate, observable, runInAction} from 'mobx';
 
 /**
  * Mixin to indicate that an object has a load and refresh lifecycle for loading data from backend
@@ -22,6 +23,12 @@ import {isPlainObject} from 'lodash';
  * @see RestGridModel
  */
 export function LoadSupport(C) {
+
+    decorate(C,  {
+        lastLoadRequested: observable.ref,
+        lastLoadCompleted: observable.ref
+    });
+
     return applyMixin(C, {
         name: 'LoadSupport',
 
@@ -55,13 +62,13 @@ export function LoadSupport(C) {
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
-                this.lastLoadRequested = new Date();
+                runInAction(() => this.lastLoadRequested = new Date());
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
                 return this
                     .doLoadAsync(loadSpec)
                     .linkTo(loadModel)
                     .finally(() => {
-                        this.lastLoadCompleted = new Date();
+                        runInAction(() => this.lastLoadCompleted = new Date());
                     });
             },
 

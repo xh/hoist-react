@@ -4,6 +4,94 @@
 
 ### 🎁 New Features
 
+* Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
+* Added an `useOnResize` hook, which runs a function when a component is resized.
+* Added keyboard support to ag-Grid context menus.
+* Exposed an `inputRef` prop on numberInput, textArea, and textInput
+* Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
+* `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
+* `PanelModel` now accepts a `maxSize` config.
+* `getRelativeTimestamp` and `RelativeTimeStamp`, now support a `relativeTo` option,
+allowing for timestamps relative to times other than now.
+* `getRelativeTimestamp` and `RelativeTimeStamp` now use a more standard moment.js routine for
+their underlying implementation.
+* If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
+  the map.
+* `GridModel.emptyText` can now be set dynamically, with changes reflected in the grid.
+
+### 💥 Breaking Changes
+
+* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
+  parameter will allow context menus to be specified with a simple array in addition to the function
+  specification currently supported.
+* The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
+* `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* The options `nowEpsilon` and `nowString` on RelativeTimestamp have been renamed to `epsilon` and
+  `equalString`, respectively.
+
+### 🐞 Bug Fixes
+
+* Fixed autoFocus on NumberInput.
+* Fixed issue where JsonInput was not receiving its `model` from context
+  ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
+  GridModel data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would create malformed file with dynamic header names
+* Fixed issue where exported tree grids would have incorrect aggregate data
+  ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired
+  ([#1498](https://github.com/xh/hoist-react/issues/1498))
+* Changed RestGrid to only display export button if export is enabled
+  ([#1490](https://github.com/xh/hoist-react/issues/1490))
+* Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
+  ([#1520](https://github.com/xh/hoist-react/issues/1520))
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.19 -> 3.22`
+* @blueprintjs/datetime `3.14 -> 3.15`
+* @fortawesome/fontawesome-pro `5.11 -> 5.12`
+* codemirror `5.49 -> 5.50`
+* core-js `3.3 -> 3.6`
+* fast-deep-equal `2.0 -> 3.1`
+* filesize `5.0 -> 6.0`
+* highcharts 7.2 -> 8.0`
+* mobx `5.14 -> 5.15`
+* react-dates `21.3 -> 21.5`
+* react-dropzone `10.1 -> 10.2`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+
+## v28.2.0 - 2019-11-08
+
+### 🎁 New Features
+
+* Added a `DateInput` component to the mobile toolkit. Its API supports many of the same options as
+  its desktop analog with the exception of `timePrecision`, which is not yet supported.
+* Added `minSize` to panelModel. A resizable panel can now be prevented from resizing to a size
+  smaller than minSize. ([#1431](https://github.com/xh/hoist-react/issues/1431))
+
+### 🐞 Bug Fixes
+
+* Made `itemHeight` a required prop for `DataView`. This avoids an issue where agGrid went into an
+  infinite loop if this value was not set.
+* Fixed a problem with `RestStore` behavior when `dataRoot` changed from its default value.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.1...v28.2.0)
+
+## v28.1.1 - 2019-10-23
+
+### 🐞 Bug Fixes
+
+* Fixes a bug with default model context being set incorrectly within context inside of `Panel`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.1.0...v28.1.1)
+
+## v28.1.0 - 2019-10-18
+
+### 🎁 New Features
+
 * `DateInput` supports a new `strictInputParsing` prop to enforce strict parsing of keyed-in entries
   by the underlying moment library. The default value is false, maintained the existing behavior
   where [moment will do its best](https://momentjs.com/guides/#/parsing/) to parse an entered date
@@ -14,7 +102,11 @@
 * `Column` and `ColumnGroup` now accept a function for `headerName`. The header will be
   automatically re-rendered when any observable properties referenced by the `headerName` function
   are modified.
-* New `Clock` component has been added for displaying the current time for a given timezone.
+* `ColumnGroup` now accepts an `align` config for setting the header text alignment
+* The flag `toContext` for `uses` and `creates` has been replaced with a new flag `publishMode` that
+  provides more granular control over how models are published and looked up via context. Components
+  can specify `ModelPublishMode.LIMITED` to make their model available for contained components
+  without it becoming the default model or exposing its sub-models.
 
 ### 🐞 Bug Fixes
 
@@ -22,24 +114,31 @@
   ag-Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
+* The MS Edge browser does not return a standard Promise from `async` functions, so the the return
+  of those functions did not previously have the required Hoist extensions installed on its
+  prototype. Edge "native" Promises are now also polyfilled / extended as required. (#1411).
+* Async `Select` combobox queries are now properly debounced as per the `queryBuffer` prop (#1416).
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...develop)
+### ⚙️ Technical
+
+* Grid column group headers now use a custom React component instead of the default ag-Grid column
+  header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the
+  ag-Grid column group headers may need to be updated to work with the new structure/classes.
+* We have configured `stylelint` to enforce greater consistency in our stylesheets within this
+  project. The initial linting run resulted in a large number of updates to our SASS files, almost
+  exclusively whitespace changes. No functional changes are intended/expected. We have also enabled
+  hooks to run both JS and style linting on pre-commit. Neither of these updates directly affects
+  applications, but the same tools could be configured for apps if desired.
+
+### 📚 Libraries
+
+* core-js `3.2 -> 3.3`
+* filesize `4.2 -> 5.0`
+* http-status-codes `added @ 1.3`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...v28.1.0)
 
 ## v28.0.0 - 2019-10-07
-
-----
-
-⚠ Special note - at release time, the `terser` library has released a broken patch update. (Terser
-is a transitive dependency used to minify code for production builds.) Apps are advised to fix the
-version of terser used for compilation by specifying the following in their `package.json` file:
-
-```
-"resolutions": {"terser": "4.3.4"}
-```
-
-ExHI will track https://github.com/terser/terser/issues/486 and test any fixes when available.
-
----
 
 _"The one with the hooks."_
 
@@ -1944,3 +2043,11 @@ and ag-Grid upgrade, and more. 🚀
 ### 🐞 Bugfixes
 
 * None
+
+------------------------------------------
+
+Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact

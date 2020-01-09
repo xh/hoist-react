@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import React from 'react';
@@ -11,6 +11,7 @@ import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {castArray} from 'lodash';
+import PT from 'prop-types';
 
 import './ButtonGroupInput.scss';
 
@@ -26,25 +27,39 @@ import './ButtonGroupInput.scss';
 export class ButtonGroupInput extends HoistInput {
 
     static propTypes = {
-        ...HoistInput.propTypes
+        ...HoistInput.propTypes,
+
+        /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
+        enableClear: PT.bool
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {children, disabled, ...rest} = this.getNonLayoutProps(),
-            buttons = castArray(children).map(button => {
-                const {value} = button.props;
+        const {children, disabled, enableClear, ...rest} = this.getNonLayoutProps();
 
-                throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
-                throwIf(!value, 'ButtonGroupInput child must declare a value');
+        const buttons = castArray(children).map(button => {
+            if (!button) return null;
 
-                return React.cloneElement(button, {
-                    active: this.renderValue == value,
-                    disabled: withDefault(disabled, false),
-                    onClick: () => this.noteValueChange(value)
-                });
+            const {value} = button.props,
+                btnDisabled = disabled || button.props.disabled;
+
+            throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
+            throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+
+            const active = (this.renderValue === value);
+            return React.cloneElement(button, {
+                active,
+                disabled: withDefault(btnDisabled, false),
+                onClick: () => {
+                    if (enableClear) {
+                        this.noteValueChange(active ? null : value);
+                    } else {
+                        this.noteValueChange(value);
+                    }
+                }
             });
+        });
 
         return buttonGroup({
             items: buttons,

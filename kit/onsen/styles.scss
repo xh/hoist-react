@@ -2,8 +2,11 @@
 // XH Components
 //--------------------
 .xh-input {
-  input, textarea {
-    font-size: 14px;
+  input,
+  textarea {
+    font-size: var(--xh-font-size);
+    font-family: var(--xh-font-family);
+    color: var(--xh-text-color);
     border: none !important;
     outline: none !important;
     text-align: inherit;

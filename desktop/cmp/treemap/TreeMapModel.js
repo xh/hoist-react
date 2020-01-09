@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
 import {bindable, computed, observable} from '@xh/hoist/mobx';
@@ -152,7 +152,8 @@ export class TreeMapModel {
                 this.heatField,
                 this.maxDepth
             ],
-            run: ([rawData]) => this.data = this.processData(rawData)
+            run: ([rawData]) => this.data = this.processData(rawData),
+            fireImmediately: true
         });
     }
 

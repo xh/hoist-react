@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
@@ -98,13 +98,23 @@ class XHClass {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    track(opts)                 {return this.trackService.track(opts)}
+    /**
+     * @param {FetchOptions} opts
+     * @return {Promise<Response>}
+     */
     fetch(opts)                 {return this.fetchService.fetch(opts)}
+
+    /**
+     * @param {FetchOptions} opts
+     * @return {Promise}
+     */
     fetchJson(opts)             {return this.fetchService.fetchJson(opts)}
+
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
     getEnv(key)                 {return this.environmentService.get(key)}
+    track(opts)                 {return this.trackService.track(opts)}
 
     getUser()                   {return this.identityService ? this.identityService.getUser() : null}
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
@@ -298,25 +308,11 @@ class XHClass {
     //------------------------------
     /**
      * Show a modal message dialog.
+     * @param {MessageConfig} config
      *
-     * @param {Object} config - message options.
-     * @param {string} config.message - message text to be displayed.
-     * @param {string} [config.title] - title of message box.
-     * @param {Element} [config.icon] - icon to be displayed.
-     * @param {MessageInput} [config.input] - config for input to be displayed (as a prompt).
-     * @param {string} [config.confirmProps] - props for primary confirm button.
-     *      Must provide either text or icon for button to be displayed, or use a preconfigured
-     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
-     * @param {string} [config.cancelProps] - props for secondary cancel button.
-     *      Must provide either text or icon for button to be displayed, or use a preconfigured
-     *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
-     * @param {function} [config.onConfirm] - Callback to execute when confirm is clicked.
-     * @param {function} [config.onCancel] - Callback to execute when cancel is clicked.
-     *
-     *
-     * Note that this method will auto focus the confirm button by default.  To focus the
-     * cancel button instead (e.g. for confirming risky operations), applications should specify a
-     * cancelProps argument of the following form:  cancelProps: {..., autoFocus: true}.
+     * Note that this method will auto focus the confirm button by default. To focus the cancel
+     * button instead (e.g. for confirming risky operations), applications should specify a
+     * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
      * @returns {Promise} - resolves to true if user confirms, false if user cancels.
      *      If an input is provided, the Promise will resolve to the input value if user confirms.
@@ -327,8 +323,7 @@ class XHClass {
 
     /**
      * Show a modal 'alert' dialog with message and default 'OK' button.
-     *
-     * @param {Object} config - see XH.message() for available options.
+     * @param {MessageConfig} config
      * @returns {Promise} - resolves to true when user acknowledges alert.
      */
     alert(config) {
@@ -337,8 +332,7 @@ class XHClass {
 
     /**
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
-     *
-     * @param {Object} config - see XH.message() for available options.
+     * @param {MessageConfig} config
      * @returns {Promise} - resolves to true if user confirms, false if user cancels.
      */
     confirm(config) {
@@ -354,7 +348,7 @@ class XHClass {
      *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *
-     * @param {Object} config - see XH.message() for available options.
+     * @param {MessageConfig} config
      * @returns {Promise} - resolves to value of input if user confirms, false if user cancels.
      */
     prompt(config) {
@@ -365,10 +359,10 @@ class XHClass {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      *
      * @param {Object} config - options for toast instance.
-     * @param {string} config.message - the message to show in the toast.
+     * @param {(ReactNode|string)} config.message - the message to show in the toast.
      * @param {Element} [config.icon] - icon to be displayed
      * @param {number} [config.timeout] - time in milliseconds to display the toast.
-     * @param {string} [config.intent] - The Blueprint intent (desktop only)
+     * @param {string} [config.intent] - the Blueprint intent (desktop only)
      * @param {Object} [config.position] - Position in viewport to display toast. See Blueprint
      *     Position enum (desktop only).
      * @param {Component} [config.containerRef] - Component that should contain (locate) the Toast.
@@ -445,7 +439,6 @@ class XHClass {
             args = flatten(args);
             args.forEach(it => {
                 if (it && it.destroy) {
-                    console.debug('[XH] Destroying', it);
                     it.destroy();
                 }
             });
@@ -666,3 +659,20 @@ class XHClass {
     }
 }
 export const XH = window.XH = new XHClass();
+
+
+/**
+ * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
+ * @property {ReactNode} message - message to be displayed - a string or any valid React node.
+ * @property {string} [title] - title of message box.
+ * @property {Element} [icon] - icon to be displayed.
+ * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
+ * @property {string} [confirmProps] - props for primary confirm button.
+ *      Must provide either text or icon for button to be displayed, or use a preconfigured
+ *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+ * @property {string} [cancelProps] - props for secondary cancel button.
+ *      Must provide either text or icon for button to be displayed, or use a preconfigured
+ *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
+ * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
+ * @property {function} [onCancel] - Callback to execute when cancel is clicked.
+ */

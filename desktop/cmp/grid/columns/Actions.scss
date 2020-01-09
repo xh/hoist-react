@@ -2,13 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 $action-col-pad: 5;
-$action-col-pad-px: $action-col-pad + 0px;
+$action-col-pad-px: $action-col-pad * 1px;
 
+// This CSS-modules export makes this value accessible from JS -note the import in Actions.js.
+//noinspection CssInvalidPseudoSelector
 :export {
+  /* stylelint-disable-next-line property-case */
   actionColPad: $action-col-pad;
 }
 
@@ -23,8 +26,8 @@ $action-col-pad-px: $action-col-pad + 0px;
     }
   }
 
+  // Keep the buttons in the action column a consistent size so we can calc the column width
   button.xh-record-action-button {
-    // Keep the buttons in the action column a consistent size so we can calc the column width
     max-width: 24px;
   }
 }

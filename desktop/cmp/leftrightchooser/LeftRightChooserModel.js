@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -79,6 +79,8 @@ export class LeftRightChooserModel {
      * @param {boolean} [c.rightGroupingExpanded] - false to show a grouped right-side list with all
      *      groups initially collapsed.
      * @param {?string} [c.rightEmptyText] - text to display if right grid has no rows.
+     * @param {boolean} [c.showCounts] - true to display the count of items on each side
+     *      in the header
      */
     constructor({
         data = [],
@@ -93,7 +95,8 @@ export class LeftRightChooserModel {
         rightSorted = false,
         rightGroupingEnabled = true,
         rightGroupingExpanded = true,
-        rightEmptyText = null
+        rightEmptyText = null,
+        showCounts = true
     }) {
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
@@ -107,13 +110,13 @@ export class LeftRightChooserModel {
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: leftTitle,
+                headerName: () => leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: rightTitle,
+                headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
@@ -201,7 +204,7 @@ export class LeftRightChooserModel {
     syncSelectionReaction() {
         const leftSel = this.leftModel.selModel,
             rightSel = this.rightModel.selModel;
-        
+
         return {
             track: () => [leftSel.singleRecord, rightSel.singleRecord],
             run: () => {

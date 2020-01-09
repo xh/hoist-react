@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, HoistModel, XH, uses, useLocalModel} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {useOnUnmount} from '@xh/hoist/utils/react';
+import {ContextKeyNavSupport} from './impl/ContextKeyNavSupport';
+import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
@@ -39,13 +41,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, ...props}) {
+    render({model, key, className, onGridReady, onCellContextMenu, ...props}) {
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isMobile} = XH;
 
         const impl = useLocalModel(() => new LocalModel(model));
         impl.onGridReady = onGridReady;
+        impl.onCellContextMenu = onCellContextMenu;
 
         useOnUnmount(() => {
             if (model) model.handleGridUnmount();
@@ -71,9 +74,9 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Pass others on directly.
                 ...agGridProps,
 
-                // Always specify an onGridReady handler to wire the model to the ag APIs, but note
-                // the implementation will also call any onGridReady passed via props.
-                onGridReady: impl.noteGridReady
+                // These handlers are overriden, but also delegate to props passed
+                onGridReady: impl.noteGridReady,
+                onCellContextMenu: impl.noteCellContextMenu
             })
         });
     }
@@ -84,9 +87,12 @@ class LocalModel {
 
     model;
     onGridReady;
+    onCellContextMenu;
 
     constructor(model) {
         this.model = model;
+        this.contextKeyNavSupport = !XH.isMobile ? new ContextKeyNavSupport(model) :  null;
+        this.rowKeyNavSupport = !XH.isMobile ? new RowKeyNavSupport(model) :  null;
     }
 
     noteGridReady = (agParams) => {
@@ -96,48 +102,23 @@ class LocalModel {
         }
     };
 
-    getRowHeight = () => {
-        const heights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS;
-        return XH.isMobile ? heights.mobile : heights.desktop;
+    noteCellContextMenu = (agParams) => {
+        if (this.onCellContextMenu) {
+            this.onCellContextMenu(agParams);
+        }
+        if (this.contextKeyNavSupport) {
+            this.contextKeyNavSupport.addContextMenuKeyNavigation();
+        }
     };
 
     navigateToNextCell = (agParams) => {
-        if (XH.isMobile) return;
-
-        const {nextCellPosition, previousCellPosition, event} = agParams,
-            {agApi} = this.model,
-            shiftKey = event.shiftKey,
-            prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
-            nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
-            prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
-            nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
-            prevNodeIsParent = prevNode && prevNode.allChildrenCount,
-            KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
-
-        switch (agParams.key) {
-            case KEY_DOWN:
-            case KEY_UP:
-                if (nextNode) {
-                    if (!shiftKey || !prevNode.isSelected()) {
-                        // 0) Simple move of selection
-                        nextNode.setSelected(true, true);
-                    } else {
-                        // 1) Extend or shrink multi-selection.
-                        if (!nextNode.isSelected()) {
-                            nextNode.setSelected(true, false);
-                        } else {
-                            prevNode.setSelected(false, false);
-                        }
-                    }
-                }
-                return nextCellPosition;
-            case KEY_LEFT:
-                if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
-                return nextCellPosition;
-            case KEY_RIGHT:
-                if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
-                return nextCellPosition;
-            default:
+        if (this.rowKeyNavSupport) {
+            return this.rowKeyNavSupport.navigateToNextCell(agParams);
         }
+    }
+
+    getRowHeight = () => {
+        const heights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS;
+        return XH.isMobile ? heights.mobile : heights.desktop;
     };
 }

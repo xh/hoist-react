@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 import ReactDOM from 'react-dom';
 import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
@@ -66,8 +73,8 @@ export class JsonInput extends HoistInput {
         return withDefault(this.props.showActionButtons, true);
     }
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {

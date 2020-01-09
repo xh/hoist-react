@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {defaults, isPlainObject} from 'lodash';
@@ -17,7 +17,7 @@ import {defaults, isPlainObject} from 'lodash';
  * to ensure that the formatter gets its own clean copy each time it is called.
  *
  * @param {function} formatter - an existing formatter method.
- * @return {function(Object):function} - a configurable renderer.
+ * @return {function(v: Object):function} - a configurable renderer.
  */
 export function createRenderer(formatter) {
     return function(config) {

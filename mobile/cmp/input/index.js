@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 export * from './Label';
 export * from './ButtonGroupInput';
 export * from './Checkbox';
+export * from './DateInput';
 export * from './NumberInput';
 export * from './SearchInput';
 export * from './Select';

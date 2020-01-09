@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
@@ -30,9 +30,10 @@ export class ExceptionHandler {
      *      will be allowed to be created with that key. If one is already created, it will be
      *      replaced with a new instance. Avoids a repeated failure creating a stack of popups.
      * @param {boolean} [options.logOnServer] - send the exception to the server to be stored in DB
-     *      for review in the system admin app. Default true.
+     *      for review in the system admin app. Default true when `showAsError`, excepting
+     *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' request exceptions.
+     *      excepting 'isAutoRefresh' exceptions.
      * @param {boolean} [options.showAsError] - display to user/log as "error" - default true.
      *      If true, error details and reporting options will be shown. Apps should set to false
      *      for "expected" exceptions.
@@ -143,7 +144,7 @@ export class ExceptionHandler {
             ret.showAlert = withDefault(ret.showAlert, false);
         } else {
             ret.showAsError = withDefault(ret.showAsError, true);
-            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError);
+            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError && !isAutoRefresh);
             ret.showAlert = withDefault(ret.showAlert, !isAutoRefresh);
         }
 

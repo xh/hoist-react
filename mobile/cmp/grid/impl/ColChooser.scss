@@ -14,9 +14,12 @@
     height: 100%;
 
     .xh-col-chooser-section {
+      background: var(--xh-bg);
+
       &:first-child {
         height: 65% !important;
       }
+
       &:last-child {
         height: 35% !important;
       }

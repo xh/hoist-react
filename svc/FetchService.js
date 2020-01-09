@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -10,6 +10,7 @@ import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -34,9 +35,8 @@ export class FetchService {
 
     /**
      * Set default headers to be sent with all subsequent requests.
-     *
-     * @param {(Object|function)} headers - Headers to be sent with all fetch requests, or a closure
-     *      to generate.
+     * @param {(Object|function)} headers - Headers to be sent with all fetch requests,
+     *      or a function to generate.
      */
     setDefaultHeaders(headers) {
         this.defaultHeaders = headers;
@@ -44,25 +44,7 @@ export class FetchService {
 
     /**
      * Send a request via the underlying fetch API.
-     *
-     * @param {Object} opts - standard options to pass through to fetch, with some additions.
-     *     @see https://developer.mozilla.org/en-US/docs/Web/API/Request for the available options
-     * @param {string} opts.url - url for the request. Relative urls will be appended to XH.baseUrl.
-     * @param {Object} [opts.body] - data to send in the request body (for POSTs/PUTs of JSON).
-     * @param {Object} [opts.params] - parameters to encode and append as a query string, or send
-     *      with the request body (for POSTs/PUTs sending form-url-encoded).
-     * @param {string} [opts.method] - HTTP Request method to use for the request. If not specified,
-     *      the method will be set to POST if there are params, otherwise GET.
-     * @param {Object} [opts.headers] - headers to send with this request. A Content-Type header will
-     *      be set if not provided by the caller directly or via one of the xxxJson methods on this service.
-     * @param {Object} [opts.fetchOpts] - options to pass to the underlying fetch request.
-     *      @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch}
-     * @param {Object} [opts.qsOpts] - options to pass to the param converter library, qs.
-     *      The default qsOpts are: {arrayFormat: 'repeat', allowDots: true}.
-     *      @see {@link https://www.npmjs.com/package/qs}
-     * @param {string} [opts.autoAbortKey] - if set, any pending requests made with the same
-     *      autoAbortKey will be immediately aborted in favor of the new request.
-     *
+     * @param {FetchOptions} opts
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
@@ -96,7 +78,6 @@ export class FetchService {
 
         // 3) Prepare merged options
         const fetchOpts = Object.assign({
-            cors: true,
             credentials: 'include',
             redirect: 'follow'
         }, {
@@ -154,23 +135,26 @@ export class FetchService {
 
     /**
      * Send an HTTP request and decode the response as JSON.
-     * This method delegates to @see {fetch} and accepts the same options.
+     * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
         const ret = await this.fetch({
             ...opts,
-            headers: {
-                'Accept': 'application/json',
-                ...opts.headers
-            }
+            headers: {'Accept': 'application/json', ...opts.headers}
         });
-        return ret.status === 204 ? null : ret.json();
+        switch (ret.status) {
+            case NO_CONTENT:
+            case RESET_CONTENT:
+                return null;
+            default:
+                return ret.json();
+        }
     }
 
     /**
      * Send a GET request and decode the response as JSON.
-     * This method delegates to @see {fetch} and accepts the same options.
+     * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async getJson(opts) {
@@ -182,7 +166,7 @@ export class FetchService {
 
     /**
      * Send a POST request with a JSON bod, and decode the response as JSON.
-     * This method delegates to @see {fetch} and accepts the same options.
+     * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async postJson(opts) {
@@ -194,7 +178,7 @@ export class FetchService {
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
-     * This method delegates to @see {fetch} and accepts the same options.
+     * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async putJson(opts) {
@@ -206,7 +190,7 @@ export class FetchService {
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * This method delegates to @see {fetch} and accepts the same options.
+     * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async deleteJson(opts) {
@@ -254,4 +238,23 @@ export class FetchService {
     }
 }
 
-
+/**
+ * @typedef {Object} FetchOptions
+ *      Standard options to pass through to fetch, with some additions.
+ *      [See MDN for available options]{@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
+ * @property {string} url - url for the request. Relative urls will be appended to XH.baseUrl.
+ * @property {Object} [body] - data to send in the request body (for POSTs/PUTs of JSON).
+ * @property {Object} [params] - parameters to encode and append as a query string, or send
+ *      with the request body (for POSTs/PUTs sending form-url-encoded).
+ * @property {string} [method] - HTTP Request method to use for the request. If not specified,
+ *      the method will be set to POST if there are params, otherwise GET.
+ * @property {Object} [headers] - headers to send with this request. A Content-Type header will
+ *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
+ * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
+ *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
+ * @property {Object} [qsOpts] - options to pass to the param converter library, qs.
+ *      The default qsOpts are: `{arrayFormat: 'repeat', allowDots: true}`.
+ *      @see https://www.npmjs.com/package/qs
+ * @property {string} [autoAbortKey] - if set, any pending requests made with the same autoAbortKey
+ *      will be immediately aborted in favor of the new request.
+ */

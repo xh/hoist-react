@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {cloneElement, useContext, Children} from 'react';
@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {isDate, isFinite, isBoolean, isUndefined} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {FormContext, FieldModel} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
@@ -39,7 +39,7 @@ import './FormField.scss';
 export const [FormField, formField] = hoistCmp.withFactory({
     displayName: 'FormField',
     className: 'xh-form-field',
-    model: uses(FieldModel, {fromContext: false, toContext: false}),
+    model: uses(FieldModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
     memo: false,
 
     render({model, className, field, children, info, ...props}) {

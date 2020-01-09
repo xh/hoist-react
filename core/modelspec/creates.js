@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ModelSpec} from './ModelSpec';
+import {ModelSpec, ModelPublishMode} from './ModelSpec';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing
@@ -21,15 +21,15 @@ import {ModelSpec} from './ModelSpec';
  * `@LoadSupport` it will be loaded on component mount, and it will always be destroyed on
  * component unmount.
  *
- * @param {Class|function} spec - HoistModel Class to construct, or a function returning a concrete
- *      HoistModel instance.
+ * @param {(Class|function)} spec - HoistModel Class to construct, or a function returning a
+ *      concrete HoistModel instance.
  * @param {Object} [flags]
- * @param {boolean} [flags.toContext] - true (default) to publish model in props for consumption as
- *      primary model by descendant components.
+ * @param {ModelPublishMode} [flags.publishMode] - mode for publishing this model to context.
  * @returns {ModelSpec}
  */
-export function creates(spec, {toContext = true} = {}) {
-    return new CreatesSpec(spec, toContext);
+export function creates(
+    spec, {publishMode = ModelPublishMode.DEFAULT} = {}) {
+    return new CreatesSpec(spec, publishMode);
 }
 
 /** @private */
@@ -37,8 +37,8 @@ export class CreatesSpec extends ModelSpec {
 
     createFn;
 
-    constructor(spec, toContext) {
-        super(false, toContext);
+    constructor(spec, publishMode) {
+        super(false, publishMode);
         if (spec.isHoistModel) {
             throwIf(spec.lookupModel, 'Specified model type must *not* be an instance. Specify a class name instead.');
             this.createFn = () => new spec();

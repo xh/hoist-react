@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import {XH, HoistService} from '@xh/hoist/core';
@@ -19,7 +19,7 @@ import {deepFreeze} from '@xh/hoist/utils/js';
 export class EnvironmentService {
 
     _data = {};
-    
+
     async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'});
 

@@ -2,20 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistService} from '@xh/hoist/core';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, sortBy, isArray, isFunction, isNil, isString, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
- * @see HoistColumn API for options to control exported values and formats.
+ * @see Column API for options to control exported values and formats.
  */
 @HoistService
 export class GridExportService {
@@ -24,14 +24,7 @@ export class GridExportService {
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {Object} [options] - Export options.
-     * @param {(string|function)} [options.filename] - name for export file, or closure to generate.
-     *      Do not include the file extension - that will be appended based on the specified type.
-     * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {(string|string[])} [options.columns] - columns to include in export. Supports tokens
-     *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
-     *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
-     *      enumerated columns).
+     * @param {ExportOptions} [options] - Export options.
      */
     async exportAsync(gridModel, {
         filename = 'export',
@@ -55,7 +48,7 @@ export class GridExportService {
             return;
         }
 
-        rows.push(this.getHeaderRow(exportColumns, type));
+        rows.push(this.getHeaderRow(exportColumns, type, gridModel));
         rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
@@ -106,19 +99,20 @@ export class GridExportService {
             includeAll = toExport.includes('ALL'),
             includeViz = toExport.includes('VISIBLE');
 
-        return gridModel
-            .getLeafColumns()
-            .filter(col => {
-                const {colId, excludeFromExport} = col;
-                return (
-                    !excludeFromExport &&
-                    (
-                        includeAll ||
-                        toExport.includes(colId) ||
-                        (includeViz && gridModel.isColumnVisible(colId))
-                    )
-                );
-            });
+        return sortBy(gridModel.getLeafColumns(), ({colId}) => {
+            const match = gridModel.columnState.find(it => it.colId === colId);
+            return withDefault(match?._sortOrder, 0);
+        }).filter(col => {
+            const {colId, excludeFromExport} = col;
+            return (
+                !excludeFromExport &&
+                (
+                    includeAll ||
+                    toExport.includes(colId) ||
+                    (includeViz && gridModel.isColumnVisible(colId))
+                )
+            );
+        });
     }
 
     getColumnMetadata(columns) {
@@ -139,8 +133,12 @@ export class GridExportService {
         });
     }
 
-    getHeaderRow(columns, type) {
-        const headers = columns.map(it => it.exportName);
+    getHeaderRow(columns, type, gridModel) {
+        const headers = columns.map(it =>
+            isString(it.exportName) ?
+                it.exportName :
+                it.exportName({column: it, gridModel})
+        );
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -170,21 +168,28 @@ export class GridExportService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        const data = columns.map(it => this.getCellData(gridModel, record, it));
+        let aggData = null;
+        if (gridModel.treeMode && record.children.length) {
+            aggData = gridModel.agApi.getRowNode(record.id).aggData;
+        }
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
         return {data, depth};
     }
 
-    getCellData(gridModel, record, column) {
+    getCellData(gridModel, record, column, aggData) {
         const {field, exportValue} = column;
 
-        // Modify value using exportValue
         let value = record[field];
+        // Modify value using exportValue
         if (isString(exportValue) && record[exportValue] !== null) {
             // If exportValue points to a different field
             value = record[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
+        } else if (aggData && !isNil(aggData[field])) {
+            // If we found aggregate data calculated by agGrid
+            value = aggData[field];
         }
 
         if (isNil(value)) return null;
@@ -225,3 +230,14 @@ export class GridExportService {
         }
     }
 }
+
+/**
+ * @typedef {Object} ExportOptions - options for exporting grid records to a file.
+ * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
+ *      Do not include the file extension - that will be appended based on the specified type.
+ * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
+ * @property {(string|string[])} [options.columns] - columns to include in export. Supports tokens
+ *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+ *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
+ *      enumerated columns).
+ */

@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {resizeSensor} from '@xh/hoist/kit/blueprint';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
@@ -17,7 +16,7 @@ import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './TreeMap.scss';
 
@@ -37,8 +36,8 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}) {
-
-        const impl = useLocalModel(() => new LocalModel(model));
+        const impl = useLocalModel(() => new LocalModel(model)),
+            ref = useOnResize((e) => impl.resizeChartAsync(e), 100);
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -73,18 +72,16 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
             item = renderChartHolder();
         }
 
-        return resizeSensor({
-            onResize: debounce((e) => impl.resizeChartAsync(e), 100),
-            item: box({
-                ...layoutProps,
-                className,
-                item
-            })
+        return box({
+            ...layoutProps,
+            className,
+            ref,
+            item
         });
     }
 });
 
-TreeMapModel.propTypes = {
+TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
@@ -305,6 +302,8 @@ class LocalModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
+
+        if (gridModel) gridModel.ensureSelectionVisible();
     }
 
     //----------------------

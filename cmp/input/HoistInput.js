@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {Component} from 'react';
@@ -88,8 +88,8 @@ export class HoistInput extends Component {
     @observable hasFocus = false;
     @observable internalValue = null;
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
 
         throwIf(props.onKeyPress, "HoistInputs no longer support a 'onKeyPress' property.  Use 'onKeyDown' instead.");
         throwIf(props.field, "HoistInput no longer supports a 'field' property.  Use 'bind' instead.");

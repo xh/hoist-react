@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistModel, LoadSupport} from '@xh/hoist/core';
@@ -38,7 +38,7 @@ export class MonitorResultsModel {
 
     constructor() {
         this.timer = Timer.create({
-            runFn: () => this.refreshAsync(),
+            runFn: () => this.autoRefreshAsync(),
             delay: 10 * SECONDS,
             interval: 10 * SECONDS
         });

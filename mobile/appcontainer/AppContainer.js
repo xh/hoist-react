@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elem, AppState, XH, uses, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
@@ -25,6 +25,7 @@ import {messageSource} from './MessageSource';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {errorBoundary} from '@xh/hoist/core/impl';
@@ -32,6 +33,7 @@ import {useOnMount} from '@xh/hoist/utils/react';
 
 installMobileImpls({
     tabContainerImpl,
+    storeFilterFieldImpl,
     colChooser,
     ColChooserModel
 });

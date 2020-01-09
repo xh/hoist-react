@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {hoistCmp, elem, AppState, XH, uses} from '@xh/hoist/core';
@@ -28,6 +28,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
+import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
@@ -37,6 +38,7 @@ import {useHotkeys} from '@xh/hoist/desktop/hooks';
 installDesktopImpls({
     tabContainerImpl,
     dockContainerImpl,
+    storeFilterFieldImpl,
     colChooser,
     ColChooserModel,
     StoreContextMenu

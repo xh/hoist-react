@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 
@@ -19,6 +19,7 @@
 export let tabContainerImpl = null;
 export let dockContainerImpl = null;
 export let colChooser = null;
+export let storeFilterFieldImpl = null;
 
 export let StoreContextMenu = null;
 export let ColChooserModel = null;
@@ -30,7 +31,8 @@ export let ColChooserModel = null;
  */
 export function installDesktopImpls(impls) {
     tabContainerImpl = impls.tabContainerImpl;
-    dockContainerImpl= impls.dockContainerImpl;
+    dockContainerImpl = impls.dockContainerImpl;
+    storeFilterFieldImpl = impls.storeFilterFieldImpl;
     colChooser = impls.colChooser;
 
     StoreContextMenu = impls.StoreContextMenu;

@@ -2,20 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFunction, startCase} from 'lodash';
+import {castArray, clone, find, isFinite, isFunction, startCase, isString} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
  * Provided to GridModels as plain configuration objects.
- * @alias HoistColumn
  */
 export class Column {
 
@@ -29,8 +28,8 @@ export class Column {
      *      Defaults to field name - one of these two properties must be specified.
      * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
-     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - additional css classes to add
-     *      to the column header. Supports both string values or function to generate strings.
+     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
+     *      header. Supports both string values or a function to generate strings.
      * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional css classes to add
      *      to each cell in the column. Supports both string values or function to generate strings.
      * @param {boolean} [c.isTreeColumn] - true if this column should show the tree affordances for a
@@ -77,6 +76,7 @@ export class Column {
      *      with ExportFormat.LONG_TEXT to enable text wrapping.
      * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
      *      tool tip function, which is based on AG Grid tooltip callback.
+     * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React component.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
@@ -127,6 +127,7 @@ export class Column {
         exportWidth,
         excludeFromExport,
         tooltip,
+        tooltipElement,
         agOptions,
         ...rest
     }, gridModel) {
@@ -148,10 +149,15 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column ${this.colId} should not be specified with both flex = true && width.  Width will be ignored.`
+            `Column specified with both flex = true && width. Width will be ignored. [colId=${this.colId}]`
+        );
+        warnIf(
+            width && !isFinite(width),
+            `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
         );
         this.flex = withDefault(flex, false);
-        this.width = this.flex ? null : width || Column.DEFAULT_WIDTH;
+        this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
+
         this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
@@ -177,7 +183,7 @@ export class Column {
             'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
         );
 
-        this.chooserName = chooserName || this.headerName || this.colId;
+        this.chooserName = withDefault(chooserName, headerName && isString(headerName) ? headerName : undefined, startCase(this.colId));
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
@@ -190,6 +196,8 @@ export class Column {
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
         this.tooltip = tooltip;
+        this.tooltipElement = tooltipElement;
+
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
@@ -208,6 +216,7 @@ export class Column {
                         isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
                         this.chooserName;
                 },
+                headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
                 hide: this.hidden,
                 minWidth: this.minWidth,
@@ -254,27 +263,27 @@ export class Column {
         if (this.tooltip) {
             ret.tooltipValueGetter = isFunction(this.tooltip) ?
                 (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, agParams}) :
+                    {record: agParams.data, column: this, gridModel, agParams}) :
                 ({value}) => value;
         }
 
-        // Generate CSS classes for headers and cells.
+        if (this.tooltipElement) {
+            ret.tooltipComponentFramework = class extends Component {
+                getReactContainerClasses() {return ['xh-grid-tooltip']}
+                render() {
+                    const agParams = this.props,
+                        {value, rowIndex, api} = agParams,
+                        record = api.getDisplayedRowAtIndex(rowIndex).data;
+
+                    // ag-Grid encodes the value, so we decode it before passing to the renderer
+                    return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
+                }
+            };
+        }
+
+        // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
         const {align} = this;
-        ret.headerClass = (agParams) => {
-            let r = [];
-            if (this.headerClass) {
-                r = castArray(
-                    isFunction(this.headerClass) ?
-                        this.headerClass({column: this, gridModel, agParams}) :
-                        this.headerClass
-                );
-            }
-            if (align === 'center' || align === 'right') {
-                r.push('xh-column-header-align-' + align);
-            }
-            return r;
-        };
         ret.cellClass = (agParams) => {
             let r = [];
             if (this.cellClass) {
@@ -360,7 +369,28 @@ export class Column {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
+}
 
+export function getAgHeaderClassFn(column) {
+    // Generate CSS classes for headers.
+    // Default alignment classes are mixed in with any provided custom classes.
+    const {headerClass, align, gridModel} = column;
+    return (agParams) => {
+        let r = [];
+        if (headerClass) {
+            r = castArray(
+                isFunction(headerClass) ?
+                    headerClass({column, gridModel, agParams}) :
+                    headerClass
+            );
+        }
+
+        if (align === 'center' || align === 'right') {
+            r.push('xh-column-header-align-' + align);
+        }
+
+        return r;
+    };
 }
 
 /**
@@ -441,7 +471,15 @@ export class Column {
  * @typedef {Object} TooltipMetadata
  * @property {Record} record - row-level data Record.
  * @property {Column} column - column for the cell being rendered.
+ * @property {GridModel} gridModel - gridModel for the grid.
  * @property {ITooltipParams} [agParams] - the ag-grid tooltip params.
+ */
+
+/**
+ * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
+ * @param {*} value - tooltip value.
+ * @param {TooltipMetadata} metadata - additional data about the column and row.
+ * @return {Element} - the React element to show as a toooltip.
  */
 
 /**

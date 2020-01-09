@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -159,8 +159,11 @@ export class Select extends HoistInput {
         return !this.inputValue || !this._inputChangedSinceSelect || this._defaultLocalFilterFn(opt, inputVal);
     };
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
+
+        const queryBuffer = withDefault(props.queryBuffer, 300);
+        if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
 
         this.addReaction({
             track: () => this.props.options,
@@ -214,7 +217,7 @@ export class Select extends HoistInput {
         }
 
         if (this.asyncMode) {
-            rsProps.loadOptions = debouncePromise(this.doQueryAsync, withDefault(props.queryBuffer, 300));
+            rsProps.loadOptions = this.doQueryAsync;
             rsProps.loadingMessage = this.loadingMessageFn;
             if (this.renderValue) rsProps.defaultOptions = [this.renderValue];
         } else {
@@ -356,7 +359,6 @@ export class Select extends HoistInput {
             {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
-
 
     //------------------------
     // Async

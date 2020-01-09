@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import PT from 'prop-types';
@@ -45,8 +45,8 @@ export class RadioInput extends HoistInput {
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.addReaction({
             track: () => this.props.options,
             run: (opts) => {
@@ -96,7 +96,7 @@ export class RadioInput extends HoistInput {
             return ret;
         });
     }
-    
+
     onChange = (e) => {
         this.noteValueChange(e.target.value);
     }

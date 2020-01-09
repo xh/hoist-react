@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
@@ -95,5 +95,5 @@ export class SplitTreeMapModel {
  * @callback SplitTreeMapTitleFn
  * @param {TreeMapModel} treeMapModel - model for the region's inner TreeMap.
  * @param {boolean} isPrimary - true if the region is the primary (top/left) map in the pair.
- * @return {(String|Node)} - the region title to display.
+ * @return {(String|ReactNode)} - the region title to display.
  */

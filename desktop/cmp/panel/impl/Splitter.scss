@@ -1,40 +1,40 @@
 .xh-resizable-splitter {
-    background-color: var(--xh-resizable-bg);
-    justify-content: center;
-    align-items: center;
+  background-color: var(--xh-resizable-bg);
+  justify-content: center;
+  align-items: center;
 
-    &.vertical {
-        height: var(--xh-resizable-size-px);
-        border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-        border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+  .xh-resizable-collapser-btn {
+    color: var(--xh-resizable-button-icon-color) !important;
+    margin: 0;
+    padding: 0;
+    z-index: 10;
+  }
 
-        .xh-resizable-collapser-btn {
-            width: 50px;
-            height: 10px;
-            background-color: var(--xh-resizable-button-bg);
-            border-left: 1px solid var(--xh-resizable-border-color);
-            border-right: 1px solid var(--xh-resizable-border-color);
-        }
-    }
-
-    &.horizontal {
-        width: var(--xh-resizable-size-px);
-        border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-        border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-
-        .xh-resizable-collapser-btn {
-            width: 10px;
-            height: 50px;
-            background-color: var(--xh-resizable-button-bg);
-            border-bottom: 1px solid var(--xh-resizable-border-color);
-            border-top: 1px solid var(--xh-resizable-border-color);
-        }
-    }
+  &.vertical {
+    height: var(--xh-resizable-size-px);
+    border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 
     .xh-resizable-collapser-btn {
-        color: var(--xh-resizable-button-icon-color) !important;
-        margin: 0;
-        padding: 0;
-        z-index: 10;
+      width: 50px;
+      height: 10px;
+      background-color: var(--xh-resizable-button-bg);
+      border-left: 1px solid var(--xh-resizable-border-color);
+      border-right: 1px solid var(--xh-resizable-border-color);
     }
+  }
+
+  &.horizontal {
+    width: var(--xh-resizable-size-px);
+    border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+
+    .xh-resizable-collapser-btn {
+      width: 10px;
+      height: 50px;
+      background-color: var(--xh-resizable-button-bg);
+      border-bottom: 1px solid var(--xh-resizable-border-color);
+      border-top: 1px solid var(--xh-resizable-border-color);
+    }
+  }
 }

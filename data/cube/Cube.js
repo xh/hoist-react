@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 
@@ -24,7 +24,7 @@ export class Cube {
     _lockFn = null;
 
     static RECORD_ID_DELIMITER = '>>';
-    
+
     /**
      * @param {Object} c - Cube configuration.
      * @param {(Field[]|Object[])} c.fields - array of Fields / {@see Field} configs.

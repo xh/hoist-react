@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel} from '@xh/hoist/core';
@@ -21,7 +21,7 @@ import browserPlugin from 'router5-plugin-browser';
 export class RouterModel {
 
     /** Router5 state object representing the current state. */
-    @observable currentState;
+    @observable.ref currentState;
 
     /** Underlying Router5 Router object implementing the routing state. */
     router = this.createRouter();
