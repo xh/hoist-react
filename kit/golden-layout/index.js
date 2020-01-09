@@ -7,8 +7,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GoldenLayout from 'golden-layout';
+
 import 'golden-layout/src/css/goldenlayout-base.css';
-import 'golden-layout/src/css/goldenlayout-light-theme.css'; // Todo: Dark theme?
+import 'golden-layout/src/css/goldenlayout-light-theme.css';
+import './styles.scss';
 
 // GoldenLayout looks for globally available React and ReactDOM.
 // Is there a better way to do this with webpack?

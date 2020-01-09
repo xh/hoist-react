@@ -4,5 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-export * from './LayoutContainer';
-export * from './LayoutContainerModel';
+export * from './DashContainer';
+export * from './DashContainerModel';
+export * from './DashViewModel';
