@@ -141,8 +141,10 @@ function doFormat(opts) {
         return opts.equalString;
     }
 
-    let ret = (elapsed > 10 * SECONDS && elapsed < 60 * SECONDS) ?
-        '<1 minute' :  // override weird moment default in this range.
+    // By default, moment will show 'a few seconds' for times up to about 45 seconds.
+    // This is confusing, so we override this default for times above 15 seconds.
+    let ret = (elapsed > 15 * SECONDS && elapsed < 60 * SECONDS) ?
+        '<1 minute' :
         moment.duration(elapsed).humanize();
 
     if (opts.short) {
