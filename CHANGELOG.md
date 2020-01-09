@@ -11,6 +11,10 @@
 * Added a `ensureSelectionVisible` method to GridModel to scroll selection into view.
 * `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
 * `PanelModel` now accepts a `maxSize` config.
+* `getRelativeTimestamp` and `RelativeTimeStamp`, now support a `relativeTo` option, 
+allowing for timestamps relative to times other than now.
+* `getRelativeTimestamp` and `RelativeTimeStamp` now use a more standard moment.js routine for 
+their underlying implementation. 
 * If a `TreeMap` is associated with a grid, the grid will now scroll to display the item selected in
   the map.
 * `GridModel.emptyText` can now be set dynamically, with changes reflected in the grid.
@@ -23,6 +27,8 @@
 * The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* The options `nowEpsilon` and `nowString` on RelativeTimestamp have been renamed to `epsilon` and 
+  `equalString`, respectively.
 
 ### 🐞 Bug Fixes
 
