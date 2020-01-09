@@ -82,12 +82,12 @@ export class Store {
         }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
-        this.setFilter(filter);
         this.processRawData = processRawData;
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
 
         this.resetRecords();
+        this.setFilter(filter);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`*/
@@ -128,8 +128,12 @@ export class Store {
             rawData = rawData[0].children;
         }
 
-        this.resetRecords();
-        this.loadDataUpdates({add: rawData, rawSummaryData});
+        const records = this.createRecords(rawData);
+        this._original = this._current = this._filtered = this._original.loadRecords(records);
+
+        if (rawSummaryData) {
+            this.summaryRecord = this.createRecord(rawSummaryData, null, true);
+        }
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
@@ -681,8 +685,8 @@ export class Store {
         return new Record({id, data, raw, parentId, store: this, isSummary});
     }
 
-    createRecords(rawRecs, parentId, recordMap = new Map()) {
-        rawRecs.forEach(raw => {
+    createRecords(rawData, parentId, recordMap = new Map()) {
+        rawData.forEach(raw => {
             const rec = this.createRecord(raw, parentId),
                 {id} = rec;
 
