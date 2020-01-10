@@ -149,6 +149,10 @@ export class RecordSet {
 
                 if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
+                } else {
+                    // If we are sure that we are going to keep this Record, we freeze it now to
+                    // enforce immutability on the application
+                    newRec.freeze();
                 }
             }
         }
@@ -192,6 +196,7 @@ export class RecordSet {
                     return;
                 }
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 
@@ -201,6 +206,7 @@ export class RecordSet {
                 const {id} = rec;
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 
