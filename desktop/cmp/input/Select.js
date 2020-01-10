@@ -342,21 +342,27 @@ export class Select extends HoistInput {
     }
 
     // Normalize / clone a single source value into a normalized option object. Supports Strings
-    // and Objects. Objects are validated/defaulted to ensure a label+value, with other fields
-    // brought along to support Selects emitting value objects with ad hoc properties.
+    // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
+    // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src) {
         const {props} = this,
             srcIsObject = isPlainObject(src),
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
+        const options = srcIsObject ? src.options : null;
+
         throwIf(
-            srcIsObject && !src.hasOwnProperty(valueField),
-            `Select options/values provided as Objects must define a '${valueField}' property.`
+            srcIsObject && !(src.hasOwnProperty(valueField) || options),
+            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
         return srcIsObject ?
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
+            (
+                isNil(options) ?
+                    {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
+                    {...src, label: src[labelField], options: this.normalizeOptions(options)}
+            ) :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
