@@ -411,15 +411,23 @@ export class Store {
     }
 
     /**
-     * Records added to this store since data was last loaded.
+     * Records added to this store which have not been committed.
      * @returns {Record[]}
      */
-    get addedRecords() {
-        return differenceBy(this.allRecords, this.originalRecords, 'id');
+    get newRecords() {
+        return this.records.filter(it => it.isNew);
     }
 
     /**
-     * Records removed from this store since data was last loaded.
+     * Records added to this store which have not been committed, unfiltered.
+     * @returns {Record[]}
+     */
+    get allNewRecords() {
+        return this.allRecords.filter(it => it.isNew);
+    }
+
+    /**
+     * Records removed from this store which have not been committed.
      * @returns {Record[]}
      */
     get removedRecords() {
@@ -430,16 +438,16 @@ export class Store {
      * Records which have been updated since they were last loaded, respecting any filter (if applied).
      * @returns {Record[]}
      */
-    get updatedRecords() {
-        return this.records.filter(it => !it.isNew && it.isDirty);
+    get modifiedRecords() {
+        return this.records.filter(it => it.isModified);
     }
 
     /**
      * Records which have been updated since they were last loaded, unfiltered.
      * @returns {Record[]}
      */
-    get allUpdatedRecords() {
-        return this.allRecords.filter(it => !it.isNew && it.isDirty);
+    get allModifiedRecords() {
+        return this.allRecords.filter(it => it.isModified);
     }
 
     /**
@@ -459,7 +467,7 @@ export class Store {
         return this.allRecords.filter(it => it.isDirty);
     }
 
-    /** @returns {boolean} - true if the store has dirty records (added/updated/removed) */
+    /** @returns {boolean} - true if the store has changes which need to be committed. */
     get isDirty() {
         return this._current !== this._original;
     }
@@ -536,7 +544,7 @@ export class Store {
     }
 
     /** @returns {RecordSet} - the record set for the current state of the store */
-    get allRecordSet() {
+    get currentRecordSet() {
         return this._current;
     }
 
@@ -714,14 +722,14 @@ export class Store {
     }
 
     parseFieldValues(data, skipMissingFields = false) {
-        const ret = {...data};
+        const ret = {};
         this.fields.forEach(field => {
             const {name} = field;
 
             // Sometimes we want to ignore fields which are not present in the data to preserve
             // an undefined value, to allow merging of data with existing data. In these cases we do
             // not want the configured default value for the field to be used, as we are dealing with
-            // partial data
+            // a partial data object
             if (skipMissingFields && !has(data, field.name)) return;
 
             ret[name] = field.parseVal(data[name]);

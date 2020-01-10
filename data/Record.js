@@ -31,19 +31,19 @@ export class Record {
     /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
     xhIsSummary;
 
-    /** @returns {boolean} */
+    /** @returns {boolean} - true if the Record has not been committed. */
     get isNew() {
         return this.originalRecord === null;
     }
 
-    /** @returns {boolean} */
+    /** @returns {boolean} - true if the Record has been modified since it was last committed. */
     get isDirty() {
-        return this.originalRecord !== this;
+        return this.originalRecord && this.originalRecord !== this;
     }
 
-    /** @returns {boolean} */
+    /** @returns {boolean} - true if the Record has changes which needs to be committed. */
     get isModified() {
-        return !this.isNew && this.isDirty;
+        return this.isNew || this.isDirty;
     }
 
     /** @returns {Record} */
@@ -151,7 +151,6 @@ export class Record {
      */
     isFieldDirty(name) {
         if (!this.isDirty) return false;
-        if (this.isNew) return true;
 
         const value = this[name], originalValue = this.originalRecord[name];
         return !equal(value, originalValue);
