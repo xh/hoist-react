@@ -21,7 +21,7 @@ export class Record {
     /** @member {(string|number)} */
     parentId;
     /** @member {Record} */
-    originalRecord;
+    committedRecord;
     /** @member {Object} */
     raw;
     /** @member {Object} */
@@ -33,17 +33,17 @@ export class Record {
 
     /** @returns {boolean} - true if the Record has not been committed. */
     get isNew() {
-        return this.originalRecord === null;
+        return this.committedRecord === null;
     }
 
     /** @returns {boolean} - true if the Record has been modified since it was last committed. */
-    get isDirty() {
-        return this.originalRecord && this.originalRecord !== this;
+    get isModified() {
+        return this.committedRecord && this.committedRecord !== this;
     }
 
-    /** @returns {boolean} - true if the Record has changes which needs to be committed. */
-    get isModified() {
-        return this.isNew || this.isDirty;
+    /** @returns {boolean} - false if the Record has been added or modified. */
+    get isCommitted() {
+        return this.committedRecord === this;
     }
 
     /** @returns {Record} */
@@ -116,22 +116,23 @@ export class Record {
      * requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
+     * @param {number|string} c.id - record id
      * @param {Object} c.data - data used to construct this record,
      *      pre-processed if applicable by `store.processRawData()` and `Field.parseVal()`.
-     * @param {Object} c.raw - the same data, prior to any store pre-processing.
      * @param {Store} c.store - store containing this record.
+     * @param {Object} [c.raw] - the same data, prior to any store pre-processing.
      * @param {Record} [c.parent] - parent record, if any.
      * @param {boolean} [c.isSummary] - whether this record is a summary record.
-     * @param {Record|null} [c.originalRecord] - the clean Record loaded into the Store. Defaults to
+     * @param {Record|null} [c.committedRecord] - the clean Record loaded into the Store. Defaults to
      *      `this` to indicate that this Record is the original. Pass `null` to indicate that this is
      *      a "new" Record with no backing original data in the Store data source.
      */
-    constructor({id, data, raw, store, parent, isSummary, originalRecord = this}) {
+    constructor({id, data, raw = null, store, parent, isSummary = false, committedRecord = this}) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
         this.parentId = parent?.id;
-        this.originalRecord = originalRecord;
+        this.committedRecord = committedRecord;
         this.raw = raw;
         this.data = data;
         this.store = store;
@@ -150,9 +151,9 @@ export class Record {
      * @returns {boolean}
      */
     isFieldDirty(name) {
-        if (!this.isDirty) return false;
+        if (!this.isModified) return false;
 
-        const value = this[name], originalValue = this.originalRecord[name];
+        const value = this[name], originalValue = this.committedRecord[name];
         return !equal(value, originalValue);
     }
 
@@ -161,13 +162,13 @@ export class Record {
      * @returns {Object.<string, FieldValue>|null}
      */
     getDirtyFields() {
-        if (!this.isDirty) return null;
+        if (!this.isModified) return null;
 
         // For "added" records, return just the current values, since there are no originals
         if (this.isNew) return reduce(this.data, (k, v, ret) => ret[k] = {value: v}, {});
 
         const ret = {},
-            rec = this.originalRecord;
+            rec = this.committedRecord;
 
         forEach(this.data, (value, key) => {
             const originalValue = rec[key];

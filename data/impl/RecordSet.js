@@ -95,7 +95,12 @@ export class RecordSet {
     // Editing operations that spawn new RecordSets.
     // Preserve all record references we can!
     //-----------------------------------------------
-    applyFilter(filter) {
+
+    normalize(target) {
+        return this.isEqual(target) ? target : this;
+    }
+
+    withFilter(filter) {
         if (!filter) return this;
         const {fn, includeChildren} = filter;
 
@@ -138,7 +143,7 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    loadRecords(recordMap) {
+    withNewRecords(recordMap) {
         // Reuse existing Record object instances where possible if they resolve as equal to their
         // new counterparts. See note on Store.loadRecords().
         if (!this.empty) {
@@ -164,7 +169,7 @@ export class RecordSet {
         return equal(rec1.xhTreePath, rec2.xhTreePath) && equal(rec1.data, rec2.data);
     }
 
-    loadRecordUpdates({update, add, remove}) {
+    withTransaction({update, add, remove}) {
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 

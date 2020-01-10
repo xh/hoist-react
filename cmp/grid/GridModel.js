@@ -443,8 +443,8 @@ export class GridModel {
     }
 
     /** Update the underlying store. */
-    loadDataUpdates(...args) {
-        return this.store.loadDataUpdates(...args);
+    updateData(...args) {
+        return this.store.updateData(...args);
     }
 
     /** Clear the underlying store, removing all rows. */

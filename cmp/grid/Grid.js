@@ -363,7 +363,7 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store.recordSet, model.showSummary],
+            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
             run: ([api, lastLoaded, lastUpdated, newRs]) => {
                 if (!api) return;
 
