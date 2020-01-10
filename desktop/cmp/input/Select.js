@@ -12,7 +12,11 @@ import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
     reactCreatableSelect,
-    reactSelect
+    reactSelect,
+    reactWindowedAsyncCreatableSelect,
+    reactWindowedAsyncSelect,
+    reactWindowedCreatableSelect,
+    reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -27,7 +31,7 @@ import './Select.scss';
 
 /**
  * A managed wrapper around the React-Select combobox/dropdown component.
- * Uses the library react-windowed-select for improved performance on large option lists.
+ * Allows use of the library react-windowed-select for improved performance on large option lists.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
@@ -68,6 +72,15 @@ export class Select extends HoistInput {
 
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
+
+        /**
+         * True to use react-windowed-select for improved performance on large option lists.
+         * Note that Creatable, Async, or AsyncCreatable Selects with enableWindow=true will not
+         * be wrapped in a {@link https://react-select.com/props#statemanager-props | State Manager},
+         * so {@link https://react-select.com/advanced#controlled-props | Controller Props}
+         * (in particular menuIsOpen) may not work as expected.
+         */
+        enableWindow: PT.bool,
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
@@ -142,6 +155,7 @@ export class Select extends HoistInput {
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
+    get windowedMode() {return !!this.props.enableWindow}
     get multiMode() {return !!this.props.enableMulti}
     get filterMode() {return withDefault(this.props.enableFilter, true)}
 
@@ -231,24 +245,38 @@ export class Select extends HoistInput {
             rsProps.formatCreateLabel = this.createMessageFn;
         }
 
-        const factory = this.asyncMode ?
-            (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-            (this.creatableMode ? reactCreatableSelect : reactSelect);
+        const factory = this.getSelectFactory();
 
         assign(rsProps, props.rsOptions);
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
             onKeyDown: (e) => {
-                // Stop keydown propagation if react-select is likely to use the event
-                // for menu management
-                if (e.key == 'Escape' || e.key == 'Enter') {
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
+                // propagation only if react-select already likely to have used for menu management.
+                // menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
+                const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
+                if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
                 }
             },
             ...layoutProps,
             width: withDefault(width, 200)
         });
+    }
+
+    getSelectFactory() {
+        let ret;
+        if (this.windowedMode) {
+            ret = this.asyncMode ?
+                (this.creatableMode ? reactWindowedAsyncCreatableSelect : reactWindowedAsyncSelect) :
+                (this.creatableMode ? reactWindowedCreatableSelect : reactWindowedSelect);
+        } else {
+            ret = this.asyncMode ?
+                (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+                (this.creatableMode ? reactCreatableSelect : reactSelect);
+        }
+        return ret;
     }
 
     @action
