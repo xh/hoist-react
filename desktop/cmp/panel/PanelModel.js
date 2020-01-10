@@ -124,10 +124,6 @@ export class PanelModel {
         }
     }
 
-    isComponentModel() {
-        return true;
-    }
-
     //----------------------
     // Actions + public setters
     //----------------------
