@@ -27,6 +27,7 @@ import './Select.scss';
 
 /**
  * A managed wrapper around the React-Select combobox/dropdown component.
+ * Uses the library react-windowed-select for improved performance on large option lists.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
@@ -35,6 +36,7 @@ import './Select.scss';
  *      + User-created ad-hoc entries
  *
  * @see {@link https://react-select.com|React Select Docs}
+ * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
  */
 @LayoutSupport
 @HoistComponent
