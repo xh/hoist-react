@@ -7,35 +7,41 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GoldenLayout from 'golden-layout';
+import {uniqueId} from 'lodash';
 
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
 import './styles.scss';
 
 // GoldenLayout looks for globally available React and ReactDOM.
-// Is there a better way to do this with webpack?
 window.React = React;
 window.ReactDOM = ReactDOM;
 
-// GoldenLayout (v1.5.9) assumes that ReactDOM.render will return a component - however,
-// as of React 16, ReactDOM.render returns null for functional components, which would break.
+// GoldenLayout (v1.5.9) assumes that we will always be using Class Components, and would
+// break with functional components.
 //
-// Below we patch the `_render` method of GoldenLayout's ReactComponentHandler to work
-// around this limitation.
+// Below we patch the `_render` and `_getReactComponent` methods of GoldenLayout's
+// ReactComponentHandler to work around these limitations.
 const ReactComponentHandler = GoldenLayout['__lm'].utils.ReactComponentHandler;
 class ReactComponentHandlerPatched extends ReactComponentHandler {
+
+    // Remove wiring up `componentWillUpdate` and `setState`. These methods don't work
+    // with functional components.
     _render() {
-        this._reactComponent = ReactDOM.render(this._getReactComponent(), this._container.getElement()[0]);
+        this._reactComponent = this._getReactComponent();
+        ReactDOM.render(this._reactComponent, this._container.getElement()[0]);
+    }
 
-        // PATCH STARTS - Add null check before attempting to wire up component lifecycle methods
-        if (!this._reactComponent) return;
-        // PATCH ENDS
-
-        this._originalComponentWillUpdate = this._reactComponent.componentWillUpdate || function() {};
-        this._reactComponent.componentWillUpdate = this._onUpdate.bind(this);
-        if (this._container.getState() && this._reactComponent.setState) {
-            this._reactComponent.setState(this._container.getState());
-        }
+    // Modify this to generate a unique id and pass it through.
+    // This enables us to associate DashViewModels with GoldenLayout react component instances.
+    _getReactComponent() {
+        const props = {
+            id: uniqueId('gl-'),
+            glEventHub: this._container.layoutManager.eventHub,
+            glContainer: this._container,
+            ...this._container._config.props
+        };
+        return React.createElement(this._reactClass, props);
     }
 }
 GoldenLayout['__lm'].utils.ReactComponentHandler = ReactComponentHandlerPatched;

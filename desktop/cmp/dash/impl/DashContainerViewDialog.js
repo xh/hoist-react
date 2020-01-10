@@ -45,10 +45,10 @@ export const dashContainerViewDialog = hoistCmp.factory({
                     },
                     item: formField({
                         label: null,
-                        field: 'view',
+                        field: 'viewSpec',
                         item: select({
                             options,
-                            optionRenderer: (opt) => viewOption({opt}),
+                            optionRenderer: (opt) => viewSpecOption({opt}),
                             hideSelectedOptionCheck: true,
                             autoFocus: true
                         })
@@ -74,7 +74,7 @@ export const dashContainerViewDialog = hoistCmp.factory({
     }
 });
 
-const viewOption = hoistCmp.factory(
+const viewSpecOption = hoistCmp.factory(
     ({opt}) => hbox({
         items: [
             box({
@@ -96,7 +96,7 @@ class Model {
     @managed
     formModel = new FormModel({
         fields: [{
-            name: 'view',
+            name: 'viewSpec',
             rules: [required]
         }]
     });
@@ -107,13 +107,14 @@ class Model {
 
     get options() {
         const {dashContainerModel} = this,
-            {views} = dashContainerModel;
+            {viewSpecs} = dashContainerModel;
 
-        return views.filter(view => {
-            const instances = dashContainerModel.getComponentsById(view.id);
-            return !view.unique || !instances.length;
-        }).map(view => {
-            return {value: view.id, label: view.title, icon: view.icon};
+        return viewSpecs.filter(viewSpec => {
+            const instances = dashContainerModel.getViewsBySpecId(viewSpec.id);
+            return !viewSpec.unique || !instances.length;
+        }).map(viewSpec => {
+            const {id, title, icon} = viewSpec;
+            return {value: id, label: title, icon};
         });
     }
 
@@ -128,8 +129,8 @@ class Model {
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
-        const {view} = this.formModel.values;
-        this.dashContainerModel.submitViewDialog(view);
+        const {viewSpec} = this.formModel.values;
+        this.dashContainerModel.submitViewDialog(viewSpec);
         this.close();
     }
 

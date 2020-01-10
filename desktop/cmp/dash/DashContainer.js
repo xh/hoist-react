@@ -5,8 +5,10 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {ModelLookupContext} from '@xh/hoist/core/impl';
 import {frame, fragment} from '@xh/hoist/cmp/layout';
-import {useOnResize} from '@xh/hoist/utils/react';
+import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
+import {useContext} from 'react';
 import PT from 'prop-types';
 
 import {DashContainerModel} from './DashContainerModel';
@@ -23,6 +25,11 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
     className: 'xh-dash-container',
 
     render({model, className}) {
+        // Store current ModelLookupContext in model, to be applied in DashViews later
+        const modelLookupContext = useContext(ModelLookupContext);
+        useOnMount(() => model.setModelLookupContext(modelLookupContext));
+
+        // Get container ref for GoldenLayouts resize handling
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
         return fragment(

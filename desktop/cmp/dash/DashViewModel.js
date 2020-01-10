@@ -4,70 +4,72 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {DashEvent} from '@xh/hoist/enums';
+
+import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
 /**
  * Model for a DashView within a DashContainer. Specifies the actual content (child component)
- * to be rendered within the view and manages that content's title and icon.
+ * to be rendered within the view and manages that content's render state and refreshes.
  *
  * This model is not typically created directly within applications. Instead, specify a
- * configuration for it via the `DashContainerModel.views` constructor config or via
- * the `DashContainerModel.addView()` method.
+ * DashViewSpec for it via the `DashContainerModel.viewSpec` constructor config or via
+ * the `DashContainerModel.addViewSpec()` method.
  */
 @HoistModel
 export class DashViewModel {
 
     id;
-    title;
-    icon;
-    unique;
-    allowClose;
+    viewSpec;
+    @bindable.ref eventHub;
+    @bindable isActive;
 
     containerModel;
+    @managed refreshContextModel;
 
-    get glConfig() {
-        const {id, title, allowClose} = this;
-        return {
-            component: id,
-            type: 'react-component',
-            title,
-            isClosable: allowClose
-        };
+    get renderMode() {
+        return this.viewSpec.renderMode || this.containerModel.renderMode;
+    }
+
+    get refreshMode() {
+        return this.viewSpec.refreshMode || this.containerModel.refreshMode;
     }
 
     /**
      * @param {Object} c - DashViewModel configuration.
-     * @param {string} c.id - unique identifier for this DashViewModel.
-     * @param {Object} c.content - content to be rendered by this DashView. Component class or a
-     *      custom element factory of the form returned by elemFactory.
+     * @param {string} c.id - Typically created by GoldenLayouts.
+     * @param {DashViewSpec} c.viewSpec - DashViewSpec used to create this DashView.
      * @param {DashContainerModel} c.containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {string} c.title - Title text added to the tab header.
-     * @param {Icon} [c.icon] - An icon placed at the left-side of the tab header.
-     * @param {boolean} [c.unique] - true to prevent multiple instances of this view. Default false.
-     * @param {boolean} [c.allowClose] - true (default) to allow removing from the DashContainer.
      */
     constructor({
         id,
-        content,
-        containerModel,
-        title,
-        icon,
-        unique = false,
-        allowClose = true
+        viewSpec,
+        containerModel
     }) {
         throwIf(!id, 'DashViewModel requires an id');
-        throwIf(!content, 'DashViewModel requires content');
-        throwIf(!title, 'DashViewModel requires a title');
+        throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
 
         this.id = id;
-        this.content = content;
+        this.viewSpec = viewSpec;
         this.containerModel = containerModel;
-        this.title = title;
-        this.icon = icon;
-        this.unique = unique;
-        this.allowClose = allowClose;
+
+        this.refreshContextModel = new DashRefreshContextModel(this);
+
+        this.addReaction({
+            track: () => this.eventHub,
+            run: () => this.addEventHubListeners()
+        });
+    }
+
+    addEventHubListeners() {
+        this.eventHub.on(DashEvent.IS_ACTIVE, ({id, isActive}) => {
+            if (id !== this.id) return;
+            this.setIsActive(isActive);
+        });
     }
 
 }
