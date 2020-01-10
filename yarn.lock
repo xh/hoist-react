@@ -2007,12 +2007,10 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-attr-accept@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/attr-accept/-/attr-accept-1.1.3.tgz#48230c79f93790ef2775fcec4f0db0f5db41ca52"
-  integrity sha512-iT40nudw8zmCweivz6j58g+RT33I4KbaIvRUhjNmDwO2WmsQUxFEZZYZ5w3vXe5x5MX9D7mfvA/XaLOZYFR9EQ==
-  dependencies:
-    core-js "^2.5.0"
+attr-accept@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/attr-accept/-/attr-accept-2.0.0.tgz#8422fef5ee4a511c207796c888227ab5de03306f"
+  integrity sha512-I9SDP4Wvh2ItYYoafEg8hFpsBe96pfQ+eabceShXt3sw2fbIP96+Aoj9zZE0vkZNAkXXzHJATVRuWz+h9FxJxQ==
 
 author-regex@^1.0.0:
   version "1.0.0"
@@ -2878,10 +2876,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codemirror@~5.49.2:
-  version "5.49.2"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.49.2.tgz#c84fdaf11b19803f828b0c67060c7bc6d154ccad"
-  integrity sha512-dwJ2HRPHm8w51WB5YTF9J7m6Z5dtkqbU9ntMZ1dqXyFB9IpjoUFDj80ahRVEoVanfIp6pfASJbOlbWdEf8FOzQ==
+codemirror@~5.50.2:
+  version "5.50.2"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.50.2.tgz#32ddfe2b50193fcf573d8141c4a31d267c92b4a3"
+  integrity sha512-PPjUsC1oXSM86lunKrw609P1oM0Wu8z9rqzjbeyBYCcx44VL41aUpccdOf1PfAZtTONlmN3sT3p2etLNYa1OGg==
 
 collapse-white-space@^1.0.2:
   version "1.0.5"
@@ -3092,7 +3090,7 @@ core-js-compat@^3.6.0:
     browserslist "^4.8.2"
     semver "7.0.0"
 
-core-js@^2.5.0, core-js@^2.5.1, core-js@^2.5.7, core-js@^2.6.5:
+core-js@^2.5.1, core-js@^2.5.7, core-js@^2.6.5:
   version "2.6.11"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.11.tgz#38831469f9922bded8ee21c9dc46985e0399308c"
   integrity sha512-5wjnpaT/3dV+XB4borEsnAYQchn00XSgTAWKDkEqv+K8KevjbzmofK6hfJ9TZIlpj2N0xQpazy7PiRQiWHqzWg==
@@ -3102,10 +3100,10 @@ core-js@^3.0.1:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.6.1.tgz#39d5e2e346258cc01eb7d44345b1c3c014ca3f05"
   integrity sha512-186WjSik2iTGfDjfdCZAxv2ormxtKgemjC3SI6PL31qOA0j5LhTDVjHChccoc7brwLvpvLPiMyRlcO88C4l1QQ==
 
-core-js@~3.4.7:
-  version "3.4.8"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.4.8.tgz#e0fc0c61f2ef90cbc10c531dbffaa46dfb7152dd"
-  integrity sha512-b+BBmCZmVgho8KnBUOXpvlqEMguko+0P+kXCwD4vIprsXC6ht1qgPxtb1OK6XgSlrySF71wkwBQ0Hv695bk9gQ==
+core-js@~3.6.2:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.6.2.tgz#2799ea1a59050f0acf50dfe89b916d6503b16caa"
+  integrity sha512-hIE5dXkRzRvnZ5vhkRfQxUvDxQZmD9oueA08jDYRBKJHx+VIl/Pne/e0A4x9LObEEthC/TqiZybUoNM4tRgnKg==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -4400,7 +4398,7 @@ file-loader@~5.0.2:
     loader-utils "^1.2.3"
     schema-utils "^2.5.0"
 
-file-selector@^0.1.11:
+file-selector@^0.1.12:
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/file-selector/-/file-selector-0.1.12.tgz#fe726547be219a787a9dcc640575a04a032b1fd0"
   integrity sha512-Kx7RTzxyQipHuiqyZGf+Nz4vY9R1XGxuQl/hLoJwq+J4avk/9wxxgZyHKtbyIPJmbD4A66DWGYfyykWNpcYutQ==
@@ -5063,10 +5061,10 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-highcharts@~7.2.1:
-  version "7.2.1"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-7.2.1.tgz#313c434bbfd4525a72b76c6bfbd9c39dfe2d1993"
-  integrity sha512-/fSUZiONmM+x49IQJNf8XwZGiNGOPRmxEOcd0xdJP9Xc3OlG46ZiUWgSLfhYQ9Oyhmzc3V3SKYCLud8+rKLi+w==
+highcharts@~8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-8.0.0.tgz#fcf77a511d6ea477b9d8447afd9dedbfc85e2727"
+  integrity sha512-jRKLiP0i29zKSEgMDASyrfpivrM3e8V8yTv8YUZtRzB2mXR+hsBNHWZw2hNRZVxqq1QCVmW/9Z/BLFvYlJELqA==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -8354,13 +8352,13 @@ react-dom@~16.8.0:
     prop-types "^15.6.2"
     scheduler "^0.13.6"
 
-react-dropzone@~10.1.9:
-  version "10.1.10"
-  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-10.1.10.tgz#f340290dfc26ac09ad68abc020ab6232c23d6cf3"
-  integrity sha512-vcLBdkYo7wgZpw1o4cz7uk8/Mmm+sYHeiTfFSshA/EGthz/TjjrTOrKwvFHm3o1p1LPk+x+KbDDlw5OeIo6eYA==
+react-dropzone@~10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-10.2.1.tgz#b7520124c4a3b66f96d49f7879027c7a475eaa20"
+  integrity sha512-Me5nOu8hK9/Xyg5easpdfJ6SajwUquqYR/2YTdMotsCUgJ1pHIIwNsv0n+qcIno0tWR2V2rVQtj2r/hXYs2TnQ==
   dependencies:
-    attr-accept "^1.1.3"
-    file-selector "^0.1.11"
+    attr-accept "^2.0.0"
+    file-selector "^0.1.12"
     prop-types "^15.7.2"
 
 react-input-autosize@^2.2.2:
@@ -8439,7 +8437,7 @@ react-redux@^7.0.3:
     prop-types "^15.7.2"
     react-is "^16.9.0"
 
-react-select@3.0.8, react-select@~3.0.8:
+react-select@3.0.8:
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/react-select/-/react-select-3.0.8.tgz#06ff764e29db843bcec439ef13e196865242e0c1"
   integrity sha512-v9LpOhckLlRmXN5A6/mGGEft4FMrfaBFTGAnuPHcUgVId7Je42kTq9y0Z+Ye5z8/j0XDT3zUqza8gaRaI1PZIg==
