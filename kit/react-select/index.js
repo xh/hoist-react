@@ -11,18 +11,18 @@ import WindowedSelect from 'react-windowed-select';
 
 const Select = WindowedSelect;
 const AsyncSelect = makeAsyncSelect(Select);
-const AsyncCreatable = makeCreatableSelect(AsyncSelect);
-const Creatable = makeCreatableSelect(Select);
+const CreatableSelect = makeCreatableSelect(Select);
+const AsyncCreatable = makeAsyncSelect(CreatableSelect);
 
 export {
     Select,
     AsyncSelect,
     AsyncCreatable,
-    Creatable
+    CreatableSelect
 };
 
 export const
     reactSelect = elemFactory(Select),
-    reactCreatableSelect = elemFactory(Creatable),
+    reactCreatableSelect = elemFactory(CreatableSelect),
     reactAsyncSelect = elemFactory(AsyncSelect),
     reactAsyncCreatableSelect = elemFactory(AsyncCreatable);
