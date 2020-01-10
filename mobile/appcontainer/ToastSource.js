@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {head} from 'lodash';
+import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
+import {head} from 'lodash';
 import {toast} from './Toast';
-import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 
 /**
  *  Support for popping global Toasts into the DOM.

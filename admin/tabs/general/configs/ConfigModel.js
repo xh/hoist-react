@@ -2,20 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
-    RestGridModel,
-    RestStore,
     addAction,
-    editAction,
     cloneAction,
-    deleteAction
+    deleteAction,
+    editAction,
+    RestGridModel,
+    RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
 @LoadSupport

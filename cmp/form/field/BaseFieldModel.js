@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {managed} from '@xh/hoist/core';
-import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
-import {observable, action, computed} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {flatten, isEmpty, isFunction, isUndefined, partition, startCase} from 'lodash';
+import {Rule} from '../validation/Rule';
 
 import {ValidationState} from '../validation/ValidationState';
-import {Rule} from '../validation/Rule';
 
 /**
  * Abstract Base class for FieldModels.

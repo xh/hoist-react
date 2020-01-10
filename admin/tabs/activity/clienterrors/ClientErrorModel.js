@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action, bindable, observable, comparer} from '@xh/hoist/mobx';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {fmtDate, fmtSpan} from '@xh/hoist/format';
-import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {boolCheckCol, compactDateCol, GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
+import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
 @HoistModel

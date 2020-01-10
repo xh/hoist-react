@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, elem} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {elem, HoistModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {keys, find, merge, isEqual} from 'lodash';
+import {find, isEqual, keys, merge} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
 

@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFinite, isFunction, startCase, isString} from 'lodash';
+import {castArray, clone, find, isFinite, isFunction, isString, startCase} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 

@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
@@ -16,7 +17,6 @@ import {
     useOwnedModelLinker
 } from './impl';
 import {CreatesSpec, ModelSpec, uses} from './modelspec';
-import classNames from 'classnames';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating

@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {computed} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {computed} from '@xh/hoist/mobx';
 
 /**
  * A Model for managing the state of a LeftRightChooser.

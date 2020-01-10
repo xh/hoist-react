@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
+import {flatten, isEmpty, isString} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.

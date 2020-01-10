@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
+import {isBoolean, isEmpty, isNil, isNumber} from 'lodash';
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as

@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {filler, fragment, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {filler, table, tbody, tr, th, td, fragment} from '@xh/hoist/cmp/layout';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
+import {dialog} from '@xh/hoist/kit/blueprint';
 
 export const activityDetail = hoistCmp.factory(
     ({model}) => {

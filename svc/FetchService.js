@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {stringify} from 'qs';
-import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
+import {isDate, isFunction, isNil, isPlainObject, omitBy} from 'lodash';
+import {stringify} from 'qs';
 
 /**
  * Service to send an HTTP request to a URL.

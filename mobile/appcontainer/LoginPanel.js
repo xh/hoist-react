@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
 import {div, filler, form, vframe} from '@xh/hoist/cmp/layout';

@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
-import {fragment, filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {textArea} from '@xh/hoist/mobile/cmp/input';
-import {Icon} from '@xh/hoist/icon';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
+import {filler, fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {textArea} from '@xh/hoist/mobile/cmp/input';
 
 import {dismissButton} from './ExceptionDialog';
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Sub-dialog for displaying exception details.  Includes affordances for submitting an

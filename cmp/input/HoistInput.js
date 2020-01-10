@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
-import PT from 'prop-types';
-import {isEqual, isFunction, upperFirst} from 'lodash';
 import {FieldModel} from '@xh/hoist/cmp/form';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
+import {isEqual, isFunction, upperFirst} from 'lodash';
+import PT from 'prop-types';
+import {Component} from 'react';
 
 import './HoistInput.scss';
 

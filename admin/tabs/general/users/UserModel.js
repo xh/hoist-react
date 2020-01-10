@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, XH, LoadSupport, managed} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {bindable, action} from '@xh/hoist/mobx/index';
+import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {action, bindable} from '@xh/hoist/mobx/index';
 import {keyBy, keys} from 'lodash';
 
 @HoistModel

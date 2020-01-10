@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {FormModel, required} from '@xh/hoist/cmp/form';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {FormModel, required} from '@xh/hoist/cmp/form';
-import {Icon} from '@xh/hoist/icon';
-import {merge, isNil} from 'lodash';
+import {isNil, merge} from 'lodash';
 
 @HoistModel
 export class RestFormModel {

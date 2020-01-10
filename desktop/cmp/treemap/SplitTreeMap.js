@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import PT from 'prop-types';
+import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
+import PT from 'prop-types';
+import React from 'react';
+import {SplitTreeMapModel} from './SplitTreeMapModel';
 
 import {treeMap} from './TreeMap';
-import {SplitTreeMapModel} from './SplitTreeMapModel';
 
 /**
  * A component which divides data across two TreeMaps.

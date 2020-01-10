@@ -2,24 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {XH, HoistService} from '@xh/hoist/core';
+import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
+import {HoistService, XH} from '@xh/hoist/core';
+import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {version as hoistReactVersion} from '@xh/hoist/package.json';
-import {version as agGridVersion} from 'ag-grid-community/package.json';
-import {version as mobxVersion} from 'mobx/package.json';
-import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
-import {defaults} from 'lodash';
 import {deepFreeze} from '@xh/hoist/utils/js';
+import {version as agGridVersion} from 'ag-grid-community/package.json';
+import {defaults} from 'lodash';
+import {version as mobxVersion} from 'mobx/package.json';
+import React from 'react';
 
 @HoistService
 export class EnvironmentService {
 
     _data = {};
-    
+
     async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'});
 

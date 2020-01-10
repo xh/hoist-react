@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
-import {bindable, computed, action, observable} from '@xh/hoist/mobx';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forOwn, some, mapValues, map, values, pickBy} from 'lodash';
-
-import {ValidationState} from './validation/ValidationState';
+import {flatMap, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldModel} from './field/SubformsFieldModel';
+
+import {ValidationState} from './validation/ValidationState';
 
 
 /**
@@ -43,7 +43,7 @@ export class FormModel {
 
     /** @member {Object} - container object for FieldModel instances, keyed by field name. */
     @observable.ref fields = {};
-    
+
     /** @member {FormModel} */
     parent = null;
 

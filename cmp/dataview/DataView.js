@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {uses, hoistCmp} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {DataViewModel} from './DataViewModel';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isNumber} from 'lodash';
+import PT from 'prop-types';
+import {DataViewModel} from './DataViewModel';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a

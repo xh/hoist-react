@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
-import {frame, filler} from '@xh/hoist/cmp/layout';
-
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
+import {filler, frame} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import './AboutDialog.scss';
 
 /**

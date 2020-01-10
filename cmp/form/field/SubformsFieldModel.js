@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, HoistModel} from '@xh/hoist/core';
-import {isArray, flatMap, partition, clone, without, defaults, isUndefined} from 'lodash';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
 
 import {FormModel} from '../FormModel';
-import {BaseFieldModel} from './BaseFieldModel';
 import {ValidationState} from '../validation/ValidationState';
+import {BaseFieldModel} from './BaseFieldModel';
 
 /**
  * A data field in a form whose value is a collection of FormModels (subforms).

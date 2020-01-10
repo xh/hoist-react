@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
-import {tab} from './Tab';
 import classNames from 'classnames';
+import {tab} from './Tab';
 
 import './Tabs.scss';
 

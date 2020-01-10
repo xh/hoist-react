@@ -2,21 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement} from 'react';
-import PT from 'prop-types';
-import {castArray, omitBy} from 'lodash';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {panelHeader} from './impl/PanelHeader';
 
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {castArray, omitBy} from 'lodash';
+import PT from 'prop-types';
+import {isValidElement} from 'react';
+import {panelHeader} from './impl/PanelHeader';
 
 import './Panel.scss';
 

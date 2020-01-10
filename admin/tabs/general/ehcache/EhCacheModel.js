@@ -2,13 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
 import {trimEnd} from 'lodash';
 
 @HoistModel
@@ -49,7 +48,7 @@ export class EhCacheModel {
             XH.toast({message: 'Caches Cleared'});
         }).catchDefault();
     }
-    
+
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }

@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
+import {TabModel} from '@xh/hoist/cmp/tab';
 import {elem, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
-import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {TabRenderMode} from '@xh/hoist/enums';
-
-import {TabModel} from '@xh/hoist/cmp/tab';
+import {page as onsenPage} from '@xh/hoist/kit/onsen';
+import {useRef} from 'react';
 
 /**
  * @private

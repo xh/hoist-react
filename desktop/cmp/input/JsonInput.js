@@ -1,31 +1,37 @@
-import ReactDOM from 'react-dom';
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
-import {fragment, box, hbox} from '@xh/hoist/cmp/layout';
-import {textArea, dialog} from '@xh/hoist/kit/blueprint';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {defaultsDeep} from 'lodash';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
 
 import {HoistInput} from '@xh/hoist/cmp/input';
-
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/addon/fold/foldgutter.css';
-import 'codemirror/addon/scroll/simplescrollbars.css';
-import 'codemirror/addon/lint/lint.css';
-import 'codemirror/theme/dracula.css';
+import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {dialog, textArea} from '@xh/hoist/kit/blueprint';
+import {bindable} from '@xh/hoist/mobx';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import * as codemirror from 'codemirror';
-import {jsonlint} from './impl/jsonlint';
+import 'codemirror/addon/fold/brace-fold.js';
+import 'codemirror/addon/fold/foldcode.js';
+import 'codemirror/addon/fold/foldgutter.css';
+import 'codemirror/addon/fold/foldgutter.js';
+import 'codemirror/addon/lint/lint.css';
+import 'codemirror/addon/lint/lint.js';
+import 'codemirror/addon/scroll/simplescrollbars.css';
+import 'codemirror/addon/scroll/simplescrollbars.js';
+
+import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/jsx/jsx';
-import 'codemirror/addon/fold/foldcode.js';
-import 'codemirror/addon/fold/foldgutter.js';
-import 'codemirror/addon/fold/brace-fold.js';
-import 'codemirror/addon/scroll/simplescrollbars.js';
-import 'codemirror/addon/lint/lint.js';
+import 'codemirror/theme/dracula.css';
+import {defaultsDeep} from 'lodash';
+import PT from 'prop-types';
+import ReactDOM from 'react-dom';
+import {jsonlint} from './impl/jsonlint';
 
 import './JsonInput.scss';
 

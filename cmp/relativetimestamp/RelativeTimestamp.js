@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
-import {fmtDateTime} from '@xh/hoist/format';
+import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
-import {pluralize, withDefault} from '@xh/hoist/utils/js';
-import {flow} from 'lodash';
+import {SECONDS} from '@xh/hoist/utils/datetime';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
+import moment from 'moment';
 import PT from 'prop-types';
 
 /**
@@ -44,16 +44,13 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 });
 RelativeTimestamp.propTypes = {
     /**
-     * Date or milliseconds representing the starting / reference time.
-     * See also `bind` as an alternative.
-     */
-    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
-
-    /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
      */
     bind: PT.string,
+
+    /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
+    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
 
     /** @see getRelativeTimestamp options. */
     options: PT.object
@@ -70,7 +67,7 @@ class LocalModel {
     @managed
     timer = Timer.create({
         runFn: () => this.refreshDisplay(),
-        interval: 10 * SECONDS
+        interval: 5 * SECONDS
     });
 
     setData(timestamp, options) {
@@ -83,7 +80,6 @@ class LocalModel {
     refreshDisplay() {
         this.display = getRelativeTimestamp(this.timestamp, this.options);
     }
-
 }
 
 
@@ -91,158 +87,66 @@ class LocalModel {
  * Returns a string describing the approximate amount of time between a given timestamp and the
  * present moment in a friendly, human readable format.
  *
- * @param {(Date|int)} timestamp - Date or milliseconds representing the starting / reference time.
+ * @param {(Date|int)} timestamp - Date or milliseconds representing the starting time / time to compare.
  * @param {Object} [options]
  * @param {boolean} [options.allowFuture] - Allow dates greater than Date.now().
  * @param {boolean} [options.short] - Use shorter timestamp text, default true for mobile clients.
  * @param {string} [options.prefix] - Label preceding timestamp.
  * @param {string} [options.futureSuffix] - appended to future timestamps.
  * @param {string} [options.pastSuffix] - appended to past timestamps.
- * @param {string} [options.nowString] - string to return when timestamp is within `nowEpsilon`.
- * @param {number} [options.nowEpsilon] - threshold interval (in seconds) for `nowString`.
+ * @param {string} [options.equalString] - string to return when timestamps are within `epsilon`.
+ * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalString`.
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
+ * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options) {
+    apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
+    apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
+
     const defaultOptions = {
             allowFuture: false,
             short: XH.isMobile,
-            futureSuffix: 'from now',
-            pastSuffix: 'ago',
-            nowString: null,
-            nowEpsilon: 30,
-            emptyResult: ''
+            futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
+            pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
+            equalString: null,
+            epsilon: 30,
+            emptyResult: '',
+            relativeTo: Date.now()
         },
         opts = Object.assign({timestamp}, defaultOptions, options);
 
     if (!timestamp) return opts.emptyResult;
 
-    // Enhance options with needed info, last function will output result.
-    return flow(
-        getNow,
-        getElapsedTime,
-        normalizeAndValidate,
-        getMillisAndUnit,
-        getPrefix,
-        getSuffix,
-        getResult
-    )(opts);
+    return doFormat(opts);
 }
-
 
 //------------------------
 // Implementation
 //------------------------
-const getNow = opts => ({...opts, now: Date.now()});
+function doFormat(opts) {
+    const diff = opts.relativeTo - opts.timestamp,
+        isFuture = diff < 0,
+        elapsed = Math.abs(diff),
+        suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
 
-const getElapsedTime = opts => {
-    const diff = opts.now - opts.timestamp;
-    opts.isFuture = diff < 0;
-    opts.elapsedTime = Math.abs(diff);
-    return opts;
-};
-
-const normalizeAndValidate = opts => {
-    const {isFuture, allowFuture, nowEpsilon, elapsedTime} = opts;
-    if (elapsedTime < nowEpsilon * SECONDS) {
-        opts.elapsedTime = 0;
-    } else if (!allowFuture && isFuture) {
-        opts.isInvalid = true;
-        console.warn(`Unexpected future date provided for timestamp: ${elapsedTime}ms in the future.`);
+    if (isFuture && !opts.allowFuture) {
+        console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
+        return '[???]';
     }
 
-    return opts;
-};
-
-const getMillisAndUnit = opts => {
-    const {isInvalid, elapsedTime} = opts;
-    // By default the smallest possible unit should be used
-    opts.unit = 'seconds';
-    opts.millis = 0;
-
-    if (isInvalid || !elapsedTime) return opts;
-
-    const types = [
-        {name: 'seconds',  formula: v => v / SECONDS},
-        {name: 'minute',   formula: v => v / MINUTES},
-        {name: 'hour',     formula: v => v / HOURS},
-        {name: 'day',      formula: v => v / DAYS},
-        {name: 'month',    formula: v => v / (DAYS * 30)},
-        {name: 'year',     formula: v => v / (DAYS * 365)}
-    ];
-
-    types.forEach(type => {
-        const val = type.formula(elapsedTime);
-
-        if (val >= 1) {
-            opts.millis = parseInt(val, 10);
-            opts.unit = type.name;
-
-            if (opts.unit !== 'seconds') {
-                opts.unit = pluralize(opts.unit, opts.millis);
-            }
-        }
-    });
-
-    return opts;
-};
-
-const getSuffix = opts => {
-    const {isInvalid, elapsedTime, isFuture, nowString} = opts;
-    if (isInvalid) return opts;
-
-    if (!elapsedTime && nowString) {
-        opts.suffix = nowString;
-        opts.useNowString = true;
-    } else {
-        opts.suffix = opts[isFuture ? 'futureSuffix' : 'pastSuffix'];
+    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
+        return opts.equalString;
     }
 
-    return opts;
-};
+    // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
+    // end of that range that output is a bit too inaccurate, so we replace as per below.
+    let ret = (elapsed < 60 * SECONDS) ?
+        '<1 minute' :
+        moment.duration(elapsed).humanize();
 
-const getPrefix  = opts => {
-    const {isInvalid, prefix} = opts;
-    if (isInvalid) return opts;
-    opts.prefix =  prefix ? prefix + ' ' : '';
-    return opts;
-};
+    if (opts.short) {
+        ret = ret.replace('minute', 'min').replace('second', 'sec');
+    }
 
-const getResult = opts => {
-    const {isInvalid, elapsedTime, millis, unit, useNowString, prefix, suffix, short} = opts;
-    if (isInvalid) return '[???]';
-
-    // if elapsedTime was normalized to 0 (smaller than nowEpsilon) then return the nowString
-    // if specified, otherwise return the default FORMAT for seconds.
-    if (!elapsedTime && useNowString) return suffix;
-
-    const fmtString = short ? SHORT_FORMAT_STRINGS[unit] : FORMAT_STRINGS[unit];
-    return `${prefix}${fmtString.replace('%d', millis)} ${suffix}`;
-};
-
-const FORMAT_STRINGS = {
-    seconds: '<1 minute',
-    minute: '1 minute',
-    minutes: '%d minutes',
-    hour: 'about an hour',
-    hours: 'about %d hours',
-    day: 'a day',
-    days: '%d days',
-    month: 'about a month',
-    months: '%d months',
-    year: 'about a year',
-    years: '%d years'
-};
-
-const SHORT_FORMAT_STRINGS = {
-    seconds: '<1 min',
-    minute: '1 min',
-    minutes: '%d mins',
-    hour: '~1 hour',
-    hours: '~%d hours',
-    day: 'a day',
-    days: '%d days',
-    month: 'a month',
-    months: '%d months',
-    year: 'a year',
-    years: '%d years'
-};
+    return `${opts.prefix} ${ret} ${suffix}`;
+}

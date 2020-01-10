@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {PanelModel} from '../../PanelModel';
+import './Dragger.scss';
 
 import {DraggerModel} from './DraggerModel';
-import './Dragger.scss';
 
 
 export const dragger = hoistCmp.factory({

@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {div, img, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {message} from './Message';
-import {div, img, p} from '@xh/hoist/cmp/layout';
 import './IdleDialog.scss';
 import idleImage from './IdleDialogImage.png';
+import {message} from './Message';
 
 
 /**

@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {PanelModel} from '../PanelModel';
 
 import './Splitter.scss';

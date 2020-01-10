@@ -2,19 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {cloneElement, isValidElement} from 'react';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {withDefault} from '../../../utils/js';
-import {restGridToolbar} from './impl/RestGridToolbar';
-import {restForm} from './impl/RestForm';
-import {RestGridModel} from './RestGridModel';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import PT from 'prop-types';
+import {cloneElement, isValidElement} from 'react';
+import {withDefault} from '../../../utils/js';
+import {restForm} from './impl/RestForm';
+import {restGridToolbar} from './impl/RestGridToolbar';
+import {RestGridModel} from './RestGridModel';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',

@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
-import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {div} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.

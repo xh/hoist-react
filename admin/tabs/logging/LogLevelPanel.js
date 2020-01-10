@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
 export const LogLevelPanel = hoistCmp(
     () => restGrid({model: modelSpec})

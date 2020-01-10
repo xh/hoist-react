@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {switchControl} from '@xh/hoist/kit/onsen';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {switchControl} from '@xh/hoist/kit/onsen';
+import PT from 'prop-types';
 
 import './SwitchInput.scss';
 

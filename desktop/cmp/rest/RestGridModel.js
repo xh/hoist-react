@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {pickBy, filter, isPlainObject} from 'lodash';
+import {action} from '@xh/hoist/mobx';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {filter, isPlainObject, pickBy} from 'lodash';
+import {RestStore} from './data/RestStore';
 
 import {RestFormModel} from './impl/RestFormModel';
-import {RestStore} from './data/RestStore';
 
 export const addAction = {
     text: 'Add',

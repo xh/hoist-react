@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
@@ -27,9 +27,9 @@ import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
+import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
-import '../styles/XH.scss';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.

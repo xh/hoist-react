@@ -2,21 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {ContextMenuItem as CM} from '@xh/hoist/desktop/cmp/contextmenu';
-
-import {AppModel} from './AppModel';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {Icon} from '@xh/hoist/icon';
 
 import './App.scss';
+
+import {AppModel} from './AppModel';
 
 export const App = hoistCmp({
     displayName: 'App',

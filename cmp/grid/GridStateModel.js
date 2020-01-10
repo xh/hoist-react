@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, remove, isUndefined} from 'lodash';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
+import {cloneDeep, debounce, find, isUndefined, remove} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions

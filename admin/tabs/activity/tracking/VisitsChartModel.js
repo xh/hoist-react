@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {forOwn} from 'lodash';
-import {XH, HoistModel, LoadSupport, managed} from '@xh/hoist/core';
-import {bindable, comparer} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/cmp/chart';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
+import {bindable, comparer} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {forOwn} from 'lodash';
 
 @HoistModel
 @LoadSupport

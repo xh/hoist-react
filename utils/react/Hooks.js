@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {debounce, isFinite} from 'lodash';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.

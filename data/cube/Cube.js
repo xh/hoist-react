@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 
-import {Field} from './Field';
-import {CubeRecord} from './record';
-import {Query} from './Query';
-import {QueryExecutor} from './impl/QueryExecutor';
 import {isString} from 'lodash';
+import {Field} from './Field';
+import {QueryExecutor} from './impl/QueryExecutor';
+import {Query} from './Query';
+import {CubeRecord} from './record';
 
 /**
  * A container for grouping, aggregating, and filtering data on multiple dimensions.
@@ -24,7 +24,7 @@ export class Cube {
     _lockFn = null;
 
     static RECORD_ID_DELIMITER = '>>';
-    
+
     /**
      * @param {Object} c - Cube configuration.
      * @param {(Field[]|Object[])} c.fields - array of Fields / {@see Field} configs.

@@ -2,15 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {
-    Cube,
-    AggregateCubeRecord,
-    ValueFilter
-} from '@xh/hoist/data/cube';
-import {isEmpty, groupBy, clone, map} from 'lodash';
+import {AggregateCubeRecord, Cube, ValueFilter} from '@xh/hoist/data/cube';
 import {wait} from '@xh/hoist/promise';
+import {clone, groupBy, isEmpty, map} from 'lodash';
 
 /**
  * @private

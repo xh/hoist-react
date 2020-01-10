@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 
 import './ExceptionDialog.scss';
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace

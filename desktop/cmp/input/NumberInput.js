@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {isNumber, isNaN, isNil} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {numericInput} from '@xh/hoist/kit/blueprint';
-import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {fmtNumber} from '@xh/hoist/format';
+import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
+import {withDefault} from '@xh/hoist/utils/js';
+import {isNaN, isNil, isNumber} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * Number input, with optional support for formatted of display value, shorthand units, and more.

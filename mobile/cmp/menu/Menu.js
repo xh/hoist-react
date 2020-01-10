@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {div, fragment, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import PT from 'prop-types';
-import {vbox, fragment, div, hspacer} from '@xh/hoist/cmp/layout';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {MenuModel} from '@xh/hoist/mobile/cmp/menu/MenuModel';
+import PT from 'prop-types';
 
 import './Menu.scss';
 

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {MINUTES, ONE_SECOND, olderThan} from '@xh/hoist/utils/datetime';
 import {wait} from '@xh/hoist/promise';
+import {MINUTES, olderThan, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {pull} from 'lodash';
 
 /**
@@ -39,7 +39,7 @@ export class Timer {
     cancelled = false;
     isRunning = false;
     lastRun = null;
-    
+
     /**
      * Create a new Timer.
      *

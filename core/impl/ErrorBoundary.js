@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Component} from 'react';
 import {elemFactory} from '@xh/hoist/core';
+import {Component} from 'react';
 
 /**
  * A minimal component implementing a React error boundary.

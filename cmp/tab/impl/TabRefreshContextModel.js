@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {loadAllAsync} from '@xh/hoist/core';
 import {RefreshContextModel} from '@xh/hoist/core/refresh';
 import {TabRefreshMode} from '@xh/hoist/enums';
-import {loadAllAsync} from '@xh/hoist/core';
 
 /**
  * @private

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isEmpty, isNil, isString, isArray} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {isArray, isEmpty, isNil, isString} from 'lodash';
 
 import moment from 'moment';
 /**
@@ -117,12 +117,12 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 export function constrainAll(constraint) {
     return ({values, displayName}) => {
         if (isNil(values) || isEmpty(values)) return null;
-        
+
         for (let value in values) {
             const fail = constraint({value, displayName});
             if (fail) return fail;
         }
-       
+
         return null;
     };
 }

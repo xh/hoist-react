@@ -1,6 +1,13 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
+import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 import {throwIf} from '../../utils/js';
 
 /**

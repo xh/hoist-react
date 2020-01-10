@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
@@ -10,7 +10,7 @@ import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, bindable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -99,9 +99,11 @@ export class GridModel {
     /** @member {GridSorter[]} */
     @observable.ref sortBy = [];
     /** @member {string[]} */
-    @observable groupBy = null;
+    @observable.ref groupBy = null;
     /** @member {(string|boolean)} */
-    @bindable showSummary = false;
+    @observable showSummary = false;
+    /** @member {string} */
+    @observable emptyText;
 
     static defaultContextMenu = [
         'copy',
@@ -382,6 +384,24 @@ export class GridModel {
             agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
+    }
+
+    /**
+     * Set the location for a docked summary row. Requires `store.SummaryRecord` to be populated.
+     * @param {(string|boolean)} showSummary - true/'top' or 'bottom' to show summary, false to hide.
+     */
+    @action
+    setShowSummary(showSummary) {
+        this.showSummary = showSummary;
+    }
+
+    /**
+     * Set the text displayed when the grid is empty.
+     * @param {?string} emptyText - text/HTML to display if grid has no records.
+     */
+    @action
+    setEmptyText(emptyText) {
+        this.emptyText = emptyText;
     }
 
     /**

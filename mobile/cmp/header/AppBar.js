@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
-import PT from 'prop-types';
-import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
+import {button, menuButton, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {button, navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import PT from 'prop-types';
 
 import './AppBar.scss';
 
@@ -101,7 +101,7 @@ AppBar.propTypes = {
 
     /** Items to be added to the right side of the AppBar, before the refresh button. */
     rightItems: PT.node,
-    
+
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 

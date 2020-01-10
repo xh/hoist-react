@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button, Button} from './Button';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
+import {button, Button} from './Button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for an export/download of data.

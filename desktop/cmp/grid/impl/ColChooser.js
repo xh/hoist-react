@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {filler} from '@xh/hoist/cmp/layout';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';

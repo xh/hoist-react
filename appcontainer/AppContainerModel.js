@@ -2,21 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
 import {RootRefreshContextModel} from '@xh/hoist/core/refresh';
-import {observable, action} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
-import {OptionsDialogModel} from './OptionsDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 import {MessageSourceModel} from './MessageSourceModel';
-import {ToastSourceModel} from './ToastSourceModel';
+import {OptionsDialogModel} from './OptionsDialogModel';
 import {ThemeModel} from './ThemeModel';
+import {ToastSourceModel} from './ToastSourceModel';
 
 /**
  *  Root object for Framework GUI State.

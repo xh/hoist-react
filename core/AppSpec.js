@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isString, isFunction} from 'lodash';
+import {isFunction, isNil, isString} from 'lodash';
 
 /**
  * Object used to hold the specification for a client-side Hoist application.

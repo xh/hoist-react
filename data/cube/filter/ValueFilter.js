@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {Cube} from '@xh/hoist/data/cube';
+import {castArray, flattenDeep, forEach, groupBy, map, uniq} from 'lodash';
 import {Filter} from './Filter';
-import {castArray, flattenDeep, groupBy, uniq, map, forEach} from 'lodash';
 
 export class ValueFilter extends Filter {
 

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {warnIf, throwIf} from '@xh/hoist/utils/js';
-import {partition, isString} from 'lodash';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {isString, partition} from 'lodash';
 
 /**
  * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.

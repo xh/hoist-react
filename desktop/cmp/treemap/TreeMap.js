@@ -2,21 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {box, div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
+import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './TreeMap.scss';
 

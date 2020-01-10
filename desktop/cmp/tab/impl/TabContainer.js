@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {getLayoutProps} from '@xh/hoist/utils/react';
+import '../Tabs.scss';
+import {tabSwitcher} from '../TabSwitcher';
 
 import {tab} from './Tab';
-import {tabSwitcher} from '../TabSwitcher';
-import '../Tabs.scss';
 
 /**
  * Desktop implementation of TabContainer.

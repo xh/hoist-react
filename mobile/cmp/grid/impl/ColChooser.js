@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, uses, useLocalModel} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+
+import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-
-import {dragDropContext, droppable, draggable} from '@xh/hoist/kit/react-beautiful-dnd';
 
 import './ColChooser.scss';
 import {ColChooserModel} from './ColChooserModel';

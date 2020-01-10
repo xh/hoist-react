@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
+import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {toast as onsenToast} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {span} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
 
 import './Toast.scss';
-import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 
 /**
  * Display an instance of ToastModel.

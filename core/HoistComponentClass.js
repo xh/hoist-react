@@ -2,10 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory, XH} from '@xh/hoist/core';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+
+import classNames from 'classnames';
 import {isPlainObject, isUndefined} from 'lodash';
 import {observer} from 'mobx-react';
 import {useDebugValue} from 'react';
@@ -13,7 +15,6 @@ import ReactDom from 'react-dom';
 import {ModelLookupContext, useOwnedModelLinker} from './impl';
 import {ManagedSupport, ReactiveSupport, XhIdSupport} from './mixins';
 
-import classNames from 'classnames';
 /**
  * Hoist decorator for creating class-based components. Adds support for MobX reactivity, model
  * awareness, and other convenience methods below.
@@ -198,7 +199,7 @@ function applyModelFromContextSupport(C) {
 
 function throwModelChangeException() {
     throw XH.exception(`
-        Cannot re-render Component with a different model. If a new model is required, ensure 
+        Cannot re-render Component with a different model. If a new model is required, ensure
         the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
     `);
 }

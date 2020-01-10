@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {find} from 'lodash';
 import {wait} from '@xh/hoist/promise';
+import {find} from 'lodash';
 
 /**
  * Support keyboard navigation on AG-Grid context menus and subMenus

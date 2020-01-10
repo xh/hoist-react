@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
 import {numberRenderer} from '@xh/hoist/format';
+import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
 
 export const emptyFlexCol =  {
     colId: 'emptyFlex',

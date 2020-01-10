@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {createContext, useContext, useMemo} from 'react';
-import {hoistCmp, elemFactory, uses, ModelPublishMode} from '@xh/hoist/core';
-import {FormModel} from './FormModel';
+import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import PT from 'prop-types';
+import {createContext, useContext, useMemo} from 'react';
+import {FormModel} from './FormModel';
 
 export const FormContext = createContext({});
 const formContextProvider = elemFactory(FormContext.Provider);

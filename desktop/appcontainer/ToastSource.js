@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {HoistModel, uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
-import {defaultTo, defaults, isElement} from 'lodash';
-import {withDefault} from '@xh/hoist/utils/js';
-import {Position, Toaster} from '@xh/hoist/kit/blueprint';
-
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {Position, Toaster} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {defaults, defaultTo, isElement} from 'lodash';
+import React from 'react';
 
 import './Toast.scss';
 

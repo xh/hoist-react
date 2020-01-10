@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from 'mobx';
 import {upperFirst} from 'lodash';
+import {action, observable} from 'mobx';
 
 /**
  * Decorator to add a simple MobX action of the form `setPropName()` to a class.

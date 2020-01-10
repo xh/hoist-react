@@ -2,34 +2,33 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elem, AppState, XH, uses, hoistCmp} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {AppState, elem, hoistCmp, uses, XH} from '@xh/hoist/core';
+import {errorBoundary} from '@xh/hoist/core/impl';
+import {refreshContextView} from '@xh/hoist/core/refresh';
+import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
+import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {menu} from '@xh/hoist/mobile/cmp/menu';
-
-import {aboutDialog} from './AboutDialog';
-import {feedbackDialog} from './FeedbackDialog';
-import {optionsDialog} from './OptionsDialog';
-import {exceptionDialog} from './ExceptionDialog';
-import {impersonationBar} from './ImpersonationBar';
-import {loginPanel} from './LoginPanel';
-import {updateBar} from './UpdateBar';
-import {versionBar}  from './VersionBar';
-import {lockoutPanel} from './LockoutPanel';
-import {toastSource} from './ToastSource';
-import {messageSource} from './MessageSource';
-
-import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
-import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
-import {colChooser, ColChooserModel} from '@xh/hoist/mobile/cmp/grid';
-import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
-import {errorBoundary} from '@xh/hoist/core/impl';
 import {useOnMount} from '@xh/hoist/utils/react';
+
+import {aboutDialog} from './AboutDialog';
+import {exceptionDialog} from './ExceptionDialog';
+import {feedbackDialog} from './FeedbackDialog';
+import {impersonationBar} from './ImpersonationBar';
+import {lockoutPanel} from './LockoutPanel';
+import {loginPanel} from './LoginPanel';
+import {messageSource} from './MessageSource';
+import {optionsDialog} from './OptionsDialog';
+import {toastSource} from './ToastSource';
+import {updateBar} from './UpdateBar';
+import {versionBar} from './VersionBar';
 
 installMobileImpls({
     tabContainerImpl,

@@ -2,21 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {warnIf, throwIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
     difference,
+    every,
     isArray,
     isEmpty,
     isEqual,
     isString,
-    every,
     keys,
     pullAllWith,
     sortBy,

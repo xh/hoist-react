@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, computed} from '@xh/hoist/mobx';
-import {castArray, intersection, union, isEqual} from 'lodash';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {castArray, intersection, isEqual, union} from 'lodash';
 
 /**
  * Model for managing store selections.

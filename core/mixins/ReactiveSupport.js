@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isFunction, isNil} from 'lodash';
 import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
-import {throwIf, applyMixin} from '@xh/hoist/utils/js';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {isFunction, isNil} from 'lodash';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.

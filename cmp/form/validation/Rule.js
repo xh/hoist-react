@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {flatten, remove, castArray, isNil} from 'lodash';
+import {castArray, flatten, isNil, remove} from 'lodash';
 import {required} from './constraints';
 
 /**

@@ -2,19 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import React from 'react';
-import {action, observable} from '@xh/hoist/mobx';
-import {cloneDeep, isEqual, pick, remove, trimEnd} from 'lodash';
-import {pluralize} from '@xh/hoist/utils/js';
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {p} from '@xh/hoist/cmp/layout';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {Icon} from '@xh/hoist/icon';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
+import {action, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
+import {cloneDeep, isEqual, pick, remove, trimEnd} from 'lodash';
+import React from 'react';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
