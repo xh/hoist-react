@@ -2,42 +2,40 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement, createRef} from 'react';
-import PT from 'prop-types';
-import {
-    isNil,
-    isString,
-    merge,
-    xor,
-    dropRightWhile,
-    dropWhile,
-    isEmpty,
-    isFunction,
-    isArray,
-    last,
-    isEqual,
-    map,
-    isFinite
-} from 'lodash';
-import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS, agGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {agGrid, AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS} from '@xh/hoist/cmp/ag-grid';
-import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
-import {ColumnHeader} from './impl/ColumnHeader';
-import {GridModel} from './GridModel';
-import {withShortDebug} from '@xh/hoist/utils/js';
-
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-
-import './Grid.scss';
+import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
+import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isDisplayed} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
+import {
+    dropRightWhile,
+    dropWhile,
+    isArray,
+    isEmpty,
+    isEqual,
+    isFinite,
+    isFunction,
+    isNil,
+    isString,
+    last,
+    map,
+    merge,
+    xor
+} from 'lodash';
+import PT from 'prop-types';
+import {createRef, isValidElement} from 'react';
+
+import {GridModel} from './GridModel';
+import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
+import {ColumnHeader} from './impl/ColumnHeader';
+import './Grid.scss';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -216,7 +214,7 @@ class LocalModel {
             rowDeselection: true,
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            overlayNoRowsTemplate: model.emptyText || '<span></span>',
+            noRowsOverlayComponentFramework: observer(() => model.emptyText),
             onRowClicked: props.onRowClicked,
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,

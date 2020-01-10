@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
@@ -145,6 +145,7 @@ export class RestGridModel {
             exportOptions: {filename: pluralize(unit)},
             restGridModel: this,
             store: this.parseStore(store),
+            enableExport: true,
             ...rest
         });
 
