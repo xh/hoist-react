@@ -7,3 +7,4 @@ node_modules
 .yarnrc
 webpack.config.intellij.js
 *.log
+*.tgz
