@@ -20,6 +20,8 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* `Select` now supports grouped options. To use, add an attribute `options` containing the array of 
+  sub-options.
 
 ### 💥 Breaking Changes
 
