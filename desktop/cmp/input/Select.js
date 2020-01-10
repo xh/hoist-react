@@ -75,10 +75,14 @@ export class Select extends HoistInput {
 
         /**
          * True to use react-windowed-select for improved performance on large option lists.
-         * Note that Creatable, Async, or AsyncCreatable Selects with enableWindow=true will not
-         * be wrapped in a {@link https://react-select.com/props#statemanager-props | State Manager},
-         * so {@link https://react-select.com/advanced#controlled-props | Controller Props}
-         * (in particular menuIsOpen) may not work as expected.
+         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
+         *
+         * Note that there may be issues with this implementation, especially when the enableCreate
+         * and/or a queryFn props are specified.  These options require the use of specialized
+         * 'Async' or 'Creatable' selects from that library which are not fully implemented.
+         *
+         * Applications should use this option with care, and it should typically only be used for
+         * simple selects with enumerated options.
          */
         enableWindowed: PT.bool,
 
@@ -254,7 +258,7 @@ export class Select extends HoistInput {
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
-                // menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
+                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
@@ -266,17 +270,16 @@ export class Select extends HoistInput {
     }
 
     getSelectFactory() {
-        let ret;
-        if (this.windowedMode) {
-            ret = this.asyncMode ?
-                (this.creatableMode ? reactWindowedAsyncCreatableSelect : reactWindowedAsyncSelect) :
-                (this.creatableMode ? reactWindowedCreatableSelect : reactWindowedSelect);
+        const {creatableMode, asyncMode, windowedMode} = this;
+        if (windowedMode) {
+            return asyncMode ?
+                (creatableMode ? reactWindowedAsyncCreatableSelect : reactWindowedAsyncSelect) :
+                (creatableMode ? reactWindowedCreatableSelect : reactWindowedSelect);
         } else {
-            ret = this.asyncMode ?
-                (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-                (this.creatableMode ? reactCreatableSelect : reactSelect);
+            return asyncMode ?
+                (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+                (creatableMode ? reactCreatableSelect : reactSelect);
         }
-        return ret;
     }
 
     @action
@@ -417,7 +420,7 @@ export class Select extends HoistInput {
     };
 
     loadingMessageFn = (params) => {
-        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
+        // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
         const {loadingMessageFn} = this.props,
             q = params.inputValue;

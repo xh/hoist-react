@@ -5,14 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import {makeAsyncSelect} from 'react-select/async';
-import {makeCreatableSelect} from 'react-select/creatable';
-import WindowedSelect from 'react-windowed-select';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';
 
+import {makeAsyncSelect} from 'react-select/async';
+import {makeCreatableSelect} from 'react-select/creatable';
+import WindowedSelect from 'react-windowed-select';
+
+// Windowed support
 const WindowedAsyncSelect = makeAsyncSelect(WindowedSelect);
 const WindowedCreatableSelect = makeCreatableSelect(WindowedSelect);
 const WindowedAsyncCreatable = makeAsyncSelect(WindowedCreatableSelect);
