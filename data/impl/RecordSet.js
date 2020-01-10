@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
+import equal from 'fast-deep-equal';
 import {throwIf} from '../../utils/js';
 
 /**
@@ -33,7 +34,7 @@ export class RecordSet {
     }
 
     get empty() {
-        return this.count == 0;
+        return this.count === 0;
     }
 
     getById(id) {
@@ -58,7 +59,7 @@ export class RecordSet {
     }
 
     isEqual(other) {
-        if (this.store !== other.store || this.count !== other.count) return false;
+        if (this.count !== other.count) return false;
 
         for (const [id, rec] of this.recordMap) {
             if (rec !== other.recordMap.get(id)) return false;
@@ -146,7 +147,7 @@ export class RecordSet {
                 const currRec = this.getById(id),
                     newRec = recordMap.get(id);
 
-                if (currRec && currRec.isEqual(newRec)) {
+                if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
                 }
             }
@@ -155,7 +156,11 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    loadRecordTransaction({update, add, remove}) {
+    areRecordsEqual(rec1, rec2) {
+        return equal(rec1.xhTreePath, rec2.xhTreePath) && equal(rec1.data, rec2.data);
+    }
+
+    loadRecordUpdates({update, add, remove}) {
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 

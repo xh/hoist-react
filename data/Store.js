@@ -86,6 +86,14 @@ export class Store {
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
 
+        this._recordClass = class extends Record {};
+        this.fields.forEach(field => {
+            Object.defineProperty(this._recordClass.prototype, field.name, {
+                get() {return this.data[field.name]},
+                set() {throw XH.exception(`Cannot set read-only field '${field.name}' on immutable Record. Use Store.loadDataUpdates() or Store.updateRecord().`)}
+            });
+        });
+
         this.resetRecords();
         this.setFilter(filter);
     }
@@ -130,6 +138,7 @@ export class Store {
 
         const records = this.createRecords(rawData);
         this._original = this._current = this._filtered = this._original.loadRecords(records);
+        // TODO: Finalize
 
         if (rawSummaryData) {
             this.summaryRecord = this.createRecord(rawSummaryData, null, true);
@@ -198,13 +207,13 @@ export class Store {
         // 3) Apply changes
         if (!isEmpty(updateRecs) || (addRecs && addRecs.size) || !isEmpty(remove)) {
             const {isDirty} = this;
-            this._original = this._original.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+            this._original = this._original.loadRecordUpdates({update: updateRecs, add: addRecs, remove: remove});
 
             // If we were dirty before loading the data transaction, we need to also load the transaction
             // into our current state, and then check if we are still dirty or not as the transaction
             // may have put us back into a clean state
             if (isDirty) {
-                this._current = this._current.loadRecordTransaction({update: updateRecs, add: addRecs, remove: remove});
+                this._current = this._current.loadRecordUpdates({update: updateRecs, add: addRecs, remove: remove});
                 this.normalizeCommittedState();
             } else {
                 this._current = this._original;
@@ -229,10 +238,10 @@ export class Store {
             const id = XH.genId(),
                 parsedData = this.parseFieldValues(it);
 
-            return new Record({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
+            return new this._recordClass({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
         });
 
-        this._current = this._current.loadRecordTransaction({add: addRecs});
+        this._current = this._current.loadRecordUpdates({add: addRecs});
         this.onRecordsUpdated();
     }
 
@@ -254,7 +263,7 @@ export class Store {
         records = castArray(records);
         records = records.map(it => (it instanceof Record) ? it.id : it);
 
-        this._current = this._current.loadRecordTransaction({remove: records});
+        this._current = this._current.loadRecordUpdates({remove: records});
         this.onRecordsUpdated();
 
         this.normalizeCommittedState();
@@ -292,7 +301,7 @@ export class Store {
                 return;
             }
 
-            const updatedRec = new Record({
+            const updatedRec = new this._recordClass({
                 id: rec.id,
                 raw: rec.raw,
                 data: Object.assign({}, rec.data, data),
@@ -308,7 +317,7 @@ export class Store {
 
         warnIf(hadDupes, 'Store.updateRecords() called with multiple updates for the same Records. Only the first update entries for each Record were processed.');
 
-        this._current = this._current.loadRecordTransaction({update: Array.from(updateRecs.values())});
+        this._current = this._current.loadRecordUpdates({update: Array.from(updateRecs.values())});
         this.onRecordsUpdated();
 
         this.normalizeCommittedState();
@@ -342,7 +351,7 @@ export class Store {
     revertRecords(records) {
         records = castArray(records);
         records = records.map(it => (it instanceof Record) ? it : this._current.getById(it));
-        this._current = this._current.loadRecordTransaction({update: records.map(it => it.originalRecord)});
+        this._current = this._current.loadRecordUpdates({update: records.map(it => it.originalRecord)});
         this.onRecordsUpdated();
 
         this.normalizeCommittedState();
@@ -682,7 +691,7 @@ export class Store {
         parentId = withDefault(parentId, rec?.parentId);
 
         data = this.parseFieldValues(data);
-        return new Record({id, data, raw, parentId, store: this, isSummary});
+        return new this._recordClass({id, data, raw, parentId, store: this, isSummary});
     }
 
     createRecords(rawData, parentId, recordMap = new Map()) {

@@ -4,7 +4,6 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {forEach, isNil, reduce} from 'lodash';
@@ -50,12 +49,6 @@ export class Record {
     /** @returns {Record} */
     get parent() {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
-    }
-
-    /** @returns {string[]} */
-    get xhTreePath() {
-        const {id} = this;
-        return this.parent ? [...this.parent.xhTreePath, id] : [id];
     }
 
     /** @member {Field[]} */
@@ -127,50 +120,28 @@ export class Record {
      *      pre-processed if applicable by `store.processRawData()` and `Field.parseVal()`.
      * @param {Object} c.raw - the same data, prior to any store pre-processing.
      * @param {Store} c.store - store containing this record.
-     * @param {string} [c.parentId] - id of parent record, if any.
+     * @param {Record} [c.parent] - parent record, if any.
      * @param {boolean} [c.isSummary] - whether this record is a summary record.
      * @param {Record|null} [c.originalRecord] - the clean Record loaded into the Store. Defaults to
      *      `this` to indicate that this Record is the original. Pass `null` to indicate that this is
      *      a "new" Record with no backing original data in the Store data source.
      */
-    constructor({id, data, raw, store, parentId, isSummary, originalRecord = this}) {
+    constructor({id, data, raw, store, parent, isSummary, originalRecord = this}) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
-        this.parentId = parentId;
-        this.originalRecord;
+        this.parentId = parent?.id;
+        this.originalRecord = originalRecord;
         this.raw = raw;
         this.data = data;
         this.store = store;
         this.xhIsSummary = isSummary;
-
-        forEach(data, (v, key) => {
-            Object.defineProperty(this, key, {
-                get: () => this.data[key],
-                set: () => {
-                    throw XH.exception(`Cannot set read-only field '${key}' on immutable Record. Use Store.loadDataTransaction() or Store.updateRecord().`);
-                }
-            });
-        });
-        deepFreeze(this.data);
-
-        Object.freeze(this);
+        this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
     }
 
-    /**
-     * Determine if another record is entirely equivalent to the current record in terms of its
-     * enumerated data, containing store, and place within any applicable tree hierarchy.
-     * @param {Record} rec - the other record to compare.
-     * @returns {boolean}
-     */
-    isEqual(rec) {
-        return (
-            this.id == rec.id &&
-            this.parentId == rec.parentId &&
-            equal(this.xhTreePath, rec.xhTreePath) &&
-            this.store == rec.store &&
-            equal(this.data, rec.data)
-        );
+    freeze() {
+        deepFreeze(this.data);
+        Object.freeze(this);
     }
 
     /**
