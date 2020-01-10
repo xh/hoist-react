@@ -4,26 +4,33 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {DashRefreshMode, DashRenderMode, DashEvent} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
-import {isPlainObject, isString, isArray, castArray} from 'lodash';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {start, wait} from '@xh/hoist/promise';
+import {isEmpty, isString, castArray} from 'lodash';
 
 import {dashView} from './DashView';
+import {convertGLToState, convertStateToGL, getGLConfig} from './impl/DashContainerUtils';
 
 /**
- * Model for a DashContainer, representing its layout and contents.
+ * Model for a DashContainer, representing its contents and layout state.
+ *
+ * Todo: Explain state. Does it need a TypeDef?
  *
  * This object provides support for managing dash views, adding new views on the fly,
- * and tracking / loading layout state.
+ * and tracking / loading state.
  */
 @HoistModel
 export class DashContainerModel {
+
+    /** @member {Object[]} */
+    @observable.ref state;
 
     /** @member {DashViewSpec[]} */
     @observable.ref viewSpecs = [];
@@ -37,6 +44,12 @@ export class DashContainerModel {
     /** member {boolean} */
     @observable dialogIsOpen;
 
+    /** @member {Object} */
+    defaultState;
+
+    /** @member {Object} */
+    settings;
+
     /** @member {Ref} */
     containerRef = createObservableRef();
 
@@ -49,9 +62,15 @@ export class DashContainerModel {
     /** @member {DashRefreshMode} */
     refreshMode;
 
+    @managed
+    loadModel = new PendingTaskModel();
+
     /**
-     * Todo: Finalise best config params
-     *
+     * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
+     *      that can be displayed in this container
+     * @param {Object[]} defaultState - Default layout state for this container.
+     * @param {Object} [settings] - custom settings to be passed to the GoldenLayout instance.
+     *      @see http://golden-layout.com/docs/Config.html
      * @param {boolean} [c.enableAdd] - true (default) to include a '+' button in each stack header,
      *      which opens the provided 'Add View' dialog.
      * @param {DashRenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
@@ -61,12 +80,17 @@ export class DashContainerModel {
      */
     constructor({
         viewSpecs = [],
-        layout,
-        glSettings,
+        defaultState = [],
+        settings,
         enableAdd = true,
         renderMode = DashRenderMode.LAZY,
         refreshMode = DashRefreshMode.ON_SHOW_LAZY
     }) {
+        throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
+        throwIf(isEmpty(defaultState), 'DashContainerModel must be intialised with default state');
+
+        this.defaultState = castArray(defaultState);
+        this.settings = settings;
         this.enableAdd = enableAdd;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
@@ -75,10 +99,10 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         viewSpecs.forEach(viewSpec => this.addViewSpec(viewSpec));
 
-        // Initialize GoldenLayouts once ref is ready
+        // Initialize GoldenLayouts with default state once ref is ready
         this.addReaction({
             track: () => this.containerRef.current,
-            run: () => this.initGoldenLayout({layout, glSettings})
+            run: () => this.loadStateAsync(this.defaultState)
         });
 
         this.addReaction({
@@ -87,59 +111,45 @@ export class DashContainerModel {
         });
     }
 
-    //-----------------
-    // Golden Layouts
-    //-----------------
     @action
-    initGoldenLayout({layout, glSettings}) {
-        // Parse structure and apply settings
-        this.goldenLayout = new GoldenLayout({
-            content: this.parseLayoutConfig(castArray(layout)),
-            settings: {
-                // Remove icons by default
-                showPopoutIcon: false,
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                ...glSettings
-            },
-            dimensions: {
-                borderWidth: 6,
-                headerHeight: 25
-            }
-        }, this.containerRef.current);
+    async loadStateAsync(state) {
+        start(() => {
+            // Recreate GoldenLayouts with state
+            this.destroyGoldenLayouts();
 
-        // Initialize GoldenLayout
-        this.registerComponents();
-        this.goldenLayout.on('stateChanged', () => this.onStateChanged());
-        this.goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
-        this.goldenLayout.init();
+            const content = convertStateToGL(state, this.viewSpecs);
+            this.goldenLayout = new GoldenLayout({
+                content,
+                settings: {
+                    // Remove icons by default
+                    showPopoutIcon: false,
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    ...this.settings
+                },
+                dimensions: {
+                    borderWidth: 6,
+                    headerHeight: 25
+                }
+            }, this.containerRef.current);
 
-        // Todo: Save copy of current state as 'Default state'
+            // Initialize GoldenLayout
+            this.registerComponents();
+            this.goldenLayout.on('stateChanged', () => this.onStateChanged());
+            this.goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
+            this.goldenLayout.init();
+        }).linkTo(this.loadModel);
     }
 
-    parseLayoutConfig(layout = []) {
-        return layout.map(it => {
-            if (isString(it)) {
-                // Uses ViewSpec id shorthand
-                const viewSpec = this.getViewSpec(it);
-                return this.getGLConfig(viewSpec);
-            } else if (isPlainObject(it) && isArray(it.content)) {
-                // Is a container - ensure correctly configured and parse children
-                const {type, content, ...rest} = it;
+    async resetStateAsync() {
+        return this.loadStateAsync(this.defaultState);
+    }
 
-                throwIf(!['row', 'column', 'stack'].includes(type), 'Container type must either "row", "column" or "stack"');
-                throwIf(!content.length, 'Container must contain at least one child');
-
-                return {
-                    type,
-                    content: this.parseLayoutConfig(content),
-                    ...rest
-                };
-            }
-
-            // Otherwise, it may be a fully qualified component spec. Return as is.
-            return it;
-        });
+    @action
+    onStateChanged() {
+        const {content} = this.goldenLayout.toConfig();
+        this.state = convertGLToState(content);
+        this.renderIcons();
     }
 
     onResize() {
@@ -168,20 +178,10 @@ export class DashContainerModel {
         return this.viewSpecs.find(it => it.id === id);
     }
 
-    getGLConfig(viewSpec) {
-        const {id, title, allowClose} = viewSpec;
-        return {
-            component: id,
-            type: 'react-component',
-            title,
-            isClosable: allowClose
-        };
-    }
-
     /**
-     * Add a DashView to the layout.
+     * Add a DashView to the container.
      *
-     * @param {(DashViewSpec|string)} viewSpec - DashViewSpec (or registered id) to add to the layout
+     * @param {(DashViewSpec|string)} viewSpec - DashViewSpec (or string id) to add to the container
      * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
      */
     addView(viewSpec, container) {
@@ -191,12 +191,12 @@ export class DashContainerModel {
         if (isString(viewSpec)) viewSpec = this.getViewSpec(viewSpec);
         if (!container) container = goldenLayout.root.contentItems[0];
 
-        const config = this.getGLConfig(viewSpec);
+        const config = getGLConfig(viewSpec);
         container.addChild(config);
     }
 
     /**
-     * Get all DashView instances currently rendered in the layout
+     * Get all DashView instances currently rendered in the container
      */
     getViews() {
         const {goldenLayout} = this;
@@ -257,20 +257,6 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Implementation - State Management
-    //-----------------
-    onStateChanged() {
-        // Todo: Save an observable model of the state
-        // console.log('onStateChanged', this.goldenLayout.toConfig());
-
-        this.renderIcons();
-    }
-
-    resetState() {
-        // Todo: Load the saved default state
-    }
-
-    //-----------------
     // Implementation - Add View Dialog
     //-----------------
     onStackCreated(stack) {
@@ -280,8 +266,8 @@ export class DashContainerModel {
         // Add '+' icon and attach click listener for adding components
         if (this.enableAdd) {
             const icon = convertIconToSvg(Icon.add());
-            stack.header.controlsContainer.append(`<div class="xh-dash-layout-add-button">${icon}</div>`);
-            const btn = stack.header.controlsContainer.find('.xh-dash-layout-add-button');
+            stack.header.controlsContainer.append(`<div class="xh-dash-container-add-button">${icon}</div>`);
+            const btn = stack.header.controlsContainer.find('.xh-dash-container-add-button');
             btn.click(() => this.openViewDialog(stack));
         }
     }
@@ -338,6 +324,15 @@ export class DashContainerModel {
                 el.find('.lm_title').before(iconSvg);
             }
         });
+    }
+
+    destroy() {
+        this.destroyGoldenLayouts();
+    }
+
+    destroyGoldenLayouts() {
+        if (!this.goldenLayout) return;
+        this.goldenLayout.destroy();
     }
 
 }

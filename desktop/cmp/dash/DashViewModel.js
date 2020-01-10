@@ -24,7 +24,6 @@ export class DashViewModel {
 
     id;
     viewSpec;
-    @bindable.ref eventHub;
     @bindable isActive;
 
     containerModel;
@@ -58,14 +57,10 @@ export class DashViewModel {
         this.containerModel = containerModel;
 
         this.refreshContextModel = new DashRefreshContextModel(this);
-
-        this.addReaction({
-            track: () => this.eventHub,
-            run: () => this.addEventHubListeners()
-        });
     }
 
-    addEventHubListeners() {
+    setEventHub(eventHub) {
+        this.eventHub = eventHub;
         this.eventHub.on(DashEvent.IS_ACTIVE, ({id, isActive}) => {
             if (id !== this.id) return;
             this.setIsActive(isActive);

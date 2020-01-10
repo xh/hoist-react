@@ -6,7 +6,8 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ModelLookupContext} from '@xh/hoist/core/impl';
-import {frame, fragment} from '@xh/hoist/cmp/layout';
+import {fragment} from '@xh/hoist/cmp/layout';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {useContext} from 'react';
 import PT from 'prop-types';
@@ -33,7 +34,11 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
         return fragment(
-            frame({className, ref}),
+            panel({
+                className,
+                ref,
+                mask: 'onLoad'
+            }),
             dashContainerViewDialog()
         );
     }
