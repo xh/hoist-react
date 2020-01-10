@@ -179,7 +179,10 @@ export class Store {
             addRecs = new Map();
             add.forEach(it => {
                 if (it.hasOwnProperty('rawData') && it.hasOwnProperty('parentId')) {
-                    this.createRecords([it.rawData], it.parentId, addRecs);
+                    const parent = this.getById(it.parentId);
+                    warnIf(!parent, `Could not find parent with id '${it.parentId}' when processing record add`);
+
+                    this.createRecords([it.rawData], parent, addRecs);
                 } else {
                     this.createRecords([it], null, addRecs);
                 }
@@ -236,9 +239,10 @@ export class Store {
         data = castArray(data);
         const addRecs = data.map(it => {
             const id = XH.genId(),
-                parsedData = this.parseFieldValues(it);
+                parsedData = this.parseFieldValues(it),
+                parent = this.getById(parentId);
 
-            return new this._recordClass({id, data: parsedData, raw: null, store: this, parentId, isSummary: false, originalRecord: null});
+            return new this._recordClass({id, data: parsedData, raw: null, store: this, parent, isSummary: false, originalRecord: null});
         });
 
         this._current = this._current.loadRecordUpdates({add: addRecs});
@@ -305,7 +309,7 @@ export class Store {
                 id: rec.id,
                 raw: rec.raw,
                 data: Object.assign({}, rec.data, data),
-                parentId: rec.parentId,
+                parent: rec.parent,
                 store: rec.store,
                 isSummary: rec.xhIsSummary,
                 originalRecord: rec.originalRecord
@@ -682,7 +686,7 @@ export class Store {
     //---------------------------------------
     // Record Generation
     //---------------------------------------
-    createRecord(raw, parentId, isSummary) {
+    createRecord(raw, parent, isSummary) {
         const {processRawData} = this;
 
         let data = raw;
@@ -696,15 +700,15 @@ export class Store {
 
         // If we are creating a record for update, and the parent id was not provided explicitly, then
         // use the parent id for the record we are updating
-        parentId = withDefault(parentId, rec?.parentId);
+        parent = withDefault(parent, rec?.parent);
 
         data = this.parseFieldValues(data);
-        return new this._recordClass({id, data, raw, parentId, store: this, isSummary});
+        return new this._recordClass({id, data, raw, parent, store: this, isSummary});
     }
 
-    createRecords(rawData, parentId, recordMap = new Map()) {
+    createRecords(rawData, parent, recordMap = new Map()) {
         rawData.forEach(raw => {
-            const rec = this.createRecord(raw, parentId),
+            const rec = this.createRecord(raw, parent),
                 {id} = rec;
 
             throwIf(
@@ -715,7 +719,7 @@ export class Store {
             recordMap.set(id, rec);
 
             if (raw.children) {
-                this.createRecords(raw.children, id, recordMap);
+                this.createRecords(raw.children, rec, recordMap);
             }
         });
         return recordMap;
