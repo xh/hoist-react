@@ -80,7 +80,7 @@ export class Select extends HoistInput {
          * so {@link https://react-select.com/advanced#controlled-props | Controller Props}
          * (in particular menuIsOpen) may not work as expected.
          */
-        enableWindow: PT.bool,
+        enableWindowed: PT.bool,
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
@@ -155,7 +155,7 @@ export class Select extends HoistInput {
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
-    get windowedMode() {return !!this.props.enableWindow}
+    get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
     get filterMode() {return withDefault(this.props.enableFilter, true)}
 
