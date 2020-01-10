@@ -113,7 +113,7 @@ class LocalModel {
                 });
                 this.offset = offset;
             } catch (e) {
-                XH.handleException(e, {showAlert: false});
+                XH.handleException(e, {showAlert: false, logOnServer: false});
                 this.offset = null;
                 this.offsetException = e;
             } finally {
