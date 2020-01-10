@@ -389,6 +389,8 @@ export class Select extends HoistInput {
     };
 
     loadingMessageFn = (params) => {
+        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {loadingMessageFn} = this.props,
             q = params.inputValue;
 
@@ -447,6 +449,8 @@ export class Select extends HoistInput {
     }
 
     noOptionsMessageFn = (params) => {
+        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {noOptionsMessageFn} = this.props,
             q = params.inputValue;
 
