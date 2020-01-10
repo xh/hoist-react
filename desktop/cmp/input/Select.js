@@ -93,10 +93,12 @@ export class Select extends HoistInput {
         optionRenderer: PT.func,
 
         /**
-         * Preset list of options for selection. Objects must contain a `value` property; a `label`
-         * property will be used for the default display of each option. Other types will be taken
-         * as their value directly and displayed via toString().  See also `queryFn` to  supply
-         * options via an async query (i.e. from the server) instead of up-front in this prop.
+         * Preset list of options for selection. Objects must contain either:
+         *      + A `value` property; a `label` property will be used for the default display of each option.
+         *      + A `label` property and an `options` property containing a list of sub-options
+         * Other types will be taken as their value directly and displayed via toString().
+         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+         * of up-front in this prop.
          */
         options: PT.array,
 
