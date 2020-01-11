@@ -13,9 +13,6 @@ import {
     reactAsyncSelect,
     reactCreatableSelect,
     reactSelect,
-    reactWindowedAsyncCreatableSelect,
-    reactWindowedAsyncSelect,
-    reactWindowedCreatableSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
@@ -25,19 +22,19 @@ import debouncePromise from 'debounce-promise';
 import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
-import {createFilter} from 'react-windowed-select';
+import {createFilter} from 'react-select';
 
 import './Select.scss';
 
 /**
  * A managed wrapper around the React-Select combobox/dropdown component.
- * Allows use of the library react-windowed-select for improved performance on large option lists.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
  *      + Multiple selection
  *      + Custom dropdown option renderers
  *      + User-created ad-hoc entries
+ *      + Use of the library react-windowed-select for improved performance on large option lists.
  *
  * @see {@link https://react-select.com|React Select Docs}
  * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
@@ -77,12 +74,11 @@ export class Select extends HoistInput {
          * True to use react-windowed-select for improved performance on large option lists.
          * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
          *
-         * Note that there may be issues with this implementation, especially when the enableCreate
-         * and/or a queryFn props are specified.  These options require the use of specialized
-         * 'Async' or 'Creatable' selects from that library which are not fully implemented.
+         * Currently only supported when the enableCreate and queryFn props are not specified.
+         * These options require the use of specialized 'Async' or 'Creatable' selects from the
+         * underlying react-select library which are not fully implemented in react-windowed-select.
          *
-         * Applications should use this option with care, and it should typically only be used for
-         * simple selects with enumerated options.
+         * Applications should use this option with care.
          */
         enableWindowed: PT.bool,
 
@@ -272,14 +268,13 @@ export class Select extends HoistInput {
     getSelectFactory() {
         const {creatableMode, asyncMode, windowedMode} = this;
         if (windowedMode) {
-            return asyncMode ?
-                (creatableMode ? reactWindowedAsyncCreatableSelect : reactWindowedAsyncSelect) :
-                (creatableMode ? reactWindowedCreatableSelect : reactWindowedSelect);
-        } else {
-            return asyncMode ?
-                (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-                (creatableMode ? reactCreatableSelect : reactSelect);
+            throwIf(creatableMode, 'Windowed mode not available when enableCreate is true');
+            throwIf(asyncMode, 'Windowed mode not available when queryFn is set');
+            return reactWindowedSelect;
         }
+        return asyncMode ?
+            (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+            (creatableMode ? reactCreatableSelect : reactSelect);
     }
 
     @action

@@ -20,6 +20,9 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* New property `enableWindowed` on desktop `Select` component to improve performance 
+with large option lists.
+
 
 ### 💥 Breaking Changes
 
@@ -49,9 +52,6 @@
 * Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
   
-### ⚙️ Technical
-* Changed selects to use the `react-windowed-select` library for improved performance with large 
-  option lists
 
 ### 📚 Libraries
 
