@@ -20,6 +20,9 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* Added a new `timeout` option to methods on FetchService.  This is a convenenience that will
+ apply `Promise.timeout()` to the promises returned by this API.
+
 
 ### 💥 Breaking Changes
 
