@@ -9,16 +9,19 @@ import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';
 import Creatable from 'react-select/creatable';
+import WindowedSelect from 'react-windowed-select';
 
 export {
     Select,
     AsyncSelect,
     AsyncCreatable,
-    Creatable
+    Creatable,
+    WindowedSelect
 };
 
 export const
     reactSelect = elemFactory(Select),
     reactCreatableSelect = elemFactory(Creatable),
     reactAsyncSelect = elemFactory(AsyncSelect),
-    reactAsyncCreatableSelect = elemFactory(AsyncCreatable);
+    reactAsyncCreatableSelect = elemFactory(AsyncCreatable),
+    reactWindowedSelect = elemFactory(WindowedSelect);
