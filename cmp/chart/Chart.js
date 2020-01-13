@@ -89,24 +89,21 @@ class LocalModel {
         if (chartElem) {
 
             const {prevConfig} = this;
-            // We need to keep track of properties of series other than data, e.g. name
             const currentConfig = {
                 ...this.model.highchartsConfig,
+                // We need to keep track of properties of series other than data, e.g. name
                 series: this.model.series.map(it => omit(it, 'data'))
             };
 
-            // TODO: figure out why the zoom changes slightly on the first refresh
-            // Seems like zoom() causes zoomout slightly past the end of the data
-            // Fixed by changing navigator.adaptToUpdatedData to false. Dunno why. Doesn't seem like we should require that setting on all charts.
-            const canUpdateInPlace = this.chart && currentConfig.series && this.chart.series.length >= currentConfig.series.length &&
+            const canUpdateInPlace = this.chart && currentConfig.series &&
+                this.chart.series.length >= currentConfig.series.length &&
                 equal(currentConfig, prevConfig);
 
             if (canUpdateInPlace) {
-                // TODO: Figure out whether or not this works reliably. I believe the index is constant.
-                // I'm going back and forth on doing this by index or by name.
                 for (let i = 0; i < currentConfig.series.length; i++) {
-                    this.chart.series[i].setData(this.model.series[i].data);
+                    this.chart.series[i].setData(this.model.series[i].data, false);
                 }
+                this.chart.redraw();
             } else {
                 this.destroyHighChart();
 
@@ -124,6 +121,7 @@ class LocalModel {
                 config.chart.renderTo = chartElem;
                 this.chart = Highcharts.chart(config);
             }
+            
             this.prevConfig = cloneDeep(currentConfig);
         }
     }
