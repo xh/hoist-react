@@ -4,32 +4,40 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-
-import {isFinite, isArray} from 'lodash';
+import {isEmpty, isFinite, isArray} from 'lodash';
 
 /**
  * Convert the output from Golden Layouts into our serializable state
  */
-export function convertGLToState(gl = []) {
-    return gl.map(it => {
-        if (it.type === 'component') {
-            // Todo: Read 'sidecar state'
-            return {
-                type: 'view',
-                id: it.component
-            };
+export function convertGLToState(configItems = [], contentItems = [], viewState) {
+    const ret = [];
+
+    configItems.forEach((configItem, idx) => {
+        const contentItem = contentItems[idx];
+
+        if (configItem.type === 'component') {
+            const state = viewState[getViewModelId(contentItem)],
+                view = {type: 'view', id: configItem.component};
+
+            if (!isEmpty(state)) view.state = state;
+
+            ret.push(view);
         } else {
-            const {type, width, height, activeItemIndex, content} = it,
-                ret = {type};
+            const {type, width, height, activeItemIndex, content} = configItem,
+                container = {type};
 
-            if (isFinite(width)) ret.width = width;
-            if (isFinite(height)) ret.height = height;
-            if (isFinite(activeItemIndex)) ret.activeItemIndex = activeItemIndex;
-            if (isArray(content) && content.length) ret.content = convertGLToState(content);
+            if (isFinite(width)) container.width = width;
+            if (isFinite(height)) container.height = height;
+            if (isFinite(activeItemIndex)) container.activeItemIndex = activeItemIndex;
+            if (isArray(content) && content.length) {
+                container.content = convertGLToState(content, contentItem.contentItems, viewState);
+            }
 
-            return ret;
+            ret.push(container);
         }
     });
+
+    return ret;
 }
 
 /**
@@ -39,7 +47,12 @@ export function convertStateToGL(state = [], viewSpecs = []) {
     return state.map(it => {
         if (it.type === 'view') {
             const viewSpec = viewSpecs.find(v => v.id === it.id);
-            return getGLConfig(viewSpec);
+            if (!viewSpec) return null;
+
+            const ret = getGLConfig(viewSpec);
+            if (it.state) ret.state = it.state;
+
+            return ret;
         } else {
             const {content, ...rest} = it;
             return {
@@ -61,4 +74,12 @@ export function getGLConfig(viewSpec) {
         title,
         isClosable: allowClose
     };
+}
+
+/**
+ * Lookup the DashViewModel id of a rendered view
+ */
+export function getViewModelId(view) {
+    if (!view || !view.isInitialised || !view.isComponent) return;
+    return view.instance?._reactComponent?.props?.id;
 }

@@ -16,7 +16,8 @@ import {start, wait} from '@xh/hoist/promise';
 import {isEmpty, isEqual, isString, castArray} from 'lodash';
 
 import {dashView} from './DashView';
-import {convertGLToState, convertStateToGL, getGLConfig} from './impl/DashContainerUtils';
+import {DashViewModel} from './DashViewModel';
+import {convertGLToState, convertStateToGL, getGLConfig, getViewModelId} from './impl/DashContainerUtils';
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -35,6 +36,9 @@ export class DashContainerModel {
 
     /** @member {DashViewSpec[]} */
     @observable.ref viewSpecs = [];
+
+    /** @member {DashViewModel[]} */
+    @observable.ref viewModels = [];
 
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
@@ -116,6 +120,11 @@ export class DashContainerModel {
             track: () => this.viewSpecs,
             run: () => this.registerComponents()
         });
+
+        this.addReaction({
+            track: () => this.viewState,
+            run: () => this.onStateChanged()
+        });
     }
 
     @action
@@ -142,7 +151,11 @@ export class DashContainerModel {
 
             // Initialize GoldenLayout
             this.registerComponents();
-            this.goldenLayout.on('stateChanged', () => this.onStateChanged());
+            this.goldenLayout.on('stateChanged', () => {
+                this.renderIcons();
+                this.onStateChanged();
+            });
+            this.goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
             this.goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
             this.goldenLayout.init();
         }).linkTo(this.loadModel);
@@ -154,9 +167,19 @@ export class DashContainerModel {
 
     @action
     onStateChanged() {
-        const {content} = this.goldenLayout.toConfig();
-        this.state = convertGLToState(content);
-        this.renderIcons();
+        const {goldenLayout, viewState} = this;
+        if (!goldenLayout.isInitialised) return;
+
+        const configItems = goldenLayout.toConfig().content,
+            contentItems = goldenLayout.root.contentItems;
+
+        this.state = convertGLToState(configItems, contentItems, viewState);
+    }
+
+    onItemDestroyed(item) {
+        if (!item.isComponent) return;
+        const id = getViewModelId(item);
+        if (id) this.removeViewModel(id);
     }
 
     onResize() {
@@ -164,7 +187,7 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Views
+    // Views Specs
     //-----------------
     /**
      * @param {DashViewSpec} viewSpec - DashViewSpec to be added.
@@ -178,13 +201,44 @@ export class DashContainerModel {
         throwIf(!title, 'DashViewSpec requires a title');
         throwIf(this.getViewSpec(id), `DashViewSpec with id=${id} already exists`);
 
-        this.viewSpecs = [viewSpec, ...this.viewSpecs];
+        this.viewSpecs = [...this.viewSpecs, viewSpec];
     }
 
     getViewSpec(id) {
         return this.viewSpecs.find(it => it.id === id);
     }
 
+    /**
+     * Called automatically to synchronize GoldenLayouts' component registry with our collection of viewSpecs
+     */
+    registerComponents() {
+        const {goldenLayout} = this;
+        if (!goldenLayout) return;
+        this.viewSpecs.forEach(viewSpec => {
+            try {
+                goldenLayout.registerComponent(viewSpec.id, (props) => {
+                    const {id, state, ...rest} = props,
+                        model = new DashViewModel({
+                            id,
+                            viewSpec,
+                            state,
+                            containerModel: this
+                        });
+
+                    this.addViewModel(model);
+                    return dashView({model, ...rest});
+                });
+            } catch {
+                // GoldenLayout.registerComponent() throws if component is already registered.
+                // There doesn't seem to be a way to check if a component is already registered without
+                // throwing (GoldenLayout.getComponent() throws if the component is *not* registered)
+            }
+        });
+    }
+
+    //-----------------
+    // Views
+    //-----------------
     /**
      * Add a DashView to the container.
      *
@@ -218,53 +272,30 @@ export class DashContainerModel {
         return this.getViews().filter(it => it.config.component === id);
     }
 
-    /**
-     * Get rendered DashView instance by DashViewModel.id
-     */
-    getViewByModelId(id) {
-        return this.getViews().find(it => {
-            const instanceId = it.instance?._reactComponent?.props?.id;
-            return instanceId && instanceId === id;
+    //-----------------
+    // View Models
+    //-----------------
+    get viewState() {
+        const ret = {};
+        this.viewModels.map(it => {
+            const {id, state} = it;
+            if (state) ret[id] = state;
         });
+        return ret;
     }
 
-    /**
-     * Lookup the DashViewModel instance id of a rendered view
-     */
-    getViewModelId(view) {
-        if (!view || !view.isInitialised || !view.isComponent) return;
-        return view.instance?._reactComponent?.props?.id;
+    @action
+    addViewModel(viewModel) {
+        this.viewModels = [...this.viewModels, viewModel];
     }
 
-    /**
-     * Called to automatically synchronize GoldenLayouts' component registry with our collection of viewSpecs
-     */
-    registerComponents() {
-        const {goldenLayout} = this;
-        if (!goldenLayout) return;
-        this.viewSpecs.forEach(viewSpec => {
-            try {
-                goldenLayout.registerComponent(viewSpec.id, (props) => {
-                    const {id, ...rest} = props;
-                    return dashView({
-                        model: {
-                            id,
-                            viewSpec,
-                            containerModel: this
-                        },
-                        ...rest
-                    });
-                });
-            } catch {
-                // GoldenLayout.registerComponent() throws if component is already registered.
-                // There doesn't seem to be a way to check if a component is already registered without
-                // throwing (GoldenLayout.getComponent() throws if the component is *not* registered)
-            }
-        });
+    @action
+    removeViewModel(id) {
+        this.viewModels = this.viewModels.filter(it => it.id !== id);
     }
 
     //-----------------
-    // Implementation - Add View Dialog
+    // Add View Dialog
     //-----------------
     onStackCreated(stack) {
         // Listen to active item change to support DashRenderMode
@@ -289,7 +320,7 @@ export class DashContainerModel {
             activeItem = stack.getActiveContentItem();
 
         views.forEach(view => {
-            const id = this.getViewModelId(view),
+            const id = getViewModelId(view),
                 isActive = view === activeItem;
 
             this.emitEvent(DashEvent.IS_ACTIVE, {id, isActive});
@@ -333,6 +364,9 @@ export class DashContainerModel {
         });
     }
 
+    //-----------------
+    // Misc
+    //-----------------
     destroy() {
         this.destroyGoldenLayouts();
     }
@@ -350,6 +384,10 @@ export class DashContainerModel {
  * @property {Object} content - content to be rendered by the DashView. Component class or a
  *      custom element factory of the form returned by elemFactory.
  * @property {string} title - Title text added to the tab header.
+ * @property {function} [contentModelFn] - Function which returns a model instance to be passed
+ *      to the content. This to facilitate saving / loading content state
+ * @property {DashViewGetStateFn} [getState] - Function to return observable state.
+ * @property {DashViewSetStateFn} [setState] - Function to set state on the contentModel
  * @property {Icon} [icon] - An icon placed at the left-side of the tab header.
  * @property {boolean} [unique] - true to prevent multiple instances of this view. Default false.
  * @property {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
@@ -357,4 +395,19 @@ export class DashContainerModel {
  *      default to its container's mode. See enum for description of supported modes.
  * @property {DashRefreshMode} [c.refreshMode] - strategy for refreshing this DashView. If null, will
  *      default to its container's mode. See enum for description of supported modes.
+ */
+
+/**
+ * @callback DashViewGetStateFn - Function which returns an *observable* object containing the
+ *      DashViews persistent state.
+ * @param {HoistModel} contentModel - The model instance provided to the DashView's content.
+ *      *note* Requires using DashViewSpec.contentModelFn.
+ * @returns {Object} - Observable state for the DashView
+ */
+
+/**
+ * @callback DashViewSetStateFn - Function to sets a DashView's persistent state.
+ * @param {Object} state - State previously created using a DashViewGetStateFn.
+ * @param {HoistModel} contentModel - The model instance provided to the DashView's content.
+ *      *note* Requires using DashViewSpec.contentModelFn.
  */

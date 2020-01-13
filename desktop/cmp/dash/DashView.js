@@ -30,8 +30,14 @@ export const dashView = hoistCmp.factory({
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className, glEventHub}) {
-        const {viewSpec, isActive, renderMode, refreshContextModel, modelLookupContext} = model,
-            {content} = viewSpec,
+        const {
+                content,
+                contentModel,
+                isActive,
+                renderMode,
+                refreshContextModel,
+                modelLookupContext
+            } = model,
             wasActivated = useRef(false);
 
         // Wire up Golden Layouts EventHub
@@ -52,7 +58,8 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
+        const contentProps = contentModel ? {model: contentModel} : {},
+            contentElem = content.isHoistComponent ? elem(content, {flex: 1, ...contentProps}) : content(contentProps);
 
         return modelLookupContextProvider({
             value: modelLookupContext,

@@ -8,6 +8,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {DashEvent} from '@xh/hoist/enums';
+import {isFunction} from 'lodash';
 
 import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
@@ -26,11 +27,16 @@ export class DashViewModel {
     viewSpec;
     @bindable isActive;
 
+    contentModel;
     containerModel;
     @managed refreshContextModel;
 
     get modelLookupContext() {
         return this.containerModel.modelLookupContext;
+    }
+
+    get content() {
+        return this.viewSpec.content;
     }
 
     get renderMode() {
@@ -47,11 +53,13 @@ export class DashViewModel {
      * @param {DashViewSpec} c.viewSpec - DashViewSpec used to create this DashView.
      * @param {DashContainerModel} c.containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
+     * @param {Object} [c.state] - State with which to initialize this DashView
      */
     constructor({
         id,
         viewSpec,
-        containerModel
+        containerModel,
+        state
     }) {
         throwIf(!id, 'DashViewModel requires an id');
         throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
@@ -60,7 +68,27 @@ export class DashViewModel {
         this.viewSpec = viewSpec;
         this.containerModel = containerModel;
 
+        // Create content model
+        if (isFunction(viewSpec.contentModelFn)) {
+            this.contentModel = viewSpec.contentModelFn();
+        }
+
+        // Initialise state
+        if (state) this.setState(state);
+
         this.refreshContextModel = new DashRefreshContextModel(this);
+    }
+
+    get state() {
+        const {getState} = this.viewSpec;
+        if (!isFunction(getState)) return null;
+        return getState(this.contentModel);
+    }
+
+    setState(state) {
+        const {setState} = this.viewSpec;
+        if (!isFunction(setState)) return;
+        return setState(state, this.contentModel);
     }
 
     setEventHub(eventHub) {

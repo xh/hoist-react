@@ -33,13 +33,14 @@ class ReactComponentHandlerPatched extends ReactComponentHandler {
     }
 
     // Modify this to generate a unique id and pass it through.
+    // Also ensures any state is provided to the DashView via props.
     // This enables us to associate DashViewModels with GoldenLayout react component instances.
     _getReactComponent() {
         const props = {
             id: uniqueId('gl-'),
+            state: this._container._config.state,
             glEventHub: this._container.layoutManager.eventHub,
-            glContainer: this._container,
-            ...this._container._config.props
+            glContainer: this._container
         };
         return React.createElement(this._reactClass, props);
     }
