@@ -166,7 +166,7 @@ export class RecordSet {
     }
 
     areRecordsEqual(rec1, rec2) {
-        return equal(rec1.xhTreePath, rec2.xhTreePath) && equal(rec1.data, rec2.data);
+        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
     }
 
     withTransaction({update, add, remove}) {

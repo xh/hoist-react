@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -80,18 +79,10 @@ export class Store {
             loadRootAsSummary = false
         }) {
         this.fields = this.parseFields(fields);
-        this.idSpec = isString(idSpec) ? (rec) => rec[idSpec] : idSpec;
+        this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
-
-        this._recordClass = class extends Record {};
-        this.fields.forEach(field => {
-            Object.defineProperty(this._recordClass.prototype, field.name, {
-                get() {return this.data[field.name]},
-                set() {throw XH.exception(`Cannot set read-only field '${field.name}' on immutable Record. Use Store.updateData() or Store.updateRecord().`)}
-            });
-        });
 
         this.resetRecords();
         this.setFilter(filter);
@@ -247,7 +238,7 @@ export class Store {
             const parsedData = this.parseFieldValues(it),
                 parent = this.getById(parentId);
 
-            return this.newRecord({id, data: parsedData, store: this, parent, committedRecord: null});
+            return new Record({id, data: parsedData, store: this, parent, committedRecord: null});
         });
 
         this._current = this._current.withTransaction({add: addRecs});
@@ -295,12 +286,12 @@ export class Store {
                 rec = this.getOrThrow(id),
                 updatedData = this.parseFieldValues(data, true);
 
-            const updatedRec = this.newRecord({
+            const updatedRec = new Record({
                 id: rec.id,
                 data: {...rec.data, ...updatedData},
                 parent: rec.parent,
                 store: rec.store,
-                isSummary: rec.xhIsSummary,
+                isSummary: rec.isSummary,
                 committedRecord: rec.committedRecord
             });
 
@@ -595,10 +586,6 @@ export class Store {
     // Record Generation
     //---------------------------------------
 
-    newRecord(cfg) {
-        return new this._recordClass(cfg);
-    }
-
     createRecord(raw, parent, isSummary) {
         const {processRawData} = this;
 
@@ -616,7 +603,7 @@ export class Store {
         parent = withDefault(parent, rec?.parent);
 
         data = this.parseFieldValues(data);
-        return this.newRecord({id, data, raw, parent, store: this, isSummary});
+        return new Record({id, data, raw, parent, store: this, isSummary});
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {

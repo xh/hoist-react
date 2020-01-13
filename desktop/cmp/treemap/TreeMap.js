@@ -292,7 +292,7 @@ class LocalModel {
         if (maxDepth && gridModel && gridModel.treeMode) {
             toSelect = new Set(selectedIds.map(id => {
                 const record = store.getById(id);
-                return record ? record.xhTreePath.slice(0, maxDepth).pop() : null;
+                return record ? record.treePath.slice(0, maxDepth).pop() : null;
             }));
         } else {
             toSelect = new Set(selectedIds);

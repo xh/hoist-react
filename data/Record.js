@@ -28,8 +28,10 @@ export class Record {
     data;
     /** @member {Store} */
     store;
-    /** @member {boolean} - flag set post-construction by Store on summary recs - for Hoist impl. */
-    xhIsSummary;
+    /** @member {boolean} */
+    isSummary;
+    /** @member {string[]|number[]} */
+    treePath;
 
     /** @returns {boolean} - true if the Record has not been committed. */
     get isNew() {
@@ -136,13 +138,17 @@ export class Record {
         this.raw = raw;
         this.data = data;
         this.store = store;
-        this.xhIsSummary = isSummary;
-        this.xhTreePath = parent ? [...parent.xhTreePath, id] : [id];
+        this.isSummary = isSummary;
+        this.treePath = parent ? [...parent.treePath, id] : [id];
     }
 
-    freeze() {
-        deepFreeze(this.data);
-        Object.freeze(this);
+    /**
+     * Gets a field value from the Record data
+     * @param {string} field - name of the field
+     * @returns {*} - the field value
+     */
+    get(field) {
+        return this.data[field];
     }
 
     /**
@@ -203,6 +209,18 @@ export class Record {
      */
     forEachAncestor(fn, fromFiltered = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(it => fn(it));
+    }
+
+    // --------------------------
+    // Protected methods
+    // --------------------------
+
+    /**
+     * Freezes this Record and its data. Should not be called by Applications.
+     */
+    freeze() {
+        deepFreeze(this.data);
+        Object.freeze(this);
     }
 }
 

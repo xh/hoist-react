@@ -536,7 +536,7 @@ class LocalModel {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = (record) => !record.xhIsSummary,
+            filterSummaryFn = (record) => !record.isSummary,
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
@@ -595,7 +595,7 @@ class LocalModel {
     // Event Handlers on AG Grid.
     //------------------------
     getDataPath = (data) => {
-        return data.xhTreePath;
+        return data.treePath;
     };
 
     onSelectionChanged = () => {

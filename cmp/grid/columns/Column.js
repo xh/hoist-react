@@ -133,6 +133,7 @@ export class Column {
         tooltipElement,
         editable,
         updateFieldFn,
+        getValueFn,
         agOptions,
         ...rest
     }, gridModel) {
@@ -205,6 +206,7 @@ export class Column {
 
         this.editable = editable;
         this.updateFieldFn = withDefault(updateFieldFn, this.defaultUpdateFieldFn);
+        this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -250,6 +252,10 @@ export class Column {
                 valueSetter: (agParams) => {
                     const {newValue: value, oldValue, data: record} = agParams;
                     this.updateFieldFn({value, oldValue, record, store: record.store, gridModel, field, column: this, agParams});
+                },
+                valueGetter: (agParams) => {
+                    const {data: record} = agParams;
+                    return this.getValueFn({record, field, store: record?.store, column: this, gridModel, agParams});
                 }
             };
 
@@ -259,7 +265,7 @@ export class Column {
         let setRenderer = (r) => ret.cellRenderer = r,
             setElementRenderer = (r) => ret.cellRendererFramework = r;
 
-        // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
+        // Our implementation of Grid.getDataPath() > Record.treePath returns data path []s of
         // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
         // Add valueGetters below to correct + additional fixes for sorting below.
         if (this.isTreeColumn) {
@@ -267,11 +273,8 @@ export class Column {
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
                 suppressCount: true,
-                suppressDoubleClickExpand: true,
-                innerRenderer: (v) => v.data[field]
+                suppressDoubleClickExpand: true
             };
-            ret.valueGetter = (v) => v.data[field];
-            ret.filterValueGetter = (v) => v.data[field];
 
             setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
             setElementRenderer = (r) => {
@@ -394,6 +397,10 @@ export class Column {
         const data = {id: record.id};
         data[field] = value;
         store.modifyRecords(data);
+    };
+
+    defaultGetValueFn = ({record, field}) => {
+        return record?.get(field);
     }
 }
 

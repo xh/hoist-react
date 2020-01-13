@@ -170,7 +170,7 @@ export class RestGridModel {
     @action
     cloneRecord(record) {
         const editableFields = filter(record.fields, 'editable').map(it => it.name),
-            clone = pickBy(record, (v, k) => editableFields.includes(k));
+            clone = pickBy(record.data, (v, k) => editableFields.includes(k));
         const {prepareCloneFn} = this;
         if (prepareCloneFn) prepareCloneFn({record, clone});
         this.formModel.openClone(clone);
