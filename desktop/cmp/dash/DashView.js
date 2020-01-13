@@ -9,7 +9,7 @@ import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {modelLookupContextProvider} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
-import {DashRenderMode} from '@xh/hoist/enums';
+import {RenderMode} from '@xh/hoist/enums';
 
 import {DashViewModel} from './DashViewModel';
 
@@ -39,7 +39,7 @@ export const dashView = hoistCmp.factory({
             } = model,
             wasActivated = useRef(false);
 
-        // Respect DashRenderMode
+        // Respect RenderMode
         if (!wasActivated.current && isActive) {
             wasActivated.current = true;
         }
@@ -47,8 +47,8 @@ export const dashView = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == DashRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == DashRenderMode.LAZY && !wasActivated.current)
+                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;

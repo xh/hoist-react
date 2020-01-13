@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {RefreshContextModel} from '@xh/hoist/core/refresh';
-import {DashRefreshMode} from '@xh/hoist/enums';
+import {RefreshMode} from '@xh/hoist/enums';
 import {loadAllAsync} from '@xh/hoist/core';
 
 /**
@@ -28,11 +28,11 @@ export class DashRefreshContextModel {
         const {dashViewModel} = this,
             mode = dashViewModel.refreshMode;
 
-        if (dashViewModel.isActive || mode == DashRefreshMode.ALWAYS) {
+        if (dashViewModel.isActive || mode == RefreshMode.ALWAYS) {
             return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
-        if (mode == DashRefreshMode.ON_SHOW_LAZY) {
+        if (mode == RefreshMode.ON_SHOW_LAZY) {
             this.refreshPending = true;
         }
     }
@@ -40,9 +40,9 @@ export class DashRefreshContextModel {
     noteActiveChanged(isActive) {
         if (isActive) {
             const mode = this.dashViewModel.refreshMode;
-            if (mode == DashRefreshMode.ON_SHOW_ALWAYS) {
+            if (mode == RefreshMode.ON_SHOW_ALWAYS) {
                 this.refreshAsync();
-            } else if (mode == DashRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
+            } else if (mode == RefreshMode.ON_SHOW_LAZY && this.refreshPending) {
                 this.refreshPending = false;
                 this.refreshAsync();
             }

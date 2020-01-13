@@ -12,6 +12,7 @@ import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core'
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {RenderMode} from '@xh/hoist/enums';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -93,7 +94,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && wasDisplayed.current)) {
+        if (!collapsed || collapsedRenderMode == RenderMode.ALWAYS || (collapsedRenderMode == RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };

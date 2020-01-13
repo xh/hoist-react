@@ -34,6 +34,7 @@ with large option lists.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
   `equalString`, respectively.
+* `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode`.
 
 ### 🐞 Bug Fixes
 

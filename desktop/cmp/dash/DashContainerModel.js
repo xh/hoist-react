@@ -7,7 +7,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {DashRefreshMode, DashRenderMode} from '@xh/hoist/enums';
+import {RefreshMode, RenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -25,6 +25,8 @@ import {convertGLToState, convertStateToGL, getGLConfig, getViewModelId} from '.
  * Note that loading state will destroy and reinitialize all components. Therefore,
  * it is recommended you do so sparingly.
  *
+ * Todo: Document how to structure state
+ *
  * This object provides support for managing dash views, adding new views on the fly,
  * and tracking / loading state.
  */
@@ -35,7 +37,7 @@ export class DashContainerModel {
     @observable.ref state;
 
     /** @member {DashViewSpec[]} */
-    @observable.ref viewSpecs = [];
+    @observable.ref viewSpecs = []; // Todo: Make immutable
 
     /** @member {DashViewModel[]} */
     @observable.ref viewModels = [];
@@ -44,7 +46,7 @@ export class DashContainerModel {
     @observable.ref goldenLayout;
 
     /** member {ModelLookupContext} */
-    @bindable.ref modelLookupContext;
+    @bindable.ref modelLookupContext; // Todo: Doesn't need to be observable, write setter. Make _underscore
 
     /** member {boolean} */
     @observable dialogIsOpen;
@@ -53,7 +55,7 @@ export class DashContainerModel {
     defaultState;
 
     /** @member {Object} */
-    settings;
+    settings; // Todo: Rename goldenLayoutSettings
 
     /** @member {Ref} */
     containerRef = createObservableRef();
@@ -61,10 +63,10 @@ export class DashContainerModel {
     /** @member {boolean} */
     enableAdd;
 
-    /** @member {DashRenderMode} */
+    /** @member {RenderMode} */
     renderMode;
 
-    /** @member {DashRefreshMode} */
+    /** @member {RefreshMode} */
     refreshMode;
 
     @managed
@@ -80,22 +82,22 @@ export class DashContainerModel {
      *      @see http://golden-layout.com/docs/Config.html
      * @param {boolean} [c.enableAdd] - true (default) to include a '+' button in each stack header,
      *      which opens the provided 'Add View' dialog.
-     * @param {DashRenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
+     * @param {RenderMode} [c.renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
-     * @param {DashRefreshMode} [c.refreshMode] - strategy for refreshing DashViews. Can be set
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      */
     constructor({
-        viewSpecs = [],
-        defaultState = [],
+        viewSpecs,
+        defaultState,
         initState,
         settings,
         enableAdd = true,
-        renderMode = DashRenderMode.LAZY,
-        refreshMode = DashRefreshMode.ON_SHOW_LAZY
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
         throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
-        throwIf(isEmpty(defaultState), 'DashContainerModel must be intialised with default state');
+        throwIf(isEmpty(defaultState), 'DashContainerModel must be initialized with default state');
 
         this.defaultState = castArray(defaultState);
         this.settings = settings;
@@ -109,13 +111,14 @@ export class DashContainerModel {
 
         // Initialize GoldenLayouts with default state once ref is ready
         this.addReaction({
-            track: () => this.containerRef.current,
+            when: () => this.containerRef.current,
             run: () => {
                 const state = !isEmpty(initState) && !isEqual(initState, defaultState) ? initState : defaultState;
                 this.loadStateAsync(state);
             }
         });
 
+        // Todo: Remove
         this.addReaction({
             track: () => this.viewSpecs,
             run: () => this.registerComponents()
@@ -130,11 +133,16 @@ export class DashContainerModel {
 
     @action
     async loadStateAsync(state) {
-        start(() => {
-            // Recreate GoldenLayouts with state
+        const containerEl = this.containerRef.current;
+        if (!containerEl) return;
+
+        return start(() => {
             this.destroyGoldenLayouts();
 
+            // Recreate GoldenLayouts with state
             const content = convertStateToGL(state, this.viewSpecs);
+
+            // Todo: const first, assign to thus at the end
             this.goldenLayout = new GoldenLayout({
                 content,
                 settings: {
@@ -148,10 +156,12 @@ export class DashContainerModel {
                     borderWidth: 6,
                     headerHeight: 25
                 }
-            }, this.containerRef.current);
+            }, containerEl);
 
             // Initialize GoldenLayout
             this.registerComponents();
+            // Todo: Move this inline - simplify
+
             this.goldenLayout.on('stateChanged', () => {
                 this.renderIcons();
                 this.updateStateBuffered();
@@ -166,6 +176,7 @@ export class DashContainerModel {
         return this.loadStateAsync(this.defaultState);
     }
 
+    // Todo: Try debounced again - maybe different order
     @action
     updateState() {
         const {goldenLayout, viewState} = this;
@@ -195,6 +206,7 @@ export class DashContainerModel {
      */
     @action
     addViewSpec(viewSpec) {
+        // Todo: Do inline in constructor
         const {id, content, title} = viewSpec;
 
         throwIf(!id, 'DashViewSpec requires an id');
@@ -303,7 +315,7 @@ export class DashContainerModel {
     // Add View Dialog
     //-----------------
     onStackCreated(stack) {
-        // Listen to active item change to support DashRenderMode
+        // Listen to active item change to support RenderMode
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
         // Add '+' icon and attach click listener for adding components
@@ -393,9 +405,9 @@ export class DashContainerModel {
  * @property {Icon} [icon] - An icon placed at the left-side of the tab header.
  * @property {boolean} [unique] - true to prevent multiple instances of this view. Default false.
  * @property {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
- * @property {DashRenderMode} [c.renderMode] - strategy for rendering this DashView. If null, will
+ * @property {RenderMode} [c.renderMode] - strategy for rendering this DashView. If null, will
  *      default to its container's mode. See enum for description of supported modes.
- * @property {DashRefreshMode} [c.refreshMode] - strategy for refreshing this DashView. If null, will
+ * @property {RefreshMode} [c.refreshMode] - strategy for refreshing this DashView. If null, will
  *      default to its container's mode. See enum for description of supported modes.
  */
 

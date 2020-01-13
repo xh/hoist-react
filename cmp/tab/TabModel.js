@@ -42,9 +42,9 @@ export class TabModel {
      *      but still be able to activate the tab manually or via routing.
      * @param {(Object|function)} c.content - Hoist Component (class or functional) to be rendered by this
      *      Tab; or function returning react element to be rendered by this Tab.
-     * @param {TabRenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
+     * @param {RenderMode} [c.renderMode] - strategy for rendering this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
-     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this tab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      */
     constructor({

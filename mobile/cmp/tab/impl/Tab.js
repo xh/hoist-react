@@ -8,7 +8,7 @@ import {useRef} from 'react';
 import {elem, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
-import {TabRenderMode} from '@xh/hoist/enums';
+import {RenderMode} from '@xh/hoist/enums';
 
 import {TabModel} from '@xh/hoist/cmp/tab';
 
@@ -34,8 +34,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
+                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             // Note: We must render an empty placeholder Onsen page to work with Onsen's tabbar.

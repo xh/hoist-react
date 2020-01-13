@@ -1,4 +1,2 @@
-export * from './dash/DashRefreshMode';
-export * from './dash/DashRenderMode';
-export * from './tab/TabRefreshMode';
-export * from './tab/TabRenderMode';
+export * from './RefreshMode';
+export * from './RenderMode';

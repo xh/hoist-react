@@ -34,6 +34,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
         return fragment(
+            // Todo: Use frame and proper mask component
             panel({
                 className,
                 ref,
