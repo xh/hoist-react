@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {start, wait} from '@xh/hoist/promise';
-import {isEmpty, isEqual, isString, castArray} from 'lodash';
+import {castArray, debounce, isEmpty, isEqual, isString} from 'lodash';
 
 import {dashView} from './DashView';
 import {DashViewModel} from './DashViewModel';
@@ -121,9 +121,10 @@ export class DashContainerModel {
             run: () => this.registerComponents()
         });
 
+        this.updateStateBuffered = debounce(this.updateState, 100);
         this.addReaction({
             track: () => this.viewState,
-            run: () => this.onStateChanged()
+            run: () => this.updateStateBuffered()
         });
     }
 
@@ -153,7 +154,7 @@ export class DashContainerModel {
             this.registerComponents();
             this.goldenLayout.on('stateChanged', () => {
                 this.renderIcons();
-                this.onStateChanged();
+                this.updateStateBuffered();
             });
             this.goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
             this.goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
@@ -166,7 +167,7 @@ export class DashContainerModel {
     }
 
     @action
-    onStateChanged() {
+    updateState() {
         const {goldenLayout, viewState} = this;
         if (!goldenLayout.isInitialised) return;
 
