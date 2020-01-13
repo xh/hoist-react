@@ -51,8 +51,9 @@ with large option lists.
   ([#1490](https://github.com/xh/hoist-react/issues/1490))
 * Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
+* Fixed problem where charts were resized when being hidden
+  ([#1528](https://github.com/xh/hoist-react/issues/1528))
   
-
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
