@@ -347,25 +347,26 @@ export class Select extends HoistInput {
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src) {
+        return isPlainObject(src) ?
+            this.ensureValidOptionObj(src) :
+            {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+    ensureValidOptionObj(src) {
         const {props} = this,
-            srcIsObject = isPlainObject(src),
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty(valueField) && ! src.hasOwnProperty('options'),
+            !src.hasOwnProperty(valueField) && ! src.hasOwnProperty('options'),
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return srcIsObject ?
-            (
-                src.hasOwnProperty('options') ?
-                    {...src, label: src[labelField], options: this.normalizeOptions(src.options)} :
-                    {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]}
-            ) :
-            {label: src != null ? src.toString() : '-null-', value: src};
-    }
+        return src.hasOwnProperty('options') ?
+            {...src, label: src[labelField], options: this.normalizeOptions(src.options)} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
 
+    }
     //------------------------
     // Async
     //------------------------
