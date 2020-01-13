@@ -367,6 +367,11 @@ export class Select extends HoistInput {
     }
 
     normalizeOptions(options, depth = 0) {
+        throwIf(
+            depth >= 2,
+            'Grouped select options support only one-deep nesting.'
+        );
+
         options = options || [];
         return options.map(it => this.toOption(it, depth));
     }
@@ -388,11 +393,6 @@ export class Select extends HoistInput {
         throwIf(
             !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
-        );
-
-        throwIf(
-            src.hasOwnProperty('options') && depth > 0,
-            'Grouped select options support only one-deep nesting.'
         );
 
         if (src.hasOwnProperty('options')) {
