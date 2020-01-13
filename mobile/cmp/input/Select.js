@@ -191,11 +191,9 @@ export class Select extends HoistInput {
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        if (src.hasOwnProperty('options')) {
-            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)};
-        } else {
-            return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
-        }
+        return src.hasOwnProperty('options') ?
+            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
     }
 
     //----------------------
