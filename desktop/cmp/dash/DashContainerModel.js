@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {start, wait} from '@xh/hoist/promise';
-import {isEmpty, isString, castArray} from 'lodash';
+import {isEmpty, isEqual, isString, castArray} from 'lodash';
 
 import {dashView} from './DashView';
 import {convertGLToState, convertStateToGL, getGLConfig} from './impl/DashContainerUtils';
@@ -21,7 +21,8 @@ import {convertGLToState, convertStateToGL, getGLConfig} from './impl/DashContai
 /**
  * Model for a DashContainer, representing its contents and layout state.
  *
- * Todo: Explain state. Does it need a TypeDef?
+ * Note that loading state will destroy and reinitialize all components. Therefore,
+ * it is recommended you do so sparingly.
  *
  * This object provides support for managing dash views, adding new views on the fly,
  * and tracking / loading state.
@@ -69,6 +70,8 @@ export class DashContainerModel {
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
      * @param {Object[]} defaultState - Default layout state for this container.
+     * @param {Object[]} [initState] - State with which to initialize for this container,
+     *      if different from defaultState.
      * @param {Object} [settings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
      * @param {boolean} [c.enableAdd] - true (default) to include a '+' button in each stack header,
@@ -81,6 +84,7 @@ export class DashContainerModel {
     constructor({
         viewSpecs = [],
         defaultState = [],
+        initState,
         settings,
         enableAdd = true,
         renderMode = DashRenderMode.LAZY,
@@ -102,7 +106,10 @@ export class DashContainerModel {
         // Initialize GoldenLayouts with default state once ref is ready
         this.addReaction({
             track: () => this.containerRef.current,
-            run: () => this.loadStateAsync(this.defaultState)
+            run: () => {
+                const state = !isEmpty(initState) && !isEqual(initState, defaultState) ? initState : defaultState;
+                this.loadStateAsync(state);
+            }
         });
 
         this.addReaction({
