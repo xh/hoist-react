@@ -208,10 +208,7 @@ class LocalModel {
         return {
             chart: {},
             credits: false,
-            exporting,
-            navigator: {
-                adaptToUpdatedData: false
-            }
+            exporting
         };
     }
 
@@ -230,6 +227,8 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
+                minPadding: 0,
+                maxPadding: 0,
                 dateTimeLabelFormats: {
                     day: '%e-%b-%y',
                     week: '%e-%b-%y',
