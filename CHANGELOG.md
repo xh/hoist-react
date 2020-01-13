@@ -12,10 +12,6 @@
 * Added a `Column.tooltipElement` config to support fully customizable tooltip components.
 * Added a `useOnResize` hook, which runs a function when a component is resized.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
-<<<<<<< HEAD
-* Added a `fmtLossless` number formatter, which shortens numbers without losing any precision.
-* Added a `fmtShorthand` number formatter, which displays a number as thousands, millions, or billions
-=======
 * `PanelModel` now accepts a `maxSize` config.
 * `RelativeTimeStamp` now support a `relativeTo` option, allowing it to display the difference
   between a timestamp and another reference time other than now. Both the component and the
@@ -26,8 +22,8 @@
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
 * New property `enableWindowed` on desktop `Select` component to improve performance 
 with large option lists.
-
->>>>>>> develop
+* Added a `fmtLossless` number formatter, which shortens numbers without losing any precision.
+* Added a `fmtShorthand` number formatter, which displays a number as thousands, millions, or billions
 
 ### 💥 Breaking Changes
 
