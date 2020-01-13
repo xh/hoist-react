@@ -105,8 +105,11 @@ export function fmtLossless(v, opts = {}) {
         maxTrailingZeroes: 2,
         precision: 2,
         zeroPad: false,
-        allowedUnits: 'mb'
+        allowedUnits: 'mb',
+        label: true
     });
+
+    if (opts.precision === 'auto') opts.precision = 2;
 
     let trailingZeroes = 0;
     for (let i = 10; v % i == 0; i *= 10) {
@@ -115,9 +118,9 @@ export function fmtLossless(v, opts = {}) {
 
     const abs = Math.abs(v);
     function checkUnit(denom) {
-        // Check that there are at most opts.precision digits after the decimal point when using `denom` as a unit.
-        return (v / denom).toString().split('.')[1].length <= opts.precision &&
-            abs >= denom;
+        // find how many digits are past the decimal point of v / denom
+        const digits = Math.floor(Math.log10(v % denom));
+        return (abs >= denom && digits <= opts.precision);
     }
 
     if (trailingZeroes > opts.maxTrailingZeroes) {
