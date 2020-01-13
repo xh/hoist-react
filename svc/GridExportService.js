@@ -177,9 +177,9 @@ export class GridExportService {
     }
 
     getCellData(gridModel, record, column, aggData) {
-        const {field, exportValue} = column;
+        const {field, exportValue, getValueFn} = column;
 
-        let value = record[field];
+        let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
         if (isString(exportValue) && record[exportValue] !== null) {
             // If exportValue points to a different field
