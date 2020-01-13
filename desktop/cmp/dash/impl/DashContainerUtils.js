@@ -44,21 +44,18 @@ export function convertGLToState(configItems = [], contentItems = [], viewState)
  * Convert our serializable state into GoldenLayouts config
  */
 export function convertStateToGL(state = [], viewSpecs = []) {
-    return state.map(it => {
-        if (it.type === 'view') {
-            const viewSpec = viewSpecs.find(v => v.id === it.id);
+    return state.map(item => {
+        if (item.type === 'view') {
+            const viewSpec = viewSpecs.find(v => v.id === item.id);
             if (!viewSpec) return null;
 
             const ret = getGLConfig(viewSpec);
-            if (it.state) ret.state = it.state;
+            if (item.state) ret.state = item.state;
 
             return ret;
         } else {
-            const {content, ...rest} = it;
-            return {
-                content: convertStateToGL(content, viewSpecs),
-                ...rest
-            };
+            const content = convertStateToGL(item.content, viewSpecs);
+            return {...item, content};
         }
     });
 }
