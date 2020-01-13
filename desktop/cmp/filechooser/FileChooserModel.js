@@ -45,7 +45,7 @@ export class FileChooserModel {
                     tooltip: 'Remove file',
                     intent: 'danger',
                     actionFn: ({record}) => {
-                        this.removeFileByName(record.name);
+                        this.removeFileByName(record.get('name'));
                     }
                 }]
             }

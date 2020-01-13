@@ -171,7 +171,7 @@ export class LeftRightChooserModel {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${record.locked ? lockSvg : ''}
+                    ${v} ${record.get('locked') ? lockSvg : ''}
                 </div>
             `;
         };

@@ -260,8 +260,8 @@ export class ConfigDifferModel  {
     }
 
     configValueTypeRenderer(v, {record}) {
-        const local = record.localValue,
-            remote = record.remoteValue;
+        const local = record.get('localValue'),
+            remote = record.get('remoteValue');
 
         if (local && remote) {
             return local.valueType == remote.valueType ? local.valueType : '??';

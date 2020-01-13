@@ -100,7 +100,7 @@ export class WebSocketModel {
             title: 'Send test alert',
             icon: Icon.bullhorn(),
             confirmProps: {text: 'Send'},
-            message: `Send an in-app alert to ${selectedRecord.authUser} with the text below.`,
+            message: `Send an in-app alert to ${selectedRecord.get('authUser')} with the text below.`,
             input: {
                 item: textInput({autoFocus: true, selectOnFocus: true}),
                 initialValue: 'This is a test alert',
@@ -111,7 +111,7 @@ export class WebSocketModel {
         XH.fetchJson({
             url: 'webSocketAdmin/pushToChannel',
             params: {
-                channelKey: selectedRecord.key,
+                channelKey: selectedRecord.get('key'),
                 topic: XH.webSocketService.TEST_MSG_TOPIC,
                 message
             }
