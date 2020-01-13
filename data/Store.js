@@ -291,7 +291,6 @@ export class Store {
                 data: {...rec.data, ...updatedData},
                 parent: rec.parent,
                 store: rec.store,
-                isSummary: rec.isSummary,
                 committedRecord: rec.committedRecord
             });
 
@@ -598,9 +597,12 @@ export class Store {
         const id = this.idSpec(data),
             rec = this.getById(id);
 
-        // If we are creating a record for update, and the parent id was not provided explicitly, then
-        // use the parent id for the record we are updating
-        parent = withDefault(parent, rec?.parent);
+        if (rec) {
+            // We are creating a record for an update, so figure out our parent or if we are the summary
+            // record based on the current state if they were not explicitly provided
+            parent = withDefault(parent, rec.parent);
+            isSummary = withDefault(isSummary, rec.id === this.summaryRecord?.id);
+        }
 
         data = this.parseFieldValues(data);
         return new Record({id, data, raw, parent, store: this, isSummary});
