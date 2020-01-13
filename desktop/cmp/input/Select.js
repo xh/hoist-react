@@ -347,16 +347,16 @@ export class Select extends HoistInput {
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src) {
+        return isPlainObject(src) ?
+            this.ensureValidOptionObj(src) :
+            {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+    ensureValidOptionObj(src) {
         const {props} = this,
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
-        return isPlainObject(src) ?
-            this.ensureValidOptionObj(src, labelField, valueField) :
-            {label: src != null ? src.toString() : '-null-', value: src};
-    }
-
-    ensureValidOptionObj(src, labelField, valueField) {
         throwIf(
             !src.hasOwnProperty(valueField) && ! src.hasOwnProperty('options'),
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
