@@ -342,9 +342,9 @@ class LocalModel {
     //----------------------
     defaultTooltip = (record) => {
         const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
-            name = record[labelField],
-            value = record[valueField],
-            heat = record[heatField],
+            name = record.get(labelField),
+            value = record.get(valueField),
+            heat = record.get(heatField),
             labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>
