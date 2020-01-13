@@ -367,10 +367,7 @@ export class Select extends HoistInput {
     }
 
     normalizeOptions(options, depth = 0) {
-        throwIf(
-            depth >= 2,
-            'Grouped select options support only one-deep nesting.'
-        );
+        throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
 
         options = options || [];
         return options.map(it => this.toOption(it, depth));
