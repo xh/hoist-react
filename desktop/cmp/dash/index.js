@@ -8,3 +8,4 @@ export * from './DashContainer';
 export * from './DashContainerModel';
 export * from './DashView';
 export * from './DashViewModel';
+export * from './DashViewSpec';

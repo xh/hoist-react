@@ -16,8 +16,7 @@ import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
  * to be rendered within the view and manages that content's render state and refreshes.
  *
  * This model is not typically created directly within applications. Instead, specify a
- * DashViewSpec for it via the `DashContainerModel.viewSpec` constructor config or via
- * the `DashContainerModel.addViewSpec()` method.
+ * DashViewSpec for it via the `DashContainerModel.viewSpecs` constructor config.
  */
 @HoistModel
 export class DashViewModel {
@@ -47,12 +46,11 @@ export class DashViewModel {
     }
 
     /**
-     * @param {Object} c - DashViewModel configuration.
-     * @param {string} c.id - Typically created by GoldenLayouts.
-     * @param {DashViewSpec} c.viewSpec - DashViewSpec used to create this DashView.
-     * @param {DashContainerModel} c.containerModel - parent DashContainerModel. Provided by the
+     * @param {string} id - Typically created by GoldenLayouts.
+     * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashView.
+     * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {Object} [c.state] - State with which to initialize this DashView
+     * @param {Object} [state] - State with which to initialize this DashView
      */
     constructor({
         id,

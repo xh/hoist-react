@@ -49,7 +49,7 @@ export function convertStateToGL(state = [], viewSpecs = []) {
             const viewSpec = viewSpecs.find(v => v.id === item.id);
             if (!viewSpec) return null;
 
-            const ret = getGLConfig(viewSpec);
+            const ret = viewSpec.goldenLayoutsConfig;
             if (item.state) ret.state = item.state;
 
             return ret;
@@ -58,19 +58,6 @@ export function convertStateToGL(state = [], viewSpecs = []) {
             return {...item, content};
         }
     });
-}
-
-/**
- * Convert a ViewSpec into a GoldenLayouts component config
- */
-export function getGLConfig(viewSpec) {
-    const {id, title, allowClose} = viewSpec;
-    return {
-        component: id,
-        type: 'react-component',
-        title,
-        isClosable: allowClose
-    };
 }
 
 /**
