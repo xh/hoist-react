@@ -53,13 +53,13 @@ export class LeftRightChooserModel {
     /** Currently 'selected' values on the right hand side. */
     @computed
     get rightValues() {
-        return this.rightModel.store.allRecords.map(it => it.value);
+        return this.rightModel.store.allRecords.map(it => it.get('value'));
     }
 
     /** Currently 'selected' values on the left hand side. */
     @computed
     get leftValues() {
-        return this.leftModel.store.allRecords.map(it => it.value);
+        return this.leftModel.store.allRecords.map(it => it.get('value'));
     }
 
     /**
@@ -193,8 +193,8 @@ export class LeftRightChooserModel {
 
     moveRows(rows) {
         rows.forEach(rec => {
-            if (rec.locked) return;
-            rec.raw.side = (rec.side === 'left' ? 'right' : 'left');
+            if (rec.get('locked')) return;
+            rec.raw.side = (rec.get('side') === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();
