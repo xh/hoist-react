@@ -113,18 +113,19 @@ export function fmtLossless(v, opts = {}) {
         trailingZeroes++;
     }
 
-    // Check that there are at most opts.precision digits after the decimal point when using `denom` as a unit.
-    function checkPrecision(denom) {
-        return (v / denom).toString().split('.')[1].length <= opts.precision;
+    const abs = Math.abs(v);
+    function checkUnit(denom) {
+        // Check that there are at most opts.precision digits after the decimal point when using `denom` as a unit.
+        return (v / denom).toString().split('.')[1].length <= opts.precision &&
+            abs >= denom;
     }
 
-    const abs = Math.abs(v);
     if (trailingZeroes > opts.maxTrailingZeroes) {
-        if (abs >= BILLION && opts.allowedUnits.includes('b') && checkPrecision(BILLION)) {
+        if (opts.allowedUnits.includes('b') && checkUnit(BILLION)) {
             return fmtBillions(v, opts);
-        } else if (abs >= MILLION && opts.allowedUnits.includes('m') && checkPrecision(MILLION)) {
+        } else if (opts.allowedUnits.includes('m') && checkUnit(MILLION)) {
             return fmtMillions(v, opts);
-        } else if (abs >= THOUSAND && opts.allowedUnits.includes('k') && checkPrecision(THOUSAND)) {
+        } else if (opts.allowedUnits.includes('k') && checkUnit(THOUSAND)) {
             return fmtThousands(v, opts);
         }
     } else {
