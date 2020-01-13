@@ -12,7 +12,8 @@ import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
     reactCreatableSelect,
-    reactSelect
+    reactSelect,
+    reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -33,8 +34,10 @@ import './Select.scss';
  *      + Multiple selection
  *      + Custom dropdown option renderers
  *      + User-created ad-hoc entries
+ *      + Use of the library react-windowed-select for improved performance on large option lists.
  *
  * @see {@link https://react-select.com|React Select Docs}
+ * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
  */
 @LayoutSupport
 @HoistComponent
@@ -66,6 +69,18 @@ export class Select extends HoistInput {
 
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
+
+        /**
+         * True to use react-windowed-select for improved performance on large option lists.
+         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
+         *
+         * Currently only supported when the enableCreate and queryFn props are not specified.
+         * These options require the use of specialized 'Async' or 'Creatable' selects from the
+         * underlying react-select library which are not fully implemented in react-windowed-select.
+         *
+         * Applications should use this option with care.
+         */
+        enableWindowed: PT.bool,
 
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
@@ -142,6 +157,7 @@ export class Select extends HoistInput {
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
+    get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
     get filterMode() {return withDefault(this.props.enableFilter, true)}
 
@@ -231,9 +247,7 @@ export class Select extends HoistInput {
             rsProps.formatCreateLabel = this.createMessageFn;
         }
 
-        const factory = this.asyncMode ?
-            (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-            (this.creatableMode ? reactCreatableSelect : reactSelect);
+        const factory = this.getSelectFactory();
 
         assign(rsProps, props.rsOptions);
         return box({
@@ -242,6 +256,7 @@ export class Select extends HoistInput {
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
+                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
@@ -250,6 +265,18 @@ export class Select extends HoistInput {
             ...layoutProps,
             width: withDefault(width, 200)
         });
+    }
+
+    getSelectFactory() {
+        const {creatableMode, asyncMode, windowedMode} = this;
+        if (windowedMode) {
+            throwIf(creatableMode, 'Windowed mode not available when enableCreate is true');
+            throwIf(asyncMode, 'Windowed mode not available when queryFn is set');
+            return reactWindowedSelect;
+        }
+        return asyncMode ?
+            (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+            (creatableMode ? reactCreatableSelect : reactSelect);
     }
 
     @action
@@ -395,6 +422,8 @@ export class Select extends HoistInput {
     };
 
     loadingMessageFn = (params) => {
+        // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {loadingMessageFn} = this.props,
             q = params.inputValue;
 
@@ -453,6 +482,8 @@ export class Select extends HoistInput {
     }
 
     noOptionsMessageFn = (params) => {
+        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {noOptionsMessageFn} = this.props,
             q = params.inputValue;
 
