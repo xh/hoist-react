@@ -181,9 +181,9 @@ export class GridExportService {
 
         let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
-        if (isString(exportValue) && record[exportValue] !== null) {
+        if (isString(exportValue) && record.get(exportValue) !== null) {
             // If exportValue points to a different field
-            value = record[exportValue];
+            value = record.get(exportValue);
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);

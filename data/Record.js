@@ -159,7 +159,7 @@ export class Record {
     isFieldDirty(name) {
         if (!this.isModified) return false;
 
-        const value = this[name], originalValue = this.committedRecord[name];
+        const value = this.get(name), originalValue = this.committedRecord.get(name);
         return !equal(value, originalValue);
     }
 
