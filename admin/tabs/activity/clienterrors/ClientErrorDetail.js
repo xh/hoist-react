@@ -37,19 +37,19 @@ const detail = hoistCmp.factory(
                 className: 'xh-admin-error-detail',
                 items: [
                     tbody(
-                        tr(th('User:'), td(rec.username)),
-                        tr(th('Message:'), td(rec.msg || 'None provided')),
-                        tr(th('User Alerted:'), td(`${rec.userAlerted}`)),
-                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
-                        tr(th('Agent:'), td(rec.userAgent)),
-                        tr(th('App Version:'), td(rec.appVersion)),
-                        tr(th('Environment:'), td(rec.appEnvironment)),
-                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
+                        tr(th('User:'), td(rec.get('username'))),
+                        tr(th('Message:'), td(rec.get('msg') || 'None provided')),
+                        tr(th('User Alerted:'), td(`${rec.get('userAlerted')}`)),
+                        tr(th('Device/Browser:'), td(`${rec.get('device')}/${rec.get('browser')}`)),
+                        tr(th('Agent:'), td(rec.get('userAgent'))),
+                        tr(th('App Version:'), td(rec.get('appVersion'))),
+                        tr(th('Environment:'), td(rec.get('appEnvironment'))),
+                        tr(th('Date:'), td(fmtDateTime(rec.get('dateCreated'))))
                     )
                 ]
             }),
             jsonInput({
-                value: rec.error,
+                value: rec.get('error'),
                 disabled: true,
                 height: 450,
                 width: '100%',
@@ -58,7 +58,7 @@ const detail = hoistCmp.factory(
             toolbar(
                 filler(),
                 clipboardButton({
-                    getCopyText: () => rec.error,
+                    getCopyText: () => rec.get('error'),
                     successMessage: 'Error details copied to clipboard.'
                 }),
                 button({

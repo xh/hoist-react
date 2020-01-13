@@ -243,7 +243,7 @@ export class ConfigDifferModel  {
     }
 
     setRemoteCellClass(rec) {
-        const data = rec.data,
+        const data = rec.get('data'),
             local = data.localValue,
             remote = data.remoteValue;
 

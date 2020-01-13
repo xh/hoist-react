@@ -32,7 +32,8 @@ export const activityDetail = hoistCmp.factory(
 const detail = hoistCmp.factory(
     ({model}) => {
         const rec = model.detailRecord,
-            user = rec.impersonating ? `${rec.username} as ${rec.impersonating}` : rec.username;
+            {impersonating, username} = rec.data,
+            user = impersonating ? `${username} as ${impersonating}` : username;
 
         return fragment(
             table({
@@ -40,18 +41,18 @@ const detail = hoistCmp.factory(
                 items: [
                     tbody(
                         tr(th('User:'), td(user)),
-                        tr(th('Message:'), td(rec.msg)),
-                        tr(th('Category:'), td(rec.category)),
-                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
-                        tr(th('Agent:'), td(rec.userAgent)),
-                        tr(th('Elapsed (ms):'), td(`${rec.elapsed || ''}`)),
-                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
+                        tr(th('Message:'), td(rec.get('msg'))),
+                        tr(th('Category:'), td(rec.get('category'))),
+                        tr(th('Device/Browser:'), td(`${rec.get('device')}/${rec.get('browser')}`)),
+                        tr(th('Agent:'), td(rec.get('userAgent'))),
+                        tr(th('Elapsed (ms):'), td(`${rec.get('elapsed') || ''}`)),
+                        tr(th('Date:'), td(fmtDateTime(rec.get('dateCreated'))))
                     )
                 ]
             }),
             jsonInput({
-                omit: !rec.data,
-                value: rec.data,
+                omit: !rec.get('data'),
+                value: rec.get('data'),
                 disabled: true,
                 height: 100,
                 width: '100%',

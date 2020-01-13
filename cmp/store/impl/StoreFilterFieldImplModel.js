@@ -115,7 +115,7 @@ export class StoreFilterFieldImplModel {
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
             fn = (rec) => activeFields.some(f => {
-                const fieldVal = rec[f];
+                const fieldVal = rec.get(f);
                 return fieldVal && regex.test(fieldVal);
             });
         }

@@ -177,7 +177,7 @@ export class Record {
             rec = this.committedRecord;
 
         forEach(this.data, (value, key) => {
-            const originalValue = rec[key];
+            const originalValue = rec.get(key);
             if (!equal(value, originalValue)) ret[key] = {value, originalValue};
         });
 
