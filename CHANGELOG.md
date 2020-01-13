@@ -20,6 +20,9 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* New property `enableWindowed` on desktop `Select` component to improve performance 
+with large option lists.
+
 
 ### 💥 Breaking Changes
 
@@ -48,7 +51,9 @@
   ([#1490](https://github.com/xh/hoist-react/issues/1490))
 * Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
-
+* Fixed problem where charts were resized when being hidden
+  ([#1528](https://github.com/xh/hoist-react/issues/1528))
+  
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
@@ -62,6 +67,7 @@
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
 * react-dropzone `10.1 -> 10.2`
+* react-windowed-select `added @ 2.0.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
 

@@ -79,18 +79,23 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
+    prevWidth;
+    prevHeight;
 
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this.chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
+                parentEl = chartElem.parentElement,  
+                dims = this.getChartDims({
+                    width: parentEl.offsetWidth,
+                    height: parentEl.offsetHeight
+                });
 
-            assign(config.chart, this.getChartDims({
-                width: parentEl.offsetWidth,
-                height: parentEl.offsetHeight
-            }));
+            assign(config.chart, dims);
+            this.prevWidth = dims.width;
+            this.prevHeight = dims.height;
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
@@ -99,6 +104,10 @@ class LocalModel {
 
     resizeChart(e) {
         const {width, height} = this.getChartDims(e[0].contentRect);
+        if (width == 0 || height == 0) return;
+        if (width == this.prevWidth && height == this.prevHeight) return;
+        this.prevWidth = width;
+        this.prevHeight = height;
         this.chart.setSize(width, height, false);
     }
 
