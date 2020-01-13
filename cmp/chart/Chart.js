@@ -86,8 +86,8 @@ class LocalModel {
 
     renderHighChart() {
         const chartElem = this.chartRef.current;
-        if (chartElem) {
 
+        if (chartElem) {
             const {prevConfig} = this;
             const currentConfig = {
                 ...this.model.highchartsConfig,
@@ -95,8 +95,9 @@ class LocalModel {
                 series: this.model.series.map(it => omit(it, 'data'))
             };
 
-            const canUpdateInPlace = this.chart && currentConfig.series &&
-                this.chart.series.length >= currentConfig.series.length &&
+            const canUpdateInPlace =
+                this.chart &&
+                this.chart.series.length >= this.model.series.length &&
                 equal(currentConfig, prevConfig);
 
             if (canUpdateInPlace) {
