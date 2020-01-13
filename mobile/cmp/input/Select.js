@@ -162,32 +162,40 @@ export class Select extends HoistInput {
         return isEmpty(internal) ? null : internal.value;
     }
 
-    normalizeOptions(options) {
+    normalizeOptions(options, depth = 0) {
         options = options || [];
-        return options.map(it => this.toOption(it));
+        return options.map(it => this.toOption(it, depth));
     }
 
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src) {
+    toOption(src, depth) {
+        return isPlainObject(src) ?
+            this.objectToOption(src, depth) :
+            {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+    objectToOption(src, depth) {
         const {props} = this,
-            srcIsObject = isPlainObject(src),
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty(valueField) && ! src.hasOwnProperty('options'),
+            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return srcIsObject ?
-            (
-                src.hasOwnProperty('options') ?
-                    {...src, label: src[labelField], options: this.normalizeOptions(src.options)} :
-                    {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]}
-            ) :
-            {label: src != null ? src.toString() : '-null-', value: src};
+        throwIf(
+            src.hasOwnProperty('options') && depth > 0,
+            'Grouped select options support only one-deep nesting.'
+        );
+
+        if (src.hasOwnProperty('options')) {
+            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, 1)};
+        } else {
+            return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        }
     }
 
     //----------------------

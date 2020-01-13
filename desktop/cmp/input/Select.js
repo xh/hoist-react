@@ -111,6 +111,7 @@ export class Select extends HoistInput {
          * Preset list of options for selection. Objects must contain either:
          *      + A `value` property; a `label` property will be used for the default display of each option.
          *      + A `label` property and an `options` property containing a list of sub-options
+         *          Only one-deep nesting is supported; sub-options cannot contain more options.
          * Other types will be taken as their value directly and displayed via toString().
          * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
          * of up-front in this prop.
@@ -365,34 +366,40 @@ export class Select extends HoistInput {
         return internal.value;
     }
 
-    normalizeOptions(options) {
+    normalizeOptions(options, depth = 0) {
         options = options || [];
-        return options.map(it => this.toOption(it));
+        return options.map(it => this.toOption(it, depth));
     }
 
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src) {
+    toOption(src, depth) {
         return isPlainObject(src) ?
-            this.objectToOption(src) :
+            this.objectToOption(src, depth) :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
-    objectToOption(src) {
+    objectToOption(src, depth) {
         const {props} = this,
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            !src.hasOwnProperty(valueField) && ! src.hasOwnProperty('options'),
+            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
             `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return src.hasOwnProperty('options') ?
-            {...src, label: src[labelField], options: this.normalizeOptions(src.options)} :
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        throwIf(
+            src.hasOwnProperty('options') && depth > 0,
+            'Grouped select options support only one-deep nesting.'
+        );
 
+        if (src.hasOwnProperty('options')) {
+            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, 1)};
+        } else {
+            return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        }
     }
     //------------------------
     // Async
