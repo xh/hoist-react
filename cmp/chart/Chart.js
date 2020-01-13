@@ -46,9 +46,6 @@ export const [Chart, chart] = hoistCmp.withFactory({
             layoutProps.flex = 1;
         }
 
-        // No-op on first render - will re-render upon setting the chartRef
-        impl.renderHighChart();
-
         // Inner div required to be the ref for the chart element
         return box({
             ...layoutProps,
@@ -82,32 +79,47 @@ class LocalModel {
     model;
     prevWidth;
     prevHeight;
-    prevConfig;
+    prevSeriesConfig;
 
-    renderHighChart() {
+    constructor() {
+        this.addReaction({
+            track: () => [
+                this.aspectRatio,
+                this.chartRef,
+                this.model.highchartsConfig
+            ],
+            run: () => {
+                this.buildHighChart();
+            }
+        });
+        this.addReaction({
+            track: () => this.model.series,
+            run: () => {
+                this.updateSeries();
+            }
+        });
+    }
+
+    updateSeries() {
+        const seriesConfig = this.model.series.map(it => omit(it, 'data'));
+        if (equal(seriesConfig, this.prevSeriesConfig)) {
+            for (let i = 0; i < this.model.series.length; i++) {
+                this.chart.series[i].setData(this.model.series[i].data, false);
+            }
+            this.chart.redraw();
+        } else {
+            this.buildHighChart();
+        }
+        this.prevSeriesConfig = cloneDeep(seriesConfig);
+    }
+
+    buildHighChart() {
         const chartElem = this.chartRef.current;
 
         if (chartElem) {
-            const {prevConfig} = this;
-            const currentConfig = {
-                ...this.model.highchartsConfig,
-                // We need to keep track of properties of series other than data, e.g. name
-                series: this.model.series.map(it => omit(it, 'data'))
-            };
-
-            const canUpdateInPlace =
-                this.chart &&
-                this.chart.series.length >= this.model.series.length &&
-                equal(currentConfig, prevConfig);
-
-            if (canUpdateInPlace) {
-                for (let i = 0; i < currentConfig.series.length; i++) {
-                    this.chart.series[i].setData(this.model.series[i].data, false);
-                }
-                this.chart.redraw();
-            } else {
-                this.destroyHighChart();
-
+            this.destroyHighChart();
+            const chartElem = this.chartRef.current;
+            if (chartElem) {
                 const config = this.getMergedConfig(),
                     parentEl = chartElem.parentElement,
                     dims = this.getChartDims({
@@ -122,8 +134,6 @@ class LocalModel {
                 config.chart.renderTo = chartElem;
                 this.chart = Highcharts.chart(config);
             }
-
-            this.prevConfig = cloneDeep(currentConfig);
         }
     }
 
