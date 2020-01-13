@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
 import {assign, castArray, clone, cloneDeep, merge, omit} from 'lodash';
@@ -81,10 +81,11 @@ class LocalModel {
     chart = null;
     prevConfig = null;
     model;
+    prevWidth;
+    prevHeight;
 
     renderHighChart() {
         const chartElem = this.chartRef.current;
-
         if (chartElem) {
 
             const {prevConfig} = this;
@@ -110,12 +111,15 @@ class LocalModel {
                 this.destroyHighChart();
 
                 const config = this.getMergedConfig(),
-                    parentEl = chartElem.parentElement;
+                    parentEl = chartElem.parentElement,
+                    dims = this.getChartDims({
+                        width: parentEl.offsetWidth,
+                        height: parentEl.offsetHeight
+                    });
 
-                assign(config.chart, this.getChartDims({
-                    width: parentEl.offsetWidth,
-                    height: parentEl.offsetHeight
-                }));
+                assign(config.chart, dims);
+                this.prevWidth = dims.width;
+                this.prevHeight = dims.height;
 
                 config.chart.renderTo = chartElem;
                 this.chart = Highcharts.chart(config);
@@ -126,6 +130,10 @@ class LocalModel {
 
     resizeChart(e) {
         const {width, height} = this.getChartDims(e[0].contentRect);
+        if (width == 0 || height == 0) return;
+        if (width == this.prevWidth && height == this.prevHeight) return;
+        this.prevWidth = width;
+        this.prevHeight = height;
         this.chart.setSize(width, height, false);
     }
 
