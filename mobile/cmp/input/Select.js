@@ -45,10 +45,16 @@ export class Select extends HoistInput {
         noOptionsMessageFn: PT.func,
 
         /**
-         * Preset list of options for selection. Objects must contain a `value` property; a `label`
-         * property will be used for the default display of each option. Other types will be taken
-         * as their value directly and displayed via toString().  See also `queryFn` to  supply
-         * options via an async query (i.e. from the server) instead of up-front in this prop.
+         * Preset list of options for selection. Elements can be either a primitive or an object.
+         * Primitives will be displayed via toString().
+         * Objects must have either:
+         *      + A `label` property for display and a `value` property
+         *      + A `label` property and an `options` property containing an array of sub-options
+         *        to be grouped beneath the option.
+         *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
+         *
+         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+         * of up-front in this prop.
          */
         options: PT.array,
 
