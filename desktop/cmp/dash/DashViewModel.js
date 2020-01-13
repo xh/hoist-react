@@ -29,6 +29,10 @@ export class DashViewModel {
     containerModel;
     @managed refreshContextModel;
 
+    get modelLookupContext() {
+        return this.containerModel.modelLookupContext;
+    }
+
     get renderMode() {
         return this.viewSpec.renderMode || this.containerModel.renderMode;
     }

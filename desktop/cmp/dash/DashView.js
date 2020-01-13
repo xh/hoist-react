@@ -30,7 +30,7 @@ export const dashView = hoistCmp.factory({
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className, glEventHub}) {
-        const {viewSpec, isActive, renderMode, refreshContextModel} = model,
+        const {viewSpec, isActive, renderMode, refreshContextModel, modelLookupContext} = model,
             {content} = viewSpec,
             wasActivated = useRef(false);
 
@@ -55,7 +55,7 @@ export const dashView = hoistCmp.factory({
         const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
 
         return modelLookupContextProvider({
-            value: model.containerModel.modelLookupContext,
+            value: modelLookupContext,
             item: frame({
                 className,
                 item: refreshContextView({
