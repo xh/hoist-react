@@ -105,7 +105,7 @@ export class RestFormModel {
         XH.safeDestroy(this.formModel);
         const formModel = this.formModel = new FormModel({
             fields,
-            initialValues: rec.data,
+            initialValues: rec?.data,
             readonly: this.parent.readonly || this.readonly
         });
 
