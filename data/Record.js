@@ -6,7 +6,7 @@
  */
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {forEach, isNil, reduce} from 'lodash';
+import {forEach, isNil} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}.
@@ -156,7 +156,7 @@ export class Record {
      * @param {string} name - field name to check.
      * @returns {boolean}
      */
-    isFieldDirty(name) {
+    isFieldModified(name) {
         if (!this.isModified) return false;
 
         const value = this.get(name), originalValue = this.committedRecord.get(name);
@@ -164,21 +164,18 @@ export class Record {
     }
 
     /**
-     * Gets an object containing all dirty fields in the Record.
+     * Gets an object containing all modified fields in the Record.
      * @returns {Object.<string, FieldValue>|null}
      */
-    getDirtyFields() {
+    getModifiedFields() {
         if (!this.isModified) return null;
-
-        // For "added" records, return just the current values, since there are no originals
-        if (this.isNew) return reduce(this.data, (k, v, ret) => ret[k] = {value: v}, {});
 
         const ret = {},
             rec = this.committedRecord;
 
-        forEach(this.data, (value, key) => {
-            const originalValue = rec.get(key);
-            if (!equal(value, originalValue)) ret[key] = {value, originalValue};
+        forEach(this.data, (value, fieldName) => {
+            const originalValue = rec.get(fieldName);
+            if (!equal(value, originalValue)) ret[fieldName] = {value, originalValue};
         });
 
         return ret;

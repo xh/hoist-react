@@ -85,7 +85,7 @@ export class Column {
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
-     * @param {Column~updateFieldFn} [c.updateFieldFn] - function for updating Record field for this
+     * @param {Column~updateValueFn} [c.updateValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
@@ -133,7 +133,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        updateFieldFn,
+        updateValueFn,
         getValueFn,
         agOptions,
         ...rest
@@ -206,11 +206,15 @@ export class Column {
         this.tooltipElement = tooltipElement;
 
         this.editable = editable;
-        this.updateFieldFn = withDefault(updateFieldFn, this.defaultUpdateFieldFn);
+        this.updateValueFn = withDefault(updateValueFn, this.defaultUpdateFieldFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
+
+        // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
+        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom updateValueFn if needed.`);
+        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
     }
 
     /**
@@ -251,12 +255,27 @@ export class Column {
                     return editable;
                 },
                 valueSetter: (agParams) => {
-                    const {newValue: value, oldValue, data: record} = agParams;
-                    this.updateFieldFn({value, oldValue, record, store: record.store, gridModel, field, column: this, agParams});
+                    const record = agParams.data;
+                    this.updateValueFn({
+                        value: agParams.newValue,
+                        record,
+                        field,
+                        store: record?.store,
+                        column: this,
+                        gridModel,
+                        agParams
+                    });
                 },
                 valueGetter: (agParams) => {
-                    const {data: record} = agParams;
-                    return this.getValueFn({record, field, store: record?.store, column: this, gridModel, agParams});
+                    const record = agParams.data;
+                    return this.getValueFn({
+                        record,
+                        field,
+                        store: record?.store,
+                        column: this,
+                        gridModel,
+                        agParams
+                    });
                 }
             };
 
@@ -545,10 +564,9 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column~updateFieldFn - function to update the value of a Record field after inline editing
+ * @callback Column~updateValueFn - function to update the value of a Record field after inline editing
  * @param {Object} params
  * @param {*} params.value - the new value for the field.
- * @param {*} params.oldValue - the previous value for the field.
  * @param {Record} params.record - row-level data Record.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
