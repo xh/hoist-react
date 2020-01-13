@@ -99,25 +99,26 @@ class LocalModel {
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
-export function getRelativeTimestamp(timestamp, options) {
+export function getRelativeTimestamp(timestamp, options = {}) {
     apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
     apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
 
-    const defaultOptions = {
-            allowFuture: false,
-            short: XH.isMobile,
-            futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
-            pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
-            equalString: null,
-            epsilon: 30,
-            emptyResult: '',
-            relativeTo: Date.now()
-        },
-        opts = Object.assign({timestamp}, defaultOptions, options);
+    options = {
+        timestamp,
+        allowFuture: false,
+        short: XH.isMobile,
+        futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
+        pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
+        equalString: null,
+        epsilon: 30,
+        emptyResult: '',
+        relativeTo: Date.now(),
+        ...options
+    };
 
-    if (!timestamp) return opts.emptyResult;
+    if (!timestamp) return options.emptyResult;
 
-    return doFormat(opts);
+    return doFormat(options);
 }
 
 //------------------------
