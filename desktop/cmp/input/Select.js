@@ -352,7 +352,7 @@ export class Select extends HoistInput {
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
-    ensureValidOptionObj(src) {
+    objectToOption(src) {
         const {props} = this,
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
