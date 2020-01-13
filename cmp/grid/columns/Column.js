@@ -84,9 +84,10 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {boolean|Column~editableFn} editable - true to make cells in this column editable.
-     * @param {Column~updateFieldFn} updateFieldFn - function for updating Record field for this
+     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
+     * @param {Column~updateFieldFn} [c.updateFieldFn] - function for updating Record field for this
      *      column after inline editing.
+     * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -401,7 +402,7 @@ export class Column {
 
     defaultGetValueFn = ({record, field}) => {
         return record?.get(field);
-    }
+    };
 }
 
 export function getAgHeaderClassFn(column) {
@@ -552,5 +553,15 @@ export function getAgHeaderClassFn(column) {
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {ValueSetterParams} params.agParams - the ag-Grid value setter params.
+ * @param {ValueSetterParams} [params.agParams] - the ag-Grid value setter params.
+ */
+
+/**
+ * @callback Column~getValueFn - function to get the value of a Record field
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {ValueGetterParams} [params.agParams] - the ag-Grid value getter params.
  */
