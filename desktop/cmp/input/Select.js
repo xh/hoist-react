@@ -396,7 +396,7 @@ export class Select extends HoistInput {
         );
 
         if (src.hasOwnProperty('options')) {
-            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, 1)};
+            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)};
         } else {
             return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
         }
