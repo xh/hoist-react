@@ -44,16 +44,13 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory({
 });
 RelativeTimestamp.propTypes = {
     /**
-     * Date or milliseconds representing the starting time / time to compare.
-     * See also `bind` as an alternative.
-     */
-    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
-
-    /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
      */
     bind: PT.string,
+
+    /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
+    timestamp: PT.oneOfType([PT.instanceOf(Date), PT.number]),
 
     /** @see getRelativeTimestamp options. */
     options: PT.object
@@ -70,7 +67,7 @@ class LocalModel {
     @managed
     timer = Timer.create({
         runFn: () => this.refreshDisplay(),
-        interval: 10 * SECONDS
+        interval: 5 * SECONDS
     });
 
     setData(timestamp, options) {
@@ -102,25 +99,26 @@ class LocalModel {
  * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
-export function getRelativeTimestamp(timestamp, options) {
+export function getRelativeTimestamp(timestamp, options = {}) {
     apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
     apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
 
-    const defaultOptions = {
-            allowFuture: false,
-            short: XH.isMobile,
-            futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
-            pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
-            equalString: null,
-            epsilon: 30,
-            emptyResult: '',
-            relativeTo: Date.now()
-        },
-        opts = Object.assign({timestamp}, defaultOptions, options);
+    options = {
+        timestamp,
+        allowFuture: false,
+        short: XH.isMobile,
+        futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
+        pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
+        equalString: null,
+        epsilon: 30,
+        emptyResult: '',
+        relativeTo: Date.now(),
+        ...options
+    };
 
-    if (!timestamp) return opts.emptyResult;
+    if (!timestamp) return options.emptyResult;
 
-    return doFormat(opts);
+    return doFormat(options);
 }
 
 //------------------------
@@ -141,9 +139,9 @@ function doFormat(opts) {
         return opts.equalString;
     }
 
-    // By default, moment will show 'a few seconds' for times up to about 45 seconds.
-    // This is confusing, so we override this default for times above 15 seconds.
-    let ret = (elapsed > 15 * SECONDS && elapsed < 60 * SECONDS) ?
+    // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
+    // end of that range that output is a bit too inaccurate, so we replace as per below.
+    let ret = (elapsed < 60 * SECONDS) ?
         '<1 minute' :
         moment.duration(elapsed).humanize();
 
