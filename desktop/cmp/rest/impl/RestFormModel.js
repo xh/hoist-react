@@ -61,11 +61,10 @@ export class RestFormModel {
     }
 
     @action
-    openClone(rec)  {
+    openClone(data)  {
         this.readonly = false;
-        this.initForm(rec);
+        this.initForm({data});
     }
-
 
     @action
     openView(rec) {
