@@ -35,7 +35,7 @@ export class ServiceModel {
         const {selection} = this.gridModel;
         if (!selection.length) return;
 
-        const names = selection.map(it => it.name);
+        const names = selection.map(it => it.get('name'));
         XH.fetchJson({
             url: 'serviceAdmin/clearCaches',
             params: {names}
