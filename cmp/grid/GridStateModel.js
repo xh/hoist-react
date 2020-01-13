@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {cloneDeep, debounce, find, remove, isUndefined} from 'lodash';
 import {start} from '@xh/hoist/promise';
-import {cloneDeep, debounce, find, isUndefined, remove} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions

@@ -4,14 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-import {box, div, filler, hbox, hspacer, p, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button, logoutButton} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
+import {Icon} from '@xh/hoist/icon';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {box, hbox, filler, vframe, viewport, p, hspacer, div} from '@xh/hoist/cmp/layout';
+import {logoutButton, button} from '@xh/hoist/desktop/cmp/button';
 
 import './LockoutPanel.scss';
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /**
  * Displayed in place of the UI when user does not have any access, as per AppSpec.checkAccess.

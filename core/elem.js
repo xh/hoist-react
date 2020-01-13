@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {castArray, isArray, isPlainObject} from 'lodash';
 import React, {isValidElement} from 'react';
+import {castArray, isArray, isPlainObject} from 'lodash';
 
 /**
  * Convenience method for creating React Elements. This method is designed to provide a well-

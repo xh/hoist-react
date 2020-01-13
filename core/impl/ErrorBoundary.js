@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {elemFactory} from '@xh/hoist/core';
 import {Component} from 'react';
+import {elemFactory} from '@xh/hoist/core';
 
 /**
  * A minimal component implementing a React error boundary.

@@ -4,16 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {div, vbox} from '@xh/hoist/cmp/layout';
+import PT from 'prop-types';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {cloneElement} from 'react';
-import {button, Button} from './Button';
+import {div, vbox} from '@xh/hoist/cmp/layout';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid';
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of

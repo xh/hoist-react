@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import {span} from '@xh/hoist/cmp/layout';
 
 import './Toolbar.scss';
 

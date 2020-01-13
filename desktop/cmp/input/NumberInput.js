@@ -5,14 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
-import {numericInput} from '@xh/hoist/kit/blueprint';
-import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
-import {isNaN, isNil, isNumber} from 'lodash';
 import PT from 'prop-types';
+import {isNumber, isNaN, isNil} from 'lodash';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {numericInput} from '@xh/hoist/kit/blueprint';
+import {fmtNumber} from '@xh/hoist/format';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {withDefault} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Number input, with optional support for formatted of display value, shorthand units, and more.

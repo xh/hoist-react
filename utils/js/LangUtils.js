@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {Exception} from '@xh/hoist/exception';
-import {forOwn, isEmpty, isObject, isObjectLike, mixin, uniq, uniqBy} from 'lodash';
+import {isEmpty, isObject, isObjectLike, forOwn, mixin, uniq, uniqBy} from 'lodash';
 import _inflection from 'lodash-inflection';
+import {Exception} from '@xh/hoist/exception';
 
 mixin(_inflection);
 

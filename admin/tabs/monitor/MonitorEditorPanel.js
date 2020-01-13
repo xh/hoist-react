@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 export const MonitorEditorPanel = hoistCmp(
     () => restGrid({model: modelSpec})

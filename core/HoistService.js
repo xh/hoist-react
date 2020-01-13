@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {applyMixin} from '@xh/hoist/utils/js';
-import {ManagedSupport, ReactiveSupport, XhIdSupport} from './mixins';
+import {ReactiveSupport, XhIdSupport, ManagedSupport} from './mixins';
 
 /**
  * Core decorator for Services in Hoist.

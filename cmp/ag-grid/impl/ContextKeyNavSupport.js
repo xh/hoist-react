@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {wait} from '@xh/hoist/promise';
 import {find} from 'lodash';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Support keyboard navigation on AG-Grid context menus and subMenus

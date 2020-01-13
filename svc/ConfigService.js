@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {XH, HoistService} from '@xh/hoist/core';
+import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
 
 /**
  * Service to read soft-configuration values.

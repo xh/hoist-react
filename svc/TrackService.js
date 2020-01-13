@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {XH, HoistService} from '@xh/hoist/core';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 

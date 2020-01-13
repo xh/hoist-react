@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
-import {elem, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {TabRenderMode} from '@xh/hoist/enums';
 import {useRef} from 'react';
+import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {refreshContextView} from '@xh/hoist/core/refresh';
+import {frame} from '@xh/hoist/cmp/layout';
+import {TabRenderMode} from '@xh/hoist/enums';
+import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's

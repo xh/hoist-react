@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {LoadSupport, XH} from '@xh/hoist/core';
+import {XH, LoadSupport} from '@xh/hoist/core';
 
 import {Store} from './Store';
 

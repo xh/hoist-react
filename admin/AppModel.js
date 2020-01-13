@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed} from '@xh/hoist/core';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
 import {ActivityTab} from './tabs/activity/ActivityTab';

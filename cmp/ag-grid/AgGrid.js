@@ -4,15 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {hoistCmp, HoistModel, XH, uses, useLocalModel} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import './AgGrid.scss';
+import {useOnUnmount} from '@xh/hoist/utils/react';
 import {ContextKeyNavSupport} from './impl/ContextKeyNavSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
-import {AgGridModel, agGridReact} from './index';
+import {agGridReact, AgGridModel} from './index';
+import './AgGrid.scss';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited

@@ -5,14 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistInput} from '@xh/hoist/cmp/input';
+import PT from 'prop-types';
+import {HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
+import {slider as bpSlider, rangeSlider as bpRangeSlider} from '@xh/hoist/kit/blueprint';
+import {isArray} from 'lodash';
 import {toJS} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {isArray} from 'lodash';
-import PT from 'prop-types';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 import './Slider.scss';
 

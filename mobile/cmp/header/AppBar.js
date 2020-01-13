@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
-import {button, menuButton, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import PT from 'prop-types';
+import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
+import {button, navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
 
 import './AppBar.scss';
 

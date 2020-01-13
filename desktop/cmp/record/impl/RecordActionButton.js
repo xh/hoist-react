@@ -5,12 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {hoistCmp} from '@xh/hoist/core';
-import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {first} from 'lodash';
 import PT from 'prop-types';
+import {hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {Column} from '@xh/hoist/cmp/grid';
+import {first} from 'lodash';
 
 /**
  * Button component used by RecordActionBar and in grid action columns.

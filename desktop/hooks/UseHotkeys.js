@@ -6,8 +6,8 @@
  */
 
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {hotkey as hotkeyBp, hotkeys as hotkeysBp, HotkeysEvents} from '@xh/hoist/kit/blueprint';
-import {isArray, isEmpty, isPlainObject} from 'lodash';
+import {HotkeysEvents, hotkey as hotkeyBp, hotkeys as hotkeysBp} from '@xh/hoist/kit/blueprint';
+import {isPlainObject, isArray, isEmpty} from 'lodash';
 import {cloneElement, isValidElement} from 'react';
 
 /**

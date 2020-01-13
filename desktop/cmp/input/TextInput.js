@@ -5,14 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {div} from '@xh/hoist/cmp/layout';
+import PT from 'prop-types';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {div} from '@xh/hoist/cmp/layout';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.

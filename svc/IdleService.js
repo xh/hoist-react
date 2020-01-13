@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {AppState, HoistService, XH} from '@xh/hoist/core';
-import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
 import {debounce} from 'lodash';
 
 /**

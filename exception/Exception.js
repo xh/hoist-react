@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {isString} from 'lodash';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Standardized Exception/Error objects.

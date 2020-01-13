@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hspacer} from '@xh/hoist/cmp/layout';
+import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as onsenButton, Button as OnsenButton} from '@xh/hoist/kit/onsen';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {hspacer} from '@xh/hoist/cmp/layout';
 import classNames from 'classnames';
-import PT from 'prop-types';
 
 import './Button.scss';
 

@@ -4,14 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -19,27 +19,27 @@ import {
     compact,
     defaults,
     defaultsDeep,
-    difference,
     find,
     findLast,
     isArray,
     isEmpty,
     isNil,
+    isUndefined,
     isPlainObject,
     isString,
-    isUndefined,
     last,
     map,
     max,
     min,
     pull,
     sortBy,
-    uniq
+    uniq,
+    difference
 } from 'lodash';
-import {managed} from '../../core/mixins';
-import {debounced} from '../../utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
+import {managed} from '../../core/mixins';
+import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,

@@ -5,17 +5,19 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isString, startCase} from 'lodash';
 import {
     Aggregator,
     MaxAggregator,
     MinAggregator,
     NullAggregator,
-    SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
-    UniqueAggregator
+    UniqueAggregator,
+    SingleAggregator
+
 } from './aggregate';
+
+import {isString, startCase} from 'lodash';
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source

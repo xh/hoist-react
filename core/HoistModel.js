@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {ReactiveSupport, ManagedSupport, XhIdSupport} from './mixins';
 import {applyMixin} from '@xh/hoist/utils/js';
-import {isFunction, isString} from 'lodash';
-import {ManagedSupport, ReactiveSupport, XhIdSupport} from './mixins';
+import {isString, isFunction} from 'lodash';
 
 
 /**

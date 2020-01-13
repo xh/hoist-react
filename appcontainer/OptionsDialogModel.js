@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {observable, computed, action} from '@xh/hoist/mobx';
 import {assign} from 'lodash';
 
 import {AppOption} from './AppOption';

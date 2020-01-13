@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {castArray, intersection, isEqual, union} from 'lodash';
+import {action, observable, computed} from '@xh/hoist/mobx';
+import {castArray, intersection, union, isEqual} from 'lodash';
 
 /**
  * Model for managing store selections.

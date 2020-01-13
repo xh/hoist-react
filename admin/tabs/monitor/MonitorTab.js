@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
-import {MonitorEditorPanel} from './MonitorEditorPanel';
 
 import {MonitorResultsPanel} from './MonitorResultsPanel';
+import {MonitorEditorPanel} from './MonitorEditorPanel';
 
 export const MonitorTab = hoistCmp(
     () => tabContainer({

@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isString} from 'lodash';
+import {isNil, isString, isFunction} from 'lodash';
 
 /**
  * Object used to hold the specification for a client-side Hoist application.

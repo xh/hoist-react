@@ -4,13 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
-import {filler} from '@xh/hoist/cmp/layout';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {filler} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/desktop/cmp/button';
+
+import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.

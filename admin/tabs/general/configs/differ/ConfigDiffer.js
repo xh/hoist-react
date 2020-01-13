@@ -4,19 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {grid} from '@xh/hoist/cmp/grid';
-import {box, filler, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {select} from '@xh/hoist/desktop/cmp/input';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {identity} from 'lodash';
 import React from 'react';
-import {configDifferDetail} from './ConfigDifferDetail';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {dialog} from '@xh/hoist/kit/blueprint';
+import {box, filler, fragment} from '@xh/hoist/cmp/layout';
+import {grid} from '@xh/hoist/cmp/grid';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {select} from '@xh/hoist/desktop/cmp/input';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {identity} from 'lodash';
 
 import {ConfigDifferModel} from './ConfigDifferModel';
+import {configDifferDetail} from './ConfigDifferDetail';
 
 export const configDiffer = hoistCmp.factory({
     model: uses(ConfigDifferModel),

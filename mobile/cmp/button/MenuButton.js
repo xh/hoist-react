@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {MenuModel} from '@xh/hoist/mobile/cmp/menu';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.

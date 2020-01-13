@@ -4,16 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
-import {div} from '@xh/hoist/cmp/layout';
-import {hbox, vbox} from '@xh/hoist/cmp/layout/index';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {select, Select} from '@xh/hoist/desktop/cmp/input';
-import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
-import {defaults, isEmpty, size} from 'lodash';
 import PT from 'prop-types';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
+import {div} from '@xh/hoist/cmp/layout';
+import {select, Select} from '@xh/hoist/desktop/cmp/input';
+import {defaults, size, isEmpty} from 'lodash';
+
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import './DimensionChooser.scss';
 
 const INDENT = 10;        // Indentation applied at each level.

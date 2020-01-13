@@ -7,8 +7,8 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 
 import classNames from 'classnames';
-import './Dock.scss';
 import {dockView} from './DockView';
+import './Dock.scss';
 
 /**
  * Desktop implementation of DockContainer.

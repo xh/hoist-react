@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {isNumber} from 'lodash';
 import PT from 'prop-types';
+import {uses, hoistCmp} from '@xh/hoist/core';
+import {grid} from '@xh/hoist/cmp/grid';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
+import {throwIf} from '@xh/hoist/utils/js';
+import {isNumber} from 'lodash';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a

@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {upperFirst} from 'lodash';
 import {action, observable} from 'mobx';
+import {upperFirst} from 'lodash';
 
 /**
  * Decorator to add a simple MobX action of the form `setPropName()` to a class.

@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import PT from 'prop-types';
 import {createContext, useContext, useMemo} from 'react';
+import {hoistCmp, elemFactory, uses, ModelPublishMode} from '@xh/hoist/core';
 import {FormModel} from './FormModel';
+import PT from 'prop-types';
 
 export const FormContext = createContext({});
 const formContextProvider = elemFactory(FormContext.Provider);

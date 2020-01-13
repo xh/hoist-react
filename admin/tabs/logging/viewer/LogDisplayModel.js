@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {HoistModel, XH, LoadSupport} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {bindable} from '@xh/hoist/mobx';
 
 /**
  * @private

@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Convenience Button preconfigured to use navigate back one page.

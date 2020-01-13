@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {usernameCol} from '@xh/hoist/admin/columns';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {usernameCol} from '@xh/hoist/admin/columns';
 
 export const UserPreferencePanel = hoistCmp(
     () => restGrid({model: modelSpec})

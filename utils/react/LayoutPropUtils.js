@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {forOwn, isEmpty, isNumber, isString, omit, pick} from 'lodash';
+import {pick, isNumber, isString, forOwn, omit, isEmpty} from 'lodash';
 
 
 /**

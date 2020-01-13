@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
+import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 
 /**
  * @private

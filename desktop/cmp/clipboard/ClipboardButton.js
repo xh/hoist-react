@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import PT from 'prop-types';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, Button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 
 import copy from 'clipboard-copy';
-import PT from 'prop-types';
 
 /**
  * Button to copy text to the clipboard.

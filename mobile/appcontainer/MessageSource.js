@@ -4,10 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
-import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {message} from './Message';
+
+import {MessageSourceModel} from '@xh/hoist/appcontainer/MessageSourceModel';
 
 /**
  *  Support for hosting multiple global Messages in the DOM.

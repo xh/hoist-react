@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {debounce, isNil, isEqual, isEmpty, pickBy, cloneDeep, forEach} from 'lodash';
+import {XH, HoistService} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
+import {throwIf, deepFreeze} from '@xh/hoist/utils/js';
 
 /**
  * Service to read and set user-specific preference values.

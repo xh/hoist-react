@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {bindable, computed, observable} from '@xh/hoist/mobx';
+import {XH, HoistModel} from '@xh/hoist/core';
+import {observable, computed, bindable} from '@xh/hoist/mobx';
 
 /**
  * Support for Forms-based Login.

@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {XH, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
-import {isDate, isFunction, isNil, isPlainObject, omitBy} from 'lodash';
 import {stringify} from 'qs';
+import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
 
 /**
  * Service to send an HTTP request to a URL.

@@ -5,24 +5,24 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {div} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import PT from 'prop-types';
+import moment from 'moment';
+import {assign, clone} from 'lodash';
 
 import {fmtDate} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {div} from '@xh/hoist/cmp/layout';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
+import {warnIf, withDefault} from '@xh/hoist/utils/js';
+import {bindable} from '@xh/hoist/mobx';
+import {HoistInput} from '@xh/hoist/cmp/input';
 import classNames from 'classnames';
-import {assign, clone} from 'lodash';
-import moment from 'moment';
-import PT from 'prop-types';
+import {wait} from '@xh/hoist/promise';
 
 import './DateInput.scss';
 

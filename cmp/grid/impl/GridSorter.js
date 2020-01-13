@@ -6,7 +6,7 @@
  */
 
 import {Utils as agUtils} from 'ag-grid-community';
-import {isNumber, isString} from 'lodash';
+import {isString, isNumber} from 'lodash';
 
 export class GridSorter {
 

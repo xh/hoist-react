@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {Timer} from '@xh/hoist/utils/async';
+import {XH, HoistModel, LoadSupport} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {isDisplayed} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {min} from 'lodash';
+import {Timer} from '@xh/hoist/utils/async';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {isDisplayed} from '@xh/hoist/utils/js';
 
 @HoistModel
 @LoadSupport

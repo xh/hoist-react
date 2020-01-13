@@ -5,13 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {throwIf} from '@xh/hoist/utils/js';
+import {Column} from '@xh/hoist/cmp/grid';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
 
 import {recordActionButton} from './impl/RecordActionButton';
 

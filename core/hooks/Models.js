@@ -6,7 +6,7 @@
  */
 
 import {useOwnedModelLinker} from '@xh/hoist/core/impl';
-import {useContext, useState} from 'react';
+import {useState, useContext} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
 
 /**

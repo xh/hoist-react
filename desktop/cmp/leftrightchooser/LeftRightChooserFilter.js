@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
-import {escapeRegExp} from 'lodash';
 import PT from 'prop-types';
+import {escapeRegExp} from 'lodash';
+import {bindable} from '@xh/hoist/mobx';
+import {hoistCmp, useLocalModel, uses, HoistModel} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 

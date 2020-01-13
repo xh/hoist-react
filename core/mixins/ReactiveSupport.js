@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
+import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
+import {throwIf, applyMixin} from '@xh/hoist/utils/js';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.

@@ -6,11 +6,11 @@
  */
 
 
-import {isString} from 'lodash';
 import {Field} from './Field';
-import {QueryExecutor} from './impl/QueryExecutor';
-import {Query} from './Query';
 import {CubeRecord} from './record';
+import {Query} from './Query';
+import {QueryExecutor} from './impl/QueryExecutor';
+import {isString} from 'lodash';
 
 /**
  * A container for grouping, aggregating, and filtering data on multiple dimensions.

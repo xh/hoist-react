@@ -8,8 +8,8 @@
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
 import {tab} from './Tab';
+import classNames from 'classnames';
 
 import './Tabs.scss';
 

@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import './UpdateBar.scss';
+
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 
 /**
  * @private

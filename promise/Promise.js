@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
+import {action} from '@xh/hoist/mobx';
+import {isFunction, isNumber, isPlainObject, castArray} from 'lodash';
 
 /**
  * Start a new promise chain.

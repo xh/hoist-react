@@ -6,9 +6,9 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
+import {startCase, isDate} from 'lodash';
 import equal from 'fast-deep-equal';
-import {isDate, startCase} from 'lodash';
 
 /**
  * Metadata for an individual data field within a {@see Record}.

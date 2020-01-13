@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {span} from '@xh/hoist/cmp/layout';
 import {capitalize} from 'lodash';
+import {span} from '@xh/hoist/cmp/layout';
 
 /**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.

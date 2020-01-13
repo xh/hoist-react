@@ -5,19 +5,19 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {form} from '@xh/hoist/cmp/form';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {form} from '@xh/hoist/cmp/form';
+import {Icon} from '@xh/hoist/icon';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
+import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 
 export const restForm = hoistCmp.factory({
     displayName: 'RestForm',

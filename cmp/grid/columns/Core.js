@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {numberRenderer} from '@xh/hoist/format';
 import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
+import {numberRenderer} from '@xh/hoist/format';
 
 export const emptyFlexCol =  {
     colId: 'emptyFlex',

@@ -4,7 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {stripTags, trimToDepth} from '@xh/hoist/utils/js';
+import {trimToDepth} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 
 /**
  * Stringify an error object (typically an exception) safely for submission to server.

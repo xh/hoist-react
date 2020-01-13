@@ -5,15 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
-import {input} from '@xh/hoist/kit/onsen';
-import {wait} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
+import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {input} from '@xh/hoist/kit/onsen';
+import {fmtNumber} from '@xh/hoist/format';
+import {withDefault} from '@xh/hoist/utils/js';
+import {wait} from '@xh/hoist/promise';
 
 import './NumberInput.scss';
+import {HoistInput} from '@xh/hoist/cmp/input';
 
 /**
  * Number Input, with optional support for formatted of display value,

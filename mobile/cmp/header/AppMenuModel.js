@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {MenuModel} from '@xh/hoist/mobile/cmp/menu';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * An top-level application drop down menu, which installs a standard set of menu items for common

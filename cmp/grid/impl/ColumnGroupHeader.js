@@ -7,10 +7,10 @@
 
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
-import classNames from 'classnames';
+import {Icon} from '@xh/hoist/icon';
 import {isFunction} from 'lodash';
+import classNames from 'classnames';
 
 /**
  * A custom ag-Grid group header component.

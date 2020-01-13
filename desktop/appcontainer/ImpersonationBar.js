@@ -4,14 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
+import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
 import {filler, hspacer, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending

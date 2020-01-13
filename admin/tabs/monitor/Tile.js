@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {div, vbox} from '@xh/hoist/cmp/layout';
-import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {vbox, div} from '@xh/hoist/cmp/layout';
+import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {pluralize} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon';
 
 import './Tile.scss';
 

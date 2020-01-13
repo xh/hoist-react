@@ -233,8 +233,7 @@ class LocalModel {
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            },
-            stopEditingWhenGridLosesFocus: true
+            }
         };
 
         // Platform specific defaults

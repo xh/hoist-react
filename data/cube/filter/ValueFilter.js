@@ -6,8 +6,8 @@
  */
 
 import {Cube} from '@xh/hoist/data/cube';
-import {castArray, flattenDeep, forEach, groupBy, map, uniq} from 'lodash';
 import {Filter} from './Filter';
+import {castArray, flattenDeep, groupBy, uniq, map, forEach} from 'lodash';
 
 export class ValueFilter extends Filter {
 

@@ -6,19 +6,19 @@
  */
 
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
-    dateInput,
     jsonInput,
-    numberInput,
     select,
+    numberInput,
     switchInput,
-    textInput
+    textInput,
+    dateInput
 } from '@xh/hoist/desktop/cmp/input';
 
-import {assign} from 'lodash';
-
 import {RestFormModel} from './RestFormModel';
+
+import {assign} from 'lodash';
+import {formField} from '@xh/hoist/desktop/cmp/form';
 
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',

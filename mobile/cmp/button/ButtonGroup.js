@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hbox} from '@xh/hoist/cmp/layout';
+import {Component} from 'react';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {Button} from '@xh/hoist/mobile/cmp/button';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
-import {Component} from 'react';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 
 import './ButtonGroup.scss';
 

@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {isEmpty, isNil, isString, isArray} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {isArray, isEmpty, isNil, isString} from 'lodash';
 
 import moment from 'moment';
 /**

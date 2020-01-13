@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {debounce, isFinite} from 'lodash';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
+import {isFinite, debounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.

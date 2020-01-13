@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
 import {action, observable} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
 import {find} from 'lodash';
+import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
 
 /**

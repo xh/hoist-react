@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Create an observable ref.

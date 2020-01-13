@@ -4,15 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
-import {form} from '@xh/hoist/cmp/form';
-import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
-import {formField} from '@xh/hoist/desktop/cmp/form';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {hoistCmp, XH, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {filler} from '@xh/hoist/cmp/layout';
+import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
+import {form} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import './OptionsDialog.scss';
 
 /**

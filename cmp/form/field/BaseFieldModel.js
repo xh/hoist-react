@@ -6,13 +6,13 @@
  */
 
 import {managed} from '@xh/hoist/core';
-import {action, computed, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
+import {observable, action, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
-import {flatten, isEmpty, isFunction, isUndefined, partition, startCase} from 'lodash';
-import {Rule} from '../validation/Rule';
+import {wait} from '@xh/hoist/promise';
 
 import {ValidationState} from '../validation/ValidationState';
+import {Rule} from '../validation/Rule';
 
 /**
  * Abstract Base class for FieldModels.
