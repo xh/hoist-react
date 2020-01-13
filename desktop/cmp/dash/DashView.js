@@ -7,7 +7,6 @@
 import {useRef} from 'react';
 import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {modelLookupContextProvider} from '@xh/hoist/core/impl';
-import {useOnMount} from '@xh/hoist/utils/react';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {DashRenderMode} from '@xh/hoist/enums';
@@ -29,7 +28,7 @@ export const dashView = hoistCmp.factory({
     className: 'xh-dash-view',
     model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
-    render({model, className, glEventHub}) {
+    render({model, className}) {
         const {
                 content,
                 contentModel,
@@ -39,9 +38,6 @@ export const dashView = hoistCmp.factory({
                 modelLookupContext
             } = model,
             wasActivated = useRef(false);
-
-        // Wire up Golden Layouts EventHub
-        useOnMount(() => model.setEventHub(glEventHub));
 
         // Respect DashRenderMode
         if (!wasActivated.current && isActive) {

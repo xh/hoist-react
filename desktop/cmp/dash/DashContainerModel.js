@@ -7,7 +7,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {DashRefreshMode, DashRenderMode, DashEvent} from '@xh/hoist/enums';
+import {DashRefreshMode, DashRenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -284,6 +284,10 @@ export class DashContainerModel {
         return ret;
     }
 
+    getViewModel(id) {
+        return this.viewModels.find(it => it.id === id);
+    }
+
     @action
     addViewModel(viewModel) {
         this.viewModels = [...this.viewModels, viewModel];
@@ -321,14 +325,11 @@ export class DashContainerModel {
 
         views.forEach(view => {
             const id = getViewModelId(view),
+                viewModel = this.getViewModel(id),
                 isActive = view === activeItem;
 
-            this.emitEvent(DashEvent.IS_ACTIVE, {id, isActive});
+            viewModel.setIsActive(isActive);
         });
-    }
-
-    emitEvent(name, payload) {
-        this.goldenLayout.eventHub.emit(name, payload);
     }
 
     @action

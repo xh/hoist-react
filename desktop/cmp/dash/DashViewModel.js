@@ -7,7 +7,6 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {DashEvent} from '@xh/hoist/enums';
 import {isFunction} from 'lodash';
 
 import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
@@ -89,14 +88,6 @@ export class DashViewModel {
         const {setState} = this.viewSpec;
         if (!isFunction(setState)) return;
         return setState(state, this.contentModel);
-    }
-
-    setEventHub(eventHub) {
-        this.eventHub = eventHub;
-        this.eventHub.on(DashEvent.IS_ACTIVE, ({id, isActive}) => {
-            if (id !== this.id) return;
-            this.setIsActive(isActive);
-        });
     }
 
 }
