@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory, XH} from '@xh/hoist/core';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
@@ -198,7 +198,7 @@ function applyModelFromContextSupport(C) {
 
 function throwModelChangeException() {
     throw XH.exception(`
-        Cannot re-render Component with a different model. If a new model is required, ensure 
+        Cannot re-render Component with a different model. If a new model is required, ensure
         the Component is re-mounted by rendering it with a unique key, e.g. "key: model.xhId".
     `);
 }

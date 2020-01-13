@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 .xh-grid {
   //------------------------
   // Core Header Classes
@@ -146,4 +153,8 @@
   .xh-multifield-renderer-delimiter {
     margin: 0 0 0 2px;
   }
+}
+
+.xh-grid-tooltip {
+  position: absolute;
 }

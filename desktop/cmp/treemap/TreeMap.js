@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
@@ -81,7 +81,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     }
 });
 
-TreeMapModel.propTypes = {
+TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
@@ -302,6 +302,8 @@ class LocalModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
+
+        if (gridModel) gridModel.ensureSelectionVisible();
     }
 
     //----------------------

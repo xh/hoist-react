@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import classNames from 'classnames';
@@ -135,6 +135,7 @@ import {
     faPrint,
     faQuestion,
     faQuestionCircle,
+    faRandom,
     faRedo,
     faRocket,
     faSave,
@@ -302,6 +303,7 @@ import {
     faPrint as faPrintLight,
     faQuestion as faQuestionLight,
     faQuestionCircle as faQuestionCircleLight,
+    faRandom as faRandomLight,
     faRedo as faRedoLight,
     faRocket as faRocketLight,
     faSave as faSaveLight,
@@ -469,6 +471,7 @@ import {
     faPrint as faPrintSolid,
     faQuestion as faQuestionSolid,
     faQuestionCircle as faQuestionCircleSolid,
+    faRandom as faRandomSolid,
     faRedo as faRedoSolid,
     faRocket as faRocketSolid,
     faSave as faSaveSolid,
@@ -638,6 +641,7 @@ library.add(
     faPrint, faPrintLight, faPrintSolid,
     faQuestion, faQuestionLight, faQuestionSolid,
     faQuestionCircle, faQuestionCircleLight, faQuestionCircleSolid,
+    faRandom, faRandomLight, faRandomSolid,
     faRedo, faRedoLight, faRedoSolid,
     faRocket, faRocketLight, faRocketSolid,
     faSave, faSaveLight, faSaveSolid,
@@ -707,13 +711,13 @@ export const Icon = {
     arrowDown(p)        {return fa(p, 'arrow-down')},
     arrowLeft(p)        {return fa(p, 'arrow-left')},
     arrowRight(p)       {return fa(p, 'arrow-right')},
-    arrowsLeftRight(p)  {return fa(p, 'arrows-h')},
-    arrowsUpDown(p)     {return fa(p, 'arrows-v')},
     arrowToBottom(p)    {return fa(p, 'arrow-to-bottom')},
     arrowToLeft(p)      {return fa(p, 'arrow-to-left')},
     arrowToRight(p)     {return fa(p, 'arrow-to-right')},
     arrowToTop(p)       {return fa(p, 'arrow-to-top')},
     arrowUp(p)          {return fa(p, 'arrow-up')},
+    arrowsLeftRight(p)  {return fa(p, 'arrows-h')},
+    arrowsUpDown(p)     {return fa(p, 'arrows-v')},
     attachment(p)       {return fa(p, 'paperclip')},
     balanceScale(p)     {return fa(p, 'balance-scale')},
     balanceScaleLeft(p) {return fa(p, 'balance-scale-left')},
@@ -828,6 +832,7 @@ export const Icon = {
     print(p)            {return fa(p, 'print')},
     question(p)         {return fa(p, 'question')},
     questionCircle(p)   {return fa(p, 'question-circle')},
+    random(p)           {return fa(p, 'random')},
     redo(p)             {return fa(p, 'redo')},
     refresh(p)          {return fa(p, 'sync')},
     reset(p)            {return fa(p, 'undo')},
@@ -852,6 +857,7 @@ export const Icon = {
     toast(p)            {return fa(p, 'bread-slice')},
     toolbox(p)          {return fa(p, 'toolbox')},
     tools(p)            {return fa(p, 'tools')},
+    transaction(p)      {return fa(p, 'exchange')},
     treeList(p)         {return fa(p, 'stream')},
     undo(p)             {return fa(p, 'undo')},
     unlink(p)           {return fa(p, 'unlink')},

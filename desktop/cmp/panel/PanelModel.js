@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH, HoistModel} from '@xh/hoist/core';
@@ -26,6 +26,7 @@ export class PanelModel {
     collapsible;
     defaultSize;
     minSize;
+    maxSize;
     defaultCollapsed;
     side;
     collapsedRenderMode;
@@ -51,14 +52,15 @@ export class PanelModel {
      * @param {boolean} [config.resizable] - Can panel be resized?
      * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} config.defaultSize - Default size of panel (in pixels).
-     * @param {number} config.minSize - Minimum size that panel can be resized to (in pixels).
-     * @param {number} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} config.side - Side of panel that it collapses/shrinks toward. This also corresponds
+     * @param {number} config.defaultSize - Default size (in px) of the panel.
+     * @param {number} [config.minSize] - Minimum size (in px) to which the panel can be resized.
+     * @param {?number} [config.maxSize] - Maximum size (in px) to which the panel can be resized.
+     * @param {boolean} [config.defaultCollapsed] - Default collapsed state.
+     * @param {string} config.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
      * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
      *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
-     * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
+     * @param {?string} [config.prefName] - preference name to store sizing and collapsed state.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
@@ -71,6 +73,7 @@ export class PanelModel {
         resizeWhileDragging = false,
         defaultSize,
         minSize = 0,
+        maxSize = null,
         defaultCollapsed = false,
         side,
         collapsedRenderMode = 'lazy',
@@ -87,12 +90,17 @@ export class PanelModel {
             resizable = false;
         }
 
-        // Set immutables
+        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
+            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
+            maxSize = null;
+        }
+
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
         this.minSize = Math.min(minSize, defaultSize);
+        this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.collapsedRenderMode = collapsedRenderMode;
@@ -116,12 +124,8 @@ export class PanelModel {
         }
     }
 
-    isComponentModel() {
-        return true;
-    }
-
     //----------------------
-    // Actions
+    // Actions + public setters
     //----------------------
     @action
     setCollapsed(collapsed) {
@@ -135,6 +139,10 @@ export class PanelModel {
         this.dispatchResize();
     }
 
+    toggleCollapsed() {
+        this.setCollapsed(!this.collapsed);
+    }
+
     @action
     setSize(v) {
         this.size = v;
@@ -146,8 +154,12 @@ export class PanelModel {
         if (!v) this.dispatchResize();
     }
 
-    toggleCollapsed() {
-        this.setCollapsed(!this.collapsed);
+    /**
+     * Enable/disable dynamic re-rendering of contents while dragging to resize.
+     * @param {boolean} v
+     */
+    setResizeWhileDragging(v) {
+        this.resizeWhileDragging = v;
     }
 
     //---------------------------------------------

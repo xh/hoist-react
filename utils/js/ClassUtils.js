@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {Exception} from '@xh/hoist/exception';
@@ -67,7 +67,7 @@ export function applyMixin(C, config) {
  * Mark a class and its instances with a boolean property set to true.
  *
  * Useful for providing an identifying flag for marking objects.
- * 
+ *
  * @param {String} flag
  */
 function markClass(C, flag) {

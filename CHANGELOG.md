@@ -4,40 +4,74 @@
 
 ### 🎁 New Features
 
-* Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
-* Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
+* Added `GridModel.setEmptyText()` to allow updates to placeholder text after initial construction.
+* Added `GridModel.ensureSelectionVisible()` to scroll the currently selected row into view.
+* When a `TreeMap` is bound to a `GridModel`, the grid will now respond to map selection changes by
+  scrolling to ensure the selected grid row is visible.
+* Added a `Column.tooltipElement` config to support fully customizable tooltip components.
+* Added a `useOnResize` hook, which runs a function when a component is resized.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
+<<<<<<< HEAD
 * Added a `fmtLossless` number formatter, which shortens numbers without losing any precision.
 * Added a `fmtShorthand` number formatter, which displays a number as thousands, millions, or billions
+=======
+* `PanelModel` now accepts a `maxSize` config.
+* `RelativeTimeStamp` now support a `relativeTo` option, allowing it to display the difference
+  between a timestamp and another reference time other than now. Both the component and the
+  `getRelativeTimestamp()` helper function now leverage moment.js for their underlying
+  implementation.
+* A new `Clock` component displays the time, either local to the browser or for a configurable
+  timezone.
+* `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* New property `enableWindowed` on desktop `Select` component to improve performance 
+with large option lists.
+
+>>>>>>> develop
 
 ### 💥 Breaking Changes
 
-* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
-parameter will allow context menus to be specified with a simple array in addition to the function
-specification currently supported.
-* The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu`
+  parameter. The new parameter will allow context menus to be specified with a simple array in
+  addition to the function specification currently supported.
+* The `GridModel.defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
+  `equalString`, respectively.
 
 ### 🐞 Bug Fixes
 
 * Fixed autoFocus on NumberInput.
-* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
-* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
-  data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
-* Fixed issue where export would create malformed file with dynamic header names  
-* Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where JsonInput was not receiving its `model` from context
+  ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
+  GridModel data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would create malformed file with dynamic header names
+* Fixed issue where exported tree grids would have incorrect aggregate data
+  ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired
+  ([#1498](https://github.com/xh/hoist-react/issues/1498))
+* Changed RestGrid to only display export button if export is enabled
+  ([#1490](https://github.com/xh/hoist-react/issues/1490))
+* Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
+  ([#1520](https://github.com/xh/hoist-react/issues/1520))
+  
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
-* core-js `3.3 -> 3.4`
+* @fortawesome/fontawesome-pro `5.11 -> 5.12`
+* codemirror `5.49 -> 5.50`
+* core-js `3.3 -> 3.6`
 * fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`
+* highcharts 7.2 -> 8.0`
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
+* react-dropzone `10.1 -> 10.2`
+* react-windowed-select `added @ 2.0.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
 
@@ -2021,3 +2055,11 @@ and ag-Grid upgrade, and more. 🚀
 ### 🐞 Bugfixes
 
 * None
+
+------------------------------------------
+
+Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact

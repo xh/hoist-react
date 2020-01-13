@@ -80,7 +80,7 @@ parameter to `configureWebpack()` within
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
 icons. A pro license includes access to a private npm repository to download the extended library,
-accessed via a unique URL. ExHI can configure appropriate access via npm configuration files or an
+accessed via a unique URL. XH can configure appropriate access via npm configuration files or an
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
@@ -126,7 +126,7 @@ Promise prototype, including:
 + `linkTo` - for integration with a `PendingTaskModel` to track and report on state across one or
   more async operations.
 
-💡 Note that by convention all methods returning a Promise within Hoist React (and ExHI-developed
+💡 Note that by convention all methods returning a Promise within Hoist React (and XH-developed
 applications) are suffixed with the qualifier `Async`, e.g. `loadUsersAsync` or
 `restoreDefaultsAsync`. The framework does not rely on this convention for any programmatic
 behaviors, but we have found it to be a helpful indicator of any Promise-based, asynchronous API.
@@ -168,7 +168,7 @@ state changes and other updates.
 Three distinct types of objects (in the form of classes) compromise the backbone of a Hoist
 application: **Models, Components, and Services**. Any non-trivial application will define and
 create multiple instances of these core object types, and understanding how Hoist defines and uses
-these three core artifacts is essential to understanding how we at ExHI build and structure apps.
+these three core artifacts is essential to understanding how we at XH build and structure apps.
 
 Hoist provides three corresponding decorators to mark a class as a particular type of object and to
 install shared functionality and extended features provided by the framework. A fourth decorator is
@@ -446,7 +446,7 @@ echo "rootProject.name = \"%appCode%\"" > settings.gradle
 This step could be avoided by checking in a `settings.gradle` with the app and, should you need the
 special plugin development setup outlined above, manually deleting or renaming it (and remembering
 to not check that change into source control). In many cases, in-line Grails plugin development will
-be a rarity or limited to ExHI or a smaller set of developers.
+be a rarity or limited to XH or a smaller set of developers.
 
 ### 2\) Server and Client Builds
 
@@ -535,7 +535,7 @@ the desired version, making them (as a pair) a complete and deployable instance 
 
 Applications should be checked in with a `/docker/` directory containing Dockerfiles and configs for
 both the server and client containers. Both can be based on
-[public images published by ExHI](https://hub.docker.com/r/xhio/), although an inspection of
+[public images published by XH](https://hub.docker.com/r/xhio/), although an inspection of
 [those](https://github.com/xh/xh-tomcat) [images](https://github.com/xh/xh-nginx) will show that
 they are very thin layers on top of the official Tomcat and nginx images on Docker Hub.
 
@@ -800,4 +800,4 @@ sudo docker system prune -af
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2019 Extremely Heavy Industries Inc.
+Copyright © 2020 Extremely Heavy Industries Inc.
