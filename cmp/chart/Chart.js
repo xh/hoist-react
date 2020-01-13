@@ -89,10 +89,14 @@ class LocalModel {
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement;
 
-            assign(config.chart, this.getChartDims({
+            const {width, height} = this.getChartDims({
                 width: parentEl.offsetWidth,
                 height: parentEl.offsetHeight
-            }));
+            });
+
+            assign(config.chart, {width, height});
+            this.prevWidth = width;
+            this.prevHeight = height;
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
