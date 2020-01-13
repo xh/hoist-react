@@ -12,7 +12,7 @@ import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {start, wait} from '@xh/hoist/promise';
+import {start} from '@xh/hoist/promise';
 import {castArray, debounce, isEmpty, isEqual, isString} from 'lodash';
 
 import {dashView} from './DashView';
@@ -175,8 +175,9 @@ export class DashContainerModel {
             goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
             goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
             goldenLayout.init();
-
             this.goldenLayout = goldenLayout;
+
+            this.refreshActiveTabs();
         }).linkTo(this.loadModel);
     }
 
@@ -229,6 +230,8 @@ export class DashContainerModel {
 
         if (isString(viewSpec)) viewSpec = this.getViewSpec(viewSpec);
         if (!container) container = goldenLayout.root.contentItems[0];
+
+        // Todo: Enforce unique with exception
 
         container.addChild(viewSpec.goldenLayoutsConfig);
     }
@@ -284,29 +287,13 @@ export class DashContainerModel {
 
         // Add '+' icon and attach click listener for adding components
         if (this.enableAdd) {
-            const icon = convertIconToSvg(Icon.add());
-            stack.header.controlsContainer.append(`<div class="xh-dash-container-add-button">${icon}</div>`);
-            const btn = stack.header.controlsContainer.find('.xh-dash-container-add-button');
-            btn.click(() => this.openViewDialog(stack));
+            const $container = stack.header.controlsContainer, // Note: this is a jquery element
+                icon = convertIconToSvg(Icon.add());
+
+            $container.append(`<div class="xh-dash-container-add-button">${icon}</div>`);
+            const $btn = $container.find('.xh-dash-container-add-button');
+            $btn.click(() => this.openViewDialog(stack));
         }
-    }
-
-    async onStackActiveItemChange(stack) {
-        if (!this.goldenLayout?.isInitialised) {
-            // We must wait a tick on first occurrence to ensure elements are rendered
-            await wait(100);
-        }
-
-        const views = stack.getItemsByType('component'),
-            activeItem = stack.getActiveContentItem();
-
-        views.forEach(view => {
-            const id = getViewModelId(view),
-                viewModel = this.getViewModel(id),
-                isActive = view === activeItem;
-
-            viewModel.setIsActive(isActive);
-        });
     }
 
     @action
@@ -325,6 +312,30 @@ export class DashContainerModel {
     }
 
     //-----------------
+    // Active Tab
+    //-----------------
+    refreshActiveTabs() {
+        if (!this.goldenLayout) return;
+        const stacks = this.goldenLayout.root.getItemsByType('stack');
+        stacks.forEach(stack => this.onStackActiveItemChange(stack));
+    }
+
+    onStackActiveItemChange(stack) {
+        if (!this.goldenLayout) return;
+
+        const views = stack.getItemsByType('component'),
+            activeItem = stack.getActiveContentItem();
+
+        views.forEach(view => {
+            const id = getViewModelId(view),
+                viewModel = this.getViewModel(id),
+                isActive = view === activeItem;
+
+            viewModel.setIsActive(isActive);
+        });
+    }
+
+    //-----------------
     // Icons
     //-----------------
     renderIcons() {
@@ -332,12 +343,12 @@ export class DashContainerModel {
         const views = this.getViews();
         views.forEach(view => {
             const id = view.config.component,
-                el = view.tab.element,
+                $el = view.tab.element, // Note: this is a jquery element
                 viewSpec = this.getViewSpec(id);
 
-            if (viewSpec?.icon && !el.find('svg.svg-inline--fa').length) {
+            if (viewSpec?.icon && !$el.find('svg.svg-inline--fa').length) {
                 const iconSvg = convertIconToSvg(viewSpec.icon);
-                el.find('.lm_title').before(iconSvg);
+                $el.find('.lm_title').before(iconSvg);
             }
         });
     }
