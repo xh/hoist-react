@@ -348,7 +348,7 @@ export class Select extends HoistInput {
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src) {
         return isPlainObject(src) ?
-            this.ensureValidOptionObj(src) :
+            this.objectToOption(src) :
             {label: src != null ? src.toString() : '-null-', value: src};
     }
 
