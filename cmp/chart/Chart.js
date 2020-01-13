@@ -79,10 +79,10 @@ class LocalModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
     chart = null;
-    prevConfig = null;
     model;
     prevWidth;
     prevHeight;
+    prevConfig;
 
     renderHighChart() {
         const chartElem = this.chartRef.current;
@@ -121,7 +121,7 @@ class LocalModel {
                 config.chart.renderTo = chartElem;
                 this.chart = Highcharts.chart(config);
             }
-            
+
             this.prevConfig = cloneDeep(currentConfig);
         }
     }
