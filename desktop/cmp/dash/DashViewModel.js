@@ -78,13 +78,13 @@ export class DashViewModel {
 
     get state() {
         const {getState} = this.viewSpec;
-        if (!isFunction(getState)) return null;
+        if (!isFunction(getState) || !this.contentModel) return null;
         return getState(this.contentModel);
     }
 
     setState(state) {
         const {setState} = this.viewSpec;
-        if (!isFunction(setState)) return;
+        if (!isFunction(setState) || !this.contentModel) return;
         return setState(state, this.contentModel);
     }
 

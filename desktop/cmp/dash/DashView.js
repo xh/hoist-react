@@ -6,7 +6,7 @@
  */
 import {useRef} from 'react';
 import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
-import {modelLookupContextProvider} from '@xh/hoist/core/impl';
+import {useOwnedModelLinker, ModelLookup, modelLookupContextProvider} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {RenderMode} from '@xh/hoist/enums';
@@ -39,6 +39,11 @@ export const dashView = hoistCmp.factory({
             } = model,
             wasActivated = useRef(false);
 
+        // If content model provided, pass it in via context
+        const lookupContext = contentModel ?
+            new ModelLookup(contentModel, modelLookupContext, ModelPublishMode.DEFAULT) :
+            modelLookupContext;
+
         // Respect RenderMode
         if (!wasActivated.current && isActive) {
             wasActivated.current = true;
@@ -54,18 +59,29 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        const contentProps = contentModel ? {model: contentModel} : {},
-            contentElem = content.isHoistComponent ? elem(content, {flex: 1, ...contentProps}) : content(contentProps);
+        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
 
         return modelLookupContextProvider({
-            value: modelLookupContext,
+            value: lookupContext,
             item: frame({
                 className,
                 item: refreshContextView({
                     model: refreshContextModel,
-                    item: contentElem
+                    item: ownedModelWrapper({
+                        contentModel,
+                        contentElem
+                    })
                 })
             })
         });
+    }
+});
+
+// This util component wraps the allows the content to own the content model, if one
+// was provided via a contentModelFn.
+const ownedModelWrapper = hoistCmp.factory({
+    render({contentModel, contentElem}) {
+        useOwnedModelLinker(contentModel ? contentModel : null);
+        return contentElem;
     }
 });
