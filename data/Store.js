@@ -238,7 +238,7 @@ export class Store {
             const parsedData = this.parseFieldValues(it),
                 parent = this.getById(parentId);
 
-            return new Record({id, data: parsedData, store: this, parent, committedRecord: null});
+            return new Record({id, data: parsedData, store: this, parent, committedData: null});
         });
 
         this._current = this._current.withTransaction({add: addRecs});
@@ -283,23 +283,24 @@ export class Store {
             }
 
             const {id, ...data} = it,
-                rec = this.getOrThrow(id),
+                currentRec = this.getOrThrow(id),
                 updatedData = this.parseFieldValues(data, true);
 
             const updatedRec = new Record({
-                id: rec.id,
-                data: {...rec.data, ...updatedData},
-                parent: rec.parent,
-                store: rec.store,
-                committedRecord: rec.committedRecord
+                id: currentRec.id,
+                raw: currentRec.raw,
+                data: {...currentRec.data, ...updatedData},
+                parent: currentRec.parent,
+                store: currentRec.store,
+                committedData: currentRec.committedData
             });
 
-            // Don't do anything if the record data hasn't actually changed
-            if (isEqual(rec.data, updatedRec.data)) return;
+            // Don't do anything if the record data hasn't actually changed compared to the current record data
+            if (isEqual(currentRec.data, updatedRec.data)) return;
 
-            // If the updated data now matches the committed record data, then restore the committed
-            if (isEqual(updatedRec.data, updatedRec.committedRecord?.data)) {
-                updateRecs.set(id, updatedRec.committedRecord);
+            // If the updated data now matches the committed record data, then restore the committed record
+            if (isEqual(updatedRec.data, updatedRec.committedData)) {
+                updateRecs.set(id, this.getCommittedOrThrow(id));
             } else {
                 updateRecs.set(id, updatedRec);
             }
@@ -326,7 +327,7 @@ export class Store {
         records = records.map(it => (it instanceof Record) ? it : this.getOrThrow(it));
 
         this._current = this._current
-            .withTransaction({update: records.map(it => it.committedRecord)})
+            .withTransaction({update: records.map(it => this.getCommittedOrThrow(it.id))})
             .normalize(this._committed);
 
         this.rebuildFiltered();
@@ -553,6 +554,12 @@ export class Store {
     getOrThrow(id) {
         const ret = this.getById(id);
         throwIf(!ret, `Could not find record with id '${id}'`);
+        return ret;
+    }
+
+    getCommittedOrThrow(id) {
+        const ret = this._committed.getById(id);
+        throwIf(!ret, `Could not find committed record with id '${id}'`);
         return ret;
     }
 

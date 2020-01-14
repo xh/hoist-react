@@ -20,8 +20,8 @@ export class Record {
     id;
     /** @member {(string|number)} */
     parentId;
-    /** @member {Record} */
-    committedRecord;
+    /** @member {Object} */
+    committedData;
     /** @member {Object} */
     raw;
     /** @member {Object} */
@@ -35,17 +35,17 @@ export class Record {
 
     /** @returns {boolean} - true if the Record has not been committed. */
     get isNew() {
-        return this.committedRecord === null;
+        return this.committedData === null;
     }
 
     /** @returns {boolean} - true if the Record has been modified since it was last committed. */
     get isModified() {
-        return this.committedRecord && this.committedRecord !== this;
+        return this.committedData && this.committedData !== this.data;
     }
 
     /** @returns {boolean} - false if the Record has been added or modified. */
     get isCommitted() {
-        return this.committedRecord === this;
+        return this.committedData === this.data;
     }
 
     /** @returns {Record} */
@@ -125,16 +125,16 @@ export class Record {
      * @param {Object} [c.raw] - the same data, prior to any store pre-processing.
      * @param {Record} [c.parent] - parent record, if any.
      * @param {boolean} [c.isSummary] - whether this record is a summary record.
-     * @param {Record|null} [c.committedRecord] - the clean Record loaded into the Store. Defaults to
-     *      `this` to indicate that this Record is the original. Pass `null` to indicate that this is
-     *      a "new" Record with no backing original data in the Store data source.
+     * @param {Object?} [c.committedData] - the committed version of the data that was loaded
+     *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record with no
+     *      committed data in the Store data source.
      */
-    constructor({id, data, raw = null, store, parent, isSummary = false, committedRecord = this}) {
+    constructor({id, data, raw = null, store, parent, isSummary = false, committedData = data}) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
         this.parentId = parent?.id;
-        this.committedRecord = committedRecord;
+        this.committedData = committedData;
         this.raw = raw;
         this.data = data;
         this.store = store;
@@ -159,7 +159,7 @@ export class Record {
     isFieldModified(name) {
         if (!this.isModified) return false;
 
-        const value = this.get(name), originalValue = this.committedRecord.get(name);
+        const value = this.data[name], originalValue = this.committedData[name];
         return !equal(value, originalValue);
     }
 
@@ -170,11 +170,10 @@ export class Record {
     getModifiedFields() {
         if (!this.isModified) return null;
 
-        const ret = {},
-            rec = this.committedRecord;
+        const ret = {};
 
         forEach(this.data, (value, fieldName) => {
-            const originalValue = rec.get(fieldName);
+            const originalValue = this.committedData[fieldName];
             if (!equal(value, originalValue)) ret[fieldName] = {value, originalValue};
         });
 
