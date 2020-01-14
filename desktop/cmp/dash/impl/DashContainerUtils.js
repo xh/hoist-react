@@ -24,7 +24,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
         const contentItem = contentItems[idx];
 
         if (configItem.type === 'component') {
-            const state = viewState[getViewModelId(contentItem)],
+            const state = viewState[getTabModelId(contentItem)],
                 view = {type: 'view', id: configItem.component};
 
             if (!isEmpty(state)) view.state = state;
@@ -78,9 +78,9 @@ export function convertStateToGL(state = [], viewSpecs = []) {
 }
 
 /**
- * Lookup the DashViewModel id of a rendered view
+ * Lookup the DashTabModel id of a rendered view
  */
-export function getViewModelId(view) {
+export function getTabModelId(view) {
     if (!view || !view.isInitialised || !view.isComponent) return;
     return view.instance?._reactComponent?.props?.id;
 }

@@ -19,6 +19,11 @@ import {withDefault} from '@xh/hoist/utils/js';
 import './DashContainerViewDialog.scss';
 import {DashContainerModel} from '../DashContainerModel';
 
+/**
+ * Dialog for adding views to a DashContainer
+ *
+ * @private
+ */
 export const dashContainerViewDialog = hoistCmp.factory({
     model: creates(() => new Model()),
     className: 'xh-dash-container-view-dialog',

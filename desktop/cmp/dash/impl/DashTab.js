@@ -11,10 +11,10 @@ import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {RenderMode} from '@xh/hoist/enums';
 
-import {DashViewModel} from './DashViewModel';
+import {DashTabModel} from './DashTabModel';
 
 /**
- * Wrapper for contents to be shown within a DashContainer. This Component is used by DashContainer's
+ * Wrapper for contents to be shown within a DashContainer. This component is used by DashContainer's
  * internal implementation to:
  *
  *   - Mount/unmount its contents according to `DashViewSpec.renderMode`.
@@ -23,10 +23,10 @@ import {DashViewModel} from './DashViewModel';
  *
  * @private
  */
-export const dashView = hoistCmp.factory({
-    displayName: 'DashView',
-    className: 'xh-dash-view',
-    model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
+export const dashTab = hoistCmp.factory({
+    displayName: 'DashTab',
+    className: 'xh-dash-tab',
+    model: uses(DashTabModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
         const {

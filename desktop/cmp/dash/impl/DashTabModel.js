@@ -9,17 +9,19 @@ import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isPlainObject} from 'lodash';
 
-import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
+import {DashRefreshContextModel} from './DashRefreshContextModel';
 
 /**
- * Model for a DashView within a DashContainer. Specifies the actual content (child component)
- * to be rendered within the view and manages that content's render state and refreshes.
+ * Model for a DashTab within a DashContainer. Specifies the actual content (child component)
+ * to be rendered within the tab and manages that content's render state and refreshes.
  *
  * This model is not typically created directly within applications. Instead, specify a
  * DashViewSpec for it via the `DashContainerModel.viewSpecs` constructor config.
+ *
+ * @private
  */
 @HoistModel
-export class DashViewModel {
+export class DashTabModel {
 
     id;
     viewSpec;
@@ -47,10 +49,10 @@ export class DashViewModel {
 
     /**
      * @param {string} id - Typically created by GoldenLayouts.
-     * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashView.
+     * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashTab.
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {Object} [state] - State with which to initialize this DashView
+     * @param {Object} [state] - State with which to initialize the view
      */
     constructor({
         id,
@@ -58,8 +60,8 @@ export class DashViewModel {
         containerModel,
         state
     }) {
-        throwIf(!id, 'DashViewModel requires an id');
-        throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
+        throwIf(!id, 'DashTabModel requires an id');
+        throwIf(!viewSpec, 'DashTabModel requires an DashViewSpec');
 
         this.id = id;
         this.viewSpec = viewSpec;
@@ -80,7 +82,7 @@ export class DashViewModel {
         const {getState} = this.viewSpec;
         if (!isFunction(getState) || !this.contentModel) return null;
         const state = getState(this.contentModel);
-        throwIf(!isPlainObject(state), 'DashView state must be an object');
+        throwIf(!isPlainObject(state), 'DashViewSpec getState() must return an object');
         return state;
     }
 

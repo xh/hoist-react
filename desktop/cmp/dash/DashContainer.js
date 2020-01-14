@@ -26,7 +26,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
     className: 'xh-dash-container',
 
     render({model, className}) {
-        // Store current ModelLookupContext in model, to be applied in DashViews later
+        // Store current ModelLookupContext in model, to be applied in DashTabs later
         const modelLookupContext = useContext(ModelLookupContext);
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
