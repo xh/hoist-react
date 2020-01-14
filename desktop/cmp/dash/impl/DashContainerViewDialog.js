@@ -134,8 +134,8 @@ class Model {
         await this.formModel.validateAsync();
         if (!this.formModel.isValid) return;
 
-        const {viewSpec} = this.formModel.values;
-        this.dashContainerModel.submitViewDialog(viewSpec);
+        const id = this.formModel.values.viewSpec;
+        this.dashContainerModel.submitViewDialog(id);
         this.close();
     }
 

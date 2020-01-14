@@ -26,7 +26,8 @@
   sub-options.
 * `FetchService` methods support a new `timeout` option. This config chains `Promise.timeout()` to
   the promises returned by the service.
-
+* Added alpha version of `DashContainer` for building dynamic, draggable dashboard-style layouts.
+  Please note: the API for this component is subject to change - use at your own risk!
 
 ### 💥 Breaking Changes
 

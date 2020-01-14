@@ -13,7 +13,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty, isString} from 'lodash';
+import {isEmpty} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashTab} from './impl/DashTab';
@@ -63,47 +63,42 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
 @HoistModel
 export class DashContainerModel {
 
+    //------------------------
+    // Observable API
+    //------------------------
     /** @member {Object[]} */
     @observable.ref state;
-
-    /** @member {DashTabModel[]} */
-    @observable.ref tabModels = [];
-
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
 
-    /** member {boolean} */
-    @observable dialogIsOpen;
-
+    //------------------------
+    // Immutable public properties
+    //------------------------
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
-
     /** @member {boolean} */
-    enableAdd;
-
+    showAddButton;
     /** @member {RenderMode} */
     renderMode;
-
     /** @member {RefreshMode} */
     refreshMode;
-
     /** @member {Object} */
     goldenLayoutSettings;
 
-    /** @member {PendingTaskModel} */
+    //------------------------
+    // Implementation properties
+    //------------------------
+    @managed @observable.ref tabModels = [];
     @managed loadingStateTask = new PendingTaskModel();
-
-    /** @member {Ref} */
     containerRef = createObservableRef();
-
-    /** member {ModelLookupContext} */
+    @observable dialogIsOpen;
     modelLookupContext;
 
     /**
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
      * @param {Object[]} [initialState] - Default layout state for this container.
-     * @param {boolean} [enableAdd] - true (default) to include a '+' button in each stack header,
+     * @param {boolean} [showAddButton] - true (default) to include a '+' button in each stack header,
      *      which opens the provided 'Add View' dialog.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
@@ -115,14 +110,14 @@ export class DashContainerModel {
     constructor({
         viewSpecs,
         initialState = [],
-        enableAdd = true,
+        showAddButton = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
     }) {
         throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
 
-        this.enableAdd = enableAdd;
+        this.showAddButton = showAddButton;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
@@ -143,15 +138,18 @@ export class DashContainerModel {
         });
     }
 
+    /**
+     * Load state into the DashContainer, recreating its layout and contents
+     * @param {object} state - State to load
+     */
     @action
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
         if (!containerEl) return;
 
         // Show mask to provide user feedback
-        start(() => {
-            this.destroyGoldenLayouts();
-            this.goldenLayout = null;
+        return start(() => {
+            this.destroyGoldenLayout();
 
             // Recreate GoldenLayouts with state
             const goldenLayout = new GoldenLayout({
@@ -197,6 +195,29 @@ export class DashContainerModel {
         }).linkTo(this.loadingStateTask);
     }
 
+    /**
+     * Add a view to the container.
+     *
+     * @param {string} id - DashViewSpec id to add to the container
+     * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
+     */
+    addView(id, container) {
+        const {goldenLayout} = this;
+        if (!goldenLayout) return;
+
+        const viewSpec = this.getViewSpec(id),
+            instances = this.getViewsBySpecId(id);
+
+        throwIf(!viewSpec, `Trying to add unknown DashViewSpec. id=${id}`);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
+
+        if (!container) container = goldenLayout.root.contentItems[0];
+        container.addChild(viewSpec.goldenLayoutsConfig);
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
     @debounced(100)
     @action
     updateState() {
@@ -205,9 +226,8 @@ export class DashContainerModel {
 
         this.state = convertGLToState(goldenLayout, viewState);
 
-        // We must update the tab headers, both because changes to
-        // GoldenLayout can cause them to be dropped, and to reflect
-        // title/icon changes in view state
+        // We must update the tab headers on state change to
+        // reflect title/icon changes in view state
         this.updateTabHeaders();
     }
 
@@ -232,25 +252,6 @@ export class DashContainerModel {
     //-----------------
     // Views
     //-----------------
-    /**
-     * Add a view to the container.
-     *
-     * @param {(DashViewSpec|string)} viewSpec - DashViewSpec (or string id) to add to the container
-     * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
-     */
-    addView(viewSpec, container) {
-        const {goldenLayout} = this;
-        if (!goldenLayout) return;
-
-        if (isString(viewSpec)) viewSpec = this.getViewSpec(viewSpec);
-        if (!container) container = goldenLayout.root.contentItems[0];
-
-        const instances = this.getViewsBySpecId(viewSpec.id);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${viewSpec.id}`);
-
-        container.addChild(viewSpec.goldenLayoutsConfig);
-    }
-
     /**
      * Get all view instances currently rendered in the container
      */
@@ -303,7 +304,7 @@ export class DashContainerModel {
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
         // Add '+' icon and attach click listener for adding components
-        if (this.enableAdd) {
+        if (this.showAddButton) {
             const $container = stack.header.controlsContainer, // Note: this is a jquery element
                 icon = convertIconToSvg(Icon.add()),
                 className = 'xh-dash-container-add-button';
@@ -325,8 +326,8 @@ export class DashContainerModel {
         this.dialogIsOpen = false;
     }
 
-    submitViewDialog(viewSpec) {
-        this.addView(viewSpec, this._dialogSelectedContainer);
+    submitViewDialog(id) {
+        this.addView(id, this._dialogSelectedContainer);
     }
 
     //-----------------
@@ -394,12 +395,15 @@ export class DashContainerModel {
     // Misc
     //-----------------
     destroy() {
-        this.destroyGoldenLayouts();
+        this.destroyGoldenLayout();
     }
 
-    destroyGoldenLayouts() {
+    @action
+    destroyGoldenLayout() {
         XH.safeDestroy(this.goldenLayout);
         XH.safeDestroy(this.tabModels);
+        this.goldenLayout = null;
+        this.tabModels = [];
     }
 
 }
