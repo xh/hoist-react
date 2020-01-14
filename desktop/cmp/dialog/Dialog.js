@@ -14,6 +14,7 @@ import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, vframe} from '@xh/hoist/cmp/layout';
+import {throwIf} from '@xh/hoist/utils/js';
 
 import {DialogModel} from './DialogModel';
 import {dialogHeader} from './impl/DialogHeader';
@@ -130,6 +131,11 @@ const rndDialog = hoistCmp.factory(
             x: 0,
             y: 0
         };
+
+        throwIf(
+            resizable && (!width || !height),
+            'Resizable dialogs must also have width and height props set.'
+        );
 
         if (width && height) {
             RnDDims = {width, height, ...dialogModel.calcPos(width, height)};
