@@ -74,8 +74,15 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         });
 
         useEffect(() => {
+            // these need to be called on 2nd render cycle
+            // cannot be put into useOnMount
+            // todo: explore how to ensure called only once.
             maybeSetFocus();
-            model.centerDraggableDialogOnRender();
+
+            const {width, height} = props;
+            if (!width && !height) {
+                model.centerDraggableDialogOnRender();
+            }
         });
 
         const {draggable, resizable, isOpen, hasMounted} = model,
@@ -110,22 +117,28 @@ const plainDialog = hoistCmp.factory(
         className: 'xh-dialog-root__plain',
         item: div({
             className: 'xh-dialog-root__content',
-            item: content(props)
+            item: content({model: dialogModel, ...props})
         })
     })
 );
 
 const rndDialog = hoistCmp.factory(
     ({model: dialogModel, props}) => {
-        const {resizable, draggable, RnDOptions = {}} = dialogModel;
+        const {resizable, draggable, RnDOptions = {}} = dialogModel,
+            {width, height} = props;
+        let RnDDims = {
+            x: 0,
+            y: 0
+        };
+
+        if (width && height) {
+            RnDDims = {width, height, ...dialogModel.calcPos(width, height)};
+        }
 
         return rnd({
             ref: c => dialogModel.rndRef = c,
             ...RnDOptions,
-            default: {
-                x: 0,
-                y: 0
-            },
+            default: RnDDims,
             disableDragging: !draggable,
             enableResizing: {
                 bottom: resizable,
@@ -144,19 +157,27 @@ const rndDialog = hoistCmp.factory(
                 tabIndex: 0,
                 ref: dialogModel.dialogWrapperDivRef,
                 className: 'react-draggable__container',
-                item: content(props)
+                item: content({model: dialogModel, ...props})
             })
         });
     }
 );
 
 const content = hoistCmp.factory(
-    ({icon, title, children}) => vframe({
-        items: [
-            dialogHeader({icon, title}),
-            ...castArray(children)
-        ]
-    })
+    ({model: dialogModel, icon, title, children}) => {
+        const dims = dialogModel.resizable ? {
+            width: '100%',
+            height: '100%'
+        } : {};
+
+        return vframe({
+            ...dims,
+            items: [
+                dialogHeader({icon, title}),
+                ...castArray(children)
+            ]
+        });
+    }
 );
 
 
@@ -165,5 +186,11 @@ Dialog.propTypes = {
     icon: PT.element,
 
     /** Title text added to the dialog's header. */
-    title: PT.oneOfType([PT.string, PT.node])
+    title: PT.oneOfType([PT.string, PT.node]),
+
+    /** Width of dialog */
+    width: PT.number,
+
+    /** Height of dialog */
+    height: PT.number
 };

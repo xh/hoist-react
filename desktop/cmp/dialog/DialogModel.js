@@ -134,18 +134,23 @@ export class DialogModel {
         if (!this.rndRef) return;
 
         const {
-                offsetWidth: width,
-                offsetHeight: height
-            } = this.dialogWrapperDivRef.current,
-            w = window, d = document, e = d.documentElement,
+            offsetWidth: width,
+            offsetHeight: height
+        } = this.dialogWrapperDivRef.current;
+
+        this.rndRef.updateSize({width, height});
+        this.rndRef.updatePosition(this.calcPos(width, height));
+    }
+
+    calcPos(width, height) {
+        const w = window, d = document, e = d.documentElement,
             g = d.getElementsByTagName('body')[0],
             windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
             windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
 
-        this.rndRef.updateSize({width, height});
-        this.rndRef.updatePosition({
+        return {
             x: Math.max((windowWidth - width) / 2, 0),
             y: Math.max((windowHeight - height) / 2, 0)
-        });
+        };
     }
 }
