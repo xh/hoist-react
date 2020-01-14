@@ -108,10 +108,16 @@ export class Select extends HoistInput {
         optionRenderer: PT.func,
 
         /**
-         * Preset list of options for selection. Objects must contain a `value` property; a `label`
-         * property will be used for the default display of each option. Other types will be taken
-         * as their value directly and displayed via toString().  See also `queryFn` to  supply
-         * options via an async query (i.e. from the server) instead of up-front in this prop.
+         * Preset list of options for selection. Elements can be either a primitive or an object.
+         * Primitives will be displayed via toString().
+         * Objects must have either:
+         *      + A `label` property for display and a `value` property
+         *      + A `label` property and an `options` property containing an array of sub-options
+         *        to be grouped beneath the option.
+         *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
+         *
+         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+         * of up-front in this prop.
          */
         options: PT.array,
 
@@ -363,28 +369,35 @@ export class Select extends HoistInput {
         return internal.value;
     }
 
-    normalizeOptions(options) {
+    normalizeOptions(options, depth = 0) {
+        throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
+
         options = options || [];
-        return options.map(it => this.toOption(it));
+        return options.map(it => this.toOption(it, depth));
     }
 
     // Normalize / clone a single source value into a normalized option object. Supports Strings
-    // and Objects. Objects are validated/defaulted to ensure a label+value, with other fields
-    // brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src) {
+    // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
+    // with other fields brought along to support Selects emitting value objects with ad hoc properties.
+    toOption(src, depth) {
+        return isPlainObject(src) ?
+            this.objectToOption(src, depth) :
+            {label: src != null ? src.toString() : '-null-', value: src};
+    }
+
+    objectToOption(src, depth) {
         const {props} = this,
-            srcIsObject = isPlainObject(src),
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty(valueField),
-            `Select options/values provided as Objects must define a '${valueField}' property.`
+            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
+            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return srcIsObject ?
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
-            {label: src != null ? src.toString() : '-null-', value: src};
+        return src.hasOwnProperty('options') ?
+            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
     }
 
     //------------------------
