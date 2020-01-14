@@ -20,18 +20,19 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
-* New property `enableWindowed` on desktop `Select` component to improve performance 
-with large option lists.
-* Added a new `timeout` option to methods on FetchService.  This is a convenenience that will
- apply `Promise.timeout()` to the promises returned by this API.
-
+* `Select` inputs support a new property `enableWindowed` (desktop platform only) to improve
+  rendering performance with large lists of options.
+* `Select` inputs support grouped options. To use, add an attribute `options` containing an array of
+  sub-options.
+* `FetchService` methods support a new `timeout` option. This config chains `Promise.timeout()` to
+  the promises returned by the service.
 
 
 ### 💥 Breaking Changes
 
-* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu`
-  parameter. The new parameter will allow context menus to be specified with a simple array in
-  addition to the function specification currently supported.
+* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
+  parameter will allow context menus to be specified with a simple array in addition to the function
+  specification currently supported.
 * The `GridModel.defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
@@ -56,7 +57,7 @@ with large option lists.
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
 * Fixed problem where charts were resized when being hidden
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
-  
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`

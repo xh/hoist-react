@@ -112,6 +112,7 @@ export function getRelativeTimestamp(timestamp, options = {}) {
         equalString: null,
         epsilon: 30,
         emptyResult: '',
+        prefix: '',
         relativeTo: Date.now(),
         ...options
     };
