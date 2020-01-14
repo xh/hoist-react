@@ -89,7 +89,7 @@ class LocalModel {
                 this.model.highchartsConfig
             ],
             run: () => {
-                this.buildHighChart();
+                this.renderHighChart();
             }
         });
         this.addReaction({
