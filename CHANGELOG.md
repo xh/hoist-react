@@ -26,6 +26,7 @@
   sub-options.
 * `FetchService` methods support a new `timeout` option. This config chains `Promise.timeout()` to
   the promises returned by the service.
+* Added a new `xhEnableImpersonation` config for enabling or disabling impersonation app-wide.
 
 
 ### 💥 Breaking Changes
