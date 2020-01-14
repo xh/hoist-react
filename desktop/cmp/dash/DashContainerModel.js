@@ -239,11 +239,7 @@ export class DashContainerModel {
         const {goldenLayout, viewState} = this;
         if (!goldenLayout.isInitialised) return;
 
-        const configItems = goldenLayout.toConfig().content,
-            contentItems = goldenLayout.root.contentItems;
-
-        // Todo: Wrap with a root-level function called here
-        this.state = convertGLToState(configItems, contentItems, viewState);
+        this.state = convertGLToState(goldenLayout, viewState);
 
         // Todo: Lose this
         if (isFunction(this.setState)) {

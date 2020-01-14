@@ -10,7 +10,14 @@ import {throwIf} from '@xh/hoist/utils/js';
 /**
  * Convert the output from Golden Layouts into our serializable state
  */
-export function convertGLToState(configItems = [], contentItems = [], viewState) {
+export function convertGLToState(goldenLayout, viewState) {
+    const configItems = goldenLayout.toConfig().content,
+        contentItems = goldenLayout.root.contentItems;
+
+    return convertGLToStateInner(configItems, contentItems, viewState);
+}
+
+function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
     const ret = [];
 
     configItems.forEach((configItem, idx) => {
@@ -31,7 +38,7 @@ export function convertGLToState(configItems = [], contentItems = [], viewState)
             if (isFinite(height)) container.height = height;
             if (isFinite(activeItemIndex)) container.activeItemIndex = activeItemIndex;
             if (isArray(content) && content.length) {
-                container.content = convertGLToState(content, contentItem.contentItems, viewState);
+                container.content = convertGLToStateInner(content, contentItem.contentItems, viewState);
             }
 
             ret.push(container);
@@ -54,7 +61,10 @@ export function convertStateToGL(state = [], viewSpecs = []) {
 
         if (type === 'view') {
             const viewSpec = viewSpecs.find(v => v.id === item.id);
-            if (!viewSpec) return null; // Todo: Warn here, and drop quietly
+            if (!viewSpec) {
+                console.warn(`Attempting to load unrecognised view "${item.id}" from state`);
+                return {type: 'row'};
+            }
 
             const ret = viewSpec.goldenLayoutsConfig;
             if (item.state) ret.state = item.state;
