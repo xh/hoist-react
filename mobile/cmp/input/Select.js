@@ -158,7 +158,7 @@ export class Select extends HoistInput {
     }
 
     findOption(val, createIfNotFound) {
-        const valAsOption = this.toOption(val),
+        const valAsOption = this.valueToOption(val),
             match = find(this.internalOptions, {value: valAsOption.value});
 
         return match ? match : (createIfNotFound ? valAsOption : null);
@@ -189,15 +189,14 @@ export class Select extends HoistInput {
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
-        if (!src.hasOwnProperty(valueField) && !src.hasOwnProperty('options')) {
-            return this.valueToOption(src);
-        }
+        throwIf(
+            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
+            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
+        );
 
-        if (src.hasOwnProperty('options')) {
-            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)};
-        } else if (src.hasOwnProperty(valueField)) {
-            return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
-        } else return this.valueToOption(src);
+        return src.hasOwnProperty('options') ?
+            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
     }
 
     valueToOption(src) {
