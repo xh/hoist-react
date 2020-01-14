@@ -90,7 +90,8 @@ export class DashViewSpec {
  *      DashViews persistent state.
  * @param {HoistModel} contentModel - The model instance provided to the DashView's content.
  *      *note* Requires using DashViewSpec.contentModelFn.
- * @returns {Object} - Observable state for the DashView
+ * @returns {Object} - Observable state for the DashView. Note that if this state contains
+ *      `title` or `icon` keys, these will be used to update the tab headers.
  */
 
 /**

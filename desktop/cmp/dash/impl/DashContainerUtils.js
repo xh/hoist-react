@@ -54,7 +54,7 @@ export function convertStateToGL(state = [], viewSpecs = []) {
 
         if (type === 'view') {
             const viewSpec = viewSpecs.find(v => v.id === item.id);
-            if (!viewSpec) return null;
+            if (!viewSpec) return null; // Todo: Warn here, and drop quietly
 
             const ret = viewSpec.goldenLayoutsConfig;
             if (item.state) ret.state = item.state;

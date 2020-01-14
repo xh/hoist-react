@@ -4,13 +4,13 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {RefreshMode, RenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {castArray, isEmpty, isString, isFunction} from 'lodash';
 
@@ -125,6 +125,7 @@ export class DashContainerModel {
     constructor({
         viewSpecs,
         defaultState,
+        initialState = [], // Todo
         enableAdd = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
@@ -133,7 +134,7 @@ export class DashContainerModel {
         setState
     }) {
         throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
-        throwIf(isEmpty(defaultState), 'DashContainerModel must be initialized with default state');
+        // throwIf(isEmpty(defaultState), 'DashContainerModel must be initialized with default state');
 
         this.defaultState = castArray(defaultState);
         this.enableAdd = enableAdd;
@@ -147,7 +148,7 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
-        // Initialize GoldenLayouts with default state once ref is ready
+        // Initialize GoldenLayouts with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
             run: () => {
@@ -169,6 +170,7 @@ export class DashContainerModel {
         if (!containerEl) return;
 
         // Show mask to provide user feedback
+        // Todo: Go back to PendingTaskModel, call it loadingState
         this.setLoadingState(true);
         await wait(100);
 
@@ -208,21 +210,20 @@ export class DashContainerModel {
         });
 
         // Initialize GoldenLayout
-        goldenLayout.on('stateChanged', () => {
-            this.renderIcons();
-            this.updateState();
-        });
+        goldenLayout.on('stateChanged', () => this.updateState());
         goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
         goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
         goldenLayout.init();
         this.goldenLayout = goldenLayout;
 
         this.refreshActiveTabs();
+        this.updateTabHeaders();
 
         await wait(100);
         this.setLoadingState(false);
     }
 
+    // Todo: Remove this
     async resetStateAsync() {
         return this.loadStateAsync(this.defaultState);
     }
@@ -241,11 +242,18 @@ export class DashContainerModel {
         const configItems = goldenLayout.toConfig().content,
             contentItems = goldenLayout.root.contentItems;
 
+        // Todo: Wrap with a root-level function called here
         this.state = convertGLToState(configItems, contentItems, viewState);
 
+        // Todo: Lose this
         if (isFunction(this.setState)) {
             this.setState(this.state);
         }
+
+        // We must update the tab headers, both because changes to
+        // GoldenLayout can cause them to be dropped, and to reflect
+        // title/icon changes in view state
+        this.updateTabHeaders();
     }
 
     onItemDestroyed(item) {
@@ -327,7 +335,14 @@ export class DashContainerModel {
 
     @action
     removeViewModel(id) {
+        const viewModel = this.getViewModel(id);
+        XH.safeDestroy(viewModel);
         this.viewModels = this.viewModels.filter(it => it.id !== id);
+    }
+
+    getViewModelId(view) {
+        if (!view || !view.isInitialised || !view.isComponent) return;
+        return view.instance?._reactComponent?.props?.id;
     }
 
     //-----------------
@@ -384,24 +399,43 @@ export class DashContainerModel {
                 viewModel = this.getViewModel(id),
                 isActive = view === activeItem;
 
-            viewModel.setIsActive(isActive);
+            if (viewModel) viewModel.setIsActive(isActive);
         });
     }
 
     //-----------------
-    // Icons
+    // Tab Headers
     //-----------------
-    renderIcons() {
-        // For each view, insert icon in tab if required
+    updateTabHeaders() {
         const views = this.getViews();
         views.forEach(view => {
             const id = view.config.component,
                 $el = view.tab.element, // Note: this is a jquery element
-                viewSpec = this.getViewSpec(id);
+                viewSpec = this.getViewSpec(id),
+                viewModelId = this.getViewModelId(view),
+                state = this.viewState[viewModelId],
+                icon = withDefault(state?.icon, viewSpec?.icon),
+                title = withDefault(state?.title, viewSpec?.title);
 
-            if (viewSpec?.icon && !$el.find('svg.svg-inline--fa').length) {
-                const iconSvg = convertIconToSvg(viewSpec.icon);
-                $el.find('.lm_title').before(iconSvg);
+            if (icon) {
+                const $currentIcon = $el.find('svg.svg-inline--fa').first(),
+                    currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
+                    newIconType = icon.props.icon[1];
+
+                if (currentIconType !== newIconType) {
+                    const iconSvg = convertIconToSvg(icon);
+                    $el.find('svg.svg-inline--fa').remove();
+                    $el.find('.lm_title').before(iconSvg);
+                }
+            }
+
+            if (title) {
+                const $titleEl = $el.find('.lm_title').first(),
+                    currentTitle = $titleEl.text();
+
+                if (currentTitle !== title) {
+                    $titleEl.text(title);
+                }
             }
         });
     }
@@ -414,8 +448,8 @@ export class DashContainerModel {
     }
 
     destroyGoldenLayouts() {
-        if (!this.goldenLayout) return;
-        this.goldenLayout.destroy();
+        XH.safeDestroy(this.goldenLayout);
+        XH.safeDestroy(this.viewModels);
     }
 
 }

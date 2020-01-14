@@ -59,6 +59,7 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
+        // Todo: Try cloning here and applying contentModel if provided (later)
         const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
 
         return modelLookupContextProvider({

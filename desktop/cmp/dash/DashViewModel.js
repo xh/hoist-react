@@ -7,7 +7,7 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction} from 'lodash';
+import {isFunction, isPlainObject} from 'lodash';
 
 import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
@@ -25,8 +25,8 @@ export class DashViewModel {
     viewSpec;
     @bindable isActive;
 
-    contentModel;
     containerModel;
+    @managed contentModel;
     @managed refreshContextModel;
 
     get modelLookupContext() {
@@ -79,7 +79,9 @@ export class DashViewModel {
     get state() {
         const {getState} = this.viewSpec;
         if (!isFunction(getState) || !this.contentModel) return null;
-        return getState(this.contentModel);
+        const state = getState(this.contentModel);
+        throwIf(!isPlainObject(state), 'DashView state must be an object');
+        return state;
     }
 
     setState(state) {
