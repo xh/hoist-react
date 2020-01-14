@@ -10,10 +10,10 @@ import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {RefreshMode, RenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {start} from '@xh/hoist/promise';
-import {castArray, debounce, isEmpty, isEqual, isString} from 'lodash';
+import {castArray, isEmpty, isEqual, isString} from 'lodash';
 
 import {dashView} from './DashView';
 import {DashViewModel} from './DashViewModel';
@@ -119,10 +119,9 @@ export class DashContainerModel {
             }
         });
 
-        this.updateStateBuffered = debounce(this.updateState, 100);
         this.addReaction({
             track: () => this.viewState,
-            run: () => this.updateStateBuffered()
+            run: () => this.updateState()
         });
     }
 
@@ -170,7 +169,7 @@ export class DashContainerModel {
             // Initialize GoldenLayout
             goldenLayout.on('stateChanged', () => {
                 this.renderIcons();
-                this.updateStateBuffered();
+                this.updateState();
             });
             goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
             goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
@@ -185,7 +184,7 @@ export class DashContainerModel {
         return this.loadStateAsync(this.defaultState);
     }
 
-    // Todo: Try debounced again - maybe different order
+    @debounced(100)
     @action
     updateState() {
         const {goldenLayout, viewState} = this;
