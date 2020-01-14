@@ -128,7 +128,7 @@ export class Store {
 
         const records = this.createRecords(rawData);
         this._committed = this._current = this._committed.withNewRecords(records);
-        this.rebuildFiltered();
+        this.applyFilter();
 
         if (rawSummaryData) {
             this.summaryRecord = this.createRecord(rawSummaryData, null, true);
@@ -212,11 +212,20 @@ export class Store {
                 this._current = this._committed;
             }
 
-            this.rebuildFiltered();
+            this.applyFilter();
             didUpdate = true;
         }
 
         if (didUpdate) this.lastUpdated = Date.now();
+    }
+
+    /**
+     * Re-runs the current StoreFilter on the current data. Applications should call this method
+     * when state used by the StoreFilter has changed.
+     */
+    @action
+    applyFilter() {
+        this._filtered = this._current.withFilter(this.filter);
     }
 
     /**
@@ -242,7 +251,7 @@ export class Store {
         });
 
         this._current = this._current.withTransaction({add: addRecs});
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /**
@@ -260,7 +269,7 @@ export class Store {
             .withTransaction({remove: records})
             .normalize(this._committed);
 
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /**
@@ -312,7 +321,7 @@ export class Store {
             .withTransaction({update: Array.from(updateRecs.values())})
             .normalize(this._committed);
 
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /**
@@ -330,7 +339,7 @@ export class Store {
             .withTransaction({update: records.map(it => this.getCommittedOrThrow(it.id))})
             .normalize(this._committed);
 
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /**
@@ -339,7 +348,7 @@ export class Store {
     @action
     revert() {
         this._current = this._committed;
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /**
@@ -437,7 +446,7 @@ export class Store {
         }
 
         this._filter = filter;
-        this.rebuildFiltered();
+        this.applyFilter();
     }
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
@@ -566,11 +575,6 @@ export class Store {
     resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
         this.summaryRecord = null;
-    }
-
-    @action
-    rebuildFiltered() {
-        this._filtered = this._current.withFilter(this.filter);
     }
 
     parseFields(fields) {
