@@ -78,18 +78,16 @@ export class DashTabModel {
         this.refreshContextModel = new DashRefreshContextModel(this);
     }
 
-    get state() {
-        const {getState} = this.viewSpec;
-        if (!isFunction(getState) || !this.contentModel) return null;
-        const state = getState(this.contentModel);
+    getState() {
+        if (!this.contentModel || !isFunction(this.contentModel.getState)) return;
+        const state = this.contentModel.getState();
         throwIf(!isPlainObject(state), 'DashViewSpec getState() must return an object');
         return state;
     }
 
     setState(state) {
-        const {setState} = this.viewSpec;
-        if (!isFunction(setState) || !this.contentModel) return;
-        return setState(state, this.contentModel);
+        if (!this.contentModel || !isFunction(this.contentModel.setState)) return;
+        this.contentModel.setState(state);
     }
 
 }

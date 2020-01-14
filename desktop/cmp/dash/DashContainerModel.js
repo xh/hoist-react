@@ -271,8 +271,8 @@ export class DashContainerModel {
     get viewState() {
         const ret = {};
         this.tabModels.map(it => {
-            const {id, state} = it;
-            if (state) ret[id] = state;
+            const state = it.getState();
+            if (state) ret[it.id] = state;
         });
         return ret;
     }

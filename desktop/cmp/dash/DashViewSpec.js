@@ -19,8 +19,6 @@ export class DashViewSpec {
     title;
     icon;
     contentModelFn;
-    getState;
-    setState;
     unique;
     allowClose;
     renderMode;
@@ -42,9 +40,10 @@ export class DashViewSpec {
      *      custom element factory of the form returned by elemFactory.
      * @param {string} title - Title text added to the tab header.
      * @param {function} [contentModelFn] - Function which returns a model instance to be passed
-     *      to the content. This to facilitate saving / loading content state
-     * @param {DashViewGetStateFn} [getState] - Function to return observable state.
-     * @param {DashViewSetStateFn} [setState] - Function to set state on the contentModel
+     *      to the content. This model should implement a getState() and setState() to facilitate
+     *      saving / loading content state.
+     *      @see DashViewGetStateFn
+     *      @see DashViewSetStateFn
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
      * @param {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
@@ -59,8 +58,6 @@ export class DashViewSpec {
         title,
         icon,
         contentModelFn,
-        getState,
-        setState,
         unique = false,
         allowClose = true,
         renderMode,
@@ -75,8 +72,6 @@ export class DashViewSpec {
         this.title = title;
         this.icon = icon;
         this.contentModelFn = contentModelFn;
-        this.getState = getState;
-        this.setState = setState;
         this.unique = unique;
         this.allowClose = allowClose;
         this.renderMode = renderMode;
@@ -87,15 +82,12 @@ export class DashViewSpec {
 
 /**
  * @callback DashViewGetStateFn - Function which returns an *observable* object containing the
- *      view's persistent state. Note: requires using DashViewSpec.contentModelFn.
- * @param {HoistModel} contentModel - The model instance provided to the view's content.
+ *      view's ContentModel's persistent state.
  * @returns {Object} - Observable state from the view's contentModel. Note that if this state
  *      contains `title` or `icon` keys, these will be used to update the tab headers.
  */
 
 /**
- * @callback DashViewSetStateFn - Function to sets a DashView's persistent state.
- *      Note: requires using DashViewSpec.contentModelFn.
+ * @callback DashViewSetStateFn - Function to set persistent state on a view's ContentModel.
  * @param {Object} state - State previously created using a DashViewGetStateFn.
- * @param {HoistModel} contentModel - The model instance provided to the view's content.
  */
