@@ -181,7 +181,7 @@ export class Select extends HoistInput {
     toOption(src, depth) {
         return isPlainObject(src) ?
             this.objectToOption(src, depth) :
-            {label: src != null ? src.toString() : '-null-', value: src};
+            this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -189,14 +189,19 @@ export class Select extends HoistInput {
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
-        throwIf(
-            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
-            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
-        );
+        if (!src.hasOwnProperty(valueField) && !src.hasOwnProperty('options')) {
+            return this.valueToOption(src);
+        }
 
-        return src.hasOwnProperty('options') ?
-            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        if (src.hasOwnProperty('options')) {
+            return {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)};
+        } else if (src.hasOwnProperty(valueField)) {
+            return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        } else return this.valueToOption(src);
+    }
+
+    valueToOption(src) {
+        return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
     //----------------------

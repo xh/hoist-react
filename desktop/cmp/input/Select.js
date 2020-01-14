@@ -382,7 +382,7 @@ export class Select extends HoistInput {
     toOption(src, depth) {
         return isPlainObject(src) ?
             this.objectToOption(src, depth) :
-            this.valueToObject(src);
+            this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -391,17 +391,17 @@ export class Select extends HoistInput {
             valueField = withDefault(props.valueField, 'value');
 
         if (!src.hasOwnProperty(valueField) && !src.hasOwnProperty('options')) {
-            return this.valueToObject(src);
+            return this.valueToOption(src);
         }
 
         if (src.hasOwnProperty('options')) {
             return {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)};
         } else if (src.hasOwnProperty(valueField)) {
             return {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
-        } else return this.valueToObject(src);
+        } else return this.valueToOption(src);
     }
 
-    valueToObject(src) {
+    valueToOption(src) {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
