@@ -6,8 +6,8 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ModelLookupContext} from '@xh/hoist/core/impl';
-import {fragment} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {frame} from '@xh/hoist/cmp/layout';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {useContext} from 'react';
 import PT from 'prop-types';
@@ -33,13 +33,9 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         // Get container ref for GoldenLayouts resize handling
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
-        return fragment(
-            // Todo: Use frame and proper mask component
-            panel({
-                className,
-                ref,
-                mask: 'onLoad'
-            }),
+        return frame(
+            frame({className, ref}),
+            mask({spinner: true, isDisplayed: model.loadingState}),
             dashContainerViewDialog()
         );
     }
