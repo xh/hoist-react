@@ -46,7 +46,12 @@ export class ImpersonationBarModel {
         if (this.isOpen) {
             this.hide();
         } else {
-            this.show();
+            XH.fetchJson({
+                url: 'xh/impersonationEnabled'
+            }).then(res => {
+                throwIf(!res.enabled, 'Impersonation is disabled for this app.');
+                this.show();
+            });
         }
     }
 
