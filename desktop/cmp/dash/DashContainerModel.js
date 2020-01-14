@@ -4,14 +4,15 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {RefreshMode, RenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
+import {start} from '@xh/hoist/promise';
 import {isEmpty, isString} from 'lodash';
 
 import {dashView} from './DashView';
@@ -74,9 +75,6 @@ export class DashContainerModel {
     /** member {boolean} */
     @observable dialogIsOpen;
 
-    /** member {boolean} */
-    @observable loadingState;
-
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
 
@@ -91,6 +89,9 @@ export class DashContainerModel {
 
     /** @member {Object} */
     goldenLayoutSettings;
+
+    /** @member {PendingTaskModel} */
+    @managed loadingStateTask = new PendingTaskModel();
 
     /** @member {Ref} */
     containerRef = createObservableRef();
@@ -148,62 +149,52 @@ export class DashContainerModel {
         if (!containerEl) return;
 
         // Show mask to provide user feedback
-        // Todo: Go back to PendingTaskModel, call it loadingState
-        this.setLoadingState(true);
-        await wait(100);
+        start(() => {
+            this.destroyGoldenLayouts();
+            this.goldenLayout = null;
 
-        this.destroyGoldenLayouts();
-        this.goldenLayout = null;
+            // Recreate GoldenLayouts with state
+            const goldenLayout = new GoldenLayout({
+                content: convertStateToGL(state, this.viewSpecs),
+                settings: {
+                    // Remove icons by default
+                    showPopoutIcon: false,
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    ...this.goldenLayoutSettings
+                },
+                dimensions: {
+                    borderWidth: 6,
+                    headerHeight: 25
+                }
+            }, containerEl);
 
-        // Recreate GoldenLayouts with state
-        const goldenLayout = new GoldenLayout({
-            content: convertStateToGL(state, this.viewSpecs),
-            settings: {
-                // Remove icons by default
-                showPopoutIcon: false,
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                ...this.goldenLayoutSettings
-            },
-            dimensions: {
-                borderWidth: 6,
-                headerHeight: 25
-            }
-        }, containerEl);
+            // Register components
+            this.viewSpecs.forEach(viewSpec => {
+                goldenLayout.registerComponent(viewSpec.id, (props) => {
+                    const {id, state, ...rest} = props,
+                        model = new DashViewModel({
+                            id,
+                            viewSpec,
+                            state,
+                            containerModel: this
+                        });
 
-        // Register components
-        this.viewSpecs.forEach(viewSpec => {
-            goldenLayout.registerComponent(viewSpec.id, (props) => {
-                const {id, state, ...rest} = props,
-                    model = new DashViewModel({
-                        id,
-                        viewSpec,
-                        state,
-                        containerModel: this
-                    });
-
-                this.addViewModel(model);
-                return dashView({model, ...rest});
+                    this.addViewModel(model);
+                    return dashView({model, ...rest});
+                });
             });
-        });
 
-        // Initialize GoldenLayout
-        goldenLayout.on('stateChanged', () => this.updateState());
-        goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
-        goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
-        goldenLayout.init();
-        this.goldenLayout = goldenLayout;
+            // Initialize GoldenLayout
+            goldenLayout.on('stateChanged', () => this.updateState());
+            goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
+            goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
+            goldenLayout.init();
+            this.goldenLayout = goldenLayout;
 
-        this.refreshActiveTabs();
-        this.updateTabHeaders();
-
-        await wait(100);
-        this.setLoadingState(false);
-    }
-
-    @action
-    setLoadingState(val) {
-        this.loadingState = val;
+            this.refreshActiveTabs();
+            this.updateTabHeaders();
+        }).linkTo(this.loadingStateTask);
     }
 
     @debounced(100)

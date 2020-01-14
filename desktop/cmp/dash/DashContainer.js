@@ -35,7 +35,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
 
         return frame(
             frame({className, ref}),
-            mask({spinner: true, isDisplayed: model.loadingState}),
+            mask({spinner: true, model: model.loadingStateTask}),
             dashContainerViewDialog()
         );
     }
