@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
+import React, {useRef} from 'react';
 import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
-import {useOwnedModelLinker, ModelLookup, modelLookupContextProvider} from '@xh/hoist/core/impl';
+import {modelLookupContextProvider, useOwnedModelLinker} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {RenderMode} from '@xh/hoist/enums';
@@ -39,11 +39,6 @@ export const dashTab = hoistCmp.factory({
             } = model,
             wasActivated = useRef(false);
 
-        // If content model provided, pass it in via context
-        const lookupContext = contentModel ?
-            new ModelLookup(contentModel, modelLookupContext, ModelPublishMode.DEFAULT) :
-            modelLookupContext;
-
         // Respect RenderMode
         if (!wasActivated.current && isActive) {
             wasActivated.current = true;
@@ -59,11 +54,15 @@ export const dashTab = hoistCmp.factory({
             return null;
         }
 
-        // Todo: Try cloning here and applying contentModel if provided (later)
-        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
+        // Create content, passing in contentModel if provided
+        const contentProps = {flex: 1};
+        if (contentModel) contentProps.model = contentModel;
+
+        let contentElem = content.isHoistComponent ? elem(content) : content();
+        contentElem = React.cloneElement(contentElem, contentProps);
 
         return modelLookupContextProvider({
-            value: lookupContext,
+            value: modelLookupContext,
             item: frame({
                 className,
                 item: refreshContextView({
@@ -78,8 +77,8 @@ export const dashTab = hoistCmp.factory({
     }
 });
 
-// This util component wraps the allows the content to own the content model, if one
-// was provided via a contentModelFn.
+// This util component allows the content to own the content model, if one
+// was provided via a contentModelFn, enabling it to support LoadSupport
 const ownedModelWrapper = hoistCmp.factory({
     render({contentModel, contentElem}) {
         useOwnedModelLinker(contentModel ? contentModel : null);
