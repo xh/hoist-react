@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import moment from 'moment';
 
 export const
     MILLISECONDS = 1,
@@ -25,3 +26,12 @@ export function olderThan(t, millis) {
     return !t || t < Date.now() - millis;
 }
 
+/** Returns midnight browser local time for the provided date, or current date. */
+export function startOfDay(date = new Date()) {
+    return moment(date).startOf('day').toDate();
+}
+
+/** Returns 11:59:59pm browser local time for the provided date, or current date. */
+export function endOfDay(date = new Date()) {
+    return moment(date).endOf('day').toDate();
+}
