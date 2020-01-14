@@ -108,7 +108,7 @@ class LocalModel {
             }
             this.chart.redraw();
         } else {
-            this.buildHighChart();
+            this.renderHighChart();
         }
         this.prevSeriesConfig = cloneDeep(seriesConfig);
     }
