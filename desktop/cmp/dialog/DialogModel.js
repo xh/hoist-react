@@ -24,6 +24,7 @@ export class DialogModel {
     dialogRootId = 'xh-dialog-root';
     dialogWrapperDivRef = createObservableRef();
     rndRef = null;
+    restoreDimsTo = {width: null, height: null};
 
     //-----------------------
     // Immutable Properties
@@ -32,8 +33,6 @@ export class DialogModel {
     draggable;
     showCloseButton;
     prefName;
-    width;
-    height;
     closeOnMaskClick;
     closeOnEscape;
 
@@ -41,6 +40,7 @@ export class DialogModel {
     // Observable State
     //---------------------
     /** Is the Dialog mounted into React's virtual DOM? */
+    @observable isMaximized = false;
     @observable hasMounted = false;
     @observable isOpen = false;
 
@@ -50,16 +50,12 @@ export class DialogModel {
      * @param {boolean} [config.draggable] - Can dialog be dragged?
      * @param {boolean} [config.showCloseButton] - Show a close button in dialog header?
      * @param {string} [config.prefName] - preference name to store sizing and positioning state.
-     * @param {number} [config.width] - Dialog width. Number that represents px.
-     * @param {number} [config.height] - Dialog height. Number that represents px.
      */
     constructor({
         resizable = false,
         draggable = false,
         showCloseButton = true,
         prefName = null,
-        width = null,
-        height = null,
         closeOnMaskClick = true,
         closeOnEscape = true
     } = {}) {
@@ -68,8 +64,6 @@ export class DialogModel {
         this.resizable = resizable;
         this.draggable = draggable;
         this.showCloseButton = showCloseButton;
-        this.width = width;
-        this.height = height;
         this.closeOnMaskClick = closeOnMaskClick;
         this.closeOnEscape = closeOnEscape;
 
@@ -102,6 +96,16 @@ export class DialogModel {
     @action
     hide() {
         this.isOpen = false;
+    }
+
+    @action
+    toggleIsMaximized() {
+        this.isMaximized = !this.isMaximized;
+        if (this.isMaximized) {
+            this.maximize();
+        } else {
+            this.restoreDims();
+        }
     }
 
     //---------------------------------------------
@@ -139,18 +143,44 @@ export class DialogModel {
         } = this.dialogWrapperDivRef.current;
 
         this.rndRef.updateSize({width, height});
-        this.rndRef.updatePosition(this.calcPos(width, height));
+        this.rndRef.updatePosition(this.calcPos({width, height}));
     }
 
-    calcPos(width, height) {
+    calcPos({width, height}) {
+        const wDims = this.windowDims;
+        return {
+            x: Math.max((wDims.width - width) / 2, 0),
+            y: Math.max((wDims.height - height) / 2, 0)
+        };
+    }
+
+    maximize() {
+        if (!this.rndRef) return;
+
+        const {
+            offsetWidth: width,
+            offsetHeight: height
+        } = this.dialogWrapperDivRef.current;
+        this.restoreDimsTo = {width, height};
+
+        this.rndRef.updatePosition({x: 0, y: 0});
+        this.rndRef.updateSize(this.windowDims);
+    }
+
+    restoreDims() {
+        if (!this.rndRef) return;
+
+        this.rndRef.updatePosition(this.calcPos(this.restoreDimsTo));
+        this.rndRef.updateSize(this.restoreDimsTo);
+    }
+
+    get windowDims() {
         const w = window, d = document, e = d.documentElement,
-            g = d.getElementsByTagName('body')[0],
-            windowWidth = w.innerWidth || e.clientWidth || g.clientWidth,
-            windowHeight = w.innerHeight || e.clientHeight || g.clientHeight;
+            g = d.getElementsByTagName('body')[0];
 
         return {
-            x: Math.max((windowWidth - width) / 2, 0),
-            y: Math.max((windowHeight - height) / 2, 0)
+            width: w.innerWidth || e.clientWidth || g.clientWidth,
+            height: w.innerHeight || e.clientHeight || g.clientHeight
         };
     }
 }

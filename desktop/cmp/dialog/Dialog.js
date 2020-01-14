@@ -138,7 +138,7 @@ const rndDialog = hoistCmp.factory(
         );
 
         if (width && height) {
-            RnDDims = {width, height, ...dialogModel.calcPos(width, height)};
+            RnDDims = {width, height, ...dialogModel.calcPos({width, height})};
         }
 
         return rnd({
