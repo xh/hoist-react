@@ -12,7 +12,7 @@ import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
-import {castArray, isEmpty, isString, isFunction} from 'lodash';
+import {isEmpty, isString} from 'lodash';
 
 import {dashView} from './DashView';
 import {DashViewModel} from './DashViewModel';
@@ -80,12 +80,6 @@ export class DashContainerModel {
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
 
-    /** @member {Object} */
-    defaultState;
-
-    /** @member {Object} */
-    goldenLayoutSettings;
-
     /** @member {boolean} */
     enableAdd;
 
@@ -95,11 +89,8 @@ export class DashContainerModel {
     /** @member {RefreshMode} */
     refreshMode;
 
-    /** @member {DashContainerGetInitStateFn} */
-    getInitState;
-
-    /** @member {DashViewSetStateFn} */
-    setState;
+    /** @member {Object} */
+    goldenLayoutSettings;
 
     /** @member {Ref} */
     containerRef = createObservableRef();
@@ -110,7 +101,7 @@ export class DashContainerModel {
     /**
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
-     * @param {Object[]} defaultState - Default layout state for this container.
+     * @param {Object[]} [initialState] - Default layout state for this container.
      * @param {boolean} [enableAdd] - true (default) to include a '+' button in each stack header,
      *      which opens the provided 'Add View' dialog.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
@@ -119,30 +110,21 @@ export class DashContainerModel {
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
-     * @param {DashContainerGetInitStateFn} [getInitState] - Function which returns initial state.
-     * @param {DashViewSetStateFn} [setState] - Callback triggered when the state changes.
      */
     constructor({
         viewSpecs,
-        defaultState,
-        initialState = [], // Todo
+        initialState = [],
         enableAdd = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        goldenLayoutSettings,
-        getInitState,
-        setState
+        goldenLayoutSettings
     }) {
         throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
-        // throwIf(isEmpty(defaultState), 'DashContainerModel must be initialized with default state');
 
-        this.defaultState = castArray(defaultState);
         this.enableAdd = enableAdd;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
-        this.getInitState = getInitState;
-        this.setState = setState;
 
         // Add viewSpecs
         ensureUniqueBy(viewSpecs, 'id');
@@ -151,11 +133,7 @@ export class DashContainerModel {
         // Initialize GoldenLayouts with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
-            run: () => {
-                const initState = isFunction(this.getInitState) ? this.getInitState() : null,
-                    state = !isEmpty(initState) ? initState : defaultState;
-                this.loadStateAsync(state);
-            }
+            run: () => this.loadStateAsync(initialState)
         });
 
         this.addReaction({
@@ -223,11 +201,6 @@ export class DashContainerModel {
         this.setLoadingState(false);
     }
 
-    // Todo: Remove this
-    async resetStateAsync() {
-        return this.loadStateAsync(this.defaultState);
-    }
-
     @action
     setLoadingState(val) {
         this.loadingState = val;
@@ -240,11 +213,6 @@ export class DashContainerModel {
         if (!goldenLayout.isInitialised) return;
 
         this.state = convertGLToState(goldenLayout, viewState);
-
-        // Todo: Lose this
-        if (isFunction(this.setState)) {
-            this.setState(this.state);
-        }
 
         // We must update the tab headers, both because changes to
         // GoldenLayout can cause them to be dropped, and to reflect
@@ -449,14 +417,3 @@ export class DashContainerModel {
     }
 
 }
-
-/**
- * @callback DashContainerGetInitStateFn - Function which returns an object containing the
- *      DashContainers initial state. Called once during initialization
- * @returns {Object} - Observable state for the DashView
- */
-
-/**
- * @callback DashViewSetStateFn - Callback triggered when the DashContainer's state changes.
- * @param {Object} state - Current state
- */
