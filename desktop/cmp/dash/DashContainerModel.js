@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {start} from '@xh/hoist/promise';
-import {castArray, isEmpty, isEqual, isString} from 'lodash';
+import {castArray, isEmpty, isString, isFunction} from 'lodash';
 
 import {dashView} from './DashView';
 import {DashViewModel} from './DashViewModel';
@@ -106,8 +106,6 @@ export class DashContainerModel {
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
      * @param {Object[]} defaultState - Default layout state for this container.
-     * @param {Object[]} [initState] - State with which to initialize for this container,
-     *      if different from defaultState.
      * @param {boolean} [enableAdd] - true (default) to include a '+' button in each stack header,
      *      which opens the provided 'Add View' dialog.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
@@ -116,15 +114,18 @@ export class DashContainerModel {
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
+     * @param {DashContainerGetInitStateFn} [getInitState] - Function which returns initial state.
+     * @param {DashViewSetStateFn} [setState] - Callback triggered when the state changes.
      */
     constructor({
         viewSpecs,
         defaultState,
-        initState,
         enableAdd = true,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        goldenLayoutSettings
+        goldenLayoutSettings,
+        getInitState,
+        setState
     }) {
         throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
         throwIf(isEmpty(defaultState), 'DashContainerModel must be initialized with default state');
@@ -134,6 +135,8 @@ export class DashContainerModel {
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
+        this.getInitState = getInitState;
+        this.setState = setState;
 
         // Add viewSpecs
         ensureUniqueBy(viewSpecs, 'id');
@@ -143,7 +146,8 @@ export class DashContainerModel {
         this.addReaction({
             when: () => this.containerRef.current,
             run: () => {
-                const state = !isEmpty(initState) && !isEqual(initState, defaultState) ? initState : defaultState;
+                const initState = isFunction(this.getInitState) ? this.getInitState() : null,
+                    state = !isEmpty(initState) ? initState : defaultState;
                 this.loadStateAsync(state);
             }
         });
@@ -223,6 +227,10 @@ export class DashContainerModel {
             contentItems = goldenLayout.root.contentItems;
 
         this.state = convertGLToState(configItems, contentItems, viewState);
+
+        if (isFunction(this.setState)) {
+            this.setState(this.state);
+        }
     }
 
     onItemDestroyed(item) {
@@ -396,3 +404,14 @@ export class DashContainerModel {
     }
 
 }
+
+/**
+ * @callback DashContainerGetInitStateFn - Function which returns an object containing the
+ *      DashContainers initial state. Called once during initialization
+ * @returns {Object} - Observable state for the DashView
+ */
+
+/**
+ * @callback DashViewSetStateFn - Callback triggered when the DashContainer's state changes.
+ * @param {Object} state - Current state
+ */
