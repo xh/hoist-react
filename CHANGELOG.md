@@ -24,6 +24,7 @@
    with large option lists.
 * `Select` now supports grouped options. To use, add an attribute `options` containing the array of 
   sub-options.
+* `Select` now allows the use of objects as values.
 
 ### 💥 Breaking Changes
 
