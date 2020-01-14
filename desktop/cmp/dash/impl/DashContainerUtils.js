@@ -5,6 +5,7 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isFinite, isArray} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Convert the output from Golden Layouts into our serializable state
@@ -45,7 +46,13 @@ export function convertGLToState(configItems = [], contentItems = [], viewState)
  */
 export function convertStateToGL(state = [], viewSpecs = []) {
     return state.map(item => {
-        if (item.type === 'view') {
+        const {type} = item;
+
+        throwIf(type === 'component' || type === 'react-component',
+            'Trying to use "component" or "react-component" types. Use type="view" instead.'
+        );
+
+        if (type === 'view') {
             const viewSpec = viewSpecs.find(v => v.id === item.id);
             if (!viewSpec) return null;
 

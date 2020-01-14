@@ -23,13 +23,42 @@ import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashCon
 /**
  * Model for a DashContainer, representing its contents and layout state.
  *
+ * This model provides support for managing dash views, adding new views on the fly,
+ * and tracking / loading state.
+ *
+ * State should be structured as nested arrays of container objects, according to
+ * GoldenLayout`s content config. Supported container types are `row`, `column` and `stack`.
+ * Child containers and views should be provided as an array under the `contents` key.
  * Note that loading state will destroy and reinitialize all components. Therefore,
  * it is recommended you do so sparingly.
  *
- * Todo: Document how to structure state
+ * We differ from GoldenLayouts by offering a new type `view`. These should be configured as
+ * id references to the provided ViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
+ * be used instead of the `component` and `react-component` types provided by GoldenLayouts.
  *
- * This object provides support for managing dash views, adding new views on the fly,
- * and tracking / loading state.
+ * e.g.
+ *
+ * [{
+ *     type: 'row',
+ *     contents: [
+ *         {
+ *             type: 'stack',
+ *             contents: [
+ *                 {type: 'view', id: 'viewId'},
+ *                 {type: 'view', id: 'viewId'}
+ *             ]
+ *         },
+ *         {
+ *             type: 'column',
+ *             contents: [
+ *                 {type: 'view', id: 'viewId'}
+ *             ]
+ *         }
+ *     ]
+ * }]
+ *
+ * @see http://golden-layout.com/docs/ItemConfig.html
+ * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
 @HoistModel
 export class DashContainerModel {
@@ -288,10 +317,11 @@ export class DashContainerModel {
         // Add '+' icon and attach click listener for adding components
         if (this.enableAdd) {
             const $container = stack.header.controlsContainer, // Note: this is a jquery element
-                icon = convertIconToSvg(Icon.add());
+                icon = convertIconToSvg(Icon.add()),
+                className = 'xh-dash-container-add-button';
 
-            $container.append(`<div class="xh-dash-container-add-button">${icon}</div>`);
-            const $btn = $container.find('.xh-dash-container-add-button');
+            $container.append(`<div class="${className}">${icon}</div>`);
+            const $btn = $container.find('.' + className);
             $btn.click(() => this.openViewDialog(stack));
         }
     }
