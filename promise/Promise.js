@@ -178,7 +178,7 @@ const enhancePromise = (promisePrototype) => {
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            config.message = config.message || 'Operation timed out';
+            config.message = config.message || `Operation timed out after ${config.interval}ms.`;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
