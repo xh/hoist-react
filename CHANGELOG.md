@@ -2,6 +2,61 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🗄️ Data Package Changes
+
+Several enhancements and changes have been made to the data package in this release. These changes
+primarily revolve around support for editing Record data, in preparation for future enhancements
+around inline grid editing support.
+
+These enhancements necessitated some re-working of how our Store and Record classes behave. Store
+now keeps track of both the current state of its records, as well as the committed state. Records
+are now immutable and frozen so any changes to Record data need to be done through the `updateData`
+or`modifyRecords` methods. This change is most likely to impact application which support inline
+grid editing of record data, which was not previously well-supported.
+
+#### Store
+* `updateData` now accepts a flat list of data changes which will be parsed out into adds and updates
+  for the transaction.
+* `refreshFilter` method has been added to allow applications to rebuild the filtered data set if
+  some application state has changed which would effect the store filter
+* `noteDataUpdated()` has been removed.
+* New methods for supporting editing of Store records:
+  * `addRecords()`
+  * `removeRecords()`
+  * `modifyRecords()`
+  * `revertRecords()`
+  * `revert()`
+* New getters for inspecting the state of the Store:
+  * `committedRecords`
+  * `newRecords`
+  * `removedRecords`
+  * `modifiedRecords`
+  * `isModified`
+
+#### Record
+* Records are now immutable and cannot be modified by Applications directly.
+* Record data is no longer available as top-level properties on the Record itself.
+  * Data is now stored in the `data` property on Record
+  * New `get()` method for accessing individual field values
+* New getters and methods for inspecting the state of the Record:
+  * `isNew`
+  * `isModified`
+  * `isCommitted`
+  * `isFieldModified()`
+  * `getModifiedFields()`
+
+#### Column
+* Columns have been enhanced for provide basic support for inline-editing of record data
+* `editable` config has been added to indicate if a column/cell should be inline-editable
+* `updateValueFn` config has been added for providing the logic needed for updating a field value on
+  a Record. A default function is installed which calls `Store.modifyRecords` to update the record.
+  Applications should not need to provide their own handling here in the majority of cases.
+* `getValueFn` config has been added for retrieving the cell value for a Record field. A default
+  function is installed which uses the new Record apis for retrieving field value, which is necessary
+  because the field values are no longer available as top-level properties of the Record. Applications
+  which had previously added `valueGetter` callbacks via `agOptions` on columns should use this new
+  config instead.
+
 ### 🎁 New Features
 
 * Added keyboard support to ag-Grid context menus.
@@ -20,7 +75,7 @@
 * A new `Clock` component displays the time, either local to the browser or for a configurable
   timezone.
 * `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
-* New property `enableWindowed` on desktop `Select` component to improve performance 
+* New property `enableWindowed` on desktop `Select` component to improve performance
 with large option lists.
 
 
@@ -53,7 +108,7 @@ with large option lists.
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
 * Fixed problem where charts were resized when being hidden
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
-  
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
@@ -390,7 +445,7 @@ leverage the context for model support discussed above.
 
 * `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
   called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
-  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to️️
   verify the grid is fully initialized.
 
 ### 📚 Libraries
