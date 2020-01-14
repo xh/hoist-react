@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {stringify} from 'qs';
-import {isFunction, isNil, isDate, omitBy} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
+import {isDate, isFunction, isNil, isNumber, omitBy} from 'lodash';
+import {stringify} from 'qs';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -48,7 +48,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        return this.fetchInternalAsync(opts).timeout(opts.timeout);
+        return this.fetchInternalAsync(opts).timeout(this.parseTimeout(opts));
     }
 
     /**
@@ -63,7 +63,7 @@ export class FetchService {
         }).then(
             r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()
         ).timeout(
-            opts.timeout
+            this.parseTimeout(opts)
         );
     }
 
@@ -77,7 +77,7 @@ export class FetchService {
     }
 
     /**
-     * Send a POST request with a JSON bod, and decode the response as JSON.
+     * Send a POST request with a JSON body and decode the response as JSON.
      * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
@@ -216,11 +216,21 @@ export class FetchService {
         }
     }
 
+    parseTimeout(opts) {
+        const {timeout, url} = opts;
+        if (!timeout) return null;
+
+        return isNumber(timeout) ?
+            {interval: timeout, message: `Failure calling ${url} - timed out after ${timeout}ms.`} :
+            timeout;
+    }
+
     qsFilterFn = (prefix, value) => {
         if (isDate(value))      return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
-    }
+    };
+
 }
 
 /**
