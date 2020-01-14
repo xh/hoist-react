@@ -231,7 +231,8 @@ export class DashContainerModel {
         if (isString(viewSpec)) viewSpec = this.getViewSpec(viewSpec);
         if (!container) container = goldenLayout.root.contentItems[0];
 
-        // Todo: Enforce unique with exception
+        const instances = this.getViewsBySpecId(viewSpec.id);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a Viewspec flagged "unique". id=${viewSpec.id}`);
 
         container.addChild(viewSpec.goldenLayoutsConfig);
     }
