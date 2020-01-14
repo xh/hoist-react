@@ -145,7 +145,7 @@ export class RecordSet {
 
     withNewRecords(recordMap) {
         // Reuse existing Record object instances where possible if they resolve as equal to their
-        // new counterparts. See note on Store.loadRecords().
+        // new counterparts. See note on Store.loadData().
         if (!this.empty) {
             const newIds = recordMap.keys();
             for (let id of newIds) {

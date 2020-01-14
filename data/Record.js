@@ -5,11 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import equal from 'fast-deep-equal';
-import {forEach, isNil} from 'lodash';
+import {isNil} from 'lodash';
 
 /**
- * Wrapper object for each data element within a {@see Store}.
+ * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
+ * within their Store and manage a bundle of data with fields defined by the Store. They track the
+ * state of that data through possible updates, with support for tracking edits and "committing"
+ * changes to provide dirty state.
+ *
+ * Records also store state related to any parent/child hierarchy, if present.
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
@@ -33,7 +37,7 @@ export class Record {
     /** @member {string[]|number[]} */
     treePath;
 
-    /** @returns {boolean} - true if the Record has not been committed. */
+    /** @returns {boolean} - true if the Record has never been committed. */
     get isNew() {
         return this.committedData === null;
     }
@@ -53,7 +57,7 @@ export class Record {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
-    /** @member {Field[]} */
+    /** @returns {Field[]} */
     get fields() {
         return this.store.fields;
     }
@@ -108,7 +112,7 @@ export class Record {
 
     /**
      * Construct a Record from a raw source object. Extract values from the source object for all
-     * Fields defined on the given Store and install them as top-level properties on the new Record.
+     * Fields defined on the given Store and install them as data on the new Record.
      *
      * This process will apply basic conversions if required, based on the specified Field types.
      * Properties of the raw object *not* included in the store's Fields config will be ignored.
@@ -118,66 +122,46 @@ export class Record {
      * requiring children to also be recreated.)
      *
      * @param {Object} c - Record configuration
-     * @param {number|string} c.id - record id
+     * @param {(number|string)} c.id - record ID
+     * @param {Store} c.store - store containing this record.
      * @param {Object} c.data - data used to construct this record,
      *      pre-processed if applicable by `store.processRawData()` and `Field.parseVal()`.
-     * @param {Store} c.store - store containing this record.
      * @param {Object} [c.raw] - the same data, prior to any store pre-processing.
-     * @param {Record} [c.parent] - parent record, if any.
-     * @param {boolean} [c.isSummary] - whether this record is a summary record.
      * @param {Object?} [c.committedData] - the committed version of the data that was loaded
-     *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record with no
-     *      committed data in the Store data source.
+     *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record that has
+     *      been added since the last load.
+     * @param {Record} [c.parent] - parent record, if any.
+     * @param {boolean} [c.isSummary] - whether this record is a summary record, used to show
+     *      aggregate, grand-total level information in grids when enabled.
      */
-    constructor({id, data, raw = null, store, parent, isSummary = false, committedData = data}) {
+    constructor({
+        id,
+        store,
+        data,
+        raw = null,
+        committedData = data,
+        parent,
+        isSummary = false
+    }) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
-        this.parentId = parent?.id;
-        this.committedData = committedData;
-        this.raw = raw;
-        this.data = data;
         this.store = store;
-        this.isSummary = isSummary;
+        this.data = data;
+        this.raw = raw;
+        this.committedData = committedData;
+        this.parentId = parent?.id;
         this.treePath = parent ? [...parent.treePath, id] : [id];
+        this.isSummary = isSummary;
     }
 
     /**
-     * Gets a field value from the Record data
-     * @param {string} field - name of the field
+     * Gets a field value from the Record data.
+     * @param {string} fieldName - name of the field
      * @returns {*} - the field value
      */
-    get(field) {
-        return this.data[field];
-    }
-
-    /**
-     * Determines if a field value has changed since this Record was originally loaded
-     * @param {string} name - field name to check.
-     * @returns {boolean}
-     */
-    isFieldModified(name) {
-        if (!this.isModified) return false;
-
-        const value = this.data[name], originalValue = this.committedData[name];
-        return !equal(value, originalValue);
-    }
-
-    /**
-     * Gets an object containing all modified fields in the Record.
-     * @returns {Object.<string, FieldValue>|null}
-     */
-    getModifiedFields() {
-        if (!this.isModified) return null;
-
-        const ret = {};
-
-        forEach(this.data, (value, fieldName) => {
-            const originalValue = this.committedData[fieldName];
-            if (!equal(value, originalValue)) ret[fieldName] = {value, originalValue};
-        });
-
-        return ret;
+    get(fieldName) {
+        return this.data[fieldName];
     }
 
     /**
@@ -210,18 +194,9 @@ export class Record {
     // --------------------------
     // Protected methods
     // --------------------------
-
-    /**
-     * Freezes this Record and its data. Should not be called by Applications.
-     */
+    /** Freezes this Record and its data. Not for application use. */
     freeze() {
         deepFreeze(this.data);
         Object.freeze(this);
     }
 }
-
-/** @typedef FieldValue
- *  @property {*} value - current value of the field
- *  @property {*} [originalValue] - original value of the field, if there is one.
- */
-

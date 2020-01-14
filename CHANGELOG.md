@@ -11,7 +11,7 @@ around inline grid editing support.
 These enhancements necessitated some re-working of how our Store and Record classes behave. Store
 now keeps track of both the current state of its records, as well as the committed state. Records
 are now immutable and frozen so any changes to Record data need to be done through the `updateData`
-or`modifyRecords` methods. This change is most likely to impact application which support inline
+or `modifyRecords` methods. This change is most likely to impact applications which support inline
 grid editing of record data, which was not previously well-supported.
 
 #### Store
