@@ -67,7 +67,7 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
-                        if (record && column) copy(record.get(column.field));
+                        if (record && column) copy(record.data[column.field]);
                     }
                 });
             case 'colChooser':

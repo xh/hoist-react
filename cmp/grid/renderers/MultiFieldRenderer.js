@@ -83,7 +83,7 @@ function renderSubField({colId, label}, context) {
     throwIf(!column, `Subfield ${colId} not found`);
 
     const {field, headerName, renderer} = column,
-        value = record.get(field),
+        value = record.data[field],
         fieldEl = document.createElement('div');
 
     if (label && !isString(label)) label = headerName;

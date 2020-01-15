@@ -170,7 +170,7 @@ export class RestFormModel {
         if (formField) {
             rawType = formField.value;
         } else if (currentRecord && field) {
-            rawType = currentRecord.get(field.name);
+            rawType = currentRecord.data[field.name];
         }
 
         switch (rawType) {

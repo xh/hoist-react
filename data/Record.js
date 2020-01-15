@@ -156,15 +156,6 @@ export class Record {
     }
 
     /**
-     * Gets a field value from the Record data.
-     * @param {string} fieldName - name of the field
-     * @returns {*} - the field value
-     */
-    get(fieldName) {
-        return this.data[fieldName];
-    }
-
-    /**
      * Calls 'fn' for each child record of this record.
      * @param {function} fn - the function to call.
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.

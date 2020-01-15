@@ -79,7 +79,7 @@ export class SplitTreeMapModel {
 
     defaultMapFilter(record) {
         const {valueField} = this.primaryMapModel;
-        return record.get(valueField) >= 0;
+        return record[valueField] >= 0;
     }
 
 }

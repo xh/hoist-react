@@ -24,7 +24,7 @@ Note the following more specific changes to these related classes:
 * 💥 Record data properties are now nested within a `data` object on Record instances and are no
   longer available as top-level properties on the Record itself.
   * Calls to access data such as `rec.quantity` must be modified to `rec.data.quantity`.
-  * When accessing multiple properties, destructing provides an efficient syntax - e.g. `const
+  * When accessing multiple properties, destructuring provides an efficient syntax - e.g. `const
     {quantity, price} = rec.data;`.
 * 💥 Records are now immutable and cannot be modified by applications directly.
   * This is a breaking change, but should only affect apps with custom inline grid editing

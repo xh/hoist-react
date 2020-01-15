@@ -220,9 +220,9 @@ export class TreeMapModel {
 
         rawData.forEach(record => {
             const {id, children, treePath} = record,
-                name = record.get(labelField),
-                value = record.get(valueField),
-                heatValue = record.get(heatField);
+                name = record.data[labelField],
+                value = record.data[valueField],
+                heatValue = record.data[heatField];
 
             // Skip records without value
             if (!value) return;
@@ -276,7 +276,7 @@ export class TreeMapModel {
         if (!data.length || colorMode === 'none') return data;
 
         // 1) Extract heat values and split into positive and negative
-        const heatValues = this.store.records.map(it => it.get(this.heatField));
+        const heatValues = this.store.records.map(it => it.data[this.heatField]);
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
         posHeatValues = posHeatValues.sort();
         negHeatValues = negHeatValues.map(it => Math.abs(it)).sort();
