@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {isEmpty, isPlainObject, find, assign} from 'lodash';
+import {isEmpty, isPlainObject, assign, isNil} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -157,11 +157,17 @@ export class Select extends HoistInput {
         return this.findOption(external, !isEmpty(external));
     }
 
-    findOption(val, createIfNotFound) {
-        const valAsOption = this.valueToOption(val),
-            match = find(this.internalOptions, {value: valAsOption.value});
+    findOption(value, createIfNotFound, options) {
+        if (!options) options = this.internalOptions;
 
-        return match ? match : (createIfNotFound ? valAsOption : null);
+        // Do a depth-first search
+        const match = options.map((option) =>
+            option.options ?
+                this.findOption(value, false, option.options) :
+                option.value === value ? option : null
+        ).find(it => !isNil(it));
+
+        return match ? match : (createIfNotFound ?  this.valueToOption(value) : null);
     }
 
     toExternal(internal) {

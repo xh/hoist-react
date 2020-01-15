@@ -19,7 +19,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import {assign, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
@@ -351,10 +351,17 @@ export class Select extends HoistInput {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(value, createIfNotFound) {
-        const match = find(this.internalOptions, value);
+    findOption(value, createIfNotFound, options) {
+        if (!options) options = this.internalOptions;
 
-        return match ? match : (createIfNotFound ? this.valueToOption(value) : null);
+        // Do a depth-first search
+        const match = options.map((option) =>
+            option.options ?
+                this.findOption(value, false, option.options) :
+                option.value === value ? option : null
+        ).find(it => !isNil(it));
+
+        return match ? match : (createIfNotFound ?  this.valueToOption(value) : null);
     }
 
     toExternal(internal) {
