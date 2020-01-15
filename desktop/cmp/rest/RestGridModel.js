@@ -4,15 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {action} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {pickBy, filter, isPlainObject} from 'lodash';
+import {action} from '@xh/hoist/mobx';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {filter, isPlainObject, pickBy} from 'lodash';
+import {RestStore} from './data/RestStore';
 
 import {RestFormModel} from './impl/RestFormModel';
-import {RestStore} from './data/RestStore';
 
 export const addAction = {
     text: 'Add',
@@ -107,7 +107,6 @@ export class RestGridModel {
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
-     * @param {function} [enhanceToolbar] - a function used to mutate RestGridToolbar items
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
@@ -121,7 +120,6 @@ export class RestGridModel {
         prepareCloneFn,
         unit = 'record',
         filterFields,
-        enhanceToolbar,
         editors = [],
         store,
         ...rest
@@ -138,7 +136,6 @@ export class RestGridModel {
 
         this.unit = unit;
         this.filterFields = filterFields;
-        this.enhanceToolbar = enhanceToolbar;
 
         this.gridModel = new GridModel({
             contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
@@ -173,7 +170,7 @@ export class RestGridModel {
     @action
     cloneRecord(record) {
         const editableFields = filter(record.fields, 'editable').map(it => it.name),
-            clone = pickBy(record, (v, k) => editableFields.includes(k));
+            clone = pickBy(record.data, (v, k) => editableFields.includes(k));
         const {prepareCloneFn} = this;
         if (prepareCloneFn) prepareCloneFn({record, clone});
         this.formModel.openClone(clone);

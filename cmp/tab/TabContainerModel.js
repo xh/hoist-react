@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {TabRefreshMode, TabRenderMode} from '@xh/hoist/enums';
 import {find} from 'lodash';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {TabModel} from './TabModel';
@@ -34,10 +33,10 @@ export class TabContainerModel {
     /** @member {string} */
     switcherPosition;
 
-    /** @member {TabRenderMode} */
+    /** @member {RenderMode} */
     renderMode;
 
-    /** @member {TabRefreshMode} */
+    /** @member {RefreshMode} */
     refreshMode;
 
     /**
@@ -49,9 +48,9 @@ export class TabContainerModel {
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component (or 'none').
      *      Valid values are 'top', 'bottom', 'left', 'right', 'none'.
-     * @param {TabRenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
+     * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
-     * @param {TabRefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
@@ -59,8 +58,8 @@ export class TabContainerModel {
         defaultTabId = null,
         route = null,
         switcherPosition = XH.isMobile ? 'bottom' : 'top',
-        renderMode = TabRenderMode.LAZY,
-        refreshMode = TabRefreshMode.ON_SHOW_LAZY
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
 
         tabs = tabs.filter(p => !p.omit);

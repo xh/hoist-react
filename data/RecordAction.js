@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
+import {isBoolean, isEmpty, isNil, isNumber} from 'lodash';
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
@@ -140,7 +140,11 @@ export class RecordAction {
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
         if (!this.actionFn) return;
-        this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
+
+        let store = record?.store;
+        if (!store) store = gridModel?.store;
+
+        this.actionFn({action: this, record, selectedRecords, store, gridModel, column, ...rest});
     }
 
     meetsRecordRequirement(count) {

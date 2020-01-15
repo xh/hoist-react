@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import equal from 'fast-deep-equal';
 import {throwIf} from '../../utils/js';
 
 /**
@@ -33,7 +34,7 @@ export class RecordSet {
     }
 
     get empty() {
-        return this.count == 0;
+        return this.count === 0;
     }
 
     getById(id) {
@@ -55,6 +56,16 @@ export class RecordSet {
         }
 
         return ret;
+    }
+
+    isEqual(other) {
+        if (this.count !== other.count) return false;
+
+        for (const [id, rec] of this.recordMap) {
+            if (rec !== other.recordMap.get(id)) return false;
+        }
+
+        return true;
     }
 
     //----------------------------------------------------------
@@ -84,7 +95,12 @@ export class RecordSet {
     // Editing operations that spawn new RecordSets.
     // Preserve all record references we can!
     //-----------------------------------------------
-    applyFilter(filter) {
+
+    normalize(target) {
+        return this.isEqual(target) ? target : this;
+    }
+
+    withFilter(filter) {
         if (!filter) return this;
         const {fn, includeChildren} = filter;
 
@@ -127,17 +143,21 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    loadRecords(recordMap) {
+    withNewRecords(recordMap) {
         // Reuse existing Record object instances where possible if they resolve as equal to their
-        // new counterparts. See note on Store.loadRecords().
+        // new counterparts. See note on Store.loadData().
         if (!this.empty) {
             const newIds = recordMap.keys();
             for (let id of newIds) {
                 const currRec = this.getById(id),
                     newRec = recordMap.get(id);
 
-                if (currRec && currRec.isEqual(newRec)) {
+                if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
+                } else {
+                    // If we are sure that we are going to keep this Record, we freeze it now to
+                    // enforce immutability on the application
+                    newRec.freeze();
                 }
             }
         }
@@ -145,7 +165,11 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    updateData({update, add, remove}) {
+    areRecordsEqual(rec1, rec2) {
+        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
+    }
+
+    withTransaction({update, add, remove}) {
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
@@ -165,8 +189,7 @@ export class RecordSet {
             allRemoves.forEach(it => newRecords.delete(it));
         }
 
-        // 1) Updates - cannot modify hierarchy by design, and incoming records do not have any
-        //    parent pointers. Assign the parentId of the existing rec to maintain the tree.
+        // 1) Updates
         if (update) {
             update.forEach(rec => {
                 const {id} = rec,
@@ -176,8 +199,8 @@ export class RecordSet {
                     console.debug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
-                rec.parentId = existing.parentId;
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 
@@ -187,6 +210,7 @@ export class RecordSet {
                 const {id} = rec;
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 

@@ -4,18 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, LoadSupport} from '@xh/hoist/core';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
-    RestGridModel,
-    RestStore,
     addAction,
-    editAction,
     cloneAction,
-    deleteAction
+    deleteAction,
+    editAction,
+    RestGridModel,
+    RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
 
 @HoistModel
 @LoadSupport
@@ -122,6 +122,6 @@ export class ConfigModel {
     }
 
     maskIfPwd(value, {record}) {
-        return record.valueType === 'pwd' ? '*****' : value;
+        return record.data.valueType === 'pwd' ? '*****' : value;
     }
 }

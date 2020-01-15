@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {useRef} from 'react';
-import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {elem, hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabRenderMode} from '@xh/hoist/enums';
 import {TabModel} from '@xh/hoist/cmp/tab';
 
 /**
@@ -35,8 +34,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
+                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == RenderMode.LAZY && !wasActivated.current)
             )
         ) {
             return null;

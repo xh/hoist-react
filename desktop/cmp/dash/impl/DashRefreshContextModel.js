@@ -11,23 +11,23 @@ import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
  * @private
  */
 @RefreshContextModel
-export class TabRefreshContextModel {
+export class DashRefreshContextModel {
 
-    tabModel;
+    dashTabModel;
 
-    constructor(tabModel)  {
-        this.tabModel = tabModel;
+    constructor(dashTabModel)  {
+        this.dashTabModel = dashTabModel;
         this.addReaction({
-            track: () => tabModel.isActive,
+            track: () => dashTabModel.isActive,
             run: this.noteActiveChanged
         });
     }
 
     async doLoadAsync(loadSpec) {
-        const {tabModel} = this,
-            mode = tabModel.refreshMode;
+        const {dashTabModel} = this,
+            mode = dashTabModel.refreshMode;
 
-        if (tabModel.isActive || mode == RefreshMode.ALWAYS) {
+        if (dashTabModel.isActive || mode == RefreshMode.ALWAYS) {
             return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
@@ -38,7 +38,7 @@ export class TabRefreshContextModel {
 
     noteActiveChanged(isActive) {
         if (isActive) {
-            const mode = this.tabModel.refreshMode;
+            const mode = this.dashTabModel.refreshMode;
             if (mode == RefreshMode.ON_SHOW_ALWAYS) {
                 this.refreshAsync();
             } else if (mode == RefreshMode.ON_SHOW_LAZY && this.refreshPending) {

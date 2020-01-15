@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {FormModel, required} from '@xh/hoist/cmp/form';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {FormModel, required} from '@xh/hoist/cmp/form';
-import {Icon} from '@xh/hoist/icon';
-import {merge, isNil} from 'lodash';
+import {isNil, merge} from 'lodash';
 
 @HoistModel
 export class RestFormModel {
@@ -61,11 +61,10 @@ export class RestFormModel {
     }
 
     @action
-    openClone(rec)  {
+    openClone(data)  {
         this.readonly = false;
-        this.initForm(rec);
+        this.initForm({data});
     }
-
 
     @action
     openView(rec) {
@@ -106,7 +105,7 @@ export class RestFormModel {
         XH.safeDestroy(this.formModel);
         const formModel = this.formModel = new FormModel({
             fields,
-            initialValues: rec,
+            initialValues: rec?.data,
             readonly: this.parent.readonly || this.readonly
         });
 
@@ -131,7 +130,7 @@ export class RestFormModel {
     @action
     saveRecordAsync() {
         const {isAdd, store, formModel, currentRecord} = this,
-            record = isAdd ? {currentRecord, ...formModel.getData(false)} : {id: currentRecord.id, ...formModel.getData(true)},
+            record = {id: currentRecord.id, data: formModel.getData(!isAdd)},
             saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
 
         return saveFn()
@@ -171,7 +170,7 @@ export class RestFormModel {
         if (formField) {
             rawType = formField.value;
         } else if (currentRecord && field) {
-            rawType = currentRecord[field.name];
+            rawType = currentRecord.data[field.name];
         }
 
         switch (rawType) {

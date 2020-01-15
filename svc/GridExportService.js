@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistService} from '@xh/hoist/core';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
+import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, sortBy, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -177,13 +177,13 @@ export class GridExportService {
     }
 
     getCellData(gridModel, record, column, aggData) {
-        const {field, exportValue} = column;
+        const {field, exportValue, getValueFn} = column;
 
-        let value = record[field];
+        let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
-        if (isString(exportValue) && record[exportValue] !== null) {
+        if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
-            value = record[exportValue];
+            value = record.data[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
