@@ -100,16 +100,12 @@ class LocalModel {
             seriesConfig = newSeries.map(it => omit(it, 'data')),
             {prevSeriesConfig, chart} = this;
 
-        // If series config is unchanged, we can update the chart in place.
+        // If metadata not changed or # of series the same we can do more minimal in-place updates
         if (isEqual(seriesConfig, prevSeriesConfig)) {
-            newSeries.forEach((s, index) => {
-                chart.series[index].setData(s.data, false);
-            });
+            newSeries.forEach((s, i) => chart.series[i].setData(s.data, false));
             chart.redraw();
         } else if (prevSeriesConfig?.length === seriesConfig.length) {
-            newSeries.forEach((s, index) => {
-                chart.series[index].update(s, false);
-            });
+            newSeries.forEach((s, i) => chart.series[i].update(s, false));
             chart.redraw();
         } else {
             this.renderHighChart();
