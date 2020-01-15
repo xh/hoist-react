@@ -160,7 +160,7 @@ export class Select extends HoistInput {
     findOption(value, createIfNotFound, options) {
         if (!options) options = this.internalOptions;
 
-        // Do a depth-first search
+        // Do a depth-first search of options
         const match = options.map((option) =>
             option.options ?
                 this.findOption(value, false, option.options) :
