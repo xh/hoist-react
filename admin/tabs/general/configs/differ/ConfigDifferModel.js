@@ -243,7 +243,7 @@ export class ConfigDifferModel  {
     }
 
     setRemoteCellClass(rec) {
-        const data = rec.get('data'),
+        const {data} = rec.data,
             local = data.localValue,
             remote = data.remoteValue;
 
@@ -260,8 +260,8 @@ export class ConfigDifferModel  {
     }
 
     configValueTypeRenderer(v, {record}) {
-        const local = record.get('localValue'),
-            remote = record.get('remoteValue');
+        const local = record.data.localValue,
+            remote = record.data.remoteValue;
 
         if (local && remote) {
             return local.valueType == remote.valueType ? local.valueType : '??';

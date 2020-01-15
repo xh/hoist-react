@@ -53,13 +53,13 @@ export class LeftRightChooserModel {
     /** Currently 'selected' values on the right hand side. */
     @computed
     get rightValues() {
-        return this.rightModel.store.allRecords.map(it => it.get('value'));
+        return this.rightModel.store.allRecords.map(it => it.data.value);
     }
 
     /** Currently 'selected' values on the left hand side. */
     @computed
     get leftValues() {
-        return this.leftModel.store.allRecords.map(it => it.get('value'));
+        return this.leftModel.store.allRecords.map(it => it.data.value);
     }
 
     /**
@@ -171,7 +171,7 @@ export class LeftRightChooserModel {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${record.get('locked') ? lockSvg : ''}
+                    ${v} ${record.data.locked ? lockSvg : ''}
                 </div>
             `;
         };
@@ -193,8 +193,9 @@ export class LeftRightChooserModel {
 
     moveRows(rows) {
         rows.forEach(rec => {
-            if (rec.get('locked')) return;
-            rec.raw.side = (rec.get('side') === 'left' ? 'right' : 'left');
+            const {locked, side} = rec.data;
+            if (locked) return;
+            rec.raw.side = (side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();

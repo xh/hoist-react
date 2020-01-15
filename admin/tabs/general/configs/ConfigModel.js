@@ -122,6 +122,6 @@ export class ConfigModel {
     }
 
     maskIfPwd(value, {record}) {
-        return record.get('valueType') === 'pwd' ? '*****' : value;
+        return record.data.valueType === 'pwd' ? '*****' : value;
     }
 }

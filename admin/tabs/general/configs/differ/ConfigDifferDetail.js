@@ -47,9 +47,9 @@ export const configDifferDetail = hoistCmp.factory({
 
 const diffTable = hoistCmp.factory(
     ({model}) => {
-        const rec = model.record,
-            local = rec.get('localValue'),
-            remote = rec.get('remoteValue'),
+        const {data} = model.record,
+            local = data.localValue,
+            remote = data.remoteValue,
             fields = keys(local || remote);
 
         const rows = fields.map(field => {

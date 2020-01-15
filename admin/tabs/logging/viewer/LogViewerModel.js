@@ -87,7 +87,7 @@ export class LogViewerModel {
         return {
             track: () => this.filesGridModel.selectedRecord,
             run: (rec) => {
-                this.file = rec ? rec.get('filename') : null;
+                this.file = rec?.data?.filename;
                 this.loadLog();
             },
             delay: 300

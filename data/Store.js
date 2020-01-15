@@ -7,13 +7,13 @@
 
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import equal from 'fast-deep-equal';
 import {
     castArray,
     differenceBy,
     has,
     isArray,
     isEmpty,
-    isEqual,
     isFunction,
     isNil,
     isPlainObject,
@@ -27,7 +27,7 @@ import {Record} from './Record';
 import {StoreFilter} from './StoreFilter';
 
 /**
- * A managed and observable set of local, in-memory records.
+ * A managed and observable set of local, in-memory Records.
  */
 export class Store {
 
@@ -98,21 +98,21 @@ export class Store {
      * Load a new and complete dataset, replacing any/all pre-existing Records as needed.
      *
      * If raw data objects have a `children` property, it will be expected to be an array and its
-     * items will be recursively processed into child records, each created with a pointer to its
+     * items will be recursively processed into child Records, each created with a pointer to its
      * parent's newly assigned Record ID.
      *
      * Note that this process will re-use pre-existing Record object instances if they are present
      * in the new dataset (as identified by their ID), contain the same data, and occupy the same
-     * place in any hierarchy across old and new loads.
-     *
-     * This is to maximize the ability of downstream consumers (e.g. ag-Grid) to recognize Records
-     * that have not changed and do not need to be re-evaluated / re-rendered.
+     * place in any hierarchy across old and new loads. This is to maximize the ability of
+     * downstream consumers (e.g. ag-Grid) to recognize Records that have not changed and do not
+     * need to be re-evaluated / re-rendered.
      *
      * Summary data can be provided via `rawSummaryData` or as the root data if the Store was
      * created with its `loadRootAsSummary` flag set to true.
      *
-     * @param {Object[]} rawData
-     * @param {Object} [rawSummaryData]
+     * @param {Object[]} rawData - source data to load
+     * @param {Object} [rawSummaryData] - source data for an optional summary record, representing
+     *      a custom aggregation to show as a "grand total" for the dataset, if desired.
      */
     @action
     loadData(rawData, rawSummaryData) {
@@ -138,7 +138,23 @@ export class Store {
     }
 
     /**
-     * Add, update, or delete records in this store.
+     * Add, update, or delete Records in this Store. Note that objects passed to this method
+     * for adds and updates should have all the raw source data required to create those Records -
+     * i.e. they should be in the same form as when passed to `loadData()`. The added/updated
+     * source data will be run through this Store's `idSpec` and `processRawData` functions.
+     *
+     * Adds can also be provided as an object of the form `{rawData, parentId}` to add new Records
+     * under a known, pre-existing parent Record. {@see StoreTransaction} for more details.
+     *
+     * Unlike `loadData()`, existing Records that are *not* included in this update transaction
+     * will be left in place and as is.
+     *
+     * Records loaded or removed via this method will be considered to be "committed", with the
+     * expectation that inputs to this method were provided by the server or other data source of
+     * record. For modifying particular fields on existing Records, see `modifyData()`. For local
+     * adds/removes not sourced from the server, see `addRecords()` and `removeRecords()`. Those
+     * APIs will modify the current RecordSet but leave those changes in an uncommitted state.
+     *
      * @param {(Object[]|StoreTransaction)} rawData - data changes to process. If provided as an
      *      array, rawData will be processed into adds and updates, with updates determined by
      *      matching existing records by ID.
@@ -149,7 +165,8 @@ export class Store {
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
-                if (this.getById(this.idSpec(it))) {
+                const recId = this.idSpec(it);
+                if (this.getById(recId)) {
                     update.push(it);
                 } else {
                     add.push(it);
@@ -200,16 +217,21 @@ export class Store {
         // 3) Apply changes
         if (!isEmpty(updateRecs) || !isEmpty(addRecs) || !isEmpty(remove)) {
             const {isModified} = this;
+
+            // Apply updates to the committed RecordSet - these changes are considered to be
+            // sourced from the server / source of record and are coming in as committed.
             this._committed = this._committed.withTransaction({update: updateRecs, add: addRecs, remove: remove});
 
-            // If we were dirty before loading the data transaction, we need to also load the transaction
-            // into our current state, and then check if we are still dirty or not as the transaction
-            // may have put us back into a clean state
             if (isModified) {
+                // If this store had pre-existing local modifications, apply the updates over that
+                // local state. This might (or might not) effectively overwrite those local changes,
+                // so we normalize against the newly updated committed state to verify if any local
+                // modifications remain.
                 this._current = this._current
                     .withTransaction({update: updateRecs, add: addRecs, remove: remove})
                     .normalize(this._committed);
             } else {
+                // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
 
@@ -222,17 +244,27 @@ export class Store {
 
     /**
      * Re-runs the StoreFilter on the current data. Applications only need to call this method if
-     * the state underlying the filter has changed.
+     * the state underlying the filter, other than the record data itself, has changed. Store will
+     * re-filter automatically whenever Record data is updated or modified.
      */
     refreshFilter() {
         this.rebuildFiltered();
     }
 
     /**
-     * Add new Records to the store. The new Records will be assigned an auto-generated id.
-     * @param {Object[]|Object} data - Record data. Note that this data will not be processed by
-     *      `processRawData`, but will be parsed by the Fields for this Store.
-     * @param {string|number} [parentId] - id of the parent record to add the new Records under.
+     * Add new Records to this Store in a local, uncommitted state - i.e. with data that has yet to
+     * be persisted back to, or sourced from, the server or other data source of record.
+     *
+     * Note that data objects passed to this method must include a unique ID - callers can generate
+     * one with `XH.genId()` if no natural ID can be produced locally on the client.
+     *
+     * For Record additions that originate from the server, call `updateData()` instead.
+     *
+     * @param {(Object[]|Object)} data - source data for new Record(s). Note that this data will
+     *      *not* be processed by this Store's `processRawData` or `idSpec` functions, but will be
+     *      parsed and potentially transformed according to this Store's Field definitions.
+     * @param {(string|number)} [parentId] - ID of the pre-existing parent Record under which this
+     *      new Record should be added, if any.
      */
     @action
     addRecords(data, parentId) {
@@ -240,8 +272,8 @@ export class Store {
         if (isEmpty(data)) return;
 
         const addRecs = data.map(it => {
-            const id = it.id;
-            throwIf(isNil(id), `Must provide 'id' for new records.`);
+            const {id} = it;
+            throwIf(isNil(id), `Must provide 'id' property for new records.`);
             throwIf(this.getById(id), `Duplicate id '${id}' provided for new record.`);
 
             const parsedData = this.parseFieldValues(it),
@@ -255,44 +287,60 @@ export class Store {
     }
 
     /**
-     * Remove Records from the store.
-     * @param {(number[]|string[]|Record[])} records - list of Records or Record ids to remove
+     * Remove Records from the Store in a local, uncommitted state - i.e. when queuing up a set of
+     * deletes on the client to be flushed back to the server at a later time.
+     *
+     * For Record deletions that originate from the server, call `updateData()` instead.
+     *
+     * @param {(number[]|string[]|Record[])} records - list of Record IDs or Records to remove
      */
     @action
     removeRecords(records) {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        records = records.map(it => (it instanceof Record) ? it.id : it);
+        const idsToRemove = records.map(it => (it instanceof Record) ? it.id : it);
 
         this._current = this._current
-            .withTransaction({remove: records})
+            .withTransaction({remove: idsToRemove})
             .normalize(this._committed);
 
         this.rebuildFiltered();
     }
 
     /**
-     * Modify Record field values.
-     * @param {(Object[]|Object)} data - Processed Record data. Each object in the list is expected
-     *      to have an `id` property to use for looking up the Record to update.
+     * Modify individual Record field values in a local, uncommitted state - i.e. when updating a
+     * Record or Records via an inline grid editor or similar control.
+     *
+     * This method accepts partial updates for any Records to be modified; modifications need only
+     * include the Record ID and any fields that have changed.
+     *
+     * For Record updates that originate from the server, call `updateData()` instead.
+     *
+     * @param {(Object[]|Object)} modifications - field-level modifications to apply to existing
+     *      Records in this Store. Each object in the list must have an `id` property identifying
+     *      the Record to modify, plus any other properties with updated field values to apply,
+     *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
      */
     @action
-    modifyRecords(data) {
-        data = castArray(data);
-        if (isEmpty(data)) return;
+    modifyRecords(modifications) {
+        modifications = castArray(modifications);
+        if (isEmpty(modifications)) return;
 
         const updateRecs = new Map();
         let hadDupes = false;
-        data.forEach(it => {
-            // Ignore duplicate entries
-            if (updateRecs.has(it.id)) {
+        modifications.forEach(it => {
+            const {id, ...data} = it;
+
+            // Ignore multiple updates for the same record - we are updating this Store in a
+            // transaction after processing all modifications, so this method is not currently setup
+            // to process more than one update for a given rec at a time.
+            if (updateRecs.has(id)) {
                 hadDupes = true;
                 return;
             }
 
-            const {id, ...data} = it,
-                currentRec = this.getOrThrow(id),
+            const currentRec = this.getOrThrow(id),
                 updatedData = this.parseFieldValues(data, true);
 
             const updatedRec = new Record({
@@ -304,18 +352,19 @@ export class Store {
                 committedData: currentRec.committedData
             });
 
-            // Don't do anything if the record data hasn't actually changed compared to the current record data
-            if (isEqual(currentRec.data, updatedRec.data)) return;
+            // Don't do anything if the record data hasn't actually changed.
+            if (equal(currentRec.data, updatedRec.data)) return;
 
-            // If the updated data now matches the committed record data, then restore the committed record
-            if (isEqual(updatedRec.data, updatedRec.committedData)) {
+            // If the updated data now matches the committed record data, restore the committed
+            // record to properly reflect the (lack of) dirty state.
+            if (equal(updatedRec.data, updatedRec.committedData)) {
                 updateRecs.set(id, this.getCommittedOrThrow(id));
             } else {
                 updateRecs.set(id, updatedRec);
             }
         });
 
-        warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first data entries for each Record were processed.');
+        warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each Record was processed.');
 
         this._current = this._current
             .withTransaction({update: Array.from(updateRecs.values())})
@@ -325,8 +374,12 @@ export class Store {
     }
 
     /**
-     * Revert all changes made to the provided records since they were last committed
-     * @param {number[]|string[]|Record[]} records - List of records or Record ids to revert
+     * Revert all changes made to the specified Records since they were last committed.
+     *
+     * This restores these Records to the state they were in when last loaded into this Store via
+     * `loadData()` or `updateData()`, undoing any local modifications that might have been applied.
+     *
+     * @param {(number[]|string[]|Record[])} records - Record IDs or instances to revert
      */
     @action
     revertRecords(records) {
@@ -344,6 +397,10 @@ export class Store {
 
     /**
      * Revert all changes made to the Store since data was last committed.
+     *
+     * This restores all Records to the state they were in when last loaded into this Store via
+     * `loadData()` or `updateData()`, undoing any local modifications that might have been applied,
+     * removing any uncommitted records added locally, and restoring any uncommitted deletes.
      */
     @action
     revert() {
@@ -352,7 +409,7 @@ export class Store {
     }
 
     /**
-     * Get a specific field, by name.
+     * Get a specific Field, by name.
      * @param {string} name - field name to locate.
      * @return {Field}
      */
@@ -401,7 +458,7 @@ export class Store {
     }
 
     /**
-     * Records which have been updated since they were last loaded, respecting any filter (if applied).
+     * Records updated since they were last loaded, respecting any filter (if applied).
      * @returns {Record[]}
      */
     get modifiedRecords() {
@@ -493,6 +550,7 @@ export class Store {
      * @return {Record}
      */
     getById(id, fromFiltered = false) {
+        if (isNil(id)) return null;
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
         const rs = fromFiltered ? this._filtered : this._current;
@@ -518,8 +576,8 @@ export class Store {
     /**
      * Get descendant records for a record.
      *
-     * See also the 'descendants' and 'allDescendants' properties on Record - those getters will likely
-     * be more convenient for most app-level callers.
+     * See also the 'descendants' and 'allDescendants' properties on Record - those getters will
+     * likely be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
      * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
@@ -601,14 +659,13 @@ export class Store {
     //---------------------------------------
     // Record Generation
     //---------------------------------------
-
     createRecord(raw, parent, isSummary) {
         const {processRawData} = this;
 
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
-            throwIf(!data, 'processRawData should return an object. If writing/editing, be sure to return a clone!');
+            throwIf(!data, 'Store.processRawData should return an object. If writing/editing, be sure to return a clone!');
         }
 
         // Note idSpec run against raw data here.
@@ -663,8 +720,8 @@ export class Store {
 }
 
 /**
- * @typedef {Object} StoreTransaction - object representing data changes to perform
- *      on a Store's data in a single transaction.
+ * @typedef {Object} StoreTransaction - object representing data changes to perform on a Store's
+ *      committed record set in a single transaction.
  * @property {Object[]} [update] - list of raw data objects representing records to be updated.
  *      Updates must be matched to existing records by id in order to be applied. The form of the
  *      update objects should be the same as presented to loadData(), with the exception that any
