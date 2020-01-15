@@ -2,6 +2,68 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🗄️ Data Package Changes
+
+Several changes have been made to data package (`Store` and `Record`) APIs for loading, updating,
+and modifying data. They include some breaking changes, but pave the way for upcoming enhancements
+to fully support inline grid editing and other new features.
+
+Store now tracks the "committed" state of its records, which represents the data as it was loaded
+(typically from the server) via `loadData()` or `updateData()`. Records are now immutable and
+frozen, so they cannot be changed directly, but Store offers a new `modifyRecords()` API to apply
+local modifications to data in a tracked and managed way. (Store creates new records internally to
+hold both this modified data and the original, "committed" data.) This additional state tracking
+allows developers to query Stores for modified or added records (e.g. to flush back to the server
+and persist) as well as call new methods to revert changes (e.g. to undo a block of changes that the
+user wishes to discard).
+
+Note the following more specific changes to these related classes:
+
+#### Record
+
+* 💥 Record data properties are now nested within a `data` object on Record instances and are no
+  longer available as top-level properties on the Record itself.
+  * Calls to access data such as `rec.quantity` must be modified to `rec.data.quantity`.
+  * When accessing multiple properties, destructuring provides an efficient syntax - e.g. `const
+    {quantity, price} = rec.data;`.
+* 💥 Records are now immutable and cannot be modified by applications directly.
+  * This is a breaking change, but should only affect apps with custom inline grid editing
+    implementations or similar code that modifies individual record values.
+  * Calls to change data such as `rec.quantity = 100` must now be made through the Record's Store,
+    e.g. `store.modifyData({id: 41, quantity: 100})`
+* Record gains new getters for inspecting its state, including: `isAdd`, `isModified`, and
+  `isCommitted`.
+
+#### Store
+
+* 💥 `noteDataUpdated()` has been removed, as out-of-band modifications to Store Records are no
+  longer possible.
+* 💥 Store's `idSpec` function is now called with the raw record data - previously it was passed
+  source data after it had been run through the store's optional `processRawData` function. (This is
+  unlikely to have a practical impact on most apps, but is included here for completeness.)
+* `Store.updateData()` now accepts a flat list of raw data to process into Record additions and
+  updates. Previously developers needed to call this method with an object containing add, update,
+  and/or remove keys mapped to arrays. Now Store will produce an object of this shape automatically.
+* `Store.refreshFilter()` method has been added to allow applications to rebuild the filtered data
+  set if some application state has changed (apart from the store's data itself) which would affect
+  the store filter.
+* Store gains new methods for manipulating its Records and data, including `addRecords()`,
+  `removeRecords()`, `modifyRecords()`, `revertRecords()`, and `revert()`. New getters have been
+  added for `addedRecords`, `removedRecords`, `modifiedRecords`, and `isModified`.
+
+#### Column
+
+* Columns have been enhanced for provide basic support for inline-editing of record data. Further
+  inline editing support enhancements are planned for upcoming Hoist releases.
+* `Column.getValueFn` config added to retrieve the cell value for a Record field. The default
+  implementation pulls the value from the Record's new `data` property (see above). Apps that
+  specify custom `valueGetter` callbacks via `Column.agOptions` should now implement their custom
+  logic in this new config.
+* `Column.setValueFn` config added to support modifying the Column field's value on the underlying
+  Record. The default implementation calls the new `Store.modifyRecords()` API and should be
+  sufficient for the majority of cases.
+* `Column.editable` config added to indicate if a column/cell should be inline-editable.
+
 ### 🎁 New Features
 
 * Added keyboard support to ag-Grid context menus.
@@ -399,7 +461,7 @@ leverage the context for model support discussed above.
 
 * `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
   called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
-  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to️️
   verify the grid is fully initialized.
 
 ### 📚 Libraries

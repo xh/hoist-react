@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isEmpty, isString, flatten} from 'lodash';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
+import {flatten, isEmpty, isString} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
@@ -67,7 +67,7 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
-                        if (record && column) copy(record[column.field]);
+                        if (record && column) copy(record.data[column.field]);
                     }
                 });
             case 'colChooser':
