@@ -48,7 +48,7 @@ export class DashTabModel {
     }
 
     /**
-     * @param {string} id - Typically created by GoldenLayouts.
+     * @param {string} id - Typically created by GoldenLayout.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashTab.
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
