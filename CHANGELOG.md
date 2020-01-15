@@ -56,7 +56,7 @@ Note the following more specific changes to these related classes:
 * Columns have been enhanced for provide basic support for inline-editing of record data. Further
   inline editing support enhancements are planned for upcoming Hoist releases.
 * `editable` config has been added to indicate if a column/cell should be inline-editable
-* `updateValueFn` config has been added for providing the logic needed for updating a field value on
+* `setValueFn` config has been added for providing the logic needed for updating a field value on
   a Record. A default function is installed which calls `Store.modifyRecords` to update the record.
   Applications should not need to provide their own handling here in the majority of cases.
 * `getValueFn` config has been added for retrieving the cell value for a Record field. A default

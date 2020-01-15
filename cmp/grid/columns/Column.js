@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFinite, isFunction, isString, startCase} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isString, startCase} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -85,7 +85,7 @@ export class Column {
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
-     * @param {Column~updateValueFn} [c.updateValueFn] - function for updating Record field for this
+     * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
@@ -133,7 +133,7 @@ export class Column {
         tooltip,
         tooltipElement,
         editable,
-        updateValueFn,
+        setValueFn,
         getValueFn,
         agOptions,
         ...rest
@@ -141,6 +141,10 @@ export class Column {
         Object.assign(this, rest);
 
         this.field = field;
+        if (field) {
+            this.fieldPath = field.includes('.') ? field.split('.') : field;
+        }
+
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
@@ -206,14 +210,14 @@ export class Column {
         this.tooltipElement = tooltipElement;
 
         this.editable = editable;
-        this.updateValueFn = withDefault(updateValueFn, this.defaultUpdateFieldFn);
+        this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
 
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
-        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom updateValueFn if needed.`);
+        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
         warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
     }
 
@@ -256,7 +260,7 @@ export class Column {
                 },
                 valueSetter: (agParams) => {
                     const record = agParams.data;
-                    this.updateValueFn({
+                    this.setValueFn({
                         value: agParams.newValue,
                         record,
                         field,
@@ -413,14 +417,19 @@ export class Column {
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
     };
 
-    defaultUpdateFieldFn = ({value, record, store, field}) => {
+    defaultSetValueFn = ({value, record, store, field}) => {
         const data = {id: record.id};
         data[field] = value;
         store.modifyRecords(data);
     };
 
-    defaultGetValueFn = ({record, field}) => {
-        return record?.get(field);
+    defaultGetValueFn = ({record}) => {
+        if (!record) return null;
+
+        const {fieldPath} = this;
+        if (fieldPath === 'id') return record.id;
+        if (isArray(fieldPath)) return get(record.data, fieldPath);
+        return record.data[fieldPath];
     };
 }
 
@@ -564,7 +573,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @callback Column~updateValueFn - function to update the value of a Record field after inline editing
+ * @callback Column~setValueFn - function to update the value of a Record field after inline editing
  * @param {Object} params
  * @param {*} params.value - the new value for the field.
  * @param {Record} params.record - row-level data Record.
