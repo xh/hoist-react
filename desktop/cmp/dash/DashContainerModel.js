@@ -12,7 +12,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty} from 'lodash';
+import {isEmpty, find, reject} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashTab} from './impl/DashTab';
@@ -269,9 +269,8 @@ export class DashContainerModel {
 
     get viewState() {
         const ret = {};
-        this.tabModels.map(it => {
-            const state = it.getState();
-            if (state) ret[it.id] = state;
+        this.tabModels.map(({viewState, id}) => {
+            if (viewState) ret[id] = viewState;
         });
         return ret;
     }
@@ -280,7 +279,7 @@ export class DashContainerModel {
     // Tabs
     //-----------------
     getTabModel(id) {
-        return this.tabModels.find(it => it.id === id);
+        return find(this.tabModels, {id});
     }
 
     @action
@@ -292,7 +291,7 @@ export class DashContainerModel {
     removeTabModel(id) {
         const tabModel = this.getTabModel(id);
         XH.safeDestroy(tabModel);
-        this.tabModels = this.tabModels.filter(it => it.id !== id);
+        this.tabModels = reject(this.tabModels, {id});
     }
 
     //-----------------

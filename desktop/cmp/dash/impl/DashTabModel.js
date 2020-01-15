@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isPlainObject} from 'lodash';
+import {isEqual} from 'lodash';
 
 import {DashRefreshContextModel} from './DashRefreshContextModel';
 
@@ -25,11 +25,12 @@ export class DashTabModel {
 
     id;
     viewSpec;
-    @bindable isActive;
-
     containerModel;
-    @managed contentModel;
+
+    @observable.ref viewState;
+    @bindable isActive;
     @managed refreshContextModel;
+
 
     get modelLookupContext() {
         return this.containerModel.modelLookupContext;
@@ -50,44 +51,41 @@ export class DashTabModel {
     /**
      * @param {string} id - Typically created by GoldenLayouts.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashTab.
+     * @param {Object} viewState - State with which to initialize the view
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
-     * @param {Object} [state] - State with which to initialize the view
      */
     constructor({
         id,
         viewSpec,
-        containerModel,
-        state
+        viewState = null,
+        containerModel
     }) {
         throwIf(!id, 'DashTabModel requires an id');
         throwIf(!viewSpec, 'DashTabModel requires an DashViewSpec');
 
         this.id = id;
         this.viewSpec = viewSpec;
+        this.viewState = viewState;
         this.containerModel = containerModel;
-
-        // Create content model
-        if (isFunction(viewSpec.contentModelFn)) {
-            this.contentModel = viewSpec.contentModelFn();
-        }
-
-        // Initialise state
-        if (state) this.setState(state);
 
         this.refreshContextModel = new DashRefreshContextModel(this);
     }
 
-    getState() {
-        if (!this.contentModel || !isFunction(this.contentModel.getState)) return;
-        const state = this.contentModel.getState();
-        throwIf(!isPlainObject(state), 'DashViewSpec getState() must return an object');
-        return state;
+    setViewStateSource = (fn) => {
+        if (fn) {
+            this.addReaction({
+                track: fn,
+                run: (viewState) => {
+                    if (!(isEqual(viewState, this.viewState))) {
+                        console.log(viewState);
+                        runInAction(() => {
+                            this.viewState = {...viewState};
+                        });
+                    }
+                },
+                fireImmediately: true
+            });
+        }
     }
-
-    setState(state) {
-        if (!this.contentModel || !isFunction(this.contentModel.setState)) return;
-        this.contentModel.setState(state);
-    }
-
 }
