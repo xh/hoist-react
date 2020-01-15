@@ -5,18 +5,18 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {box, div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
+import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './TreeMap.scss';
 
@@ -292,7 +292,7 @@ class LocalModel {
         if (maxDepth && gridModel && gridModel.treeMode) {
             toSelect = new Set(selectedIds.map(id => {
                 const record = store.getById(id);
-                return record ? record.xhTreePath.slice(0, maxDepth).pop() : null;
+                return record ? record.treePath.slice(0, maxDepth).pop() : null;
             }));
         } else {
             toSelect = new Set(selectedIds);
@@ -342,9 +342,9 @@ class LocalModel {
     //----------------------
     defaultTooltip = (record) => {
         const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
-            name = record[labelField],
-            value = record[valueField],
-            heat = record[heatField],
+            name = record.data[labelField],
+            value = record.data[valueField],
+            heat = record.data[heatField],
             labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>

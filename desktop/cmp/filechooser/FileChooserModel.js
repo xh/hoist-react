@@ -4,14 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {find, last, without, uniqBy} from 'lodash';
-import filesize from 'filesize';
 import {isEmpty} from 'codemirror/src/util/misc';
+import filesize from 'filesize';
+import {find, last, uniqBy, without} from 'lodash';
 
 
 @HoistModel
@@ -45,7 +45,7 @@ export class FileChooserModel {
                     tooltip: 'Remove file',
                     intent: 'danger',
                     actionFn: ({record}) => {
-                        this.removeFileByName(record.name);
+                        this.removeFileByName(record.data.name);
                     }
                 }]
             }

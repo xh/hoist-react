@@ -31,11 +31,11 @@ import {
 } from 'lodash';
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
+import './Grid.scss';
 
 import {GridModel} from './GridModel';
 import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
 import {ColumnHeader} from './impl/ColumnHeader';
-import './Grid.scss';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -148,7 +148,7 @@ class LocalModel {
     model;
     agOptions;
     propsKeyDown;
-    viewRef = createRef()
+    viewRef = createRef();
 
     // The minimum required row height specified by the columns (if any) */
     @computed
@@ -165,7 +165,6 @@ class LocalModel {
 
     // Do any root level records have children?
     @observable isHierarchical = false;
-
 
     constructor(model, props) {
         this.model = model;
@@ -363,8 +362,8 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
-            run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
+            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([api, lastLoaded, lastUpdated, newRs]) => {
                 if (!api) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
@@ -374,7 +373,7 @@ class LocalModel {
                     deltaCount = newCount - prevCount;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
-                    if (prevCount != 0 && experimental.useTransactions) {
+                    if (prevCount !== 0 && experimental.useTransactions) {
                         const transaction = this.genTransaction(newRs, prevRs);
                         console.debug(this.transactionLogStr(transaction));
 
@@ -389,7 +388,7 @@ class LocalModel {
 
                     // If row count changing to/from a small amt, force col resizing to account for
                     // possible appearance/disappearance of the vertical scrollbar.
-                    if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
+                    if (deltaCount !== 0 && (prevCount < 100 || newCount < 100)) {
                         api.sizeColumnsToFit();
                     }
 
@@ -407,7 +406,7 @@ class LocalModel {
                     this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
-                    this.isHierarchical = model.treeMode && store.allRootCount != store.allCount;
+                    this.isHierarchical = model.treeMode && store.allRootCount !== store.allCount;
 
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
@@ -536,7 +535,7 @@ class LocalModel {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = (data) => !data.xhIsSummary,
+            filterSummaryFn = (record) => !record.isSummary,
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
@@ -569,7 +568,7 @@ class LocalModel {
                 }
             });
 
-            if (newList.length != (prevList.length + add.length)) {
+            if (newList.length !== (prevList.length + add.length)) {
                 remove = prevList.filter(rec => !newRs.getById(rec.id));
             }
 
@@ -595,7 +594,7 @@ class LocalModel {
     // Event Handlers on AG Grid.
     //------------------------
     getDataPath = (data) => {
-        return data.xhTreePath;
+        return data.treePath;
     };
 
     onSelectionChanged = () => {
