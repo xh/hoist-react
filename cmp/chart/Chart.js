@@ -85,12 +85,12 @@ class LocalModel {
             track: () => [
                 this.aspectRatio,
                 this.chartRef,
-                this.model.highchartsConfig
+                model.highchartsConfig
             ],
             run: () => this.renderHighChart()
         });
         this.addReaction({
-            track: () => this.model.series,
+            track: () => model.series,
             run: () => this.updateSeries()
         });
     }
