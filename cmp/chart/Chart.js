@@ -87,15 +87,11 @@ class LocalModel {
                 this.chartRef,
                 this.model.highchartsConfig
             ],
-            run: () => {
-                this.renderHighChart();
-            }
+            run: () => this.renderHighChart()
         });
         this.addReaction({
             track: () => this.model.series,
-            run: () => {
-                this.updateSeries();
-            }
+            run: () => this.updateSeries()
         });
     }
 
