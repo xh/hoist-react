@@ -189,8 +189,7 @@ export class RecordSet {
             allRemoves.forEach(it => newRecords.delete(it));
         }
 
-        // 1) Updates - cannot modify hierarchy by design, and incoming records do not have any
-        //    parent pointers. Assign the parentId of the existing rec to maintain the tree.
+        // 1) Updates
         if (update) {
             update.forEach(rec => {
                 const {id} = rec,
