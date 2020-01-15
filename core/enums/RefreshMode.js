@@ -6,14 +6,14 @@
  */
 
 /**
- * Options for how Tabs should be refreshed via their built-in RefreshContextModel when they receive
- * a refresh request while inactive/hidden or are (re)activated by their parent TabContainer.
+ * Options for how content should be refreshed via their built-in RefreshContextModel when they receive
+ * a refresh request while inactive/hidden or are (re)activated by their parent container.
  *
- * @enum {TabRefreshMode}
- * @see {TabContainerModel.refreshMode}
- * @see {TabModel.refreshMode}
+ * Used by TabContainerModel and DashContainerModel.
+ *
+ * @enum {RefreshMode}
  */
-export const TabRefreshMode = Object.freeze({
+export const RefreshMode = Object.freeze({
 
     /** Always refresh a tab when requested, even if it is inactive (hidden). */
     ALWAYS: 'always',
@@ -30,5 +30,5 @@ export const TabRefreshMode = Object.freeze({
 });
 
 /**
- * @typedef {string} TabRefreshMode
+ * @typedef {string} RefreshMode
  */
