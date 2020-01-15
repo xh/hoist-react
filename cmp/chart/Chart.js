@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, cloneDeep, merge, omit} from 'lodash';
+import {assign, castArray, clone, cloneDeep, isEqual, merge, omit} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import equal from 'fast-deep-equal';
 
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
@@ -102,7 +101,7 @@ class LocalModel {
 
     updateSeries() {
         const seriesConfig = this.model.series.map(it => omit(it, 'data'));
-        if (equal(seriesConfig, this.prevSeriesConfig)) {
+        if (isEqual(seriesConfig, this.prevSeriesConfig)) {
             for (let i = 0; i < this.model.series.length; i++) {
                 this.chart.series[i].setData(this.model.series[i].data, false);
             }
