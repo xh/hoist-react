@@ -49,21 +49,20 @@ Note the following more specific changes to these related classes:
   the store filter.
 * Store gains new methods for manipulating its Records and data, including `addRecords()`,
   `removeRecords()`, `modifyRecords()`, `revertRecords()`, and `revert()`. New getters have been
-  added for `removedRecords`, `modifiedRecords`, and `isModified`.
+  added for `addedRecords`, `removedRecords`, `modifiedRecords`, and `isModified`.
 
 #### Column
 
 * Columns have been enhanced for provide basic support for inline-editing of record data. Further
   inline editing support enhancements are planned for upcoming Hoist releases.
-* `editable` config has been added to indicate if a column/cell should be inline-editable
-* `setValueFn` config has been added for providing the logic needed for updating a field value on
-  a Record. A default function is installed which calls `Store.modifyRecords` to update the record.
-  Applications should not need to provide their own handling here in the majority of cases.
-* `getValueFn` config has been added for retrieving the cell value for a Record field. A default
-  function is installed which uses the new Record apis for retrieving field value, which is
-  necessary because the field values are no longer available as top-level properties of the Record.
-  Applications which had previously added `valueGetter` callbacks via `agOptions` on columns should
-  use this new config instead.
+* `Column.getValueFn` config added to retrieve the cell value for a Record field. The default
+  implementation pulls the value from the Record's new `data` property (see above). Apps that
+  specify custom `valueGetter` callbacks via `Column.agOptions` should now implement their custom
+  logic in this new config.
+* `Column.setValueFn` config added to support modifying the Column field's value on the underlying
+  Record. The default implementation calls the new `Store.modifyRecords()` API and should be
+  sufficient for the majority of cases.
+* `Column.editable` config added to indicate if a column/cell should be inline-editable.
 
 ### 🎁 New Features
 

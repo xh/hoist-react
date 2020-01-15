@@ -442,15 +442,15 @@ export class Store {
     }
 
     /**
-     * Records added to this store which have not been committed.
+     * Records added locally which have not been committed.
      * @returns {Record[]}
      */
-    get newRecords() {
-        return this.allRecords.filter(it => it.isNew);
+    get addedRecords() {
+        return this.allRecords.filter(it => it.isAdd);
     }
 
     /**
-     * Records removed from this store which have not been committed.
+     * Records removed locally which have not been committed.
      * @returns {Record[]}
      */
     get removedRecords() {
@@ -458,7 +458,7 @@ export class Store {
     }
 
     /**
-     * Records updated since they were last loaded, respecting any filter (if applied).
+     * Records modified locally since they were last loaded.
      * @returns {Record[]}
      */
     get modifiedRecords() {

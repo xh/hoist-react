@@ -38,7 +38,7 @@ export class Record {
     treePath;
 
     /** @returns {boolean} - true if the Record has never been committed. */
-    get isNew() {
+    get isAdd() {
         return this.committedData === null;
     }
 
