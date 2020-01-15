@@ -351,11 +351,10 @@ export class Select extends HoistInput {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(val, createIfNotFound) {
-        const valAsOption = this.valueToOption(val),
-            match = find(this.internalOptions, {value: valAsOption.value});
+    findOption(value, createIfNotFound) {
+        const match = find(this.internalOptions, value);
 
-        return match ? match : (createIfNotFound ? valAsOption : null);
+        return match ? match : (createIfNotFound ? this.valueToOption(value) : null);
     }
 
     toExternal(internal) {
