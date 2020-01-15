@@ -191,7 +191,7 @@ export class Select extends HoistInput {
 
         throwIf(
             !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
-            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
+            `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
         return src.hasOwnProperty('options') ?
