@@ -12,7 +12,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty} from 'lodash';
+import {isEmpty, cloneDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashTab} from './impl/DashTab';
@@ -42,6 +42,7 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  *     contents: [
  *         {
  *             type: 'stack',
+ *             width: '200px',
  *             contents: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
@@ -50,6 +51,7 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  *         {
  *             type: 'column',
  *             contents: [
+ *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
@@ -152,7 +154,7 @@ export class DashContainerModel {
 
             // Create new GoldenLayout instance with state
             const goldenLayout = new GoldenLayout({
-                content: convertStateToGL(state, this.viewSpecs),
+                content: convertStateToGL(cloneDeep(state), this),
                 settings: {
                     // Remove icons by default
                     showPopoutIcon: false,
