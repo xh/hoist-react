@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+export * from './enums';
 export * from './elem';
 export * from './mixins';
 export * from './hooks';

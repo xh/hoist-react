@@ -35,10 +35,11 @@ export function useOnUnmount(fn) {
  * Hook to run a function when component is resized.
  * @param {function} fn
  * @param {number} [delay] - milliseconds to debounce
+ * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
  * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn, delay) {
-    const ref = useRef(null);
+export function useOnResize(fn, delay, ref) {
+    if (!ref) ref = useRef(null);
 
     useEffect(() => {
         const {current} = ref;

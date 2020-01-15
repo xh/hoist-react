@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RenderMode} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
@@ -58,8 +58,7 @@ export class PanelModel {
      * @param {boolean} [config.defaultCollapsed] - Default collapsed state.
      * @param {string} config.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
-     *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
+     * @param {RenderMode} [config.collapsedRenderMode] - How should collapsed content be rendered?
      * @param {?string} [config.prefName] - preference name to store sizing and collapsed state.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
@@ -76,7 +75,7 @@ export class PanelModel {
         maxSize = null,
         defaultCollapsed = false,
         side,
-        collapsedRenderMode = 'lazy',
+        collapsedRenderMode = RenderMode.LAZY,
         prefName = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
