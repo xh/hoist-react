@@ -238,7 +238,8 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
-                // Padding is ignored by setExtremes, so we set it to 0 to make size consistent.
+                // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming. 
+                // This is especially important when Navigator shown; first reload of data can cause a surprising tiny rezoom.
                 minPadding: 0,
                 maxPadding: 0,
                 dateTimeLabelFormats: {
