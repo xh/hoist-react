@@ -238,6 +238,7 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
+                // Padding is ignored by setExtremes, so we set it to 0 to make size consistent.
                 minPadding: 0,
                 maxPadding: 0,
                 dateTimeLabelFormats: {
