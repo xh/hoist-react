@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFinite, isArray} from 'lodash';
+import {isEmpty, isFinite, isArray, isPlainObject} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -49,7 +49,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
 }
 
 /**
- * Convert our serializable state into GoldenLayouts config
+ * Convert our serializable state into GoldenLayout config
  */
 export function convertStateToGL(state = [], viewSpecs = []) {
     return state.map(item => {
@@ -61,13 +61,18 @@ export function convertStateToGL(state = [], viewSpecs = []) {
 
         if (type === 'view') {
             const viewSpec = viewSpecs.find(v => v.id === item.id);
+
             if (!viewSpec) {
                 console.warn(`Attempting to load unrecognised view "${item.id}" from state`);
                 return {type: 'row'};
             }
 
-            const ret = viewSpec.goldenLayoutsConfig;
-            if (item.state) ret.state = item.state;
+            const ret = viewSpec.goldenLayoutConfig,
+                {state, width, height} = item;
+
+            if (isPlainObject(state)) ret.state = state;
+            if (isFinite(width)) ret.width = width;
+            if (isFinite(height)) ret.height = height;
 
             return ret;
         } else {

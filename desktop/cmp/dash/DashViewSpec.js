@@ -24,7 +24,7 @@ export class DashViewSpec {
     renderMode;
     refreshMode;
 
-    get goldenLayoutsConfig() {
+    get goldenLayoutConfig() {
         const {id, title, allowClose} = this;
         return {
             component: id,

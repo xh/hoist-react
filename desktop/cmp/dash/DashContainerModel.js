@@ -31,9 +31,9 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  * Note that loading state will destroy and reinitialize all components. Therefore,
  * it is recommended you do so sparingly.
  *
- * We differ from GoldenLayouts by offering a new type `view`. These should be configured as
+ * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
- * be used instead of the `component` and `react-component` types provided by GoldenLayouts.
+ * be used instead of the `component` and `react-component` types provided by GoldenLayout.
  *
  * e.g.
  *
@@ -125,7 +125,7 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
-        // Initialize GoldenLayouts with initial state once ref is ready
+        // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
             run: () => this.loadStateAsync(initialState)
@@ -150,7 +150,7 @@ export class DashContainerModel {
         return start(() => {
             this.destroyGoldenLayout();
 
-            // Recreate GoldenLayouts with state
+            // Create new GoldenLayout instance with state
             const goldenLayout = new GoldenLayout({
                 content: convertStateToGL(state, this.viewSpecs),
                 settings: {
@@ -211,7 +211,7 @@ export class DashContainerModel {
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
-        container.addChild(viewSpec.goldenLayoutsConfig);
+        container.addChild(viewSpec.goldenLayoutConfig);
     }
 
     //------------------------
