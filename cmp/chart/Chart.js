@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, cloneDeep, isEqual, merge, omit} from 'lodash';
+import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
@@ -32,11 +32,10 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(LocalModel),
+        const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.resizeChart(e));
 
         impl.setAspectRatio(aspectRatio);
-        impl.model = model;
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -80,7 +79,8 @@ class LocalModel {
     prevHeight;
     prevSeriesConfig;
 
-    constructor() {
+    constructor(model) {
+        this.model = model;
         this.addReaction({
             track: () => [
                 this.aspectRatio,
@@ -100,16 +100,25 @@ class LocalModel {
     }
 
     updateSeries() {
-        const seriesConfig = this.model.series.map(it => omit(it, 'data'));
-        if (isEqual(seriesConfig, this.prevSeriesConfig)) {
-            for (let i = 0; i < this.model.series.length; i++) {
-                this.chart.series[i].setData(this.model.series[i].data, false);
-            }
-            this.chart.redraw();
+        const newSeries = this.model.series,
+            seriesConfig = newSeries.map(it => omit(it, 'data')),
+            {prevSeriesConfig, chart} = this;
+
+        // If series config is unchanged, we can update the chart in place.
+        if (isEqual(seriesConfig, prevSeriesConfig)) {
+            newSeries.forEach((s, index) => {
+                chart.series[index].setData(s.data, false);
+            });
+            chart.redraw();
+        } else if (prevSeriesConfig?.length === seriesConfig.length) {
+            newSeries.forEach((s, index) => {
+                chart.series[index].update(s, false);
+            });
+            chart.redraw();
         } else {
             this.renderHighChart();
         }
-        this.prevSeriesConfig = cloneDeep(seriesConfig);
+        this.prevSeriesConfig = seriesConfig;
     }
 
     renderHighChart() {
@@ -133,10 +142,11 @@ class LocalModel {
     }
 
     resizeChart(e) {
+        if (!this.chart) return;
+
         const {width, height} = this.getChartDims(e[0].contentRect);
         if (width == 0 || height == 0) return;
         if (width == this.prevWidth && height == this.prevHeight) return;
-        if (!this.chart) return;
         this.prevWidth = width;
         this.prevHeight = height;
         this.chart.setSize(width, height, false);
