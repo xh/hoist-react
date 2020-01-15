@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RenderMode} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {RenderMode} from '@xh/hoist/enums';
 import {isNil} from 'lodash';
 
 /**

@@ -8,11 +8,10 @@
 import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
-import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {RenderMode} from '@xh/hoist/enums';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';

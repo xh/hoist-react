@@ -5,8 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {RefreshContextModel} from '@xh/hoist/core/refresh';
-import {RefreshMode} from '@xh/hoist/enums';
-import {loadAllAsync} from '@xh/hoist/core';
+import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
 
 /**
  * @private

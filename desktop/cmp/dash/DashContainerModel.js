@@ -4,10 +4,9 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {RefreshMode, RenderMode} from '@xh/hoist/enums';
 import {Icon, convertIconToSvg} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';

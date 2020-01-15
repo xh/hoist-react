@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import React, {useRef} from 'react';
-import {elem, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {elem, hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {modelLookupContextProvider, useOwnedModelLinker} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
-import {RenderMode} from '@xh/hoist/enums';
 
 import {DashTabModel} from './DashTabModel';
 

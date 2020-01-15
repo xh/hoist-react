@@ -29,6 +29,7 @@
 * Added alpha version of `DashContainer` for building dynamic, draggable dashboard-style layouts.
   Please note: the API for this component is subject to change - use at your own risk!
 
+
 ### 💥 Breaking Changes
 
 * The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
@@ -39,7 +40,9 @@
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
   `equalString`, respectively.
-* `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode`.
+* `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
+   to the `core` package.  These enumerations are now used in the APIs for `Panel`, 
+   `TabContainer`, and `DashContainer`.
 
 ### 🐞 Bug Fixes
 
