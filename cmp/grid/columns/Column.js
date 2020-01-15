@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, isFinite, isFunction, startCase, isString} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isString, startCase} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -84,6 +84,10 @@ export class Column {
      *      may have performance implications. Default false.
      * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
+     * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
+     * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
+     *      column after inline editing.
+     * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -128,12 +132,19 @@ export class Column {
         excludeFromExport,
         tooltip,
         tooltipElement,
+        editable,
+        setValueFn,
+        getValueFn,
         agOptions,
         ...rest
     }, gridModel) {
         Object.assign(this, rest);
 
         this.field = field;
+        if (field) {
+            this.fieldPath = field.includes('.') ? field.split('.') : field;
+        }
+
         this.colId = withDefault(colId, field);
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
@@ -198,8 +209,16 @@ export class Column {
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
 
+        this.editable = editable;
+        this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
+        this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
+
+        // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
+        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
+        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
     }
 
     /**
@@ -229,9 +248,40 @@ export class Column {
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressToolPanel: this.excludeFromChooser,
-                enableCellChangeFlash: this.highlightOnChange
-            };
+                enableCellChangeFlash: this.highlightOnChange,
+                editable: (agParams) => {
+                    const {editable} = this;
+                    if (isFunction(editable)) {
+                        const record = agParams.node.data;
+                        return editable({record, store: record.store, gridModel, column: this, agParams});
+                    }
 
+                    return editable;
+                },
+                valueSetter: (agParams) => {
+                    const record = agParams.data;
+                    this.setValueFn({
+                        value: agParams.newValue,
+                        record,
+                        field,
+                        store: record?.store,
+                        column: this,
+                        gridModel,
+                        agParams
+                    });
+                },
+                valueGetter: (agParams) => {
+                    const record = agParams.data;
+                    return this.getValueFn({
+                        record,
+                        field,
+                        store: record?.store,
+                        column: this,
+                        gridModel,
+                        agParams
+                    });
+                }
+            };
 
         // We will change these setters as needed to install the renderers in the proper location
         // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
@@ -239,7 +289,7 @@ export class Column {
         let setRenderer = (r) => ret.cellRenderer = r,
             setElementRenderer = (r) => ret.cellRendererFramework = r;
 
-        // Our implementation of Grid.getDataPath() > Record.xhTreePath returns data path []s of
+        // Our implementation of Grid.getDataPath() > Record.treePath returns data path []s of
         // Record IDs. TreeColumns use those IDs as their cell values, regardless of field.
         // Add valueGetters below to correct + additional fixes for sorting below.
         if (this.isTreeColumn) {
@@ -247,11 +297,8 @@ export class Column {
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
                 suppressCount: true,
-                suppressDoubleClickExpand: true,
-                innerRenderer: (v) => v.data[field]
+                suppressDoubleClickExpand: true
             };
-            ret.valueGetter = (v) => v.data[field];
-            ret.filterValueGetter = (v) => v.data[field];
 
             setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
             setElementRenderer = (r) => {
@@ -368,6 +415,21 @@ export class Column {
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
+    };
+
+    defaultSetValueFn = ({value, record, store, field}) => {
+        const data = {id: record.id};
+        data[field] = value;
+        store.modifyRecords(data);
+    };
+
+    defaultGetValueFn = ({record}) => {
+        if (!record) return null;
+
+        const {fieldPath} = this;
+        if (fieldPath === 'id') return record.id;
+        if (isArray(fieldPath)) return get(record.data, fieldPath);
+        return record.data[fieldPath];
     };
 }
 
@@ -495,4 +557,38 @@ export function getAgHeaderClassFn(column) {
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
  *      during ColumnHeader rendering.
  * @return {string} - the header name to render in the Column header
+ */
+
+/**
+ * @callback Column~editableFn - function to determine if a Column should be editable or not.
+ *      This function will be called whenever the user takes some action which would initiate inline
+ *      editing of a cell before the actual inline editing session is started.
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {IsColumnFuncParams} params.agParams - the ag-grid column function params.
+ * @return {boolean} - true if cell is editable
+ */
+
+/**
+ * @callback Column~setValueFn - function to update the value of a Record field after inline editing
+ * @param {Object} params
+ * @param {*} params.value - the new value for the field.
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {ValueSetterParams} [params.agParams] - the ag-Grid value setter params.
+ */
+
+/**
+ * @callback Column~getValueFn - function to get the value of a Record field
+ * @param {Object} params
+ * @param {Record} params.record - row-level data Record.
+ * @param {Store} params.store - Store containing the grid data.
+ * @param {Column} params.column - column for the cell being edited.
+ * @param {GridModel} params.gridModel - gridModel for the grid.
+ * @param {ValueGetterParams} [params.agParams] - the ag-Grid value getter params.
  */

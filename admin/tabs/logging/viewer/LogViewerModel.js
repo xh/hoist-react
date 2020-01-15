@@ -4,15 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {createRef} from 'react';
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {find} from 'lodash';
-import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {SECONDS, olderThan} from '@xh/hoist/utils/datetime';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
+import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {find} from 'lodash';
+import {createRef} from 'react';
 
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -87,7 +87,7 @@ export class LogViewerModel {
         return {
             track: () => this.filesGridModel.selectedRecord,
             run: (rec) => {
-                this.file = rec ? rec.filename : null;
+                this.file = rec?.data?.filename;
                 this.loadLog();
             },
             delay: 300
