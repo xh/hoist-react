@@ -36,7 +36,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             hideRefreshButton,
             hideAppMenuButton,
             className,
-            appMenuButtonOptions = {}
+            appMenuButtonOptions = {},
+            appMenuButtonPosition = 'left'
         } = props;
 
         return navbar({
@@ -47,6 +48,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     items: [
                         icon,
                         span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            ...appMenuButtonOptions
+                        }),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
@@ -56,7 +61,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     items: [
                         ...rightItems || [],
                         refreshButton({omit: hideRefreshButton}),
-                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'right',
+                            ...appMenuButtonOptions
+                        })
                     ]
                 })
             ]
@@ -86,5 +94,8 @@ AppBar.propTypes = {
     hideAppMenuButton: PT.bool,
 
     /** Options to pass to the AppMenuButton. */
-    appMenuButtonOptions: PT.object
+    appMenuButtonOptions: PT.object,
+
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition: PT.oneOf(['left', 'right'])
 };
