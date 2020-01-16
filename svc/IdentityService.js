@@ -89,7 +89,7 @@ export class IdentityService {
 
     /** Can the underlying user impersonate other users? */
     get canImpersonate() {
-        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation');
+        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
     /**
