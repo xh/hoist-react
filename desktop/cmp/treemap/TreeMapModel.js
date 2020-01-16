@@ -219,10 +219,10 @@ export class TreeMapModel {
             ret = [];
 
         rawData.forEach(record => {
-            const {id, children, xhTreePath} = record,
-                name = record[labelField],
-                value = record[valueField],
-                heatValue = record[heatField];
+            const {id, children, treePath} = record,
+                name = record.data[labelField],
+                value = record.data[valueField],
+                heatValue = record.data[heatField];
 
             // Skip records without value
             if (!value) return;
@@ -243,7 +243,7 @@ export class TreeMapModel {
             // b) This node is expanded
             // c) The children do not exceed any specified maxDepth
             let childTreeRecs = [];
-            if (children && this.nodeIsExpanded(xhTreePath) && (!maxDepth || depth < maxDepth)) {
+            if (children && this.nodeIsExpanded(treePath) && (!maxDepth || depth < maxDepth)) {
                 childTreeRecs = this.processRecordsRecursive(children, id, depth + 1);
             }
 
@@ -276,7 +276,7 @@ export class TreeMapModel {
         if (!data.length || colorMode === 'none') return data;
 
         // 1) Extract heat values and split into positive and negative
-        const heatValues = this.store.records.map(it => it[this.heatField]);
+        const heatValues = this.store.records.map(it => it.data[this.heatField]);
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
         posHeatValues = posHeatValues.sort();
         negHeatValues = negHeatValues.map(it => Math.abs(it)).sort();
@@ -354,19 +354,19 @@ export class TreeMapModel {
     //----------------------
     // Expand / Collapse
     //----------------------
-    nodeIsExpanded(xhTreePath) {
+    nodeIsExpanded(treePath) {
         if (isEmpty(this.expandState)) return false;
-        return get(this.expandState, xhTreePath, false);
+        return get(this.expandState, treePath, false);
     }
 
-    toggleNodeExpanded(xhTreePath) {
+    toggleNodeExpanded(treePath) {
         const {gridModel} = this,
             expandState = cloneDeep(gridModel.expandState);
 
-        if (get(expandState, xhTreePath)) {
-            unset(expandState, xhTreePath);
+        if (get(expandState, treePath)) {
+            unset(expandState, treePath);
         } else {
-            set(expandState, xhTreePath, true);
+            set(expandState, treePath, true);
         }
 
         gridModel.setExpandState(expandState);
@@ -388,7 +388,7 @@ export class TreeMapModel {
 
     defaultOnDoubleClick = (record) => {
         if (!this.gridModel || !this.gridModel.treeMode || isEmpty(record.children)) return;
-        this.toggleNodeExpanded(record.xhTreePath);
+        this.toggleNodeExpanded(record.treePath);
     };
 
 }

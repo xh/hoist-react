@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {UrlStore} from '@xh/hoist/data';
 import {lowerFirst} from 'lodash';
 
 @HoistModel
@@ -35,7 +35,7 @@ export class ServiceModel {
         const {selection} = this.gridModel;
         if (!selection.length) return;
 
-        const names = selection.map(it => it.name);
+        const names = selection.map(it => it.data.name);
         XH.fetchJson({
             url: 'serviceAdmin/clearCaches',
             params: {names}

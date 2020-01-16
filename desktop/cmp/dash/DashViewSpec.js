@@ -65,7 +65,7 @@ export class DashViewSpec {
     //---------------------
     // Hoist Implementation
     //---------------------
-    get goldenLayoutsConfig() {
+    get goldenLayoutConfig() {
         const {id, title, allowClose} = this;
         return {
             component: id,

@@ -12,7 +12,7 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty, find, reject} from 'lodash';
+import {isEmpty, find, reject, cloneDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
@@ -31,9 +31,9 @@ import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashCon
  * Note that loading state will destroy and reinitialize all components. Therefore,
  * it is recommended you do so sparingly.
  *
- * We differ from GoldenLayouts by offering a new type `view`. These should be configured as
+ * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
- * be used instead of the `component` and `react-component` types provided by GoldenLayouts.
+ * be used instead of the `component` and `react-component` types provided by GoldenLayout.
  *
  * e.g.
  *
@@ -42,6 +42,7 @@ import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashCon
  *     contents: [
  *         {
  *             type: 'stack',
+ *             width: '200px',
  *             contents: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
@@ -50,6 +51,7 @@ import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashCon
  *         {
  *             type: 'column',
  *             contents: [
+ *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
@@ -128,7 +130,7 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
-        // Initialize GoldenLayouts with initial state once ref is ready
+        // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
             run: () => this.loadStateAsync(initialState)
@@ -176,7 +178,7 @@ export class DashContainerModel {
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
-        container.addChild(viewSpec.goldenLayoutsConfig);
+        container.addChild(viewSpec.goldenLayoutConfig);
     }
 
     //------------------------
@@ -301,13 +303,13 @@ export class DashContainerModel {
     onStackActiveItemChange(stack) {
         if (!this.goldenLayout) return;
 
-        const views = stack.getItemsByType('component'),
+        const items = stack.getItemsByType('component'),
             activeItem = stack.getActiveContentItem();
 
-        views.forEach(view => {
-            const id = getViewModelId(view),
+        items.forEach(item => {
+            const id = getViewModelId(item),
                 viewModel = this.getViewModel(id),
-                isActive = view === activeItem;
+                isActive = item === activeItem;
 
             if (viewModel) viewModel.setIsActive(isActive);
         });
@@ -356,7 +358,7 @@ export class DashContainerModel {
     createGoldenLayout(containerEl, state) {
         const {viewSpecs} = this,
             ret = new GoldenLayout({
-                content: convertStateToGL(state, viewSpecs),
+                content: convertStateToGL(cloneDeep(state), this),
                 settings: {
                     // Remove icons by default
                     showPopoutIcon: false,
