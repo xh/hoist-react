@@ -90,10 +90,11 @@ Note the following more specific changes to these related classes:
   the promises returned by the service.
 * Added alpha version of `DashContainer` for building dynamic, draggable dashboard-style layouts.
   Please note: the API for this component is subject to change - use at your own risk!
-* Added a new `xhEnableImpersonation` config for enabling or disabling impersonation app-wide.  Note that this
-  defaults to `false`.  Apps will need to set this config to continue using impersonation.
 * `Select` now allows the use of objects as values.
-
+* Added a new `xhEnableImpersonation` config to enable or disable the ability of Hoist Admins to
+  impersonate other users. Note that this defaults to `false`. Apps will need to set this config to
+  continue using impersonation. (Note that an update to hoist-core 6.4+ is required for this config
+  to be enforced on the server.)
 
 ### 💥 Breaking Changes
 
@@ -106,8 +107,8 @@ Note the following more specific changes to these related classes:
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
   `equalString`, respectively.
 * `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
-   to the `core` package.  These enumerations are now used in the APIs for `Panel`, 
-   `TabContainer`, and `DashContainer`.
+  to the `core` package. These enumerations are now used in the APIs for `Panel`, `TabContainer`,
+  and `DashContainer`.
 
 ### 🐞 Bug Fixes
 
@@ -129,7 +130,7 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
-  
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
