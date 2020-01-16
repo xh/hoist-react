@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {isEmpty, isPlainObject, find, assign} from 'lodash';
+import {isEmpty, isPlainObject, assign, isNil} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
@@ -157,11 +157,19 @@ export class Select extends HoistInput {
         return this.findOption(external, !isEmpty(external));
     }
 
-    findOption(val, createIfNotFound) {
-        const valAsOption = this.toOption(val),
-            match = find(this.internalOptions, {value: valAsOption.value});
+    findOption(value, createIfNotFound, options = this.internalOptions) {
 
-        return match ? match : (createIfNotFound ? valAsOption : null);
+        // Do a depth-first search of options
+        for (const option of options) {
+            if (option.options) {
+                const ret = this.findOption(value, false, option.options);
+                if (ret) return ret;
+            } else {
+                if (option.value === value) return option;
+            }
+        }
+
+        return createIfNotFound ? this.valueToOption(value) : null;
     }
 
     toExternal(internal) {
@@ -181,7 +189,7 @@ export class Select extends HoistInput {
     toOption(src, depth) {
         return isPlainObject(src) ?
             this.objectToOption(src, depth) :
-            {label: src != null ? src.toString() : '-null-', value: src};
+            this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -191,12 +199,16 @@ export class Select extends HoistInput {
 
         throwIf(
             !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
-            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
+            `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
         return src.hasOwnProperty('options') ?
             {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
             {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+    }
+
+    valueToOption(src) {
+        return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
     //----------------------
