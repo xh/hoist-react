@@ -87,7 +87,7 @@ export class IdentityService {
         return this._authUser !== this._apparentUser;
     }
 
-    /** Can the unerlying user impersonate other users? */
+    /** Can the underlying user impersonate other users? */
     get canImpersonate() {
         return this._authUser.isHoistAdmin;
     }
