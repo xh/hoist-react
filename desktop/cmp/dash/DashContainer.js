@@ -30,7 +30,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         const modelLookupContext = useContext(ModelLookupContext);
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
-        // Get container ref for GoldenLayouts resize handling
+        // Get container ref for GoldenLayout resize handling
         const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
 
         return frame(

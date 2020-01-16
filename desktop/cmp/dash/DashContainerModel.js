@@ -12,12 +12,12 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty} from 'lodash';
+import {isEmpty, find, reject, cloneDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
-import {dashTab} from './impl/DashTab';
-import {DashTabModel} from './impl/DashTabModel';
-import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashContainerUtils';
+import {dashView} from './impl/DashView';
+import {DashViewModel} from './DashViewModel';
+import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -31,9 +31,9 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  * Note that loading state will destroy and reinitialize all components. Therefore,
  * it is recommended you do so sparingly.
  *
- * We differ from GoldenLayouts by offering a new type `view`. These should be configured as
+ * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
- * be used instead of the `component` and `react-component` types provided by GoldenLayouts.
+ * be used instead of the `component` and `react-component` types provided by GoldenLayout.
  *
  * e.g.
  *
@@ -42,6 +42,7 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  *     contents: [
  *         {
  *             type: 'stack',
+ *             width: '200px',
  *             contents: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
@@ -50,6 +51,7 @@ import {convertGLToState, convertStateToGL, getTabModelId} from './impl/DashCont
  *         {
  *             type: 'column',
  *             contents: [
+ *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
@@ -70,6 +72,10 @@ export class DashContainerModel {
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
 
+    /** @member {DashViewModel[]} */
+    @managed @observable.ref viewModels = [];
+
+
     //------------------------
     // Immutable public properties
     //------------------------
@@ -87,7 +93,6 @@ export class DashContainerModel {
     //------------------------
     // Implementation properties
     //------------------------
-    @managed @observable.ref tabModels = [];
     @managed loadingStateTask = new PendingTaskModel();
     containerRef = createObservableRef();
     @observable dialogIsOpen;
@@ -125,7 +130,7 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
-        // Initialize GoldenLayouts with initial state once ref is ready
+        // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
             run: () => this.loadStateAsync(initialState)
@@ -149,47 +154,9 @@ export class DashContainerModel {
         // Show mask to provide user feedback
         return start(() => {
             this.destroyGoldenLayout();
+            this.goldenLayout = this.createGoldenLayout(containerEl, state);
 
-            // Recreate GoldenLayouts with state
-            const goldenLayout = new GoldenLayout({
-                content: convertStateToGL(state, this.viewSpecs),
-                settings: {
-                    // Remove icons by default
-                    showPopoutIcon: false,
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
-                    ...this.goldenLayoutSettings
-                },
-                dimensions: {
-                    borderWidth: 6,
-                    headerHeight: 25
-                }
-            }, containerEl);
-
-            // Register components
-            this.viewSpecs.forEach(viewSpec => {
-                goldenLayout.registerComponent(viewSpec.id, (props) => {
-                    const {id, state, ...rest} = props,
-                        model = new DashTabModel({
-                            id,
-                            viewSpec,
-                            state,
-                            containerModel: this
-                        });
-
-                    this.addTabModel(model);
-                    return dashTab({model, ...rest});
-                });
-            });
-
-            // Initialize GoldenLayout
-            goldenLayout.on('stateChanged', () => this.updateState());
-            goldenLayout.on('itemDestroyed', item => this.onItemDestroyed(item));
-            goldenLayout.on('stackCreated', stack => this.onStackCreated(stack));
-            goldenLayout.init();
-            this.goldenLayout = goldenLayout;
-
-            this.refreshActiveTabs();
+            this.refreshActiveViews();
             this.updateTabHeaders();
         }).linkTo(this.loadingStateTask);
     }
@@ -205,13 +172,13 @@ export class DashContainerModel {
         if (!goldenLayout) return;
 
         const viewSpec = this.getViewSpec(id),
-            instances = this.getViewsBySpecId(id);
+            instances = this.getItemsBySpecId(id);
 
         throwIf(!viewSpec, `Trying to add unknown DashViewSpec. id=${id}`);
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
-        container.addChild(viewSpec.goldenLayoutsConfig);
+        container.addChild(viewSpec.goldenLayoutConfig);
     }
 
     //------------------------
@@ -225,15 +192,14 @@ export class DashContainerModel {
 
         this.state = convertGLToState(goldenLayout, viewState);
 
-        // We must update the tab headers on state change to
-        // reflect title/icon changes in view state
+        // Update tab headers on state change to reflect title/icon changes in view state
         this.updateTabHeaders();
     }
 
     onItemDestroyed(item) {
         if (!item.isComponent) return;
-        const id = getTabModelId(item);
-        if (id) this.removeTabModel(id);
+        const id = getViewModelId(item);
+        if (id) this.removeViewModel(id);
     }
 
     onResize() {
@@ -249,50 +215,46 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Views
+    // Items
     //-----------------
-    /**
-     * Get all view instances currently rendered in the container
-     */
-    getViews() {
+    // Get all items currently rendered in the container
+    getItems() {
         const {goldenLayout} = this;
         if (!goldenLayout) return [];
         return goldenLayout.root.getItemsByType('component');
     }
 
-    /**
-     * Get all view instances with a given DashViewSpec.id
-     */
-    getViewsBySpecId(id) {
-        return this.getViews().filter(it => it.config.component === id);
+
+    // Get all view instances with a given DashViewSpec.id
+    getItemsBySpecId(id) {
+        return this.getItems().filter(it => it.config.component === id);
     }
 
+    //-----------------
+    // Views
+    //-----------------
     get viewState() {
         const ret = {};
-        this.tabModels.map(it => {
-            const state = it.getState();
-            if (state) ret[it.id] = state;
+        this.viewModels.map(({viewState, id}) => {
+            if (viewState) ret[id] = viewState;
         });
         return ret;
     }
 
-    //-----------------
-    // Tabs
-    //-----------------
-    getTabModel(id) {
-        return this.tabModels.find(it => it.id === id);
+    getViewModel(id) {
+        return find(this.viewModels, {id});
     }
 
     @action
-    addTabModel(tabModel) {
-        this.tabModels = [...this.tabModels, tabModel];
+    addViewModel(viewModel) {
+        this.viewModels = [...this.viewModels, viewModel];
     }
 
     @action
-    removeTabModel(id) {
-        const tabModel = this.getTabModel(id);
-        XH.safeDestroy(tabModel);
-        this.tabModels = this.tabModels.filter(it => it.id !== id);
+    removeViewModel(id) {
+        const viewModel = this.getViewModel(id);
+        XH.safeDestroy(viewModel);
+        this.viewModels = reject(this.viewModels, {id});
     }
 
     //-----------------
@@ -330,9 +292,9 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Active Tab
+    // Active View
     //-----------------
-    refreshActiveTabs() {
+    refreshActiveViews() {
         if (!this.goldenLayout) return;
         const stacks = this.goldenLayout.root.getItemsByType('stack');
         stacks.forEach(stack => this.onStackActiveItemChange(stack));
@@ -341,15 +303,15 @@ export class DashContainerModel {
     onStackActiveItemChange(stack) {
         if (!this.goldenLayout) return;
 
-        const tabs = stack.getItemsByType('component'),
+        const items = stack.getItemsByType('component'),
             activeItem = stack.getActiveContentItem();
 
-        tabs.forEach(view => {
-            const id = getTabModelId(view),
-                tabModel = this.getTabModel(id),
-                isActive = view === activeItem;
+        items.forEach(item => {
+            const id = getViewModelId(item),
+                viewModel = this.getViewModel(id),
+                isActive = item === activeItem;
 
-            if (tabModel) tabModel.setIsActive(isActive);
+            if (viewModel) viewModel.setIsActive(isActive);
         });
     }
 
@@ -357,13 +319,13 @@ export class DashContainerModel {
     // Tab Headers
     //-----------------
     updateTabHeaders() {
-        const views = this.getViews();
-        views.forEach(view => {
-            const id = view.config.component,
-                $el = view.tab.element, // Note: this is a jquery element
+        const items = this.getItems();
+        items.forEach(item => {
+            const id = item.config.component,
+                $el = item.tab.element, // Note: this is a jquery element
                 viewSpec = this.getViewSpec(id),
-                tabModelId = getTabModelId(view),
-                state = this.viewState[tabModelId],
+                viewModelId = getViewModelId(item),
+                state = this.viewState[viewModelId],
                 icon = withDefault(state?.icon, viewSpec?.icon),
                 title = withDefault(state?.title, viewSpec?.title);
 
@@ -393,16 +355,55 @@ export class DashContainerModel {
     //-----------------
     // Misc
     //-----------------
-    destroy() {
-        this.destroyGoldenLayout();
+    createGoldenLayout(containerEl, state) {
+        const {viewSpecs} = this,
+            ret = new GoldenLayout({
+                content: convertStateToGL(cloneDeep(state), this),
+                settings: {
+                    // Remove icons by default
+                    showPopoutIcon: false,
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    ...this.goldenLayoutSettings
+                },
+                dimensions: {
+                    borderWidth: 6,
+                    headerHeight: 25
+                }
+            }, containerEl);
+
+        // Register components
+        viewSpecs.forEach(viewSpec => {
+            ret.registerComponent(viewSpec.id, (data) => {
+                const {id, state} = data,
+                    model = new DashViewModel({
+                        id,
+                        viewSpec,
+                        viewState: state,
+                        containerModel: this
+                    });
+
+                this.addViewModel(model);
+                return dashView({model});
+            });
+        });
+
+        ret.on('stateChanged', () => this.updateState());
+        ret.on('itemDestroyed', item => this.onItemDestroyed(item));
+        ret.on('stackCreated', stack => this.onStackCreated(stack));
+        ret.init();
+        return ret;
     }
 
     @action
     destroyGoldenLayout() {
         XH.safeDestroy(this.goldenLayout);
-        XH.safeDestroy(this.tabModels);
+        XH.safeDestroy(this.viewModels);
         this.goldenLayout = null;
-        this.tabModels = [];
+        this.viewModels = [];
     }
 
+    destroy() {
+        this.destroyGoldenLayout();
+    }
 }
