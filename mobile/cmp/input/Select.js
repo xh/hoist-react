@@ -162,7 +162,7 @@ export class Select extends HoistInput {
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
-                const ret = this.findOptions(value, false, option.options);
+                const ret = this.findOption(value, false, option.options);
                 if (ret) return ret;
             } else {
                 if (option.value === value) return option;
