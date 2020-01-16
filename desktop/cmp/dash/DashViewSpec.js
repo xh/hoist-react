@@ -74,5 +74,4 @@ export class DashViewSpec {
             isClosable: allowClose
         };
     }
-
 }
