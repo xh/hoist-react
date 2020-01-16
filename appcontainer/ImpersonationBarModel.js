@@ -33,6 +33,7 @@ export class ImpersonationBarModel {
     @action
     show() {
         throwIf(!XH.identityService.canImpersonate, 'User does not have right to impersonate.');
+        throwIf(!XH.getConf('xhEnableImpersonation', false), 'Impersonation is disabled for this app.');
         this.showRequested = true;
     }
 

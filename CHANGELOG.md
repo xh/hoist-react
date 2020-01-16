@@ -90,6 +90,8 @@ Note the following more specific changes to these related classes:
   the promises returned by the service.
 * Added alpha version of `DashContainer` for building dynamic, draggable dashboard-style layouts.
   Please note: the API for this component is subject to change - use at your own risk!
+* Added a new `xhEnableImpersonation` config for enabling or disabling impersonation app-wide.  Note that this
+  defaults to `false`.  Apps will need to set this config to continue using impersonation.
 
 
 ### 💥 Breaking Changes
