@@ -124,7 +124,9 @@ Note the following more specific changes to these related classes:
   ([#1520](https://github.com/xh/hoist-react/issues/1520))
 * Fixed problem where charts were resized when being hidden
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
-
+* Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
+  ([#1505](https://github.com/xh/hoist-react/issues/1505))
+  
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
