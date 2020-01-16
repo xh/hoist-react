@@ -10,7 +10,7 @@ import {isEmpty, isFinite, isArray, isPlainObject, isNil, isString} from 'lodash
 /**
  * Lookup the DashTabModel id of a rendered view
  */
-export function getTabModelId(view) {
+export function getViewModelId(view) {
     if (!view || !view.isInitialised || !view.isComponent) return;
     return view.instance?._reactComponent?.props?.id;
 }
@@ -32,7 +32,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
         const contentItem = contentItems[idx];
 
         if (configItem.type === 'component') {
-            const state = viewState[getTabModelId(contentItem)],
+            const state = viewState[getViewModelId(contentItem)],
                 view = {type: 'view', id: configItem.component};
 
             if (!isEmpty(state)) view.state = state;

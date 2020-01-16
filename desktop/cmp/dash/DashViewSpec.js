@@ -24,26 +24,11 @@ export class DashViewSpec {
     renderMode;
     refreshMode;
 
-    get goldenLayoutConfig() {
-        const {id, title, allowClose} = this;
-        return {
-            component: id,
-            type: 'react-component',
-            title,
-            isClosable: allowClose
-        };
-    }
-
     /**
      * @param {string} id - unique identifier of the DashViewSpec
      * @param {Object} content - content to be rendered by the DashTab. Component class or a
      *      custom element factory of the form returned by elemFactory.
      * @param {string} title - Title text added to the tab header.
-     * @param {function} [contentModelFn] - Function which returns a model instance to be passed
-     *      to the content. This model should implement a getState() and setState() to facilitate
-     *      saving / loading content state.
-     *      @see DashViewGetStateFn
-     *      @see DashViewSetStateFn
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
      * @param {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
@@ -57,7 +42,6 @@ export class DashViewSpec {
         content,
         title,
         icon,
-        contentModelFn,
         unique = false,
         allowClose = true,
         renderMode,
@@ -71,23 +55,23 @@ export class DashViewSpec {
         this.content = content;
         this.title = title;
         this.icon = icon;
-        this.contentModelFn = contentModelFn;
         this.unique = unique;
         this.allowClose = allowClose;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
     }
 
+
+    //---------------------
+    // Hoist Implementation
+    //---------------------
+    get goldenLayoutConfig() {
+        const {id, title, allowClose} = this;
+        return {
+            component: id,
+            type: 'react-component',
+            title,
+            isClosable: allowClose
+        };
+    }
 }
-
-/**
- * @callback DashViewGetStateFn - Function which returns an *observable* object containing the
- *      view's ContentModel's persistent state.
- * @returns {Object} - Observable state from the view's contentModel. Note that if this state
- *      contains `title` or `icon` keys, these will be used to update the tab headers.
- */
-
-/**
- * @callback DashViewSetStateFn - Function to set persistent state on a view's ContentModel.
- * @param {Object} state - State previously created using a DashViewGetStateFn.
- */
