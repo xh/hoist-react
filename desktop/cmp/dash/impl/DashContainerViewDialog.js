@@ -115,7 +115,7 @@ class Model {
             {viewSpecs} = dashContainerModel;
 
         return viewSpecs.filter(viewSpec => {
-            const instances = dashContainerModel.getViewsBySpecId(viewSpec.id);
+            const instances = dashContainerModel.getItemsBySpecId(viewSpec.id);
             return !viewSpec.unique || !instances.length;
         }).map(viewSpec => {
             const {id, title, icon} = viewSpec;

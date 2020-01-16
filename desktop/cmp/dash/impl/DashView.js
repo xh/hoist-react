@@ -10,11 +10,11 @@ import {modelLookupContextProvider} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 
-import {DashTabModel} from './DashTabModel';
+import {DashViewModel} from '../DashViewModel';
 
 /**
- * Wrapper for contents to be shown within a DashContainer. This component is used by DashContainer's
- * internal implementation to:
+ * Implementation component to show an item within a DashContainer.  This component
+ * is used by DashContainer's internal implementation to:
  *
  *   - Mount/unmount its contents according to `DashViewSpec.renderMode`.
  *   - Track and trigger refreshes according to `DashViewSpec.refreshMode`.
@@ -22,20 +22,13 @@ import {DashTabModel} from './DashTabModel';
  *
  * @private
  */
-export const dashTab = hoistCmp.factory({
-    displayName: 'DashTab',
+export const dashView = hoistCmp.factory({
+    displayName: 'DashView',
     className: 'xh-dash-tab',
-    model: uses(DashTabModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model, className}) {
-        const {
-                content,
-                viewState,
-                isActive,
-                renderMode,
-                refreshContextModel,
-                modelLookupContext
-            } = model,
+        const {isActive, renderMode, refreshContextModel, viewSpec} = model,
             wasActivated = useRef(false);
 
         // Respect RenderMode
@@ -53,15 +46,12 @@ export const dashTab = hoistCmp.factory({
             return null;
         }
 
+        const {content} = viewSpec;
         let contentElem = content.isHoistComponent ? elem(content) : content();
-        contentElem = React.cloneElement(contentElem, {
-            flex: 1,
-            viewState,
-            setViewStateSource: model.setViewStateSource
-        });
+        contentElem = React.cloneElement(contentElem, {flex: 1, viewModel: model});
 
         return modelLookupContextProvider({
-            value: modelLookupContext,
+            value: model.containerModel.modelLookupContext,
             item: frame({
                 className,
                 item: refreshContextView({

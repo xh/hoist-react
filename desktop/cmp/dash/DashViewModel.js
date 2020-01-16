@@ -5,40 +5,34 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEqual} from 'lodash';
 
-import {DashRefreshContextModel} from './DashRefreshContextModel';
+import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
 /**
- * Model for a DashTab within a DashContainer. Specifies the actual content (child component)
- * to be rendered within the tab and manages that content's render state and refreshes.
+ * Model for a content item within a DashContainer. Supports state management,
+ * a refresh context, and active state.
  *
- * This model is not typically created directly within applications. Instead, specify a
- * DashViewSpec for it via the `DashContainerModel.viewSpecs` constructor config.
+ * This model is not created directly within applications. Instead, specify a
+ * DashViewSpec for via the `DashContainerModel.viewSpecs` constructor config.
+ * Individual instances of this will then be loaded dynamically from user state
+ * or user actions.
  *
- * @private
+ * Content hosted within this view can use this model at runtime to access and set state
+ * for the view or access other information.
  */
 @HoistModel
-export class DashTabModel {
+export class DashViewModel {
 
     id;
     viewSpec;
     containerModel;
 
-    @observable.ref viewState;
+    @bindable.ref viewState;
     @bindable isActive;
+
     @managed refreshContextModel;
-
-
-    get modelLookupContext() {
-        return this.containerModel.modelLookupContext;
-    }
-
-    get content() {
-        return this.viewSpec.content;
-    }
 
     get renderMode() {
         return this.viewSpec.renderMode || this.containerModel.renderMode;
@@ -70,22 +64,5 @@ export class DashTabModel {
         this.containerModel = containerModel;
 
         this.refreshContextModel = new DashRefreshContextModel(this);
-    }
-
-    setViewStateSource = (fn) => {
-        if (fn) {
-            this.addReaction({
-                track: fn,
-                run: (viewState) => {
-                    if (!(isEqual(viewState, this.viewState))) {
-                        console.log(viewState);
-                        runInAction(() => {
-                            this.viewState = {...viewState};
-                        });
-                    }
-                },
-                fireImmediately: true
-            });
-        }
     }
 }
