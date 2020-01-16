@@ -84,7 +84,7 @@ class LocalModel {
         this.addReaction({
             track: () => [
                 this.aspectRatio,
-                this.chartRef,
+                this.chartRef.current,
                 model.highchartsConfig
             ],
             run: () => this.renderHighChart()
@@ -134,8 +134,6 @@ class LocalModel {
     }
 
     resizeChart(e) {
-        if (!this.chart) return;
-
         const {width, height} = this.getChartDims(e[0].contentRect);
         if (width == 0 || height == 0) return;
         if (width == this.prevWidth && height == this.prevHeight) return;
@@ -234,7 +232,7 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
-                // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming. 
+                // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming.
                 // This is especially important when Navigator shown; first reload of data can cause a surprising tiny rezoom.
                 minPadding: 0,
                 maxPadding: 0,
