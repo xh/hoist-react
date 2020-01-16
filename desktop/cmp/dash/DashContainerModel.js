@@ -215,7 +215,7 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Views
+    // Items
     //-----------------
     // Get all items currently rendered in the container
     getItems() {
