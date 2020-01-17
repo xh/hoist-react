@@ -4,8 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React, {useRef} from 'react';
-import {elem, hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
+import {useRef} from 'react';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {modelLookupContextProvider} from '@xh/hoist/core/impl';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
@@ -46,17 +47,13 @@ export const dashView = hoistCmp.factory({
             return null;
         }
 
-        const {content} = viewSpec;
-        let contentElem = content.isHoistComponent ? elem(content) : content();
-        contentElem = React.cloneElement(contentElem, {flex: 1, viewModel: model});
-
         return modelLookupContextProvider({
             value: model.containerModel.modelLookupContext,
             item: frame({
                 className,
                 item: refreshContextView({
                     model: refreshContextModel,
-                    item: contentElem
+                    item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
                 })
             })
         });
