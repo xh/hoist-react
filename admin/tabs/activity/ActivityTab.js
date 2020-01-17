@@ -11,7 +11,7 @@ import {clientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {feedbackPanel} from './feedback/FeedbackPanel';
 import {trackingPanel} from './tracking/TrackingPanel';
 
-export const activityTab = hoistCmp(
+export const activityTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.activity',

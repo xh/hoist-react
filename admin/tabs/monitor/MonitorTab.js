@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {monitorResultsPanel} from './MonitorResultsPanel';
 import {monitorEditorPanel} from './MonitorEditorPanel';
 
-export const monitorTab = hoistCmp(
+export const monitorTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.monitor',

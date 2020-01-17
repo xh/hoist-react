@@ -15,7 +15,7 @@ import {servicePanel} from './services/ServicePanel';
 import {userPanel} from './users/UserPanel';
 import {webSocketPanel} from './websocket/WebSocketPanel';
 
-export const generalTab = hoistCmp(
+export const generalTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.general',

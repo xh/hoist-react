@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {logLevelPanel} from './LogLevelPanel';
 import {logViewer} from './viewer/LogViewer';
 
-export const loggingTab = hoistCmp(
+export const loggingTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.logging',
