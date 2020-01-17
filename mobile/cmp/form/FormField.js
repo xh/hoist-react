@@ -57,12 +57,12 @@ export const [FormField, formField] = hoistCmp.withFactory({
             notValid = model?.isNotValid || false,
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
-            requiredIndicator = (isRequired && !readonly) ?
+            requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
+            requiredIndicator = (isRequired && !readonly && requiredStr) ?
                 span({
-                    item: ' ' + defaultProp('requiredIndicator', props, formContext, '*'),
+                    item: ' ' + requiredStr,
                     className: 'xh-form-field-required-indicator'
-                }) :
-                null,
+                }) : null,
             isPending = model && model.isValidationPending;
 
         // Child related props
@@ -163,7 +163,7 @@ FormField.propTypes = {
     readonlyRenderer: PT.func,
 
     /** The indicator to display next to a required field. Defaults to `*`. */
-    requiredIndicator: PT.element
+    requiredIndicator: PT.string
 };
 
 
