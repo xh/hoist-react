@@ -60,7 +60,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
             requiredIndicator = (isRequired && !readonly) ?
-                defaultProp('requiredIndicator', props, formContext, span(' *')) :
+                defaultProp('requiredIndicator', props, formContext, ' *') :
                 null;
 
         // Child related props
@@ -210,7 +210,7 @@ FormField.propTypes = {
     readonlyRenderer: PT.func,
 
     /** The indicator to display next to a required field. Defaults to span(' *'). */
-    requiredIndicator: PT.element
+    requiredIndicator: PT.string
 };
 
 const readonlyChild = hoistCmp.factory({
