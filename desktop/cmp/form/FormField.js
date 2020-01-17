@@ -61,7 +61,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
             errors = model?.errors || [],
             requiredIndicator = (isRequired && !readonly) ?
                 span({
-                    item: defaultProp('requiredIndicator', props, formContext, ' *'),
+                    item: ' ' + defaultProp('requiredIndicator', props, formContext, '*'),
                     className: 'xh-form-field-required-indicator'
                 }) :
                 null;
