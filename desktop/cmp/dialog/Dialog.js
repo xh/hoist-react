@@ -78,11 +78,12 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             // these need to be called on 2nd render cycle
             // cannot be put into useOnMount
             // todo: explore how to ensure called only once.
+            // (may not be necessary to ensure only called once, not seeing any rerenders)
             maybeSetFocus();
 
             if (model.resizable || model.draggable) {
-                const {width, height} = props;
-                model.positionDialogOnRender({width, height});
+                const {width, height, x, y} = props;
+                model.positionDialogOnRender({width, height, x, y});
             }
         });
 

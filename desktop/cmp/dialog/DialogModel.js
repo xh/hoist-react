@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isNil, isPlainObject, isString} from 'lodash';
+import {isNumber, isPlainObject, isString} from 'lodash';
 
 import {HoistModel, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
@@ -169,16 +169,18 @@ export class DialogModel {
         }
 
         const {width: stateWidth, height: stateHeight} = this.sizeState;
-        width = stateWidth || width;
-        height = stateHeight || height;
+        width = isNumber(stateWidth) ? stateWidth : width;
+        height = isNumber(stateHeight) ? stateHeight : height;
 
         const {x: stateX, y: stateY} = this.positionState;
-        x = stateX || x;
-        y = stateY || y;
+        x = isNumber(stateX) ? stateX : x;
+        y = isNumber(stateY) ? stateY :y;
 
-        this.applySizeStateChanges({width, height});
+        if (isNumber(width) && isNumber(height)) {
+            this.applySizeStateChanges({width, height});
+        }
 
-        if (isNil(x) && isNil(y)) {
+        if (!isNumber(x) || !isNumber(y)) {
             this.centerDialog();
         } else {
             this.applyPositionStateChanges({x, y});

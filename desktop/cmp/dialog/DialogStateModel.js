@@ -109,7 +109,6 @@ export class DialogStateModel {
         };
     }
 
-    // todo
     loadState(state) {
         this.state = cloneDeep(state);
         if (this.trackSize) this.updateSize();
