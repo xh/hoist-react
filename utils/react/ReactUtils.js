@@ -20,8 +20,8 @@ export function getReactElementName(obj) {
 /**
  * Create a React element from either a HoistComponent or a function returning an element.
  *
- * Used by the TabContainer, DashContainer, and DockView APIs to process the 'content' configs
- * provided to them for their tabs and views.
+ * Used by the TabContainer, DashContainer, DockView, and Navigator APIs to process the 'content'
+ * configs provided to them for their tabs and views.
  *
  * @param {(Object|function)} content - HoistComponent or function returning a React element. If a
  *      function, it may be an 'elemFactory' (as created by elemFactory()), or any function that
