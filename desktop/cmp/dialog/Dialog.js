@@ -8,7 +8,7 @@
 import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
-import {castArray} from 'lodash';
+import {castArray, isFunction} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
@@ -80,9 +80,9 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             // todo: explore how to ensure called only once.
             maybeSetFocus();
 
-            const {width, height} = props;
-            if (!width && !height) {
-                model.centerDraggableDialogOnRender();
+            if (model.resizable || model.draggable) {
+                const {width, height} = props;
+                model.positionDialogOnRender({width, height});
             }
         });
 
@@ -141,6 +141,40 @@ const rndDialog = hoistCmp.factory(
             RnDDims = {width, height, ...dialogModel.calcPos({width, height})};
         }
 
+        const onDragStop = (evt, data) => {
+            const {stateModel} = dialogModel;
+            if (stateModel?.trackPosition && !dialogModel.isMaximizedState) {
+                dialogModel.setPositionState({x: data.x, y: data.y});
+            }
+            if (isFunction(RnDOptions.onDragStop)) RnDOptions.onDragStop(evt, data);
+        };
+
+        const onResizeStop = (
+            evt,
+            resizeDirection,
+            domEl,
+            resizableDelta,
+            position
+        ) => {
+            const {stateModel} = dialogModel;
+            if (stateModel?.trackSize && !dialogModel.isMaximizedState) {
+                const {
+                    offsetWidth: width,
+                    offsetHeight: height
+                } = domEl;
+                dialogModel.setSizeState({width, height});
+            }
+            if (isFunction(RnDOptions.onResizeStop)) {
+                RnDOptions.onResizeStop(
+                    evt,
+                    resizeDirection,
+                    domEl,
+                    resizableDelta,
+                    position
+                );
+            }
+        };
+
         return rnd({
             ref: c => dialogModel.rndRef = c,
             ...RnDOptions,
@@ -158,6 +192,8 @@ const rndDialog = hoistCmp.factory(
             },
             bounds: 'body',
             dragHandleClassName: 'xh-dialog-header',
+            onDragStop,
+            onResizeStop,
             item: div({
                 onKeyDown: (evt) => dialogModel.handleKeyDown(evt),
                 tabIndex: 0,

@@ -4,9 +4,14 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {isNil, isPlainObject, isString} from 'lodash';
+
+import {HoistModel, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+
+import {DialogStateModel} from './DialogStateModel';
+
 
 /**
  * DialogModel supports configuration and state-management for user-driven Dialog resizing and
@@ -14,6 +19,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
  * including the option to persist such state into a Hoist preference.
  */
 @HoistModel
+@LoadSupport
 export class DialogModel {
 
     //-----------------------
@@ -24,38 +30,50 @@ export class DialogModel {
     dialogRootId = 'xh-dialog-root';
     dialogWrapperDivRef = createObservableRef();
     rndRef = null;
-    restoreDimsTo = {width: null, height: null};
 
     //-----------------------
     // Immutable Properties
     //-----------------------
+    /** @member {boolean} */
     resizable;
+    /** @member {boolean} */
     draggable;
+    /** @member {boolean} */
     showCloseButton;
-    prefName;
+    /** @member {boolean} */
     closeOnMaskClick;
+    /** @member {boolean} */
     closeOnEscape;
+    /** @member {DialogStateModel} */
+    stateModel;
 
     //---------------------
     // Observable State
     //---------------------
     /** Is the Dialog mounted into React's virtual DOM? */
-    @observable isMaximized = false;
+    /** @member {boolean} */
     @observable hasMounted = false;
+    /** @member {boolean} */
     @observable isOpen = false;
+    /** @member {object} */
+    @observable sizeState = {width: null, height: null};
+    /** @member {object} */
+    @observable positionState = {x: null, y: null};
+    /** @member {boolean} */
+    @observable isMaximizedState = false;
 
     /**
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can dialog be resized?
      * @param {boolean} [config.draggable] - Can dialog be dragged?
      * @param {boolean} [config.showCloseButton] - Show a close button in dialog header?
-     * @param {string} [config.prefName] - preference name to store sizing and positioning state.
+     * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
         resizable = false,
         draggable = false,
         showCloseButton = true,
-        prefName = null,
+        stateModel = null,
         closeOnMaskClick = true,
         closeOnEscape = true
     } = {}) {
@@ -66,14 +84,7 @@ export class DialogModel {
         this.showCloseButton = showCloseButton;
         this.closeOnMaskClick = closeOnMaskClick;
         this.closeOnEscape = closeOnEscape;
-
-        if (prefName && !XH.prefService.hasKey(prefName)) {
-            console.warn(`Unknown preference for storing state of XH Dialog '${prefName}'`);
-            prefName = null;
-        }
-        this.prefName = prefName;
-
-        // Set observable state
+        this.stateModel = this.parseStateModel(stateModel);
     }
 
     isComponentModel() {
@@ -100,12 +111,27 @@ export class DialogModel {
 
     @action
     toggleIsMaximized() {
-        this.isMaximized = !this.isMaximized;
-        if (this.isMaximized) {
+        this.isMaximizedState = !this.isMaximizedState;
+        if (this.isMaximizedState) {
             this.maximize();
         } else {
-            this.restoreDims();
+            this.restoreDefaultState();
         }
+    }
+
+    @action
+    setSizeState(v) {
+        this.sizeState = v;
+    }
+
+    @action
+    setPositionState(v) {
+        this.positionState = v;
+    }
+
+    @action
+    setIsMaximizedState(v) {
+        this.isMaximizedState = v;
     }
 
     //---------------------------------------------
@@ -134,7 +160,32 @@ export class DialogModel {
         this.hide();
     }
 
-    centerDraggableDialogOnRender() {
+    positionDialogOnRender({width, height, x, y}) {
+        if (!this.rndRef) return;
+
+        if (this.isMaximizedState) {
+            this.maximize();
+            return;
+        }
+
+        const {width: stateWidth, height: stateHeight} = this.sizeState;
+        width = stateWidth || width;
+        height = stateHeight || height;
+
+        const {x: stateX, y: stateY} = this.positionState;
+        x = stateX || x;
+        y = stateY || y;
+
+        this.applySizeStateChanges({width, height});
+
+        if (isNil(x) && isNil(y)) {
+            this.centerDialog();
+        } else {
+            this.applyPositionStateChanges({x, y});
+        }
+    }
+
+    centerDialog() {
         if (!this.rndRef) return;
 
         const {
@@ -142,8 +193,15 @@ export class DialogModel {
             offsetHeight: height
         } = this.dialogWrapperDivRef.current;
 
-        this.rndRef.updateSize({width, height});
         this.rndRef.updatePosition(this.calcPos({width, height}));
+    }
+
+    applySizeStateChanges({width, height}) {
+        this.rndRef.updateSize({width, height});
+    }
+
+    applyPositionStateChanges({x, y}) {
+        this.rndRef.updatePosition({x, y});
     }
 
     calcPos({width, height}) {
@@ -157,21 +215,29 @@ export class DialogModel {
     maximize() {
         if (!this.rndRef) return;
 
-        const {
-            offsetWidth: width,
-            offsetHeight: height
-        } = this.dialogWrapperDivRef.current;
-        this.restoreDimsTo = {width, height};
-
         this.rndRef.updatePosition({x: 0, y: 0});
         this.rndRef.updateSize(this.windowDims);
     }
 
-    restoreDims() {
+    restoreDefaultState() {
         if (!this.rndRef) return;
 
-        this.rndRef.updatePosition(this.calcPos(this.restoreDimsTo));
-        this.rndRef.updateSize(this.restoreDimsTo);
+        this.rndRef.updatePosition(this.positionState);
+        this.rndRef.updateSize(this.sizeState);
+    }
+
+    parseStateModel(stateModel) {
+        let ret = null;
+        if (isPlainObject(stateModel)) {
+            ret = new DialogStateModel(stateModel);
+        } else if (isString(stateModel)) {
+            ret = new DialogStateModel({dialogId: stateModel});
+        }
+        if (ret) {
+            ret.init(this);
+            this.markManaged(ret);
+        }
+        return ret;
     }
 
     get windowDims() {
