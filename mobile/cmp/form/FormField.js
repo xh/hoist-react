@@ -57,7 +57,9 @@ export const [FormField, formField] = hoistCmp.withFactory({
             notValid = model?.isNotValid || false,
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
-            requiredStr = (isRequired && !readonly) ? span(' *') : null,
+            requiredIndicator = (isRequired && !readonly) ?
+                defaultProp('requiredIndicator', props, formContext, span(' *')) :
+                null,
             isPending = model && model.isValidationPending;
 
         // Child related props
@@ -97,7 +99,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 labelCmp({
                     omit: !label,
                     className: 'xh-form-field-label',
-                    items: [label, requiredStr]
+                    items: [label, requiredIndicator]
                 }),
                 div({
                     className: childIsSizeable ? 'xh-form-field-fill' : '',
@@ -155,8 +157,10 @@ FormField.propTypes = {
      * Optional function for use in readonly mode. Called with the Field's current value
      * and should return an element suitable for presentation to the end-user.
      */
-    readonlyRenderer: PT.func
+    readonlyRenderer: PT.func,
 
+    /** The indicator to display next to a required field. Defaults to span(' *'). */
+    requiredIndicator: PT.element
 };
 
 
