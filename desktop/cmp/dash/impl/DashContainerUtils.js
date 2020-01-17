@@ -86,8 +86,12 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
-                console.warn(`Attempting to load unrecognised view "${item.id}" from state`);
-                return {type: 'row'};
+                console.warn(`Attempted to load unrecognised view "${item.id}" from state`);
+                return null;
+            }
+
+            if (viewSpec.exclude) {
+                return null;
             }
 
             const ret = viewSpec.goldenLayoutConfig;
@@ -104,7 +108,8 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
                 itemSize[dimension] = relativeSizeToPixels(item[dimension], containerSize[dimension]);
             }
 
-            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item);
+            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(it => !isNil(it));
+            if (!content.length) return null;
             return {...item, content};
         }
     });

@@ -175,7 +175,9 @@ export class DashContainerModel {
             instances = this.getItemsBySpecId(id);
 
         throwIf(!viewSpec, `Trying to add unknown DashViewSpec. id=${id}`);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
+        throwIf(viewSpec.exclude, `Trying to add DashViewSpec with exclude=true. id=${id}`);
+        throwIf(!viewSpec.allowAdd, `Trying to add DashViewSpec with allowAdd=false. id=${id}`);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
         container.addChild(viewSpec.goldenLayoutConfig);

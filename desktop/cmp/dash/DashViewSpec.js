@@ -18,8 +18,9 @@ export class DashViewSpec {
     content;
     title;
     icon;
-    contentModelFn;
     unique;
+    exclude;
+    allowAdd;
     allowClose;
     renderMode;
     refreshMode;
@@ -31,7 +32,11 @@ export class DashViewSpec {
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
-     * @param {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
+     * @param {boolean} [exclude] - true to prevent any instances of this view. References to this
+     *      view in state will be quietly dropped. Default false.
+     * @param {boolean} [allowAdd] - true (default) to allow adding new instances of this view.
+     *      References to this view in state will be respected.
+     * @param {boolean} [allowClose] - true (default) to allow removing instances from the DashContainer.
      * @param {RenderMode} [renderMode] - strategy for rendering this DashTab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashTab. If null, will
@@ -43,6 +48,8 @@ export class DashViewSpec {
         title,
         icon,
         unique = false,
+        exclude = false,
+        allowAdd = true,
         allowClose = true,
         renderMode,
         refreshMode
@@ -56,6 +63,8 @@ export class DashViewSpec {
         this.title = title;
         this.icon = icon;
         this.unique = unique;
+        this.exclude = exclude;
+        this.allowAdd = allowAdd;
         this.allowClose = allowClose;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
