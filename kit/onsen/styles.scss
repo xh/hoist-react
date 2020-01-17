@@ -6,6 +6,7 @@
   textarea {
     font-size: var(--xh-font-size);
     font-family: var(--xh-font-family);
+    font-weight: 400;
     color: var(--xh-text-color);
     border: none !important;
     outline: none !important;
@@ -13,6 +14,7 @@
 
     &::placeholder {
       color: var(--xh-input-placeholder-text-color);
+      opacity: 1;
     }
   }
 
