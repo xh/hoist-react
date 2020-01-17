@@ -8,7 +8,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty, isFinite, isArray, isPlainObject, isNil, isString} from 'lodash';
 
 /**
- * Lookup the DashTabModel id of a rendered view
+ * Lookup the DashViewModel id of a rendered view
  */
 export function getViewModelId(view) {
     if (!view || !view.isInitialised || !view.isComponent) return;

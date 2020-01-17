@@ -7,7 +7,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Spec used to generate a DashTabs and DashTabModels within a DashContainer.
+ * Spec used to generate a DashViews and DashViewModels within a DashContainer.
  *
  * This class is not typically created directly within applications. Instead, specify
  * DashViewSpec configs via the `DashContainerModel.viewSpecs` constructor config.
@@ -21,13 +21,13 @@ export class DashViewSpec {
     unique;
     exclude;
     allowAdd;
-    allowClose;
+    allowRemove;
     renderMode;
     refreshMode;
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
-     * @param {Object} content - content to be rendered by the DashTab. Component class or a
+     * @param {Object} content - content to be rendered by the DashView. Component class or a
      *      custom element factory of the form returned by elemFactory.
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
@@ -36,10 +36,10 @@ export class DashViewSpec {
      *      view in state will be quietly dropped. Default false.
      * @param {boolean} [allowAdd] - true (default) to allow adding new instances of this view.
      *      References to this view in state will be respected.
-     * @param {boolean} [allowClose] - true (default) to allow removing instances from the DashContainer.
-     * @param {RenderMode} [renderMode] - strategy for rendering this DashTab. If null, will
+     * @param {boolean} [allowRemove] - true (default) to allow removing instances from the DashContainer.
+     * @param {RenderMode} [renderMode] - strategy for rendering this DashView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
-     * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashTab. If null, will
+     * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      */
     constructor({
@@ -50,7 +50,7 @@ export class DashViewSpec {
         unique = false,
         exclude = false,
         allowAdd = true,
-        allowClose = true,
+        allowRemove = true,
         renderMode,
         refreshMode
     }) {
@@ -65,7 +65,7 @@ export class DashViewSpec {
         this.unique = unique;
         this.exclude = exclude;
         this.allowAdd = allowAdd;
-        this.allowClose = allowClose;
+        this.allowRemove = allowRemove;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
     }
@@ -75,12 +75,12 @@ export class DashViewSpec {
     // Hoist Implementation
     //---------------------
     get goldenLayoutConfig() {
-        const {id, title, allowClose} = this;
+        const {id, title, allowRemove} = this;
         return {
             component: id,
             type: 'react-component',
             title,
-            isClosable: allowClose
+            isClosable: allowRemove
         };
     }
 }
