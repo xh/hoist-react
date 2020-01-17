@@ -26,8 +26,8 @@ export class DashViewSpec {
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
-     * @param {Object} content - content to be rendered by the DashTab. Component class or a
-     *      custom element factory of the form returned by elemFactory.
+    * @param {(Object|function)} c.content - content to be rendered by this DashView.
+     *      HoistComponent or a function returning a react element.
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
