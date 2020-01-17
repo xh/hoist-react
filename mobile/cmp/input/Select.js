@@ -7,7 +7,7 @@
 
 import PT from 'prop-types';
 import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {isEmpty, isPlainObject, assign, isNil} from 'lodash';
+import {isEmpty, isPlainObject, assign} from 'lodash';
 import {observable, action} from '@xh/hoist/mobx';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
