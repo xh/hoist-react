@@ -209,7 +209,7 @@ FormField.propTypes = {
      */
     readonlyRenderer: PT.func,
 
-    /** The indicator to display next to a required field. Defaults to span(' *'). */
+    /** The indicator to display next to a required field. Defaults to `*`. */
     requiredIndicator: PT.string
 };
 
