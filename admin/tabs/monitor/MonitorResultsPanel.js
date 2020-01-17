@@ -13,7 +13,7 @@ import {MonitorResultsModel} from './MonitorResultsModel';
 
 import './MonitorResultsPanel.scss';
 
-export const MonitorResultsPanel = hoistCmp({
+export const monitorResultsPanel = hoistCmp.factory({
     model: creates(MonitorResultsModel),
 
     render({model}) {

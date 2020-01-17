@@ -13,7 +13,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
-export const AboutPanel = hoistCmp(
+export const aboutPanel = hoistCmp.factory(
     () => div({
         className: 'xh-admin-about-panel xh-tiled-bg',
         items: [

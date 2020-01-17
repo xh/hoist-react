@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 
 import {EhCacheModel} from './EhCacheModel';
 
-export const EhCachePanel = hoistCmp({
+export const ehCachePanel = hoistCmp.factory({
 
     model: creates(EhCacheModel),
 

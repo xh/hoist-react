@@ -10,6 +10,6 @@ import {vframe} from '@xh/hoist/cmp/layout';
 import {activityGrid} from './ActivityGrid';
 import {visitsChart} from './VisitsChart';
 
-export const TrackingPanel = hoistCmp(
+export const trackingPanel = hoistCmp.factory(
     () => vframe(activityGrid(), visitsChart())
 );
