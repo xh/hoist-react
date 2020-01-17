@@ -5,10 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {useRef} from 'react';
-import {elem, hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
+import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
+import {elementFromContent} from '@xh/hoist/utils/react';
 
 /**
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
@@ -41,14 +42,12 @@ export const tab = hoistCmp.factory({
             return null;
         }
 
-        const contentElem = content.isHoistComponent ? elem(content, {flex: 1}) : content();
-
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: contentElem
+                item: elementFromContent(content, {flex: 1})
             })
         });
     }
