@@ -5,8 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {pickBy, isNil} from 'lodash';
 
 import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
@@ -29,7 +30,7 @@ export class DashViewModel {
     viewSpec;
     containerModel;
 
-    @bindable.ref viewState;
+    @observable.ref viewState;
     @bindable isActive;
 
     @managed refreshContextModel;
@@ -65,4 +66,30 @@ export class DashViewModel {
 
         this.refreshContextModel = new DashRefreshContextModel(this);
     }
+
+    setTitle(title) {
+        this.setViewStateKey('title', title);
+    }
+
+    setIcon(icon) {
+        this.setViewStateKey('icon', icon);
+    }
+
+    /**
+     * Modify a single key on this model's viewState
+     */
+    setViewStateKey(key, value) {
+        this.setViewState({...this.viewState, [key]: value});
+    }
+
+    /**
+     * Overwrite viewState, preserving any existing title or icon
+     */
+    @action
+    setViewState(viewState) {
+        const {title, icon} = this.viewState ?? {},
+            newState = {title, icon, ...viewState};
+        this.viewState = pickBy(newState, v => !isNil(v));
+    }
+
 }

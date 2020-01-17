@@ -323,33 +323,75 @@ export class DashContainerModel {
         items.forEach(item => {
             const id = item.config.component,
                 $el = item.tab.element, // Note: this is a jquery element
+                $titleEl = $el.find('.lm_title').first(),
+                iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(id),
                 viewModelId = getViewModelId(item),
+                viewModel = this.getViewModel(viewModelId),
                 state = this.viewState[viewModelId],
                 icon = withDefault(state?.icon, viewSpec?.icon),
                 title = withDefault(state?.title, viewSpec?.title);
 
             if (icon) {
-                const $currentIcon = $el.find('svg.svg-inline--fa').first(),
+                const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
                     newIconType = icon.props.icon[1];
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToSvg(icon);
-                    $el.find('svg.svg-inline--fa').remove();
-                    $el.find('.lm_title').before(iconSvg);
+                    $el.find(iconSelector).remove();
+                    $titleEl.before(iconSvg);
                 }
             }
 
             if (title) {
-                const $titleEl = $el.find('.lm_title').first(),
-                    currentTitle = $titleEl.text();
+                const currentTitle = $titleEl.text();
+                if (currentTitle !== title) $titleEl.text(title);
+            }
 
-                if (currentTitle !== title) {
-                    $titleEl.text(title);
-                }
+            if (viewSpec.allowRename) {
+                this.insertTitleForm($el, viewModel);
+                $titleEl.prop('title', `${$titleEl.text()}. Double-click to edit.`);
+                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
             }
         });
+    }
+
+    insertTitleForm($el, viewModel) {
+        const formSelector = '.title-form';
+        if ($el.find(formSelector).length) return;
+
+        // Create and insert form
+        const $titleEl = $el.find('.lm_title').first();
+        $titleEl.after(`<form class="title-form"><input type="text"/></form>`);
+
+        // Attach listeners
+        const $formEl = $el.find(formSelector).first(),
+            $inputEl = $formEl.find('input').first();
+
+        $inputEl.blur(() => this.hideTitleForm($el));
+        $formEl.submit(() => {
+            const title = $inputEl.val();
+            $titleEl.text(title);
+            viewModel.setTitle(title);
+
+            this.hideTitleForm($el);
+            return false;
+        });
+    }
+
+    showTitleForm($el) {
+        const $titleEl = $el.find('.lm_title').first(),
+            $inputEl = $el.find('.title-form input').first(),
+            currentTitle = $titleEl.text();
+
+        $el.addClass('show-title-form');
+        $inputEl.val(currentTitle);
+        $inputEl.focus().select();
+    }
+
+    hideTitleForm($el) {
+        $el.removeClass('show-title-form');
     }
 
     //-----------------
