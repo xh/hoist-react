@@ -65,9 +65,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     item: ' ' + requiredStr,
                     className: 'xh-form-field-required-indicator'
                 }) : null;
-
-        defaultProp('requiredIndicator', props, formContext, '*');
-
+    
         // Child related props
         const child = getValidChild(children),
             [stableId] = useState(XH.genId()),
