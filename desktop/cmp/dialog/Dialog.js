@@ -228,5 +228,11 @@ Dialog.propTypes = {
     width: PT.number,
 
     /** Height of dialog */
-    height: PT.number
+    height: PT.number,
+
+    /** Left edge position of dialog */
+    x: PT.number,
+
+    /** Top edge position of dialog */
+    y: PT.number
 };
