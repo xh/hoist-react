@@ -6,7 +6,6 @@
  */
 import {XH, HoistModel} from '@xh/hoist/core';
 import {cloneDeep, debounce, isUndefined} from 'lodash';
-import {start} from '@xh/hoist/promise';
 
 /**
  * Model for serializing/de-serializing saved dialog state across user browsing sessions
@@ -33,7 +32,6 @@ export class DialogStateModel {
     dialogId = null;
 
     state = {};
-    defaultState = null;
 
     /**
      * @param {Object} c - DialogStateModel configuration.
@@ -63,8 +61,6 @@ export class DialogStateModel {
         if (this.trackIsMaximized) {
             this.addReaction(this.isMaximizedReaction());
         }
-
-        this.initializeState();
     }
 
     getStateKey() {
@@ -79,34 +75,12 @@ export class DialogStateModel {
         XH.localStorageService.set(stateKey, state);
     }
 
-    resetState(stateKey) {
-        XH.localStorageService.remove(stateKey);
-    }
-
-    resetStateAsync() {
-        return start(() => {
-            this.loadState(this.defaultState);
-            this.resetState(this.getStateKey());
-        });
-    }
-
     //--------------------------
     // Implementation
     //--------------------------
     initializeState() {
         const userState = this.readState(this.getStateKey());
-        // this.defaultState = this.readStateFromDialog();
-
         this.loadState(userState);
-    }
-
-    readStateFromDialog() {
-        const {dialogModel} = this;
-        return {
-            size: {...dialogModel.sizeState},
-            position: {...dialogModel.positionState},
-            isMaximized: dialogModel.isMaximizedState
-        };
     }
 
     loadState(state) {

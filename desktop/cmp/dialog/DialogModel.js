@@ -16,7 +16,7 @@ import {DialogStateModel} from './DialogStateModel';
 /**
  * DialogModel supports configuration and state-management for user-driven Dialog resizing and
  * repositioning (dragging) functionality,
- * including the option to persist such state into a Hoist preference.
+ * including the option to persist such state into local storage.
  */
 @HoistModel
 @LoadSupport
@@ -56,9 +56,9 @@ export class DialogModel {
     /** @member {boolean} */
     @observable isOpen = false;
     /** @member {object} */
-    @observable sizeState = {width: null, height: null};
+    @observable.ref sizeState = {};
     /** @member {object} */
-    @observable positionState = {x: null, y: null};
+    @observable.ref positionState = {};
     /** @member {boolean} */
     @observable isMaximizedState = false;
 
@@ -163,6 +163,8 @@ export class DialogModel {
     positionDialogOnRender({width, height, x, y}) {
         if (!this.rndRef) return;
 
+        this.stateModel?.initializeState();
+
         if (this.isMaximizedState) {
             this.maximize();
             return;
@@ -188,29 +190,32 @@ export class DialogModel {
     }
 
     centerDialog() {
-        if (!this.rndRef) return;
-
-        const {
-            offsetWidth: width,
-            offsetHeight: height
-        } = this.dialogWrapperDivRef.current;
-
-        this.rndRef.updatePosition(this.calcPos({width, height}));
+        this.rndRef.updatePosition(this.calcPos(this.dialogSize));
     }
 
     applySizeStateChanges({width, height}) {
+        const {windowSize: wSize} = this;
+
+        width = Math.min(wSize.width - 20, width);
+        height = Math.min(wSize.height - 20, height);
         this.rndRef.updateSize({width, height});
     }
 
     applyPositionStateChanges({x, y}) {
-        this.rndRef.updatePosition({x, y});
+        // delay so that correct dialog size can be calculated from DOM
+        window.requestAnimationFrame(() => {
+            const {windowSize: wSize, dialogSize: dSize} = this;
+            x = Math.min(x, wSize.width - dSize.width);
+            y = Math.min(y, wSize.height - dSize.height);
+            this.rndRef.updatePosition({x, y});
+        });
     }
 
     calcPos({width, height}) {
-        const wDims = this.windowDims;
+        const wSize = this.windowSize;
         return {
-            x: Math.max((wDims.width - width) / 2, 0),
-            y: Math.max((wDims.height - height) / 2, 0)
+            x: Math.max((wSize.width - width) / 2, 0),
+            y: Math.max((wSize.height - height) / 2, 0)
         };
     }
 
@@ -218,7 +223,7 @@ export class DialogModel {
         if (!this.rndRef) return;
 
         this.rndRef.updatePosition({x: 0, y: 0});
-        this.rndRef.updateSize(this.windowDims);
+        this.rndRef.updateSize(this.windowSize);
     }
 
     restoreDefaultState() {
@@ -242,7 +247,7 @@ export class DialogModel {
         return ret;
     }
 
-    get windowDims() {
+    get windowSize() {
         const w = window, d = document, e = d.documentElement,
             g = d.getElementsByTagName('body')[0];
 
@@ -250,5 +255,13 @@ export class DialogModel {
             width: w.innerWidth || e.clientWidth || g.clientWidth,
             height: w.innerHeight || e.clientHeight || g.clientHeight
         };
+    }
+
+    get dialogSize() {
+        const {
+            offsetWidth: width,
+            offsetHeight: height
+        } = this.dialogWrapperDivRef.current;
+        return {width, height};
     }
 }

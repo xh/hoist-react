@@ -45,10 +45,10 @@ export const dialogHeader = hoistCmp.factory({
 
 const maxMinButton = hoistCmp.factory(
     ({dialogModel}) => {
-        const {resizable, isMaximized} = dialogModel;
+        const {resizable, isMaximizedState} = dialogModel;
         return button({
             omit: !resizable,
-            icon: !isMaximized ? Icon.expand() : Icon.collapse(),
+            icon: !isMaximizedState ? Icon.expand() : Icon.collapse(),
             onClick: () => dialogModel.toggleIsMaximized()
         });
     }

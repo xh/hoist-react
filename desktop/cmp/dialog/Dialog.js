@@ -144,6 +144,9 @@ const rndDialog = hoistCmp.factory(
 
         const onDragStop = (evt, data) => {
             const {stateModel} = dialogModel;
+
+            if (evt.target.closest('button')) return;
+
             if (stateModel?.trackPosition && !dialogModel.isMaximizedState) {
                 dialogModel.setPositionState({x: data.x, y: data.y});
             }

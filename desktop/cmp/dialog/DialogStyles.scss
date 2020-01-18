@@ -20,6 +20,8 @@
         background-color: var(--xh-bg-alt);
         box-shadow: var(--xh-dialog-box-shadow);
         border: var(--xh-border-solid);
+        max-height: 100vh;
+        max-width: 100vh;
 
         .react-draggable__container {
             z-index: 1;
