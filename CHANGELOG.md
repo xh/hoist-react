@@ -96,6 +96,10 @@ Note the following more specific changes to these related classes:
   continue using impersonation. (Note that an update to hoist-core 6.4+ is required for this config
   to be enforced on the server.)
 * `FormField` now supports a `requiredIndicator` to customize how required fields are displayed.
+* Application build tags are now included in version update checks, primarily to prompt dev/QA users
+  to refresh when running SNAPSHOT versions. (Note that an update to hoist-core 6.4+ is required for
+  the server to emit build tag for comparison.)
+
 ### 💥 Breaking Changes
 
 * The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
@@ -109,10 +113,10 @@ Note the following more specific changes to these related classes:
 * `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
   to the `core` package. These enumerations are now used in the APIs for `Panel`, `TabContainer`,
   and `DashContainer`.
-* `DockViewModel` now requires a function, or a HoistComponent as its `content` param.  It has always 
-  been documented this way, but a bug in the original implementation had it accepting an actual 
-  element rather than a function.  As now implemented, the form of the `content` param is 
-  consistent across `TabModel`, `DockViewModel`, and `DashViewSpec`.   
+* `DockViewModel` now requires a function, or a HoistComponent as its `content` param. It has always
+  been documented this way, but a bug in the original implementation had it accepting an actual
+  element rather than a function. As now implemented, the form of the `content` param is consistent
+  across `TabModel`, `DockViewModel`, and `DashViewSpec`.
 
 ### 🐞 Bug Fixes
 
