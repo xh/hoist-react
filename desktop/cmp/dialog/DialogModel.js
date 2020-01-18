@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isNumber, isPlainObject, isString} from 'lodash';
+import {isEmpty, isNumber, isPlainObject, isString} from 'lodash';
 
 import {HoistModel, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
@@ -107,6 +107,11 @@ export class DialogModel {
     @action
     hide() {
         this.isOpen = false;
+        if (this.stateModel) return;
+
+        this.setSizeState({});
+        this.setPositionState({});
+        this.setIsMaximizedState(false);
     }
 
     @action
@@ -115,7 +120,7 @@ export class DialogModel {
         if (this.isMaximizedState) {
             this.maximize();
         } else {
-            this.restoreDefaultState();
+            this.unMaximize();
         }
     }
 
@@ -190,7 +195,7 @@ export class DialogModel {
     }
 
     centerDialog() {
-        this.rndRef.updatePosition(this.calcPos(this.dialogSize));
+        window.requestAnimationFrame(() => this.rndRef.updatePosition(this.calcPos(this.dialogSize)));
     }
 
     applySizeStateChanges({width, height}) {
@@ -222,15 +227,23 @@ export class DialogModel {
     maximize() {
         if (!this.rndRef) return;
 
+        // save current size and state for when
+        // model is restored to non-maximized mode
+        if (isEmpty(this.sizeState)) this.setSizeState(this.dialogSize);
+
         this.rndRef.updatePosition({x: 0, y: 0});
         this.rndRef.updateSize(this.windowSize);
     }
 
-    restoreDefaultState() {
+    unMaximize() {
         if (!this.rndRef) return;
 
-        this.rndRef.updatePosition(this.positionState);
         this.rndRef.updateSize(this.sizeState);
+        if (isEmpty(this.positionState)) {
+            this.centerDialog();
+        } else {
+            this.rndRef.updatePosition(this.positionState);
+        }
     }
 
     parseStateModel(stateModel) {

@@ -78,7 +78,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             // these need to be called on 2nd render cycle
             // cannot be put into useOnMount
             // todo: explore how to ensure called only once.
-            // (may not be necessary to ensure only called once, not seeing any rerenders)
+            // (may not be necessary to ensure only called once, not seeing any re-renders)
             maybeSetFocus();
 
             if (model.resizable || model.draggable) {
@@ -128,26 +128,17 @@ const rndDialog = hoistCmp.factory(
     ({model: dialogModel, props}) => {
         const {resizable, draggable, RnDOptions = {}} = dialogModel,
             {width, height} = props;
-        let RnDDims = {
-            x: 0,
-            y: 0
-        };
 
         throwIf(
             resizable && (!width || !height),
             'Resizable dialogs must also have width and height props set.'
         );
 
-        if (width && height) {
-            RnDDims = {width, height, ...dialogModel.calcPos({width, height})};
-        }
-
         const onDragStop = (evt, data) => {
-            const {stateModel} = dialogModel;
-
+            // ignore drags on close or maximize button in title bar
             if (evt.target.closest('button')) return;
 
-            if (stateModel?.trackPosition && !dialogModel.isMaximizedState) {
+            if (!dialogModel.isMaximizedState) {
                 dialogModel.setPositionState({x: data.x, y: data.y});
             }
             if (isFunction(RnDOptions.onDragStop)) RnDOptions.onDragStop(evt, data);
@@ -160,13 +151,13 @@ const rndDialog = hoistCmp.factory(
             resizableDelta,
             position
         ) => {
-            const {stateModel} = dialogModel;
-            if (stateModel?.trackSize && !dialogModel.isMaximizedState) {
+            if (!dialogModel.isMaximizedState) {
                 const {
                     offsetWidth: width,
                     offsetHeight: height
                 } = domEl;
                 dialogModel.setSizeState({width, height});
+                dialogModel.setPositionState(position);
             }
             if (isFunction(RnDOptions.onResizeStop)) {
                 RnDOptions.onResizeStop(
@@ -182,7 +173,6 @@ const rndDialog = hoistCmp.factory(
         return rnd({
             ref: c => dialogModel.rndRef = c,
             ...RnDOptions,
-            default: RnDDims,
             disableDragging: !draggable,
             enableResizing: {
                 bottom: resizable,
