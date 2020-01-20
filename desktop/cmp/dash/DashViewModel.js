@@ -5,9 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {pickBy, isNil} from 'lodash';
 
 import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
@@ -30,7 +29,9 @@ export class DashViewModel {
     viewSpec;
     containerModel;
 
-    @observable.ref viewState;
+    @bindable.ref icon;
+    @bindable title;
+    @bindable.ref viewState;
     @bindable isActive;
 
     @managed refreshContextModel;
@@ -46,13 +47,17 @@ export class DashViewModel {
     /**
      * @param {string} id - Typically created by GoldenLayouts.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashTab.
-     * @param {Object} viewState - State with which to initialize the view
+     * @param {Icon} [icon] - Icon with which to initialize the view
+     * @param {string} [title] - Title with which to initialize the view
+     * @param {Object} [viewState] - State with which to initialize the view
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      */
     constructor({
         id,
         viewSpec,
+        icon,
+        title,
         viewState = null,
         containerModel
     }) {
@@ -61,18 +66,12 @@ export class DashViewModel {
 
         this.id = id;
         this.viewSpec = viewSpec;
+        this.icon = icon ?? viewSpec.icon;
+        this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
 
         this.refreshContextModel = new DashRefreshContextModel(this);
-    }
-
-    setTitle(title) {
-        this.setViewStateKey('title', title);
-    }
-
-    setIcon(icon) {
-        this.setViewStateKey('icon', icon);
     }
 
     /**
@@ -80,16 +79,6 @@ export class DashViewModel {
      */
     setViewStateKey(key, value) {
         this.setViewState({...this.viewState, [key]: value});
-    }
-
-    /**
-     * Overwrite viewState, preserving any existing title or icon
-     */
-    @action
-    setViewState(viewState) {
-        const {title, icon} = this.viewState ?? {},
-            newState = {title, icon, ...viewState};
-        this.viewState = pickBy(newState, v => !isNil(v));
     }
 
 }

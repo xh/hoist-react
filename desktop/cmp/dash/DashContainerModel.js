@@ -7,10 +7,10 @@
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {Icon, convertIconToSvg} from '@xh/hoist/icon';
+import {Icon, convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {isEmpty, find, reject, cloneDeep} from 'lodash';
 
@@ -71,7 +71,6 @@ export class DashContainerModel {
     @observable.ref state;
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
-
     /** @member {DashViewModel[]} */
     @managed @observable.ref viewModels = [];
 
@@ -187,12 +186,12 @@ export class DashContainerModel {
     @debounced(100)
     @action
     updateState() {
-        const {goldenLayout, viewState} = this;
+        const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
 
-        this.state = convertGLToState(goldenLayout, viewState);
+        this.state = convertGLToState(goldenLayout, this);
 
-        // Update tab headers on state change to reflect title/icon changes in view state
+        // Update tab headers on state change to reflect title/icon changes.
         this.updateTabHeaders();
     }
 
@@ -224,7 +223,6 @@ export class DashContainerModel {
         return goldenLayout.root.getItemsByType('component');
     }
 
-
     // Get all view instances with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.getItems().filter(it => it.config.component === id);
@@ -235,8 +233,8 @@ export class DashContainerModel {
     //-----------------
     get viewState() {
         const ret = {};
-        this.viewModels.map(({viewState, id}) => {
-            if (viewState) ret[id] = viewState;
+        this.viewModels.map(({id, icon, title, viewState}) => {
+            ret[id] = {icon, title, viewState};
         });
         return ret;
     }
@@ -321,16 +319,12 @@ export class DashContainerModel {
     updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
-            const id = item.config.component,
-                $el = item.tab.element, // Note: this is a jquery element
+            const $el = item.tab.element, // Note: this is a jquery element
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
-                viewSpec = this.getViewSpec(id),
-                viewModelId = getViewModelId(item),
-                viewModel = this.getViewModel(viewModelId),
-                state = this.viewState[viewModelId],
-                icon = withDefault(state?.icon, viewSpec?.icon),
-                title = withDefault(state?.title, viewSpec?.title);
+                viewSpec = this.getViewSpec(item.config.component),
+                viewModel = this.getViewModel(getViewModelId(item)),
+                {icon, title} = viewModel;
 
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
@@ -417,13 +411,18 @@ export class DashContainerModel {
         // Register components
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, (data) => {
-                const {id, state} = data,
-                    model = new DashViewModel({
-                        id,
-                        viewSpec,
-                        viewState: state,
-                        containerModel: this
-                    });
+                const {id, title, viewState} = data;
+                let icon = data.icon;
+                if (icon) icon = deserializeIcon(icon);
+
+                const model = new DashViewModel({
+                    id,
+                    viewSpec,
+                    icon,
+                    title,
+                    viewState,
+                    containerModel: this
+                });
 
                 this.addViewModel(model);
                 return dashView({model});
