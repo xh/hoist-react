@@ -92,11 +92,7 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
-                console.warn(`Attempted to load unrecognised view "${item.id}" from state`);
-                return null;
-            }
-
-            if (viewSpec.exclude) {
+                console.debug(`Attempted to load non-existent or omitted view from state: ${item.id}`);
                 return null;
             }
 

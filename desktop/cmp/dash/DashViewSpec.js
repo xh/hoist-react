@@ -18,8 +18,8 @@ export class DashViewSpec {
     content;
     title;
     icon;
+    omit;
     unique;
-    exclude;
     allowAdd;
     allowRemove;
     allowRename;
@@ -32,9 +32,9 @@ export class DashViewSpec {
      *      HoistComponent or a function returning a react element.
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
-     * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
-     * @param {boolean} [exclude] - true to prevent any instances of this view. References to this
+     * * @param {boolean} [omit] - true to prevent any instances of this view. References to this
      *      view in state will be quietly dropped. Default false.
+     * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
      * @param {boolean} [allowAdd] - true (default) to allow adding new instances of this view.
      *      References to this view in state will be respected.
      * @param {boolean} [allowRemove] - true (default) to allow removing instances from the DashContainer.
@@ -49,8 +49,8 @@ export class DashViewSpec {
         content,
         title,
         icon,
+        omit = false,
         unique = false,
-        exclude = false,
         allowAdd = true,
         allowRemove = true,
         allowRename = true,
@@ -65,8 +65,8 @@ export class DashViewSpec {
         this.content = content;
         this.title = title;
         this.icon = icon;
+        this.omit = omit;
         this.unique = unique;
-        this.exclude = exclude;
         this.allowAdd = allowAdd;
         this.allowRemove = allowRemove;
         this.allowRename = allowRename;

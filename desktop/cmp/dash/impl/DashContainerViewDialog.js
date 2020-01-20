@@ -115,7 +115,6 @@ class Model {
             {viewSpecs} = dashContainerModel;
 
         return viewSpecs.filter(viewSpec => {
-            if (viewSpec.exclude) return false;
             if (!viewSpec.allowAdd) return false;
             if (viewSpec.unique) {
                 const instances = dashContainerModel.getItemsBySpecId(viewSpec.id);

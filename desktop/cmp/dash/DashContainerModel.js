@@ -10,9 +10,9 @@ import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {Icon, convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
+import {ensureNotEmpty, ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty, find, reject, cloneDeep} from 'lodash';
+import {find, reject, cloneDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
@@ -118,16 +118,15 @@ export class DashContainerModel {
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
     }) {
-        throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
+        viewSpecs = viewSpecs.filter(it => !it.omit);
+        ensureNotEmpty(viewSpecs, 'DashContainerModel needs at least one DashViewSpec');
+        ensureUniqueBy(viewSpecs, 'id');
+        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
         this.showAddButton = showAddButton;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
-
-        // Add DashViewSpecs
-        ensureUniqueBy(viewSpecs, 'id');
-        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
@@ -173,8 +172,7 @@ export class DashContainerModel {
         const viewSpec = this.getViewSpec(id),
             instances = this.getItemsBySpecId(id);
 
-        throwIf(!viewSpec, `Trying to add unknown DashViewSpec. id=${id}`);
-        throwIf(viewSpec.exclude, `Trying to add DashViewSpec with exclude=true. id=${id}`);
+        throwIf(!viewSpec, `Trying to add non-existent or omitted DashViewSpec. id=${id}`);
         throwIf(!viewSpec.allowAdd, `Trying to add DashViewSpec with allowAdd=false. id=${id}`);
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
 
