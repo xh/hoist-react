@@ -9,17 +9,17 @@ import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
-import {MonitorResultsPanel} from './MonitorResultsPanel';
-import {MonitorEditorPanel} from './MonitorEditorPanel';
+import {monitorResultsPanel} from './MonitorResultsPanel';
+import {monitorEditorPanel} from './MonitorEditorPanel';
 
-export const MonitorTab = hoistCmp(
+export const monitorTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.monitor',
             switcherPosition: 'left',
             tabs: [
-                {id: 'status', icon: Icon.shieldCheck(), content: MonitorResultsPanel},
-                {id: 'config', icon: Icon.settings(), content: MonitorEditorPanel}
+                {id: 'status', icon: Icon.shieldCheck(), content: monitorResultsPanel},
+                {id: 'config', icon: Icon.settings(), content: monitorEditorPanel}
             ]
         }
     })

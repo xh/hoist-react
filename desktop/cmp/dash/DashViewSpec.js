@@ -22,13 +22,14 @@ export class DashViewSpec {
     exclude;
     allowAdd;
     allowRemove;
+    allowRename;
     renderMode;
     refreshMode;
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
-     * @param {Object} content - content to be rendered by the DashView. Component class or a
-     *      custom element factory of the form returned by elemFactory.
+    * @param {(Object|function)} c.content - content to be rendered by this DashView.
+     *      HoistComponent or a function returning a react element.
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
@@ -37,6 +38,7 @@ export class DashViewSpec {
      * @param {boolean} [allowAdd] - true (default) to allow adding new instances of this view.
      *      References to this view in state will be respected.
      * @param {boolean} [allowRemove] - true (default) to allow removing instances from the DashContainer.
+     * @param {boolean} [allowRename] - true (default) to allow renaming the view.
      * @param {RenderMode} [renderMode] - strategy for rendering this DashView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashView. If null, will
@@ -51,6 +53,7 @@ export class DashViewSpec {
         exclude = false,
         allowAdd = true,
         allowRemove = true,
+        allowRename = true,
         renderMode,
         refreshMode
     }) {
@@ -66,6 +69,7 @@ export class DashViewSpec {
         this.exclude = exclude;
         this.allowAdd = allowAdd;
         this.allowRemove = allowRemove;
+        this.allowRename = allowRename;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
     }

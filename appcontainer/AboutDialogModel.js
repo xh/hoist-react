@@ -47,11 +47,10 @@ export class AboutDialogModel {
                 row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
                 row('Current User', XH.identityService.username),
                 row('Environment', svc.get('appEnvironment')),
-                row('Server', svc.get('appVersion')),
-                row('Client', svc.get('clientVersion')),
+                row('Server', `${svc.get('appVersion')} (build ${svc.get('appBuild')})`),
+                row('Client', `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`),
                 row('Hoist Core', svc.get('hoistCoreVersion')),
                 row('Hoist React', svc.get('hoistReactVersion')),
-                row('Build', svc.get('clientBuild')),
                 row('User Agent', window.navigator.userAgent),
                 ...configRows,
                 row('WebSockets', webSocketIndicator())

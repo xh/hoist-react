@@ -29,6 +29,8 @@ export class DashViewModel {
     viewSpec;
     containerModel;
 
+    @bindable.ref icon;
+    @bindable title;
     @bindable.ref viewState;
     @bindable isActive;
 
@@ -45,13 +47,17 @@ export class DashViewModel {
     /**
      * @param {string} id - Typically created by GoldenLayouts.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this view.
-     * @param {Object} viewState - State with which to initialize the view
+     * @param {Icon} [icon] - Icon with which to initialize the view
+     * @param {string} [title] - Title with which to initialize the view
+     * @param {Object} [viewState] - State with which to initialize the view
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      */
     constructor({
         id,
         viewSpec,
+        icon,
+        title,
         viewState = null,
         containerModel
     }) {
@@ -60,9 +66,19 @@ export class DashViewModel {
 
         this.id = id;
         this.viewSpec = viewSpec;
+        this.icon = icon ?? viewSpec.icon;
+        this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
 
         this.refreshContextModel = new DashRefreshContextModel(this);
     }
+
+    /**
+     * Modify a single key on this model's viewState
+     */
+    setViewStateKey(key, value) {
+        this.setViewState({...this.viewState, [key]: value});
+    }
+
 }

@@ -8,6 +8,7 @@ import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {truncate} from 'lodash';
 import './UpdateBar.scss';
 
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
@@ -27,11 +28,11 @@ export const updateBar = hoistCmp.factory({
             className: 'xh-update-bar',
             items: [
                 Icon.rocket({size: 'lg'}),
-                div('An update is available!'),
+                div('Update available!'),
                 filler(),
                 button({
                     icon: Icon.refresh(),
-                    text: updateVersion,
+                    text: truncate(updateVersion, {length: 20}),
                     onClick: () => XH.reloadApp()
                 })
             ]
