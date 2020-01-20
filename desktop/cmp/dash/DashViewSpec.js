@@ -18,9 +18,9 @@ export class DashViewSpec {
     content;
     title;
     icon;
-    contentModelFn;
     unique;
     allowClose;
+    allowRename;
     renderMode;
     refreshMode;
 
@@ -32,6 +32,7 @@ export class DashViewSpec {
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.
      * @param {boolean} [allowClose] - true (default) to allow removing from the DashContainer.
+     * @param {boolean} [allowRename] - true (default) to allow renaming the view.
      * @param {RenderMode} [renderMode] - strategy for rendering this DashTab. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashTab. If null, will
@@ -44,6 +45,7 @@ export class DashViewSpec {
         icon,
         unique = false,
         allowClose = true,
+        allowRename = true,
         renderMode,
         refreshMode
     }) {
@@ -57,6 +59,7 @@ export class DashViewSpec {
         this.icon = icon;
         this.unique = unique;
         this.allowClose = allowClose;
+        this.allowRename = allowRename;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
     }
