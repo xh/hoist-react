@@ -46,7 +46,7 @@ export class DashViewModel {
 
     /**
      * @param {string} id - Typically created by GoldenLayouts.
-     * @param {DashViewSpec} viewSpec - DashViewSpec used to create this DashTab.
+     * @param {DashViewSpec} viewSpec - DashViewSpec used to create this view.
      * @param {Icon} [icon] - Icon with which to initialize the view
      * @param {string} [title] - Title with which to initialize the view
      * @param {Object} [viewState] - State with which to initialize the view
@@ -61,8 +61,8 @@ export class DashViewModel {
         viewState = null,
         containerModel
     }) {
-        throwIf(!id, 'DashTabModel requires an id');
-        throwIf(!viewSpec, 'DashTabModel requires an DashViewSpec');
+        throwIf(!id, 'DashViewModel requires an id');
+        throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
 
         this.id = id;
         this.viewSpec = viewSpec;
