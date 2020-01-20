@@ -10,7 +10,7 @@ import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {Icon, convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureNotEmpty, ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {find, reject, cloneDeep} from 'lodash';
 
@@ -119,7 +119,6 @@ export class DashContainerModel {
         goldenLayoutSettings
     }) {
         viewSpecs = viewSpecs.filter(it => !it.omit);
-        ensureNotEmpty(viewSpecs, 'DashContainerModel needs at least one DashViewSpec');
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
