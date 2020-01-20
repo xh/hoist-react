@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement} from 'react';
-import {elem, hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -28,11 +28,14 @@ export const dockView = hoistCmp.factory({
     render({model, className, compactHeaders}) {
         const {collapsed, docked} = model;
 
+        const header = headerCmp({compactHeaders}),
+            body = div({className: 'xh-dock-view__body', item: elementFromContent(model.content)});
+
         // 1) Render docked
         if (collapsed || docked) {
             return vbox({
                 className: classNames(className, collapsed ? 'xh-dock-view--collapsed' : null),
-                items: [header({compactHeaders}), body()]
+                items: [header, body]
             });
         }
 
@@ -42,13 +45,13 @@ export const dockView = hoistCmp.factory({
             isOpen: true,
             onClose: () => model.onClose(),
             canOutsideClickClose: false,
-            items: [header({compactHeaders}), body()]
+            items: [header, body]
         });
     }
 });
 
 
-const header = hoistCmp.factory(
+const headerCmp = hoistCmp.factory(
     ({model, compactHeaders}) => {
         const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
 
@@ -84,18 +87,5 @@ const header = hoistCmp.factory(
                 })
             ]
         });
-    }
-);
-
-const body = hoistCmp.factory(
-    ({model}) => {
-        let {content} = model,
-            contentEl = content.isHoistComponent ? elem(content) : content;
-        if (!isValidElement(contentEl)) {
-            console.error("Please specify a React element, or a Component for the 'content' of a DockedView");
-            contentEl = null;
-        }
-
-        return div({className: 'xh-dock-view__body', item: contentEl});
     }
 );

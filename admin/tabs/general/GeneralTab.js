@@ -8,25 +8,25 @@ import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
-import {AboutPanel} from './about/AboutPanel';
-import {ConfigPanel} from './configs/ConfigPanel';
-import {EhCachePanel} from './ehcache/EhCachePanel';
-import {ServicePanel} from './services/ServicePanel';
-import {UserPanel} from './users/UserPanel';
-import {WebSocketPanel} from './websocket/WebSocketPanel';
+import {aboutPanel} from './about/AboutPanel';
+import {configPanel} from './configs/ConfigPanel';
+import {ehCachePanel} from './ehcache/EhCachePanel';
+import {servicePanel} from './services/ServicePanel';
+import {userPanel} from './users/UserPanel';
+import {webSocketPanel} from './websocket/WebSocketPanel';
 
-export const GeneralTab = hoistCmp(
+export const generalTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.general',
             switcherPosition: 'left',
             tabs: [
-                {id: 'about', icon: Icon.info(), content: AboutPanel},
-                {id: 'config', icon: Icon.settings(), content: ConfigPanel},
-                {id: 'services', icon: Icon.gears(), content: ServicePanel},
-                {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: EhCachePanel},
-                {id: 'users', icon: Icon.users(), content: UserPanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: WebSocketPanel}
+                {id: 'about', icon: Icon.info(), content: aboutPanel},
+                {id: 'config', icon: Icon.settings(), content: configPanel},
+                {id: 'services', icon: Icon.gears(), content: servicePanel},
+                {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: ehCachePanel},
+                {id: 'users', icon: Icon.users(), content: userPanel},
+                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
         }
     })

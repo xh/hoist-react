@@ -241,6 +241,11 @@ textarea.bp3-input,
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
+
+  &::placeholder {
+    color: var(--xh-input-placeholder-text-color);
+    opacity: 1;
+  }
 }
 
 // Expose CSS var for box-shadow tweaking

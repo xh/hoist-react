@@ -4,9 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, elem} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import {keys, find, merge, isEqual} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
@@ -184,7 +185,7 @@ export class NavigatorModel {
             if (onsenIdx !== ourIdx) return null;
         }
 
-        return content.isHoistComponent ? elem(content, {key, ...props}) : content({key, ...props});
+        return elementFromContent(content, {key, ...props});
     }
 
     @action
