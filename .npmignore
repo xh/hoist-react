@@ -6,3 +6,5 @@ node_modules
 .yarn
 .yarnrc
 webpack.config.intellij.js
+*.log
+*.tgz

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -49,7 +49,7 @@ export class AppOption {
         valueSetter,
         reloadRequired = false
     }) {
-        
+
         warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
             'Must specify either a valid prefName or provide a valueGetter and valueSetter.'

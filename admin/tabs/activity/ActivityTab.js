@@ -2,24 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
-import {ClientErrorPanel} from './clienterrors/ClientErrorPanel';
-import {FeedbackPanel} from './feedback/FeedbackPanel';
-import {TrackingPanel} from './tracking/TrackingPanel';
+import {clientErrorPanel} from './clienterrors/ClientErrorPanel';
+import {feedbackPanel} from './feedback/FeedbackPanel';
+import {trackingPanel} from './tracking/TrackingPanel';
 
-export const ActivityTab = hoistCmp(
+export const activityTab = hoistCmp.factory(
     () => tabContainer({
         model: {
             route: 'default.activity',
             switcherPosition: 'left',
             tabs: [
-                {id: 'tracking', icon: Icon.analytics(), content: TrackingPanel},
-                {id: 'clientErrors', icon: Icon.warning(), content: ClientErrorPanel},
-                {id: 'feedback', icon: Icon.comment(), content: FeedbackPanel}
+                {id: 'tracking', icon: Icon.analytics(), content: trackingPanel},
+                {id: 'clientErrors', icon: Icon.warning(), content: clientErrorPanel},
+                {id: 'feedback', icon: Icon.comment(), content: feedbackPanel}
             ]
         }
     })

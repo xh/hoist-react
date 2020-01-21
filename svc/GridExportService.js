@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistService} from '@xh/hoist/core';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
+import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, sortBy, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -24,14 +24,7 @@ export class GridExportService {
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {Object} [options] - Export options.
-     * @param {(string|function)} [options.filename] - name for export file, or closure to generate.
-     *      Do not include the file extension - that will be appended based on the specified type.
-     * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {(string|string[])} [options.columns] - columns to include in export. Supports tokens
-     *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
-     *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
-     *      enumerated columns).
+     * @param {ExportOptions} [options] - Export options.
      */
     async exportAsync(gridModel, {
         filename = 'export',
@@ -184,13 +177,13 @@ export class GridExportService {
     }
 
     getCellData(gridModel, record, column, aggData) {
-        const {field, exportValue} = column;
+        const {field, exportValue, getValueFn} = column;
 
-        let value = record[field];
+        let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
-        if (isString(exportValue) && record[exportValue] !== null) {
+        if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
-            value = record[exportValue];
+            value = record.data[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
@@ -237,3 +230,14 @@ export class GridExportService {
         }
     }
 }
+
+/**
+ * @typedef {Object} ExportOptions - options for exporting grid records to a file.
+ * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
+ *      Do not include the file extension - that will be appended based on the specified type.
+ * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
+ * @property {(string|string[])} [options.columns] - columns to include in export. Supports tokens
+ *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+ *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
+ *      enumerated columns).
+ */

@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {filler, table, tbody, tr, th, td, fragment} from '@xh/hoist/cmp/layout';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
+import {dialog} from '@xh/hoist/kit/blueprint';
 
 export const activityDetail = hoistCmp.factory(
     ({model}) => {
@@ -31,33 +32,36 @@ export const activityDetail = hoistCmp.factory(
 
 const detail = hoistCmp.factory(
     ({model}) => {
-        const rec = model.detailRecord,
-            user = rec.impersonating ? `${rec.username} as ${rec.impersonating}` : rec.username;
+        const {data} = model.detailRecord,
+            {impersonating, username} = data,
+            user = impersonating ? `${username} as ${impersonating}` : username;
 
-        return fragment(
-            table({
-                className: 'xh-admin-activity-detail',
-                items: [
-                    tbody(
-                        tr(th('User:'), td(user)),
-                        tr(th('Message:'), td(rec.msg)),
-                        tr(th('Category:'), td(rec.category)),
-                        tr(th('Device/Browser:'), td(`${rec.device}/${rec.browser}`)),
-                        tr(th('Agent:'), td(rec.userAgent)),
-                        tr(th('Elapsed (ms):'), td(`${rec.elapsed || ''}`)),
-                        tr(th('Date:'), td(fmtDateTime(rec.dateCreated)))
-                    )
-                ]
-            }),
-            jsonInput({
-                omit: !rec.data,
-                value: rec.data,
-                disabled: true,
-                height: 100,
-                width: '100%',
-                editorProps: {lineWrapping: true}
-            }),
-            toolbar(
+        return panel({
+            items: [
+                table({
+                    className: 'xh-admin-activity-detail',
+                    items: [
+                        tbody(
+                            tr(th('User:'), td(user)),
+                            tr(th('Message:'), td(data.msg)),
+                            tr(th('Category:'), td(data.category)),
+                            tr(th('Device/Browser:'), td(`${data.device}/${data.browser}`)),
+                            tr(th('Agent:'), td(data.userAgent)),
+                            tr(th('Elapsed (ms):'), td(`${data.elapsed || ''}`)),
+                            tr(th('Date:'), td(fmtDateTime(data.dateCreated)))
+                        )
+                    ]
+                }),
+                jsonInput({
+                    omit: !data.data,
+                    value: data.data,
+                    disabled: true,
+                    height: 100,
+                    width: '100%',
+                    editorProps: {lineWrapping: true}
+                })
+            ],
+            bbar: toolbar(
                 filler(),
                 button({
                     text: 'Close',
@@ -65,6 +69,6 @@ const detail = hoistCmp.factory(
                     onClick: () => model.closeDetail()
                 })
             )
-        );
+        });
     }
 );

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
@@ -35,10 +35,11 @@ export function useOnUnmount(fn) {
  * Hook to run a function when component is resized.
  * @param {function} fn
  * @param {number} [delay] - milliseconds to debounce
+ * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
  * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn, delay) {
-    const ref = useRef(null);
+export function useOnResize(fn, delay, ref) {
+    if (!ref) ref = useRef(null);
 
     useEffect(() => {
         const {current} = ref;

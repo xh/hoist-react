@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, merge} from 'lodash';
+import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
@@ -32,11 +32,10 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(LocalModel),
+        const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.resizeChart(e));
 
         impl.setAspectRatio(aspectRatio);
-        impl.model = model;
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -44,9 +43,6 @@ export const [Chart, chart] = hoistCmp.withFactory({
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
-
-        // No-op on first render - will re-render upon setting the chartRef
-        impl.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return box({
@@ -79,18 +75,59 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
+    prevWidth;
+    prevHeight;
+    prevSeriesConfig;
+
+    constructor(model) {
+        this.model = model;
+        this.addReaction({
+            track: () => [
+                this.aspectRatio,
+                this.chartRef.current,
+                model.highchartsConfig,
+                XH.darkTheme
+            ],
+            run: () => this.renderHighChart()
+        });
+        this.addReaction({
+            track: () => model.series,
+            run: () => this.updateSeries()
+        });
+    }
+
+    updateSeries() {
+        const newSeries = this.model.series,
+            seriesConfig = newSeries.map(it => omit(it, 'data')),
+            {prevSeriesConfig, chart} = this;
+
+        // If metadata not changed or # of series the same we can do more minimal in-place updates
+        if (isEqual(seriesConfig, prevSeriesConfig)) {
+            newSeries.forEach((s, i) => chart.series[i].setData(s.data, false));
+            chart.redraw();
+        } else if (prevSeriesConfig?.length === seriesConfig.length) {
+            newSeries.forEach((s, i) => chart.series[i].update(s, false));
+            chart.redraw();
+        } else {
+            this.renderHighChart();
+        }
+        this.prevSeriesConfig = seriesConfig;
+    }
 
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this.chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
+                parentEl = chartElem.parentElement,
+                dims = this.getChartDims({
+                    width: parentEl.offsetWidth,
+                    height: parentEl.offsetHeight
+                });
 
-            assign(config.chart, this.getChartDims({
-                width: parentEl.offsetWidth,
-                height: parentEl.offsetHeight
-            }));
+            assign(config.chart, dims);
+            this.prevWidth = dims.width;
+            this.prevHeight = dims.height;
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
@@ -99,6 +136,10 @@ class LocalModel {
 
     resizeChart(e) {
         const {width, height} = this.getChartDims(e[0].contentRect);
+        if (width == 0 || height == 0) return;
+        if (width == this.prevWidth && height == this.prevHeight) return;
+        this.prevWidth = width;
+        this.prevHeight = height;
         this.chart.setSize(width, height, false);
     }
 
@@ -192,6 +233,10 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
+                // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming.
+                // This is especially important when Navigator shown; first reload of data can cause a surprising tiny rezoom.
+                minPadding: 0,
+                maxPadding: 0,
                 dateTimeLabelFormats: {
                     day: '%e-%b-%y',
                     week: '%e-%b-%y',

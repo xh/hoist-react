@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -32,7 +32,7 @@ export const restGridToolbar = hoistCmp.factory({
             filler(),
             gridCountLabel({gridModel, unit}),
             storeFilterField({gridModel, includeFields: model.filterFields}),
-            exportButton({gridModel})
+            exportButton({gridModel, omit: !model.gridModel.enableExport})
         );
     }
 });

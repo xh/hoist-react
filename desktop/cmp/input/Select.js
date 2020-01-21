@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -12,13 +12,14 @@ import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
     reactCreatableSelect,
-    reactSelect
+    reactSelect,
+    reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import {assign, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
@@ -33,8 +34,10 @@ import './Select.scss';
  *      + Multiple selection
  *      + Custom dropdown option renderers
  *      + User-created ad-hoc entries
+ *      + Use of the library react-windowed-select for improved performance on large option lists.
  *
  * @see {@link https://react-select.com|React Select Docs}
+ * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
  */
 @LayoutSupport
 @HoistComponent
@@ -67,6 +70,18 @@ export class Select extends HoistInput {
         /** True to allow entry/selection of multiple values - "tag picker" style. */
         enableMulti: PT.bool,
 
+        /**
+         * True to use react-windowed-select for improved performance on large option lists.
+         * See https://github.com/jacobworrel/react-windowed-select/.  Defaults to false.
+         *
+         * Currently only supported when the enableCreate and queryFn props are not specified.
+         * These options require the use of specialized 'Async' or 'Creatable' selects from the
+         * underlying react-select library which are not fully implemented in react-windowed-select.
+         *
+         * Applications should use this option with care.
+         */
+        enableWindowed: PT.bool,
+
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
@@ -93,10 +108,16 @@ export class Select extends HoistInput {
         optionRenderer: PT.func,
 
         /**
-         * Preset list of options for selection. Objects must contain a `value` property; a `label`
-         * property will be used for the default display of each option. Other types will be taken
-         * as their value directly and displayed via toString().  See also `queryFn` to  supply
-         * options via an async query (i.e. from the server) instead of up-front in this prop.
+         * Preset list of options for selection. Elements can be either a primitive or an object.
+         * Primitives will be displayed via toString().
+         * Objects must have either:
+         *      + A `label` property for display and a `value` property
+         *      + A `label` property and an `options` property containing an array of sub-options
+         *        to be grouped beneath the option.
+         *        These sub-options must be either primitives or `label`:`value` pairs: deeper nesting is unsupported.
+         *
+         * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
+         * of up-front in this prop.
          */
         options: PT.array,
 
@@ -140,6 +161,7 @@ export class Select extends HoistInput {
     // Prop-backed convenience getters
     get asyncMode() {return !!this.props.queryFn}
     get creatableMode() {return !!this.props.enableCreate}
+    get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
     get filterMode() {return withDefault(this.props.enableFilter, true)}
 
@@ -229,9 +251,7 @@ export class Select extends HoistInput {
             rsProps.formatCreateLabel = this.createMessageFn;
         }
 
-        const factory = this.asyncMode ?
-            (this.creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-            (this.creatableMode ? reactCreatableSelect : reactSelect);
+        const factory = this.getSelectFactory();
 
         assign(rsProps, props.rsOptions);
         return box({
@@ -240,6 +260,7 @@ export class Select extends HoistInput {
             onKeyDown: (e) => {
                 // Esc. and Enter can be listened for by parents -- stop the keydown event
                 // propagation only if react-select already likely to have used for menu management.
+                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
                 if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
                     e.stopPropagation();
@@ -248,6 +269,18 @@ export class Select extends HoistInput {
             ...layoutProps,
             width: withDefault(width, 200)
         });
+    }
+
+    getSelectFactory() {
+        const {creatableMode, asyncMode, windowedMode} = this;
+        if (windowedMode) {
+            throwIf(creatableMode, 'Windowed mode not available when enableCreate is true');
+            throwIf(asyncMode, 'Windowed mode not available when queryFn is set');
+            return reactWindowedSelect;
+        }
+        return asyncMode ?
+            (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
+            (creatableMode ? reactCreatableSelect : reactSelect);
     }
 
     @action
@@ -318,11 +351,19 @@ export class Select extends HoistInput {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(val, createIfNotFound) {
-        const valAsOption = this.toOption(val),
-            match = find(this.internalOptions, {value: valAsOption.value});
+    findOption(value, createIfNotFound, options = this.internalOptions) {
 
-        return match ? match : (createIfNotFound ? valAsOption : null);
+        // Do a depth-first search of options
+        for (const option of options) {
+            if (option.options) {
+                const ret = this.findOption(value, false, option.options);
+                if (ret) return ret;
+            } else {
+                if (option.value === value) return option;
+            }
+        }
+
+        return createIfNotFound ? this.valueToOption(value) : null;
     }
 
     toExternal(internal) {
@@ -336,28 +377,39 @@ export class Select extends HoistInput {
         return internal.value;
     }
 
-    normalizeOptions(options) {
+    normalizeOptions(options, depth = 0) {
+        throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
+
         options = options || [];
-        return options.map(it => this.toOption(it));
+        return options.map(it => this.toOption(it, depth));
     }
 
     // Normalize / clone a single source value into a normalized option object. Supports Strings
-    // and Objects. Objects are validated/defaulted to ensure a label+value, with other fields
-    // brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src) {
+    // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
+    // with other fields brought along to support Selects emitting value objects with ad hoc properties.
+    toOption(src, depth) {
+        return isPlainObject(src) ?
+            this.objectToOption(src, depth) :
+            this.valueToOption(src);
+    }
+
+    objectToOption(src, depth) {
         const {props} = this,
-            srcIsObject = isPlainObject(src),
             labelField = withDefault(props.labelField, 'label'),
             valueField = withDefault(props.valueField, 'value');
 
         throwIf(
-            srcIsObject && !src.hasOwnProperty(valueField),
-            `Select options/values provided as Objects must define a '${valueField}' property.`
+            !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
+            `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return srcIsObject ?
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]} :
-            {label: src != null ? src.toString() : '-null-', value: src};
+        return src.hasOwnProperty('options') ?
+            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
+            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+    }
+
+    valueToOption(src) {
+        return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
     //------------------------
@@ -388,6 +440,8 @@ export class Select extends HoistInput {
     };
 
     loadingMessageFn = (params) => {
+        // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {loadingMessageFn} = this.props,
             q = params.inputValue;
 
@@ -446,6 +500,8 @@ export class Select extends HoistInput {
     }
 
     noOptionsMessageFn = (params) => {
+        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
+        if (!params) return '';
         const {noOptionsMessageFn} = this.props,
             q = params.inputValue;
 

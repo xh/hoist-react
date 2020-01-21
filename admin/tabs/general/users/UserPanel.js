@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -15,7 +15,7 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 import {UserModel} from './UserModel';
 
-export const UserPanel = hoistCmp({
+export const userPanel = hoistCmp.factory({
     model: creates(UserModel),
 
     render() {

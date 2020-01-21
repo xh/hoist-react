@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import React from 'react';
@@ -13,7 +13,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
-export const AboutPanel = hoistCmp(
+export const aboutPanel = hoistCmp.factory(
     () => div({
         className: 'xh-admin-about-panel xh-tiled-bg',
         items: [

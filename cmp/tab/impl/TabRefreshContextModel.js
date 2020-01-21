@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {RefreshContextModel} from '@xh/hoist/core/refresh';
-import {TabRefreshMode} from '@xh/hoist/enums';
-import {loadAllAsync} from '@xh/hoist/core';
+import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
 
 /**
  * @private
@@ -28,11 +27,11 @@ export class TabRefreshContextModel {
         const {tabModel} = this,
             mode = tabModel.refreshMode;
 
-        if (tabModel.isActive || mode == TabRefreshMode.ALWAYS) {
+        if (tabModel.isActive || mode == RefreshMode.ALWAYS) {
             return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
-        if (mode == TabRefreshMode.ON_SHOW_LAZY) {
+        if (mode == RefreshMode.ON_SHOW_LAZY) {
             this.refreshPending = true;
         }
     }
@@ -40,9 +39,9 @@ export class TabRefreshContextModel {
     noteActiveChanged(isActive) {
         if (isActive) {
             const mode = this.tabModel.refreshMode;
-            if (mode == TabRefreshMode.ON_SHOW_ALWAYS) {
+            if (mode == RefreshMode.ON_SHOW_ALWAYS) {
                 this.refreshAsync();
-            } else if (mode == TabRefreshMode.ON_SHOW_LAZY && this.refreshPending) {
+            } else if (mode == RefreshMode.ON_SHOW_LAZY && this.refreshPending) {
                 this.refreshPending = false;
                 this.refreshAsync();
             }

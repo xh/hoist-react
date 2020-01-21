@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {RecordAction} from '@xh/hoist/data';
@@ -46,7 +46,7 @@ export const actionCol = {
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {
-        if (agParams.node.group || (record && record.xhIsSummary)) return null;
+        if (agParams.node.group || (record && record.isSummary)) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
@@ -73,7 +73,7 @@ export const actionCol = {
             actionButtonEl.innerHTML = convertIconToSvg(icon);
             actionButtonEl.addEventListener('click', (ev) => {
                 ev.stopPropagation();
-                action.actionFn({record, selectedRecords: [record], gridModel, column});
+                action.call({record, selectedRecords: [record], gridModel, column});
             });
 
             buttonGroupEl.appendChild(actionButtonEl);

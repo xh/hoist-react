@@ -2,41 +2,153 @@
 
 ## v29.0.0-SNAPSHOT - under development
 
+### 🗄️ Data Package Changes
+
+Several changes have been made to data package (`Store` and `Record`) APIs for loading, updating,
+and modifying data. They include some breaking changes, but pave the way for upcoming enhancements
+to fully support inline grid editing and other new features.
+
+Store now tracks the "committed" state of its records, which represents the data as it was loaded
+(typically from the server) via `loadData()` or `updateData()`. Records are now immutable and
+frozen, so they cannot be changed directly, but Store offers a new `modifyRecords()` API to apply
+local modifications to data in a tracked and managed way. (Store creates new records internally to
+hold both this modified data and the original, "committed" data.) This additional state tracking
+allows developers to query Stores for modified or added records (e.g. to flush back to the server
+and persist) as well as call new methods to revert changes (e.g. to undo a block of changes that the
+user wishes to discard).
+
+Note the following more specific changes to these related classes:
+
+#### Record
+
+* 💥 Record data properties are now nested within a `data` object on Record instances and are no
+  longer available as top-level properties on the Record itself.
+  * Calls to access data such as `rec.quantity` must be modified to `rec.data.quantity`.
+  * When accessing multiple properties, destructuring provides an efficient syntax - e.g. `const
+    {quantity, price} = rec.data;`.
+* 💥 Records are now immutable and cannot be modified by applications directly.
+  * This is a breaking change, but should only affect apps with custom inline grid editing
+    implementations or similar code that modifies individual record values.
+  * Calls to change data such as `rec.quantity = 100` must now be made through the Record's Store,
+    e.g. `store.modifyData({id: 41, quantity: 100})`
+* Record gains new getters for inspecting its state, including: `isAdd`, `isModified`, and
+  `isCommitted`.
+
+#### Store
+
+* 💥 `noteDataUpdated()` has been removed, as out-of-band modifications to Store Records are no
+  longer possible.
+* 💥 Store's `idSpec` function is now called with the raw record data - previously it was passed
+  source data after it had been run through the store's optional `processRawData` function. (This is
+  unlikely to have a practical impact on most apps, but is included here for completeness.)
+* `Store.updateData()` now accepts a flat list of raw data to process into Record additions and
+  updates. Previously developers needed to call this method with an object containing add, update,
+  and/or remove keys mapped to arrays. Now Store will produce an object of this shape automatically.
+* `Store.refreshFilter()` method has been added to allow applications to rebuild the filtered data
+  set if some application state has changed (apart from the store's data itself) which would affect
+  the store filter.
+* Store gains new methods for manipulating its Records and data, including `addRecords()`,
+  `removeRecords()`, `modifyRecords()`, `revertRecords()`, and `revert()`. New getters have been
+  added for `addedRecords`, `removedRecords`, `modifiedRecords`, and `isModified`.
+
+#### Column
+
+* Columns have been enhanced for provide basic support for inline-editing of record data. Further
+  inline editing support enhancements are planned for upcoming Hoist releases.
+* `Column.getValueFn` config added to retrieve the cell value for a Record field. The default
+  implementation pulls the value from the Record's new `data` property (see above). Apps that
+  specify custom `valueGetter` callbacks via `Column.agOptions` should now implement their custom
+  logic in this new config.
+* `Column.setValueFn` config added to support modifying the Column field's value on the underlying
+  Record. The default implementation calls the new `Store.modifyRecords()` API and should be
+  sufficient for the majority of cases.
+* `Column.editable` config added to indicate if a column/cell should be inline-editable.
+
 ### 🎁 New Features
 
-* Added a `showCounts` option to show the number of items on each side of a LeftRightChooser.
-* Added an `useOnResize` hook, which runs a function when a component is resized.
 * Added keyboard support to ag-Grid context menus.
+* Added `GridModel.setEmptyText()` to allow updates to placeholder text after initial construction.
+* Added `GridModel.ensureSelectionVisible()` to scroll the currently selected row into view.
+* When a `TreeMap` is bound to a `GridModel`, the grid will now respond to map selection changes by
+  scrolling to ensure the selected grid row is visible.
+* Added a `Column.tooltipElement` config to support fully customizable tooltip components.
+* Added a `useOnResize` hook, which runs a function when a component is resized.
 * Exposed an `inputRef` prop on numberInput, textArea, and textInput
-* `Column` now accepts a `tooltipElement` config for custom React tooltip components in the Grid
-
+* `PanelModel` now accepts a `maxSize` config.
+* `RelativeTimeStamp` now support a `relativeTo` option, allowing it to display the difference
+  between a timestamp and another reference time other than now. Both the component and the
+  `getRelativeTimestamp()` helper function now leverage moment.js for their underlying
+  implementation.
+* A new `Clock` component displays the time, either local to the browser or for a configurable
+  timezone.
+* `LeftRightChooser` gets a new `showCounts` option to print the number of items on each side.
+* `Select` inputs support a new property `enableWindowed` (desktop platform only) to improve
+  rendering performance with large lists of options.
+* `Select` inputs support grouped options. To use, add an attribute `options` containing an array of
+  sub-options.
+* `FetchService` methods support a new `timeout` option. This config chains `Promise.timeout()` to
+  the promises returned by the service.
+* Added alpha version of `DashContainer` for building dynamic, draggable dashboard-style layouts.
+  Please note: the API for this component is subject to change - use at your own risk!
+* `Select` now allows the use of objects as values.
+* Added a new `xhEnableImpersonation` config to enable or disable the ability of Hoist Admins to
+  impersonate other users. Note that this defaults to `false`. Apps will need to set this config to
+  continue using impersonation. (Note that an update to hoist-core 6.4+ is required for this config
+  to be enforced on the server.)
+* `FormField` now supports a `requiredIndicator` to customize how required fields are displayed.
 ### 💥 Breaking Changes
 
-* The GridModel `contextMenuFn` parameter has been replaced with a `contextMenu` parameter.  The new
-parameter will allow context menus to be specified with a simple array in addition to the function
-specification currently supported.
-* The GridModel `defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
+  parameter will allow context menus to be specified with a simple array in addition to the function
+  specification currently supported.
+* The `GridModel.defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
+  `equalString`, respectively.
+* `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
+  to the `core` package. These enumerations are now used in the APIs for `Panel`, `TabContainer`,
+  and `DashContainer`.
+* `DockViewModel` now requires a function, or a HoistComponent as its `content` param.  It has always 
+  been documented this way, but a bug in the original implementation had it accepting an actual 
+  element rather than a function.  As now implemented, the form of the `content` param is 
+  consistent across `TabModel`, `DockViewModel`, and `DashViewSpec`.   
 
 ### 🐞 Bug Fixes
 
 * Fixed autoFocus on NumberInput.
-* Fixed issue where JsonInput was not receiving its `model` from context ([#1456](https://github.com/xh/hoist-react/issues/1456))
-* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the GridModel
-  data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
-* Fixed issue where export would create malformed file with dynamic header names  
-* Fixed issue where exported tree grids would have incorrect aggregate data ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where JsonInput was not receiving its `model` from context
+  ([#1456](https://github.com/xh/hoist-react/issues/1456))
+* Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
+  GridModel data was loaded ([#1471](https://github.com/xh/hoist-react/issues/1471))
+* Fixed issue where export would create malformed file with dynamic header names
+* Fixed issue where exported tree grids would have incorrect aggregate data
+  ([#1447](https://github.com/xh/hoist-react/issues/1447))
+* Fixed issue where resizable Panels could grow larger than desired
+  ([#1498](https://github.com/xh/hoist-react/issues/1498))
+* Changed RestGrid to only display export button if export is enabled
+  ([#1490](https://github.com/xh/hoist-react/issues/1490))
+* Fixed errors when grouping rows in Grids with `groupUseEntireRow` turned off
+  ([#1520](https://github.com/xh/hoist-react/issues/1520))
+* Fixed problem where charts were resized when being hidden
+  ([#1528](https://github.com/xh/hoist-react/issues/1528))
+* Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
+  ([#1505](https://github.com/xh/hoist-react/issues/1505))
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.19 -> 3.22`
 * @blueprintjs/datetime `3.14 -> 3.15`
-* core-js `3.3 -> 3.4`
+* @fortawesome/fontawesome-pro `5.11 -> 5.12`
+* codemirror `5.49 -> 5.50`
+* core-js `3.3 -> 3.6`
 * fast-deep-equal `2.0 -> 3.1`
 * filesize `5.0 -> 6.0`
+* highcharts 7.2 -> 8.0`
 * mobx `5.14 -> 5.15`
 * react-dates `21.3 -> 21.5`
+* react-dropzone `10.1 -> 10.2`
+* react-windowed-select `added @ 2.0.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
 
@@ -359,7 +471,7 @@ leverage the context for model support discussed above.
 
 * `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
   called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
-  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to
+  Applications can check the new `isReady` property on `AgGridModel` before calling such methods to️️
   verify the grid is fully initialized.
 
 ### 📚 Libraries
@@ -2020,3 +2132,11 @@ and ag-Grid upgrade, and more. 🚀
 ### 🐞 Bugfixes
 
 * None
+
+------------------------------------------
+
+Copyright © 2020 Extremely Heavy Industries Inc. - all rights reserved
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact

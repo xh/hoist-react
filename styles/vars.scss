@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 @import '~sass-material-colors/sass/sass-material-colors';
 
 // Functions to fetch Google material design colors (https://material.io/color/)
@@ -68,13 +75,6 @@ body {
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
-
-  // Dialogs
-  --xh-dialog-box-shadow: var(--dialog-box-shadow,
-    0 0 0 1px rgba(16, 22, 26, 0.1),
-    0 4px 8px rgba(16, 22, 26, 0.2),
-    0 18px 46px 6px rgba(16, 22, 26, 0.2)
-  );
 
   // Chart
   --xh-chart-bg: var(--chart-bg, var(--xh-bg));
@@ -343,13 +343,6 @@ body.xh-dark {
 
   // Buttons
   --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '600')});
-
-    // Dialogs
-  --xh-dialog-box-shadow: var(--dialog-box-shadow,
-    0 0 0 1px rgba(16,22,26,.2),
-    0 4px 8px rgba(16,22,26,.4),
-    0 18px 46px 6px rgba(16,22,26,.4)
-  );
 }
 
 //------------------------

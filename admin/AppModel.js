@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistAppModel, managed} from '@xh/hoist/core';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
-import {ActivityTab} from './tabs/activity/ActivityTab';
-import {GeneralTab} from './tabs/general/GeneralTab';
-import {LoggingTab} from './tabs/logging/LoggingTab';
-import {MonitorTab} from './tabs/monitor/MonitorTab';
-import {PreferencesTab} from './tabs/preferences/PreferencesTab';
+import {activityTab} from './tabs/activity/ActivityTab';
+import {generalTab} from './tabs/general/GeneralTab';
+import {loggingTab} from './tabs/logging/LoggingTab';
+import {monitorTab} from './tabs/monitor/MonitorTab';
+import {preferencesTab} from './tabs/preferences/PreferencesTab';
 
 @HoistAppModel
 export class AppModel {
@@ -89,11 +89,11 @@ export class AppModel {
 
     createTabs() {
         return [
-            {id: 'general', icon: Icon.info(), content: GeneralTab},
-            {id: 'activity', icon: Icon.analytics(), content: ActivityTab},
-            {id: 'logging', icon: Icon.fileText(), content: LoggingTab},
-            {id: 'monitor', icon: Icon.shieldCheck(), content: MonitorTab},
-            {id: 'preferences', icon: Icon.bookmark(), content: PreferencesTab}
+            {id: 'general', icon: Icon.info(), content: generalTab},
+            {id: 'activity', icon: Icon.analytics(), content: activityTab},
+            {id: 'logging', icon: Icon.fileText(), content: loggingTab},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab},
+            {id: 'preferences', icon: Icon.bookmark(), content: preferencesTab}
         ];
     }
 }

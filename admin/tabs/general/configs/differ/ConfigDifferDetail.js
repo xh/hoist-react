@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {keys, toString} from 'lodash';
+import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {filler, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {dialog} from '@xh/hoist/kit/blueprint';
+import {keys, toString} from 'lodash';
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 import './Differ.scss';
@@ -47,9 +47,9 @@ export const configDifferDetail = hoistCmp.factory({
 
 const diffTable = hoistCmp.factory(
     ({model}) => {
-        const rec = model.record,
-            local = rec.localValue,
-            remote = rec.remoteValue,
+        const {data} = model.record,
+            local = data.localValue,
+            remote = data.remoteValue,
             fields = keys(local || remote);
 
         const rows = fields.map(field => {
