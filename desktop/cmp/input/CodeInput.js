@@ -216,6 +216,12 @@ export class CodeInput extends HoistInput {
 
     createDefaults() {
         const {disabled, mode, linter} = this.props;
+        let gutters = [
+            'CodeMirror-linenumbers',
+            'CodeMirror-foldgutter'
+        ];
+        if (linter) gutters.push('CodeMirror-lint-markers');
+
         return {
             mode,
             theme: XH.darkTheme ? 'dracula' : 'default',
@@ -229,11 +235,7 @@ export class CodeInput extends HoistInput {
             foldGutter: true,
             scrollbarStyle: 'simple',
             readOnly: disabled ? 'nocursor' : false,
-            gutters: [
-                'CodeMirror-linenumbers',
-                'CodeMirror-foldgutter',
-                linter ? 'CodeMirror-lint-markers' : null
-            ],
+            gutters,
             lint: linter ? {getAnnotations: linter} : false
         };
     }
