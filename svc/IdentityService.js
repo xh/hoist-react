@@ -89,7 +89,7 @@ export class IdentityService {
 
     /** Can the underlying user impersonate other users? */
     get canImpersonate() {
-        return this._authUser.isHoistAdmin;
+        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
     /**
@@ -101,7 +101,7 @@ export class IdentityService {
      * @param {string} username - the end-user to impersonate
      */
     async impersonateAsync(username) {
-        throwIf(!this.canImpersonate, 'User does not have right to impersonate.');
+        throwIf(!this.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
         return XH.fetchJson({
             url: 'xh/impersonate',
             params: {

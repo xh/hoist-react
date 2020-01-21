@@ -17,7 +17,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ClientErrorModel} from './ClientErrorModel';
 import {clientErrorDetail} from './ClientErrorDetail';
 
-export const ClientErrorPanel = hoistCmp({
+export const clientErrorPanel = hoistCmp.factory({
     model: creates(ClientErrorModel),
 
     render({model}) {

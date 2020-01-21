@@ -15,7 +15,7 @@ import {LogViewerModel} from './LogViewerModel';
 import {logViewerToolbar} from './LogViewerToolbar';
 import './LogViewer.scss';
 
-export const LogViewer = hoistCmp({
+export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
 
     render({model}) {

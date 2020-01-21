@@ -15,7 +15,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
-export const WebSocketPanel = hoistCmp({
+export const webSocketPanel = hoistCmp.factory({
 
     model: creates(WebSocketModel),
 

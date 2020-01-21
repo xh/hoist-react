@@ -8,7 +8,9 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "UNLICENSED",
   "scripts": {
-    "lint": "eslint --ext .js,.jsx .",
+    "lint": "yarn lint:js",
+    "lint:all": "yarn lint:js && yarn lint:styles",
+    "lint:js": "eslint --ext .js,.jsx .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\""
   },
   "sideEffects": [

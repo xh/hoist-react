@@ -8,7 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
 
-export const UserPreferencePanel = hoistCmp(
+export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 

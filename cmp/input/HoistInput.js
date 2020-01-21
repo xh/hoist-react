@@ -86,7 +86,7 @@ export class HoistInput extends Component {
     };
 
     @observable hasFocus = false;
-    @observable internalValue = null;
+    @observable.ref internalValue = null;
 
     constructor(props, context) {
         super(props, context);

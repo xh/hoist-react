@@ -36,8 +36,8 @@ export class NavigatorPageModel {
 
     /**
      * @param {string} id - unique ID. Must match a configured Router5 route name.
-     * @param {Object} content - content to be rendered. Component class or a custom
-     *      element factory of the form returned by elemFactory.
+     * @param {(Object|function)} c.content - Hoist Component (class or functional) to be
+     *      rendered by this page; or function returning react element to be rendered by this page.
      * @param {Object} [props] - props to be passed to page upon creation.
      * @param {boolean} [disableDirectLink] - Don't allow the route can be arrived at in a new browser session.
      *      Non-linkable routes are unwound to a safe starting point at the start of a new session.
