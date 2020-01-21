@@ -51,32 +51,38 @@ export class JsonInput extends HoistInput {
     render() {
         const {props} = this;
         return codeInput({
-            linter: function(text) {
-                const found = [];
-
-                jsonlint.parseError = function(str, hash) {
-                    const loc = hash.loc;
-                    found.push({
-                        from: codemirror.Pos(loc.first_line - 1, loc.first_column),
-                        to: codemirror.Pos(loc.last_line - 1, loc.last_column),
-                        message: str
-                    });
-                };
-
-                if (!text) return found;
-
-                try {
-                    jsonlint.parse(text);
-                } catch (ignored) {}
-
-                return found;
-            },
-            formatter: (str) => JSON.stringify(JSON.parse(str), undefined, 2),
+            linter: this.linter,
+            formatter: this.formatter,
             mode: 'application/json',
             showFullscreenButton: this.showActionButtons,
             showFormatButton: this.showActionButtons,
             ...props
         });
+    }
+
+    linter(text) {
+        const found = [];
+
+        jsonlint.parseError = function(str, hash) {
+            const loc = hash.loc;
+            found.push({
+                from: codemirror.Pos(loc.first_line - 1, loc.first_column),
+                to: codemirror.Pos(loc.last_line - 1, loc.last_column),
+                message: str
+            });
+        };
+
+        if (!text) return found;
+
+        try {
+            jsonlint.parse(text);
+        } catch (ignored) {}
+
+        return found;
+    }
+
+    formatter(text) {
+        return JSON.stringify(JSON.parse(text), undefined, 2);
     }
 }
 export const jsonInput = elemFactory(JsonInput);
