@@ -17,13 +17,13 @@ body.xh-app .xh-button-group .xh-button {
     background-color: var(--xh-border-color);
 
     &.xh-button-active {
-      background-color: var(--xh-button-color);
+      background-color: var(--xh-button-bg);
       opacity: 1;
     }
   }
 
   &.button--outline.xh-button-active {
-    background-color: var(--xh-button-color);
+    background-color: var(--xh-button-bg);
     color: white;
   }
 

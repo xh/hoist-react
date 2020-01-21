@@ -72,7 +72,9 @@ body {
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
 
   // Buttons
-  --xh-button-active-color: var(--button-active-color, #{mc('blue-grey', '100')});
+  --xh-button-active-bg: var(--button-active-color, #{mc('blue-grey', '100')});
+  --xh-button-active-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-bg: var(--button-color, #{mc('blue-grey', '600')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
@@ -340,7 +342,10 @@ body.xh-dark {
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 
   // Buttons
-  --xh-button-active-color: var(--button-active-color, #{mc('blue-grey', '600')});
+  --xh-button-active-bg: var(--button-active-color, #{mc('blue-grey', '100')});
+  --xh-button-active-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-bg: var(--button-color, #{mc('blue-grey', '600')});
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 }
 
 //------------------------
@@ -351,8 +356,8 @@ body.xh-mobile {
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
-  --xh-button-color: var(--button-color, #{mc('blue-grey', '600')});
-  --xh-toolbar-button-color: var(--toolbar-button-color, var(--xh-button-color));
+  --xh-button-bg: var(--button-color, #{mc('blue-grey', '600')});
+  --xh-toolbar-button-bg: var(--toolbar-button-color, var(--xh-button-bg));
 
   // Grid
   --xh-grid-font-size: var(--grid-font-size, 14);
