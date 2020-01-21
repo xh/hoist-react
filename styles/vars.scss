@@ -72,9 +72,10 @@ body {
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
 
   // Buttons
-  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-active-color: var(--button-active-color, #{mc('blue-grey', '100')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 
   // Chart
   --xh-chart-bg: var(--chart-bg, var(--xh-bg));
@@ -261,9 +262,6 @@ body {
   --xh-intent-danger: var(--intent-danger, var(--xh-red));
   --xh-intent-success: var(--intent-success, var(--xh-green));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
-
-  // Buttons
-  --xh-button-active-color: var(--button-active-color, #{mc('blue-grey', '100')});
 }
 
 //------------------------
