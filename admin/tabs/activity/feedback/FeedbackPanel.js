@@ -10,7 +10,7 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 import {compactDateCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const FeedbackPanel = hoistCmp(
+export const feedbackPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 

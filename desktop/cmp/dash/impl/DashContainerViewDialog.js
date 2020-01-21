@@ -115,8 +115,12 @@ class Model {
             {viewSpecs} = dashContainerModel;
 
         return viewSpecs.filter(viewSpec => {
-            const instances = dashContainerModel.getItemsBySpecId(viewSpec.id);
-            return !viewSpec.unique || !instances.length;
+            if (!viewSpec.allowAdd) return false;
+            if (viewSpec.unique) {
+                const instances = dashContainerModel.getItemsBySpecId(viewSpec.id);
+                return !instances.length;
+            }
+            return true;
         }).map(viewSpec => {
             const {id, title, icon} = viewSpec;
             return {value: id, label: title, icon};

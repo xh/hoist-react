@@ -13,7 +13,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 
 import './AboutPanel.scss';
 
-export const AboutPanel = hoistCmp(
+export const aboutPanel = hoistCmp.factory(
     () => div({
         className: 'xh-admin-about-panel xh-tiled-bg',
         items: [
@@ -41,9 +41,8 @@ function renderTables() {
             item: tbody(
                 row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
                 row('Environment', svc.get('appEnvironment')),
-                row('Server', svc.get('appVersion')),
-                row('Client', svc.get('clientVersion')),
-                row('Build', svc.get('clientBuild')),
+                row('Server', `${svc.get('appVersion')} (build ${svc.get('appBuild')})`),
+                row('Client', `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`),
                 row('Database', svc.get('databaseConnectionString')),
                 row('Database User', svc.get('databaseUser')),
                 row('DB Create Mode', svc.get('databaseCreateMode'))

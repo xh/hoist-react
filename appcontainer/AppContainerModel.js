@@ -69,10 +69,18 @@ export class AppContainerModel {
      * Show the update toolbar prompt. Called by EnvironmentService when the server reports that a
      * new (or at least different) version is available and the user should be prompted.
      *
-     * @param {string} updateVersion - latest version available on server.
+     * @param {string} version - updated version from server.
+     * @param {string} [build] - updated build from server - included for snapshot version prompts.
      */
     @action
-    showUpdateBar(updateVersion) {
+    showUpdateBar(version, build) {
+        let updateVersion = version;
+
+        // Display build tag for snaps only - not of much interest across actual version updates.
+        if (updateVersion.includes('SNAPSHOT') && build) {
+            updateVersion += ` (b${build})`;
+        }
+
         this.updateVersion = updateVersion;
     }
 }

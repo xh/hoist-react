@@ -4,8 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-import {elem, hoistCmp, ModelPublishMode, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, RenderMode, uses} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 
@@ -40,11 +41,10 @@ export const tab = hoistCmp.factory({
             // Note: We must render an empty placeholder Onsen page to work with Onsen's tabbar.
             return onsenPage();
         }
-        const contentElem = content.isHoistComponent ? elem(content) : content();
 
         return refreshContextView({
             model: refreshContextModel,
-            item: contentElem
+            item: elementFromContent(content)
         });
     }
 });

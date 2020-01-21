@@ -32,7 +32,7 @@ export class ImpersonationBarModel {
 
     @action
     show() {
-        throwIf(!XH.identityService.canImpersonate, 'User does not have right to impersonate.');
+        throwIf(!XH.identityService.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
         this.showRequested = true;
     }
 

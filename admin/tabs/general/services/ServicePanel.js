@@ -14,7 +14,7 @@ import {storeFilterField} from '@xh/hoist/cmp/store';
 import {Icon} from '@xh/hoist/icon';
 import {ServiceModel} from './ServiceModel';
 
-export const ServicePanel = hoistCmp({
+export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
     render({model}) {

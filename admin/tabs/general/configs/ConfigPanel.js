@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 
-export const ConfigPanel = hoistCmp({
+export const configPanel = hoistCmp.factory({
     model: creates(ConfigModel),
 
     render({model}) {
