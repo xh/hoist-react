@@ -74,11 +74,27 @@ export class EnvironmentService {
 
     checkAppVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
-            shouldUpdate = data.shouldUpdate,
-            appVersion = data.appVersion;
+            {appVersion, appBuild, shouldUpdate} = data;
 
-        if (shouldUpdate && appVersion !== XH.appVersion) {
-            XH.appContainerModel.showUpdateBar(data.appVersion);
+        // Compare latest version/build info from server against the same info (also supplied by
+        // server) when the app initialized. A change indicates an update to the app and will
+        // prompt the user to refresh via the updateBar, unless suppressed via shouldUpdate flag.
+        // Builds are checked here to trigger refresh prompts across SNAPSHOT updates for projects
+        // with active dev/QA users.
+        if (
+            shouldUpdate &&
+            (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild'))
+        ) {
+            XH.appContainerModel.showUpdateBar(appVersion, appBuild);
+        }
+
+        // Note that the case of version mismatches across the client and server we do *not* show
+        // the update bar to the user - that would indicate a deployment issue that a client reload
+        // is unlikely to resolve, leaving the user in a frustrating state where they are endlessly
+        // prompted to refresh.
+        const clientVersion = this.get('clientVersion');
+        if (appVersion !== clientVersion) {
+            console.warn(`Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`);
         }
     }
 }

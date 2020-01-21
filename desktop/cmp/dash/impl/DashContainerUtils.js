@@ -5,10 +5,11 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
+import {serializeIcon} from '@xh/hoist/icon';
 import {isEmpty, isFinite, isArray, isPlainObject, isNil, isString} from 'lodash';
 
 /**
- * Lookup the DashTabModel id of a rendered view
+ * Lookup the DashViewModel id of a rendered view
  */
 export function getViewModelId(view) {
     if (!view || !view.isInitialised || !view.isComponent) return;
@@ -18,24 +19,29 @@ export function getViewModelId(view) {
 /**
  * Convert the output from Golden Layouts into our serializable state
  */
-export function convertGLToState(goldenLayout, viewState) {
+export function convertGLToState(goldenLayout, dashContainerModel) {
     const configItems = goldenLayout.toConfig().content,
         contentItems = goldenLayout.root.contentItems;
 
-    return convertGLToStateInner(configItems, contentItems, viewState);
+    return convertGLToStateInner(configItems, contentItems, dashContainerModel);
 }
 
-function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
+function convertGLToStateInner(configItems = [], contentItems = [], dashContainerModel) {
     const ret = [];
 
     configItems.forEach((configItem, idx) => {
         const contentItem = contentItems[idx];
 
         if (configItem.type === 'component') {
-            const state = viewState[getViewModelId(contentItem)],
-                view = {type: 'view', id: configItem.component};
+            const viewSpecId = configItem.component,
+                viewSpec = dashContainerModel.getViewSpec(viewSpecId),
+                viewModelId = getViewModelId(contentItem),
+                viewModel = dashContainerModel.getViewModel(viewModelId),
+                view = {type: 'view', id: viewSpecId};
 
-            if (!isEmpty(state)) view.state = state;
+            if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
+            if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
+            if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
 
             ret.push(view);
         } else {
@@ -46,7 +52,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], viewState) {
             if (isFinite(height)) container.height = height;
             if (isFinite(activeItemIndex)) container.activeItemIndex = activeItemIndex;
             if (isArray(content) && content.length) {
-                container.content = convertGLToStateInner(content, contentItem.contentItems, viewState);
+                container.content = convertGLToStateInner(content, contentItem.contentItems, dashContainerModel);
             }
 
             ret.push(container);
@@ -66,7 +72,7 @@ export function convertStateToGL(state = [], dashContainerModel) {
             height: containerRef.current.offsetHeight
         };
 
-    return convertStateToGLInner(state, viewSpecs, containerSize);
+    return convertStateToGLInner(state, viewSpecs, containerSize).filter(it => !isNil(it));
 }
 
 function convertStateToGLInner(items = [], viewSpecs = [], containerSize, containerItem) {
@@ -86,12 +92,14 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
-                console.warn(`Attempting to load unrecognised view "${item.id}" from state`);
-                return {type: 'row'};
+                console.debug(`Attempted to load non-existent or omitted view from state: ${item.id}`);
+                return null;
             }
 
             const ret = viewSpec.goldenLayoutConfig;
 
+            if (!isNil(item.icon)) ret.icon = item.icon;
+            if (!isNil(item.title)) ret.title = item.title;
             if (isPlainObject(item.state)) ret.state = item.state;
             if (isFinite(width)) ret.width = width;
             if (isFinite(height)) ret.height = height;
@@ -104,7 +112,8 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
                 itemSize[dimension] = relativeSizeToPixels(item[dimension], containerSize[dimension]);
             }
 
-            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item);
+            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(it => !isNil(it));
+            if (!content.length) return null;
             return {...item, content};
         }
     });
