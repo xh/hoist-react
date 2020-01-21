@@ -19,7 +19,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {assign, castArray, find, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import {assign, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
@@ -351,11 +351,19 @@ export class Select extends HoistInput {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(val, createIfNotFound) {
-        const valAsOption = this.toOption(val),
-            match = find(this.internalOptions, {value: valAsOption.value});
+    findOption(value, createIfNotFound, options = this.internalOptions) {
 
-        return match ? match : (createIfNotFound ? valAsOption : null);
+        // Do a depth-first search of options
+        for (const option of options) {
+            if (option.options) {
+                const ret = this.findOption(value, false, option.options);
+                if (ret) return ret;
+            } else {
+                if (option.value === value) return option;
+            }
+        }
+
+        return createIfNotFound ? this.valueToOption(value) : null;
     }
 
     toExternal(internal) {
@@ -382,7 +390,7 @@ export class Select extends HoistInput {
     toOption(src, depth) {
         return isPlainObject(src) ?
             this.objectToOption(src, depth) :
-            {label: src != null ? src.toString() : '-null-', value: src};
+            this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -392,12 +400,16 @@ export class Select extends HoistInput {
 
         throwIf(
             !src.hasOwnProperty(valueField) && !src.hasOwnProperty('options'),
-            `Select options/values provided as Objects must define a '${valueField}' property or a sublist of options.`
+            `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
         return src.hasOwnProperty('options') ?
             {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
             {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+    }
+
+    valueToOption(src) {
+        return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
     //------------------------
@@ -424,6 +436,10 @@ export class Select extends HoistInput {
 
                 // But only return the matching options back to the combo.
                 return matchOpts;
+            })
+            .catch(e => {
+                console.error(e);
+                throw e;
             });
     };
 

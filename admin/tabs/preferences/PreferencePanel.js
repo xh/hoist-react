@@ -9,7 +9,7 @@ import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const PreferencePanel = hoistCmp(
+export const preferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 

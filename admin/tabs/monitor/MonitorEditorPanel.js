@@ -9,7 +9,7 @@ import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 
-export const MonitorEditorPanel = hoistCmp(
+export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 

@@ -4,19 +4,22 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {Icon, convertIconToSvg} from '@xh/hoist/icon';
+import {convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf, debounced, withDefault} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {isEmpty, find, reject, cloneDeep} from 'lodash';
+import {find, reject, cloneDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
+import {addViewPanel} from './impl/AddViewPanel';
+import {addViewButton} from './impl/AddViewButton';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
@@ -71,7 +74,6 @@ export class DashContainerModel {
     @observable.ref state;
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
-
     /** @member {DashViewModel[]} */
     @managed @observable.ref viewModels = [];
 
@@ -83,6 +85,8 @@ export class DashContainerModel {
     viewSpecs = [];
     /** @member {boolean} */
     showAddButton;
+    /** @member {(Object|function)} */
+    addViewContent;
     /** @member {RenderMode} */
     renderMode;
     /** @member {RefreshMode} */
@@ -95,7 +99,6 @@ export class DashContainerModel {
     //------------------------
     @managed loadingStateTask = new PendingTaskModel();
     containerRef = createObservableRef();
-    @observable dialogIsOpen;
     modelLookupContext;
 
     /**
@@ -103,7 +106,11 @@ export class DashContainerModel {
      *      that can be displayed in this container
      * @param {Object[]} [initialState] - Default layout state for this container.
      * @param {boolean} [showAddButton] - true (default) to include a '+' button in each stack header,
-     *      which opens the provided 'Add View' dialog.
+     *      which opens the provided 'Add View' popover.
+     * @param {(Object|function)} [addViewContent] - content to be rendered in the 'Add View' popover.
+     *      HoistComponent or a function returning a react element. Defaults to the provided
+     *      @see AddViewPanel. Will receive the clicked `stack`, this `dashContainerModel`
+     *      and the `popoverModel` as props.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
@@ -115,20 +122,20 @@ export class DashContainerModel {
         viewSpecs,
         initialState = [],
         showAddButton = true,
+        addViewContent = addViewPanel,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
     }) {
-        throwIf(isEmpty(viewSpecs), 'A collection of DashViewSpecs are required');
+        viewSpecs = viewSpecs.filter(it => !it.omit);
+        ensureUniqueBy(viewSpecs, 'id');
+        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
         this.showAddButton = showAddButton;
+        this.addViewContent = addViewContent;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
-
-        // Add DashViewSpecs
-        ensureUniqueBy(viewSpecs, 'id');
-        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
@@ -146,13 +153,12 @@ export class DashContainerModel {
      * Load state into the DashContainer, recreating its layout and contents
      * @param {object} state - State to load
      */
-    @action
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
         if (!containerEl) return;
 
         // Show mask to provide user feedback
-        return start(() => {
+        return start().thenAction(() => {
             this.destroyGoldenLayout();
             this.goldenLayout = this.createGoldenLayout(containerEl, state);
 
@@ -174,8 +180,9 @@ export class DashContainerModel {
         const viewSpec = this.getViewSpec(id),
             instances = this.getItemsBySpecId(id);
 
-        throwIf(!viewSpec, `Trying to add unknown DashViewSpec. id=${id}`);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instance of a DashViewSpec flagged "unique". id=${id}`);
+        throwIf(!viewSpec, `Trying to add non-existent or omitted DashViewSpec. id=${id}`);
+        throwIf(!viewSpec.allowAdd, `Trying to add DashViewSpec with allowAdd=false. id=${id}`);
+        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
         container.addChild(viewSpec.goldenLayoutConfig);
@@ -187,12 +194,12 @@ export class DashContainerModel {
     @debounced(100)
     @action
     updateState() {
-        const {goldenLayout, viewState} = this;
+        const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
 
-        this.state = convertGLToState(goldenLayout, viewState);
+        this.state = convertGLToState(goldenLayout, this);
 
-        // Update tab headers on state change to reflect title/icon changes in view state
+        // Update tab headers on state change to reflect title/icon changes.
         this.updateTabHeaders();
     }
 
@@ -224,7 +231,6 @@ export class DashContainerModel {
         return goldenLayout.root.getItemsByType('component');
     }
 
-
     // Get all view instances with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.getItems().filter(it => it.config.component === id);
@@ -235,8 +241,8 @@ export class DashContainerModel {
     //-----------------
     get viewState() {
         const ret = {};
-        this.viewModels.map(({viewState, id}) => {
-            if (viewState) ret[id] = viewState;
+        this.viewModels.map(({id, icon, title, viewState}) => {
+            ret[id] = {icon, title, viewState};
         });
         return ret;
     }
@@ -266,29 +272,9 @@ export class DashContainerModel {
 
         // Add '+' icon and attach click listener for adding components
         if (this.showAddButton) {
-            const $container = stack.header.controlsContainer, // Note: this is a jquery element
-                icon = convertIconToSvg(Icon.add()),
-                className = 'xh-dash-container-add-button';
-
-            $container.append(`<div class="${className}">${icon}</div>`);
-            const $btn = $container.find('.' + className);
-            $btn.click(() => this.openViewDialog(stack));
+            const containerEl = stack.header.controlsContainer[0];
+            ReactDOM.render(addViewButton({dashContainerModel: this, stack}), containerEl);
         }
-    }
-
-    @action
-    openViewDialog(stack) {
-        this._dialogSelectedContainer = stack;
-        this.dialogIsOpen = true;
-    }
-
-    @action
-    closeViewDialog() {
-        this.dialogIsOpen = false;
-    }
-
-    submitViewDialog(id) {
-        this.addView(id, this._dialogSelectedContainer);
     }
 
     //-----------------
@@ -321,35 +307,73 @@ export class DashContainerModel {
     updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
-            const id = item.config.component,
-                $el = item.tab.element, // Note: this is a jquery element
-                viewSpec = this.getViewSpec(id),
-                viewModelId = getViewModelId(item),
-                state = this.viewState[viewModelId],
-                icon = withDefault(state?.icon, viewSpec?.icon),
-                title = withDefault(state?.title, viewSpec?.title);
+            const $el = item.tab.element, // Note: this is a jquery element
+                $titleEl = $el.find('.lm_title').first(),
+                iconSelector = 'svg.svg-inline--fa',
+                viewSpec = this.getViewSpec(item.config.component),
+                viewModel = this.getViewModel(getViewModelId(item)),
+                {icon, title} = viewModel;
 
             if (icon) {
-                const $currentIcon = $el.find('svg.svg-inline--fa').first(),
+                const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
                     newIconType = icon.props.icon[1];
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToSvg(icon);
-                    $el.find('svg.svg-inline--fa').remove();
-                    $el.find('.lm_title').before(iconSvg);
+                    $el.find(iconSelector).remove();
+                    $titleEl.before(iconSvg);
                 }
             }
 
             if (title) {
-                const $titleEl = $el.find('.lm_title').first(),
-                    currentTitle = $titleEl.text();
+                const currentTitle = $titleEl.text();
+                if (currentTitle !== title) $titleEl.text(title);
+            }
 
-                if (currentTitle !== title) {
-                    $titleEl.text(title);
-                }
+            if (viewSpec.allowRename) {
+                this.insertTitleForm($el, viewModel);
+                $titleEl.prop('title', `${$titleEl.text()}. Double-click to edit.`);
+                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
             }
         });
+    }
+
+    insertTitleForm($el, viewModel) {
+        const formSelector = '.title-form';
+        if ($el.find(formSelector).length) return;
+
+        // Create and insert form
+        const $titleEl = $el.find('.lm_title').first();
+        $titleEl.after(`<form class="title-form"><input type="text"/></form>`);
+
+        // Attach listeners
+        const $formEl = $el.find(formSelector).first(),
+            $inputEl = $formEl.find('input').first();
+
+        $inputEl.blur(() => this.hideTitleForm($el));
+        $formEl.submit(() => {
+            const title = $inputEl.val();
+            $titleEl.text(title);
+            viewModel.setTitle(title);
+
+            this.hideTitleForm($el);
+            return false;
+        });
+    }
+
+    showTitleForm($el) {
+        const $titleEl = $el.find('.lm_title').first(),
+            $inputEl = $el.find('.title-form input').first(),
+            currentTitle = $titleEl.text();
+
+        $el.addClass('show-title-form');
+        $inputEl.val(currentTitle);
+        $inputEl.focus().select();
+    }
+
+    hideTitleForm($el) {
+        $el.removeClass('show-title-form');
     }
 
     //-----------------
@@ -375,13 +399,18 @@ export class DashContainerModel {
         // Register components
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, (data) => {
-                const {id, state} = data,
-                    model = new DashViewModel({
-                        id,
-                        viewSpec,
-                        viewState: state,
-                        containerModel: this
-                    });
+                const {id, title, viewState} = data;
+                let icon = data.icon;
+                if (icon) icon = deserializeIcon(icon);
+
+                const model = new DashViewModel({
+                    id,
+                    viewSpec,
+                    icon,
+                    title,
+                    viewState,
+                    containerModel: this
+                });
 
                 this.addViewModel(model);
                 return dashView({model});

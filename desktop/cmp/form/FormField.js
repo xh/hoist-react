@@ -59,7 +59,12 @@ export const [FormField, formField] = hoistCmp.withFactory({
             notValid = model?.isNotValid || false,
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
-            requiredStr = (isRequired && !readonly) ? span(' *') : null;
+            requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
+            requiredIndicator = (isRequired && !readonly && requiredStr) ?
+                span({
+                    item: ' ' + requiredStr,
+                    className: 'xh-form-field-required-indicator'
+                }) : null;
 
         // Child related props
         const child = getValidChild(children),
@@ -119,7 +124,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field-label',
-                    items: [label, requiredStr],
+                    items: [label, requiredIndicator],
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelAlign,
@@ -205,7 +210,10 @@ FormField.propTypes = {
      * Optional function for use in readonly mode. Called with the Field's current value
      * and should return an element suitable for presentation to the end-user.
      */
-    readonlyRenderer: PT.func
+    readonlyRenderer: PT.func,
+
+    /** The indicator to display next to a required field. Defaults to `*`. */
+    requiredIndicator: PT.string
 };
 
 const readonlyChild = hoistCmp.factory({
@@ -262,7 +270,7 @@ const editableChild = hoistCmp.factory({
 //--------------------------------
 // Helper Functions
 //---------------------------------
-const blockChildren = ['TextInput', 'JsonInput', 'Select'];
+const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
     const child = Children.only(children);
