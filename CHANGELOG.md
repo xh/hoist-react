@@ -99,8 +99,8 @@ Note the following more specific changes to these related classes:
 * Application build tags are now included in version update checks, primarily to prompt dev/QA users
   to refresh when running SNAPSHOT versions. (Note that an update to hoist-core 6.4+ is required for
   the server to emit build tag for comparison.)
-* Added a new `CodeInput` to make it easier to create custom code editors. JsonInput has been
-  converted to a wrapper around this class.
+* `CodeInput` component added to provide general `HoistInput` support around the CodeMirror code
+  editor. The pre-existing `JsonInput` has been converted to a wrapper around this class.
 
 ### 💥 Breaking Changes
 
@@ -119,6 +119,8 @@ Note the following more specific changes to these related classes:
   been documented this way, but a bug in the original implementation had it accepting an actual
   element rather than a function. As now implemented, the form of the `content` param is consistent
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
+* `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
+  `showFullscreenButton` props.
 
 ### 🐞 Bug Fixes
 

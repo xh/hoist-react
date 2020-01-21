@@ -5,39 +5,38 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import ReactDOM from 'react-dom';
-import {XH, elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
-import {fragment, box, hbox} from '@xh/hoist/cmp/layout';
-import {textArea, dialog} from '@xh/hoist/kit/blueprint';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {dialog, textArea} from '@xh/hoist/kit/blueprint';
+import {bindable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
+import {defaultsDeep, isFunction} from 'lodash';
 import PT from 'prop-types';
-import {defaultsDeep} from 'lodash';
-
-import {HoistInput} from '@xh/hoist/cmp/input';
-
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/addon/fold/foldgutter.css';
-import 'codemirror/addon/scroll/simplescrollbars.css';
-import 'codemirror/addon/lint/lint.css';
-import 'codemirror/theme/dracula.css';
+import ReactDOM from 'react-dom';
 
 import * as codemirror from 'codemirror';
-import 'codemirror/addon/fold/foldcode.js';
-import 'codemirror/addon/fold/foldgutter.js';
 import 'codemirror/addon/fold/brace-fold.js';
-import 'codemirror/addon/scroll/simplescrollbars.js';
+import 'codemirror/addon/fold/foldcode.js';
+import 'codemirror/addon/fold/foldgutter.css';
+import 'codemirror/addon/fold/foldgutter.js';
+import 'codemirror/addon/lint/lint.css';
 import 'codemirror/addon/lint/lint.js';
+import 'codemirror/addon/scroll/simplescrollbars.css';
+import 'codemirror/addon/scroll/simplescrollbars.js';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/dracula.css';
 
 import './CodeInput.scss';
 
 /**
- * Code-editor style input, powered by CodeMirror.
+ * Code-editor style input, powered by CodeMirror. Displays a gutter with line numbers, mono-spaced
+ * styling, and custom key handlers (e.g. tab to indent). Can be customized with options and
+ * language modes supported by the underlying CodeMirror library {@link https://codemirror.net/}.
  *
- * Any inputs which use a CodeInput must import the JavaScript files for the relevant CodeMirror mode.
- * @see https://codemirror.net/mode/
+ * Note Hoist also provides a preconfigured {@see JsonInput} component for editing JSON.
  *
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
@@ -51,8 +50,6 @@ export class CodeInput extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
-        value: PT.string,
-
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
 
@@ -62,26 +59,30 @@ export class CodeInput extends HoistInput {
          */
         editorProps: PT.object,
 
-        /** True to show Fullscreen + Auto-format buttons at top-right of input. */
-        showActionButtons: PT.bool,
-
-        /** A CodeMirror linter. */
-        linter: PT.func,
-
         /**
          * Callback to autoformat the code. Given the unformatted code, this should return a
          * properly-formatted copy.
          */
         formatter: PT.func,
 
-        /** True to display Fullscreen button at top-right of input. */
-        showFullscreenButton: PT.bool,
+        /** A CodeMirror linter to provide error detection and hinting in the gutter. */
+        linter: PT.func,
 
-        /** True to display autoformat button at top-right of input. */
+        /**
+         * A CodeMirror language mode - default none (plain-text).
+         * See the CodeMirror docs ({@link https://codemirror.net/mode/}) regarding available modes.
+         * Applications must import any mode they wish to enable.
+         */
+        mode: PT.string,
+
+        /**
+         * True (default) to display autoformat button at top-right of input.
+         * Requires a `formatter` to be configured - button will never show otherwise.
+         */
         showFormatButton: PT.bool,
 
-        /** Select the CodeMirror mode. */
-        mode: PT.string
+        /** True (default) to display Fullscreen button at top-right of input. */
+        showFullscreenButton: PT.bool
     };
 
     get commitOnChange() {
@@ -93,11 +94,12 @@ export class CodeInput extends HoistInput {
     }
 
     get showFormatButton() {
-        return withDefault(this.props.showFormatButton, !!this.props.formatter);
+        return isFunction(this.props.formatter) && withDefault(this.props.showFormatButton, true);
     }
 
     constructor(props, context) {
         super(props, context);
+
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -105,6 +107,7 @@ export class CodeInput extends HoistInput {
                 if (editor) editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default');
             }
         });
+
         this.addReaction({
             track: () => this.renderValue,
             run: (value) => {
@@ -168,16 +171,17 @@ export class CodeInput extends HoistInput {
 
     renderActionButtons() {
         if (!this.hasFocus || (!this.showFormatButton && !this.showFullscreenButton)) return null;
+
         const {fullScreen} = this;
         return hbox({
             className: 'xh-code-input__action-buttons',
             items: [
-                this.showFullscreenButton ? button({
+                this.showFormatButton ? button({
                     icon: Icon.code(),
                     title: 'Auto-format',
                     onClick: () => this.onAutoFormat()
                 }) : null,
-                this.showFormatButton ? button({
+                this.showFullscreenButton ? button({
                     icon: fullScreen ? Icon.collapse() : Icon.expand(),
                     title: fullScreen ? 'Exit full screen' : 'Full screen',
                     onClick: () => this.setFullScreen(!fullScreen)
@@ -189,20 +193,20 @@ export class CodeInput extends HoistInput {
     //------------------
     // Implementation
     //------------------
-    manageCodeEditor = (taCmp) => {
-        if (taCmp) {
-            this.editor = this.createCodeEditor(taCmp);
+    manageCodeEditor = (textAreaComp) => {
+        if (textAreaComp) {
+            this.editor = this.createCodeEditor(textAreaComp);
         }
-    }
+    };
 
-    createCodeEditor(taCmp) {
+    createCodeEditor(textAreaComp) {
         const {editorProps, width, height} = this.props,
             editorSpec = defaultsDeep(
                 editorProps,
                 this.createDefaults()
             );
 
-        const taDom = ReactDOM.findDOMNode(taCmp),
+        const taDom = ReactDOM.findDOMNode(textAreaComp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
@@ -249,9 +253,10 @@ export class CodeInput extends HoistInput {
     };
 
     onAutoFormat = () => {
+        if (!isFunction(this.props.formatter)) return;
+
         const editor = this.editor,
             val = this.tryPrettyPrint(editor.getValue());
-
         editor.setValue(val);
     };
 
