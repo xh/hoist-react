@@ -15,7 +15,7 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 
 import {UserModel} from './UserModel';
 
-export const UserPanel = hoistCmp({
+export const userPanel = hoistCmp.factory({
     model: creates(UserModel),
 
     render() {

@@ -85,7 +85,8 @@ class LocalModel {
             track: () => [
                 this.aspectRatio,
                 this.chartRef.current,
-                model.highchartsConfig
+                model.highchartsConfig,
+                XH.darkTheme
             ],
             run: () => this.renderHighChart()
         });

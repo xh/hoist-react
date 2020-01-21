@@ -889,11 +889,20 @@ export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
  * @return {string}
  */
 export const convertIconToSvg = function(iconElem, opts) {
-    const iconDef = findIconDefinition({
+    const iconDef = findIconDefinition(serializeIcon(iconElem));
+    return icon(iconDef, opts).html[0];
+};
+
+export const serializeIcon = function(iconElem) {
+    return {
         prefix: iconElem.props.icon[0],
         iconName: iconElem.props.icon[1]
-    });
-    return icon(iconDef, opts).html[0];
+    };
+};
+
+export const deserializeIcon = function(iconDef) {
+    const {prefix, iconName} = iconDef;
+    return fa({prefix}, iconName);
 };
 
 /**
