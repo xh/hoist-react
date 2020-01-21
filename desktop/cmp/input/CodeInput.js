@@ -115,8 +115,6 @@ export class CodeInput extends HoistInput {
     }
 
     editor = null;
-    taCmp = null;
-
     baseClassName = 'xh-code-input';
 
     render() {
@@ -190,7 +188,6 @@ export class CodeInput extends HoistInput {
     //------------------
     manageCodeEditor = (taCmp) => {
         if (taCmp) {
-            this.taCmp = taCmp;
             this.editor = this.createCodeEditor(taCmp);
         }
     }
@@ -217,7 +214,6 @@ export class CodeInput extends HoistInput {
     createDefaults() {
         const {disabled, mode, linter} = this.props;
         return {
-            // TODO: make this configurable
             mode,
             theme: XH.darkTheme ? 'dracula' : 'default',
             lineWrapping: false,
