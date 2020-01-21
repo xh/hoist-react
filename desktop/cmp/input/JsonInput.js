@@ -15,6 +15,8 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import * as codemirror from 'codemirror';
 import {jsonlint} from './impl/jsonlint';
 
+import 'codemirror/mode/javascript/javascript';
+
 /**
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
  *
@@ -61,6 +63,8 @@ export class JsonInput extends HoistInput {
                     });
                 };
 
+                console.log('foob');
+
                 if (!text) return found;
 
                 try {
@@ -70,8 +74,7 @@ export class JsonInput extends HoistInput {
                 return found;
             },
             formatter: (str) => JSON.stringify(JSON.parse(str), undefined, 2),
-            import: 'apl/apl.js',
-            mode: 'text/apl',
+            mode: 'application/json',
             showFullscreenButton: this.showActionButtons,
             showFormatButton: this.showActionButtons,
             ...props

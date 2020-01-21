@@ -47,6 +47,7 @@ export class CodeInput extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
+
         value: PT.string,
 
         /** True to commit on every change/keystroke, default false. */
@@ -76,9 +77,6 @@ export class CodeInput extends HoistInput {
         /** True to display autoformat button at top-right of input. */
         showFormatButton: PT.bool,
 
-        /** The path to the CodeMirror mode to be used */
-        import: PT.string,
-
         /** Select the CodeMirror mode. */
         mode: PT.string
     };
@@ -96,11 +94,7 @@ export class CodeInput extends HoistInput {
     }
 
     constructor(props, context) {
-        import('codemirror/mode/apl/apl');
         super(props, context);
-        if (props.linter) {
-            codemirror.registerHelper('lint', props.mode, props.linter);
-        }
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
@@ -221,7 +215,7 @@ export class CodeInput extends HoistInput {
     }
 
     createDefaults() {
-        const {disabled, mode, lint} = this.props;
+        const {disabled, mode, linter} = this.props;
         return {
             // TODO: make this configurable
             mode,
@@ -238,9 +232,10 @@ export class CodeInput extends HoistInput {
             readOnly: disabled ? 'nocursor' : false,
             gutters: [
                 'CodeMirror-linenumbers',
-                'CodeMirror-foldgutter'
+                'CodeMirror-foldgutter',
+                linter ? 'CodeMirror-lint-markers' : null
             ],
-            lint: !!lint
+            lint: linter ? {getAnnotations: linter} : false
         };
     }
 
