@@ -30,11 +30,11 @@ body.xh-app.xh-mobile {
 
   .toolbar-button,
   .back-button {
-    color: var(--xh-toolbar-btn-color);
+    color: var(--xh-toolbar-button-color);
   }
 
   .back-button__icon {
-    fill: var(--xh-toolbar-btn-color);
+    fill: var(--xh-toolbar-button-color);
   }
 
   // Borders
@@ -90,18 +90,18 @@ body.xh-app.xh-mobile {
 
   // Buttons
   .button:not(.button--outline):not(.button--quiet):not(.button--light) {
-    background-color: var(--xh-btn-color);
+    background-color: var(--xh-button-color);
 
     &:active {
-      background-color: var(--xh-btn-color);
+      background-color: var(--xh-button-color);
     }
   }
 
   .button--outline,
   .button--outline:active,
   .button--outline:hover {
-    border-color: var(--xh-btn-color);
-    color: var(--xh-btn-color);
+    border-color: var(--xh-button-color);
+    color: var(--xh-button-color);
   }
 
   .button--light,
