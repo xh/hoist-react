@@ -37,7 +37,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             hideAppMenuButton,
             className,
             appMenuButtonOptions = {},
-            appMenuButtonPosition = 'left'
+            appMenuButtonPosition = 'right'
         } = props;
 
         return navbar({
