@@ -27,6 +27,7 @@ body {
   // Core colors
   --xh-black: var(--black, #{mc('grey', '900')});
   --xh-blue: var(--blue, #{mc('blue', '700')});
+  --xh-blue: var(--blue, #{mc('blue', '700')});
   --xh-blue-muted: var(--blue-muted, #{mc-muted('blue', '800', 40%)});
   --xh-blue-dark: var(--blue-dark, #{mc('light-blue', '900')});
   --xh-blue-light: var(--blue-light, #{mc('light-blue', '600')});
@@ -73,7 +74,7 @@ body {
 
   // Buttons
   --xh-button-active-bg: var(--button-active-color, #{mc('blue-grey', '100')});
-  --xh-button-active-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-color, #{mc('blue-grey', '600')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
@@ -343,7 +344,7 @@ body.xh-dark {
 
   // Buttons
   --xh-button-active-bg: var(--button-active-color, #{mc('blue-grey', '100')});
-  --xh-button-active-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-blue-gray-dark));
   --xh-button-bg: var(--button-color, #{mc('blue-grey', '600')});
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 }
