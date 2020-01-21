@@ -36,6 +36,9 @@ import './CodeInput.scss';
 /**
  * Code-editor style input, powered by CodeMirror.
  *
+ * Any inputs which use a CodeInput must import the JavaScript files for the relevant CodeMirror mode.
+ * @see https://codemirror.net/mode/
+ *
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327
  */
