@@ -130,6 +130,8 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
+* Fixed problem where tree grid alignment was inconsistent
+  ([#1546](https://github.com/xh/hoist-react/issues/1546))
 
 ### 📚 Libraries
 
