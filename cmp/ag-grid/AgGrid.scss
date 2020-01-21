@@ -67,11 +67,11 @@
       background-color: var(--xh-grid-group-bg);
     }
 
-    .group-header-icon-expanded {
+    .ag-group-expanded {
       margin: 0 var(--xh-pad-half-px);
     }
 
-    .group-header-icon-contracted {
+    .ag-group-contracted {
       margin: 0 var(--xh-pad-half-px);
     }
   }
@@ -214,12 +214,14 @@
     // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
     // (and in general tighter padding preferred here vs. full-width groups).
     .ag-row {
-      .group-header-icon-expanded {
+      .ag-group-expanded {
         margin: 0 var(--xh-pad-half-px) 0 0;
+        width: 10px;
       }
 
-      .group-header-icon-contracted {
+      .ag-group-contracted {
         margin: 0 var(--xh-pad-half-px) 0 0;
+        width: 10px;
       }
     }
   }
