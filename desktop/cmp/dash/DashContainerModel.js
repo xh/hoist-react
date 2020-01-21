@@ -4,10 +4,11 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
+import ReactDOM from 'react-dom';
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {Icon, convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
+import {convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
@@ -17,6 +18,8 @@ import {find, reject, cloneDeep} from 'lodash';
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
+import {dashContainerAddViewPanel} from './impl/DashContainerAddViewPanel';
+import {dashContainerAddViewButton} from './impl/DashContainerAddViewButton';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
@@ -82,6 +85,8 @@ export class DashContainerModel {
     viewSpecs = [];
     /** @member {boolean} */
     showAddButton;
+    /** @member {(Object|function)} */
+    addViewContent;
     /** @member {RenderMode} */
     renderMode;
     /** @member {RefreshMode} */
@@ -94,7 +99,6 @@ export class DashContainerModel {
     //------------------------
     @managed loadingStateTask = new PendingTaskModel();
     containerRef = createObservableRef();
-    @observable dialogIsOpen;
     modelLookupContext;
 
     /**
@@ -102,7 +106,11 @@ export class DashContainerModel {
      *      that can be displayed in this container
      * @param {Object[]} [initialState] - Default layout state for this container.
      * @param {boolean} [showAddButton] - true (default) to include a '+' button in each stack header,
-     *      which opens the provided 'Add View' dialog.
+     *      which opens the provided 'Add View' popover.
+     * @param {(Object|function)} [addViewContent] - content to be rendered in the 'Add View' popover.
+     *      HoistComponent or a function returning a react element. Defaults to the provided
+     *      @see DashContainerAddViewPanel. Will receive the clicked `stack`, this `dashContainerModel`
+     *      and the `popoverModel` as props.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
@@ -114,6 +122,7 @@ export class DashContainerModel {
         viewSpecs,
         initialState = [],
         showAddButton = true,
+        addViewContent = () => dashContainerAddViewPanel(),
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
@@ -123,6 +132,7 @@ export class DashContainerModel {
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
         this.showAddButton = showAddButton;
+        this.addViewContent = addViewContent;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
@@ -143,13 +153,12 @@ export class DashContainerModel {
      * Load state into the DashContainer, recreating its layout and contents
      * @param {object} state - State to load
      */
-    @action
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
         if (!containerEl) return;
 
         // Show mask to provide user feedback
-        return start(() => {
+        return start().thenAction(() => {
             this.destroyGoldenLayout();
             this.goldenLayout = this.createGoldenLayout(containerEl, state);
 
@@ -263,29 +272,9 @@ export class DashContainerModel {
 
         // Add '+' icon and attach click listener for adding components
         if (this.showAddButton) {
-            const $container = stack.header.controlsContainer, // Note: this is a jquery element
-                icon = convertIconToSvg(Icon.add()),
-                className = 'xh-dash-container-add-button';
-
-            $container.append(`<div class="${className}">${icon}</div>`);
-            const $btn = $container.find('.' + className);
-            $btn.click(() => this.openViewDialog(stack));
+            const containerEl = stack.header.controlsContainer[0];
+            ReactDOM.render(dashContainerAddViewButton({dashContainerModel: this, stack}), containerEl);
         }
-    }
-
-    @action
-    openViewDialog(stack) {
-        this._dialogSelectedContainer = stack;
-        this.dialogIsOpen = true;
-    }
-
-    @action
-    closeViewDialog() {
-        this.dialogIsOpen = false;
-    }
-
-    submitViewDialog(id) {
-        this.addView(id, this._dialogSelectedContainer);
     }
 
     //-----------------
