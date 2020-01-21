@@ -63,8 +63,6 @@ export class JsonInput extends HoistInput {
                     });
                 };
 
-                console.log('foob');
-
                 if (!text) return found;
 
                 try {
