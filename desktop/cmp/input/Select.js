@@ -437,7 +437,10 @@ export class Select extends HoistInput {
                 // But only return the matching options back to the combo.
                 return matchOpts;
             })
-            .catch(e => console.error(e));
+            .catch(e => {
+                console.error(e);
+                throw e;
+            });
     };
 
     loadingMessageFn = (params) => {
