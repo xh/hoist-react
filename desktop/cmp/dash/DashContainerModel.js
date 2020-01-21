@@ -18,8 +18,8 @@ import {find, reject, cloneDeep} from 'lodash';
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
-import {dashContainerAddViewPanel} from './impl/DashContainerAddViewPanel';
-import {dashContainerAddViewButton} from './impl/DashContainerAddViewButton';
+import {addViewPanel} from './impl/AddViewPanel';
+import {addViewButton} from './impl/AddViewButton';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
@@ -109,7 +109,7 @@ export class DashContainerModel {
      *      which opens the provided 'Add View' popover.
      * @param {(Object|function)} [addViewContent] - content to be rendered in the 'Add View' popover.
      *      HoistComponent or a function returning a react element. Defaults to the provided
-     *      @see DashContainerAddViewPanel. Will receive the clicked `stack`, this `dashContainerModel`
+     *      @see AddViewPanel. Will receive the clicked `stack`, this `dashContainerModel`
      *      and the `popoverModel` as props.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
@@ -122,7 +122,7 @@ export class DashContainerModel {
         viewSpecs,
         initialState = [],
         showAddButton = true,
-        addViewContent = () => dashContainerAddViewPanel(),
+        addViewContent = addViewPanel,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
@@ -273,7 +273,7 @@ export class DashContainerModel {
         // Add '+' icon and attach click listener for adding components
         if (this.showAddButton) {
             const containerEl = stack.header.controlsContainer[0];
-            ReactDOM.render(dashContainerAddViewButton({dashContainerModel: this, stack}), containerEl);
+            ReactDOM.render(addViewButton({dashContainerModel: this, stack}), containerEl);
         }
     }
 

@@ -8,11 +8,13 @@ import {HoistModel, hoistCmp, creates} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {vbox, div} from '@xh/hoist/cmp/layout';
 import {popover, Position, PopoverInteractionKind} from '@xh/hoist/kit/blueprint';
-import {elementFromContent, createObservableRef} from '@xh/hoist/utils/react';
+import {debounced} from '@xh/hoist/utils/js';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {createRef} from 'react';
 
-import './DashContainerAddViewButton.scss';
+import './AddViewButton.scss';
 
 /**
  * Button and popover for adding views to a DashContainer. Apps can customize the
@@ -21,7 +23,7 @@ import './DashContainerAddViewButton.scss';
  * @see DashContainerModel
  * @private
  */
-export const dashContainerAddViewButton = hoistCmp.factory({
+export const addViewButton = hoistCmp.factory({
     model: creates(() => new Model()),
     render({model, stack, dashContainerModel}) {
         return popover({
@@ -44,7 +46,7 @@ export const dashContainerAddViewButton = hoistCmp.factory({
                         popoverModel: model
                     })
                 ],
-                onBlur: (ev) => model.onBlur(ev)
+                onBlur: (ev) => model.onBlur(ev.relatedTarget)
             }),
             onInteraction: (willOpen) => {
                 if (willOpen) {
@@ -60,7 +62,7 @@ export const dashContainerAddViewButton = hoistCmp.factory({
 @HoistModel
 class Model {
     @observable isOpen = false;
-    popoverRef = createObservableRef();
+    popoverRef = createRef();
 
     @action
     open() {
@@ -72,9 +74,12 @@ class Model {
         this.isOpen = false;
     }
 
-    onBlur(ev) {
+    // Debounced to allow clicking the button again to close
+    @debounced(200)
+    onBlur(elem) {
+        if (!this.isOpen) return;
+
         // Ignore focus jumping internally from *within* the control.
-        let elem = ev.relatedTarget;
         for (let thisElem = this.popoverRef.current; elem; elem = elem.parentElement) {
             if (elem == thisElem) return;
         }

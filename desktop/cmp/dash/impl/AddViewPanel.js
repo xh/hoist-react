@@ -13,7 +13,7 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
-import './DashContainerAddViewPanel.scss';
+import './AddViewPanel.scss';
 
 /**
  * Default panel for adding views to a DashContainer. Can be replaced via
@@ -22,7 +22,7 @@ import './DashContainerAddViewPanel.scss';
  * @see DashContainerModel
  * @private
  */
-export const dashContainerAddViewPanel = hoistCmp.factory({
+export const addViewPanel = hoistCmp.factory({
     model: creates(() => new Model()),
     render({model, stack, dashContainerModel, popoverModel}) {
         model.stack = stack;
