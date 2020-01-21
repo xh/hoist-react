@@ -46,12 +46,12 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                 navbarGroup({
                     align: 'left',
                     items: [
-                        icon,
-                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
                             ...appMenuButtonOptions
                         }),
+                        icon,
+                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
