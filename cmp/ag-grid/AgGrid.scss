@@ -213,15 +213,17 @@
     // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
     // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
     // (and in general tighter padding preferred here vs. full-width groups).
+    // Also set a constant size on the drop-down arrow, since the expanded and contracted arrows
+    // are different widths.
     .ag-row {
       .ag-group-expanded {
         margin: 0 var(--xh-pad-half-px) 0 0;
-        width: 10px;
+        width: var(--xh-pad-px);
       }
 
       .ag-group-contracted {
         margin: 0 var(--xh-pad-half-px) 0 0;
-        width: 10px;
+        width: var(--xh-pad-px);
       }
     }
   }

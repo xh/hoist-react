@@ -104,7 +104,7 @@
     }
 
     .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: calc(10px + var(--xh-pad-half-px));
+      margin-left: calc(var(--xh-pad-px) + var(--xh-pad-half-px));
     }
 
     .ag-group-contracted + .ag-group-value:not(:empty) {
