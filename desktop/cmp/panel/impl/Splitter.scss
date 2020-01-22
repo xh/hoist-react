@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
 
-  .xh-resizable-collapser-button {
+  .xh-resizable-collapser-btn {
     color: var(--xh-resizable-button-icon-color) !important;
     margin: 0;
     padding: 0;
@@ -15,7 +15,7 @@
     border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 
-    .xh-resizable-collapser-button {
+    .xh-resizable-collapser-btn {
       width: 50px;
       height: 10px;
       background-color: var(--xh-resizable-button-bg);
@@ -29,7 +29,7 @@
     border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
     border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
 
-    .xh-resizable-collapser-button {
+    .xh-resizable-collapser-btn {
       width: 10px;
       height: 50px;
       background-color: var(--xh-resizable-button-bg);
