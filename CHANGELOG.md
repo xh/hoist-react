@@ -99,6 +99,11 @@ Note the following more specific changes to these related classes:
 * Application build tags are now included in version update checks, primarily to prompt dev/QA users
   to refresh when running SNAPSHOT versions. (Note that an update to hoist-core 6.4+ is required for
   the server to emit build tag for comparison.)
+* `CodeInput` component added to provide general `HoistInput` support around the CodeMirror code
+  editor. The pre-existing `JsonInput` has been converted to a wrapper around this class.
+* `JsonInput` now supports an `autoFocus` prop.
+* `Select` now supports a `hideDropdownIndicator` prop.
+* `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
 
 ### 💥 Breaking Changes
 
@@ -117,6 +122,8 @@ Note the following more specific changes to these related classes:
   been documented this way, but a bug in the original implementation had it accepting an actual
   element rather than a function. As now implemented, the form of the `content` param is consistent
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
+* `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
+  `showFullscreenButton` props.
 * Several CSS variables related to buttons have been renamed for consistency.
   ([#1568](https://github.com/xh/hoist-react/pull/1568))
 
@@ -140,6 +147,8 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
+* Removed padding from Select option wrapper elements which was making it difficult for custom
+  option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
 
 ### 📚 Libraries
 
