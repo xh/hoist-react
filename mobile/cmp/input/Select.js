@@ -35,6 +35,9 @@ export class Select extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
+        /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
+        hideDropdownIndicator: PT.bool,
+
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
 
@@ -132,6 +135,14 @@ export class Select extends HoistInput {
                 onFocus: this.onFocus
             };
 
+        if (props.hideDropdownIndicator) {
+            rsProps.components = {
+                ...rsProps.components,
+                DropdownIndicator: () => null,
+                IndicatorSeparator: () => null
+            };
+        }
+
         assign(rsProps, props.rsOptions);
 
         return box({
@@ -226,23 +237,26 @@ export class Select extends HoistInput {
         // implementation here to render a checkmark next to the active selection.
         const optionRenderer = this.props.optionRenderer || this.optionRenderer;
         return optionRenderer(opt);
-    }
+    };
 
     optionRenderer = (opt) => {
         if (this.suppressCheck) {
-            return div({item: opt.label, style: {paddingLeft: 8}});
+            return div(opt.label);
         }
 
         return this.externalValue === opt.value ?
-            hbox(
-                div({
-                    style: {minWidth: 25, textAlign: 'center'},
-                    item: Icon.check({size: 'sm'})
-                }),
-                span(opt.label)
-            ) :
+            hbox({
+                items: [
+                    div({
+                        style: {minWidth: 25, textAlign: 'center'},
+                        item: Icon.check({size: 'sm'})
+                    }),
+                    span(opt.label)
+                ],
+                paddingLeft: 0
+            }) :
             div({item: opt.label, style: {paddingLeft: 25}});
-    }
+    };
 
     get suppressCheck() {
         const {props} = this;

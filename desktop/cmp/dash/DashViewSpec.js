@@ -28,7 +28,7 @@ export class DashViewSpec {
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
-    * @param {(Object|function)} c.content - content to be rendered by this DashView.
+     * @param {(Object|function)} c.content - content to be rendered by this DashView.
      *      HoistComponent or a function returning a react element.
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
