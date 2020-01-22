@@ -144,6 +144,8 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
+* Removed padding from Select option wrapper elements which was making it difficult for custom
+  option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
 
 ### 📚 Libraries
 
