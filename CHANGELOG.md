@@ -102,6 +102,7 @@ Note the following more specific changes to these related classes:
 * `CodeInput` component added to provide general `HoistInput` support around the CodeMirror code
   editor. The pre-existing `JsonInput` has been converted to a wrapper around this class.
 * `JsonInput` now supports an `autoFocus` prop.
+* `Select` now supports a `hideIndicator` prop.
 
 ### 💥 Breaking Changes
 

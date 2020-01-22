@@ -82,6 +82,9 @@ export class Select extends HoistInput {
          */
         enableWindowed: PT.bool,
 
+        /** True to hide the indicator, i.e. the default down-facing arrow at the right of the Select. */
+        hideIndicator: PT.bool,
+
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
@@ -249,6 +252,12 @@ export class Select extends HoistInput {
 
         if (this.creatableMode) {
             rsProps.formatCreateLabel = this.createMessageFn;
+        }
+
+        if (props.hideIndicator) {
+            if (!rsProps.components) rsProps.components = {};
+            rsProps.components.DropdownIndicator = () => null;
+            rsProps.components.IndicatorSeparator = () => null;
         }
 
         const factory = this.getSelectFactory();

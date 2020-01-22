@@ -35,6 +35,9 @@ export class Select extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
+        /** True to hide the indicator, i.e. the default down-facing arrow at the right of the Select. */
+        hideIndicator: PT.bool,
+
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
 
@@ -131,6 +134,12 @@ export class Select extends HoistInput {
                 onChange: this.onSelectChange,
                 onFocus: this.onFocus
             };
+
+        if (props.hideIndicator) {
+            if (!rsProps.components) rsProps.components = {};
+            rsProps.components.DropdownIndicator = () => null;
+            rsProps.components.IndicatorSeparator = () => null;
+        }
 
         assign(rsProps, props.rsOptions);
 
