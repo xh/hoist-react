@@ -8,7 +8,18 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isString, startCase} from 'lodash';
+import {
+    castArray,
+    clone,
+    find,
+    get,
+    isArray,
+    isFinite,
+    isFunction,
+    isNil,
+    isString,
+    startCase
+} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -431,9 +442,9 @@ export class Column {
     };
 
     defaultGetValueFn = ({record}) => {
-        if (!record) return null;
-
         const {fieldPath} = this;
+        if (!record || isNil(fieldPath)) return null;
+
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
