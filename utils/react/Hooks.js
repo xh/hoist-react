@@ -33,6 +33,8 @@ export function useOnUnmount(fn) {
 
 /**
  * Hook to run a function when component is resized.
+ * This will not run the hook when the size is changed to 0 (i.e. the element is hidden) or when
+ * the new size is the same as the previous size (e.g. when the element is set to visible)
  * @param {function} fn
  * @param {number} [delay] - milliseconds to debounce
  * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
