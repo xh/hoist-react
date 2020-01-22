@@ -51,9 +51,7 @@ export function useOnResize(fn, delay, ref) {
 
         const wrappedFn = (e) => {
             const {width, height} = e[0].contentRect;
-            console.log('got resize event');
             if (width != 0 && height != 0 && width != prevWidth && height != prevHeight) {
-                console.log('doing resize');
                 prevWidth = width;
                 prevHeight = height;
                 fn(e);
