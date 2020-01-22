@@ -65,7 +65,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                     item: ' ' + requiredStr,
                     className: 'xh-form-field-required-indicator'
                 }) : null;
-    
+
         // Child related props
         const child = getValidChild(children),
             [stableId] = useState(XH.genId()),
@@ -270,7 +270,7 @@ const editableChild = hoistCmp.factory({
 //--------------------------------
 // Helper Functions
 //---------------------------------
-const blockChildren = ['TextInput', 'JsonInput', 'Select'];
+const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
     const child = Children.only(children);
