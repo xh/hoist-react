@@ -16,6 +16,7 @@ export class ChartModel {
 
     @bindable.ref highchartsConfig = {};
     @bindable.ref series = [];
+    chart;
 
     /**
      * @param {Object} c - ChartModel configuration.
