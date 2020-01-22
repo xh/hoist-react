@@ -117,6 +117,8 @@ Note the following more specific changes to these related classes:
   been documented this way, but a bug in the original implementation had it accepting an actual
   element rather than a function. As now implemented, the form of the `content` param is consistent
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
+* Several CSS variables related to buttons have been renamed for consistency.
+  ([#1568](https://github.com/xh/hoist-react/pull/1568))
 
 ### 🐞 Bug Fixes
 
