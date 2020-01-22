@@ -101,6 +101,9 @@ Note the following more specific changes to these related classes:
   the server to emit build tag for comparison.)
 * `CodeInput` component added to provide general `HoistInput` support around the CodeMirror code
   editor. The pre-existing `JsonInput` has been converted to a wrapper around this class.
+* `JsonInput` now supports an `autoFocus` prop.
+* `Select` now supports a `hideDropdownIndicator` prop.
+* `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
 
 ### 💥 Breaking Changes
 
@@ -142,6 +145,8 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
+* Removed padding from Select option wrapper elements which was making it difficult for custom
+  option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
 
 ### 📚 Libraries
 
