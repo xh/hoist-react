@@ -13,7 +13,6 @@ import {useContext} from 'react';
 import PT from 'prop-types';
 
 import {DashContainerModel} from './DashContainerModel';
-import {dashContainerViewDialog} from './impl/DashContainerViewDialog';
 
 /**
  * Display a set of child components in accordance with a DashContainerModel.
@@ -35,8 +34,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
 
         return frame(
             frame({className, ref}),
-            mask({spinner: true, model: model.loadingStateTask}),
-            dashContainerViewDialog()
+            mask({spinner: true, model: model.loadingStateTask})
         );
     }
 });
