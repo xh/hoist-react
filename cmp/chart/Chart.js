@@ -133,7 +133,6 @@ class LocalModel {
     }
 
     resizeChart(e) {
-        console.log('Resizing!');
         const {width, height} = this.getChartDims(e[0].contentRect);
         this.chart.setSize(width, height, false);
     }
