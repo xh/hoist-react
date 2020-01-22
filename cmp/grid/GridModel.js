@@ -16,7 +16,6 @@ import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
-    compact,
     defaults,
     defaultsDeep,
     find,
@@ -33,7 +32,6 @@ import {
     min,
     pull,
     sortBy,
-    uniq,
     difference
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
@@ -725,7 +723,7 @@ export class GridModel {
             // Ensure store config has a complete set of fields for all configured columns.
             const fields = store.fields || [],
                 storeFieldNames = map(fields, it => isString(it) ? it : it.name),
-                colFieldNames = uniq(compact(map(this.getLeafColumns(), 'field'))),
+                colFieldNames = this.calcFieldNamesFromColumns(),
                 missingFieldNames = difference(colFieldNames, storeFieldNames);
 
             // ID is always present on a Record, yet will never be listed within store.fields.
@@ -743,6 +741,20 @@ export class GridModel {
 
         throw XH.exception(
             'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
+    }
+
+    calcFieldNamesFromColumns() {
+        const ret = new Set();
+        this.getLeafColumns().forEach(col => {
+            let {fieldPath} = col;
+            if (isNil(fieldPath)) return;
+
+            // Handle dot-separated column fields, including the root of their path in the returned
+            // list of field names. The resulting store field will hold the parent object.
+            ret.add(isArray(fieldPath) ? fieldPath[0] : fieldPath);
+        });
+
+        return Array.from(ret);
     }
 
     parseSelModel(selModel) {
