@@ -41,11 +41,22 @@ export function useOnUnmount(fn) {
 export function useOnResize(fn, delay, ref) {
     if (!ref) ref = useRef(null);
 
+    let prevWidth, prevHeight;
+
+    const wrappedFn = (e) => {
+        const {width, height} = e[0].contentRect;
+        if (width != 0 && height != 0 && width != prevWidth && height != prevHeight) {
+            prevWidth = width;
+            prevHeight = height;
+            fn(e);
+        }
+    };
+
     useEffect(() => {
         const {current} = ref;
         if (!current) return;
 
-        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(fn, delay) : fn,
+        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(wrappedFn, delay) : wrappedFn,
             resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);

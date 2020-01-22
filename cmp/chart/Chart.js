@@ -75,8 +75,6 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     model;
-    prevWidth;
-    prevHeight;
     prevSeriesConfig;
 
     constructor(model) {
@@ -135,11 +133,8 @@ class LocalModel {
     }
 
     resizeChart(e) {
+        console.log('Resizing!');
         const {width, height} = this.getChartDims(e[0].contentRect);
-        if (width == 0 || height == 0) return;
-        if (width == this.prevWidth && height == this.prevHeight) return;
-        this.prevWidth = width;
-        this.prevHeight = height;
         this.chart.setSize(width, height, false);
     }
 
