@@ -124,8 +124,6 @@ class LocalModel {
                 });
 
             assign(config.chart, dims);
-            this.prevWidth = dims.width;
-            this.prevHeight = dims.height;
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
