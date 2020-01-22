@@ -61,7 +61,13 @@
     }
 
     &__option {
-      padding-left: 0;
+      // Suppress the padding added by react-select on the option wrapper
+      padding: 0;
+
+      > * {
+        // Default padding for the inner option element
+        padding: var(--xh-pad-px);
+      }
 
       &--is-selected {
         // Suppress default highlighting - checkmark indicate selection.

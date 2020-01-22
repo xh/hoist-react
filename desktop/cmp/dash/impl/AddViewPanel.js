@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, hoistCmp, creates, managed} from '@xh/hoist/core';
-import {hbox, box, div, filler} from '@xh/hoist/cmp/layout';
+import {hbox, div, filler, hspacer} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {FormModel, required, form} from '@xh/hoist/cmp/form';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -71,11 +71,8 @@ export const addViewPanel = hoistCmp.factory({
 const viewSpecOption = hoistCmp.factory(
     ({opt}) => hbox({
         items: [
-            box({
-                item: opt.icon,
-                width: 32,
-                paddingLeft: 8
-            }),
+            opt.icon,
+            hspacer(8),
             div(opt.label)
         ],
         alignItems: 'center'

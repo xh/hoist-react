@@ -82,6 +82,9 @@ export class Select extends HoistInput {
          */
         enableWindowed: PT.bool,
 
+        /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
+        hideDropdownIndicator: PT.bool,
+
         /** True to suppress the default check icon rendered for the currently selected option. */
         hideSelectedOptionCheck: PT.bool,
 
@@ -249,6 +252,14 @@ export class Select extends HoistInput {
 
         if (this.creatableMode) {
             rsProps.formatCreateLabel = this.createMessageFn;
+        }
+
+        if (props.hideDropdownIndicator) {
+            rsProps.components = {
+                ...rsProps.components,
+                DropdownIndicator: () => null,
+                IndicatorSeparator: () => null
+            };
         }
 
         const factory = this.getSelectFactory();
@@ -471,17 +482,20 @@ export class Select extends HoistInput {
 
     optionRenderer = (opt) => {
         if (this.suppressCheck) {
-            return div({item: opt.label, style: {paddingLeft: 8}});
+            return div(opt.label);
         }
 
         return this.externalValue === opt.value ?
-            hbox(
-                div({
-                    style: {minWidth: 25, textAlign: 'center'},
-                    item: Icon.check({size: 'sm'})
-                }),
-                span(opt.label)
-            ) :
+            hbox({
+                items: [
+                    div({
+                        style: {minWidth: 25, textAlign: 'center'},
+                        item: Icon.check({size: 'sm'})
+                    }),
+                    span(opt.label)
+                ],
+                paddingLeft: 0
+            }) :
             div({item: opt.label, style: {paddingLeft: 25}});
     };
 

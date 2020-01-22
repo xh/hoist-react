@@ -50,6 +50,9 @@ export class CodeInput extends HoistInput {
     static propTypes = {
         ...HoistInput.propTypes,
 
+        /** True to focus the control on render. */
+        autoFocus: PT.bool,
+
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
 
@@ -219,7 +222,7 @@ export class CodeInput extends HoistInput {
     }
 
     createDefaults() {
-        const {disabled, mode, linter} = this.props;
+        const {disabled, mode, linter, autoFocus} = this.props;
         let gutters = [
             'CodeMirror-linenumbers',
             'CodeMirror-foldgutter'
@@ -240,7 +243,8 @@ export class CodeInput extends HoistInput {
             scrollbarStyle: 'simple',
             readOnly: disabled ? 'nocursor' : false,
             gutters,
-            lint: linter ? {getAnnotations: linter} : false
+            lint: linter ? {getAnnotations: linter} : false,
+            autofocus: autoFocus
         };
     }
 
