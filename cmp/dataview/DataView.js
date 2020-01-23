@@ -28,7 +28,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
         const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
 
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
-        const itemHeightModel = useLocalModel(() => new ItemHeightModel(model, itemHeight));
+        const itemHeightModel = useLocalModel(() => new ItemHeightModel(model));
 
         useEffect(() => itemHeightModel.setItemHeight(itemHeight));
 
@@ -68,7 +68,7 @@ class ItemHeightModel {
     @bindable
     itemHeight;
 
-    constructor(model, initial) {
+    constructor(model) {
         this.addReaction({
             track: () => this.itemHeight,
             run: () => model.gridModel.agApi?.resetRowHeights()
