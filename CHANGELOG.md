@@ -105,6 +105,8 @@ Note the following more specific changes to these related classes:
 * `Select` now supports a `hideDropdownIndicator` prop.
 * `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
 * `DimensionChooser` now supports a `popoverPosition` prop.
+* `RelativeTimstamp` now supports the use of Elements for `equalResult` and `emptyResult, rather
+  than only strings.
 
 ### 💥 Breaking Changes
 
