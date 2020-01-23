@@ -104,6 +104,7 @@ Note the following more specific changes to these related classes:
 * `JsonInput` now supports an `autoFocus` prop.
 * `Select` now supports a `hideDropdownIndicator` prop.
 * `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
+* `DimensionChooser` now supports a `popoverPosition` prop.
 
 ### 💥 Breaking Changes
 
