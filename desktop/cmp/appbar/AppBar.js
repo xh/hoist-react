@@ -36,7 +36,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             hideRefreshButton,
             hideAppMenuButton,
             className,
-            appMenuButtonOptions = {},
+            appMenuButtonOptions: appMenuButtonProps = {},
             appMenuButtonPosition = 'right'
         } = props;
 
@@ -48,7 +48,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     items: [
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
-                            ...appMenuButtonOptions
+                            ...appMenuButtonProps
                         }),
                         icon,
                         span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
@@ -63,7 +63,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                         refreshButton({omit: hideRefreshButton}),
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'right',
-                            ...appMenuButtonOptions
+                            ...appMenuButtonProps
                         })
                     ]
                 })
