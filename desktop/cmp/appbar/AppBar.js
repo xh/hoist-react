@@ -36,7 +36,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             hideRefreshButton,
             hideAppMenuButton,
             className,
-            appMenuButtonOptions: appMenuButtonProps = {},
+            appMenuButtonProps = {},
             appMenuButtonPosition = 'right'
         } = props;
 
