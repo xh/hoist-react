@@ -5,8 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {bindable} from '@xh/hoist/mobx';
 import PT from 'prop-types';
-import {uses, hoistCmp} from '@xh/hoist/core';
+import {uses, hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -24,7 +25,11 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
+        console.log('doing the render');
+
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
+        const itemHeightModel = useLocalModel(() => new ItemHeightModel(model, itemHeight));
+        itemHeightModel.setItemHeight(itemHeight);
 
         return grid({
             ...layoutProps,
@@ -33,7 +38,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
             agOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,
-                getRowHeight: () => itemHeight
+                getRowHeight: () => itemHeightModel.itemHeight
             },
             onRowDoubleClicked
         });
@@ -56,3 +61,16 @@ DataView.propTypes = {
     onRowDoubleClicked: PT.func
 
 };
+
+@HoistModel
+class ItemHeightModel {
+    @bindable
+    itemHeight;
+
+    constructor(model, initial) {
+        this.addReaction({
+            track: () => this.itemHeight,
+            run: () => model.gridModel.agApi?.resetRowHeights()
+        });
+    }
+}
