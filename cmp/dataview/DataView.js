@@ -25,7 +25,6 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
-        console.log('doing the render');
 
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
         const itemHeightModel = useLocalModel(() => new ItemHeightModel(model, itemHeight));
