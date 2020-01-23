@@ -94,9 +94,9 @@ class LocalModel {
  * @param {string} [options.prefix] - Label preceding timestamp.
  * @param {string} [options.futureSuffix] - appended to future timestamps.
  * @param {string} [options.pastSuffix] - appended to past timestamps.
- * @param {Element|string} [options.equalResult] - what to return when timestamps are within `epsilon`.
+ * @param {Element} [options.equalResult] - what to return when timestamps are within `epsilon`.
  * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalResult`.
- * @param {Element|string} [options.emptyResult] - what to return when timestamp is empty/falsey.
+ * @param {Element} [options.emptyResult] - what to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options = {}) {
