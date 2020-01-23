@@ -93,8 +93,8 @@ AppBar.propTypes = {
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 
-    /** Options to pass to the AppMenuButton. */
-    appMenuButtonOptions: PT.object,
+    /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
+    appMenuButtonProps: PT.object,
 
     /** Position of the AppMenuButton. */
     appMenuButtonPosition: PT.oneOf(['left', 'right'])
