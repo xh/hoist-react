@@ -115,7 +115,7 @@ Note the following more specific changes to these related classes:
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
 * `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
-  `equalString`, respectively.
+  `equalResult`, respectively.
 * `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
   to the `core` package. These enumerations are now used in the APIs for `Panel`, `TabContainer`,
   and `DashContainer`.

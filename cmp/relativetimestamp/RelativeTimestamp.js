@@ -62,7 +62,7 @@ class LocalModel {
     options;
     timestamp;
 
-    @observable display = '';
+    @observable.ref display = '';
 
     @managed
     timer = Timer.create({
@@ -94,14 +94,14 @@ class LocalModel {
  * @param {string} [options.prefix] - Label preceding timestamp.
  * @param {string} [options.futureSuffix] - appended to future timestamps.
  * @param {string} [options.pastSuffix] - appended to past timestamps.
- * @param {string} [options.equalString] - string to return when timestamps are within `epsilon`.
- * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalString`.
- * @param {string} [options.emptyResult] - string to return when timestamp is empty/falsey.
+ * @param {Element} [options.equalResult] - what to return when timestamps are within `epsilon`.
+ * @param {number} [options.epsilon] - threshold interval (in seconds) for `equalResult`.
+ * @param {Element} [options.emptyResult] - what to return when timestamp is empty/falsey.
  * @param {(Date|int)} [options.relativeTo] - time to which the input timestamp is compared
  */
 export function getRelativeTimestamp(timestamp, options = {}) {
     apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
-    apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
+    apiRemoved(options.nowString, 'nowString', "Use 'equalResult' instead.");
 
     options = {
         timestamp,
@@ -109,7 +109,7 @@ export function getRelativeTimestamp(timestamp, options = {}) {
         short: XH.isMobile,
         futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
         pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
-        equalString: null,
+        equalResult: null,
         epsilon: 30,
         emptyResult: '',
         prefix: '',
@@ -136,8 +136,8 @@ function doFormat(opts) {
         return '[???]';
     }
 
-    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
-        return opts.equalString;
+    if (elapsed < opts.epsilon * SECONDS && opts.equalResult) {
+        return opts.equalResult;
     }
 
     // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
