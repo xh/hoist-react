@@ -6,7 +6,7 @@
  */
 
 .xh-appbar {
-  .xh-app-menu {
+  .xh-app-menu:first-child {
     margin-right: var(--xh-pad-px);
   }
 
