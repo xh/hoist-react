@@ -5,15 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {menu, menuItem, menuDivider} from '@xh/hoist/kit/blueprint';
-import {size, forOwn} from 'lodash';
+import {menu, menuItem} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Default menu for adding views to a DashContainer. Can be replaced via
  * DashContainerModel's `addViewContent` config.
  *
  * Available view specs are listed in their defined order, optionally
- * grouped by their `groupName` at the top.
+ * grouped by their `groupName` property
  *
  * @see DashContainerModel
  * @private
@@ -29,10 +29,10 @@ export const addViewMenu = hoistCmp.factory({
 // Implementation
 //---------------------------
 function createMenuItems(dashContainerModel, stack) {
-    const groups = {},
-        ret = [];
+    const ret = [];
 
     // Convert available viewSpecs into menu items
+    let hasUngrouped;
     dashContainerModel.viewSpecs.filter(viewSpec => {
         if (!viewSpec.allowAdd) return false;
         if (viewSpec.unique) {
@@ -50,21 +50,27 @@ function createMenuItems(dashContainerModel, stack) {
 
         // Group if necessary
         if (groupName) {
-            if (!groups[groupName]) groups[groupName] = [];
-            groups[groupName].push(item);
+            let groupSpec = ret.find(it => it.groupName === groupName);
+            if (!groupSpec) {
+                groupSpec = {groupName, text: groupName, items: []};
+                ret.push(groupSpec);
+            }
+            groupSpec.items.push(item);
         } else {
             ret.push(item);
+            hasUngrouped = true;
         }
     });
 
-    // Insert groups as nested menu items
-    if (size(groups)) ret.unshift(menuDivider());
-    forOwn(groups, (items, text) => {
-        ret.unshift(menuItem({
-            text,
-            items
-        }));
-    });
+    // Convert groups into nested menu items
+    return ret.map(item => {
+        if (!item.groupName) return item;
 
-    return ret;
+        // If we have any ungrouped root items (i.e. in a 'mixed mode'),
+        // insert a hidden icon to align the item text.
+        const icon = hasUngrouped ? Icon.angleRight({style: {visibility: 'hidden'}}) : undefined,
+            {text, items} = item;
+
+        return menuItem({icon, text, items});
+    });
 }
