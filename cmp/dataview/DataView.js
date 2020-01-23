@@ -10,6 +10,7 @@ import PT from 'prop-types';
 import {uses, hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {useEffect} from 'react';
 import {DataViewModel} from './DataViewModel';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
@@ -28,7 +29,8 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
         const itemHeightModel = useLocalModel(() => new ItemHeightModel(model, itemHeight));
-        itemHeightModel.setItemHeight(itemHeight);
+
+        useEffect(() => itemHeightModel.setItemHeight(itemHeight));
 
         return grid({
             ...layoutProps,
