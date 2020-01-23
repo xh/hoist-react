@@ -41,6 +41,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         emptyText = 'Ungrouped',
         popoverWidth = 250,
         popoverTitle = 'Group By',
+        popoverPosition = 'bottom',
         selectProps
     }) {
         const {isMenuOpen, activeMode, value, dimensions} = model;
@@ -83,7 +84,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
                 isOpen: isMenuOpen,
                 targetClassName: 'xh-dim-popover',
                 popoverClassName: 'xh-dim-chooser-popover xh-popup--framed',
-                position: 'bottom',
+                position: popoverPosition,
                 content: contentCmp({popoverWidth, popoverTitle, selectProps, emptyText}),
                 // Handle user clicks outside of the popover (which would by default close it).
                 onInteraction: (nextOpenState, e) => {
@@ -131,10 +132,19 @@ DimensionChooser.propTypes = {
     /** Width in pixels of the popover menu itself. */
     popoverWidth: PT.number,
 
+    /** Position for chooser popover, as per Blueprint docs. */
+    popoverPosition: PT.oneOf([
+        'top-left', 'top', 'top-right',
+        'right-top', 'right', 'right-bottom',
+        'bottom-right', 'bottom', 'bottom-left',
+        'left-bottom', 'left', 'left-top',
+        'auto'
+    ]),
+
     /**
      * Additional props passed directly to editor Select components. Use with care - not all
      * props are supported and can easily conflict with this component's usage. Defaulted
-     * props for override include `menuPosition` and
+     * props for override include `menuPlacement` and `enableFilter`.
      */
     selectProps: PT.object,
 
