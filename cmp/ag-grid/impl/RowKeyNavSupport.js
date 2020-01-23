@@ -23,28 +23,14 @@ export class RowKeyNavSupport {
             prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
             nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
+            nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
             KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
-        let nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null;
 
         switch (agParams.key) {
             case KEY_DOWN:
             case KEY_UP:
                 if (nextNode) {
-                    if (!nextNode.selectable ||
-                        (agParams.key === KEY_DOWN && nextIndex < prevIndex) ||
-                        (agParams.key === KEY_UP && nextIndex > prevIndex)) {
-                        const {before, after} = this.findBeforeAfter(prevIndex, agApi);
-                        if (agParams.key === KEY_DOWN) {
-                            nextNode = after;
-                        } else {
-                            nextNode = before;
-                        }
-                        if (!nextNode) {
-                            return previousCellPosition;
-                        }
-                        nextCellPosition.rowIndex = nextNode.rowIndex;
-                    }
                     if (!shiftKey || !prevNode.isSelected()) {
                         // 0) Simple move of selection
                         nextNode.setSelected(true, true);
@@ -66,23 +52,5 @@ export class RowKeyNavSupport {
                 return nextCellPosition;
             default:
         }
-    }
-
-    findBeforeAfter(id, agApi) {
-        let before = null,
-            after = null,
-            foundId = false;
-        agApi.forEachNodeAfterFilterAndSort((node, index) => {
-            if (node.selectable) {
-                if (index === id) {
-                    foundId = true;
-                } else if (!foundId) {
-                    before = node;
-                } else if (!after) {
-                    after = node;
-                }
-            }
-        });
-        return {before, after};
     }
 }
