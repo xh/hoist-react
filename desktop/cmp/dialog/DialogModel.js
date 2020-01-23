@@ -168,30 +168,43 @@ export class DialogModel {
     positionDialogOnRender({width, height, x, y}) {
         if (!this.rndRef) return;
 
-        this.stateModel?.initializeState();
+        this.setState({width, height, x, y});
 
         if (this.isMaximizedState) {
             this.maximize();
             return;
         }
 
-        const {width: stateWidth, height: stateHeight} = this.sizeState;
-        width = isNumber(stateWidth) ? stateWidth : width;
-        height = isNumber(stateHeight) ? stateHeight : height;
-
-        const {x: stateX, y: stateY} = this.positionState;
-        x = isNumber(stateX) ? stateX : x;
-        y = isNumber(stateY) ? stateY :y;
-
+        width = this.sizeState.width;
+        height = this.sizeState.height;
         if (isNumber(width) && isNumber(height)) {
             this.applySizeStateChanges({width, height});
         }
 
+        x = this.positionState.x;
+        y = this.positionState.y;
         if (!isNumber(x) || !isNumber(y)) {
             this.centerDialog();
         } else {
             this.applyPositionStateChanges({x, y});
         }
+    }
+
+    setState({width, height, x, y}) {
+        if (this.stateModel) {
+            this.stateModel.initializeState();
+        }
+
+        const {width: stateWidth, height: stateHeight} = this.sizeState;
+        width = isNumber(stateWidth) ? stateWidth : width;
+        height = isNumber(stateHeight) ? stateHeight : height;
+        this.setSizeState({width, height});
+
+        const {x: stateX, y: stateY} = this.positionState;
+        x = isNumber(stateX) ? stateX : x;
+        y = isNumber(stateY) ? stateY :y;
+        this.setPositionState({x, y});
+
     }
 
     centerDialog() {
@@ -226,10 +239,6 @@ export class DialogModel {
 
     maximize() {
         if (!this.rndRef) return;
-
-        // save current size and state for when
-        // model is restored to non-maximized mode
-        if (isEmpty(this.sizeState)) this.setSizeState(this.dialogSize);
 
         this.rndRef.updatePosition({x: 0, y: 0});
         this.rndRef.updateSize(this.windowSize);
