@@ -6,9 +6,19 @@
  */
 
 .xh-appbar {
+
+  // Menu button might be on left or right of appBar - add right margin when on left only.
+  .xh-app-menu:first-child {
+    margin-right: var(--xh-pad-px);
+  }
+
+  .xh-appbar-icon {
+    margin-right: var(--xh-pad-px);
+  }
+
   .xh-appbar-title {
     color: var(--xh-navbar-title-color);
     font-size: var(--xh-navbar-title-font-size-px);
-    margin: 0 var(--xh-pad-px);
+    margin-right: var(--xh-pad-px);
   }
 }

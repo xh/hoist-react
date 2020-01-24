@@ -353,8 +353,10 @@ export class DashContainerModel {
         $inputEl.blur(() => this.hideTitleForm($el));
         $formEl.submit(() => {
             const title = $inputEl.val();
-            $titleEl.text(title);
-            viewModel.setTitle(title);
+            if (title.length) {
+                $titleEl.text(title);
+                viewModel.setTitle(title);
+            }
 
             this.hideTitleForm($el);
             return false;

@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
@@ -17,7 +17,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
+        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems, ...rest} = props;
         extraItems = extraItems ?
             [...extraItems.map(m => menuItem(m)), menuDivider()] :
             [];
@@ -32,7 +32,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
             position: 'bottom-right',
             minimal: true,
             target: button({
-                icon: Icon.bars()
+                icon: Icon.bars(),
+                ...rest
             }),
             content: menu(
                 ...extraItems,
@@ -74,6 +75,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     }
 });
 AppMenuButton.propTypes = {
+    ...Button.propTypes,
+
     /** True to hide the Launch Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
     hideAdminItem: PT.bool,
 
