@@ -4,8 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './AppMenuButton';
+
+// Export button first as others (e.g. AppMenuButton) depend on its static propTypes.
 export * from './Button';
+export * from './AppMenuButton';
 export * from './ButtonGroup';
 export * from './ColChooserButton';
 export * from './ExportButton';
