@@ -31,15 +31,14 @@ export class RowKeyNavSupport {
             case KEY_DOWN:
             case KEY_UP:
                 if (nextNode) {
-                    if (!nextNode.selectable ||
-                        (agParams.key === KEY_DOWN && nextIndex < prevIndex) ||
+                    if ((agParams.key === KEY_DOWN && nextIndex < prevIndex) ||
                         (agParams.key === KEY_UP && nextIndex > prevIndex)) {
-                        const {before, after} = this.findBeforeAfter(prevIndex, agApi);
-                        if (agParams.key === KEY_DOWN) {
-                            nextNode = after;
-                        } else {
-                            nextNode = before;
-                        }
+                        // nextCellPosition wraps the position if there is a summary row so ignore
+                        return previousCellPosition;
+                    }
+                    if (!nextNode.selectable) {
+                        // nextCellPosition doesn't respect row selectability so calculate the next selectable row
+                        nextNode = this.findNext(prevIndex, agParams.key === KEY_UP, agApi);
                         if (!nextNode) {
                             return previousCellPosition;
                         }
@@ -68,21 +67,22 @@ export class RowKeyNavSupport {
         }
     }
 
-    findBeforeAfter(id, agApi) {
-        let before = null,
-            after = null,
+    findNext(id, isBefore, agApi) {
+        let next = null,
             foundId = false;
         agApi.forEachNodeAfterFilterAndSort((node, index) => {
             if (node.selectable) {
                 if (index === id) {
                     foundId = true;
                 } else if (!foundId) {
-                    before = node;
-                } else if (!after) {
-                    after = node;
+                    if (isBefore) {
+                        next = node;
+                    }
+                } else if (!next && !isBefore) {
+                    next = node;
                 }
             }
         });
-        return {before, after};
+        return next;
     }
 }
