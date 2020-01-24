@@ -5,15 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {bindable} from '@xh/hoist/mobx';
 import PT from 'prop-types';
-import {uses, hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
+import {uses, hoistCmp} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {useEffect} from 'react';
 import {DataViewModel} from './DataViewModel';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isNumber} from 'lodash';
+import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
@@ -25,12 +22,9 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     className: 'xh-data-view',
 
     render({model, className, ...props}) {
-        const [layoutProps, {rowCls, itemHeight, onRowDoubleClicked}] = splitLayoutProps(props);
+        apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
 
-        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView.');
-        const itemHeightModel = useLocalModel(() => new ItemHeightModel(model));
-
-        useEffect(() => itemHeightModel.setItemHeight(itemHeight));
+        const [layoutProps, {rowCls, onRowDoubleClicked}] = splitLayoutProps(props);
 
         return grid({
             ...layoutProps,
@@ -39,7 +33,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
             agOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,
-                getRowHeight: () => itemHeightModel.itemHeight
+                getRowHeight: () => model.itemHeight
             },
             onRowDoubleClicked
         });
@@ -62,16 +56,3 @@ DataView.propTypes = {
     onRowDoubleClicked: PT.func
 
 };
-
-@HoistModel
-class ItemHeightModel {
-    @bindable
-    itemHeight;
-
-    constructor(model) {
-        this.addReaction({
-            track: () => this.itemHeight,
-            run: () => model.gridModel.agApi?.resetRowHeights()
-        });
-    }
-}
