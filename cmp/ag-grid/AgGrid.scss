@@ -34,8 +34,8 @@
     background-color: var(--xh-grid-bg);
   }
 
-  // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
-  // scrollbar
+  // This ensures that rows will take up at least the full width of the grid in cases where there
+  // is no horizontal scrollbar.
   .ag-center-cols-container {
     min-width: 100%;
   }
@@ -107,12 +107,18 @@
     .ag-row {
       border-color: transparent;
 
-      // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
+      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
       &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
     }
+  }
+
+  // Suppress default border on last row for full-width group rows - avoids minor up/down shift
+  // when collapsing and expanding the last group.
+  .ag-row.ag-row-group.ag-full-width-row.ag-row-last {
+    border-bottom-width: 0;
   }
 
   // Row zebra striping
