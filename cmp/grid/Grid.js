@@ -200,11 +200,11 @@ class LocalModel {
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
-                    {classes: ['group-header-icon-expanded']}
+                    {classes: ['ag-group-expanded']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.angleRight(),
-                    {classes: ['group-header-icon-contracted']}
+                    {classes: ['ag-group-contracted']}
                 ),
                 clipboardCopy: convertIconToSvg(Icon.copy())
             },

@@ -109,6 +109,8 @@ body {
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
+  --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
+
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);

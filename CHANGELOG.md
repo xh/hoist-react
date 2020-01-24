@@ -105,15 +105,19 @@ Note the following more specific changes to these related classes:
 * `Select` now supports a `hideDropdownIndicator` prop.
 * `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
 * `DimensionChooser` now supports a `popoverPosition` prop.
+* `AppBar.appMenuButtonPosition` prop added to configure the App Menu on the left or the right, and
+  `AppMenuButton` now accepts and applies any `Button` props to customize.
+* New `--xh-grid-tree-indent-px` CSS variable added to allow control over the amount of indentation
+  applied to tree grid child nodes.
 
 ### 💥 Breaking Changes
 
-* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
-  parameter will allow context menus to be specified with a simple array in addition to the function
-  specification currently supported.
-* The `GridModel.defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* `GridModel.contextMenuFn` config replaced with a `contextMenu` parameter. The new parameter will
+  allow context menus to be specified with a simple array in addition to the function specification
+  currently supported.
+* `GridModel.defaultContextMenuTokens` config renamed to `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
-* `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* `StoreFilterField` has been moved from `desktop/cmp/store` to `cmp/store`.
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
   `equalString`, respectively.
 * `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
@@ -125,10 +129,12 @@ Note the following more specific changes to these related classes:
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
 * `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
   `showFullscreenButton` props.
+* The `DataView.itemHeight` prop has been moved to `DataViewModel` where it can now be changed
+  dynamically by applications.
+* Desktop `AppBar.appMenuButtonOptions` prop renamed to `appMenuButtonProps` for consistency.
 
 ### 🐞 Bug Fixes
 
-* Fixed autoFocus on NumberInput.
 * Fixed issue where JsonInput was not receiving its `model` from context
   ([#1456](https://github.com/xh/hoist-react/issues/1456))
 * Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
@@ -148,6 +154,9 @@ Note the following more specific changes to these related classes:
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
 * Removed padding from Select option wrapper elements which was making it difficult for custom
   option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
+* Fixed issues with inconsistent indentation for tree grid nodes under certain conditions
+  ([#1546](https://github.com/xh/hoist-react/issues/1546))
+* Fixed autoFocus on NumberInput.
 
 ### 📚 Libraries
 

@@ -36,7 +36,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
             hideRefreshButton,
             hideAppMenuButton,
             className,
-            appMenuButtonOptions = {}
+            appMenuButtonProps = {},
+            appMenuButtonPosition = 'right'
         } = props;
 
         return navbar({
@@ -45,7 +46,11 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                 navbarGroup({
                     align: 'left',
                     items: [
-                        icon,
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            ...appMenuButtonProps
+                        }),
+                        icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
                         span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
@@ -56,7 +61,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     items: [
                         ...rightItems || [],
                         refreshButton({omit: hideRefreshButton}),
-                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'right',
+                            ...appMenuButtonProps
+                        })
                     ]
                 })
             ]
@@ -85,6 +93,9 @@ AppBar.propTypes = {
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 
-    /** Options to pass to the AppMenuButton. */
-    appMenuButtonOptions: PT.object
+    /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
+    appMenuButtonProps: PT.object,
+
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition: PT.oneOf(['left', 'right'])
 };
