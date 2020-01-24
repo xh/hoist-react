@@ -52,7 +52,7 @@ const tbar = hoistCmp.factory(
             }),
             appBarSeparator()
         ],
-        appMenuButtonOptions: {
+        appMenuButtonProps: {
             hideAdminItem: true,
             hideFeedbackItem: true
         }
