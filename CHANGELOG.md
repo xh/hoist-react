@@ -104,6 +104,8 @@ Note the following more specific changes to these related classes:
 * `JsonInput` now supports an `autoFocus` prop.
 * `Select` now supports a `hideDropdownIndicator` prop.
 * `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
+* New `--xh-grid-tree-indent-px` CSS variable added to allow control over the amount of indentation
+  applied to tree grid child nodes.
 
 ### 💥 Breaking Changes
 
@@ -147,7 +149,7 @@ Note the following more specific changes to these related classes:
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
 * Removed padding from Select option wrapper elements which was making it difficult for custom
   option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
-* Fixed problem where tree grid alignment was inconsistent
+* Fixed issues with inconsistent indentation for tree grid nodes under certain conditions
   ([#1546](https://github.com/xh/hoist-react/issues/1546))
 
 ### 📚 Libraries
