@@ -105,7 +105,6 @@ Note the following more specific changes to these related classes:
 * `Select` now supports a `hideDropdownIndicator` prop.
 * `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
 * `DimensionChooser` now supports a `popoverPosition` prop.
-* `DataView` will now react to changes in `itemHeight` prop.
 
 ### 💥 Breaking Changes
 
@@ -126,6 +125,8 @@ Note the following more specific changes to these related classes:
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
 * `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
   `showFullscreenButton` props.
+*  The `DataView` `itemHeight` prop has been moved to `DataViewModel` it may now be changed dynamically by
+    applications.
 
 ### 🐞 Bug Fixes
 
