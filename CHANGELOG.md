@@ -125,6 +125,8 @@ Note the following more specific changes to these related classes:
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
 * `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
   `showFullscreenButton` props.
+*  The `DataView` `itemHeight` prop has been moved to `DataViewModel` it may now be changed dynamically by
+    applications.
 
 ### 🐞 Bug Fixes
 
