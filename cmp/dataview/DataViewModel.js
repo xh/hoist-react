@@ -55,6 +55,8 @@ export class DataViewModel {
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView model.');
 
+        this.itemHeight = itemHeight;
+
         // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
         // the data sorted, initially and through updates via transactions. To continue leveraging
         // the grid for sort, set the field of our single column to the desired sort field. (The
@@ -83,10 +85,9 @@ export class DataViewModel {
             ]
         });
 
-        this.setItemHeight(itemHeight);
         this.addReaction({
             track: () => this.itemHeight,
-            run: () => this.gridModel?.agApi.resetRowHeights()
+            run: () => this.gridModel.agApi?.resetRowHeights()
         });
     }
 
