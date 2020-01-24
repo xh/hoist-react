@@ -53,7 +53,7 @@ export class DataViewModel {
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
-        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataView model.');
+        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataViewModel.');
 
         this.itemHeight = itemHeight;
 
