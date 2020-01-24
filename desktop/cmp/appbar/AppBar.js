@@ -50,7 +50,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
                             ...appMenuButtonProps
                         }),
-                        icon,
+                        icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
                         span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
