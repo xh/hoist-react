@@ -104,12 +104,13 @@ body {
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
   --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
   --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color));
-  --xh-grid-tree-indent: var(--grid-tree-indent, 10px);
   --xh-grid-line-height-px: calc(var(--xh-grid-line-height) * 1px);
   --xh-grid-line-height: var(--grid-line-height, 26);
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
+  --xh-grid-tree-indent-px: var(--grid-tree-indent-px, 10px);
+
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
