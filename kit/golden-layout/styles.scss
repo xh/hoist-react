@@ -71,13 +71,17 @@
       }
 
       .title-form {
+        max-width: calc(100% - 25px);
         display: none;
 
         input {
           padding: 2px 0 1px;
           width: 140px;
+          max-width: 100%;
           font-family: var(--xh-font-family);
           font-size: var(--xh-font-size-px);
+          color: var(--xh-text-color);
+          background: none;
           border: 1px solid var(--xh-intent-primary);
           border-width: 0 0 1px;
         }
