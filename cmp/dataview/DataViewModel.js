@@ -29,6 +29,7 @@ export class DataViewModel {
 
     /**
      * @param {Object} c - DataViewModel configuration.
+     * @param {number} itemHeight - Row height for each item displayed in the view
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
@@ -40,16 +41,15 @@ export class DataViewModel {
      * @param {(Object[]|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
-     * @param {number} itemHeight - Row height for each item displayed in the view
      */
     constructor({
+        itemHeight,
         itemRenderer,
         store,
         sortBy = [],
         selModel,
         emptyText,
-        contextMenu = null,
-        itemHeight
+        contextMenu = null
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
