@@ -2,6 +2,10 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased 
 
+### 🐞 Bug Fixes
+
+* Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
+
 
 ## v29.0.0 - 2020-01-24
 
