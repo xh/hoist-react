@@ -1,6 +1,9 @@
 # Changelog
 
-## v29.0.0-SNAPSHOT - under development
+## v30.0.0-SNAPSHOT - Unreleased 
+
+
+## v29.0.0 - 2020-01-24
 
 ### 🗄️ Data Package Changes
 
