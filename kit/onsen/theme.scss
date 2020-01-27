@@ -91,9 +91,11 @@ body.xh-app.xh-mobile {
   // Buttons
   .button:not(.button--outline):not(.button--quiet):not(.button--light) {
     background-color: var(--xh-button-bg);
+    color: var(--xh-button-text-color);
 
     &:active {
-      background-color: var(--xh-button-bg);
+      background-color: var(--xh-button-active-bg);
+      color: var(--xh-button-active-text-color);
     }
   }
 
