@@ -358,7 +358,10 @@ body.xh-mobile {
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
-  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
+  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '600')});
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
+  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '400')});
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
   --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
   // Grid
