@@ -4,40 +4,46 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, bindable} from '@xh/hoist/mobx';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {computed, bindable} from '@xh/hoist/mobx';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 /**
  * Support for Forms-based Login.
- *
- *  @private
+ * @private
  */
 @HoistModel
 export class LoginPanelModel {
 
     @bindable username = '';
     @bindable password = '';
-    @observable warning = '';
+    @bindable warning = '';
+
+    @managed loadModel = new PendingTaskModel();
 
     @computed
     get isValid() {
         return this.username && this.password;
     }
 
-    submit() {
-        if (!this.isValid) return;
+    async submitAsync() {
+        const {username, password, loadModel, isValid} = this;
+        if (!isValid) return;
 
-        const {username, password} = this;
-        XH.fetchJson({
+        const resp = await XH.fetchJson({
             url: 'xh/login',
             params: {username, password}
-        }).thenAction(r => {
-            this.warning = r.success ? '' : 'Login Incorrect';
-            if (r.success) {
-                XH.completeInitAsync();
-            }
-        }).catchDefault({
+        }).linkTo(
+            loadModel
+        ).catchDefault({
             hideParams: ['password']
         });
+
+        if (resp.success) {
+            this.setWarning('');
+            XH.completeInitAsync();
+        } else {
+            this.setWarning('Login incorrect.');
+        }
     }
 }

@@ -27,10 +27,10 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {warning} = model;
+            {loadModel, warning, isValid} = model;
 
         const onKeyDown = (ev) => {
-            if (ev.key === 'Enter') model.submit();
+            if (ev.key === 'Enter') model.submitAsync();
         };
 
         return viewport({
@@ -42,6 +42,7 @@ export const loginPanel = hoistCmp.factory({
                 icon: Icon.login(),
                 className: 'xh-login',
                 width: 300,
+                mask: loadModel,
                 items: [
                     vspacer(10),
                     form(
@@ -81,8 +82,8 @@ export const loginPanel = hoistCmp.factory({
                         text: 'Login',
                         intent: 'primary',
                         icon: Icon.login(),
-                        disabled: !model.isValid,
-                        onClick: () => model.submit()
+                        disabled: !isValid,
+                        onClick: () => model.submitAsync()
                     })
                 ]
             })
