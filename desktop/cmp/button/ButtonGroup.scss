@@ -6,5 +6,11 @@
  */
 
 .xh-button-group .xh-button.bp3-active {
-  background-color: var(--xh-button-active-bg) !important;
+  background-color: var(--xh-button-active-bg);
+  color: var(--xh-button-active-text-color);
+}
+
+.bp3-dark .xh-button-group .xh-button.bp3-active {
+  background-color: var(--xh-button-active-bg);
+  color: var(--xh-button-active-text-color);
 }

@@ -74,7 +74,7 @@ body {
   // Buttons
   --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '100')});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
-  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
+  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '50')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
@@ -344,8 +344,8 @@ body.xh-dark {
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 
   // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '600')});
-  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-blue-gray-dark));
+  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '900')});
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 }

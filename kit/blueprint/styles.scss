@@ -174,9 +174,11 @@ $pt-transition-duration: 100ms !default;
 
   &:not([class*="bp3-intent-"]) {
     color: var(--xh-button-text-color);
+    background-color: var(--xh-button-bg);
 
     .bp3-dark & {
       color: var(--xh-button-text-color);
+      background-color: var(--xh-button-bg);
     }
   }
 
