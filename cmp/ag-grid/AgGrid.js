@@ -33,9 +33,6 @@ import './AgGrid.scss';
  * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
  * managed option would conflict with or complicate access to those features.
  */
-export const AG_ROW_HEIGHTS = {mobile: 34, desktop: 28};
-export const AG_COMPACT_ROW_HEIGHTS = {mobile: 30, desktop: 24};
-
 export const [AgGrid, agGrid] = hoistCmp.withFactory({
     displayName: 'AgGrid',
     className: 'xh-ag-grid',
@@ -82,6 +79,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     }
 });
 
+/**
+ * Row heights (in pixels) enumerated here and available for global override if required
+ * by stomping on these values directly. To override for individual grids, supply a custom
+ * `getRowHeight` function as a direct prop to this component, or via `Grid.agOptions`.
+ */
+AgGrid.ROW_HEIGHTS = {standard: 28, compact: 24};
+AgGrid.ROW_HEIGHTS_MOBILE = {standard: 34, compact: 30};
+
 @HoistModel
 class LocalModel {
 
@@ -118,7 +123,7 @@ class LocalModel {
     }
 
     getRowHeight = () => {
-        const heights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS;
-        return XH.isMobile ? heights.mobile : heights.desktop;
+        const heights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS;
+        return this.model.compact ? heights.compact : heights.standard;
     };
 }
