@@ -178,7 +178,7 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column specified with both flex = true && width. Width will be ignored. [colId=${this.colId}]`
+            `Column specified with both flex && width. Width will be ignored. [colId=${this.colId}]`
         );
         warnIf(
             width && !isFinite(width),
@@ -190,7 +190,7 @@ export class Column {
         this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
-        this.minWidth = minWidth;
+        this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
