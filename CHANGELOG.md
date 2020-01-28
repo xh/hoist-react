@@ -6,11 +6,17 @@
 
 * The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
   `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
-  directly by applications that wish to customize the default row heights globally on init.
+  directly by applications that wish to customize the default row heights globally on init
   * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
     a breaking change for any apps that imported the old objects directly (considered unlikely).
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
+### 📚 Libraries
+
+* @blueprintjs/core `3.22 -> 3.23`
+* codemirror `5.50 -> 5.51`
+* react-dates `21.5 -> 21.7`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.0.0)
 
 ## v29.0.0 - 2020-01-24
 
