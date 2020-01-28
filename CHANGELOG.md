@@ -1,7 +1,16 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - Unreleased 
+## v30.0.0-SNAPSHOT - Unreleased
 
+### ⚙️ Technical
+
+* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
+  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
+  directly by applications that wish to customize the default row heights globally on init.
+  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
+    a breaking change for any apps that imported the old objects directly (considered unlikely).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
 
 ## v29.0.0 - 2020-01-24
 
@@ -176,7 +185,7 @@ Note the following more specific changes to these related classes:
 * react-dropzone `10.1 -> 10.2`
 * react-windowed-select `added @ 2.0.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...v29.0.0)
 
 ## v28.2.0 - 2019-11-08
 
