@@ -2,8 +2,12 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
-### ⚙️ Technical
+### 🐞 Bug Fixes
 
+* Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
+
+=======
+### ⚙️ Technical
 * The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
   `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
   directly by applications that wish to customize the default row heights globally on init
