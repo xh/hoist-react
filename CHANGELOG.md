@@ -1,7 +1,14 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - Unreleased 
+## v30.0.0-SNAPSHOT - Unreleased
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.22 -> 3.23`
+* codemirror `5.50 -> 5.51`
+* react-dates `21.5 -> 21.7`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.0.0)
 
 ## v29.0.0 - 2020-01-24
 
@@ -176,7 +183,7 @@ Note the following more specific changes to these related classes:
 * react-dropzone `10.1 -> 10.2`
 * react-windowed-select `added @ 2.0.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...v29.0.0)
 
 ## v28.2.0 - 2019-11-08
 
