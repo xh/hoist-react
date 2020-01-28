@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS, agGrid} from '@xh/hoist/cmp/ag-grid';
+import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
@@ -153,10 +153,11 @@ class LocalModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const agHeights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS,
-            modelHeight = XH.isMobile ? agHeights.mobile : agHeights.desktop,
-            columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
-        return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
+        const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
+            gridDefaultHeight = this.model.compact ? platformHeights.compact : platformHeights.standard,
+            maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+
+        return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
