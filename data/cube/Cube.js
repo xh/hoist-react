@@ -75,7 +75,7 @@ export class Cube {
      *
      * @param {Query} query - Query (or config for one) defining the shape of the view.
      * @param {boolean} connect - true to update the returned view as the data in this cube
-     *      changes (versus a snapshot).
+     *      changes (versus a snapshot)
      * @returns {View}
      */
     executeQuery(query, connect) {
