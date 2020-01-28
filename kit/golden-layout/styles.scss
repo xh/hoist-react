@@ -15,6 +15,7 @@ $add-btn-offset: 25px;
   .lm_header {
     display: flex;
     background: rgba(0, 0, 0, 0.06);
+    min-height: 25px;
 
     .xh-dash-container-add-button {
       padding: 5px;

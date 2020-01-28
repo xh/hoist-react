@@ -72,7 +72,9 @@ export function convertStateToGL(state = [], dashContainerModel) {
             height: containerRef.current.offsetHeight
         };
 
-    return convertStateToGLInner(state, viewSpecs, containerSize).filter(it => !isNil(it));
+    // Replace any completely empty state with an empty stack, to allow users to add views
+    const ret = convertStateToGLInner(state, viewSpecs, containerSize).filter(it => !isNil(it));
+    return !ret.length ? [{type: 'stack'}] : ret;
 }
 
 function convertStateToGLInner(items = [], viewSpecs = [], containerSize, containerItem) {

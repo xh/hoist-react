@@ -196,6 +196,12 @@ export class DashContainerModel {
         const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
 
+        // If the layout becomes completely empty, ensure we have our minimal empty layout
+        if (!goldenLayout.root.contentItems.length) {
+            this.loadStateAsync([]);
+            return;
+        }
+
         this.state = convertGLToState(goldenLayout, this);
 
         // Update tab headers on state change to reflect title/icon changes.
