@@ -11,7 +11,7 @@ export class SumAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
         return records.reduce((ret, it) => {
-            const val = it.get(fieldName);
+            const val = it.data[fieldName];
             if (val != null) ret += val;
             return ret;
         }, null);

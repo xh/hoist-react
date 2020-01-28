@@ -158,10 +158,12 @@ export class Store {
      * @param {(Object[]|StoreTransaction)} rawData - data changes to process. If provided as an
      *      array, rawData will be processed into adds and updates, with updates determined by
      *      matching existing records by ID.
+     * @returns {StoreTransaction} - transaction applied, or null if no changes were made.
      */
     @action
     updateData(rawData) {
         // Build a transaction object out of a flat list of adds and updates
+        let transaction = null;
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
@@ -173,10 +175,12 @@ export class Store {
                 }
             });
 
-            rawData = {update, add};
+            transaction = {update, add};
+        } else {
+            transaction = rawData;
         }
 
-        const {update, add, remove, rawSummaryData, ...other} = rawData;
+        const {update, add, remove, rawSummaryData, ...other} = transaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
@@ -239,7 +243,11 @@ export class Store {
             didUpdate = true;
         }
 
-        if (didUpdate) this.lastUpdated = Date.now();
+        if (didUpdate) {
+            this.lastUpdated = Date.now();
+            return transaction;
+        }
+        return null;
     }
 
     /**

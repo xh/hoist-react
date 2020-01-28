@@ -5,16 +5,21 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {CubeRecord} from './CubeRecord';
+/**
+ * @private
+ *
+ * pseudo-record used by views to gather Aggregate rows
+ */
+export class AggregateRecord {
 
-export class AggregateCubeRecord extends CubeRecord {
-
-    /** @member {Field} */
+    isAggregate = true;
     dim = null;
-    isLeaf = false;
+    data = null;
+    children = null;
 
     constructor(fields, id, children, dim, val, appliedDimensions) {
-        super(fields);
+
+        this.children = children;
 
         const data = {id, cubeLabel: val};
         if (dim) {
@@ -23,12 +28,11 @@ export class AggregateCubeRecord extends CubeRecord {
         }
         this.data = data;
 
-        children.forEach(it => it.parent = this);
-        this.children = children;
 
-        this.eachField((field, name) => {
+        fields.forEach(field => {
             if (field !== dim) {
-                const dimName = dim ? dim.name : 'Total',
+                const {name} = field,
+                    dimName = dim ? dim.name : 'Total',
                     {aggregator, canAggregateFn} = field,
                     canAgg = aggregator && (!canAggregateFn || canAggregateFn(dimName, val, appliedDimensions));
 

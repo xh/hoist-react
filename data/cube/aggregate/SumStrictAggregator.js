@@ -9,10 +9,10 @@ import {Aggregator} from './Aggregator';
 export class SumStrictAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
-        if (!records.length || records.some(it => it.get(fieldName) == null)) return null;
+        if (!records.length || records.some(it => it.data[fieldName] == null)) return null;
 
         return records.reduce((ret, it) => {
-            ret += it.get(fieldName);
+            ret += it.data[fieldName];
             return ret;
         }, 0);
     }

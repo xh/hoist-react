@@ -13,7 +13,7 @@ export class UniqueAggregator extends Aggregator {
     aggregate(records, fieldName) {
         if (isEmpty(records)) return null;
 
-        const val = records[0].get(fieldName);
-        return records.every(it => it.get(fieldName) == val) ? val : null;
+        const val = records[0].data[fieldName];
+        return records.every(it => it.data[fieldName] === val) ? val : null;
     }
 }

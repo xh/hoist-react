@@ -18,7 +18,7 @@ import {
 } from './aggregate';
 
 import {isString} from 'lodash';
-import {Field} from 'store';
+import {Field} from '../';
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source

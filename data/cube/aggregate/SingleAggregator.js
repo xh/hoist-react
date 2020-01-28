@@ -10,6 +10,6 @@ import {Aggregator} from './Aggregator';
 export class SingleAggregator extends Aggregator {
 
     aggregate(records, fieldName) {
-        return records.length == 1 ? records.get(fieldName) : null;
+        return records.length === 1 ? records[0].data[fieldName] : null;
     }
 }

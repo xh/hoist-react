@@ -6,10 +6,10 @@
  */
 
 import {Cube} from '@xh/hoist/data/cube';
-import {Filter} from './Filter';
+import {StoreFilter} from '../../StoreFilter';
 import {castArray, flattenDeep, groupBy, uniq, map, forEach} from 'lodash';
 
-export class ValueFilter extends Filter {
+export class ValueFilter extends StoreFilter {
 
     static encode(fieldName, values) {
         // e.g.   assetClass=[FX]   -or-   animal=[dog||cat||bear]
@@ -60,11 +60,11 @@ export class ValueFilter extends Filter {
         this.fieldName = fieldName;
         this.values = castArray(values);
 
-        if (values.length == 1) {
+        if (values.length === 1) {
             const singleVal = values[0];
-            this.matches = (rec) => rec.get(fieldName) === singleVal;
+            this.fn = (rec) => rec.get(fieldName) === singleVal;
         } else {
-            this.matches = (rec) => values.includes(rec.get(fieldName));
+            this.fn = (rec) => values.includes(rec.get(fieldName));
         }
     }
 
