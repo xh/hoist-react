@@ -190,6 +190,8 @@ export class DashContainerModel {
     //------------------------
     // Implementation
     //------------------------
+    @debounced(100)
+    @action
     updateState() {
         const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
@@ -200,15 +202,10 @@ export class DashContainerModel {
             return;
         }
 
-        this.updateTabHeaders();
-        this.publishState();
-    }
-
-    @debounced(1000)
-    @action
-    publishState() {
-        const {goldenLayout} = this;
         this.state = convertGLToState(goldenLayout, this);
+
+        // Update tab headers on state change to reflect title/icon changes.
+        this.updateTabHeaders();
     }
 
     onItemDestroyed(item) {
@@ -272,7 +269,7 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Add View Button
+    // Add View Dialog
     //-----------------
     onStackCreated(stack) {
         // Listen to active item change to support RenderMode
@@ -315,13 +312,11 @@ export class DashContainerModel {
     updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
-            const viewModel = this.getViewModel(getViewModelId(item));
-            if (!viewModel) return;
-
             const $el = item.tab.element, // Note: this is a jquery element
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
+                viewModel = this.getViewModel(getViewModelId(item)),
                 {icon, title} = viewModel;
 
             if (icon) {
