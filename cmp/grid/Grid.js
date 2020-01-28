@@ -458,6 +458,7 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
+                api.sizeColumnsToFit();
             }
         };
     }
