@@ -16,7 +16,7 @@ import {
     isArray,
     isFinite,
     isFunction,
-    isNil,
+    isNil, isNumber,
     isString,
     startCase
 } from 'lodash';
@@ -52,9 +52,9 @@ export class Column {
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
      * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing above this value.
-     * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
-     *      within the overall grid. Flex columns are not user-resizable as they will dynamically
-     *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {number} [c.flex] - columns with flex set will fill all available space in the grid,
+     *      with remaining space divided between flex columns in proportion to the value of flex.
+     *      Resizing is disabled on flex columns.
      * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
@@ -62,7 +62,7 @@ export class Column {
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
-     * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
+     * @param {boolean} [c.sortable] - false to prevent user from sorting on this colum n.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
@@ -184,13 +184,13 @@ export class Column {
             width && !isFinite(width),
             `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
         );
-        this.flex = withDefault(flex, false);
+        this.flex = withDefault(flex, 0);
         this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
 
         this.rowHeight = rowHeight;
 
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
-        this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
+        this.minWidth = minWidth;
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
@@ -366,7 +366,7 @@ export class Column {
 
         if (this.flex) {
             ret.resizable = false;
-            ret.width = Number.MAX_SAFE_INTEGER;
+            ret.flex = isNumber(this.flex) ? this.flex : 1;
         } else {
             ret.suppressSizeToFit = true;
             ret.width = this.width;

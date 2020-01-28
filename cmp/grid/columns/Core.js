@@ -11,7 +11,7 @@ import {numberRenderer} from '@xh/hoist/format';
 export const emptyFlexCol =  {
     colId: 'emptyFlex',
     headerName: null,
-    flex: true,
+    flex: 1,
     minWidth: 0,
     movable: false,
     resizable: false,

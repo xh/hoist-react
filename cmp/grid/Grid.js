@@ -221,7 +221,6 @@ class LocalModel {
             onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
-            onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
@@ -369,9 +368,7 @@ class LocalModel {
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
-                    newCount = newRs.count,
-                    prevCount = prevRs ? prevRs.count : 0,
-                    deltaCount = newCount - prevCount;
+                    prevCount = prevRs ? prevRs.count : 0;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
                     if (prevCount !== 0 && experimental.useTransactions) {
@@ -386,12 +383,6 @@ class LocalModel {
                     }
 
                     this.updatePinnedSummaryRowData();
-
-                    // If row count changing to/from a small amt, force col resizing to account for
-                    // possible appearance/disappearance of the vertical scrollbar.
-                    if (deltaCount !== 0 && (prevCount < 100 || newCount < 100)) {
-                        api.sizeColumnsToFit();
-                    }
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
@@ -467,7 +458,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -489,25 +479,20 @@ class LocalModel {
 
                 // 1) Columns all in right place -- simply update incorrect props we maintain
                 if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
-                    let hadChanges = false;
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
 
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
-                            hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
-                            hadChanges = true;
                         }
                         if (agCol.pinned != col.pinned) {
                             colApi.setColumnPinned(id, col.pinned);
-                            hadChanges = true;
                         }
                     });
-                    if (hadChanges) api.sizeColumnsToFit();
                     return;
                 }
 
@@ -527,7 +512,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     colApi.setColumnState(colState);
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -622,7 +606,6 @@ class LocalModel {
     };
 
     onRowGroupOpened = () => {
-        this.model.agGridModel.agApi.sizeColumnsToFit();
         this.model.noteAgExpandStateChange();
     };
 
@@ -637,12 +620,6 @@ class LocalModel {
     onColumnVisible = (ev) => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
-        }
-    };
-
-    onGridSizeChanged = (ev) => {
-        if (isDisplayed(this.viewRef.current)) {
-            ev.api.sizeColumnsToFit();
         }
     };
 
