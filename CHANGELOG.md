@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
+* Fix filtering in LeftRightChooser, which was broken in last release.
 
 =======
 ### ⚙️ Technical
