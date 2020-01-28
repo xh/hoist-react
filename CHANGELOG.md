@@ -2,6 +2,9 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
+### 🎁 New Features
+* AppOption configs now accept an `omit` property for excluding options
+
 ### 🐞 Bug Fixes
 
 * Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
