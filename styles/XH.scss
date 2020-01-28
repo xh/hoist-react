@@ -158,11 +158,12 @@ body.xh-app {
 
   // Minimal title style for a header div within a popover - used for e.g column and dimension choosers.
   &__title {
-    text-align: center;
-    text-transform: uppercase;
-    padding: var(--xh-pad-half-px);
-    font-size: var(--xh-font-size-small-px);
     background-color: var(--xh-popup-title-bg);
     color: var(--xh-popup-title-text-color);
+    font-family: var(--xh-popup-title-font-family);
+    font-size: var(--xh-font-size-small-px);
+    padding: var(--xh-pad-half-px);
+    text-align: center;
+    text-transform: uppercase;
   }
 }
