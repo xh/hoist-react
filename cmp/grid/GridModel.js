@@ -163,7 +163,7 @@ export class GridModel {
         showSummary = false,
         selModel,
         stateModel = null,
-        emptyText = null,
+        emptyText = '',
         sortBy = [],
         groupBy = null,
 
