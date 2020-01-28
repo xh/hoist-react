@@ -369,7 +369,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
@@ -379,7 +378,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
