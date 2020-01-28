@@ -73,7 +73,7 @@ class LocalModel {
 
         const filter = (raw) => {
             return fields.some(f => {
-                const fieldVal = !!searchTerm && raw.data[f];
+                const fieldVal = !!searchTerm && raw[f];
                 return ((fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal)) || !fieldVal);
             });
         };
