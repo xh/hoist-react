@@ -15,6 +15,9 @@
 * @blueprintjs/core `3.22 -> 3.23`
 * codemirror `5.50 -> 5.51`
 * react-dates `21.5 -> 21.7`
+* ag-grid-community `21.2 -> 22.1`
+* ag-grid-enterprise `21.2 -> 22.1`
+* ag-grid-react `21.2 -> 22.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.0.0)
 
