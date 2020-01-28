@@ -14,7 +14,7 @@ import {Cube} from './Cube';
 import {ValueFilter} from './filter';
 import {AggregateRecord} from './impl/AggregateRecord';
 
-import {isEmpty, groupBy, map, clone} from 'lodash';
+import {isEmpty, groupBy, map} from 'lodash';
 
 
 /**

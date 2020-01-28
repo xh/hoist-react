@@ -89,7 +89,7 @@ export class Query {
     //------------------------
     parseFields(names) {
         const {fields} = this.cube.store;
-        return names ? fields.filter(f => names.includes(f.name)) : fields
+        return names ? fields.filter(f => names.includes(f.name)) : fields;
     }
 
     parseDimensions(names) {
