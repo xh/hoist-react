@@ -9,7 +9,7 @@ import {XH, HoistService} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';
-import {version as agGridVersion} from 'ag-grid-community/package.json';
+import {version as agGridVersion} from '@ag-grid-community/all-modules/package.json';
 import {version as mobxVersion} from 'mobx/package.json';
 import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
 import {defaults} from 'lodash';
