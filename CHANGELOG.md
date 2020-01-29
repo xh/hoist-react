@@ -4,11 +4,13 @@
 
 ### 🐞 Bug Fixes
 
-* Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
-* Fix filtering in LeftRightChooser, which was broken in last release.
+* Unselectable grid rows are now skipped during up/down keyboard navigation.
+* Fix local quick filtering in `LeftRightChooser` (v29 regression).
+* Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
+  values as intended (v29 regression).
 
-=======
 ### ⚙️ Technical
+
 * The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
   `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
   directly by applications that wish to customize the default row heights globally on init
@@ -24,7 +26,7 @@
 * ag-grid-enterprise `21.2 -> 22.1`
 * ag-grid-react `21.2 -> 22.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.0.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
 
 ## v29.0.0 - 2020-01-24
 
