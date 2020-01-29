@@ -184,7 +184,7 @@ export class Column {
             width && !isFinite(width),
             `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
         );
-        this.flex = withDefault(flex, true);
+        this.flex = withDefault(flex, false);
         this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
 
         this.rowHeight = rowHeight;
