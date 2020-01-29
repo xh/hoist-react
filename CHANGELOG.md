@@ -9,7 +9,7 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 ### 🎁 New Features
 
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
-* Grid column `flex` prop will now accept numbers, with available space divided between flex columns
+* Grid column `flex` param will now accept numbers, with available space divided between flex columns
   in proportion to their `flex` value.
 
 ### 🐞 Bug Fixes
