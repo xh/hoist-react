@@ -12,7 +12,7 @@ import {flatten, isEmpty, isString} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
- * @see GridModel.contextMenuFn
+ * @see GridModel.contextMenu
  */
 export class StoreContextMenu {
 
