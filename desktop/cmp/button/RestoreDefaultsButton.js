@@ -21,8 +21,8 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFacto
     model: false,
 
     render({
-        warningMessage = 'Are you sure you want to restore defaults?',
-        warningTitle = 'All app customizations, including grid customizations, will be restored to their default settings and the app will be reloaded.',
+        warningTitle = 'Are you sure you want to restore defaults?',
+        warningMessage = 'All app customizations, including grid customizations, will be restored to their default settings and the app will be reloaded.',
         ...buttonProps
     }) {
 

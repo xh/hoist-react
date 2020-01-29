@@ -2,16 +2,25 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
+⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
+consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
+to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
+
 ### 🎁 New Features
+
+* `AppOption` configs now accept an `omit` property for conditionally excluding options.
 * Grid column `flex` prop will now accept numbers, with available space divided between flex columns
   in proportion to their `flex` value.
 
 ### 🐞 Bug Fixes
 
-* Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
+* Unselectable grid rows are now skipped during up/down keyboard navigation.
+* Fix local quick filtering in `LeftRightChooser` (v29 regression).
+* Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
+  values as intended (v29 regression).
 
-=======
 ### ⚙️ Technical
+
 * The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
   `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
   directly by applications that wish to customize the default row heights globally on init
@@ -28,7 +37,7 @@
 * ag-grid-enterprise `21.2 -> 22.1`
 * ag-grid-react `21.2 -> 22.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.0.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
 
 ## v29.0.0 - 2020-01-24
 

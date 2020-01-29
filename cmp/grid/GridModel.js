@@ -71,7 +71,7 @@ export class GridModel {
     colChooserModel;
     /** @member {function} */
     rowClassFn;
-    /** @member {(array|function)} */
+    /** @member {(Array|function)} */
     contextMenu;
     /** @member {GridGroupSortFn} */
     groupSortFn;
