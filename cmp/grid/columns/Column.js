@@ -62,7 +62,7 @@ export class Column {
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
-     * @param {boolean} [c.sortable] - false to prevent user from sorting on this colum n.
+     * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
      * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
      *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
      * @param {Column~rendererFn} [c.renderer] - function to produce a formatted string for each cell.
