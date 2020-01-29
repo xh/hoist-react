@@ -22,7 +22,7 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 * Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
   values as intended (v29 regression).
 
-### ⚙️ TechnicalAmre
+### ⚙️ Technical
 
 * The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
   `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
