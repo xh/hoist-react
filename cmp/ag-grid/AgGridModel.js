@@ -63,7 +63,7 @@ export class AgGridModel {
         showCellFocus = false
     } = {}) {
         if (compact) {
-            console.warn('The \'compact\' has been deprecated in favor of the more powerful \'sizingMode\' config.');
+            console.warn('The \'compact\' config has been deprecated in favor of the more powerful \'sizingMode\' config.');
             sizingMode = 'compact';
         }
 
