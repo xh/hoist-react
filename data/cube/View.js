@@ -73,7 +73,7 @@ export class View {
         return new Store({fields: this.query.fields});
     }
 
-    async getDataAsync() {
+     getData() {
         const {query} = this,
             {dimensions, includeRoot, fields, cube, filters} = query,
             cubeRecords = cube.store.records,
@@ -143,7 +143,9 @@ export class View {
                     data.children = childrenAsData;
                 }
             }
-            data.xhDimension = dim?.name;
+            if (dim) {
+                data.xhDimension = dim?.name;
+            }
             return data;
         });
     }
