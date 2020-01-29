@@ -52,11 +52,13 @@ export function HoistAppModel(C) {
             },
 
             /**
-             * Provide a list of app-wide options to be displayed in the app's Options Dialog,
-             * accessible from the default AppBar menu when this method returns non-empty.
-             *
-             * @returns {Object[]} - AppOption configs
+             * Provide a list of app-wide options to be displayed in the App's built-in Options
+             * dialog, accessible from the default AppBar menu when this method returns non-empty.
              * @see AppOption
+             *
+             * @returns {Object[]} - AppOption configs. An additional `omit` property is supported
+             *      here that, if true, will skip construction of that particular option and drop
+             *      it out of the Options dialog.
              */
             getAppOptions() {
                 return [];
