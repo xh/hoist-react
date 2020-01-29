@@ -190,16 +190,25 @@ export class DashContainerModel {
     //------------------------
     // Implementation
     //------------------------
-    @debounced(100)
-    @action
     updateState() {
         const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
 
-        this.state = convertGLToState(goldenLayout, this);
+        // If the layout becomes completely empty, ensure we have our minimal empty layout
+        if (!goldenLayout.root.contentItems.length) {
+            this.loadStateAsync([]);
+            return;
+        }
 
-        // Update tab headers on state change to reflect title/icon changes.
         this.updateTabHeaders();
+        this.publishState();
+    }
+
+    @debounced(1000)
+    @action
+    publishState() {
+        const {goldenLayout} = this;
+        this.state = convertGLToState(goldenLayout, this);
     }
 
     onItemDestroyed(item) {
@@ -263,7 +272,7 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Add View Dialog
+    // Add View Button
     //-----------------
     onStackCreated(stack) {
         // Listen to active item change to support RenderMode
@@ -306,11 +315,13 @@ export class DashContainerModel {
     updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
+            const viewModel = this.getViewModel(getViewModelId(item));
+            if (!viewModel) return;
+
             const $el = item.tab.element, // Note: this is a jquery element
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
-                viewModel = this.getViewModel(getViewModelId(item)),
                 {icon, title} = viewModel;
 
             if (icon) {

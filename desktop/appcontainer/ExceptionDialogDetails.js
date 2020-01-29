@@ -49,7 +49,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
             isOpen: true,
             isCloseButtonShown: !requireReload,
             onClose: !requireReload ? () => model.close() : null,
-            style: {height: 600, width: 800},
+            style: {width: 800},
             items: [
                 dialogBody({
                     className: 'xh-exception-dialog-details',
