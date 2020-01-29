@@ -39,7 +39,7 @@ export class OptionsDialogModel {
     // Setting options
     //-------------------
     setOptions(options) {
-        this.options = options.map(o => new AppOption(o));
+        this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields});
     }
