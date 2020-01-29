@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Utils as agUtils} from '@ag-grid-community/all-modules';
+import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {isString, isNumber} from 'lodash';
 
 export class GridSorter {

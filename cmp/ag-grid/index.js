@@ -8,9 +8,9 @@ import '@ag-grid-enterprise/all-modules';
 import {AgGridReact} from '@ag-grid-community/react';
 import {LicenseManager} from '@ag-grid-enterprise/all-modules';
 import {elemFactory} from '@xh/hoist/core';
-import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
-import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css';
-import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham-dark.css';
+import '@ag-grid-enterprise/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-enterprise/all-modules/dist/styles/ag-theme-balham.css';
+import '@ag-grid-enterprise/all-modules/dist/styles/ag-theme-balham-dark.css';
 
 // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);
