@@ -201,6 +201,32 @@
   }
 
   //------------------------
+  // Large Mode
+  //------------------------
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-large-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-large-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-large-header-lr-pad-px);
+      padding-right: var(--xh-grid-large-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
   // Compact Mode
   //------------------------
   &--compact {
@@ -223,6 +249,32 @@
     .ag-header-group-cell {
       padding-left: var(--xh-grid-compact-header-lr-pad-px);
       padding-right: var(--xh-grid-compact-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
+  // Tiny Mode
+  //------------------------
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-tiny-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-tiny-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-tiny-header-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-header-lr-pad-px);
     }
   }
 

@@ -5,10 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
+import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 import {throwIf} from '../../utils/js';
+import {AgGrid} from './index';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -25,8 +26,8 @@ export class AgGridModel {
     //------------------------
     // Grid Style
     //------------------------
-    /** @member {boolean} */
-    @bindable compact;
+    /** @member {string} */
+    @bindable sizingMode;
     /** @member {boolean} */
     @bindable rowBorders;
     /** @member {boolean} */
@@ -45,7 +46,7 @@ export class AgGridModel {
 
     /**
      * @param {Object} [c] - AgGridModel configuration.
-     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
@@ -53,6 +54,7 @@ export class AgGridModel {
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      */
     constructor({
+        sizingMode = 'standard',
         compact = false,
         showHover = false,
         rowBorders = false,
@@ -60,7 +62,12 @@ export class AgGridModel {
         stripeRows = true,
         showCellFocus = false
     } = {}) {
-        this.compact = compact;
+        if (compact) {
+            console.warn('The \'compact\' has been deprecated in favor of the more powerful \'sizingMode\' config.');
+            sizingMode = 'compact';
+        }
+
+        this.sizingMode = sizingMode;
         this.showHover = showHover;
         this.rowBorders = rowBorders;
         this.cellBorders = cellBorders;
@@ -68,9 +75,14 @@ export class AgGridModel {
         this.showCellFocus = showCellFocus;
 
         this.addReaction({
-            track: () => this.compact,
+            track: () => this.sizingMode,
             run: () => {
-                if (this.agApi) this.agApi.resetRowHeights();
+                if (this.agApi) {
+                    this.agApi.resetRowHeights();
+                    this.agApi.setHeaderHeight(this.headerHeight);
+
+                    // TODO: Do we need to set all of the different type of headers here?
+                }
             }
         });
     }
@@ -80,6 +92,14 @@ export class AgGridModel {
      */
     get isReady() {
         return !isNil(this.agApi);
+    }
+
+    /**
+     * @returns {number} - height of the grid headers for the current sizing mode in pixels
+     */
+    get headerHeight() {
+        const headerHeights = XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS;
+        return headerHeights[this.sizingMode];
     }
 
     /**

@@ -154,7 +154,7 @@ class LocalModel {
     @computed
     get rowHeight() {
         const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
-            gridDefaultHeight = this.model.compact ? platformHeights.compact : platformHeights.standard,
+            gridDefaultHeight = platformHeights[this.model.sizingMode],
             maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
 
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
