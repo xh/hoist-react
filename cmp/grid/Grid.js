@@ -196,7 +196,6 @@ class LocalModel {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            headerHeight: props.hideHeaders ? 0 : undefined,
             suppressAggFuncInHeader: true,
             icons: {
                 groupExpanded: convertIconToSvg(
@@ -234,8 +233,13 @@ class LocalModel {
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
+            },
+            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
         };
+
+        if (props.hideHeaders) {
+            ret.headerHeight = 0;
+        }
 
         // Platform specific defaults
         if (XH.isMobile) {

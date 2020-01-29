@@ -113,13 +113,13 @@ body {
   --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
 
   // Large Grid
-  --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 6);
+  --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);
   --xh-grid-large-cell-lr-pad-px: calc(var(--xh-grid-large-cell-lr-pad) * 1px);
-  --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 8);
+  --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
   --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
-  --xh-grid-large-font-size: var(--grid-large-font-size, 13);
+  --xh-grid-large-font-size: var(--grid-large-font-size, 14);
   --xh-grid-large-font-size-px: calc(var(--xh-grid-large-font-size) * 1px);
-  --xh-grid-large-line-height: var(--grid-large-line-height, 26);
+  --xh-grid-large-line-height: var(--grid-large-line-height, 30);
   --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
 
   // Compact Grid

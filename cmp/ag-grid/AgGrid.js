@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {ContextKeyNavSupport} from './impl/ContextKeyNavSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+import {isNil} from 'lodash';
 
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
@@ -43,7 +44,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isMobile} = XH;
 
-        const impl = useLocalModel(() => new LocalModel(model));
+        const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
         impl.onCellContextMenu = onCellContextMenu;
 
@@ -67,12 +68,12 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
-                headerHeight: impl.headerHeight,
+                headerHeight: model.headerHeight,
 
                 // Pass others on directly.
                 ...agGridProps,
 
-                // These handlers are overriden, but also delegate to props passed
+                // These handlers are overridden, but also delegate to props passed
                 onGridReady: impl.noteGridReady,
                 onCellContextMenu: impl.noteCellContextMenu
             })
@@ -101,10 +102,18 @@ class LocalModel {
     onGridReady;
     onCellContextMenu;
 
-    constructor(model) {
+    constructor(model, agGridProps) {
         this.model = model;
         this.contextKeyNavSupport = !XH.isMobile ? new ContextKeyNavSupport(model) :  null;
         this.rowKeyNavSupport = !XH.isMobile ? new RowKeyNavSupport(model) :  null;
+
+        // Only update header height if was not explicitly provided to the component
+        if (isNil(agGridProps.headerHeight)) {
+            this.addReaction({
+                track: () => this.model.headerHeight,
+                run: (height) => this.model.agApi.setHeaderHeight(height)
+            });
+        }
     }
 
     noteGridReady = (agParams) => {

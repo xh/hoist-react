@@ -77,11 +77,9 @@ export class AgGridModel {
         this.addReaction({
             track: () => this.sizingMode,
             run: () => {
-                if (this.agApi) {
-                    this.agApi.resetRowHeights();
-                    this.agApi.setHeaderHeight(this.headerHeight);
-
-                    // TODO: Do we need to set all of the different type of headers here?
+                const api = this.agApi;
+                if (api) {
+                    api.resetRowHeights();
                 }
             }
         });
