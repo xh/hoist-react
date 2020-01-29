@@ -72,6 +72,7 @@ body {
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
 
   // Buttons
+  --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '100')});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '50')});
@@ -208,6 +209,7 @@ body {
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
   --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
+  --xh-popup-title-font-family: var(--popup-title-font-family, var(--xh-title-font-family));
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
@@ -250,10 +252,13 @@ body {
   // Titles (e.g. panels, dialogs)
   --xh-title-bg: var(--title-bg, var(--xh-blue-gray));
   --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
+  --xh-title-font-family: var(--title-font-family, var(--xh-font-family-headings));
   --xh-title-font-size: var(--title-font-size, var(--xh-font-size-large));
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
   --xh-title-height: var(--title-height, 36);
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
+  --xh-title-icon-size: var(--title-icon-size, var(--xh-title-font-size));
+  --xh-title-icon-size-px: calc(var(--xh-title-icon-size) * 1px);
   --xh-title-pad: var(--title-pad, var(--xh-pad-half));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
   --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));

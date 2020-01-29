@@ -2,6 +2,44 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
+⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
+consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
+to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
+
+### 🎁 New Features
+
+* `AppOption` configs now accept an `omit` property for conditionally excluding options.
+
+### 💥 Breaking Changes
+
+* Several CSS variables related to buttons have been renamed for consistency.
+  ([#1568](https://github.com/xh/hoist-react/pull/1568))
+
+### 🐞 Bug Fixes
+
+* Unselectable grid rows are now skipped during up/down keyboard navigation.
+* Fix local quick filtering in `LeftRightChooser` (v29 regression).
+* Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
+  values as intended (v29 regression).
+
+### ⚙️ TechnicalAmre
+
+* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
+  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
+  directly by applications that wish to customize the default row heights globally on init
+  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
+    a breaking change for any apps that imported the old objects directly (considered unlikely).
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.22 -> 3.23`
+* codemirror `5.50 -> 5.51`
+* react-dates `21.5 -> 21.7`
+* ag-grid-community `21.2 -> 22.1`
+* ag-grid-enterprise `21.2 -> 22.1`
+* ag-grid-react `21.2 -> 22.1`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
 
 ## v29.0.0 - 2020-01-24
 
@@ -135,8 +173,6 @@ Note the following more specific changes to these related classes:
 * The `DataView.itemHeight` prop has been moved to `DataViewModel` where it can now be changed
   dynamically by applications.
 * Desktop `AppBar.appMenuButtonOptions` prop renamed to `appMenuButtonProps` for consistency.
-* Several CSS variables related to buttons have been renamed for consistency.
-  ([#1568](https://github.com/xh/hoist-react/pull/1568))
 
 ### 🐞 Bug Fixes
 
@@ -178,7 +214,7 @@ Note the following more specific changes to these related classes:
 * react-dropzone `10.1 -> 10.2`
 * react-windowed-select `added @ 2.0.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...v29.0.0)
 
 ## v28.2.0 - 2019-11-08
 

@@ -8,12 +8,11 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, pick, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
 
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
@@ -33,8 +32,9 @@ export class ConfigDifferModel  {
     @managed
     gridModel;
 
+    @bindable remoteHost;
+    @bindable hasLoaded = false;
     @observable isOpen = false;
-    @observable remoteHost = null;
 
     applyRemoteAction = {
         text: 'Apply Remote',
@@ -47,17 +47,30 @@ export class ConfigDifferModel  {
         recordsRequired: true
     };
 
+    get remoteHosts() {
+        return XH.getConf('xhAppInstances').filter(it => it != window.location.origin);
+    }
+
     constructor(configModel) {
         this.configModel = configModel;
-
         this.gridModel = new GridModel({
-            enableExport: true,
             store: {
                 idSpec: 'name',
-                filter: (it) => it.status !== 'Identical'
+                filter: (it) => it.data.status !== 'Identical'
             },
+            emptyText: 'All configs match!',
             selModel: 'multiple',
+            sortBy: 'name',
+            groupBy: 'status',
+            enableExport: true,
+            showHover: true,
             columns: [
+                {
+                    ...actionCol,
+                    width: 60,
+                    actions: [this.applyRemoteAction]
+                },
+                {field: 'status', hidden: true},
                 {field: 'name', width: 200},
                 {
                     field: 'type',
@@ -72,45 +85,30 @@ export class ConfigDifferModel  {
                 {
                     field: 'remoteValue',
                     flex: true,
-                    renderer: this.valueRenderer,
-                    agOptions: {
-                        cellClassRules: {
-                            'xh-green': this.setRemoteCellClass
-                        }
-                    }
-                },
-                {
-                    field: 'status',
-                    width: 120
-                },
-                {
-                    ...actionCol,
-                    width: 60,
-                    actions: [this.applyRemoteAction]
+                    renderer: this.valueRenderer
                 }
             ],
-            contextMenuFn: this.contextMenuFn
+            contextMenu: [
+                this.applyRemoteAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ]
         });
     }
 
-    contextMenuFn = () => {
-        return new StoreContextMenu({
-            items: [this.applyRemoteAction]
-        });
-    };
-
     async doLoadAsync(loadSpec) {
-        if (loadSpec.isAutoRefresh) return;
+        if (loadSpec.isAutoRefresh || !this.remoteHost) return;
 
         const remoteHost = trimEnd(this.remoteHost, '/'),
-            apiAffix = XH.baseUrl[0] == '/' ? XH.baseUrl : '/',
+            // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
+            apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
             remoteBaseUrl = remoteHost + apiAffix;
 
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs', loadSpec}),
                 XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs', loadSpec})
-            ]).linkTo(XH.appLoadModel);
+            ]);
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
@@ -127,21 +125,22 @@ export class ConfigDifferModel  {
     }
 
     processResponse(resp) {
-        const local = this.removeMetaData(resp[0].data),
-            remote = this.removeMetaData(resp[1].data),
-            diffedConfigs = this.diffConfigs(local, remote),
+        const local = this.cleanRawData(resp[0].data),
+            remote = this.cleanRawData(resp[1].data),
+            diffedConfigs = this.diffRawConfigs(local, remote),
             {store} = this.gridModel;
 
         store.loadData(diffedConfigs);
-
-        if (store.count == 0) this.showNoDiffToast();
+        this.setHasLoaded(true);
+        if (store.empty) this.showNoDiffToast();
     }
 
     processFailedLoad() {
-        this.gridModel.store.clear();
+        this.gridModel.clear();
+        this.setHasLoaded(false);
     }
 
-    diffConfigs(localConfigs, remoteConfigs) {
+    diffRawConfigs(localConfigs, remoteConfigs) {
         const ret = [];
 
         // 0) Check each local config against (possible) remote counterpart. Cull remote config if found.
@@ -152,7 +151,7 @@ export class ConfigDifferModel  {
                 name: local.name,
                 localValue: local,
                 remoteValue: remote,
-                status: this.configsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
+                status: this.rawConfigsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
@@ -173,19 +172,20 @@ export class ConfigDifferModel  {
         return ret;
     }
 
-    configsAreEqual(local, remote) {
-        const l = cloneDeep(local),
-            r = cloneDeep(remote);
-
-        if (l && r && l.valueType == 'json' && r.valueType == 'json') {
-            l.value = JSON.parse(l.value);
-            r.value = JSON.parse(r.value);
+    rawConfigsAreEqual(local, remote) {
+        // For JSON configs, parse JSON to do an accurate value compare,
+        // cloning to avoid disturbing the source data.
+        if (local?.valueType == 'json' && remote?.valueType == 'json') {
+            local = cloneDeep(local);
+            local.value = JSON.parse(local.value);
+            remote = cloneDeep(remote);
+            remote.value = JSON.parse(remote.value);
         }
 
-        return isEqual(l, r);
+        return isEqual(local, remote);
     }
 
-    removeMetaData(data) {
+    cleanRawData(data) {
         data.forEach(it => {
             delete it.lastUpdated;
             delete it.lastUpdatedBy;
@@ -217,14 +217,16 @@ export class ConfigDifferModel  {
         });
     }
 
-    isPwd(diff) {
-        if (diff.localValue && diff.localValue.valueType == 'pwd') return true;
-        if (diff.remoteValue && diff.remoteValue.valueType == 'pwd') return true;
-        return false;
+    isPwd(rec) {
+        const {localValue, remoteValue} = rec.data;
+        return localValue?.valueType == 'pwd' || remoteValue?.valueType == 'pwd';
     }
 
     doApplyRemote(records) {
-        const recsForPost = records.map(rec => pick(rec, ['name', 'remoteValue']));
+        const recsForPost = records.map(rec => {
+            const {name, remoteValue} = rec.data;
+            return {name, remoteValue};
+        });
 
         XH.fetchJson({
             url: 'configDiffAdmin/applyRemoteValues',
@@ -234,24 +236,12 @@ export class ConfigDifferModel  {
             this.configModel.loadAsync();
             this.detailModel.close();
         }).linkTo(
-            XH.appLoadModel
+            this.pendingTaskModel
         ).catchDefault();
     }
 
     showNoDiffToast() {
-        XH.toast({message: 'Good news! All configs match remote host.'});
-    }
-
-    setRemoteCellClass(rec) {
-        const {data} = rec.data,
-            local = data.localValue,
-            remote = data.remoteValue;
-
-        if (local && remote) {
-            return local.value != remote.value;
-        }
-
-        return true;
+        XH.toast({message: 'Good news - all configs match remote host.'});
     }
 
     valueRenderer(v) {
@@ -283,7 +273,7 @@ export class ConfigDifferModel  {
     @action
     close() {
         this.isOpen = false;
-        this.gridModel.loadData([]);
+        this.gridModel.clear();
         this.setRemoteHost(null);
     }
 }
