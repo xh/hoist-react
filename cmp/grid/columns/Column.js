@@ -52,9 +52,9 @@ export class Column {
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
      * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing above this value.
-     * @param {number} [c.flex] - columns with flex set will fill all available space in the grid,
+     * @param {boolean|number} [c.flex] - columns with flex set will fill all available space in the grid,
      *      with remaining space divided between flex columns in proportion to the value of flex.
-     *      Resizing is disabled on flex columns.
+     *      If set to `true`, then the column will have a flex value of 1.
      * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,

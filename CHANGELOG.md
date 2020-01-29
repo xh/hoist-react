@@ -2,6 +2,10 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
+### 🎁 New Features
+* Grid column `flex` prop will now accept numbers, with available space divided between flex columns
+  in proportion to their `flex` value.
+
 ### 🐞 Bug Fixes
 
 * Improved up/down keyboard navigation for non-selectable rows.  These rows are now skipped.
@@ -13,6 +17,7 @@
   directly by applications that wish to customize the default row heights globally on init
   * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
     a breaking change for any apps that imported the old objects directly (considered unlikely).
+* Flex columns now use the built-in ag-Grid flex functionality.
 
 ### 📚 Libraries
 
