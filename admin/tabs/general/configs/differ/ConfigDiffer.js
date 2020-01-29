@@ -4,19 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {dialog} from '@xh/hoist/kit/blueprint';
-import {box, filler, fragment} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon/Icon';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity} from 'lodash';
 
-import {ConfigDifferModel} from './ConfigDifferModel';
 import {configDifferDetail} from './ConfigDifferDetail';
+import {ConfigDifferModel} from './ConfigDifferModel';
 
 export const configDiffer = hoistCmp.factory({
     model: uses(ConfigDifferModel),
@@ -24,6 +24,7 @@ export const configDiffer = hoistCmp.factory({
     render({model}) {
         return fragment(
             dialog({
+                title: 'Configuration Differ',
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
@@ -37,46 +38,48 @@ export const configDiffer = hoistCmp.factory({
 
 const contents = hoistCmp.factory(
     ({model}) => {
-        const {store} = model.gridModel;
         return panel({
-            tbar: [
-                box(<b>Configuration Comparison</b>),
-                filler(),
-                box('Compare with:'),
-                select({
-                    bind: 'remoteHost',
-                    placeholder: 'https://remote-host/',
-                    enableCreate: true,
-                    createMessageFn: identity,
-                    width: 250,
-                    options: XH.getConf('xhAppInstances').filter(it => it != window.location.origin)
-                }),
-                button({
-                    text: 'Load Diff',
-                    intent: 'primary',
-                    disabled: !model.remoteHost,
-                    onClick: () => model.loadAsync()
-                })
-            ],
-            item: panel({
-                mask: mask({
-                    isDisplayed: !model.remoteHost || !store.count,
-                    message: store.allCount ? 'All configs match!' : 'Enter a remote host for comparison.'
-                }),
-                item: grid({
+            tbar: tbar(),
+            item: model.hasLoaded ?
+                grid({
                     onRowDoubleClicked: (e) => model.detailModel.open(e.data),
-                    agOptions: {
-                        popupParent: null
-                    }
-                })
-            }),
+                    agOptions: {popupParent: null}
+                }) :
+                frame({
+                    item: 'Select or enter a remote host to compare against...',
+                    padding: 10
+                }),
             bbar: [
                 filler(),
                 button({
                     text: 'Close',
                     onClick: () => model.close()
                 })
-            ]
+            ],
+            mask: 'onLoad'
         });
+    }
+);
+
+const tbar = hoistCmp.factory(
+    ({model}) => {
+        return toolbar(
+            span('Compare with'),
+            select({
+                bind: 'remoteHost',
+                placeholder: 'https://remote-host/',
+                enableCreate: true,
+                createMessageFn: identity,
+                width: 250,
+                options: model.remoteHosts
+            }),
+            button({
+                text: 'Load Diff',
+                icon: Icon.diff(),
+                intent: 'primary',
+                disabled: !model.remoteHost,
+                onClick: () => model.loadAsync()
+            })
+        );
     }
 );
