@@ -110,8 +110,11 @@ class LocalModel {
         // Only update header height if was not explicitly provided to the component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => this.model.headerHeight,
-                run: (height) => this.model.agApi.setHeaderHeight(height)
+                track: () => this.model.sizingMode,
+                run: (sizingMode) => {
+                    const headerHeights = XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS;
+                    this.model.agApi.setHeaderHeight(headerHeights[sizingMode]);
+                }
             });
         }
     }

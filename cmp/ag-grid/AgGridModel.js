@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
-import {throwIf} from '../../utils/js';
-import {AgGrid} from './index';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -55,17 +54,15 @@ export class AgGridModel {
      */
     constructor({
         sizingMode = 'standard',
-        compact = false,
         showHover = false,
         rowBorders = false,
         cellBorders = false,
         stripeRows = true,
-        showCellFocus = false
+        showCellFocus = false,
+        compact
     } = {}) {
-        if (compact) {
-            console.warn('The \'compact\' config has been deprecated in favor of the more powerful \'sizingMode\' config.');
-            sizingMode = 'compact';
-        }
+        warnIf(compact !== undefined, "The 'compact' config has been deprecated. Use 'sizingMode' instead");
+        if (compact) sizingMode = 'compact';
 
         this.sizingMode = sizingMode;
         this.showHover = showHover;
@@ -90,14 +87,6 @@ export class AgGridModel {
      */
     get isReady() {
         return !isNil(this.agApi);
-    }
-
-    /**
-     * @returns {number} - height of the grid headers for the current sizing mode in pixels
-     */
-    get headerHeight() {
-        const headerHeights = XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS;
-        return headerHeights[this.sizingMode];
     }
 
     /**

@@ -168,12 +168,12 @@ export class GridModel {
         groupBy = null,
 
         sizingMode = 'standard',
-        compact = false,
         showHover = false,
         rowBorders = false,
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
+        compact,
 
         enableColumnPinning = true,
         enableColChooser = false,
