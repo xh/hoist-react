@@ -265,7 +265,7 @@ export class Column {
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
-                suppressColumnsToolPanel: this.excludeFromChooser,
+                suppressToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 editable: (agParams) => {
                     const {editable} = this;
