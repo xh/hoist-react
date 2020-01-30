@@ -41,6 +41,8 @@ export class DataViewModel {
      * @param {(Object[]|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {string} groupBy - Column ID by which to do full-width row grouping.
+     * @param {number} groupedItemHeight - Height of a group row
      */
     constructor({
         itemHeight,
@@ -49,13 +51,16 @@ export class DataViewModel {
         sortBy = [],
         selModel,
         emptyText,
-        contextMenu = null
+        contextMenu = null,
+        groupBy,
+        groupedItemHeight
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataViewModel.');
 
         this.itemHeight = itemHeight;
+        this.groupedItemHeight = groupedItemHeight;
 
         // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
         // the data sorted, initially and through updates via transactions. To continue leveraging
@@ -69,20 +74,29 @@ export class DataViewModel {
             field = sorter.colId;
         }
 
+        let columns = [
+            {
+                field,
+                flex: true,
+                elementRenderer: itemRenderer,
+                rendererIsComplex: true
+            }
+        ];
+        if (groupBy) {
+            columns.push({
+                field: groupBy,
+                hidden: true
+            });
+        }
+
         this.gridModel = new GridModel({
             store,
             sortBy,
             selModel,
             contextMenu,
             emptyText,
-            columns: [
-                {
-                    field,
-                    flex: true,
-                    elementRenderer: itemRenderer,
-                    rendererIsComplex: true
-                }
-            ]
+            groupBy,
+            columns
         });
 
         this.addReaction({

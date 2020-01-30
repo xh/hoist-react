@@ -14,6 +14,7 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
   * Each of these sizing modes has their own css variables for applications to override as needed
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
+* `DataViewModel` now accepts `groupBy` and `groupedItemHeight` params to enable grouped `DataView`.
 
 ### 🐞 Bug Fixes
 

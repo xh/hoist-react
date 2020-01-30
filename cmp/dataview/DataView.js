@@ -33,7 +33,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
             agOptions: {
                 headerHeight: 0,
                 rowClass: rowCls,
-                getRowHeight: () => model.itemHeight
+                getRowHeight: (params) => params.node.group ? model.groupedItemHeight : model.itemHeight
             },
             onRowDoubleClicked
         });
