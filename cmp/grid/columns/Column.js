@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
+import {Utils as agUtils} from 'ag-grid-community';
 import {
     castArray,
     clone,
@@ -265,7 +265,7 @@ export class Column {
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
-                suppressColumnsToolPanel: this.excludeFromChooser,
+                suppressToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 editable: (agParams) => {
                     const {editable} = this;
