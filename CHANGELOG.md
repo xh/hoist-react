@@ -9,6 +9,11 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 ### 🎁 New Features
 
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
+* The `compact` config on `GridModel` has been deprecated in favor of the more powerful `sizingMode`
+  which supports the values 'large', 'standard', 'compact', or 'tiny'
+  * Each of these sizing modes has their own css variables for applications to override as needed
+  * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
+    properties of the `AgGrid` component
 
 ### 🐞 Bug Fixes
 

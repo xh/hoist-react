@@ -133,7 +133,7 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
-     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
@@ -167,12 +167,13 @@ export class GridModel {
         sortBy = [],
         groupBy = null,
 
-        compact = false,
+        sizingMode = 'standard',
         showHover = false,
         rowBorders = false,
         cellBorders = false,
         stripeRows = true,
         showCellFocus = false,
+        compact,
 
         enableColumnPinning = true,
         enableColChooser = false,
@@ -214,6 +215,7 @@ export class GridModel {
         this.setSortBy(sortBy);
 
         this.agGridModel = new AgGridModel({
+            sizingMode,
             compact,
             showHover,
             rowBorders,
@@ -328,8 +330,8 @@ export class GridModel {
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
-    get compact() { return this.agGridModel.compact}
-    setCompact(compact) { this.agGridModel.setCompact(compact)}
+    get sizingMode() {return this.agGridModel.sizingMode}
+    setSizingMode(sizingMode) {this.agGridModel.setSizingMode(sizingMode)}
 
     get showHover() { return this.agGridModel.showHover }
     setShowHover(showHover) { this.agGridModel.setShowHover(showHover) }
