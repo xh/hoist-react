@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
+import {Utils as agUtils} from 'ag-grid-community';
 import {
     castArray,
     clone,
