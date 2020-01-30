@@ -2,10 +2,6 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
-⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
-consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
-to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
-
 ### 🎁 New Features
 
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
