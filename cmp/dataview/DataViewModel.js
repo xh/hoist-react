@@ -74,21 +74,6 @@ export class DataViewModel {
             field = sorter.colId;
         }
 
-        let columns = [
-            {
-                field,
-                flex: true,
-                elementRenderer: itemRenderer,
-                rendererIsComplex: true
-            }
-        ];
-        if (groupBy) {
-            columns.push({
-                field: groupBy,
-                hidden: true
-            });
-        }
-
         this.gridModel = new GridModel({
             store,
             sortBy,
@@ -96,7 +81,15 @@ export class DataViewModel {
             contextMenu,
             emptyText,
             groupBy,
-            columns
+            columns: [
+                {
+                    field,
+                    flex: true,
+                    elementRenderer: itemRenderer,
+                    rendererIsComplex: true
+                },
+                ...(groupBy ? [{field: groupBy, hidden: true}] : [])
+            ]
         });
 
         this.addReaction({
