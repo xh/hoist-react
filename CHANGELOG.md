@@ -10,6 +10,7 @@
   * Each of these sizing modes has their own css variables for applications to override as needed
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
+* The Grid context menu now contains an `Autosize Columns` option by default.
 
 ### 🐞 Bug Fixes
 

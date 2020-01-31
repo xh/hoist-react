@@ -113,7 +113,8 @@ export class GridModel {
         'exportExcel',
         'exportCsv',
         '-',
-        'colChooser'
+        'colChooser',
+        'autoSizeColumns'
     ];
 
     /**
