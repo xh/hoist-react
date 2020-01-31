@@ -115,7 +115,7 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Autosize Columns',
                     icon: Icon.arrowsLeftRight(),
-                    actionFn: () => gridModel.agColumnApi.autoSizeColumns(gridModel.columns.map(col => col.colId))
+                    actionFn: () => gridModel.autoSizeAllColumns()
                 });
             default:
                 return token;
