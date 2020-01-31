@@ -27,10 +27,13 @@ export class DataViewModel {
     @bindable
     itemHeight;
 
+    groupRowRenderer;
+
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {number} itemHeight - Row height for each item displayed in the view
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
+     *      Used to render normal rows.
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -43,6 +46,8 @@ export class DataViewModel {
      *      function returning a StoreContextMenu.  Desktop only.
      * @param {string} groupBy - Column ID by which to do full-width row grouping.
      * @param {number} groupedItemHeight - Height of a group row
+     * @param {function} groupRowRenderer - function which returns a React component.
+     *      React component. Used with 'groupBy' to render grouped rows.
      */
     constructor({
         itemHeight,
@@ -53,7 +58,8 @@ export class DataViewModel {
         emptyText,
         contextMenu = null,
         groupBy,
-        groupedItemHeight
+        groupedItemHeight,
+        groupRowRenderer
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
@@ -61,6 +67,7 @@ export class DataViewModel {
 
         this.itemHeight = itemHeight;
         this.groupedItemHeight = groupedItemHeight;
+        this.groupRowRenderer = groupRowRenderer;
 
         // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
         // the data sorted, initially and through updates via transactions. To continue leveraging
