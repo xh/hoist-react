@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-
 import {managed} from '@xh/hoist/core';
 import {observable} from '@xh/hoist/mobx';
 
@@ -73,7 +72,7 @@ export class View {
         return new Store({fields: this.query.fields});
     }
 
-     getData() {
+    getData() {
         const {query} = this,
             {dimensions, includeRoot, fields, cube, filters} = query,
             cubeRecords = cube.store.records,
