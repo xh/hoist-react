@@ -34,7 +34,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
                 headerHeight: 0,
                 rowClass: rowCls,
                 getRowHeight: (params) => params.node.group ? model.groupedItemHeight : model.itemHeight,
-                groupRowRendererFramework: model.groupRowRenderer
+                ...(model.groupRowRenderer ? {groupRowRendererFramework: model.groupRowRenderer} : {})
             },
             onRowDoubleClicked
         });
