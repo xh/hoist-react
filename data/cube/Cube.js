@@ -71,6 +71,26 @@ export class Cube {
     }
 
     /**
+     * Query the cube.
+     *
+     * This method will return an immutable snapshot of javascript objects representing the filtered
+     * and aggregated data in the query.  To receive an auto-updating form of the data use
+     * createView instead.
+     *
+     * @param {Query} query - Query (or config for one) defining the shape of the view.
+     * @returns {Object} -- hierarchical data containing the results of the query.
+     */
+    executeQuery(query) {
+        query = query instanceof Query ? query : new Query(query);
+        query.cube = this;
+        const view = new View(query, false),
+            ret = view.getData();
+
+        view.destroy();
+        return ret;
+    }
+
+    /**
      * Create a View on this data.
      *
      * @param {Query} query - Query (or config for one) defining the shape of the view.
@@ -78,10 +98,12 @@ export class Cube {
      *      changes (versus a snapshot)
      * @returns {View}
      */
-    executeQuery(query, connect) {
+    createView(query, store, connect) {
         query = query instanceof Query ? query : new Query(query);
         query.cube = this;
-        return new View(query, connect);
+        const view = new View(query, store);
+        if (connect) this._connectedViews.add(view);
+        return view;
     }
 
     /**
@@ -111,12 +133,9 @@ export class Cube {
         }
     }
 
-    connectView(v) {
-        this._connectedViews.add(v);
-    }
-
     disconnectView(v) {
         this._connectedViews.delete(v);
+
     }
 
     //---------------------
@@ -124,5 +143,9 @@ export class Cube {
     //---------------------
     parseFields(fields = []) {
         return fields.map(f => f instanceof CubeField ? f : new CubeField(f));
+    }
+
+    destroy() {
+        this._connectedViews.forEach(v => this.disconnectView(v));
     }
 }

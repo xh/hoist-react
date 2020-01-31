@@ -5,10 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {managed} from '@xh/hoist/core';
-import {observable} from '@xh/hoist/mobx';
-
-import {Store} from '../';
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
 import {AggregateRecord} from './impl/AggregateRecord';
@@ -18,30 +14,25 @@ import {isEmpty, groupBy, map} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
+ *
+ * Not created directly by application.  Applications should use the method
+ * Cube.createView() instead.
  */
 export class View {
-
-    /**
-     * @member {Store} Store with current data in the view.
-     */
-    @observable
-    @managed
-    store;
 
     /** @member {Query} */
     query = null;
 
     /**
-     * @param {Cube} cube - source cube for this view.
-     * @param {Query} query - to be used to construct this view,
-     * @param {boolean} [connect] - Should this view receive updates when its source Cube changes?
+     * @private.  Applications should use createView() instead.
+     *
+     * @param {Query} query - query to be used to construct this view,
+     * @param {Store} [store] - store into which data for this view should be loaded.
+     *      This store is optional, if this view is *only* being used to produce
+     *      raw data it need not be provided.
      */
-    constructor({query, connect = false}) {
+    constructor(query, store) {
         this.query = query;
-        this.store = this.createStore();
-
-        // Connect late to avoid connecting if an exception thrown.
-        if (connect) this.cube.connect(this);
     }
 
     //--------------------
@@ -57,19 +48,6 @@ export class View {
 
     getInfo() {
         return this.cube.getInfo();
-    }
-    //-----------------------
-    // Entry point for cube
-    //-----------------------
-    noteCubeLoaded() {
-        this.loadRecordsFromCube();
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    createStore() {
-        return new Store({fields: this.query.fields});
     }
 
     getData() {
@@ -87,10 +65,18 @@ export class View {
             [new AggregateRecord(fields, rootId, newRecords, null, 'Total', {})] :
             newRecords;
 
-        const data = this.getRecordsAsData(newRecords);
-        this.store.loadData(data);
+        return this.getRecordsAsData(newRecords);
     }
 
+    //-----------------------
+    // Entry point for cube
+    //-----------------------
+    noteCubeLoaded() {}
+    noteCubeUpdated() {}
+
+    //------------------------
+    // Implementation
+    //------------------------
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions)) return leaves;
 
