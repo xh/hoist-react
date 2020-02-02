@@ -29,6 +29,7 @@ export class DialogModel {
     portalContainer = null;
     dialogRootId = 'xh-dialog-root';
     dialogWrapperDivRef = createObservableRef();
+    clickCaptureCompRef = createObservableRef();
     rndRef = null;
 
     //-----------------------
@@ -40,8 +41,6 @@ export class DialogModel {
     draggable;
     /** @member {boolean} */
     showCloseButton;
-    /** @member {boolean} */
-    closeOnMaskClick;
     /** @member {boolean} */
     closeOnEscape;
     /** @member {DialogStateModel} */
@@ -74,7 +73,6 @@ export class DialogModel {
         draggable = false,
         showCloseButton = true,
         stateModel = null,
-        closeOnMaskClick = true,
         closeOnEscape = true
     } = {}) {
 
@@ -82,7 +80,6 @@ export class DialogModel {
         this.resizable = resizable;
         this.draggable = draggable;
         this.showCloseButton = showCloseButton;
-        this.closeOnMaskClick = closeOnMaskClick;
         this.closeOnEscape = closeOnEscape;
         this.stateModel = this.parseStateModel(stateModel);
     }
@@ -158,10 +155,8 @@ export class DialogModel {
         if (this.closeOnEscape) this.hide();
     }
 
-    handleMaskClick(evt) {
-        if (this.closeOnMaskClick == false) return;
-        if (evt.target != this.dialogWrapperDivRef.current) return;
-
+    handleOutsideClick(evt) {
+        if (evt.target != this.clickCaptureCompRef.current) return;
         this.hide();
     }
 
