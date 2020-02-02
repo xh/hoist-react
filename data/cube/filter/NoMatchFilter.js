@@ -9,6 +9,6 @@ import {StoreFilter} from '../../StoreFilter';
 export class NoMatchFilter extends StoreFilter {
 
     constructor(record) {
-        super(() => false, false);
+        super({fn: () => false});
     }
 }

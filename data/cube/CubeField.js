@@ -108,5 +108,6 @@ export class CubeField extends Field {
  *
  * @param {string} dimension - dimension of aggregation
  * @param {*} value - value of record on dimension
- * @param {Object} - previously applied dimension values for this record
+ * @param {Object} - *all* applied dimension values for this record
+ * @returns boolean
  */

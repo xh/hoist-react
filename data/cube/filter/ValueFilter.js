@@ -56,15 +56,15 @@ export class ValueFilter extends StoreFilter {
     }
 
     constructor(fieldName, values) {
-        super();
+        super({});
         this.fieldName = fieldName;
         this.values = castArray(values);
 
         if (values.length === 1) {
             const singleVal = values[0];
-            this.fn = (rec) => rec.get(fieldName) === singleVal;
+            this.fn = (rec) => rec.data[fieldName] === singleVal;
         } else {
-            this.fn = (rec) => values.includes(rec.get(fieldName));
+            this.fn = (rec) => values.includes(rec.data[fieldName]);
         }
     }
 

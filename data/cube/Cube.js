@@ -32,18 +32,21 @@ export class Cube {
      * @param {Object} c - Cube configuration.
      * @param {(CubeField[]|Object[])} - array of CubeFields / {@see CubeField} configs.
      *      See Store.fields.
-     * @param {(function|string)} [c.idSpec] - see Store.idSpec
-     * @param {function} [c.processRawData] - see Store.processRawData/
+     * @param {(function|string)} [c.idSpec] - see Store.idSpec.  Default 'id'
+     * @param {function} [c.processRawData] - see Store.processRawData.
      * @param {Object[]} [c.rawData] - array of initial raw data.
      * @param {Object} [c.info] - map of metadata associated with this data.
-     * @param {function} [c.defaultLockFn] - default function to be called for each node to
-     *      determine if it should be "locked", preventing drilldown into its children. If true
-     *      returned for a node, no drilldown will be allowed, and the row will be marked with a
-     *      boolean "locked" property.  May be overridden on Query.
-     * @param {function} [c.defaultLabelFn] - function to be called for each node to generate a
-     *      label.  Will be passed the data for the node, and the aggregate
+     * @param {LockFn} [c.lockFn] - optional function to be called for each node to aggregate to
+     *      determine if it should be "locked", preventing drilldown into its children.
      */
-    constructor({fields, idSpec, processRawData, rawData = [], info = {}, lockFn}) {
+    constructor({
+            fields,
+            idSpec = 'id',
+            processRawData,
+            rawData = [],
+            info = {},
+            lockFn,
+    }) {
         this.store = new Store({
             fields: this.parseFields(fields),
             idSpec,
@@ -51,6 +54,7 @@ export class Cube {
         });
         this.store.loadData(rawData);
         this.lockFn = lockFn;
+        this._info = info;
     }
 
     /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
@@ -77,8 +81,8 @@ export class Cube {
      * Query the cube.
      *
      * This method will return an immutable snapshot of javascript objects representing the filtered
-     * and aggregated data in the query.  To receive an auto-updating form of the data use
-     * createView instead.
+     * and aggregated data in the query.  In addition to the fields specified in Query, nodes will
+     * each contain a 'cubeLabel' and a 'cubeDimension' property.
      *
      * @param {Object} query - Config for query defining the shape of the view.
      * @returns {Object} -- hierarchical data containing the results of the query.
@@ -95,12 +99,21 @@ export class Cube {
     /**
      * Create a View on this data.
      *
+     * Similiar to executeQuery(), but data will be loaded into a store, which will be optionally
+     * refreshed as the underlying facts in the cube are updated.  Useful for binding to grids
+     * and efficiently displaying changing results in the cube.
+     *
+     * Note: call the disconnect() method on the View returned to disconnect store from cube and
+     * updates.
+     *
      * @param {Object} query - Config for query defining the shape of the view.
-     * @param {boolean} connect - true to update the returned view as the data in this cube
-     *      changes (versus a snapshot)
-     * @returns {View}
+     * @param {Object} store - Store in to which view should load results.  The fields of this
+     *      store should include all fields in the query.
+     * @param {boolean} connect - true to update the store as the data in this cube
+     *      changes (versus a snapshot).
+     * @returns {View}.
      */
-    createView(query, store, connect) {
+    createView(query, store, connect = false) {
         query = new Query({...query, cube: this});
         const view = new View(query, store);
         if (connect) this._connectedViews.add(view);
@@ -136,7 +149,6 @@ export class Cube {
 
     disconnectView(v) {
         this._connectedViews.delete(v);
-
     }
 
     //---------------------
@@ -150,3 +162,17 @@ export class Cube {
         this._connectedViews.forEach(v => this.disconnectView(v));
     }
 }
+
+
+/**
+ * @callback LockFn
+ *
+ * Function to be called for each node to aggregate to determine if it should be "locked",
+ * preventing drilldown into its children. If true returned for a node, no drilldown will be
+ * allowed, and the row will be marked with a boolean "locked" property.
+ *
+ * @param {AggregateRecord} dimension - dimension of aggregation.  Null for leaf node.
+ * @param {*} value - value of record on dimension.  Null for leaf node.
+ * @param {Object} - *all* applied dimension values for this record.  Null for leaf node.
+ * @returns string
+ */

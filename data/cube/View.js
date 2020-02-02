@@ -23,16 +23,20 @@ export class View {
     /** @member {Query} */
     query = null;
 
+    /** @member {Store} */
+    store = null;
+
     /**
      * @private.  Applications should use createView() instead.
      *
      * @param {Query} query - query to be used to construct this view,
-     * @param {Store} [store] - store into which data for this view should be loaded.
+     * @param {Store} [store] - store into which data for this view should be loaded/reloaded
      *      This store is optional, if this view is *only* being used to produce
-     *      raw data it need not be provided.
+     *      a data snapshot with getData() it need not be provided.
      */
     constructor(query, store) {
         this.query = query;
+        this.store = store
     }
 
     //--------------------
@@ -42,13 +46,19 @@ export class View {
         return this.query.cube;
     }
 
-    isConnected() {
+    get isConnected() {
         return this.cube.isConnected(this);
     }
 
-    getInfo() {
-        return this.cube.getInfo();
+    get info() {
+        return this.cube.info();
     }
+
+    //-----------------------
+    // Entry point for cube
+    //-----------------------
+    noteCubeLoaded() {}
+    noteCubeUpdated() {}
 
     getData() {
         const {query} = this,
@@ -67,12 +77,6 @@ export class View {
 
         return this.getRecordsAsData(newRecords);
     }
-
-    //-----------------------
-    // Entry point for cube
-    //-----------------------
-    noteCubeLoaded() {}
-    noteCubeUpdated() {}
 
     //------------------------
     // Implementation
@@ -107,7 +111,7 @@ export class View {
             let {id, data, dim, children} = rec;
 
             // Leaves are simple
-            if (!rec.isAggregate) return {id, ...data};
+            if (!rec.isAggregate) return {id: id, cubeLabel: id, ...data};
 
             // Aggregates need children and their dimension processed.
             if (children) {
@@ -133,7 +137,7 @@ export class View {
                 }
             }
             if (dim) {
-                data.xhDimension = dim?.name;
+                data.cubeDimension = dim?.name;
             }
 
             return data;

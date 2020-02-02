@@ -70,8 +70,7 @@ export class Store {
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      */
-    constructor(
-        {
+    constructor({
             fields,
             idSpec = 'id',
             processRawData = null,
@@ -514,6 +513,16 @@ export class Store {
 
         this.rebuildFiltered();
     }
+
+    /**
+     * Set whether the root should be loaded as summary data in loadData().
+     *
+     * @param {boolean}
+     */
+    setLoadRootAsSummary(val) {
+        this._loadRootAsSummary = val;
+    }
+
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {
