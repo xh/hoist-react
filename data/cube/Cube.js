@@ -22,10 +22,10 @@ export class Cube {
     static RECORD_ID_DELIMITER = '>>';
 
     @managed
-    _store = null
-    _info = null;
-    _lockFn = null;
+    store = null;
+    lockFn = null;
 
+    _info = null;
     _connectedViews = new Set();
 
     /**
@@ -34,20 +34,23 @@ export class Cube {
      *      See Store.fields.
      * @param {(function|string)} [c.idSpec] - see Store.idSpec
      * @param {function} [c.processRawData] - see Store.processRawData/
-     * @param {Object[]} [c.data] - array of initial raw data.
+     * @param {Object[]} [c.rawData] - array of initial raw data.
      * @param {Object} [c.info] - map of metadata associated with this data.
-     * @param {function} [c.lockFn] - function to be called for each node to determine if it should
-     *      be "locked", preventing drilldown into its children. If true returned for a node, no
-     *      drilldown will be allowed, and the row will be marked with a boolean "locked" property.
+     * @param {function} [c.defaultLockFn] - default function to be called for each node to
+     *      determine if it should be "locked", preventing drilldown into its children. If true
+     *      returned for a node, no drilldown will be allowed, and the row will be marked with a
+     *      boolean "locked" property.  May be overridden on Query.
+     * @param {function} [c.defaultLabelFn] - function to be called for each node to generate a
+     *      label.  Will be passed the data for the node, and the aggregate
      */
-    constructor({fields, idSpec, processRawData, rawData, info, lockFn}) {
-        this._store = new Store({
+    constructor({fields, idSpec, processRawData, rawData = [], info = {}, lockFn}) {
+        this.store = new Store({
             fields: this.parseFields(fields),
             idSpec,
             processRawData
         });
-        this._store.loadData(rawData, info);
-        this._lockFn = lockFn;
+        this.store.loadData(rawData);
+        this.lockFn = lockFn;
     }
 
     /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
@@ -65,7 +68,7 @@ export class Cube {
      * @param {Object} info - optional metadata to associate with this cube/dataset.
      */
     loadData(rawData, info = {}) {
-        this._store.loadData(rawData);
+        this.store.loadData(rawData);
         this._info = Object.freeze(info);
         this._connectedViews.forEach(view => view.noteCubeLoaded());
     }
@@ -77,12 +80,11 @@ export class Cube {
      * and aggregated data in the query.  To receive an auto-updating form of the data use
      * createView instead.
      *
-     * @param {Query} query - Query (or config for one) defining the shape of the view.
+     * @param {Object} query - Config for query defining the shape of the view.
      * @returns {Object} -- hierarchical data containing the results of the query.
      */
     executeQuery(query) {
-        query = query instanceof Query ? query : new Query(query);
-        query.cube = this;
+        query = new Query({...query, cube: this});
         const view = new View(query, false),
             ret = view.getData();
 
@@ -93,14 +95,13 @@ export class Cube {
     /**
      * Create a View on this data.
      *
-     * @param {Query} query - Query (or config for one) defining the shape of the view.
+     * @param {Object} query - Config for query defining the shape of the view.
      * @param {boolean} connect - true to update the returned view as the data in this cube
      *      changes (versus a snapshot)
      * @returns {View}
      */
     createView(query, store, connect) {
-        query = query instanceof Query ? query : new Query(query);
-        query.cube = this;
+        query = new Query({...query, cube: this});
         const view = new View(query, store);
         if (connect) this._connectedViews.add(view);
         return view;
@@ -117,7 +118,7 @@ export class Cube {
      */
     updateData(rawData, info) {
         // 1) Process data
-        const transaction = this._store.updateData(rawData);
+        const transaction = this.store.updateData(rawData);
 
         // 2) Process info
         const infoUpdated = isEmpty(info);

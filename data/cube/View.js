@@ -97,18 +97,22 @@ export class View {
 
     getRecordsAsData(records) {
         const {query, cube} = this,
-            {_lockFn} = cube;
+            {lockFn} = cube;
 
         if (!records.length || (!query.includeLeaves && !records[0].isAggregate)) {
             return [];
         }
 
         return records.map(rec => {
-            let {data, dim, children} = rec;
+            let {id, data, dim, children} = rec;
 
+            // Leaves are simple
+            if (!rec.isAggregate) return {id, ...data};
+
+            // Aggregates need children and their dimension processed.
             if (children) {
                 // Potentially Lock children
-                if (_lockFn && _lockFn(rec)) {
+                if (lockFn && lockFn(rec)) {
                     data.locked = true;
                     children = [];
                 } else if (children.length === 1) {
@@ -131,6 +135,7 @@ export class View {
             if (dim) {
                 data.xhDimension = dim?.name;
             }
+
             return data;
         });
     }
