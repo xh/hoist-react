@@ -17,8 +17,7 @@
       border-radius: 5px;
       font-size: 35px;
       margin: var(--xh-pad-px);
-      align-items: center;
-      justify-content: center;
+      text-align: center;
 
       &.disabled {
         color: var(--xh-text-color-muted);
@@ -43,18 +42,18 @@
 
     div {
       flex: 1;
-      height: 100%;
     }
 
     &__key {
       flex: 1;
 
       &.xh-button {
-        height: 100%;
         font-size: var(--xh-font-size-large-em);
         background-color: var(--xh-bg);
+        height: 100%;
         color: var(--xh-text-color);
         margin: var(--xh-pad-px);
+        padding: 0;
         border: var(--xh-border-solid);
       }
     }

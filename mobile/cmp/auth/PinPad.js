@@ -10,44 +10,40 @@ export const pinPad = hoistCmp.factory({
 
     model: uses(PinPadModel),
 
-    render({model}) {
+    render() {
         return vbox({
             className: 'xh-auth-pinpad',
             items: [
                 header(),
-                pinPadDisplay(),
+                display(),
                 errorDisplay(),
-                pinPadKeyboard()
+                keypad()
             ]
         });
     }
 });
 
-const header = hoistCmp.factory({
-    render({model}) {
-        return div({
-            className: 'xh-auth-pinpad__header',
-            items: [
-                h1(model.headerText),
-                p(model.subHeaderText)
-            ]
-        });
-    }
-});
+const header = hoistCmp.factory(
+    ({model}) => div({
+        className: 'xh-auth-pinpad__header',
+        items: [
+            h1(model.headerText),
+            p(model.subHeaderText)
+        ]
+    })
+);
 
-const pinPadDisplay = hoistCmp.factory({
-    render({model}) {
-        return hbox({
-            className: 'xh-auth-pinpad__display',
-            items: model.displayedDigits.map(
-                (num, index) => digit({num, index})
-            )
-        });
-    }
-});
+const display = hoistCmp.factory(
+    ({model}) => hbox({
+        className: 'xh-auth-pinpad__display',
+        items: model.displayedDigits.map(
+            (num, index) => digit({num, index})
+        )
+    })
+);
 
-const digit = hoistCmp.factory({
-    render({num, index, model}) {
+const digit = hoistCmp.factory(
+    ({num, index, model}) => {
         const isActive = index === model.numEntered;
         return span({
             className: 'xh-auth-pinpad__display__digit' +
@@ -56,50 +52,44 @@ const digit = hoistCmp.factory({
             item: num
         });
     }
-});
+);
 
-const errorDisplay = hoistCmp.factory({
-    render({model}) {
-        return div({
-            className: 'xh-auth-pinpad__error',
-            item: p(model.errorText)
-        });
-    }
-});
+const errorDisplay = hoistCmp.factory(
+    ({model}) => div({
+        className: 'xh-auth-pinpad__error',
+        item: p(model.errorText)
+    })
+);
 
-const pinPadKeyboard = hoistCmp.factory({
-    render({model}) {
-        return vbox({
-            className: 'xh-auth-pinpad__keyboard',
-            items: [
-                keypadRow({keys: [1, 2, 3]}),
-                keypadRow({keys: [4, 5, 6]}),
-                keypadRow({keys: [7, 8, 9]}),
-                keypadRow({keys: [
-                    {text: 'clear', onClick: () => model.clear()},
-                    0,
-                    {icon: Icon.arrowLeft(), onClick: () => model.deleteDigit()}
-                ]})
-            ]
-        });
-    }
-});
+const keypad = hoistCmp.factory(
+    ({model}) => vbox({
+        className: 'xh-auth-pinpad__keyboard',
+        items: [
+            keypadRow({keys: [1, 2, 3]}),
+            keypadRow({keys: [4, 5, 6]}),
+            keypadRow({keys: [7, 8, 9]}),
+            keypadRow({keys: [
+                {text: 'clear', onClick: () => model.clear()},
+                0,
+                {icon: Icon.arrowLeft(), onClick: () => model.deleteDigit()}
+            ]})
+        ]
+    })
+);
 
-const keypadRow = hoistCmp.factory({
-    render({keys, model}) {
-        return hbox(
-            keys.map(
-                key => button({
-                    className: 'xh-auth-pinpad__keyboard__key',
-                    disabled: model.disabled,
-                    ...(isNumber(key) ?
-                        {
-                            text: `${key}`,
-                            onClick: () => model.enterDigit(key)
-                        } : key
-                    )
-                })
-            )
-        );
-    }
-});
+const keypadRow = hoistCmp.factory(
+    ({keys, model}) => hbox(
+        keys.map(
+            key => button({
+                className: 'xh-auth-pinpad__keyboard__key',
+                disabled: model.disabled,
+                ...(isNumber(key) ?
+                    {
+                        text: `${key}`,
+                        onClick: () => model.enterDigit(key)
+                    } : key
+                )
+            })
+        )
+    )
+);
