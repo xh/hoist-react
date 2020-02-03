@@ -62,11 +62,11 @@ export class PinPadModel {
 
     @action
     enterDigit(digit) {
-        if (this.checkComplete()) return;
+        if (this.pinComplete()) return;
 
         this._enteredDigits.push(digit);
 
-        if (this.checkComplete()) {
+        if (this.pinComplete()) {
             this.onPinComplete(this._enteredDigits.toJS());
         }
     }
