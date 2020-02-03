@@ -37,6 +37,7 @@ export class View {
     constructor(query, store) {
         this.query = query;
         this.store = store;
+        if (store) store.loadData(this.getData());
     }
 
     //--------------------
@@ -54,11 +55,21 @@ export class View {
         return this.cube.info();
     }
 
+    disconnect() {
+        this.cube.disconnectView(this);
+    }
     //-----------------------
     // Entry point for cube
     //-----------------------
-    noteCubeLoaded() {}
-    noteCubeUpdated() {}
+    noteCubeLoaded() {
+        const {store} = this;
+        store.loadData(this.getData());
+    }
+
+    noteCubeUpdated() {
+        const {store} = this;
+        store.loadData(this.getData());
+    }
 
     getData() {
         const {query} = this,
@@ -145,6 +156,6 @@ export class View {
     }
 
     destroy() {
-        this.cube.disconnectView(this);
+        this.disconnect();
     }
 }
