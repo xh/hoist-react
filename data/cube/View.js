@@ -36,7 +36,7 @@ export class View {
      */
     constructor(query, store) {
         this.query = query;
-        this.store = store
+        this.store = store;
     }
 
     //--------------------

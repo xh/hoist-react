@@ -71,12 +71,12 @@ export class Store {
      *      the summary record.
      */
     constructor({
-            fields,
-            idSpec = 'id',
-            processRawData = null,
-            filter = null,
-            loadRootAsSummary = false
-        }) {
+        fields,
+        idSpec = 'id',
+        processRawData = null,
+        filter = null,
+        loadRootAsSummary = false
+    }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;

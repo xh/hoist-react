@@ -40,12 +40,12 @@ export class Cube {
      *      determine if it should be "locked", preventing drilldown into its children.
      */
     constructor({
-            fields,
-            idSpec = 'id',
-            processRawData,
-            rawData = [],
-            info = {},
-            lockFn,
+        fields,
+        idSpec = 'id',
+        processRawData,
+        rawData = [],
+        info = {},
+        lockFn
     }) {
         this.store = new Store({
             fields: this.parseFields(fields),
