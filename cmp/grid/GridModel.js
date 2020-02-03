@@ -650,8 +650,8 @@ export class GridModel {
         return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
     }
 
-    autoSizeAllColumns() {
-        this.agColumnApi.autoSizeColumns(this.columns.map(col => col.colId));
+    autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
+        this.agColumnApi.autoSizeColumns(colIds);
     }
 
     //-----------------------

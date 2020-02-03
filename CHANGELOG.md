@@ -11,6 +11,7 @@
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
 * The Grid context menu now contains an `Autosize Columns` option by default.
+* `GridModel` now exposes an `autoSizeColumns` method.
 
 ### 🐞 Bug Fixes
 
