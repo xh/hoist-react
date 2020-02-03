@@ -1,10 +1,9 @@
-import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {PinPadModel} from '@xh/hoist/mobile/cmp/auth/PinPadModel';
 import './PinPad.scss';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {isNumber} from 'lodash';
 
 export const pinPad = hoistCmp.factory({
@@ -15,13 +14,22 @@ export const pinPad = hoistCmp.factory({
         return vbox({
             className: 'xh-auth-pinpad',
             items: [
+                header(),
                 pinPadDisplay(),
-                pinPadKeyboard(),
-                mask({
-                    isDisplayed: model.disabled,
-                    message: model.errorText,
-                    spinner: false
-                })
+                errorDisplay(),
+                pinPadKeyboard()
+            ]
+        });
+    }
+});
+
+const header = hoistCmp.factory({
+    render({model}) {
+        return div({
+            className: 'xh-auth-pinpad__header',
+            items: [
+                h1(model.headerText),
+                p(model.subHeaderText)
             ]
         });
     }
@@ -32,17 +40,29 @@ const pinPadDisplay = hoistCmp.factory({
         return hbox({
             className: 'xh-auth-pinpad__display',
             items: model.displayedDigits.map(
-                i => digit({num: i})
+                (num, index) => digit({num, index})
             )
         });
     }
 });
 
 const digit = hoistCmp.factory({
-    render({num}) {
+    render({num, index, model}) {
+        const isActive = index === model.numEntered;
         return span({
-            className: 'xh-auth-pinpad__display__digit',
+            className: 'xh-auth-pinpad__display__digit' +
+                (model.disabled ? ' disabled' : '') +
+                (isActive ? ' active' : ''),
             item: num
+        });
+    }
+});
+
+const errorDisplay = hoistCmp.factory({
+    render({model}) {
+        return div({
+            className: 'xh-auth-pinpad__error',
+            item: p(model.errorText)
         });
     }
 });

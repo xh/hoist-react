@@ -2,6 +2,10 @@
   width: 100%;
   height: 100%;
 
+  &__header {
+    text-align: center;
+  }
+
   &__display {
     flex: 1;
     flex-direction: row;
@@ -13,6 +17,46 @@
       border-radius: 5px;
       font-size: 35px;
       margin: var(--xh-pad-px);
+      align-items: center;
+      justify-content: center;
+
+      &.disabled {
+        color: var(--xh-text-color-muted);
+      }
+
+      &.active {
+        border-width: 2px;
+        background-color: var(--xh-bg-highlight);
+      }
+    }
+  }
+
+  &__error {
+    flex: 1;
+    color: var(--xh-red);
+    text-align: center;
+    font-size: 16px;
+  }
+
+  &__keyboard {
+    flex: 2;
+
+    div {
+      flex: 1;
+      height: 100%;
+    }
+
+    &__key {
+      flex: 1;
+
+      &.xh-button {
+        height: 100%;
+        font-size: var(--xh-font-size-large-em);
+        background-color: var(--xh-bg);
+        color: var(--xh-text-color);
+        margin: var(--xh-pad-px);
+        border: var(--xh-border-solid);
+      }
     }
   }
 }
