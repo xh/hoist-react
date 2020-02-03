@@ -10,10 +10,8 @@ export class PinPadModel {
 
     @bindable
     disabled;
-
     @bindable
     errorText;
-
     @bindable
     headerText;
     @bindable
@@ -23,11 +21,26 @@ export class PinPadModel {
     _enteredDigits;
 
     @computed
+    get enteredDigits() {
+        return this._enteredDigits.toJS();
+    }
+
+    @computed
+    get numEntered() {
+        return this._enteredDigits.length;
+    }
+
+    @computed
+    get pinComplete() {
+        return this.pinLength === this.numEntered;
+    }
+
+    @computed
     get displayedDigits() {
         const {numEntered, pinLength, _enteredDigits} = this;
 
         let res = Array(pinLength).fill('•');
-        if (this.pinComplete()) {
+        if (this.pinComplete) {
             return res;
         }
 
@@ -35,12 +48,8 @@ export class PinPadModel {
         for (let i = numEntered; i < pinLength; i++) {
             res[i] = ' ';
         }
-        return res;
-    }
 
-    @computed
-    get numEntered() {
-        return this._enteredDigits.length;
+        return res;
     }
 
     constructor({
@@ -62,17 +71,13 @@ export class PinPadModel {
 
     @action
     enterDigit(digit) {
-        if (this.pinComplete()) return;
+        if (this.pinComplete) return;
 
         this._enteredDigits.push(digit);
 
-        if (this.pinComplete()) {
-            this.onPinComplete(this._enteredDigits.toJS());
+        if (this.pinComplete) {
+            this.onPinComplete(this.enteredDigits);
         }
-    }
-
-    pinComplete() {
-        return this.pinLength === this.numEntered;
     }
 
     @action
