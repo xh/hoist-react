@@ -7,9 +7,11 @@
 
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
-import {AggregateRecord} from './impl/AggregateRecord';
 
-import {isEmpty, groupBy, map} from 'lodash';
+import {AggregateRecord} from './impl/AggregateRecord';
+import {RecordSet} from '../impl/RecordSet';
+
+import {isEmpty, groupBy, map, omitBy} from 'lodash';
 
 
 /**
@@ -25,6 +27,9 @@ export class View {
 
     /** @member {Store} */
     store = null;
+
+    // Implementation
+    lastLeaves  = null; // RecordSet
 
     /**
      * @private.  Applications should use createView() instead.
@@ -66,27 +71,40 @@ export class View {
         store.loadData(this.getData());
     }
 
-    noteCubeUpdated() {
-        const {store} = this;
-        store.loadData(this.getData());
+    noteCubeUpdated(transaction) {
+        const {store} = this,
+            t = this.filteredTransaction(transaction);
+
+        // 0) Need a full rebuild, due to changed leaves
+        if (!isEmpty(t.add) || !isEmpty(t.remove) || !isEmpty(t.newUpdate)) {
+            store.loadData(this.getData());
+            return;
+        }
+
+        // 1) Otherwise, incrementally refresh aggregations.  Hopefully common!
+        if (!isEmpty(t.update)) {
+            console.debug('ToDo:  Apply these updates minimally:')
+            console.debug(t);
+            store.loadData(this.getData());
+        }
     }
 
     getData() {
         const {query} = this,
-            {dimensions, includeRoot, fields, cube, filters} = query,
-            cubeRecords = cube.store.records,
+            {dimensions, includeRoot, fields, cube} = query,
             rootId = query.filtersAsString();
 
-        const leaves = !isEmpty(filters) ?
-            cubeRecords.filter(rec => filters.every(f => f.fn(rec))) :
-            cubeRecords;
+        const leaves = this.filterLeaves(cube.store._current);
 
-        let newRecords = this.groupAndInsertLeaves(leaves, dimensions, rootId, {});
+        let newRecords = this.groupAndInsertLeaves(leaves.list, dimensions, rootId, {});
         newRecords = includeRoot ?
             [new AggregateRecord(fields, rootId, newRecords, null, 'Total', {})] :
             newRecords;
 
-        return this.getRecordsAsData(newRecords);
+        const ret = this.getRecordsAsData(newRecords);
+
+        this.lastLeaves = leaves;
+        return ret;
     }
 
     //------------------------
@@ -153,6 +171,31 @@ export class View {
 
             return data;
         });
+    }
+
+    filteredTransaction(t) {
+        const {filters} = this.query;
+        if (isEmpty(filters)) return t;
+
+        const {lastLeaves} = this,
+            recordFilter = (r) => filters.every(f => f.fn(r));
+        return omitBy ({
+            update: t.update?.filter(r => lastLeaves.getById(r.id)),
+            remove: t.remove?.filter(id => lastLeaves.getById(id)),
+            add:    t.add?.filter(recordFilter),
+            newUpdate: t.update?.filter(r => !lastLeaves.getById(r.id) && recordFilter(r))
+        }, isEmpty);
+    }
+
+    filterLeaves(rs) {
+        const {filters} = this.query;
+        if (isEmpty(filters)) return rs;
+
+        const passes = new Map();
+        rs.recordMap.forEach((rec, key) => {
+            if (filters.every(f => f.fn(rec))) passes.set(key, rec);
+        });
+        return new RecordSet(rs.store, passes);
     }
 
     destroy() {

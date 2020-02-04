@@ -157,12 +157,14 @@ export class Store {
      * @param {(Object[]|StoreTransaction)} rawData - data changes to process. If provided as an
      *      array, rawData will be processed into adds and updates, with updates determined by
      *      matching existing records by ID.
-     * @returns {StoreTransaction} - transaction applied, or null if no changes were made.
+     * @returns {Object} - changes applied, or null if no record changes were made.
      */
     @action
     updateData(rawData) {
+        const changeLog = {};
+
         // Build a transaction object out of a flat list of adds and updates
-        let transaction = null;
+        let rawTransaction = null;
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
@@ -174,12 +176,12 @@ export class Store {
                 }
             });
 
-            transaction = {update, add};
+            rawTransaction = {update, add};
         } else {
-            transaction = rawData;
+            rawTransaction = rawData;
         }
 
-        const {update, add, remove, rawSummaryData, ...other} = transaction;
+        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
@@ -199,8 +201,6 @@ export class Store {
             });
         }
 
-        let didUpdate = false;
-
         // 2) Pre-process summary record, peeling it out of updates if needed
         const {summaryRecord} = this;
         let summaryUpdateRec;
@@ -214,39 +214,41 @@ export class Store {
 
         if (summaryUpdateRec) {
             this.summaryRecord = summaryUpdateRec;
-            didUpdate = true;
+            changeLog.summaryRecord = this.summaryRecord;
         }
 
         // 3) Apply changes
-        if (!isEmpty(updateRecs) || !isEmpty(addRecs) || !isEmpty(remove)) {
-            const {isModified} = this;
+        let rsTransaction = {};
+        if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
+        if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
+        if (!isEmpty(remove)) rsTransaction.remove = remove;
+
+        if (!isEmpty(rsTransaction)) {
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
-            this._committed = this._committed.withTransaction({update: updateRecs, add: addRecs, remove: remove});
+            this._committed = this._committed.withTransaction(rsTransaction);
 
-            if (isModified) {
+            if (this.isModified) {
                 // If this store had pre-existing local modifications, apply the updates over that
                 // local state. This might (or might not) effectively overwrite those local changes,
                 // so we normalize against the newly updated committed state to verify if any local
                 // modifications remain.
-                this._current = this._current
-                    .withTransaction({update: updateRecs, add: addRecs, remove: remove})
-                    .normalize(this._committed);
+                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
             } else {
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
 
             this.rebuildFiltered();
-            didUpdate = true;
+            Object.assign(changeLog, rsTransaction);
         }
 
-        if (didUpdate) {
+        if (!isEmpty(changeLog)) {
             this.lastUpdated = Date.now();
-            return transaction;
         }
-        return null;
+
+        return changeLog;
     }
 
     /**
