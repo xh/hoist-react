@@ -4,14 +4,18 @@
 
   &__header {
     text-align: center;
+
+    & p {
+      min-height: 2em;
+    }
   }
 
   &__display {
-    flex: 1;
     flex-direction: row;
 
     &__digit {
       flex: 1;
+      height: 65px;
       background-color: var(--xh-bg-alt);
       border: var(--xh-border-solid);
       border-radius: 5px;
@@ -24,7 +28,8 @@
       }
 
       &.active {
-        border-width: 2px;
+        border-width: calc(var(--xh-border-width-px) * 2);
+        margin: calc(var(--xh-pad-px) - var(--xh-border-width-px));
         background-color: var(--xh-bg-highlight);
       }
     }
@@ -38,9 +43,10 @@
   }
 
   &__keyboard {
-    flex: 2;
+    flex: 3;
+    margin: var(--xh-pad-double-px);
 
-    div {
+    &__row {
       flex: 1;
     }
 
@@ -49,10 +55,8 @@
 
       &.xh-button {
         font-size: var(--xh-font-size-large-em);
-        background-color: var(--xh-bg);
         height: 100%;
-        color: var(--xh-text-color);
-        margin: var(--xh-pad-px);
+        margin: 0;
         padding: 0;
         border: var(--xh-border-solid);
       }

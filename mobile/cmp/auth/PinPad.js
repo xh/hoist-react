@@ -78,8 +78,9 @@ const keypad = hoistCmp.factory(
 );
 
 const keypadRow = hoistCmp.factory(
-    ({keys, model}) => hbox(
-        keys.map(
+    ({keys, model}) => hbox({
+        className: 'xh-auth-pinpad__keyboard__row',
+        items: keys.map(
             key => button({
                 className: 'xh-auth-pinpad__keyboard__key',
                 disabled: model.disabled,
@@ -91,5 +92,5 @@ const keypadRow = hoistCmp.factory(
                 )
             })
         )
-    )
+    })
 );
