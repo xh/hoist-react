@@ -1,12 +1,10 @@
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action, bindable} from '@xh/hoist/mobx';
-import {computed} from 'mobx';
 
 @HoistModel
 export class PinPadModel {
 
     pinLength;
-    onPinComplete;
 
     @bindable
     disabled;
@@ -20,31 +18,49 @@ export class PinPadModel {
     @observable
     _enteredDigits;
 
-    @computed
-    get enteredDigits() {
-        return this._enteredDigits.toJS();
+    constructor({
+        pinLength,
+        errorText = ' ',
+        headerText = ' ',
+        subHeaderText = ' '
+    }) {
+        this.pinLength = pinLength;
+        this.errorText = errorText;
+        this.headerText = headerText;
+        this.subHeaderText = subHeaderText;
+
+        this._enteredDigits = [];
     }
 
-    @computed
-    get numEntered() {
-        return this._enteredDigits.length;
+    @action
+    enterDigit(digit) {
+        if (this.pinComplete) return;
+
+        this.didDelete = false;
+
+        this._enteredDigits.push(digit);
     }
 
-    @computed
-    get pinComplete() {
-        return this.pinLength === this.numEntered;
+    @action
+    deleteDigit() {
+        this.didDelete = true;
+        this._enteredDigits.pop();
     }
 
-    @computed
+    @action
+    clear() {
+        this._enteredDigits.clear();
+    }
+
     get displayedDigits() {
         const {numEntered, pinLength, _enteredDigits} = this;
 
         let res = Array(pinLength).fill('•');
-        if (this.pinComplete) {
-            return res;
+
+        if (!this.pinComplete && !this.didDelete) {
+            res[numEntered - 1] = _enteredDigits[numEntered - 1];
         }
 
-        res[numEntered - 1] = _enteredDigits[numEntered - 1];
         for (let i = numEntered; i < pinLength; i++) {
             res[i] = ' ';
         }
@@ -52,41 +68,27 @@ export class PinPadModel {
         return res;
     }
 
-    constructor({
-        pinLength,
-        onPinComplete,
-        errorText = ' ',
-        headerText = ' ',
-        subHeaderText = ' '
-    }) {
-        this.pinLength = pinLength;
-        this.onPinComplete = onPinComplete;
-        this.errorText = errorText;
-        this.headerText = headerText;
-        this.subHeaderText = subHeaderText;
-
-        this._enteredDigits = [];
-
+    completedPin() {
+        return this.pinComplete ?
+            this._enteredDigits.toJS().join('') :
+            null;
     }
 
-    @action
-    enterDigit(digit) {
-        if (this.pinComplete) return;
+    //------------------------------------
+    // Implementation
+    //------------------------------------
 
-        this._enteredDigits.push(digit);
+    didDelete = false;
 
-        if (this.pinComplete) {
-            this.onPinComplete(this.enteredDigits);
-        }
+    get activeIndex() {
+        return this.numEntered;
     }
 
-    @action
-    deleteDigit() {
-        this._enteredDigits.pop();
+    get numEntered() {
+        return this._enteredDigits.length;
     }
 
-    @action
-    clear() {
-        this._enteredDigits = [];
+    get pinComplete() {
+        return this.pinLength === this.numEntered;
     }
 }

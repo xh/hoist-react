@@ -44,11 +44,12 @@ const display = hoistCmp.factory(
 
 const digit = hoistCmp.factory(
     ({num, index, model}) => {
-        const isActive = index === model.numEntered;
+        const isActive = index === model.activeIndex;
+        let className = 'xh-auth-pinpad__display__digit';
+        if (model.disabled) className += ' disabled';
+        if (isActive) className += ' active';
         return span({
-            className: 'xh-auth-pinpad__display__digit' +
-                (model.disabled ? ' disabled' : '') +
-                (isActive ? ' active' : ''),
+            className,
             item: num
         });
     }
