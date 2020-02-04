@@ -15,17 +15,6 @@ export class PinPadModel {
     @bindable subHeaderText;
 
     /**
-     * The completed PIN entered by the user.
-     * @returns {string} - null if the user has not finished entering a PIN, otherwise the PIN
-     *      the user entered.
-     */
-    get completedPin() {
-        return this.pinComplete ?
-            this._enteredDigits.toJS().join('') :
-            null;
-    }
-
-    /**
      * @param pinLength - The length of the PIN to get from the user.
      * @param errorText - Text to show formatted as an error.
      * @param headerText - Text to show formatted as a header.
@@ -48,6 +37,17 @@ export class PinPadModel {
     }
 
     /**
+     * The completed PIN entered by the user.
+     * @returns {string} - null if the user has not finished entering a PIN, otherwise the PIN
+     *      the user entered.
+     */
+    get completedPin() {
+        return this._pinComplete ?
+            this._enteredDigits.toJS().join('') :
+            null;
+    }
+
+    /**
      * Clear everything entered by the user, allowing the user to start entering a new PIN.
      */
     @action
@@ -62,21 +62,21 @@ export class PinPadModel {
     _deleteWasLast = false;
     _pinLength;
 
-    get activeIndex() {
-        return this.numEntered;
+    get _activeIndex() {
+        return this._numEntered;
     }
 
-    get numEntered() {
+    get _numEntered() {
         return this._enteredDigits.length;
     }
 
-    get pinComplete() {
-        return this._pinLength === this.numEntered;
+    get _pinComplete() {
+        return this._pinLength === this._numEntered;
     }
 
     @action
     enterDigit(digit) {
-        if (this.pinComplete) return;
+        if (this._pinComplete) return;
         this._deleteWasLast = false;
         this._enteredDigits.push(digit);
     }
@@ -88,18 +88,16 @@ export class PinPadModel {
     }
 
     get displayedDigits() {
-        const {numEntered, _pinLength, _enteredDigits} = this;
+        const {_numEntered, _pinLength, _enteredDigits} = this;
 
         let res = Array(_pinLength).fill('•');
 
-        const shouldDisplayDigit = !this.pinComplete && !this._deleteWasLast;
+        const shouldDisplayDigit = !this._pinComplete && !this._deleteWasLast;
         if (shouldDisplayDigit) {
-            res[numEntered - 1] = _enteredDigits[numEntered - 1];
+            res[_numEntered - 1] = _enteredDigits[_numEntered - 1];
         }
 
-        for (let i = numEntered; i < _pinLength; i++) {
-            res[i] = ' ';
-        }
+        res.fill(' ', _numEntered);
 
         return res;
     }
