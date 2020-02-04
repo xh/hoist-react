@@ -32,7 +32,6 @@
       }
 
       &.active {
-        margin: calc(var(--xh-pad-px) - var(--xh-border-width-px));
         border-color: var(--xh-accent-color);
         background-color: var(--xh-bg-highlight);
       }
