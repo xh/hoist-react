@@ -4,14 +4,10 @@ import {observable, action, bindable} from '@xh/hoist/mobx';
 @HoistModel
 export class PinPadModel {
 
-    @bindable
-    disabled;
-    @bindable
-    errorText;
-    @bindable
-    headerText;
-    @bindable
-    subHeaderText;
+    @bindable disabled;
+    @bindable errorText;
+    @bindable headerText;
+    @bindable subHeaderText;
 
     constructor({
         pinLength,
@@ -36,9 +32,7 @@ export class PinPadModel {
     @action
     enterDigit(digit) {
         if (this.pinComplete) return;
-
         this._deleteWasLast = false;
-
         this._enteredDigits.push(digit);
     }
 
@@ -73,12 +67,8 @@ export class PinPadModel {
     //------------------------------------
     // Implementation
     //------------------------------------
-
-    @observable
-    _enteredDigits;
-
+    @observable _enteredDigits;
     _deleteWasLast = false;
-
     _pinLength;
 
     get activeIndex() {

@@ -11,9 +11,13 @@
   }
 
   &__display {
+    margin: 0 var(--xh-pad-px);
     flex-direction: row;
 
     &__digit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex: 1;
       height: 65px;
       background-color: var(--xh-bg-alt);
@@ -28,8 +32,8 @@
       }
 
       &.active {
-        border-width: calc(var(--xh-border-width-px) * 2);
         margin: calc(var(--xh-pad-px) - var(--xh-border-width-px));
+        border-color: var(--xh-accent-color);
         background-color: var(--xh-bg-highlight);
       }
     }
@@ -44,7 +48,6 @@
 
   &__keyboard {
     flex: 3;
-    margin: var(--xh-pad-double-px);
 
     &__row {
       flex: 1;
@@ -58,7 +61,8 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        border: var(--xh-border-solid);
+        border: 1px solid var(--xh-bg-alt);
+        border-radius: 0;
       }
     }
   }

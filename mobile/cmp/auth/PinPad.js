@@ -1,15 +1,14 @@
-import {div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {PinPadModel} from '@xh/hoist/mobile/cmp/auth/PinPadModel';
-import './PinPad.scss';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {isNumber} from 'lodash';
 
+import './PinPad.scss';
+import {PinPadModel} from './PinPadModel';
+
 export const pinPad = hoistCmp.factory({
-
     model: uses(PinPadModel),
-
     render() {
         return vbox({
             className: 'xh-auth-pinpad',
@@ -70,7 +69,7 @@ const keypad = hoistCmp.factory(
             keypadRow({keys: [4, 5, 6]}),
             keypadRow({keys: [7, 8, 9]}),
             keypadRow({keys: [
-                {text: 'clear', onClick: () => model.clear()},
+                {text: 'Clear', onClick: () => model.clear()},
                 0,
                 {icon: Icon.arrowLeft(), onClick: () => model.deleteDigit()}
             ]})
