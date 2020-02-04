@@ -1,5 +1,5 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
+import {frame, vframe, div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {isNumber} from 'lodash';
@@ -13,14 +13,17 @@ import {PinPadModel} from './PinPadModel';
 export const pinPad = hoistCmp.factory({
     model: uses(PinPadModel),
     render() {
-        return vbox({
+        return frame({
             className: 'xh-auth-pinpad',
-            items: [
-                header(),
-                display(),
-                errorDisplay(),
-                keypad()
-            ]
+            item: vframe({
+                className: 'xh-auth-pinpad__frame',
+                items: [
+                    header(),
+                    display(),
+                    errorDisplay(),
+                    keypad()
+                ]
+            })
         });
     }
 });
