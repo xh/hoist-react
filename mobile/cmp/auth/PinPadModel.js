@@ -15,10 +15,10 @@ export class PinPadModel {
     @bindable subHeaderText;
 
     /**
-     * @param pinLength - The length of the PIN to get from the user.
-     * @param errorText - Text to show formatted as an error.
-     * @param headerText - Text to show formatted as a header.
-     * @param subHeaderText - Text to show formatted as a subheader.
+     * @param {number} pinLength - The length of the PIN to get from the user.
+     * @param {string} [errorText] - Text to show formatted as an error.
+     * @param {string} [headerText] - Text to show formatted as a header.
+     * @param {string} [subHeaderText] - Text to show formatted as a subheader.
      */
     constructor({
         pinLength,
