@@ -10,7 +10,7 @@
   * Each of these sizing modes has their own css variables for applications to override as needed
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
-* Added a `PinPad` component for streamlined handling of PIN entry.
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
 
 ### 🐞 Bug Fixes
 
