@@ -69,6 +69,9 @@ export class Store {
      *      StoreFilter config to create.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
+     * @param {Object[]} [c.rawData] - source data to load
+     * @param {Object} [c.rawSummaryData] - source data for an optional summary record, representing
+     *      a custom aggregation to show as a "grand total" for the dataset, if desired.
      */
     constructor(
         {
@@ -76,7 +79,9 @@ export class Store {
             idSpec = 'id',
             processRawData = null,
             filter = null,
-            loadRootAsSummary = false
+            loadRootAsSummary = false,
+            rawData,
+            rawSummaryData
         }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
@@ -86,6 +91,8 @@ export class Store {
 
         this.resetRecords();
         this.setFilter(filter);
+
+        if (rawData) this.loadData(rawData, rawSummaryData);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
