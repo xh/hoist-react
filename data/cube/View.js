@@ -83,7 +83,7 @@ export class View {
 
         // 1) Otherwise, incrementally refresh aggregations.  Hopefully common!
         if (!isEmpty(t.update)) {
-            console.debug('ToDo:  Apply these updates minimally:')
+            console.debug('ToDo:  Apply these updates minimally:');
             console.debug(t);
             store.loadData(this.getData());
         }
@@ -179,7 +179,7 @@ export class View {
 
         const {lastLeaves} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
-        return omitBy ({
+        return omitBy({
             update: t.update?.filter(r => lastLeaves.getById(r.id)),
             remove: t.remove?.filter(id => lastLeaves.getById(id)),
             add:    t.add?.filter(recordFilter),
