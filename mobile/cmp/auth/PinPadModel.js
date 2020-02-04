@@ -4,8 +4,6 @@ import {observable, action, bindable} from '@xh/hoist/mobx';
 @HoistModel
 export class PinPadModel {
 
-    pinLength;
-
     @bindable
     disabled;
     @bindable
@@ -15,16 +13,13 @@ export class PinPadModel {
     @bindable
     subHeaderText;
 
-    @observable
-    _enteredDigits;
-
     constructor({
         pinLength,
         errorText = ' ',
         headerText = ' ',
         subHeaderText = ' '
     }) {
-        this.pinLength = pinLength;
+        this._pinLength = pinLength;
         this.errorText = errorText;
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
@@ -32,18 +27,24 @@ export class PinPadModel {
         this._enteredDigits = [];
     }
 
+    get completedPin() {
+        return this.pinComplete ?
+            this._enteredDigits.toJS().join('') :
+            null;
+    }
+
     @action
     enterDigit(digit) {
         if (this.pinComplete) return;
 
-        this.didDelete = false;
+        this._deleteWasLast = false;
 
         this._enteredDigits.push(digit);
     }
 
     @action
     deleteDigit() {
-        this.didDelete = true;
+        this._deleteWasLast = true;
         this._enteredDigits.pop();
     }
 
@@ -53,32 +54,32 @@ export class PinPadModel {
     }
 
     get displayedDigits() {
-        const {numEntered, pinLength, _enteredDigits} = this;
+        const {numEntered, _pinLength, _enteredDigits} = this;
 
-        let res = Array(pinLength).fill('•');
+        let res = Array(_pinLength).fill('•');
 
-        if (!this.pinComplete && !this.didDelete) {
+        const shouldDisplayDigit = !this.pinComplete && !this._deleteWasLast;
+        if (shouldDisplayDigit) {
             res[numEntered - 1] = _enteredDigits[numEntered - 1];
         }
 
-        for (let i = numEntered; i < pinLength; i++) {
+        for (let i = numEntered; i < _pinLength; i++) {
             res[i] = ' ';
         }
 
         return res;
     }
 
-    completedPin() {
-        return this.pinComplete ?
-            this._enteredDigits.toJS().join('') :
-            null;
-    }
-
     //------------------------------------
     // Implementation
     //------------------------------------
 
-    didDelete = false;
+    @observable
+    _enteredDigits;
+
+    _deleteWasLast = false;
+
+    _pinLength;
 
     get activeIndex() {
         return this.numEntered;
@@ -89,6 +90,6 @@ export class PinPadModel {
     }
 
     get pinComplete() {
-        return this.pinLength === this.numEntered;
+        return this._pinLength === this.numEntered;
     }
 }
