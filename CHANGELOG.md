@@ -11,6 +11,7 @@
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
 * Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `Column` and `ColumnGroup` now support React elements for `headerName`.
 
 ### 🐞 Bug Fixes
 
