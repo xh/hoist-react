@@ -48,7 +48,7 @@ export class CubeField extends Field {
 
     /**
      * @param {Object} c - Field configuration.  See Field class for core parameters.
-     *      The CubeField constructor also supports the additional parameters below.
+     *      This constructor also supports the additional parameters below.
      * @param {boolean} [c.isDimension] - true to allow this field to be used for grouping.
      * @param {(string|Aggregator)} [c.aggregator] - instance of a Hoist Cube Aggregator (from the
      *      aggregate package), or string alias for the same (e.g. 'MAX').

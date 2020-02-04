@@ -12,10 +12,11 @@ import {Store} from '../';
 
 import {isEmpty} from 'lodash';
 /**
- * A container for grouping, aggregating, and filtering data on multiple dimensions.
+ * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
  *
- * This object is a wrapper around a Store, which allows the creation of observable
- * "views" -- filtered and aggregated views on this data.
+ * This object is a wrapper around a Store.   It allows executing queries against that store
+ * that performing filtering, grouping, and aggregating.  It also support the creation of
+ * observable "views" for showing realtime updates to this data..
  */
 export class Cube {
 
@@ -32,9 +33,9 @@ export class Cube {
      * @param {Object} c - Cube configuration.
      * @param {(CubeField[]|Object[])} - array of CubeFields / {@see CubeField} configs.
      *      See Store.fields.
+     * @param {Object[]} [c.data] - array of initial raw data.
      * @param {(function|string)} [c.idSpec] - see Store.idSpec.  Default 'id'
      * @param {function} [c.processRawData] - see Store.processRawData.
-     * @param {Object[]} [c.rawData] - array of initial raw data.
      * @param {Object} [c.info] - map of metadata associated with this data.
      * @param {LockFn} [c.lockFn] - optional function to be called for each node to aggregate to
      *      determine if it should be "locked", preventing drilldown into its children.
@@ -43,7 +44,7 @@ export class Cube {
         fields,
         idSpec = 'id',
         processRawData,
-        rawData = [],
+        data = [],
         info = {},
         lockFn
     }) {
@@ -52,7 +53,7 @@ export class Cube {
             idSpec,
             processRawData
         });
-        this.store.loadData(rawData);
+        this.store.loadData(data);
         this.lockFn = lockFn;
         this._info = info;
     }
@@ -80,12 +81,12 @@ export class Cube {
     /**
      * Query the cube.
      *
-     * This method will return an immutable snapshot of javascript objects representing the filtered
+     * This method will return a snapshot of javascript objects representing the filtered
      * and aggregated data in the query.  In addition to the fields specified in Query, nodes will
      * each contain a 'cubeLabel' and a 'cubeDimension' property.
      *
      * @param {Object} query - Config for query defining the shape of the view.
-     * @returns {Object} -- hierarchical data containing the results of the query.
+     * @returns {Object} - hierarchical data containing the results of the query.
      */
     executeQuery(query) {
         query = new Query({...query, cube: this});
