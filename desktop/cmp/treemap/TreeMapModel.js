@@ -204,8 +204,8 @@ export class TreeMapModel {
     //-------------------------
     // Data
     //-------------------------
-    processData(rawData) {
-        const ret = this.processRecordsRecursive(rawData);
+    processData(sourceRecords) {
+        const ret = this.processRecordsRecursive(sourceRecords);
         return this.normaliseColorValues(ret);
     }
 
@@ -214,11 +214,11 @@ export class TreeMapModel {
      * passed to HighCharts for rendering. Drilldown children are included according
      * to the bound GridModel's expandState.
      */
-    processRecordsRecursive(rawData, parentId = null, depth = 1) {
+    processRecordsRecursive(sourceRecords, parentId = null, depth = 1) {
         const {labelField, valueField, heatField, maxDepth} = this,
             ret = [];
 
-        rawData.forEach(record => {
+        sourceRecords.forEach(record => {
             const {id, children, treePath} = record,
                 name = record.data[labelField],
                 value = record.data[valueField],

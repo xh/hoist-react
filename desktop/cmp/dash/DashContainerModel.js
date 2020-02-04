@@ -18,7 +18,7 @@ import {find, reject, cloneDeep} from 'lodash';
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
-import {addViewPanel} from './impl/AddViewPanel';
+import {addViewMenu} from './impl/AddViewMenu';
 import {addViewButton} from './impl/AddViewButton';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
@@ -109,8 +109,7 @@ export class DashContainerModel {
      *      which opens the provided 'Add View' popover.
      * @param {(Object|function)} [addViewContent] - content to be rendered in the 'Add View' popover.
      *      HoistComponent or a function returning a react element. Defaults to the provided
-     *      @see AddViewPanel. Will receive the clicked `stack`, this `dashContainerModel`
-     *      and the `popoverModel` as props.
+     *      @see AddViewMenu. Will receive the clicked `stack` and this `dashContainerModel` as props.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
@@ -122,7 +121,7 @@ export class DashContainerModel {
         viewSpecs,
         initialState = [],
         showAddButton = true,
-        addViewContent = addViewPanel,
+        addViewContent = addViewMenu,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
@@ -191,16 +190,25 @@ export class DashContainerModel {
     //------------------------
     // Implementation
     //------------------------
-    @debounced(100)
-    @action
     updateState() {
         const {goldenLayout} = this;
         if (!goldenLayout.isInitialised) return;
 
-        this.state = convertGLToState(goldenLayout, this);
+        // If the layout becomes completely empty, ensure we have our minimal empty layout
+        if (!goldenLayout.root.contentItems.length) {
+            this.loadStateAsync([]);
+            return;
+        }
 
-        // Update tab headers on state change to reflect title/icon changes.
         this.updateTabHeaders();
+        this.publishState();
+    }
+
+    @debounced(1000)
+    @action
+    publishState() {
+        const {goldenLayout} = this;
+        this.state = convertGLToState(goldenLayout, this);
     }
 
     onItemDestroyed(item) {
@@ -264,7 +272,7 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Add View Dialog
+    // Add View Button
     //-----------------
     onStackCreated(stack) {
         // Listen to active item change to support RenderMode
@@ -307,11 +315,13 @@ export class DashContainerModel {
     updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
+            const viewModel = this.getViewModel(getViewModelId(item));
+            if (!viewModel) return;
+
             const $el = item.tab.element, // Note: this is a jquery element
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
-                viewModel = this.getViewModel(getViewModelId(item)),
                 {icon, title} = viewModel;
 
             if (icon) {
@@ -354,8 +364,10 @@ export class DashContainerModel {
         $inputEl.blur(() => this.hideTitleForm($el));
         $formEl.submit(() => {
             const title = $inputEl.val();
-            $titleEl.text(title);
-            viewModel.setTitle(title);
+            if (title.length) {
+                $titleEl.text(title);
+                viewModel.setTitle(title);
+            }
 
             this.hideTitleForm($el);
             return false;

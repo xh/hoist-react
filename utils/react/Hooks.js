@@ -50,8 +50,11 @@ export function useOnResize(fn, delay, ref) {
         let prevWidth, prevHeight;
 
         const wrappedFn = (e) => {
-            const {width, height} = e[0].contentRect;
-            if (width != 0 && height != 0 && width != prevWidth && height != prevHeight) {
+            const {width, height} = e[0].contentRect,
+                isVisible = width !== 0 && height !== 0,
+                hasChanged = width !== prevWidth || height !== prevHeight;
+
+            if (isVisible && hasChanged) {
                 prevWidth = width;
                 prevHeight = height;
                 fn(e);

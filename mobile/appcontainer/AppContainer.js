@@ -8,7 +8,6 @@ import {elem, AppState, XH, uses, hoistCmp} from '@xh/hoist/core';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
-import {menu} from '@xh/hoist/mobile/cmp/menu';
 
 import {aboutDialog} from './AboutDialog';
 import {feedbackDialog} from './FeedbackDialog';
@@ -98,8 +97,7 @@ const appContainerView = hoistCmp.factory({
                             model: model.refreshContextModel,
                             item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
                         }),
-                        versionBar(),
-                        appMenu()
+                        versionBar()
                     ),
                     mask({model: model.appLoadModel, spinner: true}),
                     messageSource(),
@@ -111,20 +109,5 @@ const appContainerView = hoistCmp.factory({
             default:
                 return null;
         }
-    }
-});
-
-
-const appMenu = hoistCmp.factory({
-    displayName: 'AppMenu',
-
-    render() {
-        const menuModel = XH.appModel.appMenuModel;
-        if (!menuModel) return null;
-        return menu({
-            model: menuModel,
-            width: 260,
-            align: 'right'
-        });
     }
 });
