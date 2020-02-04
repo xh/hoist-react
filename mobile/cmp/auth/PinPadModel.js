@@ -1,6 +1,6 @@
 import {HoistModel} from '@xh/hoist/core';
-import {observable, action, bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {observable, action, bindable, computed} from '@xh/hoist/mobx';
+import {times} from 'lodash';
 
 @HoistModel
 export class PinPadModel {
@@ -8,42 +8,51 @@ export class PinPadModel {
     /** @member {boolean} */
     @bindable disabled;
     /** @member {string} */
-    @bindable errorText;
-    /** @member {string} */
     @bindable headerText;
     /** @member {string} */
     @bindable subHeaderText;
+    /** @member {string} */
+    @bindable errorText;
+
+
+    @observable _enteredDigits;
+    _deleteWasLast = false;
+    _pinLength;
+
 
     /**
-     * @param pinLength - The length of the PIN to get from the user.
-     * @param errorText - Text to show formatted as an error.
-     * @param headerText - Text to show formatted as a header.
-     * @param subHeaderText - Text to show formatted as a subheader.
+     * @param {Object} [c] - configuration object.
+     * @param {number} [c.pinLength] - The length of the PIN to get from the user, default 4.
+     * @param {string} [c.headerText] - initial text to show formatted as a header.
+     * @param {string} [c.subHeaderText] - initial text to show formatted as a subheader.
      */
     constructor({
-        pinLength,
-        errorText = ' ',
-        headerText = ' ',
-        subHeaderText = ' '
-    }) {
-        throwIf(!pinLength, 'PinPad requires pinLength to be specified.');
-
-        this._pinLength = pinLength;
-        this.errorText = errorText;
+        pinLength = 4,
+        headerText = '',
+        subHeaderText = ''
+    } = {}) {
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;
 
+        this._pinLength = pinLength;
         this._enteredDigits = [];
     }
 
+    //-------------------
+    // App Entry points
+    //--------------------
     /**
-     * The completed PIN entered by the user.
+     * The completed PIN entered by the user.  Observe this property to track the state
+     * of user progress.
+     *
      * @returns {string} - null if the user has not finished entering a PIN, otherwise the PIN
      *      the user entered.
      */
+    @computed
     get completedPin() {
-        return this._pinComplete ?
-            this._enteredDigits.toJS().join('') :
+        const {_enteredDigits, _pinLength} = this;
+        return _enteredDigits.length === _pinLength ?
+            _enteredDigits.toJS().join('') :
             null;
     }
 
@@ -53,30 +62,19 @@ export class PinPadModel {
     @action
     clear() {
         this._enteredDigits.clear();
+        this._deleteWasLast = false;
     }
 
-    //------------------------------------
-    // Implementation
-    //------------------------------------
-    @observable _enteredDigits;
-    _deleteWasLast = false;
-    _pinLength;
-
-    get _activeIndex() {
-        return this._numEntered;
-    }
-
-    get _numEntered() {
+    //------------------------
+    // Component Entry points
+    //------------------------
+    get activeIndex() {
         return this._enteredDigits.length;
-    }
-
-    get _pinComplete() {
-        return this._pinLength === this._numEntered;
     }
 
     @action
     enterDigit(digit) {
-        if (this._pinComplete) return;
+        if (this.completePin) return;
         this._deleteWasLast = false;
         this._enteredDigits.push(digit);
     }
@@ -87,18 +85,18 @@ export class PinPadModel {
         this._enteredDigits.pop();
     }
 
+    @computed
     get displayedDigits() {
-        const {_numEntered, _pinLength, _enteredDigits} = this;
+        const {_pinLength, _enteredDigits, _deleteWasLast, completedPin, activeIndex} = this;
 
-        let res = Array(_pinLength).fill('•');
+        // Show bullet or empty
+        const ret = times(_pinLength, i => i < activeIndex ?  '•' : ' ');
 
-        const shouldDisplayDigit = !this._pinComplete && !this._deleteWasLast;
-        if (shouldDisplayDigit) {
-            res[_numEntered - 1] = _enteredDigits[_numEntered - 1];
+        // ... and reveal previous, if going forward
+        if (activeIndex > 0 && !completedPin && !_deleteWasLast) {
+            ret[activeIndex - 1] = _enteredDigits[activeIndex - 1];
         }
 
-        res.fill(' ', _numEntered);
-
-        return res;
+        return ret;
     }
 }
