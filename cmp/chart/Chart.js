@@ -96,7 +96,7 @@ class LocalModel {
 
     set chart(newChart) {
         this._chart = newChart;
-        this.model.hchart = newChart;
+        this.model.setHchart(newChart);
     }
     get chart() {
         return this._chart;
