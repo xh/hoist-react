@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -19,7 +19,7 @@ export class ChartModel {
     /**
      * The HighCharts chart instance currently being displayed.
      */
-    @bindable.ref hchart;
+    @observable.ref hchart;
 
     /**
      * @param {Object} c - ChartModel configuration.
