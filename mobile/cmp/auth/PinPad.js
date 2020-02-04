@@ -7,6 +7,9 @@ import {isNumber} from 'lodash';
 import './PinPad.scss';
 import {PinPadModel} from './PinPadModel';
 
+/**
+ * A prompt used to get a PIN from the user. Uses a custom key pad and digit display.
+ */
 export const pinPad = hoistCmp.factory({
     model: uses(PinPadModel),
     render() {
