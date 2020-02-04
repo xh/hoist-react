@@ -48,6 +48,10 @@ export class DataViewModel {
      * @param {number} groupedItemHeight - Height of a group row
      * @param {function} groupRowRenderer - function which returns a React component.
      *      React component. Used with 'groupBy' to render grouped rows.
+     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
+     * @param {boolean} [c.rowBorders] - true to render row borders.
+     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
+     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      */
     constructor({
         itemHeight,
@@ -59,7 +63,11 @@ export class DataViewModel {
         contextMenu = null,
         groupBy,
         groupedItemHeight,
-        groupRowRenderer
+        groupRowRenderer,
+        showHover,
+        rowBorders,
+        stripeRows,
+        sizingMode
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
@@ -96,7 +104,11 @@ export class DataViewModel {
                     rendererIsComplex: true
                 },
                 ...(groupBy ? [{field: groupBy, hidden: true}] : [])
-            ]
+            ],
+            showHover,
+            rowBorders,
+            stripeRows,
+            sizingMode
         });
 
         this.addReaction({

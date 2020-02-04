@@ -11,6 +11,8 @@
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
 * `DataViewModel` now accepts `groupBy` and `groupedItemHeight` params to enable grouped `DataView`.
+  * `DataViewModel` also accepts other styling properties of the `AgGrid` component: `sizingMode`,
+    `showHover`, `rowBorders`, and `stripeRows`.
 
 ### 🐞 Bug Fixes
 
