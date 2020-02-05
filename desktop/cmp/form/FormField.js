@@ -46,8 +46,6 @@ export const [FormField, formField] = hoistCmp.withFactory({
 
     render({model, className, field, children, info, ...props}) {
 
-        console.log(props);
-
         // Resolve FieldModel
         const formContext = useContext(FormContext),
             formModel = formContext.model;
