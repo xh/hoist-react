@@ -6,7 +6,7 @@
  */
 import React, {cloneElement, useContext, useState, Children} from 'react';
 import PT from 'prop-types';
-import {isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
+import {isUndefined, isDate, isEmpty, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
@@ -49,10 +49,10 @@ export const [FormField, formField] = hoistCmp.withFactory({
         // Resolve FieldModel
         const formContext = useContext(FormContext);
         warnIf(
-            !formContext || (Object.entries(formContext).length === 0),
+            isEmpty(formContext),
             'Form field could not find valid FormContext. ' +
-            'Make sure you are using a Hoist form (\'@xh/hoist/cmp/form/Form\') ' +
-            'and not an Html Form (\'@xh/layout/Form\')'
+            'Make sure you are using a Hoist form (\'@xh/hoist/cmp/form/form\') ' +
+            'and not an Html Form (\'@xh/hoist/cmp/layout/form\')'
         );
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
@@ -304,6 +304,6 @@ function getErrorTooltipContent(errors) {
 }
 
 function defaultProp(name, props, formContext, defaultVal) {
-    const fieldDefault = formContext?.fieldDefaults ? formContext.fieldDefaults[name] : null;
+    const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }
