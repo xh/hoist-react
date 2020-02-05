@@ -11,6 +11,7 @@
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` or `ROW_HEIGHTS`
     properties of the `AgGrid` component
 * The `Store` constructor now accepts a `data` argument to load data at initialization.
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
 
 ### 🐞 Bug Fixes
 
