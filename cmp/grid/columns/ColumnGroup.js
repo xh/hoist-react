@@ -18,7 +18,7 @@ export class ColumnGroup {
      * @param {Object} c - ColumnGroup configuration.
      * @param {Object[]} c.children - Column or ColumnGroup configs for children of this group.
      * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
-     * @param {Column~headerNameFn|string} [c.headerName] - display text for column group header.
+     * @param {Column~headerNameFn|element} [c.headerName] - display text for column group header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
      * @param {string} [c.align] - horizontal alignment of cell contents.
