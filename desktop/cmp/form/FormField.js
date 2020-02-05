@@ -47,8 +47,13 @@ export const [FormField, formField] = hoistCmp.withFactory({
     render({model, className, field, children, info, ...props}) {
 
         // Resolve FieldModel
-        const formContext = useContext(FormContext),
-            formModel = formContext.model;
+        const formContext = useContext(FormContext);
+        throwIf(
+            !formContext || (Object.entries(formContext).length === 0),
+            'Form field could not find valid FormContext. ' +
+            'Possibly caused by using an HTML form rather than a Hoist form.'
+        );
+        const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
         // Model related props
