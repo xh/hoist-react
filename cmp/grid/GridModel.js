@@ -113,7 +113,8 @@ export class GridModel {
         'exportExcel',
         'exportCsv',
         '-',
-        'colChooser'
+        'colChooser',
+        'autoSizeColumns'
     ];
 
     /**
@@ -647,6 +648,14 @@ export class GridModel {
 
     buildColumn(c) {
         return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
+    }
+
+    /**
+     * Autosize columns to fit their contents.
+     * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
+     */
+    autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
+        this.agColumnApi.autoSizeColumns(castArray(colIds));
     }
 
     //-----------------------
