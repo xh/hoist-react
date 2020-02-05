@@ -9,7 +9,7 @@ import {Aggregator} from './Aggregator';
 
 export class SingleAggregator extends Aggregator {
 
-    aggregate(records, fieldName) {
-        return records.length === 1 ? records[0].data[fieldName] : null;
+    aggregate(rows, fieldName) {
+        return rows.length === 1 ? rows[0][fieldName] : null;
     }
 }

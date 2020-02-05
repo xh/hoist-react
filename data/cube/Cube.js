@@ -63,6 +63,56 @@ export class Cube {
         return this._info;
     }
 
+    //------------------
+    // Querying API
+    //-----------------
+
+    /**
+     * Query the cube.
+     *
+     * This method will return a snapshot of javascript objects representing the filtered
+     * and aggregated data in the query.  In addition to the fields specified in Query, nodes will
+     * each contain a 'cubeLabel' and a 'cubeDimension' property.
+     *
+     * @param {Object} query - Config for query defining the shape of the view.
+     * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
+     */
+    executeQuery(query) {
+        query = new Query({...query, cube: this});
+        const view = new View({query}),
+            rows = view.rows;
+
+
+        view.destroy();
+        return rows;
+    }
+
+    /**
+     * Create a View on this data.
+     *
+     * Similar to executeQuery(), but data will be returned as a View which can be
+     * refreshed as the underlying facts in the cube are updated.  Useful for binding
+     * to grids and efficiently displaying changing results in the cube.
+     *
+     * Note: Applications should call the disconnect() or destroy() method on the View
+     * returned when appropriate to avoid unnecessary processing.
+     *
+     * @param {Object} c - config object.
+     * @param {Query} c.query - query to be used to construct this view.
+     * @param {Store} [c.store] - Store to be loaded/reloaded with data from this view.
+     *      To receive data only, use the 'rows' property of the returned object instead.
+     * @param {boolean} [c.connect] - true to update View automatically when data in
+     *      the underlying cube is changed. Default false.
+     * @returns {View}.
+     */
+    createView({query, store, connect = false}) {
+        query = new Query({...query, cube: this});
+        return new View({query, store, connect});
+    }
+
+    //-------------------
+    // Data Loading API
+    //-------------------
     /**
      * Populate this cube with a new dataset.
      *
@@ -76,48 +126,6 @@ export class Cube {
         this.store.loadData(rawData);
         this._info = Object.freeze(info);
         this._connectedViews.forEach(view => view.noteCubeLoaded());
-    }
-
-    /**
-     * Query the cube.
-     *
-     * This method will return a snapshot of javascript objects representing the filtered
-     * and aggregated data in the query.  In addition to the fields specified in Query, nodes will
-     * each contain a 'cubeLabel' and a 'cubeDimension' property.
-     *
-     * @param {Object} query - Config for query defining the shape of the view.
-     * @returns {Object} - hierarchical data containing the results of the query.
-     */
-    executeQuery(query) {
-        query = new Query({...query, cube: this});
-        const view = new View(query),
-            ret = view.getData();
-
-        view.destroy();
-        return ret;
-    }
-
-    /**
-     * Create a View on this data.
-     *
-     * Similiar to executeQuery(), but data will be loaded into a store which will be
-     * refreshed as the underlying facts in the cube are updated.  Useful for binding
-     * to grids and efficiently displaying changing results in the cube.
-     *
-     * Note: call the disconnect() method on the View returned to disconnect store from
-     * cube and updates.
-     *
-     * @param {Object} query - Config for query defining the shape of the view.
-     * @param {Object} store - Store in to which view should load results.  The fields of this
-     *      store should include all fields in the query.
-     * @returns {View}.
-     */
-    createView(query, store) {
-        query = new Query({...query, cube: this});
-        const view = new View(query);
-
-        view.connect(store);
-        return view;
     }
 
     /**
@@ -167,8 +175,6 @@ export class Cube {
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  *
- * @param {AggregateRecord} dimension - dimension of aggregation.  Null for leaf node.
- * @param {*} value - value of record on dimension.  Null for leaf node.
- * @param {Object} - *all* applied dimension values for this record.  Null for leaf node.
- * @returns string
+ * @param {AggregateRow} row - node to be potentially locked.
+ * @returns boolean
  */

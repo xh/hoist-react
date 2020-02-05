@@ -5,11 +5,5 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-export class Aggregator {
-
-    /**
-     * Aggregate values
-     */
-    aggregate(rows, fieldName) {}
-
-}
+export * from './AggregateRow';
+export * from './LeafRow';

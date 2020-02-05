@@ -7,12 +7,9 @@
 
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
-
-import {AggregateRecord} from './impl/AggregateRecord';
-import {RecordSet} from '../impl/RecordSet';
+import {AggregateRow, LeafRow} from './impl';
 
 import {isEmpty, groupBy, map, omitBy} from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -25,19 +22,41 @@ export class View {
     /** @member {Query} */
     query = null;
 
-    /** @member {Store} */
+    /**
+     * @member {Object []}
+     * Results of this view, as an array of hierarchichal row objects.
+     */
+    rows = null;
+
+    /**
+     * @member {Store}
+     * Store to which results of this view should be (re)loaded
+     */
     store = null;
 
+
     // Implementation
-    lastLeaves  = null; // RecordSet
+    leafMap = null; // Map of leafRows
 
     /**
      * @private.  Applications should use createView() instead.
      *
-     * @param {Query} query - query to be used to construct this view,
+     * @param {Object} c - config object.
+     * @param {Query} c.query - query to be used to construct this view.
+     * @param {Store} [c.store] - Store to be loaded/reloaded with
+     *      data from this view.  Optional. To receive data only, use the
+     *      rows property instead.
+     * @param {boolean} [c.connect] - true to updated rows property and loaded
+     *      store when data in the underlying cube is changed.
      */
-    constructor(query) {
+    constructor({query, connect = false, store = null}) {
         this.query = query;
+        this.store = store;
+        this.fullUpdate();
+
+        if (connect) {
+            this.cube._connectedViews.add(this);
+        }
     }
 
     //--------------------
@@ -47,19 +66,12 @@ export class View {
         return this.query.cube;
     }
 
+    get fields() {
+        return this.query.fields;
+    }
+
     get info() {
         return this.cube.info();
-    }
-
-    getData() {
-        throwIf(this.isConnected, 'getData() is for use on unconnected stores only.');
-        return this.generateData();
-    }
-
-    connect(store) {
-        this.store = store;
-        this.reloadStore();
-        this.cube._connectedViews.add(this);
     }
 
     get isConnected() {
@@ -69,11 +81,12 @@ export class View {
     disconnect() {
         this.cube._connectedViews.delete(this);
     }
+
     //-----------------------
     // Entry point for cube
     //-----------------------
     noteCubeLoaded() {
-        this.reloadStore();
+        this.fullUpdate();
     }
 
     noteCubeUpdated(transaction) {
@@ -81,108 +94,59 @@ export class View {
 
         // 0) Need a full rebuild, due to changed leaves
         if (!isEmpty(t.add) || !isEmpty(t.remove) || !isEmpty(t.newUpdate)) {
-            this.reloadStore();
+            this.fullUpdate();
             return;
         }
 
         // 1) Otherwise, incrementally refresh aggregations.  Hopefully common!
         if (!isEmpty(t.update)) {
-            console.debug('ToDo:  Apply these updates minimally:');
-            console.debug(t);
-            this.reloadStore();
+            console.log(t);
+            this.fullUpdate();
         }
     }
-
 
     //------------------------
     // Implementation
     //------------------------
-    reloadStore() {
+    fullUpdate() {
         const {store} = this;
-        if (store) store.loadData(this.generateData());
-    }
 
+        this.generateRows();
+        if (store) store.loadData(this.rows);
+    }
 
     // Generate a new full data representation
-    generateData() {
+    generateRows() {
         const {query} = this,
-            {dimensions, includeRoot, fields, cube} = query,
+            {dimensions, includeRoot, cube} = query,
             rootId = query.filtersAsString();
 
-        const leaves = this.filterLeaves(cube.store._current);
+        const leafMap = this.generateLeaves(cube.store.records),
+            leafArray = Array.from(leafMap.values());
+        let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
+        if (includeRoot) {
+            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+        } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
+            newRows = []; // degenerate case, no visible rows
+        }
 
-        let newRecords = this.groupAndInsertLeaves(leaves.list, dimensions, rootId, {});
-        newRecords = includeRoot ?
-            [new AggregateRecord(fields, rootId, newRecords, null, 'Total', {})] :
-            newRecords;
-
-        const ret = this.getRecordsAsData(newRecords);
-
-        this.currLeaves = leaves;
-        return ret;
+        this.leafMap = leafMap;
+        this.rows = newRows;
     }
-
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions)) return leaves;
 
-        const {query} = this,
-            {fields} = query,
-            dim = dimensions[0],
+        const dim = dimensions[0],
             dimName = dim.name,
-            groups = groupBy(leaves, (it) => it.data[dimName]);
+            groups = groupBy(leaves, (it) => it[dimName]);
 
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
-            return new AggregateRecord(fields, id, newChildren, dim, val, appliedDimensions);
-        });
-    }
-
-    getRecordsAsData(records) {
-        const {query, cube} = this,
-            {lockFn} = cube;
-
-        if (!records.length || (!query.includeLeaves && !records[0].isAggregate)) {
-            return [];
-        }
-
-        return records.map(rec => {
-            let {id, data, dim, children} = rec;
-
-            // Leaves are simple
-            if (!rec.isAggregate) return {id: id, cubeLabel: id, ...data};
-
-            // Aggregates need children and their dimension processed.
-            if (children) {
-                // Potentially Lock children
-                if (lockFn && lockFn(rec)) {
-                    data.locked = true;
-                    children = [];
-                } else if (children.length === 1) {
-                    // ...or drill past single child if it is an identical 'child' dimension.
-                    const childRec = children[0],
-                        childDim = childRec.dim;
-
-                    if (dim && childDim && childDim.parentDimension === dim.name &&
-                        childRec.data[childDim.name] === rec.data[dim.name]) {
-                        children = childRec.children;
-                    }
-                }
-
-                // 1) serialize to store data recursively
-                const childrenAsData = this.getRecordsAsData(children);
-                if (childrenAsData.length) {
-                    data.children = childrenAsData;
-                }
-            }
-            if (dim) {
-                data.cubeDimension = dim?.name;
-            }
-
-            return data;
+            return new AggregateRow(this, id, newChildren, dim, val, appliedDimensions);
         });
     }
 
@@ -190,25 +154,27 @@ export class View {
         const {filters} = this.query;
         if (isEmpty(filters)) return t;
 
-        const {currLeaves} = this,
+        const {leafMap} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
         return omitBy({
-            update: t.update?.filter(r => currLeaves.getById(r.id)),
-            remove: t.remove?.filter(id => currLeaves.getById(id)),
+            update: t.update?.filter(r => leafMap.has(r.id)),
+            remove: t.remove?.filter(id => leafMap.has(id)),
             add:    t.add?.filter(recordFilter),
-            newUpdate: t.update?.filter(r => !currLeaves.getById(r.id) && recordFilter(r))
+            newUpdate: t.update?.filter(r => !leafMap.has(r.id) && recordFilter(r))
         }, isEmpty);
     }
 
-    filterLeaves(rs) {
-        const {filters} = this.query;
-        if (isEmpty(filters)) return rs;
+    generateLeaves(records) {
+        const ret = new Map();
+        let {filters} = this.query;
+        if (isEmpty(filters)) filters = null;
 
-        const passes = new Map();
-        rs.recordMap.forEach((rec, key) => {
-            if (filters.every(f => f.fn(rec))) passes.set(key, rec);
+        records.forEach(rec => {
+            if (!filters || filters.every(f => f.fn(rec))) {
+                ret.set(rec.id, new LeafRow(this, rec));
+            }
         });
-        return new RecordSet(rs.store, passes);
+        return ret;
     }
 
     destroy() {

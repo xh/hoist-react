@@ -9,9 +9,9 @@ import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
 export class SumAggregator extends Aggregator {
 
-    aggregate(records, fieldName) {
-        return records.reduce((ret, it) => {
-            const val = it.data[fieldName];
+    aggregate(rows, fieldName) {
+        return rows.reduce((ret, it) => {
+            const val = it[fieldName];
             if (val != null) ret += val;
             return ret;
         }, null);
