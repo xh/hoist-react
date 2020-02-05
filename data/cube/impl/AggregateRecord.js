@@ -12,32 +12,37 @@
  */
 export class AggregateRecord {
 
-    isAggregate = true;
-    dim = null;
     data = null;
     children = null;
+    aggregateFields = null;
 
     constructor(fields, id, children, dim, val, appliedDimensions) {
-
         this.children = children;
+        this.data = {id, cubeLabel: val};
+        this.aggregateFields = this.selectAggFields(fields, dim, val, appliedDimensions);
 
-        const data = {id, cubeLabel: val};
-        if (dim) {
-            this.dim = dim;
-            data[dim.name] = val;
-        }
-        this.data = data;
+        if (dim) this.data[dim.name] = val;
+        this.computeAggregates();
+    }
 
+    get isAggregate() {return true}
 
-        fields.forEach(field => {
-            if (field !== dim) {
-                const {name} = field,
-                    dimName = dim ? dim.name : 'Total',
-                    {aggregator, canAggregateFn} = field,
-                    canAgg = aggregator && (!canAggregateFn || canAggregateFn(dimName, val, appliedDimensions));
+    computeAggregates() {
+        const {children, aggregateFields, data} = this;
+        aggregateFields.forEach(({aggregator, name}) => {
+            data[name] = aggregator.aggregate(children, name);
+        });
+    }
 
-                data[name] = canAgg ? aggregator.aggregate(children, name) : null;
-            }
+    //-------------------
+    // Implementation
+    //-------------------
+    selectAggFields(fields, dim, val, appliedDimensions) {
+        return fields.filter(field => {
+            if (field === dim) return false;
+            const dimName = dim ? dim.name : 'Total',
+                {aggregator, canAggregateFn} = field;
+            return aggregator && (!canAggregateFn || canAggregateFn(dimName, val, appliedDimensions));
         });
     }
 }

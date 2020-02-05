@@ -12,7 +12,7 @@ import {AggregateRecord} from './impl/AggregateRecord';
 import {RecordSet} from '../impl/RecordSet';
 
 import {isEmpty, groupBy, map, omitBy} from 'lodash';
-
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -35,14 +35,9 @@ export class View {
      * @private.  Applications should use createView() instead.
      *
      * @param {Query} query - query to be used to construct this view,
-     * @param {Store} [store] - store into which data for this view should be loaded/reloaded
-     *      This store is optional, if this view is *only* being used to produce
-     *      a data snapshot with getData() it need not be provided.
      */
-    constructor(query, store) {
+    constructor(query) {
         this.query = query;
-        this.store = store;
-        if (store) store.loadData(this.getData());
     }
 
     //--------------------
@@ -52,32 +47,41 @@ export class View {
         return this.query.cube;
     }
 
-    get isConnected() {
-        return this.cube.isConnected(this);
-    }
-
     get info() {
         return this.cube.info();
     }
 
+    getData() {
+        throwIf(this.isConnected, 'getData() is for use on unconnected stores only.');
+        return this.generateData();
+    }
+
+    connect(store) {
+        this.store = store;
+        this.reloadStore();
+        this.cube._connectedViews.add(this);
+    }
+
+    get isConnected() {
+        return this.cube._connectedViews.has(this);
+    }
+
     disconnect() {
-        this.cube.disconnectView(this);
+        this.cube._connectedViews.delete(this);
     }
     //-----------------------
     // Entry point for cube
     //-----------------------
     noteCubeLoaded() {
-        const {store} = this;
-        store.loadData(this.getData());
+        this.reloadStore();
     }
 
     noteCubeUpdated(transaction) {
-        const {store} = this,
-            t = this.filteredTransaction(transaction);
+        const t = this.filteredTransaction(transaction);
 
         // 0) Need a full rebuild, due to changed leaves
         if (!isEmpty(t.add) || !isEmpty(t.remove) || !isEmpty(t.newUpdate)) {
-            store.loadData(this.getData());
+            this.reloadStore();
             return;
         }
 
@@ -85,11 +89,22 @@ export class View {
         if (!isEmpty(t.update)) {
             console.debug('ToDo:  Apply these updates minimally:');
             console.debug(t);
-            store.loadData(this.getData());
+            this.reloadStore();
         }
     }
 
-    getData() {
+
+    //------------------------
+    // Implementation
+    //------------------------
+    reloadStore() {
+        const {store} = this;
+        if (store) store.loadData(this.generateData());
+    }
+
+
+    // Generate a new full data representation
+    generateData() {
         const {query} = this,
             {dimensions, includeRoot, fields, cube} = query,
             rootId = query.filtersAsString();
@@ -103,13 +118,11 @@ export class View {
 
         const ret = this.getRecordsAsData(newRecords);
 
-        this.lastLeaves = leaves;
+        this.currLeaves = leaves;
         return ret;
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
+
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
         if (isEmpty(dimensions)) return leaves;
 
@@ -177,13 +190,13 @@ export class View {
         const {filters} = this.query;
         if (isEmpty(filters)) return t;
 
-        const {lastLeaves} = this,
+        const {currLeaves} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
         return omitBy({
-            update: t.update?.filter(r => lastLeaves.getById(r.id)),
-            remove: t.remove?.filter(id => lastLeaves.getById(id)),
+            update: t.update?.filter(r => currLeaves.getById(r.id)),
+            remove: t.remove?.filter(id => currLeaves.getById(id)),
             add:    t.add?.filter(recordFilter),
-            newUpdate: t.update?.filter(r => !lastLeaves.getById(r.id) && recordFilter(r))
+            newUpdate: t.update?.filter(r => !currLeaves.getById(r.id) && recordFilter(r))
         }, isEmpty);
     }
 

@@ -90,7 +90,7 @@ export class Cube {
      */
     executeQuery(query) {
         query = new Query({...query, cube: this});
-        const view = new View(query, false),
+        const view = new View(query),
             ret = view.getData();
 
         view.destroy();
@@ -100,24 +100,23 @@ export class Cube {
     /**
      * Create a View on this data.
      *
-     * Similiar to executeQuery(), but data will be loaded into a store, which will be optionally
-     * refreshed as the underlying facts in the cube are updated.  Useful for binding to grids
-     * and efficiently displaying changing results in the cube.
+     * Similiar to executeQuery(), but data will be loaded into a store which will be
+     * refreshed as the underlying facts in the cube are updated.  Useful for binding
+     * to grids and efficiently displaying changing results in the cube.
      *
-     * Note: call the disconnect() method on the View returned to disconnect store from cube and
-     * updates.
+     * Note: call the disconnect() method on the View returned to disconnect store from
+     * cube and updates.
      *
      * @param {Object} query - Config for query defining the shape of the view.
      * @param {Object} store - Store in to which view should load results.  The fields of this
      *      store should include all fields in the query.
-     * @param {boolean} connect - true to update the store as the data in this cube
-     *      changes (versus a snapshot).
      * @returns {View}.
      */
-    createView(query, store, connect = false) {
+    createView(query, store) {
         query = new Query({...query, cube: this});
-        const view = new View(query, store);
-        if (connect) this._connectedViews.add(view);
+        const view = new View(query);
+
+        view.connect(store);
         return view;
     }
 
@@ -148,10 +147,6 @@ export class Cube {
         }
     }
 
-    disconnectView(v) {
-        this._connectedViews.delete(v);
-    }
-
     //---------------------
     // Implementation
     //---------------------
@@ -160,7 +155,7 @@ export class Cube {
     }
 
     destroy() {
-        this._connectedViews.forEach(v => this.disconnectView(v));
+        this._connectedViews.forEach(v => v.disconnect());
     }
 }
 
