@@ -16,7 +16,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -48,10 +48,11 @@ export const [FormField, formField] = hoistCmp.withFactory({
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
-        throwIf(
+        warnIf(
             !formContext || (Object.entries(formContext).length === 0),
             'Form field could not find valid FormContext. ' +
-            'Possibly caused by using an HTML form rather than a Hoist form.'
+            'Make sure you are using a Hoist form (\'@xh/hoist/cmp/form/Form\') ' +
+            'and not an Html Form (\'@xh/layout/Form\')'
         );
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
@@ -303,5 +304,6 @@ function getErrorTooltipContent(errors) {
 }
 
 function defaultProp(name, props, formContext, defaultVal) {
-    return withDefault(props[name], formContext.fieldDefaults[name], defaultVal);
+    const fieldDefault = formContext?.fieldDefaults ? formContext.fieldDefaults[name] : null;
+    return withDefault(props[name], fieldDefault, defaultVal);
 }
