@@ -12,6 +12,7 @@
     properties of the `AgGrid` component
 * The `Store` constructor now accepts a `data` argument to load data at initialization.
 * Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `Column` and `ColumnGroup` now support React elements for `headerName`.
 
 ### 🐞 Bug Fixes
 

@@ -134,11 +134,21 @@ export class GridExportService {
     }
 
     getHeaderRow(columns, type, gridModel) {
-        const headers = columns.map(it =>
-            isString(it.exportName) ?
-                it.exportName :
-                it.exportName({column: it, gridModel})
-        );
+        const headers = columns.map(it => {
+            let ret = isFunction(it.exportName) ?
+                it.exportName({column: it, gridModel}) :
+                it.exportName;
+
+            if (!isString(ret)) {
+                console.warn(
+                    'Tried to export column ' + it.colId + ' with an invalid "exportName", ' +
+                    'probably caused by setting "headerName" to a React element. Please specify an ' +
+                    'appropriate "exportName". Defaulting to ' + it.colId
+                );
+                ret = it.colId;
+            }
+            return ret;
+        });
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
