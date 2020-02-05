@@ -220,10 +220,14 @@ FormField.propTypes = {
 
     /**
      * Minimal validation tooltip will try to fit within the corresponding boundary.
+     * @see https://blueprintjs.com/docs/#core/components/popover
      */
     tooltipBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
 
-    /** Position for minimal validation tooltip. */
+    /**
+     * Position for minimal validation tooltip.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
     tooltipPosition: PT.oneOf([
         'top-left', 'top', 'top-right',
         'right-top', 'right', 'right-bottom',
