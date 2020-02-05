@@ -15,6 +15,8 @@
 * The Grid context menu now contains an `Autosize Columns` option by default.
 * `GridModel` now exposes an `autoSizeColumns` method.
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
 
 ### 🐞 Bug Fixes
 
