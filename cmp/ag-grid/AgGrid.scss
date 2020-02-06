@@ -153,6 +153,13 @@
   .ag-header-group-cell {
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
+
+    // Override ag-Grid defaults for the header separator to make it responsive to different header heights
+    &::after {
+      height: 50%;
+      margin-top: unset;
+      top: unset;
+    }
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
@@ -201,7 +208,33 @@
   }
 
   //------------------------
-  // Compact Mode
+  // Large Sizing Mode
+  //------------------------
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-large-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-large-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-large-header-lr-pad-px);
+      padding-right: var(--xh-grid-large-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
+  // Compact Sizing Mode
   //------------------------
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
@@ -223,6 +256,32 @@
     .ag-header-group-cell {
       padding-left: var(--xh-grid-compact-header-lr-pad-px);
       padding-right: var(--xh-grid-compact-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
+  // Tiny Sizing Mode
+  //------------------------
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-tiny-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-tiny-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-tiny-header-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-header-lr-pad-px);
     }
   }
 

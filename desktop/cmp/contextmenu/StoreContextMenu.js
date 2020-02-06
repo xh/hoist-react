@@ -111,6 +111,12 @@ export class StoreContextMenu {
                 ];
             case 'exportLocal':
                 return 'export';
+            case 'autoSizeColumns':
+                return new RecordAction({
+                    text: 'Autosize Columns',
+                    icon: Icon.arrowsLeftRight(),
+                    actionFn: () => gridModel.autoSizeColumns()
+                });
             default:
                 return token;
         }

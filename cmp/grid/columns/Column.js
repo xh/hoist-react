@@ -37,7 +37,7 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
+     * @param {(Column~headerNameFn|element)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
@@ -265,7 +265,7 @@ export class Column {
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel,
                 headerComponentParams: {gridModel, xhColumn: this},
-                suppressColumnsToolPanel: this.excludeFromChooser,
+                suppressToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 editable: (agParams) => {
                     const {editable} = this;
@@ -574,7 +574,7 @@ export function getAgHeaderClassFn(column) {
  * @param {GridModel} gridModel - gridModel for the grid.
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
  *      during ColumnHeader rendering.
- * @return {string} - the header name to render in the Column header
+ * @return {element} - the header name to render in the Column header
  */
 
 /**

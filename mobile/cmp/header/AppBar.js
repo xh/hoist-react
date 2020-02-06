@@ -116,7 +116,7 @@ AppBar.propTypes = {
     icon: PT.element,
 
     /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
-    title: PT.string,
+    title: PT.node,
 
     /** Items to be added to the left side of the AppBar, before the title buttons. */
     leftItems: PT.node,
