@@ -31,6 +31,15 @@
 * Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
   values as intended (v29 regression).
 
+### ⚙️ Technical
+
+* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
+  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
+  directly by applications that wish to customize the default row heights globally on init
+  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
+    a breaking change for any apps that imported the old objects directly (considered unlikely).
+* `FormFields` now check that they are contained in a Hoist `Form`.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.22 -> 3.23`

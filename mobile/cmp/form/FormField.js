@@ -7,7 +7,7 @@
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {cloneElement, useContext, Children} from 'react';
 import PT from 'prop-types';
-import {isDate, isFinite, isBoolean, isUndefined} from 'lodash';
+import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
@@ -16,7 +16,7 @@ import {FormContext, FieldModel} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 
 import './FormField.scss';
@@ -45,8 +45,14 @@ export const [FormField, formField] = hoistCmp.withFactory({
     render({model, className, field, children, info, ...props}) {
 
         // Resolve FieldModel
-        const formContext = useContext(FormContext),
-            formModel = formContext.model;
+        const formContext = useContext(FormContext);
+        errorIf(
+            isEmpty(formContext),
+            `Form field could not find valid FormContext. ` +
+            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
+            `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
+        );
+        const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
         // Model related props
@@ -234,5 +240,6 @@ function defaultReadonlyRenderer(value) {
 }
 
 function defaultProp(name, props, formContext, defaultVal) {
-    return withDefault(props[name], formContext.fieldDefaults[name], defaultVal);
+    const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
+    return withDefault(props[name], fieldDefault, defaultVal);
 }
