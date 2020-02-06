@@ -25,6 +25,8 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
+* `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
+  when used in an action column.
 * Grid column `flex` param will now accept numbers, with available space divided between flex columns
   in proportion to their `flex` value.
 
@@ -42,6 +44,7 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
   directly by applications that wish to customize the default row heights globally on init
   * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
     a breaking change for any apps that imported the old objects directly (considered unlikely).
+* `FormFields` now check that they are contained in a Hoist `Form`.
 * Flex columns now use the built-in ag-Grid flex functionality.
 
 ### 📚 Libraries
