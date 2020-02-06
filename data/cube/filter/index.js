@@ -5,6 +5,5 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-export * from './Filter';
 export * from './NoMatchFilter';
 export * from './ValueFilter';
