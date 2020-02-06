@@ -248,7 +248,7 @@ export class Store {
             this.lastUpdated = Date.now();
         }
 
-        return changeLog;
+        return !isEmpty(changeLog) ? changeLog : null;
     }
 
     /**

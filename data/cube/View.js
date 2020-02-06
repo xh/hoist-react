@@ -9,7 +9,7 @@ import {Cube} from './Cube';
 import {ValueFilter} from './filter';
 import {AggregateRow, LeafRow} from './impl';
 
-import {isEmpty, groupBy, map, omitBy} from 'lodash';
+import {isEmpty, groupBy, map} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -24,7 +24,7 @@ export class View {
 
     /**
      * @member {Object []}
-     * Results of this view, as an array of hierarchichal row objects.
+     * Results of this view, as an array of hierarchical row objects.
      */
     rows = null;
 
@@ -71,7 +71,7 @@ export class View {
     }
 
     get info() {
-        return this.cube.info();
+        return this.cube.info;
     }
 
     get isConnected() {
@@ -89,19 +89,13 @@ export class View {
         this.fullUpdate();
     }
 
-    noteCubeUpdated(transaction) {
-        const t = this.filteredTransaction(transaction);
+    noteCubeUpdated(changeLog) {
+        const simpleUpdates = this.getSimpleUpdates(changeLog);
 
-        // 0) Need a full rebuild, due to changed leaves
-        if (!isEmpty(t.add) || !isEmpty(t.remove) || !isEmpty(t.newUpdate)) {
+        if (!simpleUpdates) {
             this.fullUpdate();
-            return;
-        }
-
-        // 1) Otherwise, incrementally refresh aggregations.  Hopefully common!
-        if (!isEmpty(t.update)) {
-            console.log(t);
-            this.fullUpdate();
+        } else {
+            this.simpleUpdate(simpleUpdates);
         }
     }
 
@@ -109,6 +103,13 @@ export class View {
     // Implementation
     //------------------------
     fullUpdate() {
+        const {store} = this;
+
+        this.generateRows();
+        if (store) store.loadData(this.rows);
+    }
+
+    simpleUpdate(updates) {
         const {store} = this;
 
         this.generateRows();
@@ -150,18 +151,33 @@ export class View {
         });
     }
 
-    filteredTransaction(t) {
-        const {filters} = this.query;
-        if (isEmpty(filters)) return t;
-
-        const {leafMap} = this,
+    // return a list of simple updates for leaves we have or false if leaf population changing
+    getSimpleUpdates(t) {
+        const {filters} = this.query,
+            {leafMap} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
-        return omitBy({
-            update: t.update?.filter(r => leafMap.has(r.id)),
-            remove: t.remove?.filter(id => leafMap.has(id)),
-            add:    t.add?.filter(recordFilter),
-            newUpdate: t.update?.filter(r => !leafMap.has(r.id) && recordFilter(r))
-        }, isEmpty);
+
+        // 1) Simple case: no filters
+        if (isEmpty(filters)) {
+            return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
+        }
+
+        // 2) Examine, accounting for filters
+        // 2a) Relevant adds or removes fail us
+        if (t.add?.any(recordFilter)) return false;
+        if (t.remove?.any(id => leafMap.has(id))) return false;
+
+        // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
+        const ret = [];
+        for (const r of t.updates) {
+            const passes = recordFilter(r),
+                present = leafMap.has(r.id);
+            if (passes !== present) return false;
+
+            if (present) ret.push(r);
+        }
+
+        return ret;
     }
 
     generateLeaves(records) {

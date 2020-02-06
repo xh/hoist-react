@@ -139,7 +139,7 @@ export class Cube {
      */
     updateData(rawData, info) {
         // 1) Process data
-        const transaction = this.store.updateData(rawData);
+        const changeLog = this.store.updateData(rawData);
 
         // 2) Process info
         const infoUpdated = isEmpty(info);
@@ -148,9 +148,9 @@ export class Cube {
         }
 
         // 3) Notify connected views
-        if (transaction || infoUpdated) {
+        if (changeLog || infoUpdated) {
             this._connectedViews.forEach(view => {
-                view.noteCubeUpdated(transaction, infoUpdated);
+                view.noteCubeUpdated(changeLog, infoUpdated);
             });
         }
     }

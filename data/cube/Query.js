@@ -13,11 +13,11 @@ import {find} from 'lodash';
  */
 export class Query {
 
-    /** @member {Fields[]} */
+    /** @member {CubeFields[]} */
     fields;
     /** @member {CubeField[]} */
     dimensions;
-    /** @member {ValueFilter[]} */
+    /** @member {StoreFilter[]} */
     filters;
     /** @member {boolean} */
     includeRoot;
