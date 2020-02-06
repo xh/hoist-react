@@ -51,7 +51,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         errorIf(
             isEmpty(formContext),
             `Form field could not find valid FormContext. ` +
-            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form')` +
+            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
             `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
         );
         const formModel = formContext.model;
