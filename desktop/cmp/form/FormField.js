@@ -16,7 +16,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import {getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -48,7 +48,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
 
         // Resolve FieldModel
         const formContext = useContext(FormContext);
-        warnIf(
+        errorIf(
             isEmpty(formContext),
             `Form field could not find valid FormContext. ` +
             `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form')` +
