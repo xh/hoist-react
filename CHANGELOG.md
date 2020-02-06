@@ -15,6 +15,9 @@
 * The Grid context menu now contains an `Autosize Columns` option by default.
 * `GridModel` now exposes an `autoSizeColumns` method.
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
+* The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
+    data package and support observable "Views".  See documentation on `Cube` for more information.
+
 
 ### 🐞 Bug Fixes
 

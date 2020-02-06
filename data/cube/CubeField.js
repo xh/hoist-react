@@ -17,19 +17,16 @@ import {
 
 } from './aggregate';
 
-import {isString, startCase} from 'lodash';
+import {isString} from 'lodash';
+import {Field} from '../';
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
  * it to extract the data from the source objects and how to aggregate or filter on that data.
  */
-export class Field {
+export class CubeField extends Field {
 
-    /** @member {string} */
-    name;
-    /** @member {string} */
-    displayName;
     /** @member {Aggregator} */
     aggregator;
     /** @member {CanAggregateFn} */
@@ -50,9 +47,8 @@ export class Field {
     static singleAggregator = new SingleAggregator();
 
     /**
-     * @param {Object} c - Field configuration.
-     * @param {string} c.name - Unique key describing this field.
-     * @param {string} [c.displayName] - Descriptive name suitable for display to end users.
+     * @param {Object} c - Field configuration.  See Field class for core parameters.
+     *      This constructor also supports the additional parameters below.
      * @param {boolean} [c.isDimension] - true to allow this field to be used for grouping.
      * @param {(string|Aggregator)} [c.aggregator] - instance of a Hoist Cube Aggregator (from the
      *      aggregate package), or string alias for the same (e.g. 'MAX').
@@ -66,16 +62,14 @@ export class Field {
      *      derivative nodes when a parent node has a single identical child node.
      */
     constructor({
-        name,
-        displayName,
         isDimension = false,
         aggregator = isDimension ? null : Field.uniqueAggregator,
         canAggregateFn =  null,
         isLeafDimension = false,
-        parentDimension = null
+        parentDimension = null,
+        ...fieldArgs
     }) {
-        this.name = name;
-        this.displayName = displayName || startCase(name);
+        super(fieldArgs);
         this.isDimension = isDimension;
 
         // Metrics
@@ -94,13 +88,13 @@ export class Field {
     parseAggregator(val) {
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return Field.maxAggregator;
-                case 'MIN':         return Field.minAggregator;
-                case 'NULL':        return Field.nullAggregator;
-                case 'SUM':         return Field.sumAggregator;
-                case 'SUM_STRICT':  return Field.sumStrictAggregator;
-                case 'UNIQUE':      return Field.uniqueAggregator;
-                case 'SINGLE':      return Field.singleAggregator;
+                case 'MAX':         return CubeField.maxAggregator;
+                case 'MIN':         return CubeField.minAggregator;
+                case 'NULL':        return CubeField.nullAggregator;
+                case 'SUM':         return CubeField.sumAggregator;
+                case 'SUM_STRICT':  return CubeField.sumStrictAggregator;
+                case 'UNIQUE':      return CubeField.uniqueAggregator;
+                case 'SINGLE':      return CubeField.singleAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
@@ -114,5 +108,6 @@ export class Field {
  *
  * @param {string} dimension - dimension of aggregation
  * @param {*} value - value of record on dimension
- * @param {Object} - previously applied dimension values for this record
+ * @param {Object} - *all* applied dimension values for this record
+ * @returns boolean
  */
