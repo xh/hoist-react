@@ -36,7 +36,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
             maxMessageLength = withDefault(props.maxMessageLength, 30),
             message = truncate(withDefault(props.message, model?.message), {length: maxMessageLength}),
             showSpinner = withDefault(props.spinner, true),
-            corner = withDefault(props.corner, true);
+            corner = withDefault(props.corner, 'br');
 
         if (!isDisplayed || (!showSpinner && !message)) return null;
 
