@@ -165,6 +165,8 @@ export class Store {
      */
     @action
     updateData(rawData) {
+        const changeLog = {};
+
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction = null;
         if (isArray(rawData)) {
