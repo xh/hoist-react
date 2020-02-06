@@ -97,5 +97,5 @@ AppBar.propTypes = {
     rightItems: PT.node,
 
     /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
-    title: PT.string
+    title: PT.node
 };

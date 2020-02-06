@@ -6,9 +6,9 @@
  */
 
 export * from './Cube';
-export * from './Field';
+export * from './CubeField';
 export * from './Query';
+export * from './View';
 
 export * from './aggregate';
 export * from './filter';
-export * from './record';

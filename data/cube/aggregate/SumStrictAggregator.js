@@ -8,11 +8,11 @@ import {Aggregator} from './Aggregator';
 
 export class SumStrictAggregator extends Aggregator {
 
-    aggregate(records, fieldName) {
-        if (!records.length || records.some(it => it.get(fieldName) == null)) return null;
+    aggregate(rows, fieldName) {
+        if (!rows.length || rows.some(it => it[fieldName] == null)) return null;
 
-        return records.reduce((ret, it) => {
-            ret += it.get(fieldName);
+        return rows.reduce((ret, it) => {
+            ret += it[fieldName];
             return ret;
         }, 0);
     }
