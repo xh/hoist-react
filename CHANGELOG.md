@@ -19,6 +19,8 @@
 * `GridModel` now exposes an `autoSizeColumns` method, and the Grid context menu now contains an
   `Autosize Columns` option by default.
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
 * `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
