@@ -21,6 +21,8 @@
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
+* `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
+  when used in an action column.
 
 ### 🐞 Bug Fixes
 
