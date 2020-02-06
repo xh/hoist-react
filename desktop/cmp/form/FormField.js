@@ -6,7 +6,7 @@
  */
 import React, {cloneElement, useContext, useState, Children} from 'react';
 import PT from 'prop-types';
-import {isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
+import {isUndefined, isDate, isEmpty, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
@@ -16,7 +16,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import {getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -47,8 +47,14 @@ export const [FormField, formField] = hoistCmp.withFactory({
     render({model, className, field, children, info, ...props}) {
 
         // Resolve FieldModel
-        const formContext = useContext(FormContext),
-            formModel = formContext.model;
+        const formContext = useContext(FormContext);
+        errorIf(
+            isEmpty(formContext),
+            `Form field could not find valid FormContext. ` +
+            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
+            `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
+        );
+        const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
         // Model related props
@@ -319,5 +325,6 @@ function getErrorTooltipContent(errors) {
 }
 
 function defaultProp(name, props, formContext, defaultVal) {
-    return withDefault(props[name], formContext.fieldDefaults[name], defaultVal);
+    const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
+    return withDefault(props[name], fieldDefault, defaultVal);
 }

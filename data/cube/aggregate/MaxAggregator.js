@@ -9,9 +9,9 @@ import {Aggregator} from './Aggregator';
 
 export class MaxAggregator extends Aggregator {
 
-    aggregate(records, fieldName) {
-        return records.reduce((ret, it) => {
-            const val = it.get(fieldName);
+    aggregate(rows, fieldName) {
+        return rows.reduce((ret, it) => {
+            const val = it[fieldName];
             if (val != null  && (ret == null || val > ret)) {
                 ret = val;
             }

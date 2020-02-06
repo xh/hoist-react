@@ -10,6 +10,6 @@ export class Aggregator {
     /**
      * Aggregate values
      */
-    aggregate(records, fieldName) {}
+    aggregate(rows, fieldName) {}
 
 }

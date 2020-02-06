@@ -4,10 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {StoreFilter} from '../../StoreFilter';
 
-export class NoMatchFilter {
+export class NoMatchFilter extends StoreFilter {
 
-    matches(record) {
-        return false;
+    constructor(record) {
+        super({fn: () => false});
     }
 }
