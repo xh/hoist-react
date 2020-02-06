@@ -90,11 +90,14 @@ export class View {
     }
 
     noteCubeUpdated(changeLog) {
+        console.debug('Processing Changelog', changeLog);
+
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
             this.fullUpdate();
-        } else {
+        } else if (!isEmpty(simpleUpdates)) {
+            console.debug('Processing Simple Update', simpleUpdates);
             this.simpleUpdate(simpleUpdates);
         }
     }
@@ -111,8 +114,8 @@ export class View {
 
     simpleUpdate(updates) {
         const {store} = this;
-
         this.generateRows();
+
         if (store) store.loadData(this.rows);
     }
 
@@ -169,12 +172,14 @@ export class View {
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
-        for (const r of t.updates) {
-            const passes = recordFilter(r),
-                present = leafMap.has(r.id);
-            if (passes !== present) return false;
+        if (t.update) {
+            for (const r of t.update) {
+                const passes = recordFilter(r),
+                    present = leafMap.has(r.id);
+                if (passes !== present) return false;
 
-            if (present) ret.push(r);
+                if (present) ret.push(r);
+            }
         }
 
         return ret;
