@@ -26,6 +26,8 @@ export class DataViewModel {
 
     @bindable
     itemHeight;
+    @bindable
+    groupedItemHeight;
 
     groupRowRenderer;
 
