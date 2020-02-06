@@ -8,6 +8,8 @@
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
 import {AggregateRow, LeafRow} from './impl';
+import {observable, action} from 'mobx';
+import {throwIf} from '../../utils/js';
 
 import {isEmpty, groupBy, map} from 'lodash';
 
@@ -19,8 +21,13 @@ import {isEmpty, groupBy, map} from 'lodash';
  */
 export class View {
 
-    /** @member {Query} */
-    query = null;
+    /**
+     * @member {Query}
+     * Query defining this View.  Update with updateView();
+     */
+    get query() {
+        return this._query;
+    }
 
     /**
      * @member {Object []}
@@ -34,9 +41,22 @@ export class View {
      */
     store = null;
 
+    /**
+     * @member {Object}
+     *
+     * Cube info associated with the view when it was last updated.
+     * This is an observable property.
+     */
+    get info() {
+        return this._info;
+    }
 
     // Implementation
-    leafMap = null; // Map of leafRows
+    @observable
+    _info = null;
+    _leafMap = null;
+    _query = null;
+
 
     /**
      * @private.  Applications should use createView() instead.
@@ -50,7 +70,7 @@ export class View {
      *      store when data in the underlying cube is changed.
      */
     constructor({query, connect = false, store = null}) {
-        this.query = query;
+        this._query = query;
         this.store = store;
         this.fullUpdate();
 
@@ -70,16 +90,27 @@ export class View {
         return this.query.fields;
     }
 
-    get info() {
-        return this.cube.info;
-    }
-
     get isConnected() {
         return this.cube._connectedViews.has(this);
     }
 
     disconnect() {
         this.cube._connectedViews.delete(this);
+    }
+
+    /**
+     * Change the query in some way.
+     *
+     * Setting this property will cause the data in this view to be re-computed to reflect
+     * the new query.
+     *
+     * @param {Object} overrides - changes to be applied to the query.  May include any
+     *      arguments to the query constructor, other than cube.
+     */
+    updateQuery(overrides) {
+        throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
+        this._query = this._query.clone(overrides);
+        this.fullUpdate();
     }
 
     //-----------------------
@@ -114,8 +145,9 @@ export class View {
 
     simpleUpdate(updates) {
         const {store} = this;
-        this.generateRows();
 
+        // Be sure to call setInfoInternal here as well when we re-implement
+        this.generateRows();
         if (store) store.loadData(this.rows);
     }
 
@@ -134,7 +166,8 @@ export class View {
             newRows = []; // degenerate case, no visible rows
         }
 
-        this.leafMap = leafMap;
+        this.internalSetInfo(cube.info);
+        this._leafMap = leafMap;
         this.rows = newRows;
     }
 
@@ -157,7 +190,7 @@ export class View {
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         const {filters} = this.query,
-            {leafMap} = this,
+            {_leafMap} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
 
         // 1) Simple case: no filters
@@ -168,14 +201,14 @@ export class View {
         // 2) Examine, accounting for filters
         // 2a) Relevant adds or removes fail us
         if (t.add?.any(recordFilter)) return false;
-        if (t.remove?.any(id => leafMap.has(id))) return false;
+        if (t.remove?.any(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
                 const passes = recordFilter(r),
-                    present = leafMap.has(r.id);
+                    present = _leafMap.has(r.id);
                 if (passes !== present) return false;
 
                 if (present) ret.push(r);
@@ -196,6 +229,11 @@ export class View {
             }
         });
         return ret;
+    }
+
+    @action
+    internalSetInfo(info) {
+        this._info = info;
     }
 
     destroy() {

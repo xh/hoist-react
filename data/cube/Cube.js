@@ -135,22 +135,22 @@ export class Cube {
      * information.
      *
      * @param {(Object[]|StoreTransaction)} rawData
-     * @param {Object} info
+     * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    updateData(rawData, info) {
+    updateData(rawData, infoUpdates) {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
         // 2) Process info
-        const infoUpdated = isEmpty(info);
-        if (!isEmpty(info)) {
-            this._info = {...this._info, info};
+        const hasInfoUpdates = isEmpty(infoUpdates);
+        if (hasInfoUpdates) {
+            this._info = Object.freeze({...this._info, ...infoUpdates});
         }
 
         // 3) Notify connected views
-        if (changeLog || infoUpdated) {
+        if (changeLog || hasInfoUpdates) {
             this._connectedViews.forEach(view => {
-                view.noteCubeUpdated(changeLog, infoUpdated);
+                view.noteCubeUpdated(changeLog);
             });
         }
     }
