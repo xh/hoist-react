@@ -23,6 +23,7 @@
   data package and support observable "Views". See documentation on `Cube` for more information.
 * `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
   when used in an action column.
+* It is now possible to specify a tree column without binding it to a field.
 
 ### 🐞 Bug Fixes
 
