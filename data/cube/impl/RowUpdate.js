@@ -5,11 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Aggregator} from './Aggregator';
+/**
+ * @private
+ */
+export class RowUpdate {
 
-export class SingleAggregator extends Aggregator {
-
-    aggregate(rows, fieldName) {
-        return rows.length === 1 ? rows[0].data[fieldName] : null;
+    constructor(field, oldValue, newValue) {
+        this.field = field;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
     }
 }
