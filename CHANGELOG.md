@@ -2,6 +2,8 @@
 
 ## v30.0.0-SNAPSHOT - Unreleased
 
+## v29.1.0 - 2020-02-07
+
 ### 🎁 New Features
 
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
@@ -51,7 +53,7 @@
 * codemirror `5.50 -> 5.51`
 * react-dates `21.5 -> 21.7`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v29.0.0)
 
 ## v29.0.0 - 2020-01-24
 
