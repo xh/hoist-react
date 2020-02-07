@@ -3,6 +3,7 @@
 
   &.xh-panel-scrollable > .xh-vframe {
     overflow-y: auto !important;
+    display: block !important;
   }
 
   .xh-panel-header {
