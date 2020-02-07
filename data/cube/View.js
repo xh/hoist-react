@@ -149,7 +149,7 @@ export class View {
 
     @action
     dataOnlyUpdate(updates) {
-        const {store, _leafMap, cube} = this;
+        const {store, _leafMap} = this;
 
         const updatedRows = new Set();
         updates.forEach(rec => {
@@ -158,10 +158,10 @@ export class View {
         });
         const recordUpdates = [];
         updatedRows.forEach(row => {
-            if (store.getById(row.id)) recordUpdates.push(row)
+            if (store.getById(row.id)) recordUpdates.push(row);
         });
 
-        store.updateData({update: recordUpdates});
+        if (store) store.updateData({update: recordUpdates});
         this.result = {rows: this._rows};
         this.info = this.cube.info;
     }
