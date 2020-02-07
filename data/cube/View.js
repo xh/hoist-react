@@ -52,7 +52,7 @@ export class View {
     }
 
     // Implementation
-    @observable
+    @observable.ref
     _info = null;
     _leafMap = null;
     _query = null;
