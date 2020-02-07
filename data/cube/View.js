@@ -7,7 +7,7 @@
 
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
-import {AggregateRow, LeafRow} from './impl';
+import {createAggregateRow, createLeafRow} from './impl';
 import {observable, action} from 'mobx';
 import {throwIf} from '../../utils/js';
 
@@ -30,10 +30,12 @@ export class View {
     }
 
     /**
-     * @member {Object []}
-     * Results of this view, as an array of hierarchical row objects.
+     * @member {Object}
+     * Results of this view.  Will contain a single property 'rows' containing an array of
+     * hierarchical data objects. This is an observable property.
      */
-    rows = null;
+    @observable.ref
+    result = null;
 
     /**
      * @member {Store}
@@ -47,16 +49,13 @@ export class View {
      * Cube info associated with the view when it was last updated.
      * This is an observable property.
      */
-    get info() {
-        return this._info;
-    }
+    @observable.ref
+    info = null;
 
     // Implementation
-    @observable.ref
-    _info = null;
+    _rows = null;
     _leafMap = null;
     _query = null;
-
 
     /**
      * @private.  Applications should use createView() instead.
@@ -107,6 +106,7 @@ export class View {
      * @param {Object} overrides - changes to be applied to the query.  May include any
      *      arguments to the query constructor, other than cube.
      */
+    @action
     updateQuery(overrides) {
         throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
         this._query = this._query.clone(overrides);
@@ -116,39 +116,54 @@ export class View {
     //-----------------------
     // Entry point for cube
     //-----------------------
+    @action
     noteCubeLoaded() {
         this.fullUpdate();
     }
 
+    @action
     noteCubeUpdated(changeLog) {
-        console.debug('Processing Changelog', changeLog);
-
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
-            console.debug('Processing Simple Update', simpleUpdates);
-            this.simpleUpdate(simpleUpdates);
+            this.dataOnlyUpdate(simpleUpdates);
+        } else {
+            this.info = this.cube.info;
         }
     }
 
     //------------------------
     // Implementation
     //------------------------
+    @action
     fullUpdate() {
         const {store} = this;
-
         this.generateRows();
-        if (store) store.loadData(this.rows);
+
+        if (store) store.loadData(this._rows);
+        this.result = {rows: this._rows};
+        this.info = this.cube.info;
     }
 
-    simpleUpdate(updates) {
-        const {store} = this;
+    @action
+    dataOnlyUpdate(updates) {
+        const {store, _leafMap, cube} = this;
 
-        // Be sure to call setInfoInternal here as well when we re-implement
-        this.generateRows();
-        if (store) store.loadData(this.rows);
+        const updatedRows = new Set();
+        updates.forEach(rec => {
+            const leaf = _leafMap.get(rec.id);
+            leaf?._meta.applyDataUpdate(rec, updatedRows);
+        });
+        const recordUpdates = [];
+        updatedRows.forEach(row => {
+            if (store.getById(row.id)) recordUpdates.push(row)
+        });
+
+        store.updateData({update: recordUpdates});
+        this.result = {rows: this._rows};
+        this.info = this.cube.info;
     }
 
     // Generate a new full data representation
@@ -161,14 +176,12 @@ export class View {
             leafArray = Array.from(leafMap.values());
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
         if (includeRoot) {
-            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
-
-        this.internalSetInfo(cube.info);
         this._leafMap = leafMap;
-        this.rows = newRows;
+        this._rows = newRows;
     }
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
@@ -183,12 +196,13 @@ export class View {
             appliedDimensions[dimName] = val;
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
-            return new AggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+            return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
         });
     }
 
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
+        if (!t) return [];
         const {filters} = this.query,
             {_leafMap} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
@@ -225,15 +239,10 @@ export class View {
 
         records.forEach(rec => {
             if (!filters || filters.every(f => f.fn(rec))) {
-                ret.set(rec.id, new LeafRow(this, rec));
+                ret.set(rec.id, createLeafRow(this, rec));
             }
         });
         return ret;
-    }
-
-    @action
-    internalSetInfo(info) {
-        this._info = info;
     }
 
     destroy() {

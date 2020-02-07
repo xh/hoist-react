@@ -96,8 +96,7 @@ export class Cube {
     executeQuery(query) {
         query = new Query({...query, cube: this});
         const view = new View({query}),
-            rows = view.rows;
-
+            rows = view.result.rows;
 
         view.destroy();
         return rows;
@@ -116,7 +115,7 @@ export class Cube {
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
      * @param {Store} [c.store] - Store to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'rows' property of the returned object instead.
+     *      To receive data only, use the 'results' property of the returned object instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
      * @returns {View}.

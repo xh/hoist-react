@@ -63,7 +63,7 @@ export class CubeField extends Field {
      */
     constructor({
         isDimension = false,
-        aggregator = isDimension ? null : Field.uniqueAggregator,
+        aggregator = null,
         canAggregateFn =  null,
         isLeafDimension = false,
         parentDimension = null,
