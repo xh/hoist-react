@@ -58,9 +58,25 @@ export class Cube {
         this._info = info;
     }
 
-    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
+    /**
+     * @returns {Object} - optional metadata associated with this Cube at the last data load.
+     */
     get info() {
         return this._info;
+    }
+
+    /**
+     * @returns {CubeField[]} - fields associated with this cube.
+     */
+    get fields() {
+        return this.store.fields;
+    }
+
+    /**
+     * @returns {Record[]} - records loaded in to this cube.
+     */
+    get records() {
+        return this.store.records;
     }
 
     //------------------
