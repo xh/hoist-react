@@ -25,6 +25,9 @@
   data package and support observable "Views". See documentation on `Cube` for more information.
 * `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
   when used in an action column.
+* Mobile Navigator component now takes an `animation` prop which can be set to one of: 'slide', 'lift', 'fade', 'none'.
+  The default `animation` setting is `slide`.  These values are passed to the underlying OnsenUi onsenNavigator component.
+  ([#1641](https://github.com/xh/hoist-react/pull/1641))
 
 ### 🐞 Bug Fixes
 
