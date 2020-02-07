@@ -29,6 +29,8 @@ export class AggregateRow {
         if (dim) this[dimName] = val;
         view.fields.forEach(({name}) => this[name] = null);
 
+        children.forEach(it => it._meta.parent = this);
+
         this.computeAggregates();
         this.applyVisibleChildren();
     }
