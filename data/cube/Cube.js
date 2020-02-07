@@ -158,7 +158,7 @@ export class Cube {
         const changeLog = this.store.updateData(rawData);
 
         // 2) Process info
-        const hasInfoUpdates = isEmpty(infoUpdates);
+        const hasInfoUpdates = !isEmpty(infoUpdates);
         if (hasInfoUpdates) {
             this._info = Object.freeze({...this._info, ...infoUpdates});
         }
