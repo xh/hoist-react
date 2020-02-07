@@ -265,7 +265,7 @@ const editableChild = hoistCmp.factory({
         const overrides = {
             model,
             bind: 'value',
-            disabled,
+            disabled: props.disabled || disabled,
             id: childId
         };
 
