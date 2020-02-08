@@ -1,35 +1,45 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - Unreleased
+## v30.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
 ## v29.1.0 - 2020-02-07
 
 ### 🎁 New Features
 
-* `AppOption` configs now accept an `omit` property for conditionally excluding options.
+#### Grid
+
 * The `compact` config on `GridModel` has been deprecated in favor of the more powerful `sizingMode`
   which supports the values 'large', 'standard', 'compact', or 'tiny'.
   * Each new mode has its own set of CSS variables for applications to override as needed.
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` and `ROW_HEIGHTS`
-    static properties of the `AgGrid` component and can be modified directly by applications that
-    wish to customize the default row heights globally on init.
+    static properties of the `AgGrid` component. These objects can be modified on init by
+    applications that wish to customize the default row heights globally.
   * 💥 Note that these height config objects were previously exported as constants from AgGrid.js.
     This would be a breaking change for any apps that imported the old objects directly (considered
     unlikely).
-* The `Store` constructor now accepts a `data` argument to load data at initialization.
-* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
 * `GridModel` now exposes an `autoSizeColumns` method, and the Grid context menu now contains an
   `Autosize Columns` option by default.
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
-* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
-  validation tooltip.
+
+#### Data
+
+* The `Store` constructor now accepts a `data` argument to load data at initialization.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
+
+#### Other
+
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
 * `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
   when used in an action column.
-* Mobile Navigator component now takes an `animation` prop which can be set to one of: 'slide', 'lift', 'fade', 'none'.
-  The default `animation` setting is `slide`.  These values are passed to the underlying OnsenUi onsenNavigator component.
+* Mobile Navigator component now takes an `animation` prop which can be set to 'slide' (default),
+  'lift', 'fade', or 'none'. These values are passed to the underlying onsenNavigator component.
   ([#1641](https://github.com/xh/hoist-react/pull/1641))
+* `AppOption` configs now accept an `omit` property for conditionally excluding options.
 
 ### 🐞 Bug Fixes
 
@@ -40,11 +50,6 @@
 
 ### ⚙️ Technical
 
-* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
-  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
-  directly by applications that wish to customize the default row heights globally on init
-  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
-    a breaking change for any apps that imported the old objects directly (considered unlikely).
 * `FormFields` now check that they are contained in a Hoist `Form`.
 
 ### 📚 Libraries
@@ -53,7 +58,7 @@
 * codemirror `5.50 -> 5.51`
 * react-dates `21.5 -> 21.7`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v29.0.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.1.0)
 
 ## v29.0.0 - 2020-01-24
 
