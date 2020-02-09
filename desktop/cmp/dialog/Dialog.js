@@ -106,7 +106,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 const rndDialog = hoistCmp.factory(
     ({model: dialogModel, props}) => {
         const {resizable, draggable, RnDOptions = {}} = dialogModel,
-            {width, height, mask, closeOnOutsideClick} = props;
+            {width, height, mask, closeOnOutsideClick, style={}, zIndex} = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -150,8 +150,8 @@ const rndDialog = hoistCmp.factory(
         };
 
         return fragment(
-            mask ? maskComp() : null,
-            closeOnOutsideClick ? clickCaptureComp() : null,
+            mask ? maskComp({zIndex}) : null,
+            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
             rnd({
                 ref: c => dialogModel.rndRef = c,
                 ...RnDOptions,
@@ -168,6 +168,10 @@ const rndDialog = hoistCmp.factory(
                 },
                 bounds: 'body',
                 dragHandleClassName: 'xh-dialog-header',
+                style: {
+                    ...style,
+                    zIndex
+                },
                 onDragStop,
                 onResizeStop,
                 item: div({
@@ -183,12 +187,13 @@ const rndDialog = hoistCmp.factory(
 );
 
 const maskComp = hoistCmp.factory(
-    () => div({className: 'xh-dialog-root__mask'})
+    ({zIndex}) => div({className: 'xh-dialog-root__mask', style: {zIndex}})
 );
 
 const clickCaptureComp = hoistCmp.factory(
-    ({model: dialogModel}) => div({
+    ({model: dialogModel, zIndex}) => div({
         className: 'xh-dialog-root__click-capture',
+        style: {zIndex},
         ref: dialogModel.clickCaptureCompRef,
         onClick: (evt) => dialogModel.handleOutsideClick(evt)
     })

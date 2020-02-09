@@ -6,15 +6,6 @@
  */
 
 .xh-dialog-root {
-  &__content {
-    box-shadow: var(--xh-dialog-box-shadow);
-    border: var(--xh-border-solid);
-
-    > .xh-panel > .xh-panel-header {
-      padding-right: 0;
-    }
-  }
-
   .react-draggable {
     background-color: var(--xh-bg-alt);
     box-shadow: var(--xh-dialog-box-shadow);
@@ -31,21 +22,6 @@
         cursor: move;
       }
     }
-  }
-
-  &__plain {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    opacity: 1;
-    background-color: rgba(16, 22, 26, 0.7);
-    overflow: auto;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   &__mask {
