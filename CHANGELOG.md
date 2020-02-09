@@ -2,6 +2,10 @@
 
 ## v30.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DataView` now supports grouping via new `DataViewModel.groupBy` and `groupedItemHeight` configs.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
 ## v29.1.0 - 2020-02-07
@@ -28,7 +32,6 @@
 * The `Store` constructor now accepts a `data` argument to load data at initialization.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
-* `DataViewModel` now accepts `groupBy` and `groupedItemHeight` params to enable grouped `DataView`.
 
 #### Other
 
