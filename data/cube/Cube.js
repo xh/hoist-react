@@ -58,9 +58,25 @@ export class Cube {
         this._info = info;
     }
 
-    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
+    /**
+     * @returns {Object} - optional metadata associated with this Cube at the last data load.
+     */
     get info() {
         return this._info;
+    }
+
+    /**
+     * @returns {CubeField[]} - fields associated with this cube.
+     */
+    get fields() {
+        return this.store.fields;
+    }
+
+    /**
+     * @returns {Record[]} - records loaded in to this cube.
+     */
+    get records() {
+        return this.store.records;
     }
 
     //------------------
@@ -80,8 +96,7 @@ export class Cube {
     executeQuery(query) {
         query = new Query({...query, cube: this});
         const view = new View({query}),
-            rows = view.rows;
-
+            rows = view.result.rows;
 
         view.destroy();
         return rows;
@@ -100,7 +115,7 @@ export class Cube {
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
      * @param {Store} [c.store] - Store to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'rows' property of the returned object instead.
+     *      To receive data only, use the 'results' property of the returned object instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
      * @returns {View}.
@@ -135,22 +150,22 @@ export class Cube {
      * information.
      *
      * @param {(Object[]|StoreTransaction)} rawData
-     * @param {Object} info
+     * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    updateData(rawData, info) {
+    updateData(rawData, infoUpdates) {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
         // 2) Process info
-        const infoUpdated = isEmpty(info);
-        if (!isEmpty(info)) {
-            this._info = {...this._info, info};
+        const hasInfoUpdates = !isEmpty(infoUpdates);
+        if (hasInfoUpdates) {
+            this._info = Object.freeze({...this._info, ...infoUpdates});
         }
 
         // 3) Notify connected views
-        if (changeLog || infoUpdated) {
+        if (changeLog || hasInfoUpdates) {
             this._connectedViews.forEach(view => {
-                view.noteCubeUpdated(changeLog, infoUpdated);
+                view.noteCubeUpdated(changeLog);
             });
         }
     }

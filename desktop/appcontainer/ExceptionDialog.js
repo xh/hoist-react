@@ -74,10 +74,13 @@ const bbar = hoistCmp.factory(
  */
 export const dismissButton = hoistCmp.factory(
     ({model}) => {
-        return model.options.requireReload ?
+        const reloadRequired = model.options.requireReload,
+            loginRequired = isSessionExpired(model.exception);
+
+        return reloadRequired ?
             button({
-                icon: Icon.refresh(),
-                text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
+                icon: loginRequired ? Icon.login() : Icon.refresh(),
+                text: loginRequired ? 'Login' : 'Reload App',
                 autoFocus: true,
                 onClick: () => XH.reloadApp()
             }) :

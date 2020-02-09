@@ -63,20 +63,20 @@ export const actionCol = {
             const {icon, intent, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             if (hidden) return;
 
-            const actionButtonEl = document.createElement('button');
-            actionButtonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
+            const buttonEl = document.createElement('button');
+            buttonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
 
-            if (disabled) actionButtonEl.setAttribute('disabled', 'true');
-            if (!isEmpty(tooltip)) actionButtonEl.setAttribute('title', tooltip);
-            if (!isEmpty(intent)) actionButtonEl.classList.add(`bp3-intent-${intent}`);
+            if (disabled) buttonEl.setAttribute('disabled', 'true');
+            if (!isEmpty(tooltip)) buttonEl.setAttribute('title', tooltip);
+            if (!isEmpty(intent)) buttonEl.classList.add(`bp3-intent-${intent}`);
 
-            actionButtonEl.innerHTML = convertIconToSvg(icon);
-            actionButtonEl.addEventListener('click', (ev) => {
+            buttonEl.innerHTML = convertIconToSvg(icon);
+            buttonEl.addEventListener('click', (ev) => {
                 ev.stopPropagation();
-                action.call({record, selectedRecords: [record], gridModel, column});
+                action.call({record, selectedRecords: [record], gridModel, column, buttonEl});
             });
 
-            buttonGroupEl.appendChild(actionButtonEl);
+            buttonGroupEl.appendChild(buttonEl);
         });
 
         return buttonGroupEl;

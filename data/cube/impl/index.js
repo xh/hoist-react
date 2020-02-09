@@ -7,3 +7,4 @@
 
 export * from './AggregateRow';
 export * from './LeafRow';
+export * from './RowUpdate';
