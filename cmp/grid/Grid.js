@@ -153,8 +153,7 @@ class LocalModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
-            gridDefaultHeight = platformHeights[this.model.sizingMode],
+        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
             maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
 
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;

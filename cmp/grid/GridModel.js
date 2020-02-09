@@ -147,7 +147,7 @@ export class GridModel {
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
-     * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
+     * @param {function} [c.rowClassFn] - closure to generate CSS class names for a row.
      *      Called with record data, returns a string or array of strings.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.

@@ -1,0 +1,140 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
+/**
+ * Note that the core Hoist AgGrid.scss sheet excludes xh-data-view at the top-level, as many of
+ * its styles are N/A or would be disruptive in a DV context (notably sizing mode).
+ *
+ * That said, this stylesheet copies over several useful styles and behaviors from the core grid,
+ * with some modifications specific to DataView.
+ */
+.xh-data-view {
+  .ag-theme-balham.xh-ag-grid,
+  .ag-theme-balham-dark.xh-ag-grid {
+    // Standard app font family/sizing applied by default.
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-font-size-px);
+
+    .ag-root {
+      border: none;
+      background-color: var(--xh-bg);
+    }
+
+    // Header height fixed to zero - avoid 1px border creating a gap at top of grid.
+    .ag-header {
+      border: none;
+    }
+
+    // Always suppress agGrid-provided horizontal scrollbar - we never want it for DVs.
+    .ag-center-cols-viewport {
+      overflow-x: hidden;
+    }
+
+    //------------------------
+    // Core Row Classes
+    //------------------------
+    .ag-row {
+      // Container for DV items should take up all configured row height + flex contents.
+      .ag-react-container {
+        height: 100%;
+        display: flex;
+      }
+
+      // Default selection highlight supported by DV.
+      &.ag-row-selected {
+        background-color: var(--xh-grid-bg-highlight);
+      }
+
+      // Carry over grouped header styles from grid. DVs can optionally specify a custom
+      // groupRowRenderer, but this ensures the default style looks consistent.
+      &.ag-row-group.ag-full-width-row {
+        color: var(--xh-grid-group-text-color);
+        background-color: var(--xh-grid-group-bg);
+      }
+
+      .ag-group-expanded {
+        margin: 0 var(--xh-pad-half-px);
+
+        svg {
+          width: var(--xh-pad-px);
+        }
+      }
+
+      .ag-group-contracted {
+        margin: 0 var(--xh-pad-half-px);
+
+        svg {
+          width: var(--xh-pad-px);
+        }
+      }
+    }
+
+    //------------------------
+    // Row borders supported by DV
+    //------------------------
+    &--row-borders {
+      .ag-row {
+        border-color: var(--xh-grid-border-color);
+
+        &.ag-row-group {
+          border-color: var(--xh-grid-group-border-color);
+        }
+      }
+    }
+
+    &--no-row-borders {
+      .ag-row {
+        border-color: transparent;
+
+        // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+        // Without this collapsed groups (which don't stripe) blend together in a solid block.
+        &.ag-row-group.ag-full-width-row {
+          border-color: var(--xh-grid-group-border-color);
+        }
+      }
+    }
+
+    // Suppress default border on last row for full-width group rows - avoids minor up/down shift
+    // when collapsing and expanding the last group.
+    .ag-row.ag-row-group.ag-full-width-row.ag-row-last {
+      border-bottom-width: 0;
+    }
+
+    //------------------------
+    // Zebra striping supported by DV
+    //------------------------
+    &--stripe-rows {
+      .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-bg-odd);
+      }
+    }
+
+    //------------------------
+    // Hover highlight supported by DV
+    //------------------------
+    &--show-hover {
+      .ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected) {
+        background-color: var(--xh-grid-bg-hover);
+      }
+    }
+
+    //------------------------
+    // Core Cell Classes
+    //------------------------
+    .ag-cell {
+      line-height: unset;
+      white-space: normal;
+      padding: 0;
+    }
+
+    // No cell borders
+    .ag-cell,
+    .ag-has-focus .ag-cell-focus {
+      border-color: transparent;
+    }
+  }
+}
