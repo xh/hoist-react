@@ -106,7 +106,13 @@
 
     //------------------------
     // Zebra striping supported by DV
+    // (But unset default ag-grid striping if not enabled)
     //------------------------
+    .ag-row.ag-row-even:not(.ag-full-width-row):not(.ag-row-selected),
+    .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+      background-color: unset;
+    }
+
     &--stripe-rows {
       .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
         background-color: var(--xh-grid-bg-odd);
