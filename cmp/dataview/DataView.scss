@@ -142,5 +142,14 @@
     .ag-has-focus .ag-cell-focus {
       border-color: transparent;
     }
+
+    //------------------------
+    // Other overrides
+    //------------------------
+    .ag-side-bar { border: none; }
+
+    .ag-status-bar { border: none; }
+
+    .ag-bl-overlay { display: none; }
   }
 }
