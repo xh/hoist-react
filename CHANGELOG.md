@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed an issue where PinPad would not display zeroes.
+* Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
