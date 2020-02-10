@@ -127,28 +127,20 @@ export class DataViewModel {
         });
     }
 
-    get store() {return this.gridModel.store}
-    get selModel() {return this.gridModel.selModel}
+    // Getters and methods trampolined from GridModel.
+    get store()             {return this.gridModel.store}
+    get empty()             {return this.gridModel.empty}
+    get selModel()          {return this.gridModel.selModel}
+    get hasSelection()      {return this.gridModel.hasSelection}
+    get selection()         {return this.selModel.records}
+    get selectedRecord()    {return this.selModel.singleRecord}
 
-    /** Select the first record in the DataView. */
     selectFirst() {
         this.gridModel.selectFirst();
     }
 
-    /**
-     * Shortcut to the currently selected records (observable).
-     * @see StoreSelectionModel.records
-     */
-    get selection() {
-        return this.selModel.records;
-    }
-
-    /**
-     * Shortcut to a single selected record (observable), or null if multiple records selected.
-     * @see StoreSelectionModel.singleRecord
-     */
-    get selectedRecord() {
-        return this.selModel.singleRecord;
+    ensureSelectionVisible() {
+        this.gridModel.ensureSelectionVisible();
     }
 
     /** Load the underlying store. */
