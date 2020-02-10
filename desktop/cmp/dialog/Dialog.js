@@ -105,8 +105,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
 const rndDialog = hoistCmp.factory(
     ({model: dialogModel, props}) => {
-        const {resizable, draggable, RnDOptions = {}} = dialogModel,
-            {width, height, mask, closeOnOutsideClick, style={}, zIndex} = props;
+        const {resizable, draggable} = dialogModel,
+            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style} = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -149,6 +149,9 @@ const rndDialog = hoistCmp.factory(
             }
         };
 
+        if (style) RnDOptions.style = style;
+        const zIndex = RnDOptions.style?.zIndex;
+
         return fragment(
             mask ? maskComp({zIndex}) : null,
             closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
@@ -168,10 +171,6 @@ const rndDialog = hoistCmp.factory(
                 },
                 bounds: 'body',
                 dragHandleClassName: 'xh-dialog-header',
-                style: {
-                    ...style,
-                    zIndex
-                },
                 onDragStop,
                 onResizeStop,
                 item: div({
@@ -240,5 +239,11 @@ Dialog.propTypes = {
     x: PT.number,
 
     /** Top edge position of dialog */
-    y: PT.number
+    y: PT.number,
+
+    /** Escape hatch to pass any ReactRnD props to ReactRnD comp */
+    RnDOptions: PT.object,
+
+    /** CSS style object passed into ReactRnD */
+    style: PT.object
 };
