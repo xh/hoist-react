@@ -55,7 +55,7 @@ const digit = hoistCmp.factory(
         if (isActive) className += ' active';
         return span({
             className,
-            item: num
+            item: `${num}`
         });
     }
 );
