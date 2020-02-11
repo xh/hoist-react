@@ -8,9 +8,10 @@ import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
+import {isEmpty} from 'lodash';
 
 /**
- * Context menu for adding views to a DashContainer.
+ * Context menu for title bar/tabs of a stack in a DashContainer.
  *
  * Available view specs are listed in their defined order, optionally
  * grouped by their `groupName` property
@@ -19,6 +20,7 @@ import {Icon} from '@xh/hoist/icon';
  * @private
  */
 export const dashContainerContextMenu = hoistCmp.factory({
+    model: null, observable: null,
     render(props) {
         const menuItems = createMenuItems(props);
         return contextMenu({menuItems});
@@ -29,21 +31,21 @@ export const dashContainerContextMenu = hoistCmp.factory({
 // Implementation
 //---------------------------
 function createMenuItems(props) {
-    const {dashContainerModel, stack, viewModel, index} = props,
+    const {dashContainerModel, viewModel} = props,
         ret = [];
 
     // Add context sensitive items if clicked on a tab
     if (viewModel) {
-        const {id, title, viewSpec, refreshContextModel} = viewModel;
+        const {id, viewSpec, refreshContextModel} = viewModel;
         ret.push(
             {
-                text: `Close "${title}"`,
+                text: 'Remove',
                 icon: Icon.cross(),
                 disabled: !viewSpec.allowRemove,
                 actionFn: () => dashContainerModel.removeView(id)
             },
             {
-                text: 'Rename (Dbl-Click)',
+                text: 'Rename',
                 icon: Icon.edit(),
                 hidden: !viewSpec.allowRename,
                 actionFn: () => dashContainerModel.renameView(id)
@@ -56,18 +58,35 @@ function createMenuItems(props) {
             }
         );
     }
+    const addMenuItems = createAddMenuItems(props);
+    if (!isEmpty(addMenuItems)) {
+        ret.push(
+            menuDivider({title: 'Add'}),
+            ...addMenuItems
+        );
+    }
 
-    // Convert available viewSpecs into menu items
-    ret.push(menuDivider({title: 'Add'}));
-    let hasUngrouped;
-    dashContainerModel.viewSpecs.filter(viewSpec => {
+    return ret;
+}
+
+// Convert any available viewSpecs into menu items
+function createAddMenuItems(props) {
+    let {dashContainerModel, stack, index} = props,
+        ret = [];
+
+    const addableSpecs = dashContainerModel.viewSpecs.filter(viewSpec => {
         if (!viewSpec.allowAdd) return false;
         if (viewSpec.unique) {
             const instances = dashContainerModel.getItemsBySpecId(viewSpec.id);
             return !instances.length;
         }
         return true;
-    }).forEach(viewSpec => {
+    });
+
+    if (isEmpty(addableSpecs)) return [];
+
+    let hasUngrouped;
+    addableSpecs.forEach(viewSpec => {
         const {id, title, icon, groupName} = viewSpec,
             item = {
                 text: title,

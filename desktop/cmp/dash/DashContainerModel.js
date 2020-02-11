@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
-import {find, reject, cloneDeep} from 'lodash';
+import {find, reject, cloneDeep, isFinite} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
@@ -171,6 +171,8 @@ export class DashContainerModel {
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
+
+        if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(viewSpec.goldenLayoutConfig, index);
     }
 
