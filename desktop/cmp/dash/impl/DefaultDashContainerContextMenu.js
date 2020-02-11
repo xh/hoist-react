@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {menu, menuItem} from '@xh/hoist/kit/blueprint';
+import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
 
 /**
  * Default menu for adding views to a DashContainer. Can be replaced via
- * DashContainerModel's `addViewContent` config.
+ * DashContainerModel's `contextMenu` config.
  *
  * Available view specs are listed in their defined order, optionally
  * grouped by their `groupName` property
@@ -18,18 +18,29 @@ import {Icon} from '@xh/hoist/icon';
  * @see DashContainerModel
  * @private
  */
-export const addViewMenu = hoistCmp.factory({
-    render({dashContainerModel, stack}) {
-        const menuItems = createMenuItems(dashContainerModel, stack);
-        return menu(menuItems);
+export const defaultDashContainerContextMenu = hoistCmp.factory({
+    render(props) {
+        const menuItems = createMenuItems(props);
+        return contextMenu({menuItems});
     }
 });
 
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems(dashContainerModel, stack) {
-    const ret = [];
+function createMenuItems(props) {
+    const {dashContainerModel, stack, viewModel, addIndex} = props,
+        ret = [];
+
+    // Option to remove item if clicked on a tab
+    if (viewModel && viewModel.viewSpec.allowRemove) {
+        const item = {
+            text: `Close "${viewModel.title}"`,
+            icon: Icon.cross(),
+            actionFn: () => dashContainerModel.removeView(viewModel.id)
+        };
+        ret.push(item, '-');
+    }
 
     // Convert available viewSpecs into menu items
     let hasUngrouped;
@@ -42,11 +53,11 @@ function createMenuItems(dashContainerModel, stack) {
         return true;
     }).forEach(viewSpec => {
         const {id, title, icon, groupName} = viewSpec,
-            item = menuItem({
+            item = {
                 text: title,
                 icon: icon,
-                onClick: () => dashContainerModel.addView(id, stack)
-            });
+                actionFn: () => dashContainerModel.addView(id, stack, addIndex)
+            };
 
         // Group if necessary
         if (groupName) {
@@ -71,6 +82,6 @@ function createMenuItems(dashContainerModel, stack) {
         const icon = hasUngrouped ? Icon.angleRight({style: {visibility: 'hidden'}}) : undefined,
             {text, items} = item;
 
-        return menuItem({icon, text, items});
+        return {icon, text, items};
     });
 }
