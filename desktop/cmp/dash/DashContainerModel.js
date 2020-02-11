@@ -9,7 +9,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
@@ -18,7 +18,7 @@ import {find, reject, cloneDeep} from 'lodash';
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
-import {defaultDashContainerContextMenu} from './impl/DefaultDashContainerContextMenu';
+import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
@@ -82,8 +82,6 @@ export class DashContainerModel {
     //------------------------
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
-    /** @member {(Object|function)} */
-    contextMenu;
     /** @member {RenderMode} */
     renderMode;
     /** @member {RefreshMode} */
@@ -102,10 +100,6 @@ export class DashContainerModel {
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
      * @param {Object[]} [initialState] - Default layout state for this container.
-     * @param {(Object|function)} [contextMenu] - ContextMenu or a function returning a ContextMenu.
-     *      Will receive the clicked `stack` and this `dashContainerModel` as props. If triggered
-     *      from a tab, will additionally receive the tab's DashViewModel and index as props
-     *      Defaults to @defaultDashContainerContextMenu
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
@@ -116,7 +110,6 @@ export class DashContainerModel {
     constructor({
         viewSpecs,
         initialState = [],
-        contextMenu = defaultDashContainerContextMenu,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         goldenLayoutSettings
@@ -125,7 +118,6 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
-        this.contextMenu = contextMenu;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
@@ -308,7 +300,7 @@ export class DashContainerModel {
 
     showContextMenu(e, {stack, viewModel, index}) {
         const offset = {left: e.clientX, top: e.clientY},
-            menu = elementFromContent(this.contextMenu, {
+            menu = dashContainerContextMenu({
                 stack,
                 viewModel,
                 index,

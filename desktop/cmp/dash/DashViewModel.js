@@ -75,13 +75,6 @@ export class DashViewModel {
     }
 
     /**
-     * Trigger a refresh for this model
-     */
-    async refreshAsync() {
-        return this.refreshContextModel.refreshAsync();
-    }
-
-    /**
      * Modify a single key on this model's viewState
      */
     setViewStateKey(key, value) {

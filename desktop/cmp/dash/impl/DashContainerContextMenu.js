@@ -10,8 +10,7 @@ import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Default menu for adding views to a DashContainer. Can be replaced via
- * DashContainerModel's `contextMenu` config.
+ * Context menu for adding views to a DashContainer.
  *
  * Available view specs are listed in their defined order, optionally
  * grouped by their `groupName` property
@@ -19,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
  * @see DashContainerModel
  * @private
  */
-export const defaultDashContainerContextMenu = hoistCmp.factory({
+export const dashContainerContextMenu = hoistCmp.factory({
     render(props) {
         const menuItems = createMenuItems(props);
         return contextMenu({menuItems});
@@ -35,7 +34,7 @@ function createMenuItems(props) {
 
     // Add context sensitive items if clicked on a tab
     if (viewModel) {
-        const {id, title, viewSpec} = viewModel;
+        const {id, title, viewSpec, refreshContextModel} = viewModel;
         ret.push(
             {
                 text: `Close "${title}"`,
@@ -46,13 +45,14 @@ function createMenuItems(props) {
             {
                 text: 'Rename (Dbl-Click)',
                 icon: Icon.edit(),
-                disabled: !viewSpec.allowRename,
+                hidden: !viewSpec.allowRename,
                 actionFn: () => dashContainerModel.renameView(id)
             },
             {
                 text: 'Refresh',
                 icon: Icon.refresh(),
-                actionFn: () => viewModel.refreshAsync()
+                hidden: !refreshContextModel.refreshTargets.length,
+                actionFn: () => refreshContextModel.refreshAsync()
             }
         );
     }
