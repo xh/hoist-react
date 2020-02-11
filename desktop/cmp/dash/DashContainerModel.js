@@ -184,13 +184,22 @@ export class DashContainerModel {
 
     /**
      * Remove a view from the container.
-     *
      * @param {string} id - DashViewModel id to remove from the container
      */
     removeView(id) {
-        const view = this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
+        const view = this.getItemByViewModel(id);
         if (!view) return;
         view.parent.removeChild(view);
+    }
+
+    /**
+     * Enable the rename field for a given view
+     * @param {string} id - DashViewModel id to rename
+     */
+    renameView(id) {
+        const view = this.getItemByViewModel(id);
+        if (!view) return;
+        this.showTitleForm(view.tab.element);
     }
 
     //------------------------
@@ -248,6 +257,11 @@ export class DashContainerModel {
     // Get all view instances with a given DashViewSpec.id
     getItemsBySpecId(id) {
         return this.getItems().filter(it => it.config.component === id);
+    }
+
+    // Get the view instance with the given DashViewModel.id
+    getItemByViewModel(id) {
+        return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
     }
 
     //-----------------
@@ -369,7 +383,6 @@ export class DashContainerModel {
 
             if (viewSpec.allowRename) {
                 this.insertTitleForm($el, viewModel);
-                $titleEl.prop('title', `${$titleEl.text()}. Double-click to edit.`);
                 $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
             }
         });
@@ -400,18 +413,18 @@ export class DashContainerModel {
         });
     }
 
-    showTitleForm($el) {
-        const $titleEl = $el.find('.lm_title').first(),
-            $inputEl = $el.find('.title-form input').first(),
+    showTitleForm($tabEl) {
+        const $titleEl = $tabEl.find('.lm_title').first(),
+            $inputEl = $tabEl.find('.title-form input').first(),
             currentTitle = $titleEl.text();
 
-        $el.addClass('show-title-form');
+        $tabEl.addClass('show-title-form');
         $inputEl.val(currentTitle);
         $inputEl.focus().select();
     }
 
-    hideTitleForm($el) {
-        $el.removeClass('show-title-form');
+    hideTitleForm($tabEl) {
+        $tabEl.removeClass('show-title-form');
     }
 
     //-----------------

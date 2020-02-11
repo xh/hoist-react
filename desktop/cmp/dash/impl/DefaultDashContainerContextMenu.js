@@ -6,6 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
+import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
 
 /**
@@ -32,17 +33,32 @@ function createMenuItems(props) {
     const {dashContainerModel, stack, viewModel, index} = props,
         ret = [];
 
-    // Option to remove item if clicked on a tab
-    if (viewModel && viewModel.viewSpec.allowRemove) {
-        const item = {
-            text: `Close "${viewModel.title}"`,
-            icon: Icon.cross(),
-            actionFn: () => dashContainerModel.removeView(viewModel.id)
-        };
-        ret.push(item, '-');
+    // Add context sensitive items if clicked on a tab
+    if (viewModel) {
+        const {id, title, viewSpec} = viewModel;
+        ret.push(
+            {
+                text: `Close "${title}"`,
+                icon: Icon.cross(),
+                disabled: !viewSpec.allowRemove,
+                actionFn: () => dashContainerModel.removeView(id)
+            },
+            {
+                text: 'Rename (Dbl-Click)',
+                icon: Icon.edit(),
+                disabled: !viewSpec.allowRename,
+                actionFn: () => dashContainerModel.renameView(id)
+            },
+            {
+                text: 'Refresh',
+                icon: Icon.refresh(),
+                actionFn: () => viewModel.refreshAsync()
+            }
+        );
     }
 
     // Convert available viewSpecs into menu items
+    ret.push(menuDivider({title: 'Add'}));
     let hasUngrouped;
     dashContainerModel.viewSpecs.filter(viewSpec => {
         if (!viewSpec.allowAdd) return false;

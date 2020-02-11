@@ -65,9 +65,15 @@ function parseMenuItems(items) {
         }
         return true;
     }).map(item => {
-        if (item === '-') return menuDivider();
+        if (item === '-') {
+            return menuDivider();
+        }
         if (isValidElement(item)) {
-            return menuItem({text: item});
+            if (['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(item.type.displayName)) {
+                return item;
+            } else {
+                return menuItem({text: item});
+            }
         }
 
         const items = item.items ? this.parseMenuItems(item.items) : null;
