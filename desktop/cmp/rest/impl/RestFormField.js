@@ -59,6 +59,7 @@ function renderDefaultInput(name, model) {
         case 'bool':
             return renderBoolean(fieldModel);
         case 'int':
+            return numberInput({precision: 0});
         case 'number':
             return numberInput();
         case 'json':
