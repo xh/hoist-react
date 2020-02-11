@@ -29,7 +29,7 @@ export const defaultDashContainerContextMenu = hoistCmp.factory({
 // Implementation
 //---------------------------
 function createMenuItems(props) {
-    const {dashContainerModel, stack, viewModel, addIndex} = props,
+    const {dashContainerModel, stack, viewModel, index} = props,
         ret = [];
 
     // Option to remove item if clicked on a tab
@@ -56,7 +56,7 @@ function createMenuItems(props) {
             item = {
                 text: title,
                 icon: icon,
-                actionFn: () => dashContainerModel.addView(id, stack, addIndex)
+                actionFn: () => dashContainerModel.addView(id, stack, index + 1)
             };
 
         // Group if necessary

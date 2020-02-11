@@ -103,7 +103,8 @@ export class DashContainerModel {
      *      that can be displayed in this container
      * @param {Object[]} [initialState] - Default layout state for this container.
      * @param {(Object|function)} [contextMenu] - ContextMenu or a function returning a ContextMenu.
-     *      Will receive the clicked `stack` and this `dashContainerModel` as props.
+     *      Will receive the clicked `stack` and this `dashContainerModel` as props. If triggered
+     *      from a tab, will additionally receive the tab's DashViewModel and index as props
      *      Defaults to @defaultDashContainerContextMenu
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
@@ -291,12 +292,12 @@ export class DashContainerModel {
         });
     }
 
-    showContextMenu(e, {stack, viewModel, addIndex}) {
+    showContextMenu(e, {stack, viewModel, index}) {
         const offset = {left: e.clientX, top: e.clientY},
             menu = elementFromContent(this.contextMenu, {
                 stack,
                 viewModel,
-                addIndex,
+                index,
                 dashContainerModel: this
             });
 
@@ -344,10 +345,8 @@ export class DashContainerModel {
                 {icon, title} = viewModel;
 
             $el.off('contextmenu').contextmenu(e => {
-                const index = stack.contentItems.indexOf(item),
-                    addIndex = index + 1;
-
-                this.showContextMenu(e, {stack, viewModel, addIndex});
+                const index = stack.contentItems.indexOf(item);
+                this.showContextMenu(e, {stack, viewModel, index});
                 return false;
             });
 
