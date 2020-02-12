@@ -11,7 +11,7 @@ import {createAggregateRow, createLeafRow} from './impl';
 import {observable, action} from 'mobx';
 import {throwIf} from '../../utils/js';
 
-import {isEmpty, groupBy, map} from 'lodash';
+import {isEmpty, groupBy, map, uniq} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -111,6 +111,23 @@ export class View {
         throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
         this._query = this._query.clone(overrides);
         this.fullUpdate();
+    }
+
+    /**
+     * Gathers all unique non-null values for each dimension used in the query
+     * @returns {DimensionValue[]}
+     */
+    getDimensionValues() {
+        const leaves = Array.from(this._leafMap.values()),
+            {dimensions} = this._query,
+            ret = [];
+
+        dimensions.forEach(field => {
+            const values = uniq(leaves.map(it => it[field.name]).filter(it => it !== null));
+            ret.push({field, values});
+        });
+
+        return ret;
     }
 
     //-----------------------
@@ -249,3 +266,9 @@ export class View {
         this.disconnect();
     }
 }
+
+/**
+ * @typedef DimensionValue
+ * @property {CubeField} field - dimension field
+ * @property {Array} values - unique non-null values for the dimension
+ */
