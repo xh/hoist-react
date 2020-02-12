@@ -25,9 +25,8 @@ export class View {
      * @member {Query}
      * Query defining this View.  Update with updateView();
      */
-    get query() {
-        return this._query;
-    }
+    @observable.ref
+    query = null;
 
     /**
      * @member {Object}
@@ -55,7 +54,6 @@ export class View {
     // Implementation
     _rows = null;
     _leafMap = null;
-    _query = null;
 
     /**
      * @private.  Applications should use createView() instead.
@@ -69,7 +67,7 @@ export class View {
      *      store when data in the underlying cube is changed.
      */
     constructor({query, connect = false, store = null}) {
-        this._query = query;
+        this.query = query;
         this.store = store;
         this.fullUpdate();
 
@@ -109,7 +107,7 @@ export class View {
     @action
     updateQuery(overrides) {
         throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
-        this._query = this._query.clone(overrides);
+        this.query = this.query.clone(overrides);
         this.fullUpdate();
     }
 
@@ -119,7 +117,7 @@ export class View {
      */
     getDimensionValues() {
         const leaves = Array.from(this._leafMap.values()),
-            fields = this._query.fields.filter(it => it.isDimension),
+            fields = this.query.fields.filter(it => it.isDimension),
             ret = [];
 
         fields.forEach(field => {
