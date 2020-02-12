@@ -11,7 +11,7 @@ import {createAggregateRow, createLeafRow} from './impl';
 import {observable, action} from 'mobx';
 import {throwIf} from '../../utils/js';
 
-import {isEmpty, groupBy, map, uniq} from 'lodash';
+import {isEmpty, groupBy, map} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -112,20 +112,18 @@ export class View {
     }
 
     /**
-     * Gathers all unique non-null values for each dimension field in the query
+     * Gathers all unique values for each dimension field in the query
      * @returns {DimensionValue[]}
      */
     getDimensionValues() {
-        const leaves = Array.from(this._leafMap.values()),
-            fields = this.query.fields.filter(it => it.isDimension),
-            ret = [];
+        const {_leafMap} = this,
+            fields = this.query.fields.filter(it => it.isDimension);
 
-        fields.forEach(field => {
-            const values = uniq(leaves.map(it => it[field.name]).filter(it => it !== null));
-            ret.push({field, values});
+        return fields.map(field => {
+            const values = new Set();
+            _leafMap.forEach(leaf => values.add(leaf[field.name]));
+            return {field, values};
         });
-
-        return ret;
     }
 
     //-----------------------
@@ -158,7 +156,7 @@ export class View {
         this.generateRows();
 
         if (store) store.loadData(this._rows);
-        this.result = {rows: this._rows};
+        this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
 
@@ -177,7 +175,7 @@ export class View {
         });
 
         if (store) store.updateData({update: recordUpdates});
-        this.result = {rows: this._rows};
+        this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
 
@@ -268,5 +266,5 @@ export class View {
 /**
  * @typedef DimensionValue
  * @property {CubeField} field - dimension field
- * @property {Array} values - unique non-null values for the dimension
+ * @property {Set} values - unique non-null values for the dimension
  */
