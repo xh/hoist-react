@@ -114,15 +114,15 @@ export class View {
     }
 
     /**
-     * Gathers all unique non-null values for each dimension used in the query
+     * Gathers all unique non-null values for each dimension field in the query
      * @returns {DimensionValue[]}
      */
     getDimensionValues() {
         const leaves = Array.from(this._leafMap.values()),
-            {dimensions} = this._query,
+            fields = this._query.fields.filter(it => it.isDimension),
             ret = [];
 
-        dimensions.forEach(field => {
+        fields.forEach(field => {
             const values = uniq(leaves.map(it => it[field.name]).filter(it => it !== null));
             ret.push({field, values});
         });
