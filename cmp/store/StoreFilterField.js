@@ -10,6 +10,7 @@ import {XH, hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Store} from '@xh/hoist/data';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {useEffect} from 'react';
 
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
@@ -44,8 +45,12 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
             store = gridModel ? gridModel.store : null;
         }
 
-        // Right now we freeze the initial props -- could be more dynamic.
         const implModel = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
+        useEffect(
+            () => implModel.setFilterOptions(props.filterOptions),
+            [implModel, props.filterOptions]
+        );
+
         return XH.isMobile ? mobileStoreFilterFieldImpl({implModel, ...props}) : desktopStoreFilterFieldImpl({implModel, ...props});
     }
 });

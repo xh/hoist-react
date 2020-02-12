@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -25,7 +25,7 @@ export class StoreFilterFieldImplModel {
     gridModel;
     store;
     filterBuffer;
-    filterOptions;
+    @bindable.ref filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
@@ -73,7 +73,7 @@ export class StoreFilterFieldImplModel {
 
             if (gridModel) {
                 this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy, filterOptions],
+                    track: () => [gridModel.columns, gridModel.groupBy, this.filterOptions],
                     run: () => this.regenerateFilter({applyImmediately: false})
                 });
             }

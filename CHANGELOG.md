@@ -7,6 +7,9 @@
 * Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
 * Fixed `fontAwesomeIcon` elem factory component to include the default 'fa-fw' className.
 Previously, it was overridden by any `className` passed in via optional params.
+* Fixed an issue where `StoreFilterField` `filterOption.includeChildren` could not be changed
+  dynamically.
+  [#1644](https://github.com/xh/hoist-react/issues/1644)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
