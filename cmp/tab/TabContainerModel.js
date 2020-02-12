@@ -33,6 +33,9 @@ export class TabContainerModel {
     /** @member {string} */
     switcherPosition;
 
+    /** @member {boolean} */
+    track;
+
     /** @member {RenderMode} */
     renderMode;
 
@@ -48,6 +51,8 @@ export class TabContainerModel {
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component (or 'none').
      *      Valid values are 'top', 'bottom', 'left', 'right', 'none'.
+     * @param {boolean} [c.track] - Enables tracking of tab views and logs to Admin Activity panel.
+     *      If not set, will default to false.
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
@@ -58,6 +63,7 @@ export class TabContainerModel {
         defaultTabId = null,
         route = null,
         switcherPosition = XH.isMobile ? 'bottom' : 'top',
+        track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
@@ -73,6 +79,7 @@ export class TabContainerModel {
         this.route = route;
         this.activeTabId = this.initialActiveTabId(tabs, defaultTabId);
         this.tabs = tabs.map(p => new TabModel({...p, containerModel: this}));
+        this.track = track;
 
         if (route) {
             if (XH.isMobile) {
@@ -86,6 +93,20 @@ export class TabContainerModel {
             });
 
             this.forwardRouterToTab(this.activeTabId);
+        }
+
+        if (track) {
+            this.addReaction({
+                track: () => this.activeTab,
+                run: (activeTab) => {
+                    XH.track({
+                        msg: `Viewed ${activeTab.title}`,
+                        category: 'Tab',
+                        // route data could be useful for non-top-level tabs.
+                        data: activeTab.containerModel.route && activeTab.containerModel.route !== 'default' ? {route: activeTab.containerModel.route} : null
+                    });
+                }
+            });
         }
     }
 
