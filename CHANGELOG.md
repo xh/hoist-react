@@ -7,6 +7,8 @@
 * Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
 * Fixed `fontAwesomeIcon` elem factory component to include the default 'fa-fw' className.
 Previously, it was overridden by any `className` passed in via optional params.
+* Fixed an issue where ConfigDiffer would always warn about deletions.
+  [#1652](https://github.com/xh/hoist-react/issues/1652)
 * Fixed an issue where `StoreFilterField` `filterOption.includeChildren` could not be changed
   dynamically.
   [#1644](https://github.com/xh/hoist-react/issues/1644)
