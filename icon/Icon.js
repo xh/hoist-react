@@ -172,6 +172,7 @@ import {
     faUniversity,
     faUnlink,
     faUpload,
+    faUsdCircle,
     faUserCheck,
     faUserCircle,
     faUserClock,
@@ -341,6 +342,7 @@ import {
     faUniversity as faUniversityLight,
     faUnlink as faUnlinkLight,
     faUpload as faUploadLight,
+    faUsdCircle as faUsdCircleLight,
     faUserCheck as faUserCheckLight,
     faUserCircle as faUserCircleLight,
     faUserClock as faUserClockLight,
@@ -510,6 +512,7 @@ import {
     faUniversity as faUniversitySolid,
     faUnlink as faUnlinkSolid,
     faUpload as faUploadSolid,
+    faUsdCircle as faUsdCircleSolid,
     faUserCheck as faUserCheckSolid,
     faUserCircle as faUserCircleSolid,
     faUserClock as faUserClockSolid,
@@ -681,6 +684,7 @@ library.add(
     faUniversity, faUniversityLight, faUniversitySolid,
     faUnlink, faUnlinkLight, faUnlinkSolid,
     faUpload, faUploadLight, faUploadSolid,
+    faUsdCircle, faUsdCircleLight, faUsdCircleSolid,
     faUserCheck, faUserCheckLight, faUserCheckSolid,
     faUserCircle, faUserCircleLight, faUserCircleSolid,
     faUserClock, faUserClockLight, faUserClockSolid,
@@ -772,6 +776,7 @@ export const Icon = {
     diff(p)             {return fa(p, 'exchange')},
     disabled(p)         {return fa(p, 'ban')},
     dollarSign(p)       {return fa(p, 'dollar-sign')},
+    dollarSignCircle(p) {return fa(p, 'usd-circle')},
     download(p)         {return fa(p, 'download')},
     edit(p)             {return fa(p, 'edit')},
     envelope(p)         {return fa(p, 'envelope')},
@@ -944,9 +949,9 @@ export const fileIcon = function(extension) {
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props = {}, name) {
-    const prefix = withDefault(props.prefix, 'far'),
-        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+const fa = function({prefix, className, ...rest} = {}, name) {
+    prefix = withDefault(prefix, 'far');
+    className = classNames('fa-fw', className);  // apply fa-fw for consistent icon widths in buttons, etc
 
-    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
+    return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
 };

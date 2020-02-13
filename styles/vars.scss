@@ -72,9 +72,10 @@ body {
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
 
   // Buttons
-  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+  --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 
   // Chart
   --xh-chart-bg: var(--chart-bg, var(--xh-bg));
@@ -109,6 +110,18 @@ body {
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
+  --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
+
+  // Large Grid
+  --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);
+  --xh-grid-large-cell-lr-pad-px: calc(var(--xh-grid-large-cell-lr-pad) * 1px);
+  --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
+  --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
+  --xh-grid-large-font-size: var(--grid-large-font-size, 14);
+  --xh-grid-large-font-size-px: calc(var(--xh-grid-large-font-size) * 1px);
+  --xh-grid-large-line-height: var(--grid-large-line-height, 30);
+  --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
+
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
@@ -118,6 +131,16 @@ body {
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
+
+  // Tiny Grid
+  --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
+  --xh-grid-tiny-cell-lr-pad-px: calc(var(--xh-grid-tiny-cell-lr-pad) * 1px);
+  --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
+  --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
+  --xh-grid-tiny-font-size: var(--grid-tiny-font-size, 11);
+  --xh-grid-tiny-font-size-px: calc(var(--xh-grid-tiny-font-size) * 1px);
+  --xh-grid-tiny-line-height: var(--grid-tiny-line-height, 18);
+  --xh-grid-tiny-line-height-px: calc(var(--xh-grid-tiny-line-height) * 1px);
 
   // Multifield renderer
   --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);
@@ -203,6 +226,7 @@ body {
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
   --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
+  --xh-popup-title-font-family: var(--popup-title-font-family, var(--xh-title-font-family));
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
@@ -245,10 +269,13 @@ body {
   // Titles (e.g. panels, dialogs)
   --xh-title-bg: var(--title-bg, var(--xh-blue-gray));
   --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
+  --xh-title-font-family: var(--title-font-family, var(--xh-font-family-headings));
   --xh-title-font-size: var(--title-font-size, var(--xh-font-size-large));
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
   --xh-title-height: var(--title-height, 36);
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
+  --xh-title-icon-size: var(--title-icon-size, var(--xh-title-font-size));
+  --xh-title-icon-size-px: calc(var(--xh-title-icon-size) * 1px);
   --xh-title-pad: var(--title-pad, var(--xh-pad-half));
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
   --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));

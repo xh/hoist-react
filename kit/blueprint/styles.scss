@@ -95,6 +95,7 @@
   .bp3-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
+    font-family: var(--xh-popup-title-font-family);
     font-size: var(--xh-popup-title-font-size-px);
     padding-left: var(--xh-pad-px);
     border-top-right-radius: var(--xh-border-radius-px);
@@ -251,6 +252,11 @@ textarea.bp3-input,
 // Expose CSS var for box-shadow tweaking
 .bp3-input:not(.bp3-active):not(:focus) {
   box-shadow: var(--xh-form-field-box-shadow);
+}
+
+.bp3-input:focus,
+.bp3-dark .bp3-input:focus {
+  box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
 // Override Blueprint textarea and switch input dark theme

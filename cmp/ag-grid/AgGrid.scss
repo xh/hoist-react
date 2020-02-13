@@ -28,14 +28,15 @@
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
+  background-color: var(--xh-grid-bg);
 
   .ag-root {
     border: none;
     background-color: var(--xh-grid-bg);
   }
 
-  // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
-  // scrollbar
+  // This ensures that rows will take up at least the full width of the grid in cases where there
+  // is no horizontal scrollbar.
   .ag-center-cols-container {
     min-width: 100%;
   }
@@ -67,12 +68,22 @@
       background-color: var(--xh-grid-group-bg);
     }
 
-    .group-header-icon-expanded {
+    // Set a constant width, since the two icons are different sizes.
+    // This caused rows to jump around when expansion was toggled.
+    .ag-group-expanded {
       margin: 0 var(--xh-pad-half-px);
+
+      svg {
+        width: var(--xh-pad-px);
+      }
     }
 
-    .group-header-icon-contracted {
+    .ag-group-contracted {
       margin: 0 var(--xh-pad-half-px);
+
+      svg {
+        width: var(--xh-pad-px);
+      }
     }
   }
 
@@ -97,12 +108,18 @@
     .ag-row {
       border-color: transparent;
 
-      // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
+      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
       &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
     }
+  }
+
+  // Suppress default border on last row for full-width group rows - avoids minor up/down shift
+  // when collapsing and expanding the last group.
+  .ag-row.ag-row-group.ag-full-width-row.ag-row-last {
+    border-bottom-width: 0;
   }
 
   // Row zebra striping
@@ -112,6 +129,10 @@
     }
   }
 
+  // TODO - why do we need to specify this, as opposed to simply not putting the class on above?
+  //  This creates a highly specific selector and makes it hard to customize background
+  //  row colors even with striping off - you perversely end up with striping coming BACK
+  //  because this specific class applies --xh-grid-bg and overrides a custom color.
   &--no-stripe-rows {
     .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
       background-color: var(--xh-grid-bg);
@@ -133,6 +154,13 @@
   .ag-header-group-cell {
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
+
+    // Override ag-Grid defaults for the header separator to make it responsive to different header heights
+    &::after {
+      height: 50%;
+      margin-top: unset;
+      top: unset;
+    }
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
@@ -181,7 +209,33 @@
   }
 
   //------------------------
-  // Compact Mode
+  // Large Sizing Mode
+  //------------------------
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-large-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-large-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-large-header-lr-pad-px);
+      padding-right: var(--xh-grid-large-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
+  // Compact Sizing Mode
   //------------------------
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
@@ -207,6 +261,32 @@
   }
 
   //------------------------
+  // Tiny Sizing Mode
+  //------------------------
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-tiny-line-height-px);
+    }
+
+    .ag-header {
+      font-size: var(--xh-grid-tiny-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-tiny-header-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
   // Tree Mode
   //------------------------
   .xh-grid--hierarchical & {
@@ -214,11 +294,11 @@
     // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
     // (and in general tighter padding preferred here vs. full-width groups).
     .ag-row {
-      .group-header-icon-expanded {
+      .ag-group-expanded {
         margin: 0 var(--xh-pad-half-px) 0 0;
       }
 
-      .group-header-icon-contracted {
+      .ag-group-contracted {
         margin: 0 var(--xh-pad-half-px) 0 0;
       }
     }

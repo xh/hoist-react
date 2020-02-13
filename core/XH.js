@@ -417,6 +417,11 @@ class XHClass {
         return this.acm.aboutDialogModel.show();
     }
 
+    /** Show the impersonation bar to allow switching users. */
+    showImpersonationBar() {
+        return this.acm.impersonationBarModel.show();
+    }
+
     /**
      * Resets user customizations.
      * Clears all user preferences and local grid state, then reloads the app.

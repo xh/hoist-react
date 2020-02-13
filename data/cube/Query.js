@@ -6,18 +6,18 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {ValueFilter} from '@xh/hoist/data/cube';
-
+import {ValueFilter} from './filter';
+import {find} from 'lodash';
 /**
  *  Specification used to define the shape of the data returned by a Cube.
  */
 export class Query {
 
-    /** @member {Map} */
+    /** @member {CubeField[]} */
     fields;
-    /** @member {Field[]} */
+    /** @member {CubeField[]} */
     dimensions;
-    /** @member {ValueFilter[]} */
+    /** @member {StoreFilter[]} */
     filters;
     /** @member {boolean} */
     includeRoot;
@@ -60,8 +60,8 @@ export class Query {
 
     clone(overrides) {
         const conf = {
-            dimensions: this.dimensionNames,
-            fields: this.fieldNames,
+            dimensions: this.dimensions?.map(d => d.name),
+            fields: this.fields?.map(f => f.name),
             filters: this.filters,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -70,17 +70,6 @@ export class Query {
         };
 
         return new Query(conf);
-    }
-
-    /** @returns {string[]} */
-    get fieldNames() {
-        return Array.from(this.fields.keys());
-    }
-
-    /** @returns {string[]} */
-    get dimensionNames() {
-        const {dimensions} = this;
-        return dimensions ? dimensions.map(f => f.name) : [];
     }
 
     /** @returns {string} */
@@ -95,26 +84,19 @@ export class Query {
         return ret;
     }
 
-
     //------------------------
     // Implementation
     //------------------------
     parseFields(names) {
-        const fields = this.cube.fields;
-        if (!names) return fields;
-
-        const ret = new Map();
-        fields.forEach((v, k) => {
-            if (names.includes(k)) ret.set(k, v);
-        });
-
-        return ret;
+        const {fields} = this.cube.store;
+        return names ? fields.filter(f => names.includes(f.name)) : fields;
     }
 
     parseDimensions(names) {
         if (!names) return null;
+        const {fields} = this;
         return names.map(name => {
-            const field = this.fields.get(name);
+            const field = find(fields, {name});
             if (!field || !field.isDimension) {
                 throw XH.exception(`Dimension is not a field, or is not a field specified as dimension '${name}'`);
             }

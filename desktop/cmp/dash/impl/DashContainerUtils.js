@@ -72,7 +72,9 @@ export function convertStateToGL(state = [], dashContainerModel) {
             height: containerRef.current.offsetHeight
         };
 
-    return convertStateToGLInner(state, viewSpecs, containerSize).filter(it => !isNil(it));
+    // Replace any completely empty state with an empty stack, to allow users to add views
+    const ret = convertStateToGLInner(state, viewSpecs, containerSize).filter(it => !isNil(it));
+    return !ret.length ? [{type: 'stack'}] : ret;
 }
 
 function convertStateToGLInner(items = [], viewSpecs = [], containerSize, containerItem) {
@@ -114,7 +116,15 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
 
             const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(it => !isNil(it));
             if (!content.length) return null;
-            return {...item, content};
+
+            // Below is a workaround for issue https://github.com/golden-layout/golden-layout/issues/418
+            // GoldenLayouts can sometimes export its state with an out-of-bounds `activeItemIndex`.
+            // If we encounter this, we overwrite `activeItemIndex` to point to the last item.
+            const ret = {...item, content};
+            if (type === 'stack' && isFinite(ret.activeItemIndex) && ret.activeItemIndex >= content.length) {
+                ret.activeItemIndex = content.length - 1;
+            }
+            return ret;
         }
     });
 }
