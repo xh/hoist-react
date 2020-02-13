@@ -51,8 +51,8 @@ export class TabContainerModel {
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component (or 'none').
      *      Valid values are 'top', 'bottom', 'left', 'right', 'none'.
-     * @param {boolean} [c.track] - Enables tracking of tab views and logs to Admin Activity panel.
-     *      If not set, will default to false.
+     * @param {boolean} [c.track] - Enables tracking of tab views in admin logger under category
+     *      "Tabs". If not set, will default to false.
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
@@ -99,11 +99,12 @@ export class TabContainerModel {
             this.addReaction({
                 track: () => this.activeTab,
                 run: (activeTab) => {
+                    const route = activeTab.containerModel.route;
                     XH.track({
                         msg: `Viewed ${activeTab.title}`,
                         category: 'Tab',
-                        // route data could be useful for non-top-level tabs.
-                        data: activeTab.containerModel.route && activeTab.containerModel.route !== 'default' ? {route: activeTab.containerModel.route} : null
+                        // If using routing, data field specifies route for non-top-level tabs.
+                        data: route && route !== 'default' ? {route: route} : null
                     });
                 }
             });
