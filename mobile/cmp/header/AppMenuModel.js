@@ -61,7 +61,7 @@ export class AppMenuModel extends MenuModel {
             {
                 icon: Icon.impersonate(),
                 text: 'Impersonate',
-                action: () => XH.acm.impersonationBarModel.show(),
+                action: () => XH.showImpersonationBar(),
                 prepareFn: (item) => item.hidden = !XH.identityService.canImpersonate
             },
             {
