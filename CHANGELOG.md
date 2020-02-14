@@ -4,7 +4,13 @@
 
 ### 🎁 New Features
 
-* Clicking on a pinned grid row will now clear selection.
+#### Other
+
+* The `StoreFilterField` component on desktop and mobile accepts all other config options from
+`TextInput` such as `disabled`, `textAlign`, and `spellCheck`.
+
+* Clicking on a summary row in `Grid` will now clear selection.
+
 
 ### 🐞 Bug Fixes
 
