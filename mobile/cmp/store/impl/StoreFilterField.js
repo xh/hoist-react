@@ -15,11 +15,9 @@ import {withDefault} from '@xh/hoist/utils/js';
 export function storeFilterFieldImpl({implModel, ...props}) {
     return textInput({
         value: implModel.value,
-        placeholder: withDefault(props.placeholder, 'Quick filter'),
-        className: props.className,
-        style: props.style,
-        width: withDefault(props.width, 180),
         onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        placeholder: 'Quick filter',
+        width: 180,
         ...props
     });
 }
