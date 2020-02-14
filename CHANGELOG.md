@@ -2,6 +2,13 @@
 
 ## v30.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+#### Other
+
+* The `StoreFilterField` component on desktop and mobile accepts all other config options from
+`TextInput` such as `disabled`, `textAlign`, and `spellCheck`.
+
 ### 🐞 Bug Fixes
 
 * Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
