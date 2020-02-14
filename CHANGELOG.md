@@ -2,6 +2,10 @@
 
 ## v30.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Clicking on a pinned grid row will now clear selection.
+
 ### 🐞 Bug Fixes
 
 * Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
