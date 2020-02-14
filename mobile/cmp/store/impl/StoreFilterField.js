@@ -19,6 +19,7 @@ export function storeFilterFieldImpl({implModel, ...props}) {
         className: props.className,
         style: props.style,
         width: withDefault(props.width, 180),
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false})
+        onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        ...props
     });
 }
