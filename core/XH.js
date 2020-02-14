@@ -23,6 +23,7 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {p} from '@xh/hoist/cmp/layout';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 
@@ -626,10 +627,12 @@ class XHClass {
             results.forEach((it, idx) => {
                 it.name = svcs[idx].constructor.name;
             });
-            const names = errs.map(it => it.name).join(', ');
 
             throw this.exception({
-                message: 'Failed to initialize services: ' + names,
+                message: [
+                    p('Failed to initialize services:'),
+                    ...errs.map(it => p(it.reason.message + ' (' + it.name + ')'))
+                ],
                 details: errs
             });
         }
