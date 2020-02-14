@@ -214,7 +214,10 @@ class LocalModel {
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
-            onRowClicked: props.onRowClicked,
+            onRowClicked: (e) => {
+                this.onRowClicked(e);
+                if (props.onRowClicked) props.onRowClicked(e);
+            },
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
@@ -686,5 +689,12 @@ class LocalModel {
         }
 
         if (this.propsKeyDown) this.propsKeyDown(evt);
-    }
+    };
+
+    onRowClicked = (evt) => {
+        const {selModel} = this.model;
+        if (evt.rowPinned) {
+            selModel.clear();
+        }
+    };
 }
