@@ -6,7 +6,6 @@
  */
 
 import {textInput} from '@xh/hoist/mobile/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Mobile implementation of StoreFilterField.

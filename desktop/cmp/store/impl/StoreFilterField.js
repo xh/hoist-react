@@ -7,7 +7,6 @@
 
 import {Icon} from '@xh/hoist/icon';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Desktop implementation of StoreFilterField.
@@ -21,6 +20,6 @@ export function storeFilterFieldImpl({implModel, ...props}) {
         enableClear: true,
         placeholder: 'Quick filter',
         width: 180,
-        ...props,
+        ...props
     });
 }
