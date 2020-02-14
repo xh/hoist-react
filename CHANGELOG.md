@@ -9,6 +9,8 @@
 Previously, it was overridden by any `className` passed in via optional params.
 * Fixed an issue where ConfigDiffer would always warn about deletions.
   [#1652](https://github.com/xh/hoist-react/issues/1652)
+* `TextInput` will now set its value to `null` when all text is deleted.  The clear icon is also
+now hidden when the value is the empty string.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
