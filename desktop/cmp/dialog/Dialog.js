@@ -96,125 +96,12 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         document.body.style.overflow = 'hidden';
 
         return ReactDOM.createPortal(
-            rndDialog({model, props}),
+            rndDialog(props),
             model.containerElement
         );
 
     }
 });
-
-const rndDialog = hoistCmp.factory(
-    ({model: dialogModel, props}) => {
-        const {resizable, draggable} = dialogModel,
-            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style} = props;
-
-        throwIf(
-            resizable && (!width || !height),
-            'Resizable dialogs must also have width and height props set.'
-        );
-
-        const onDragStop = (evt, data) => {
-            // ignore drags on close or maximize button in title bar
-            if (evt.target.closest('button')) return;
-
-            if (!dialogModel.isMaximizedState) {
-                dialogModel.setPositionState({x: data.x, y: data.y});
-            }
-            if (isFunction(RnDOptions.onDragStop)) RnDOptions.onDragStop(evt, data);
-        };
-
-        const onResizeStop = (
-            evt,
-            resizeDirection,
-            domEl,
-            resizableDelta,
-            position
-        ) => {
-            if (!dialogModel.isMaximizedState) {
-                const {
-                    offsetWidth: width,
-                    offsetHeight: height
-                } = domEl;
-                dialogModel.setSizeState({width, height});
-                dialogModel.setPositionState(position);
-            }
-            if (isFunction(RnDOptions.onResizeStop)) {
-                RnDOptions.onResizeStop(
-                    evt,
-                    resizeDirection,
-                    domEl,
-                    resizableDelta,
-                    position
-                );
-            }
-        };
-
-        if (style) RnDOptions.style = style;
-        const zIndex = RnDOptions.style?.zIndex;
-
-        return fragment(
-            mask ? maskComp({zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
-            rnd({
-                ref: c => dialogModel.rndRef = c,
-                ...RnDOptions,
-                disableDragging: !draggable,
-                enableResizing: {
-                    bottom: resizable,
-                    bottomLeft: resizable,
-                    bottomRight: resizable,
-                    left: resizable,
-                    right: resizable,
-                    top: resizable,
-                    topLeft: resizable,
-                    topRight: resizable
-                },
-                bounds: 'body',
-                dragHandleClassName: 'xh-dialog-header',
-                onDragStop,
-                onResizeStop,
-                item: div({
-                    onKeyDown: (evt) => dialogModel.handleKeyDown(evt),
-                    tabIndex: 0,
-                    ref: dialogModel.dialogWrapperDivRef,
-                    className: 'react-draggable__container',
-                    item: content({model: dialogModel, ...props})
-                })
-            })
-        );
-    }
-);
-
-const maskComp = hoistCmp.factory(
-    ({zIndex}) => div({className: 'xh-dialog-root__mask', style: {zIndex}})
-);
-
-const clickCaptureComp = hoistCmp.factory(
-    ({model: dialogModel, zIndex}) => div({
-        className: 'xh-dialog-root__click-capture',
-        style: {zIndex},
-        ref: dialogModel.clickCaptureCompRef,
-        onClick: (evt) => dialogModel.handleOutsideClick(evt)
-    })
-);
-
-const content = hoistCmp.factory(
-    ({model: dialogModel, icon, title, children}) => {
-        const dims = dialogModel.resizable ? {
-            width: '100%',
-            height: '100%'
-        } : {};
-
-        return vframe({
-            ...dims,
-            items: [
-                dialogHeader({icon, title}),
-                ...castArray(children)
-            ]
-        });
-    }
-);
-
 
 Dialog.propTypes = {
     /** An icon placed at the left-side of the dialog's header. */
@@ -247,3 +134,129 @@ Dialog.propTypes = {
     /** CSS style object passed into ReactRnD */
     style: PT.object
 };
+
+const rndDialog = hoistCmp.factory({
+    model: uses(DialogModel, {
+        fromContext: true,
+        publishMode: ModelPublishMode.LIMITED
+    }),
+    render({model, ...props}) {
+        const {resizable, draggable} = model,
+            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style} = props;
+
+        throwIf(
+            resizable && (!width || !height),
+            'Resizable dialogs must also have width and height props set.'
+        );
+
+        const onDragStop = (evt, data) => {
+            // ignore drags on close or maximize button in title bar
+            if (evt.target.closest('button')) return;
+
+            if (!model.isMaximizedState) {
+                model.setPositionState({x: data.x, y: data.y});
+            }
+            if (isFunction(RnDOptions.onDragStop)) RnDOptions.onDragStop(evt, data);
+        };
+
+        const onResizeStop = (
+            evt,
+            resizeDirection,
+            domEl,
+            resizableDelta,
+            position
+        ) => {
+            if (!model.isMaximizedState) {
+                const {
+                    offsetWidth: width,
+                    offsetHeight: height
+                } = domEl;
+                model.setSizeState({width, height});
+                model.setPositionState(position);
+            }
+            if (isFunction(RnDOptions.onResizeStop)) {
+                RnDOptions.onResizeStop(
+                    evt,
+                    resizeDirection,
+                    domEl,
+                    resizableDelta,
+                    position
+                );
+            }
+        };
+
+        if (style) RnDOptions.style = style;
+        const zIndex = RnDOptions.style?.zIndex;
+
+        return fragment(
+            mask ? maskComp({zIndex}) : null,
+            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
+            rnd({
+                ref: c =>  model.rndRef = c,
+                ...RnDOptions,
+                disableDragging: !draggable,
+                enableResizing: {
+                    bottom: resizable,
+                    bottomLeft: resizable,
+                    bottomRight: resizable,
+                    left: resizable,
+                    right: resizable,
+                    top: resizable,
+                    topLeft: resizable,
+                    topRight: resizable
+                },
+                bounds: 'body',
+                dragHandleClassName: 'xh-dialog-header',
+                onDragStop,
+                onResizeStop,
+                item: div({
+                    onKeyDown: (evt) => model.handleKeyDown(evt),
+                    tabIndex: 0,
+                    ref: model.dialogWrapperDivRef,
+                    className: 'react-draggable__container',
+                    item: content(props)
+                })
+            })
+        );
+    }
+});
+
+const maskComp = hoistCmp.factory(
+    ({zIndex}) => div({className: 'xh-dialog-root__mask', style: {zIndex}})
+);
+
+const clickCaptureComp = hoistCmp.factory({
+    model: uses(DialogModel, {
+        fromContext: true,
+        publishMode: ModelPublishMode.LIMITED
+    }),
+    render({model, zIndex}) {
+        return div({
+            className: 'xh-dialog-root__click-capture',
+            style: {zIndex},
+            ref: model.clickCaptureCompRef,
+            onClick: (evt) => model.handleOutsideClick(evt)
+        });
+    }
+});
+
+const content = hoistCmp.factory({
+    model: uses(DialogModel, {
+        fromContext: true,
+        publishMode: ModelPublishMode.LIMITED
+    }),
+    render({model, icon, title, children}) {
+        const dims = model.resizable ? {
+            width: '100%',
+            height: '100%'
+        } : {};
+
+        return vframe({
+            ...dims,
+            items: [
+                dialogHeader({icon, title}),
+                ...castArray(children)
+            ]
+        });
+    }
+});
