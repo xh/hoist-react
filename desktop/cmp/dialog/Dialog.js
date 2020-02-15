@@ -8,7 +8,7 @@
 import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
-import {castArray, isFunction} from 'lodash';
+import {castArray, isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
@@ -186,7 +186,9 @@ const rndDialog = hoistCmp.factory({
         };
 
         if (style) RnDOptions.style = style;
-        const zIndex = RnDOptions.style?.zIndex;
+        let zIndex = DialogModel.DIALOG_ZINDEX_BASE;
+        if (RnDOptions.style?.zIndex) zIndex += RnDOptions.style.zIndex;
+        merge(RnDOptions, {style: {zIndex}});
 
         return fragment(
             mask ? maskComp({zIndex}) : null,

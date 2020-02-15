@@ -22,6 +22,21 @@ import {DialogStateModel} from './DialogStateModel';
 @LoadSupport
 export class DialogModel {
 
+    /**
+     * The base zIndex that will be used for all dialogs;
+     */
+    static DIALOG_ZINDEX_BASE= 10000; // gets over bootstrap, blueprintjs
+
+    /**
+     * Set the base zIndex to a custom value for all dialogs in your app.
+     * You would set this early in app life cycle.
+     *
+     * @param {number} zIndex - the base zIndex to use for all dialogs in an app.
+     */
+    static setZindexBase(zIndex) {
+        DialogModel.DIALOG_ZINDEX_BASE = zIndex;
+    }
+
     //-----------------------
     // Private Properties
     //-----------------------
