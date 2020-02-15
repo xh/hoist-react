@@ -235,7 +235,6 @@ class XHClass {
         return this.refreshContextModel.refreshAsync();
     }
 
-
     /**
      * Tracks globally loading promises.
      * Apps should link any async operations that should mask the entire viewport to this model.
@@ -250,7 +249,6 @@ class XHClass {
     get refreshContextModel() {
         return this.acm.refreshContextModel;
     }
-
 
     //------------------------
     // Theme Support
@@ -478,13 +476,12 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec} = this;
+            {appSpec, isMobile} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh-app and platform classes to body element to power Hoist CSS selectors.
-        const platformCls = XH.isMobile ? 'xh-mobile' : 'xh-desktop';
-        document.body.classList.add('xh-app', platformCls);
+        // add xh css classes to to power Hoist CSS selectors.
+        document.body.classList.add('xh-app', (isMobile ? 'xh-mobile' : 'xh-desktop'));
 
         try {
             await this.installServicesAsync(FetchService);
@@ -506,6 +503,7 @@ class XHClass {
                 });
             }
 
+            this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
@@ -587,6 +585,12 @@ class XHClass {
             const ret = checkAccess(user);
             return isBoolean(ret) ? {hasAccess: ret} : ret;
         }
+    }
+
+    setDocTitle() {
+        const env = XH.getEnv('appEnvironment'),
+            {clientAppName} = this.appSpec;
+        document.title = (env === 'Production' ? clientAppName : `${clientAppName} (${env})`);
     }
 
     async getAuthStatusFromServerAsync() {
