@@ -11,6 +11,9 @@
 
 * Clicking on a summary row in `Grid` will now clear selection.
 
+* The browser document title is now set to the `clientAppName` from `AppSpec`.  This is especially
+ useful for applications with multiple internal javascript apps.
+
 
 ### 🐞 Bug Fixes
 
