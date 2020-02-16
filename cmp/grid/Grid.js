@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS, agGrid} from '@xh/hoist/cmp/ag-grid';
+import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
@@ -153,10 +153,11 @@ class LocalModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const agHeights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS,
-            modelHeight = XH.isMobile ? agHeights.mobile : agHeights.desktop,
-            columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
-        return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
+        const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
+            gridDefaultHeight = platformHeights[this.model.sizingMode],
+            maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+
+        return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
@@ -195,16 +196,15 @@ class LocalModel {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            headerHeight: props.hideHeaders ? 0 : undefined,
             suppressAggFuncInHeader: true,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
-                    {classes: ['group-header-icon-expanded']}
+                    {classes: ['ag-group-expanded']}
                 ),
                 groupContracted: convertIconToSvg(
                     Icon.angleRight(),
-                    {classes: ['group-header-icon-contracted']}
+                    {classes: ['ag-group-contracted']}
                 ),
                 clipboardCopy: convertIconToSvg(Icon.copy())
             },
@@ -214,7 +214,10 @@ class LocalModel {
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
-            onRowClicked: props.onRowClicked,
+            onRowClicked: (e) => {
+                this.onRowClicked(e);
+                if (props.onRowClicked) props.onRowClicked(e);
+            },
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
@@ -233,8 +236,13 @@ class LocalModel {
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
+            },
+            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
         };
+
+        if (props.hideHeaders) {
+            ret.headerHeight = 0;
+        }
 
         // Platform specific defaults
         if (XH.isMobile) {
@@ -681,5 +689,12 @@ class LocalModel {
         }
 
         if (this.propsKeyDown) this.propsKeyDown(evt);
-    }
+    };
+
+    onRowClicked = (evt) => {
+        const {selModel} = this.model;
+        if (evt.rowPinned) {
+            selModel.clear();
+        }
+    };
 }

@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {menu} from '@xh/hoist/mobile/cmp/menu';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import PT from 'prop-types';
 import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -38,7 +39,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         hideRefreshButton,
         appMenuButtonProps = {},
         backButtonProps = {},
-        refreshButtonProps = {}
+        refreshButtonProps = {},
+        appMenuButtonPosition = 'right'
     }) {
 
         const navigatorModel = useContextModel(NavigatorModel);
@@ -52,6 +54,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                         navigatorBackButton({
                             omit: hideBackButton,
                             ...backButtonProps
+                        }),
+                        menuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            ...appMenuButtonProps
                         }),
                         ...leftItems || []
                     ]
@@ -79,22 +85,38 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                             ...refreshButtonProps
                         }),
                         menuButton({
-                            omit: hideAppMenuButton,
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'right',
                             ...appMenuButtonProps
                         })
                     ]
-                })
+                }),
+                appMenu({align: appMenuButtonPosition})
             ]
         });
     }
 });
+
+const appMenu = hoistCmp.factory({
+    displayName: 'AppMenu',
+
+    render({align}) {
+        const menuModel = XH.appModel.appMenuModel;
+        if (!menuModel) return null;
+        return menu({
+            model: menuModel,
+            width: 260,
+            align
+        });
+    }
+});
+
 
 AppBar.propTypes = {
     /** App icon to display to the left of the title. */
     icon: PT.element,
 
     /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
-    title: PT.string,
+    title: PT.node,
 
     /** Items to be added to the left side of the AppBar, before the title buttons. */
     leftItems: PT.node,
@@ -113,6 +135,9 @@ AppBar.propTypes = {
 
     /** Allows overriding the default properties of the App Menu button. @see MenuButton */
     appMenuButtonProps: PT.object,
+
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition: PT.oneOf(['left', 'right']),
 
     /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
     backButtonProps: PT.object,

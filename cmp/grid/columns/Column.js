@@ -8,7 +8,18 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {Utils as agUtils} from 'ag-grid-community';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isString, startCase} from 'lodash';
+import {
+    castArray,
+    clone,
+    find,
+    get,
+    isArray,
+    isFinite,
+    isFunction,
+    isNil,
+    isString,
+    startCase
+} from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 
@@ -26,7 +37,7 @@ export class Column {
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
      *      Defaults to field name - one of these two properties must be specified.
-     * @param {(Column~headerNameFn|string)} [c.headerName] - display text for grid header.
+     * @param {(Column~headerNameFn|element)} [c.headerName] - display text for grid header.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
@@ -88,6 +99,10 @@ export class Column {
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
+     * @param {boolean} [c.enableDotSeparatedFieldPath] - true (default) to enable configuration
+     *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
+     *      `getValueFn` will expect the field to be an object and render a nested property.
+     *      False to support field names that contain dots *without* triggering this behavior.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -135,14 +150,17 @@ export class Column {
         editable,
         setValueFn,
         getValueFn,
+        enableDotSeparatedFieldPath,
         agOptions,
         ...rest
     }, gridModel) {
         Object.assign(this, rest);
 
         this.field = field;
+        this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
         if (field) {
-            this.fieldPath = field.includes('.') ? field.split('.') : field;
+            const splitFieldPath = this.enableDotSeparatedFieldPath && field.includes('.');
+            this.fieldPath = splitFieldPath ? field.split('.') : field;
         }
 
         this.colId = withDefault(colId, field);
@@ -424,9 +442,9 @@ export class Column {
     };
 
     defaultGetValueFn = ({record}) => {
-        if (!record) return null;
-
         const {fieldPath} = this;
+        if (!record || isNil(fieldPath)) return null;
+
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
@@ -556,7 +574,7 @@ export function getAgHeaderClassFn(column) {
  * @param {GridModel} gridModel - gridModel for the grid.
  * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
  *      during ColumnHeader rendering.
- * @return {string} - the header name to render in the Column header
+ * @return {element} - the header name to render in the Column header
  */
 
 /**

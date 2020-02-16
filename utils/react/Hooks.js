@@ -33,6 +33,8 @@ export function useOnUnmount(fn) {
 
 /**
  * Hook to run a function when component is resized.
+ * This will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
+ * size. This is to improve performance by avoiding unneeded resizing.
  * @param {function} fn
  * @param {number} [delay] - milliseconds to debounce
  * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
@@ -45,7 +47,21 @@ export function useOnResize(fn, delay, ref) {
         const {current} = ref;
         if (!current) return;
 
-        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(fn, delay) : fn,
+        let prevWidth, prevHeight;
+
+        const wrappedFn = (e) => {
+            const {width, height} = e[0].contentRect,
+                isVisible = width !== 0 && height !== 0,
+                hasChanged = width !== prevWidth || height !== prevHeight;
+
+            if (isVisible && hasChanged) {
+                prevWidth = width;
+                prevHeight = height;
+                fn(e);
+            }
+        };
+
+        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(wrappedFn, delay) : wrappedFn,
             resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);

@@ -1,6 +1,86 @@
 # Changelog
 
-## v29.0.0-SNAPSHOT - under development
+## v30.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+#### Other
+
+* The `StoreFilterField` component on desktop and mobile accepts all other config options from
+`TextInput` such as `disabled`, `textAlign`, and `spellCheck`.
+
+* Clicking on a summary row in `Grid` will now clear selection.
+
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
+* Fixed `fontAwesomeIcon` elem factory component to include the default 'fa-fw' className.
+Previously, it was overridden by any `className` passed in via optional params.
+* Fixed an issue where ConfigDiffer would always warn about deletions.
+  [#1652](https://github.com/xh/hoist-react/issues/1652)
+* `TextInput` will now set its value to `null` when all text is deleted.  The clear icon is also
+now hidden when the value is the empty string.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+
+## v29.1.0 - 2020-02-07
+
+### 🎁 New Features
+
+#### Grid
+
+* The `compact` config on `GridModel` has been deprecated in favor of the more powerful `sizingMode`
+  which supports the values 'large', 'standard', 'compact', or 'tiny'.
+  * Each new mode has its own set of CSS variables for applications to override as needed.
+  * Header and row heights are configurable for each via the `HEADER_HEIGHTS` and `ROW_HEIGHTS`
+    static properties of the `AgGrid` component. These objects can be modified on init by
+    applications that wish to customize the default row heights globally.
+  * 💥 Note that these height config objects were previously exported as constants from AgGrid.js.
+    This would be a breaking change for any apps that imported the old objects directly (considered
+    unlikely).
+* `GridModel` now exposes an `autoSizeColumns` method, and the Grid context menu now contains an
+  `Autosize Columns` option by default.
+* `Column` and `ColumnGroup` now support React elements for `headerName`.
+
+#### Data
+
+* The `Store` constructor now accepts a `data` argument to load data at initialization.
+* The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
+  data package and support observable "Views". See documentation on `Cube` for more information.
+
+#### Other
+
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
+* `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
+  when used in an action column.
+* Mobile Navigator component now takes an `animation` prop which can be set to 'slide' (default),
+  'lift', 'fade', or 'none'. These values are passed to the underlying onsenNavigator component.
+  ([#1641](https://github.com/xh/hoist-react/pull/1641))
+* `AppOption` configs now accept an `omit` property for conditionally excluding options.
+
+### 🐞 Bug Fixes
+
+* Unselectable grid rows are now skipped during up/down keyboard navigation.
+* Fix local quick filtering in `LeftRightChooser` (v29 regression).
+* Fix `SplitTreeMap` - the default filtering once again splits the map across positive and negative
+  values as intended (v29 regression).
+
+### ⚙️ Technical
+
+* `FormFields` now check that they are contained in a Hoist `Form`.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.22 -> 3.23`
+* codemirror `5.50 -> 5.51`
+* react-dates `21.5 -> 21.7`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.1.0)
+
+## v29.0.0 - 2020-01-24
 
 ### 🗄️ Data Package Changes
 
@@ -99,15 +179,25 @@ Note the following more specific changes to these related classes:
 * Application build tags are now included in version update checks, primarily to prompt dev/QA users
   to refresh when running SNAPSHOT versions. (Note that an update to hoist-core 6.4+ is required for
   the server to emit build tag for comparison.)
+* `CodeInput` component added to provide general `HoistInput` support around the CodeMirror code
+  editor. The pre-existing `JsonInput` has been converted to a wrapper around this class.
+* `JsonInput` now supports an `autoFocus` prop.
+* `Select` now supports a `hideDropdownIndicator` prop.
+* `useOnResize` hook will now ignore visibility changes, i.e. a component resizing to a size of 0.
+* `DimensionChooser` now supports a `popoverPosition` prop.
+* `AppBar.appMenuButtonPosition` prop added to configure the App Menu on the left or the right, and
+  `AppMenuButton` now accepts and applies any `Button` props to customize.
+* New `--xh-grid-tree-indent-px` CSS variable added to allow control over the amount of indentation
+  applied to tree grid child nodes.
 
 ### 💥 Breaking Changes
 
-* The `GridModel.contextMenuFn` parameter has been replaced with a `contextMenu` parameter. The new
-  parameter will allow context menus to be specified with a simple array in addition to the function
-  specification currently supported.
-* The `GridModel.defaultContextMenuTokens` array has been renamed `defaultContextMenu`.
+* `GridModel.contextMenuFn` config replaced with a `contextMenu` parameter. The new parameter will
+  allow context menus to be specified with a simple array in addition to the function specification
+  currently supported.
+* `GridModel.defaultContextMenuTokens` config renamed to `defaultContextMenu`.
 * `Chart` and `ChartModel` have been moved from `desktop/cmp/charts` to `cmp/charts`.
-* `StoreFilterField` have been moved from `desktop/cmp/store` to `cmp/store`.
+* `StoreFilterField` has been moved from `desktop/cmp/store` to `cmp/store`.
 * The options `nowEpsilon` and `nowString` on `RelativeTimestamp` have been renamed to `epsilon` and
   `equalString`, respectively.
 * `TabRenderMode` and `TabRefreshMode` have been renamed to `RenderMode` and `RefreshMode` and moved
@@ -117,10 +207,14 @@ Note the following more specific changes to these related classes:
   been documented this way, but a bug in the original implementation had it accepting an actual
   element rather than a function. As now implemented, the form of the `content` param is consistent
   across `TabModel`, `DockViewModel`, and `DashViewSpec`.
+* `JsonInput.showActionButtons` prop replaced with more specific `showFormatButton` and
+  `showFullscreenButton` props.
+* The `DataView.itemHeight` prop has been moved to `DataViewModel` where it can now be changed
+  dynamically by applications.
+* Desktop `AppBar.appMenuButtonOptions` prop renamed to `appMenuButtonProps` for consistency.
 
 ### 🐞 Bug Fixes
 
-* Fixed autoFocus on NumberInput.
 * Fixed issue where JsonInput was not receiving its `model` from context
   ([#1456](https://github.com/xh/hoist-react/issues/1456))
 * Fixed issue where TreeMap would not be initialized if the TreeMapModel was created after the
@@ -138,6 +232,11 @@ Note the following more specific changes to these related classes:
   ([#1528](https://github.com/xh/hoist-react/issues/1528))
 * Fixed problem where charts were needlessly re-rendered, hurting performance and losing some state
   ([#1505](https://github.com/xh/hoist-react/issues/1505))
+* Removed padding from Select option wrapper elements which was making it difficult for custom
+  option renderers to control the padding ([1571](https://github.com/xh/hoist-react/issues/1571))
+* Fixed issues with inconsistent indentation for tree grid nodes under certain conditions
+  ([#1546](https://github.com/xh/hoist-react/issues/1546))
+* Fixed autoFocus on NumberInput.
 
 ### 📚 Libraries
 
@@ -154,7 +253,7 @@ Note the following more specific changes to these related classes:
 * react-dropzone `10.1 -> 10.2`
 * react-windowed-select `added @ 2.0.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...v29.0.0)
 
 ## v28.2.0 - 2019-11-08
 
@@ -305,8 +404,8 @@ leverage the context for model support discussed above.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
   support for the `optional chaining` (aka null safe) and `nullish coalescing` operators via their
   Babel proposal plugins. Developers are encouraged to make good use of the new syntax below:
-  *  conditional-chaining: `let foo = bar?.baz?.qux;`
-  *  nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
+  * conditional-chaining: `let foo = bar?.baz?.qux;`
+  * nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
 
 ### 🐞 Bug Fixes
 
@@ -1236,17 +1335,17 @@ leverage the context for model support discussed above.
 ### 💥 Breaking Changes
 
 * The implementation of the `model` property on `HoistComponent` has been substantially enhanced:
-  *  "Local" Models should now be specified on the Component class declaration by simply setting the
-     `model` property, rather than the confusing `localModel` property.
-  *  HoistComponent now supports a static `modelClass` class property. If set, this property will
-     allow a HoistComponent to auto-create a model internally when presented with a plain javascript
-     object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
-     where apps often need to specify a model but do not require a reference to the model. Those
-     usages can now skip importing and instantiating an instance of the component's model class
-     themselves.
-  *  Hoist will now throw an Exception if an application attempts to changes the model on an
-     existing HoistComponent instance or presents the wrong type of model to a HoistComponent where
-     `modelClass` has been specified.
+  * "Local" Models should now be specified on the Component class declaration by simply setting the
+    `model` property, rather than the confusing `localModel` property.
+  * HoistComponent now supports a static `modelClass` class property. If set, this property will
+    allow a HoistComponent to auto-create a model internally when presented with a plain javascript
+    object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
+    where apps often need to specify a model but do not require a reference to the model. Those
+    usages can now skip importing and instantiating an instance of the component's model class
+    themselves.
+  * Hoist will now throw an Exception if an application attempts to changes the model on an existing
+    HoistComponent instance or presents the wrong type of model to a HoistComponent where
+    `modelClass` has been specified.
 
 * `PanelSizingModel` has been renamed `PanelModel`. The class now also has the following new
   optional properties, all of which are `true` by default:
@@ -1843,10 +1942,10 @@ resizing and collapsing behavior** (#534).
 * `ToastManager` has been deprecated. Use `XH.toast` instead.
 * `Message` is no longer a public class (and its API has changed). Use `XH.message/confirm/alert`
   instead.
-*  Export API has changed. The Built-in grid export now uses more powerful server-side support. To
-   continue to use local AG based export, call method `GridModel.localExport()`. Built-in export
-   needs to be enabled with the new property on `GridModel.enableExport`. See `GridModel` for more
-   details.
+* Export API has changed. The Built-in grid export now uses more powerful server-side support. To
+  continue to use local AG based export, call method `GridModel.localExport()`. Built-in export
+  needs to be enabled with the new property on `GridModel.enableExport`. See `GridModel` for more
+  details.
 
 ### 🎁 Enhancements
 
@@ -2067,7 +2166,7 @@ and ag-Grid upgrade, and more. 🚀
 * Update processFailedLoad to loadData into gridModel store, Fixes #337
 * Fix regression to ErrorTracking. Make errorTrackingService safer/simpler to call at any point in
   life-cycle.
-*  Fix broken LocalStore state.
+* Fix broken LocalStore state.
 * Tweak flex prop for charts. Side by side charts in a flexbox now auto-size themselves! Fixes #342
 * Provide token parsing for storeContextMenus. Context menus are all grown up! Fixes #300
 

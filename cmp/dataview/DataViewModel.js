@@ -8,8 +8,9 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray} from 'lodash';
+import {castArray, isNumber} from 'lodash';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -23,8 +24,12 @@ export class DataViewModel {
     @managed
     gridModel;
 
+    @bindable
+    itemHeight;
+
     /**
      * @param {Object} c - DataViewModel configuration.
+     * @param {number} itemHeight - Row height for each item displayed in the view
      * @param {Column~elementRendererFn} c.itemRenderer - function which returns a React component.
      * @param {(Store|Object)} c.store - a Store instance, or a config with which to create a
      *      default Store. The store is the source for the view's data.
@@ -38,6 +43,7 @@ export class DataViewModel {
      *      function returning a StoreContextMenu.  Desktop only.
      */
     constructor({
+        itemHeight,
         itemRenderer,
         store,
         sortBy = [],
@@ -47,6 +53,9 @@ export class DataViewModel {
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
+        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight in DataViewModel.');
+
+        this.itemHeight = itemHeight;
 
         // We only have a single column in our DataView grid, and we also rely on ag-Grid to keep
         // the data sorted, initially and through updates via transactions. To continue leveraging
@@ -76,6 +85,10 @@ export class DataViewModel {
             ]
         });
 
+        this.addReaction({
+            track: () => this.itemHeight,
+            run: () => this.gridModel.agApi?.resetRowHeights()
+        });
     }
 
     get store() {return this.gridModel.store}

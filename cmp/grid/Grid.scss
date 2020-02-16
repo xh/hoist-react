@@ -94,17 +94,50 @@
   //------------------------
   &--hierarchical {
     // Generate indentations for tree grids with hierarchical data.
-    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
-    $xh-tree-indent: 10px !default;
+    .ag-ltr {
+      .ag-row-group-indent-0 {
+        padding-left: calc(0 * var(--xh-grid-tree-indent-px));
+      }
 
-    @for $i from 0 to 50 {
-      .ag-ltr .ag-row-group-indent-#{$i} {
-        padding-left: $i * $xh-tree-indent;
+      .ag-row-group-indent-1 {
+        padding-left: calc(1 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-2 {
+        padding-left: calc(2 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-3 {
+        padding-left: calc(3 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-4 {
+        padding-left: calc(4 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-5 {
+        padding-left: calc(5 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-6 {
+        padding-left: calc(6 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-7 {
+        padding-left: calc(7 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-8 {
+        padding-left: calc(8 * var(--xh-grid-tree-indent-px));
+      }
+
+      .ag-row-group-indent-9 {
+        padding-left: calc(9 * var(--xh-grid-tree-indent-px));
       }
     }
 
     .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: 20px;
+      margin-left: var(--xh-pad-double-px);
     }
 
     .ag-group-contracted + .ag-group-value:not(:empty) {

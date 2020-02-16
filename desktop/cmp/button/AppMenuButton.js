@@ -8,7 +8,7 @@
 import PT from 'prop-types';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
@@ -17,22 +17,24 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideLogoutItem, extraItems} = props;
+        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideImpersonateItem, hideLogoutItem, extraItems, ...rest} = props;
         extraItems = extraItems ?
             [...extraItems.map(m => menuItem(m)), menuDivider()] :
             [];
 
         hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+        hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
         hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
         hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
 
-        // TODO:  Need logic from context menu to remove duplicate seperators!
+        // TODO:  Need logic from context menu to remove duplicate separators!
         return popover({
             className,
             position: 'bottom-right',
             minimal: true,
             target: button({
-                icon: Icon.bars()
+                icon: Icon.bars(),
+                ...rest
             }),
             content: menu(
                 ...extraItems,
@@ -54,12 +56,18 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
                     icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
                     onClick: () => XH.toggleTheme()
                 }),
-                menuDivider({omit: hideAdminItem}),
+                menuDivider({omit: hideAdminItem && hideImpersonateItem}),
                 menuItem({
                     omit: hideAdminItem,
                     text: 'Admin',
                     icon: Icon.wrench(),
                     onClick: () => window.open('/admin')
+                }),
+                menuItem({
+                    omit: hideImpersonateItem,
+                    text: 'Impersonate',
+                    icon: Icon.impersonate(),
+                    onClick: () => XH.showImpersonationBar()
                 }),
                 menuDivider({omit: hideLogoutItem}),
                 menuItem({
@@ -74,8 +82,13 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     }
 });
 AppMenuButton.propTypes = {
-    /** True to hide the Launch Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
+    ...Button.propTypes,
+
+    /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
     hideAdminItem: PT.bool,
+
+    /** True to hide the Impersonate Item. Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled. */
+    hideImpersonateItem: PT.bool,
 
     /** True to hide the Feedback Item. */
     hideFeedbackItem: PT.bool,

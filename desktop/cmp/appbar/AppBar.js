@@ -5,13 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {hoistCmp, XH} from '@xh/hoist/core';
-import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
+import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import PT from 'prop-types';
 import './AppBar.scss';
 
 /**
@@ -30,14 +31,16 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
     render(props) {
         const {
             icon,
-            title,
             leftItems,
             rightItems,
             hideRefreshButton,
             hideAppMenuButton,
             className,
-            appMenuButtonOptions = {}
+            appMenuButtonProps = {},
+            appMenuButtonPosition = 'right'
         } = props;
+
+        const title = withDefault(props.title, XH.clientAppName);
 
         return navbar({
             className,
@@ -45,8 +48,12 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                 navbarGroup({
                     align: 'left',
                     items: [
-                        icon,
-                        span({className: 'xh-appbar-title', item: title || XH.clientAppName}),
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            ...appMenuButtonProps
+                        }),
+                        icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
+                        title ? span({className: 'xh-appbar-title', item: title}) : null,
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...leftItems || []
                     ]
@@ -56,22 +63,32 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                     items: [
                         ...rightItems || [],
                         refreshButton({omit: hideRefreshButton}),
-                        appMenuButton({omit: hideAppMenuButton, ...appMenuButtonOptions})
+                        appMenuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'right',
+                            ...appMenuButtonProps
+                        })
                     ]
                 })
             ]
         });
     }
 });
+
 AppBar.propTypes = {
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition: PT.oneOf(['left', 'right']),
+
+    /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
+    appMenuButtonProps: PT.object,
+
+    /** True to hide the AppMenuButton. */
+    hideAppMenuButton: PT.bool,
+
+    /** True to hide the Refresh button. */
+    hideRefreshButton: PT.bool,
 
     /** Icon to display to the left of the title. */
     icon: PT.element,
-
-    /**
-     * Title to display to the left side of the AppBar. Defaults to XH.clientAppName.
-     */
-    title: PT.string,
 
     /** Items to be added to the left side of the AppBar, immediately after the title (or . */
     leftItems: PT.node,
@@ -79,12 +96,6 @@ AppBar.propTypes = {
     /** Items to be added to the right side of the AppBar, before the standard buttons. */
     rightItems: PT.node,
 
-    /** True to hide the Refresh button. */
-    hideRefreshButton: PT.bool,
-
-    /** True to hide the AppMenuButton. */
-    hideAppMenuButton: PT.bool,
-
-    /** Options to pass to the AppMenuButton. */
-    appMenuButtonOptions: PT.object
+    /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
+    title: PT.node
 };

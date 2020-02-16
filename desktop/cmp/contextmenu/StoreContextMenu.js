@@ -12,7 +12,7 @@ import {flatten, isEmpty, isString} from 'lodash';
 
 /**
  * Model for ContextMenus interacting with data provided by Hoist data stores, typically via a Grid.
- * @see GridModel.contextMenuFn
+ * @see GridModel.contextMenu
  */
 export class StoreContextMenu {
 
@@ -111,6 +111,12 @@ export class StoreContextMenu {
                 ];
             case 'exportLocal':
                 return 'export';
+            case 'autoSizeColumns':
+                return new RecordAction({
+                    text: 'Autosize Columns',
+                    icon: Icon.arrowsLeftRight(),
+                    actionFn: () => gridModel.autoSizeColumns()
+                });
             default:
                 return token;
         }

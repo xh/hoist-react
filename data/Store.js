@@ -69,15 +69,16 @@ export class Store {
      *      StoreFilter config to create.
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
+     * @param {Object[]} [c.data] - source data to load
      */
-    constructor(
-        {
-            fields,
-            idSpec = 'id',
-            processRawData = null,
-            filter = null,
-            loadRootAsSummary = false
-        }) {
+    constructor({
+        fields,
+        idSpec = 'id',
+        processRawData = null,
+        filter = null,
+        loadRootAsSummary = false,
+        data
+    }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
@@ -86,6 +87,8 @@ export class Store {
 
         this.resetRecords();
         this.setFilter(filter);
+
+        if (data) this.loadData(data);
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -119,11 +122,11 @@ export class Store {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
         if (rawData.length !== 0 && this._loadRootAsSummary) {
             throwIf(
-                rawData.length !== 1 || isEmpty(rawData[0].children) || rawSummaryData,
+                rawData.length !== 1 || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
             );
             rawSummaryData = rawData[0];
-            rawData = rawData[0].children;
+            rawData = rawData[0].children ?? [];
         }
 
         const records = this.createRecords(rawData);
@@ -158,10 +161,14 @@ export class Store {
      * @param {(Object[]|StoreTransaction)} rawData - data changes to process. If provided as an
      *      array, rawData will be processed into adds and updates, with updates determined by
      *      matching existing records by ID.
+     * @returns {Object} - changes applied, or null if no record changes were made.
      */
     @action
     updateData(rawData) {
+        const changeLog = {};
+
         // Build a transaction object out of a flat list of adds and updates
+        let rawTransaction = null;
         if (isArray(rawData)) {
             const update = [], add = [];
             rawData.forEach(it => {
@@ -173,10 +180,12 @@ export class Store {
                 }
             });
 
-            rawData = {update, add};
+            rawTransaction = {update, add};
+        } else {
+            rawTransaction = rawData;
         }
 
-        const {update, add, remove, rawSummaryData, ...other} = rawData;
+        const {update, add, remove, rawSummaryData, ...other} = rawTransaction;
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
@@ -196,8 +205,6 @@ export class Store {
             });
         }
 
-        let didUpdate = false;
-
         // 2) Pre-process summary record, peeling it out of updates if needed
         const {summaryRecord} = this;
         let summaryUpdateRec;
@@ -211,35 +218,41 @@ export class Store {
 
         if (summaryUpdateRec) {
             this.summaryRecord = summaryUpdateRec;
-            didUpdate = true;
+            changeLog.summaryRecord = this.summaryRecord;
         }
 
         // 3) Apply changes
-        if (!isEmpty(updateRecs) || !isEmpty(addRecs) || !isEmpty(remove)) {
-            const {isModified} = this;
+        let rsTransaction = {};
+        if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
+        if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
+        if (!isEmpty(remove)) rsTransaction.remove = remove;
+
+        if (!isEmpty(rsTransaction)) {
 
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
-            this._committed = this._committed.withTransaction({update: updateRecs, add: addRecs, remove: remove});
+            this._committed = this._committed.withTransaction(rsTransaction);
 
-            if (isModified) {
+            if (this.isModified) {
                 // If this store had pre-existing local modifications, apply the updates over that
                 // local state. This might (or might not) effectively overwrite those local changes,
                 // so we normalize against the newly updated committed state to verify if any local
                 // modifications remain.
-                this._current = this._current
-                    .withTransaction({update: updateRecs, add: addRecs, remove: remove})
-                    .normalize(this._committed);
+                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
             } else {
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
             }
 
             this.rebuildFiltered();
-            didUpdate = true;
+            Object.assign(changeLog, rsTransaction);
         }
 
-        if (didUpdate) this.lastUpdated = Date.now();
+        if (!isEmpty(changeLog)) {
+            this.lastUpdated = Date.now();
+        }
+
+        return !isEmpty(changeLog) ? changeLog : null;
     }
 
     /**
@@ -506,6 +519,16 @@ export class Store {
 
         this.rebuildFiltered();
     }
+
+    /**
+     * Set whether the root should be loaded as summary data in loadData().
+     *
+     * @param {boolean}
+     */
+    setLoadRootAsSummary(val) {
+        this._loadRootAsSummary = val;
+    }
+
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {
