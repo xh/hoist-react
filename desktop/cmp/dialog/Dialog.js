@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 import {castArray, isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -25,8 +25,7 @@ import './DialogStyles.scss';
 export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Panel',
     model: uses(DialogModel, {
-        fromContext: true,
-        publishMode: ModelPublishMode.LIMITED
+        fromContext: true
     }),
     memo: false,
     className: 'xh-dialog',
@@ -136,10 +135,6 @@ Dialog.propTypes = {
 };
 
 const rndDialog = hoistCmp.factory({
-    model: uses(DialogModel, {
-        fromContext: true,
-        publishMode: ModelPublishMode.LIMITED
-    }),
     render({model, ...props}) {
         const {resizable, draggable} = model,
             {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style} = props;
@@ -228,10 +223,6 @@ const maskComp = hoistCmp.factory(
 );
 
 const clickCaptureComp = hoistCmp.factory({
-    model: uses(DialogModel, {
-        fromContext: true,
-        publishMode: ModelPublishMode.LIMITED
-    }),
     render({model, zIndex}) {
         return div({
             className: 'xh-dialog-root__click-capture',
@@ -243,10 +234,6 @@ const clickCaptureComp = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory({
-    model: uses(DialogModel, {
-        fromContext: true,
-        publishMode: ModelPublishMode.LIMITED
-    }),
     render({model, icon, title, children}) {
         const dims = model.resizable ? {
             width: '100%',

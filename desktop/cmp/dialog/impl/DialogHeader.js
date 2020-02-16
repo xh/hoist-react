@@ -4,23 +4,20 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import { hoistCmp, useContextModel } from '@xh/hoist/core';
+import { hoistCmp } from '@xh/hoist/core';
 import { box, hbox, filler } from '@xh/hoist/cmp/layout';
 
 import './DialogHeader.scss';
 import { button } from '@xh/hoist/desktop/cmp/button';
 import { Icon } from '@xh/hoist/icon';
 import classNames from 'classnames';
-import { DialogModel } from '../DialogModel';
 
 export const dialogHeader = hoistCmp.factory({
     displayName: 'DialogHeader',
-    model: false,
     className: 'xh-dialog-header',
 
-    render({ className, icon, title}) {
-        const dialogModel = useContextModel(DialogModel),
-            {resizable, draggable, showCloseButton} = dialogModel;
+    render({model, className, icon, title}) {
+        const {resizable, draggable, showCloseButton} = model;
 
         if (!title && !icon && !resizable && !draggable && !showCloseButton) return null;
 
@@ -35,8 +32,8 @@ export const dialogHeader = hoistCmp.factory({
                         item: title
                     }) :
                     filler(),
-                maxMinButton({dialogModel}),
-                closeButton({dialogModel})
+                maxMinButton(),
+                closeButton()
             ]
         });
 
@@ -44,19 +41,20 @@ export const dialogHeader = hoistCmp.factory({
 });
 
 const maxMinButton = hoistCmp.factory(
-    ({dialogModel}) => {
-        const {resizable, isMaximizedState} = dialogModel;
+    ({model}) => {
+        const {resizable, isMaximizedState} = model;
         return button({
             omit: !resizable,
             icon: !isMaximizedState ? Icon.expand() : Icon.collapse(),
-            onClick: () => dialogModel.toggleIsMaximized()
+            onClick: () => model.toggleIsMaximized()
         });
     }
 );
 
 const closeButton = hoistCmp.factory(
-    ({dialogModel}) => button({
+    ({model}) => button({
+        omit: !model.showCloseButton,
         icon: Icon.close(),
-        onClick: () => dialogModel.hide()
+        onClick: () => model.hide()
     })
 );
