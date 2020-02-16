@@ -206,10 +206,8 @@ body {
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
-  --xh-dialog-box-shadow: var(--dialog-box-shadow,
-    #{0 0 0 1px rgba(16, 22, 26, 0.1), 0 4px 8px rgba(16, 22, 26, 0.2), 0 18px 46px 6px rgba(16, 22, 26, 0.2)}
-  );
-    
+  --xh-dialog-box-shadow: var(--dialog-box-shadow, #{0 0 0 1px rgba(16, 22, 26, 0.1), 0 4px 8px rgba(16, 22, 26, 0.2), 0 18px 46px 6px rgba(16, 22, 26, 0.2)});
+
   // Resizable splitter
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
@@ -314,10 +312,8 @@ body.xh-dark {
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
 
   // Popups / dialogs
-  --xh-dialog-box-shadow: var(--dialog-box-shadow,
-    #{0 0 0 1px rgba(16,22,26,.2), 0 4px 8px rgba(16,22,26,.4), 0 18px 46px 6px rgba(16,22,26,.4)}
-  );
-    
+  --xh-dialog-box-shadow: var(--dialog-box-shadow, #{0 0 0 1px rgba(16, 22, 26, 0.2), 0 4px 8px rgba(16, 22, 26, 0.4), 0 18px 46px 6px rgba(16, 22, 26, 0.4)});
+
   // Navbar
   --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
   --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '50')});
