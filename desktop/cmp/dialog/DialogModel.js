@@ -218,7 +218,7 @@ export class DialogModel {
     }
 
     centerDialog() {
-        window.requestAnimationFrame(() => this.rndRef.updatePosition(this.calcPos(this.dialogSize)));
+        window.requestAnimationFrame(() => this.rndRef.updatePosition(this.calcCenteredPos(this.dialogSize)));
     }
 
     applySizeStateChanges({width, height}) {
@@ -239,7 +239,7 @@ export class DialogModel {
         });
     }
 
-    calcPos({width, height}) {
+    calcCenteredPos({width, height}) {
         const wSize = this.windowSize;
         return {
             x: Math.max((wSize.width - width) / 2, 0),
