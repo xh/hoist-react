@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isNumber, isPlainObject, isString} from 'lodash';
+import {isEmpty, isNumber, isPlainObject, isString, isUndefined} from 'lodash';
 
 import {HoistModel, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
@@ -143,6 +143,7 @@ export class DialogModel {
 
     @action
     setPositionState(v) {
+        if (isUndefined(v.x) && isUndefined(v.y)) v = {};
         this.positionState = v;
     }
 
