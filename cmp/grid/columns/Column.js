@@ -443,7 +443,7 @@ export class Column {
 
     defaultGetValueFn = ({record}) => {
         const {fieldPath} = this;
-        if (!record || isNil(fieldPath)) return null;
+        if (!record || isNil(fieldPath)) return '';
 
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
