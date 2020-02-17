@@ -109,6 +109,9 @@ Dialog.propTypes = {
     /** Title text added to the dialog's header. */
     title: PT.oneOfType([PT.string, PT.node]),
 
+    /** True to show close button in dialog's header */
+    showCloseButton: PT.bool,
+
     /** True to show a shaded background mask behind dialog. */
     mask: PT.bool,
 
@@ -234,7 +237,7 @@ const clickCaptureComp = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory({
-    render({model, icon, title, children}) {
+    render({model, ...props}) {
         const dims = model.resizable ? {
             width: '100%',
             height: '100%'
@@ -243,8 +246,8 @@ const content = hoistCmp.factory({
         return vframe({
             ...dims,
             items: [
-                dialogHeader({icon, title}),
-                ...castArray(children)
+                dialogHeader(props),
+                ...castArray(props.children)
             ]
         });
     }

@@ -25,7 +25,7 @@ export class DialogModel {
     /**
      * The base zIndex that will be used for all dialogs;
      */
-    static DIALOG_ZINDEX_BASE= 10000; // gets over bootstrap, blueprintjs
+    static DIALOG_ZINDEX_BASE= 1; // go too high and your dialog covers datepicker and select popups
 
     /**
      * Set the base zIndex to a custom value for all dialogs in your app.
@@ -55,8 +55,6 @@ export class DialogModel {
     /** @member {boolean} */
     draggable;
     /** @member {boolean} */
-    showCloseButton;
-    /** @member {boolean} */
     closeOnEscape;
     /** @member {DialogStateModel} */
     stateModel;
@@ -80,13 +78,11 @@ export class DialogModel {
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can dialog be resized?
      * @param {boolean} [config.draggable] - Can dialog be dragged?
-     * @param {boolean} [config.showCloseButton] - Show a close button in dialog header?
      * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
         resizable = false,
         draggable = false,
-        showCloseButton = true,
         stateModel = null,
         closeOnEscape = true
     } = {}) {
@@ -94,7 +90,6 @@ export class DialogModel {
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
-        this.showCloseButton = showCloseButton;
         this.closeOnEscape = closeOnEscape;
         this.stateModel = this.parseStateModel(stateModel);
     }

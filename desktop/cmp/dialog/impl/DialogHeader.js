@@ -16,8 +16,8 @@ export const dialogHeader = hoistCmp.factory({
     displayName: 'DialogHeader',
     className: 'xh-dialog-header',
 
-    render({model, className, icon, title}) {
-        const {resizable, draggable, showCloseButton} = model;
+    render({model, className, icon, title, showCloseButton = true}) {
+        const {resizable, draggable} = model;
 
         if (!title && !icon && !resizable && !draggable && !showCloseButton) return null;
 
@@ -33,7 +33,7 @@ export const dialogHeader = hoistCmp.factory({
                     }) :
                     filler(),
                 maxMinButton(),
-                closeButton()
+                closeButton({showCloseButton})
             ]
         });
 
@@ -52,8 +52,8 @@ const maxMinButton = hoistCmp.factory(
 );
 
 const closeButton = hoistCmp.factory(
-    ({model}) => button({
-        omit: !model.showCloseButton,
+    ({model, showCloseButton}) => button({
+        omit: !showCloseButton,
         icon: Icon.close(),
         onClick: () => model.hide()
     })
