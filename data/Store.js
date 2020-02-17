@@ -122,11 +122,11 @@ export class Store {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
         if (rawData.length !== 0 && this._loadRootAsSummary) {
             throwIf(
-                rawData.length !== 1 || isEmpty(rawData[0].children) || rawSummaryData,
+                rawData.length !== 1 || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
             );
             rawSummaryData = rawData[0];
-            rawData = rawData[0].children;
+            rawData = rawData[0].children ?? [];
         }
 
         const records = this.createRecords(rawData);

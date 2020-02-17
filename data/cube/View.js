@@ -25,9 +25,8 @@ export class View {
      * @member {Query}
      * Query defining this View.  Update with updateView();
      */
-    get query() {
-        return this._query;
-    }
+    @observable.ref
+    query = null;
 
     /**
      * @member {Object}
@@ -55,7 +54,6 @@ export class View {
     // Implementation
     _rows = null;
     _leafMap = null;
-    _query = null;
 
     /**
      * @private.  Applications should use createView() instead.
@@ -69,7 +67,7 @@ export class View {
      *      store when data in the underlying cube is changed.
      */
     constructor({query, connect = false, store = null}) {
-        this._query = query;
+        this.query = query;
         this.store = store;
         this.fullUpdate();
 
@@ -109,8 +107,23 @@ export class View {
     @action
     updateQuery(overrides) {
         throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
-        this._query = this._query.clone(overrides);
+        this.query = this.query.clone(overrides);
         this.fullUpdate();
+    }
+
+    /**
+     * Gathers all unique values for each dimension field in the query
+     * @returns {DimensionValue[]}
+     */
+    getDimensionValues() {
+        const {_leafMap} = this,
+            fields = this.query.fields.filter(it => it.isDimension);
+
+        return fields.map(field => {
+            const values = new Set();
+            _leafMap.forEach(leaf => values.add(leaf[field.name]));
+            return {field, values};
+        });
     }
 
     //-----------------------
@@ -143,7 +156,7 @@ export class View {
         this.generateRows();
 
         if (store) store.loadData(this._rows);
-        this.result = {rows: this._rows};
+        this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
 
@@ -162,7 +175,7 @@ export class View {
         });
 
         if (store) store.updateData({update: recordUpdates});
-        this.result = {rows: this._rows};
+        this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
 
@@ -249,3 +262,9 @@ export class View {
         this.disconnect();
     }
 }
+
+/**
+ * @typedef DimensionValue
+ * @property {CubeField} field - dimension field
+ * @property {Set} values - unique non-null values for the dimension
+ */
