@@ -121,47 +121,27 @@ export class DataViewModel {
         });
 
         this.addReaction({
-            track: () => this.itemHeight,
+            track: () => [this.itemHeight, this.groupRowHeight],
             run: () => this.gridModel.agApi?.resetRowHeights()
         });
     }
 
+
     // Getters and methods trampolined from GridModel.
-    get store()             {return this.gridModel.store}
-    get empty()             {return this.gridModel.empty}
-    get selModel()          {return this.gridModel.selModel}
-    get hasSelection()      {return this.gridModel.hasSelection}
-    get selection()         {return this.selModel.records}
-    get selectedRecord()    {return this.selModel.singleRecord}
+    // Explicit trampolining to aid code-editor, future docs.
+    get store()                 {return this.gridModel.store}
+    get empty()                 {return this.gridModel.empty}
+    get selModel()              {return this.gridModel.selModel}
+    get hasSelection()          {return this.gridModel.hasSelection}
+    get selection()             {return this.gridModel.selection}
+    get selectedRecord()        {return this.gridModel.selectedRecord}
 
-    selectFirst() {
-        this.gridModel.selectFirst();
-    }
-
-    ensureSelectionVisible() {
-        this.gridModel.ensureSelectionVisible();
-    }
-
-    /** Load the underlying store. */
-    doLoadAsync(loadSpec) {
-        throwIf(!this.store.isLoadSupport, 'Underlying store does not define support for loading.');
-        return this.store.loadAsync(loadSpec);
-    }
-
-    /** Load the underlying store. */
-    loadData(...args) {
-        return this.store.loadData(...args);
-    }
-
-    /** Update the underlying store. */
-    updateData(...args) {
-        return this.store.updateData(...args);
-    }
-
-    /** Clear the underlying store, removing all rows. */
-    clear() {
-        this.store.clear();
-    }
+    selectFirst()               {return this.gridModel.selectFirst()}
+    ensureSelectionVisible()    {return this.gridModel.ensureSelectionVisible()}
+    doLoadAsync(loadSpec)       {return this.gridModel.doLoadAsync(loadSpec)}
+    loadData(...args)           {return this.gridModel.loadData(...args)}
+    updateData(...args)         {return this.gridModel.updateData(...args)}
+    clear()                     {return this.gridModel.clear()}
 
     @computed
     get agOptions() {
