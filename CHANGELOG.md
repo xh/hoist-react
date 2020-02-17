@@ -1,29 +1,68 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - Unreleased
+## v30.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* `AppOption` configs now accept an `omit` property for conditionally excluding options.
+#### Other
+
+* The `StoreFilterField` component on desktop and mobile accepts all other config options from
+`TextInput` such as `disabled`, `textAlign`, and `spellCheck`.
+
+* Clicking on a summary row in `Grid` will now clear selection.
+
+* The browser document title is now set to the `clientAppName` from `AppSpec`.  This is especially
+ useful for applications with multiple internal javascript apps.
+
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
+* Fixed `fontAwesomeIcon` elem factory component to include the default 'fa-fw' className.
+Previously, it was overridden by any `className` passed in via optional params.
+* Fixed an issue where ConfigDiffer would always warn about deletions.
+  [#1652](https://github.com/xh/hoist-react/issues/1652)
+* `TextInput` will now set its value to `null` when all text is deleted.  The clear icon is also
+now hidden when the value is the empty string.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+
+## v29.1.0 - 2020-02-07
+
+### 🎁 New Features
+
+#### Grid
+
 * The `compact` config on `GridModel` has been deprecated in favor of the more powerful `sizingMode`
   which supports the values 'large', 'standard', 'compact', or 'tiny'.
   * Each new mode has its own set of CSS variables for applications to override as needed.
   * Header and row heights are configurable for each via the `HEADER_HEIGHTS` and `ROW_HEIGHTS`
-    static properties of the `AgGrid` component and can be modified directly by applications that
-    wish to customize the default row heights globally on init.
+    static properties of the `AgGrid` component. These objects can be modified on init by
+    applications that wish to customize the default row heights globally.
   * 💥 Note that these height config objects were previously exported as constants from AgGrid.js.
     This would be a breaking change for any apps that imported the old objects directly (considered
     unlikely).
-* The `Store` constructor now accepts a `data` argument to load data at initialization.
-* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
 * `GridModel` now exposes an `autoSizeColumns` method, and the Grid context menu now contains an
   `Autosize Columns` option by default.
 * `Column` and `ColumnGroup` now support React elements for `headerName`.
+
+#### Data
+
+* The `Store` constructor now accepts a `data` argument to load data at initialization.
 * The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
   data package and support observable "Views". See documentation on `Cube` for more information.
+
+#### Other
+
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
 * `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
   when used in an action column.
-* It is now possible to specify a tree column without binding it to a field.
+* Mobile Navigator component now takes an `animation` prop which can be set to 'slide' (default),
+  'lift', 'fade', or 'none'. These values are passed to the underlying onsenNavigator component.
+  ([#1641](https://github.com/xh/hoist-react/pull/1641))
+* `AppOption` configs now accept an `omit` property for conditionally excluding options.
 
 ### 🐞 Bug Fixes
 
@@ -34,11 +73,6 @@
 
 ### ⚙️ Technical
 
-* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
-  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
-  directly by applications that wish to customize the default row heights globally on init
-  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
-    a breaking change for any apps that imported the old objects directly (considered unlikely).
 * `FormFields` now check that they are contained in a Hoist `Form`.
 
 ### 📚 Libraries
@@ -47,7 +81,7 @@
 * codemirror `5.50 -> 5.51`
 * react-dates `21.5 -> 21.7`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.1.0)
 
 ## v29.0.0 - 2020-01-24
 

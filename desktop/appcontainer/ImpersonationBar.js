@@ -12,6 +12,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
+import './ImpersonationBar.scss';
 
 /**
  * An admin-only toolbar that provides a UI for impersonating application users, as well as ending
@@ -39,7 +40,7 @@ export const impersonationBar = hoistCmp.factory({
         }
 
         return toolbar({
-            style: {color: 'white', backgroundColor: 'midnightblue', zIndex: 9999},
+            className: 'xh-impersonation-bar',
             items: [
                 hspacer(5),
                 Icon.impersonate(),
@@ -51,7 +52,7 @@ export const impersonationBar = hoistCmp.factory({
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
-                    width: 200,
+                    width: 250,
                     onCommit: impl.onCommit
                 }),
                 button({

@@ -98,7 +98,9 @@ export class TextInput extends HoistInput {
     }
 
     onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
+        let {value} = ev.target;
+        if (value === '') value = null;
+        this.noteValueChange(value);
     };
 
     onKeyDown = (ev) => {

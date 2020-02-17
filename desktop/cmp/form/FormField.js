@@ -87,7 +87,9 @@ export const [FormField, formField] = hoistCmp.withFactory({
             labelAlign = defaultProp('labelAlign', props, formContext, 'left'),
             labelWidth = defaultProp('labelWidth', props, formContext, null),
             label = defaultProp('label', props, formContext, model?.displayName),
-            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined);
+            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
+            tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
+            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport');
 
         // Styles
         const classes = [childCssName];
@@ -116,7 +118,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 target: childEl,
                 targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName: !blockChildren.includes(getReactElementName(child)) || child.props.width ? 'span' : 'div',
-                position: 'right',
+                position: tooltipPosition,
+                boundary: tooltipBoundary,
                 disabled: !displayNotValid,
                 content: getErrorTooltipContent(errors)
             });
@@ -219,7 +222,25 @@ FormField.propTypes = {
     readonlyRenderer: PT.func,
 
     /** The indicator to display next to a required field. Defaults to `*`. */
-    requiredIndicator: PT.string
+    requiredIndicator: PT.string,
+
+    /**
+     * Minimal validation tooltip will try to fit within the corresponding boundary.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
+
+    /**
+     * Position for minimal validation tooltip.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipPosition: PT.oneOf([
+        'top-left', 'top', 'top-right',
+        'right-top', 'right', 'right-bottom',
+        'bottom-right', 'bottom', 'bottom-left',
+        'left-bottom', 'left', 'left-top',
+        'auto', 'auto-start', 'auto-end'
+    ])
 };
 
 const readonlyChild = hoistCmp.factory({
@@ -244,7 +265,7 @@ const editableChild = hoistCmp.factory({
         const overrides = {
             model,
             bind: 'value',
-            disabled,
+            disabled: props.disabled || disabled,
             id: childId
         };
 

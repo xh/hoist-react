@@ -7,7 +7,9 @@
 
 import {Cube} from './Cube';
 import {ValueFilter} from './filter';
-import {AggregateRow, LeafRow} from './impl';
+import {createAggregateRow, createLeafRow} from './impl';
+import {observable, action} from 'mobx';
+import {throwIf} from '../../utils/js';
 
 import {isEmpty, groupBy, map} from 'lodash';
 
@@ -19,14 +21,20 @@ import {isEmpty, groupBy, map} from 'lodash';
  */
 export class View {
 
-    /** @member {Query} */
+    /**
+     * @member {Query}
+     * Query defining this View.  Update with updateView();
+     */
+    @observable.ref
     query = null;
 
     /**
-     * @member {Object []}
-     * Results of this view, as an array of hierarchical row objects.
+     * @member {Object}
+     * Results of this view.  Will contain a single property 'rows' containing an array of
+     * hierarchical data objects. This is an observable property.
      */
-    rows = null;
+    @observable.ref
+    result = null;
 
     /**
      * @member {Store}
@@ -34,9 +42,18 @@ export class View {
      */
     store = null;
 
+    /**
+     * @member {Object}
+     *
+     * Cube info associated with the view when it was last updated.
+     * This is an observable property.
+     */
+    @observable.ref
+    info = null;
 
     // Implementation
-    leafMap = null; // Map of leafRows
+    _rows = null;
+    _leafMap = null;
 
     /**
      * @private.  Applications should use createView() instead.
@@ -70,10 +87,6 @@ export class View {
         return this.query.fields;
     }
 
-    get info() {
-        return this.cube.info;
-    }
-
     get isConnected() {
         return this.cube._connectedViews.has(this);
     }
@@ -82,41 +95,88 @@ export class View {
         this.cube._connectedViews.delete(this);
     }
 
+    /**
+     * Change the query in some way.
+     *
+     * Setting this property will cause the data in this view to be re-computed to reflect
+     * the new query.
+     *
+     * @param {Object} overrides - changes to be applied to the query.  May include any
+     *      arguments to the query constructor, other than cube.
+     */
+    @action
+    updateQuery(overrides) {
+        throwIf(overrides.cubes, 'Cannot redirect view to a different cube in updateQuery().');
+        this.query = this.query.clone(overrides);
+        this.fullUpdate();
+    }
+
+    /**
+     * Gathers all unique values for each dimension field in the query
+     * @returns {DimensionValue[]}
+     */
+    getDimensionValues() {
+        const {_leafMap} = this,
+            fields = this.query.fields.filter(it => it.isDimension);
+
+        return fields.map(field => {
+            const values = new Set();
+            _leafMap.forEach(leaf => values.add(leaf[field.name]));
+            return {field, values};
+        });
+    }
+
     //-----------------------
     // Entry point for cube
     //-----------------------
+    @action
     noteCubeLoaded() {
         this.fullUpdate();
     }
 
+    @action
     noteCubeUpdated(changeLog) {
-        console.debug('Processing Changelog', changeLog);
-
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
             this.fullUpdate();
         } else if (!isEmpty(simpleUpdates)) {
-            console.debug('Processing Simple Update', simpleUpdates);
-            this.simpleUpdate(simpleUpdates);
+            this.dataOnlyUpdate(simpleUpdates);
+        } else {
+            this.info = this.cube.info;
         }
     }
 
     //------------------------
     // Implementation
     //------------------------
+    @action
     fullUpdate() {
         const {store} = this;
-
         this.generateRows();
-        if (store) store.loadData(this.rows);
+
+        if (store) store.loadData(this._rows);
+        this.result = {rows: this._rows, leafMap: this._leafMap};
+        this.info = this.cube.info;
     }
 
-    simpleUpdate(updates) {
-        const {store} = this;
-        this.generateRows();
+    @action
+    dataOnlyUpdate(updates) {
+        const {store, _leafMap} = this;
 
-        if (store) store.loadData(this.rows);
+        const updatedRows = new Set();
+        updates.forEach(rec => {
+            const leaf = _leafMap.get(rec.id);
+            leaf?._meta.applyDataUpdate(rec, updatedRows);
+        });
+        const recordUpdates = [];
+        updatedRows.forEach(row => {
+            if (store.getById(row.id)) recordUpdates.push(row);
+        });
+
+        if (store) store.updateData({update: recordUpdates});
+        this.result = {rows: this._rows, leafMap: this._leafMap};
+        this.info = this.cube.info;
     }
 
     // Generate a new full data representation
@@ -129,13 +189,12 @@ export class View {
             leafArray = Array.from(leafMap.values());
         let newRows = this.groupAndInsertLeaves(leafArray, dimensions, rootId, {});
         if (includeRoot) {
-            newRows = [new AggregateRow(this, rootId, newRows, null, 'Total', {})];
+            newRows = [createAggregateRow(this, rootId, newRows, null, 'Total', {})];
         } else if (!query.includeLeaves && newRows[0]?._meta.isLeaf) {
             newRows = []; // degenerate case, no visible rows
         }
-
-        this.leafMap = leafMap;
-        this.rows = newRows;
+        this._leafMap = leafMap;
+        this._rows = newRows;
     }
 
     groupAndInsertLeaves(leaves, dimensions, parentId, appliedDimensions) {
@@ -150,14 +209,15 @@ export class View {
             appliedDimensions[dimName] = val;
             const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
-            return new AggregateRow(this, id, newChildren, dim, val, appliedDimensions);
+            return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
         });
     }
 
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
+        if (!t) return [];
         const {filters} = this.query,
-            {leafMap} = this,
+            {_leafMap} = this,
             recordFilter = (r) => filters.every(f => f.fn(r));
 
         // 1) Simple case: no filters
@@ -168,14 +228,14 @@ export class View {
         // 2) Examine, accounting for filters
         // 2a) Relevant adds or removes fail us
         if (t.add?.any(recordFilter)) return false;
-        if (t.remove?.any(id => leafMap.has(id))) return false;
+        if (t.remove?.any(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
                 const passes = recordFilter(r),
-                    present = leafMap.has(r.id);
+                    present = _leafMap.has(r.id);
                 if (passes !== present) return false;
 
                 if (present) ret.push(r);
@@ -192,7 +252,7 @@ export class View {
 
         records.forEach(rec => {
             if (!filters || filters.every(f => f.fn(rec))) {
-                ret.set(rec.id, new LeafRow(this, rec));
+                ret.set(rec.id, createLeafRow(this, rec));
             }
         });
         return ret;
@@ -202,3 +262,9 @@ export class View {
         this.disconnect();
     }
 }
+
+/**
+ * @typedef DimensionValue
+ * @property {CubeField} field - dimension field
+ * @property {Set} values - unique non-null values for the dimension
+ */
