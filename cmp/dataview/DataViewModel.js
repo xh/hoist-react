@@ -52,8 +52,7 @@ export class DataViewModel {
      * @param {(Object[]|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs
      *      or token strings with which to create grid context menu items.  May also be specified
      *      as a function returning a StoreContextMenu. Desktop only.
-     * @param {function} [c.rowClassFn] - closure to generate CSS class names for a row.
-     *      Called with record data, returns a string or array of strings.
+     * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
      * @param {Object} [c.gridModelConfig] - additional configs passed to the underlying gridModel.
      *      Note this is for advanced usage - not all configs supported, and many will override
      *      DataView defaults in ways that will break this component.
@@ -77,7 +76,7 @@ export class DataViewModel {
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
-        throwIf(!isNumber(itemHeight), 'Must specify a number for itemHeight (in pixels) in DataViewModel.');
+        throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
@@ -87,7 +86,7 @@ export class DataViewModel {
         // initially and through updates via transactions. For this reason, we set the field of our
         // single column to the desired sort field. (The field setting should not have any other
         // meaningful impact on the grid, since we use a custom renderer and mark it as complex to
-        // ensure re-renders on any record change.)
+        // ensure each item re-renders on any record change.)
         let field = 'id';
         if (sortBy.length === 1) {
             let sorter = sortBy[0];
@@ -173,10 +172,10 @@ export class DataViewModel {
             getRowHeight: (params) => {
                 // Return (required) itemHeight for data rows.
                 if (!params.node?.group) return itemHeight;
-                // For group rows, return (optional) groupRowHeight.
-                if (groupRowHeight) return groupRowHeight;
-                // Or use standard height (DataView does not participate in grid sizing modes).
-                return AgGrid.getRowHeightForSizingMode('standard');
+
+                // For group rows, return groupRowHeight if specified, or use standard height
+                // (DataView does not participate in grid sizing modes.)
+                return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
             },
             ...(groupRowRenderer ? {groupRowRendererFramework: groupRowRenderer} : {})
         };
