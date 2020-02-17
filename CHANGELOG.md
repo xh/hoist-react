@@ -4,26 +4,21 @@
 
 ### 🎁 New Features
 
-#### Other
-
-* The `StoreFilterField` component on desktop and mobile accepts all other config options from
-`TextInput` such as `disabled`, `textAlign`, and `spellCheck`.
-
-* Clicking on a summary row in `Grid` will now clear selection.
-
-* The browser document title is now set to the `clientAppName` from `AppSpec`.  This is especially
- useful for applications with multiple internal javascript apps.
-
+* The browser document title is now set to the `clientAppName` from `AppSpec`. This is especially
+  useful for projects with multiple javascript client apps.
+* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
+  and `spellCheck`).
+* Clicking on a summary row in `Grid` now clears its record selection.
 
 ### 🐞 Bug Fixes
 
-* Fixed an issue where zeroes entered by the user in PinPad would be displayed as blanks.
-* Fixed `fontAwesomeIcon` elem factory component to include the default 'fa-fw' className.
-Previously, it was overridden by any `className` passed in via optional params.
+* Fixed an issue where zeroes entered by the user in `PinPad` would be displayed as blanks.
+* Fixed `fontAwesomeIcon` elem factory component to always include the default 'fa-fw' className.
+  Previously, it was overridden if a `className` prop was provided.
 * Fixed an issue where ConfigDiffer would always warn about deletions.
   [#1652](https://github.com/xh/hoist-react/issues/1652)
-* `TextInput` will now set its value to `null` when all text is deleted.  The clear icon is also
-now hidden when the value is the empty string.
+* `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
+  automatically hide.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
