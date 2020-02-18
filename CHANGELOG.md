@@ -9,6 +9,8 @@
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
   and `spellCheck`).
 * Clicking on a summary row in `Grid` now clears its record selection.
+* `TabContainerModel` now accepts a `track` property for tracking tab views in admin track log. The
+  default value is set to `false`.
 
 ### 🐞 Bug Fixes
 
@@ -58,8 +60,6 @@
   'lift', 'fade', or 'none'. These values are passed to the underlying onsenNavigator component.
   ([#1641](https://github.com/xh/hoist-react/pull/1641))
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
-* `TabContainerModel` now accepts a `track` property for tracking tab views in admin track log. The
-  default value is set to `false`.
 
 ### 🐞 Bug Fixes
 
