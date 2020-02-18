@@ -17,9 +17,11 @@ export class ChartModel {
     @bindable.ref highchartsConfig = {};
     @bindable.ref series = [];
     /**
-     * The HighCharts chart instance currently being displayed.
+     * The HighCharts chart instance currently being displayed. This may be used for reading
+     * information about the chart, e.g. the current extremes, but any mutations to the chart should
+     * be done with ChartModel.setHighchartsConfig() or ChartModel.setSeries().
      */
-    @observable.ref hchart;
+    @observable.ref highchart;
 
     /**
      * @param {Object} c - ChartModel configuration.

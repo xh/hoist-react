@@ -97,8 +97,9 @@ class LocalModel {
     @action
     set chart(newChart) {
         this._chart = newChart;
-        this.model.hchart = newChart;
+        this.model.highchart = newChart;
     }
+
     get chart() {
         return this._chart;
     }
