@@ -4,9 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {runInAction} from 'mobx';
 import PT from 'prop-types';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
-import {bindable, action} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
@@ -93,9 +94,8 @@ class LocalModel {
         });
     }
 
-    @action
     set chart(newChart) {
-        this.model.highchart = newChart;
+        runInAction(() => this.model.highchart = newChart);
     }
 
     get chart() {
