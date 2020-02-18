@@ -13,6 +13,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.
@@ -87,7 +88,7 @@ export class TextInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, flex, ...layoutProps} = this.getLayoutProps();
 
-        const isClearable = (this.internalValue !== null);
+        const isClearable = !isEmpty(this.internalValue);
 
         return div({
             item: inputGroup({
@@ -142,7 +143,9 @@ export class TextInput extends HoistInput {
     }
 
     onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
+        let {value} = ev.target;
+        if (value === '') value = null;
+        this.noteValueChange(value);
     };
 
     onKeyDown = (ev) => {

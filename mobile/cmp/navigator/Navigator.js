@@ -21,10 +21,11 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
     model: uses(NavigatorModel),
     className: 'xh-navigator',
 
-    render({model, className}) {
+    render({model, className, animation = 'slide'}) {
         return onsenNavigator({
             className,
             initialRoute: {init: true},
+            animation,
             animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
             renderPage: (pageModel, navigator) => model.renderPage(pageModel, navigator),
             onPostPush: () => model.onPageChange(),
@@ -35,5 +36,8 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
 
 Navigator.propTypes = {
     /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object])
+    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]),
+    
+    /** Set animation style or turn off, default 'slide' */
+    animation: PT.oneOf(['slide', 'lift', 'fade', 'none'])
 };

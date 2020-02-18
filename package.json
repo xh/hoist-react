@@ -28,11 +28,11 @@
   "dependencies": {
     "@blueprintjs/core": "~3.23.1",
     "@blueprintjs/datetime": "~3.15.2",
-    "@fortawesome/fontawesome-pro": "~5.12.0",
-    "@fortawesome/fontawesome-svg-core": "~1.2.26",
-    "@fortawesome/pro-light-svg-icons": "~5.12.0",
-    "@fortawesome/pro-regular-svg-icons": "~5.12.0",
-    "@fortawesome/pro-solid-svg-icons": "~5.12.0",
+    "@fortawesome/fontawesome-pro": "~5.12.1",
+    "@fortawesome/fontawesome-svg-core": "~1.2.27",
+    "@fortawesome/pro-light-svg-icons": "~5.12.1",
+    "@fortawesome/pro-regular-svg-icons": "~5.12.1",
+    "@fortawesome/pro-solid-svg-icons": "~5.12.1",
     "@fortawesome/react-fontawesome": "~0.1.8",
     "ag-grid-community": "~21.2.2",
     "ag-grid-enterprise": "~21.2.2",
@@ -50,7 +50,7 @@
     "http-status-codes": "~1.4.0",
     "lodash": "~4.17.15",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.15.3",
+    "mobx": "~5.15.4",
     "mobx-react": "~6.1.5",
     "moment": "~2.24.0",
     "numbro": "~2.1.2",
@@ -61,9 +61,11 @@
     "react-dates": "~21.7.0",
     "react-dropzone": "~10.2.1",
     "react-onsenui": "~1.11.2",
+    "react-select": "3.0.8",
     "react-transition-group": "~4.3.0",
     "react-windowed-select": "~2.0.2",
     "regenerator-runtime": "~0.13.3",
+    "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
     "store2": "~2.10.0"
@@ -76,12 +78,12 @@
   "devDependencies": {
     "@xh/hoist-dev-utils": "^4.0.0",
     "husky": "~4.2.1",
-    "lint-staged": "~10.0.3",
+    "lint-staged": "~10.0.7",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
     "stylelint": "~13.0.0",
     "stylelint-config-standard": "~19.0.0",
-    "stylelint-scss": "~3.14.0"
+    "stylelint-scss": "~3.14.2"
   }
 }

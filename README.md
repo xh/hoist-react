@@ -1,7 +1,7 @@
 # Welcome to Hoist React
 
 Hoist is a web application development toolkit developed by
-[Extremely Heavy Industries](https://xh.io/).
+[Extremely Heavy](https://xh.io/).
 
 Hoist is designed as a "full stack" UI development framework, meaning that it has both server and
 client components that work together to provide an integrated set of tools and utilities for quickly
@@ -38,7 +38,7 @@ at the class/component level and for essential public methods.
 ## Hoist usage, licensing, and support
 
 While we maintain open access to the Hoist codebase via these public repositories, Hoist is intended
-for use by clients of Extremely Heavy Industries who are working with us to develop custom
+for use by clients of Extremely Heavy who are working with us to develop custom
 applications for their enterprise.
 
 Please refer to the
@@ -48,7 +48,7 @@ additional terms and conditions, all of which apply equally and entirely to Hois
 ## Key Libraries and Dependencies
 
 📚 Hoist React is built on a collection of remarkable third-party libraries that have been
-selected, combined and integrated by Extremely Heavy Industries. To make the best use of this
+selected, combined and integrated by Extremely Heavy. To make the best use of this
 framework, please review the technologies below.
 
 |   Library    |                                          Notes                                          |                Link                |

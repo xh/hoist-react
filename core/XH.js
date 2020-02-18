@@ -23,6 +23,7 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {p} from '@xh/hoist/cmp/layout';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 
@@ -234,7 +235,6 @@ class XHClass {
         return this.refreshContextModel.refreshAsync();
     }
 
-
     /**
      * Tracks globally loading promises.
      * Apps should link any async operations that should mask the entire viewport to this model.
@@ -249,7 +249,6 @@ class XHClass {
     get refreshContextModel() {
         return this.acm.refreshContextModel;
     }
-
 
     //------------------------
     // Theme Support
@@ -417,6 +416,11 @@ class XHClass {
         return this.acm.aboutDialogModel.show();
     }
 
+    /** Show the impersonation bar to allow switching users. */
+    showImpersonationBar() {
+        return this.acm.impersonationBarModel.show();
+    }
+
     /**
      * Resets user customizations.
      * Clears all user preferences and local grid state, then reloads the app.
@@ -472,13 +476,12 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec} = this;
+            {appSpec, isMobile} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh-app and platform classes to body element to power Hoist CSS selectors.
-        const platformCls = XH.isMobile ? 'xh-mobile' : 'xh-desktop';
-        document.body.classList.add('xh-app', platformCls);
+        // add xh css classes to to power Hoist CSS selectors.
+        document.body.classList.add('xh-app', (isMobile ? 'xh-mobile' : 'xh-desktop'));
 
         try {
             await this.installServicesAsync(FetchService);
@@ -500,6 +503,7 @@ class XHClass {
                 });
             }
 
+            this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
             // Check if user has already been authenticated (prior login, SSO)...
@@ -583,6 +587,12 @@ class XHClass {
         }
     }
 
+    setDocTitle() {
+        const env = XH.getEnv('appEnvironment'),
+            {clientAppName} = this.appSpec;
+        document.title = (env === 'Production' ? clientAppName : `${clientAppName} (${env})`);
+    }
+
     async getAuthStatusFromServerAsync() {
         return await this.fetchService
             .fetchJson({url: 'xh/authStatus'})
@@ -621,10 +631,12 @@ class XHClass {
             results.forEach((it, idx) => {
                 it.name = svcs[idx].constructor.name;
             });
-            const names = errs.map(it => it.name).join(', ');
 
             throw this.exception({
-                message: 'Failed to initialize services: ' + names,
+                message: [
+                    p('Failed to initialize services:'),
+                    ...errs.map(it => p(it.reason.message + ' (' + it.name + ')'))
+                ],
                 details: errs
             });
         }

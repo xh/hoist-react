@@ -198,7 +198,7 @@ export class ConfigDifferModel  {
     confirmApplyRemote(records) {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
             hadPwdConfig = records.length != filteredRecords.length,
-            willDeleteConfig = filteredRecords.some(it => !it.remoteValue),
+            willDeleteConfig = filteredRecords.some(it => !it.data.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredRecords.length, true)}?`;
 
         const message = (
