@@ -4,36 +4,37 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import { hoistCmp } from '@xh/hoist/core';
-import { box, hbox, filler } from '@xh/hoist/cmp/layout';
 
-import './DialogHeader.scss';
+import { hoistCmp} from '@xh/hoist/core';
+import { box, hbox, filler } from '@xh/hoist/cmp/layout';
 import { button } from '@xh/hoist/desktop/cmp/button';
 import { Icon } from '@xh/hoist/icon';
-import classNames from 'classnames';
+
+import './DialogHeader.scss';
+
 
 export const dialogHeader = hoistCmp.factory({
     displayName: 'DialogHeader',
-    className: 'xh-dialog-header',
 
-    render({model, className, icon, title, showCloseButton = true}) {
-        const {resizable, draggable} = model;
+    render(props) {
+        const {dialogModel, icon, title, showCloseButton} = props,
+            {resizable, draggable} = dialogModel;
 
         if (!title && !icon && !resizable && !draggable && !showCloseButton) return null;
 
         return hbox({
-            className: classNames(className),
+            className: 'xh-dialog__header' + (draggable ? ' xh-dialog__header--draggable' : ''),
             items: [
                 icon || null,
                 title ?
                     box({
-                        className: 'xh-dialog-header__title',
+                        className: 'xh-dialog__header__title',
                         flex: 1,
                         item: title
                     }) :
                     filler(),
-                maxMinButton(),
-                closeButton({showCloseButton})
+                maxMinButton({dialogModel}),
+                closeButton(props)
             ]
         });
 
@@ -41,20 +42,22 @@ export const dialogHeader = hoistCmp.factory({
 });
 
 const maxMinButton = hoistCmp.factory(
-    ({model}) => {
-        const {resizable, isMaximizedState} = model;
+    ({dialogModel}) => {
+        const {resizable, isMaximizedState} = dialogModel;
         return button({
             omit: !resizable,
             icon: !isMaximizedState ? Icon.expand() : Icon.collapse(),
-            onClick: () => model.toggleIsMaximized()
+            onClick: () => dialogModel.toggleIsMaximized()
         });
     }
 );
 
 const closeButton = hoistCmp.factory(
-    ({model, showCloseButton}) => button({
-        omit: !showCloseButton,
-        icon: Icon.close(),
-        onClick: () => model.hide()
-    })
+    ({dialogModel, showCloseButton, onClose}) => {
+        return button({
+            omit: !showCloseButton,
+            icon: Icon.close(),
+            onClick: () => dialogModel.hide(onClose)
+        });
+    }
 );

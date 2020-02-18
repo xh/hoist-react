@@ -65,8 +65,6 @@ export class DialogModel {
     /** Is the Dialog mounted into React's virtual DOM? */
     /** @member {boolean} */
     @observable hasMounted = false;
-    /** @member {boolean} */
-    @observable isOpen = false;
     /** @member {object} */
     @observable.ref sizeState = {};
     /** @member {object} */
@@ -107,13 +105,8 @@ export class DialogModel {
     }
 
     @action
-    show() {
-        this.isOpen = true;
-    }
-
-    @action
-    hide() {
-        this.isOpen = false;
+    hide(onClose) {
+        onClose();
         if (this.stateModel) return;
 
         this.setSizeState({});
@@ -155,20 +148,20 @@ export class DialogModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    handleKeyDown(evt) {
+    handleKeyDown(evt, onClose) {
         switch (evt.key) {
             case 'Escape':
-                this.handleEscapKey(evt); break;
+                this.handleEscapKey(evt, onClose); break;
         }
     }
 
-    handleEscapKey() {
-        if (this.closeOnEscape) this.hide();
+    handleEscapKey(onClose) {
+        if (this.closeOnEscape) this.hide(onClose);
     }
 
-    handleOutsideClick(evt) {
+    handleOutsideClick(evt, onClose) {
         if (evt.target != this.clickCaptureCompRef.current) return;
-        this.hide();
+        this.hide(onClose);
     }
 
     positionDialogOnRender({width, height, x, y}) {

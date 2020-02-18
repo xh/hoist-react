@@ -13,13 +13,9 @@
     max-height: 100vh;
     max-width: 100vh;
 
-    &__container {
+    .xh-dialog {
       width: 100%;
       height: 100%;
-
-      .xh-dialog-header {
-        cursor: move;
-      }
     }
   }
 

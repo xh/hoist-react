@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom';
 import {castArray, isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
 import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -23,39 +23,41 @@ import './DialogStyles.scss';
 
 
 export const [Dialog, dialog] = hoistCmp.withFactory({
-    displayName: 'Panel',
+    displayName: 'Dialog',
     model: uses(DialogModel, {
-        fromContext: true
+        fromContext: false,
+        publishMode: ModelPublishMode.LIMITED,
+        createDefault: true
     }),
     memo: false,
     className: 'xh-dialog',
 
     render({model, ...props}) {
-
-        const maybeSetFocus = () => {
+        const {isOpen} = props,
+            maybeSetFocus = () => {
             // always delay focus manipulation to just before repaint to prevent scroll jumping
-            window.requestAnimationFrame(() => {
-                const {containerElement: container, isOpen} = model,
-                    {activeElement} = document;
+                window.requestAnimationFrame(() => {
+                    const {containerElement: container} = model,
+                        {activeElement} = document;
 
-                // containerElement may be undefined between component mounting and Portal rendering
-                // activeElement may be undefined in some rare cases in IE
-                if (container == null || activeElement == null || !isOpen) return;
+                    // containerElement may be undefined between component mounting and Portal rendering
+                    // activeElement may be undefined in some rare cases in IE
+                    if (container == null || activeElement == null || !isOpen) return;
 
-                const isFocusOutsideModal = !container.contains(activeElement);
-                if (isFocusOutsideModal) {
+                    const isFocusOutsideModal = !container.contains(activeElement);
+                    if (isFocusOutsideModal) {
                     /**
                      * @see {@link https://github.com/facebook/react/blob/9fe1031244903e442de179821f1d383a9f2a59f2/packages/react-dom/src/shared/DOMProperty.js#L294}
                      * @see {@link https://github.com/facebook/react/blob/master/packages/react-dom/src/client/ReactDOMHostConfig.js#L379}
                      * for why we do not search for autofocus on dom element: TLDR:  it's not there!
                      */
-                    const wrapperElement = container.querySelector('[tabindex]');
-                    if (wrapperElement != null) {
-                        wrapperElement.focus();
+                        const wrapperElement = container.querySelector('[tabindex]');
+                        if (wrapperElement != null) {
+                            wrapperElement.focus();
+                        }
                     }
-                }
-            });
-        };
+                });
+            };
 
         useOnMount(() => {
             /**
@@ -84,9 +86,9 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             model.positionDialogOnRender({width, height, x, y});
         });
 
-        const {isOpen, hasMounted} = model;
+        const {hasMounted} = model;
 
-        if (isOpen === false || !hasMounted) {
+        if (!isOpen || !hasMounted) {
             document.body.style.overflow = null;
             return null;
         }
@@ -103,6 +105,15 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 });
 
 Dialog.propTypes = {
+    /** True to render the dialog */
+    isOpen: PT.bool,
+
+    /** Callback invoked when user interaction triggers onClose call
+     * (closeOnOutsideClick overlay, close button, escape key)
+     *
+     * */
+    onClose: PT.func,
+
     /** An icon placed at the left-side of the dialog's header. */
     icon: PT.element,
 
@@ -138,9 +149,10 @@ Dialog.propTypes = {
 };
 
 const rndDialog = hoistCmp.factory({
-    render({model, ...props}) {
-        const {resizable, draggable} = model,
-            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style} = props;
+    render(props) {
+        const model = useContextModel(DialogModel),
+            {resizable, draggable} = model,
+            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style, onClose} = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -190,7 +202,7 @@ const rndDialog = hoistCmp.factory({
 
         return fragment(
             mask ? maskComp({zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
+            closeOnOutsideClick ? clickCaptureComp({zIndex, onClose}) : null,
             rnd({
                 ref: c =>  model.rndRef = c,
                 ...RnDOptions,
@@ -206,14 +218,14 @@ const rndDialog = hoistCmp.factory({
                     topRight: resizable
                 },
                 bounds: 'body',
-                dragHandleClassName: 'xh-dialog-header',
+                dragHandleClassName: 'xh-dialog__header',
                 onDragStop,
                 onResizeStop,
                 item: div({
-                    onKeyDown: (evt) => model.handleKeyDown(evt),
+                    onKeyDown: (evt) => model.handleKeyDown(evt, onClose),
                     tabIndex: 0,
                     ref: model.dialogWrapperDivRef,
-                    className: 'react-draggable__container',
+                    className: props.className,
                     item: content(props)
                 })
             })
@@ -226,27 +238,30 @@ const maskComp = hoistCmp.factory(
 );
 
 const clickCaptureComp = hoistCmp.factory({
-    render({model, zIndex}) {
+    render({zIndex, onClose}) {
+        const model = useContextModel(DialogModel);
+
         return div({
             className: 'xh-dialog-root__click-capture',
             style: {zIndex},
             ref: model.clickCaptureCompRef,
-            onClick: (evt) => model.handleOutsideClick(evt)
+            onClick: (evt) => model.handleOutsideClick(evt, onClose)
         });
     }
 });
 
 const content = hoistCmp.factory({
-    render({model, ...props}) {
-        const dims = model.resizable ? {
-            width: '100%',
-            height: '100%'
-        } : {};
+    render(props) {
+        const dialogModel = useContextModel(DialogModel),
+            dims = dialogModel.resizable ? {
+                width: '100%',
+                height: '100%'
+            } : {};
 
         return vframe({
             ...dims,
             items: [
-                dialogHeader(props),
+                dialogHeader({dialogModel, ...props}),
                 ...castArray(props.children)
             ]
         });
