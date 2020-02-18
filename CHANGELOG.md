@@ -19,6 +19,7 @@
 
 * `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
   flexibility and better symmetry with `GridModel`.
+* `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`
 * `DataView` styling has been updated to avoid applying several unwanted styles from `Grid`. Note
   that apps might rely on these styles (intentionally or not) for their `itemRenderer` components
   and appearance and will need to adjust.
