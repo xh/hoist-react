@@ -29,17 +29,17 @@ export class DataViewModel {
     @bindable
     groupRowHeight;
 
-    groupElementRenderer;
+    groupRowElementRenderer;
 
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
-     * @param {Column~elementRendererFn} c.itemRenderer - function returning a React element for
+     * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
      * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
-     * @param {Grid~groupElementRendererFn} [c.groupElementRenderer] - function returning a React
+     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render groups.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
@@ -59,11 +59,11 @@ export class DataViewModel {
      */
     constructor({
         store,
-        itemRenderer,
+        elementRenderer,
         itemHeight,
         groupBy,
         groupRowHeight,
-        groupElementRenderer,
+        groupRowElementRenderer,
         sortBy = [],
         selModel,
         emptyText,
@@ -80,7 +80,7 @@ export class DataViewModel {
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
-        this.groupElementRenderer = groupElementRenderer;
+        this.groupRowElementRenderer = groupRowElementRenderer;
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
         // initially and through updates via transactions. For this reason, we set the field of our
@@ -97,7 +97,7 @@ export class DataViewModel {
         const columns = [{
             field,
             flex: true,
-            elementRenderer: itemRenderer,
+            elementRenderer,
             rendererIsComplex: true
         }];
 
@@ -118,11 +118,6 @@ export class DataViewModel {
             rowClassFn,
             columns,
             ...gridModelConfig
-        });
-
-        this.addReaction({
-            track: () => [this.itemHeight, this.groupRowHeight],
-            run: () => this.gridModel.agApi?.resetRowHeights()
         });
     }
 

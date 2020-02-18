@@ -6,7 +6,6 @@
  */
 
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {computed} from '@xh/hoist/mobx';
 import PT from 'prop-types';
 import {uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -56,22 +55,27 @@ class LocalModel {
 
     constructor(model) {
         this.model = model;
+        this.addReaction({
+            track: () => [model.itemHeight, model.groupRowHeight],
+            run: () => model.gridModel.agApi?.resetRowHeights()
+        });
     }
 
-    @computed
     get agOptions() {
-        const {itemHeight, groupRowHeight, groupElementRenderer} = this.model;
+        const {model} = this,
+            {groupRowElementRenderer} = model;
         return {
             headerHeight: 0,
             getRowHeight: (params) => {
+
                 // Return (required) itemHeight for data rows.
-                if (!params.node?.group) return itemHeight;
+                if (!params.node?.group) return model.itemHeight;
 
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
-                return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
             },
-            ...(groupElementRenderer ? {groupRowRendererFramework: groupElementRenderer} : {})
+            ...(groupRowElementRenderer ? {groupRowRendererFramework: groupRowElementRenderer} : null)
         };
     }
 }
