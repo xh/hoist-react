@@ -1,13 +1,62 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - Unreleased
-
-⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
-consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
-to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
+## v30.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
+* The browser document title is now set to the `clientAppName` from `AppSpec`. This is especially
+  useful for projects with multiple javascript client apps.
+* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
+  and `spellCheck`).
+* Clicking on a summary row in `Grid` now clears its record selection.
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where zeroes entered by the user in `PinPad` would be displayed as blanks.
+* Fixed `fontAwesomeIcon` elem factory component to always include the default 'fa-fw' className.
+  Previously, it was overridden if a `className` prop was provided.
+* Fixed an issue where ConfigDiffer would always warn about deletions.
+  [#1652](https://github.com/xh/hoist-react/issues/1652)
+* `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
+  automatically hide.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+
+## v29.1.0 - 2020-02-07
+
+### 🎁 New Features
+
+#### Grid
+
+* The `compact` config on `GridModel` has been deprecated in favor of the more powerful `sizingMode`
+  which supports the values 'large', 'standard', 'compact', or 'tiny'.
+  * Each new mode has its own set of CSS variables for applications to override as needed.
+  * Header and row heights are configurable for each via the `HEADER_HEIGHTS` and `ROW_HEIGHTS`
+    static properties of the `AgGrid` component. These objects can be modified on init by
+    applications that wish to customize the default row heights globally.
+  * 💥 Note that these height config objects were previously exported as constants from AgGrid.js.
+    This would be a breaking change for any apps that imported the old objects directly (considered
+    unlikely).
+* `GridModel` now exposes an `autoSizeColumns` method, and the Grid context menu now contains an
+  `Autosize Columns` option by default.
+* `Column` and `ColumnGroup` now support React elements for `headerName`.
+
+#### Data
+
+* The `Store` constructor now accepts a `data` argument to load data at initialization.
+* The `xh/hoist/data/cube` package has been modified substantially to better integrate with the core
+  data package and support observable "Views". See documentation on `Cube` for more information.
+
+#### Other
+
+* Added a `PinPad` component for streamlined handling of PIN entry on mobile devices.
+* `FormField` now takes `tooltipPosition` and `tooltipBoundary` props for customizing minimal
+  validation tooltip.
+* `RecordAction.actionFn` parameters now include a `buttonEl` property containing the button element
+  when used in an action column.
+* Mobile Navigator component now takes an `animation` prop which can be set to 'slide' (default),
+  'lift', 'fade', or 'none'. These values are passed to the underlying onsenNavigator component.
+  ([#1641](https://github.com/xh/hoist-react/pull/1641))
 * `AppOption` configs now accept an `omit` property for conditionally excluding options.
 
 ### 💥 Breaking Changes
@@ -24,22 +73,15 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 
 ### ⚙️ Technical
 
-* The default row heights for Hoist `AgGrid` and `Grid` components are now defined within static
-  `ROW_HEIGHTS` and `ROW_HEIGHTS_MOBILE` properties of the `AgGrid` component and can be modified
-  directly by applications that wish to customize the default row heights globally on init
-  * 💥 Note that these were previously exported as similar constants from AgGrid.js. This would be
-    a breaking change for any apps that imported the old objects directly (considered unlikely).
+* `FormFields` now check that they are contained in a Hoist `Form`.
 
 ### 📚 Libraries
 
 * @blueprintjs/core `3.22 -> 3.23`
 * codemirror `5.50 -> 5.51`
 * react-dates `21.5 -> 21.7`
-* ag-grid-community `21.2 -> 22.1`
-* ag-grid-enterprise `21.2 -> 22.1`
-* ag-grid-react `21.2 -> 22.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.1.0)
 
 ## v29.0.0 - 2020-01-24
 
@@ -365,8 +407,8 @@ leverage the context for model support discussed above.
 * Not a Hoist feature, exactly, but the latest version of `@xh/hoist-dev-utils` (see below) enables
   support for the `optional chaining` (aka null safe) and `nullish coalescing` operators via their
   Babel proposal plugins. Developers are encouraged to make good use of the new syntax below:
-  *  conditional-chaining: `let foo = bar?.baz?.qux;`
-  *  nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
+  * conditional-chaining: `let foo = bar?.baz?.qux;`
+  * nullish coalescing: `let foo = bar ?? 'someDefaultValue';`
 
 ### 🐞 Bug Fixes
 
@@ -1296,17 +1338,17 @@ leverage the context for model support discussed above.
 ### 💥 Breaking Changes
 
 * The implementation of the `model` property on `HoistComponent` has been substantially enhanced:
-  *  "Local" Models should now be specified on the Component class declaration by simply setting the
-     `model` property, rather than the confusing `localModel` property.
-  *  HoistComponent now supports a static `modelClass` class property. If set, this property will
-     allow a HoistComponent to auto-create a model internally when presented with a plain javascript
-     object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
-     where apps often need to specify a model but do not require a reference to the model. Those
-     usages can now skip importing and instantiating an instance of the component's model class
-     themselves.
-  *  Hoist will now throw an Exception if an application attempts to changes the model on an
-     existing HoistComponent instance or presents the wrong type of model to a HoistComponent where
-     `modelClass` has been specified.
+  * "Local" Models should now be specified on the Component class declaration by simply setting the
+    `model` property, rather than the confusing `localModel` property.
+  * HoistComponent now supports a static `modelClass` class property. If set, this property will
+    allow a HoistComponent to auto-create a model internally when presented with a plain javascript
+    object as its `model` prop. This is especially useful in cases like `Panel` and `TabContainer`,
+    where apps often need to specify a model but do not require a reference to the model. Those
+    usages can now skip importing and instantiating an instance of the component's model class
+    themselves.
+  * Hoist will now throw an Exception if an application attempts to changes the model on an existing
+    HoistComponent instance or presents the wrong type of model to a HoistComponent where
+    `modelClass` has been specified.
 
 * `PanelSizingModel` has been renamed `PanelModel`. The class now also has the following new
   optional properties, all of which are `true` by default:
@@ -1903,10 +1945,10 @@ resizing and collapsing behavior** (#534).
 * `ToastManager` has been deprecated. Use `XH.toast` instead.
 * `Message` is no longer a public class (and its API has changed). Use `XH.message/confirm/alert`
   instead.
-*  Export API has changed. The Built-in grid export now uses more powerful server-side support. To
-   continue to use local AG based export, call method `GridModel.localExport()`. Built-in export
-   needs to be enabled with the new property on `GridModel.enableExport`. See `GridModel` for more
-   details.
+* Export API has changed. The Built-in grid export now uses more powerful server-side support. To
+  continue to use local AG based export, call method `GridModel.localExport()`. Built-in export
+  needs to be enabled with the new property on `GridModel.enableExport`. See `GridModel` for more
+  details.
 
 ### 🎁 Enhancements
 
@@ -2127,7 +2169,7 @@ and ag-Grid upgrade, and more. 🚀
 * Update processFailedLoad to loadData into gridModel store, Fixes #337
 * Fix regression to ErrorTracking. Make errorTrackingService safer/simpler to call at any point in
   life-cycle.
-*  Fix broken LocalStore state.
+* Fix broken LocalStore state.
 * Tweak flex prop for charts. Side by side charts in a flexbox now auto-size themselves! Fixes #342
 * Provide token parsing for storeContextMenus. Context menus are all grown up! Fixes #300
 

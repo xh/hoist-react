@@ -9,7 +9,7 @@ import {Aggregator} from './Aggregator';
 
 export class NullAggregator extends Aggregator {
 
-    aggregate(records, fieldName) {
+    aggregate(rows, fieldName) {
         return null;
     }
 }

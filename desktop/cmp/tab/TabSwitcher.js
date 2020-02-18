@@ -27,7 +27,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
 
-    render({model, className, ...props}) {
+    render({model, className, animate, ...props}) {
         const {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),
@@ -47,12 +47,16 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                 });
             }),
             ...props,
+            animate: withDefault(animate, false),
             className: classNames(className, `xh-tab-switcher--${orientation}`)
         });
     }
 });
 
 TabSwitcher.propTypes = {
+    /** True to animate the indicator when switching tabs. False (default) to change instantly. */
+    animate: PT.bool,
+
     /** Primary component model instance. */
     model: PT.instanceOf(TabContainerModel),
 

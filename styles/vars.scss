@@ -115,6 +115,16 @@ body {
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
   --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
 
+  // Large Grid
+  --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);
+  --xh-grid-large-cell-lr-pad-px: calc(var(--xh-grid-large-cell-lr-pad) * 1px);
+  --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
+  --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
+  --xh-grid-large-font-size: var(--grid-large-font-size, 14);
+  --xh-grid-large-font-size-px: calc(var(--xh-grid-large-font-size) * 1px);
+  --xh-grid-large-line-height: var(--grid-large-line-height, 30);
+  --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
+
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
@@ -124,6 +134,16 @@ body {
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
+
+  // Tiny Grid
+  --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
+  --xh-grid-tiny-cell-lr-pad-px: calc(var(--xh-grid-tiny-cell-lr-pad) * 1px);
+  --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
+  --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
+  --xh-grid-tiny-font-size: var(--grid-tiny-font-size, 11);
+  --xh-grid-tiny-font-size-px: calc(var(--xh-grid-tiny-font-size) * 1px);
+  --xh-grid-tiny-line-height: var(--grid-tiny-line-height, 18);
+  --xh-grid-tiny-line-height-px: calc(var(--xh-grid-tiny-line-height) * 1px);
 
   // Multifield renderer
   --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);

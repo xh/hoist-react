@@ -154,7 +154,7 @@ class LocalModel {
     @computed
     get rowHeight() {
         const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
-            gridDefaultHeight = this.model.compact ? platformHeights.compact : platformHeights.standard,
+            gridDefaultHeight = platformHeights[this.model.sizingMode],
             maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
 
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
@@ -196,7 +196,6 @@ class LocalModel {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            headerHeight: props.hideHeaders ? 0 : undefined,
             suppressAggFuncInHeader: true,
             icons: {
                 groupExpanded: convertIconToSvg(
@@ -215,7 +214,10 @@ class LocalModel {
             getRowHeight: () => this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
-            onRowClicked: props.onRowClicked,
+            onRowClicked: (e) => {
+                this.onRowClicked(e);
+                if (props.onRowClicked) props.onRowClicked(e);
+            },
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
@@ -234,8 +236,13 @@ class LocalModel {
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
+            },
+            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
         };
+
+        if (props.hideHeaders) {
+            ret.headerHeight = 0;
+        }
 
         // Platform specific defaults
         if (XH.isMobile) {
@@ -682,5 +689,12 @@ class LocalModel {
         }
 
         if (this.propsKeyDown) this.propsKeyDown(evt);
-    }
+    };
+
+    onRowClicked = (evt) => {
+        const {selModel} = this.model;
+        if (evt.rowPinned) {
+            selModel.clear();
+        }
+    };
 }
