@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, isNumber} from 'lodash';
 
@@ -143,23 +142,4 @@ export class DataViewModel {
     loadData(...args)           {return this.gridModel.loadData(...args)}
     updateData(...args)         {return this.gridModel.updateData(...args)}
     clear()                     {return this.gridModel.clear()}
-
-    @computed
-    get agOptions() {
-        // Pull these out here to ensure computed re-runs when they change.
-        const {itemHeight, groupRowHeight, groupElementRenderer} = this;
-        return {
-            headerHeight: 0,
-            getRowHeight: (params) => {
-                // Return (required) itemHeight for data rows.
-                if (!params.node?.group) return itemHeight;
-
-                // For group rows, return groupRowHeight if specified, or use standard height
-                // (DataView does not participate in grid sizing modes.)
-                return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
-            },
-            ...(groupElementRenderer ? {groupRowRendererFramework: groupElementRenderer} : {})
-        };
-    }
-
 }

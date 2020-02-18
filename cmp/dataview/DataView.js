@@ -5,8 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {AgGrid} from '@xh/hoist/cmp/ag-grid';
+import {computed} from '@xh/hoist/mobx';
 import PT from 'prop-types';
-import {uses, hoistCmp} from '@xh/hoist/core';
+import {uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -26,12 +28,13 @@ export const [DataView, dataView] = hoistCmp.withFactory({
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
 
         const [layoutProps, {onRowDoubleClicked}] = splitLayoutProps(props);
+        const localModel = useLocalModel(() => new LocalModel(model));
 
         return grid({
             ...layoutProps,
             className,
             model: model.gridModel,
-            agOptions: model.agOptions,
+            agOptions: localModel.agOptions,
             onRowDoubleClicked
         });
     }
@@ -47,3 +50,28 @@ DataView.propTypes = {
      */
     onRowDoubleClicked: PT.func
 };
+
+class LocalModel {
+    model;
+
+    constructor(model) {
+        this.model = model;
+    }
+
+    @computed
+    get agOptions() {
+        const {itemHeight, groupRowHeight, groupElementRenderer} = this.model;
+        return {
+            headerHeight: 0,
+            getRowHeight: (params) => {
+                // Return (required) itemHeight for data rows.
+                if (!params.node?.group) return itemHeight;
+
+                // For group rows, return groupRowHeight if specified, or use standard height
+                // (DataView does not participate in grid sizing modes.)
+                return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+            },
+            ...(groupElementRenderer ? {groupRowRendererFramework: groupElementRenderer} : {})
+        };
+    }
+}
