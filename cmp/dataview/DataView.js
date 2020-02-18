@@ -7,7 +7,7 @@
 
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import PT from 'prop-types';
-import {uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
+import {uses, hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {DataViewModel} from './DataViewModel';
@@ -50,6 +50,7 @@ DataView.propTypes = {
     onRowDoubleClicked: PT.func
 };
 
+@HoistModel
 class LocalModel {
     model;
 
