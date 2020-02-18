@@ -74,7 +74,7 @@ function parseMenuItems(items) {
                 menuItem({text: item});
         }
 
-        const items = item.items ? this.parseMenuItems(item.items) : null;
+        const items = item.items ? parseMenuItems(item.items) : null;
         return menuItem({
             text: item.text,
             icon: item.icon,

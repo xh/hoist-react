@@ -12,6 +12,8 @@
   useful for projects with multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
   and `spellCheck`).
+* Clicking on a summary row in `Grid` now clears its record selection.
+* Added a `highchart` property to ChartModel, which exposes the underlying HighChart component.
 
 ### 💥 Breaking Changes
 
