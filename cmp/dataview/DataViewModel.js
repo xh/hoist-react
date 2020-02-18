@@ -30,7 +30,7 @@ export class DataViewModel {
     @bindable
     groupRowHeight;
 
-    groupRowRenderer;
+    groupElementRenderer;
 
     /**
      * @param {Object} c - DataViewModel configuration.
@@ -40,7 +40,8 @@ export class DataViewModel {
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
      * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
-     * @param {function} [c.groupRowRenderer] - function returning a React element for group rows.
+     * @param {Grid~groupElementRendererFn} [c.groupElementRenderer] - function returning a React
+     *      element used to render groups.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
@@ -63,7 +64,7 @@ export class DataViewModel {
         itemHeight,
         groupBy,
         groupRowHeight,
-        groupRowRenderer,
+        groupElementRenderer,
         sortBy = [],
         selModel,
         emptyText,
@@ -80,7 +81,7 @@ export class DataViewModel {
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = groupRowRenderer;
+        this.groupElementRenderer = groupElementRenderer;
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
         // initially and through updates via transactions. For this reason, we set the field of our
@@ -146,7 +147,7 @@ export class DataViewModel {
     @computed
     get agOptions() {
         // Pull these out here to ensure computed re-runs when they change.
-        const {itemHeight, groupRowHeight, groupRowRenderer} = this;
+        const {itemHeight, groupRowHeight, groupElementRenderer} = this;
         return {
             headerHeight: 0,
             getRowHeight: (params) => {
@@ -157,7 +158,7 @@ export class DataViewModel {
                 // (DataView does not participate in grid sizing modes.)
                 return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
             },
-            ...(groupRowRenderer ? {groupRowRendererFramework: groupRowRenderer} : {})
+            ...(groupElementRenderer ? {groupRowRendererFramework: groupElementRenderer} : {})
         };
     }
 

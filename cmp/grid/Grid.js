@@ -697,3 +697,9 @@ class LocalModel {
         }
     };
 }
+
+/**
+ * @callback Grid~groupElementRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {Element} - the React element to render.
+ */
