@@ -11,6 +11,7 @@ import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-co
 import {elemFactory} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {toLower} from 'lodash';
+import {hoistCmp} from '@xh/hoist/core';
 
 import {
     faAddressCard,
@@ -915,36 +916,77 @@ export const deserializeIcon = function(iconDef) {
  * @param {String} extension
  * @return {Element}
  */
-export const fileIcon = function(extension) {
-    switch (toLower(extension)) {
-        case 'png':
-        case 'gif':
-        case 'jpg':
-        case 'jpeg':
-            return Icon.fileImage();
-        case 'doc':
-        case 'docx':
-            return Icon.fileWord();
-        case 'csv':
-            return Icon.fileCsv();
-        case 'xls':
-        case 'xlsx':
-            return Icon.fileExcel();
-        case 'ppt':
-        case 'pptx':
-            return Icon.filePowerpoint();
-        case 'msg':
-        case 'eml':
-            return Icon.mail();
-        case 'pdf':
-            return Icon.filePdf();
-        case 'txt':
-            return Icon.fileText();
-        case 'zip':
-            return Icon.fileArchive();
+
+export const [FileIcon, fileIcon] = hoistCmp.withFactory({
+    render(props) {
+        let {extension, prefix} = props;
+        prefix = withDefault(prefix, 'fas');
+        function iconName(extension) {
+            switch (toLower(extension)) {
+                case 'png':
+                case 'gif':
+                case 'jpg':
+                case 'jpeg':
+                    return 'fileImage';
+                case 'doc':
+                case 'docx':
+                    return 'fileWord';
+                case 'csv':
+                    return 'fileCsv';
+                case 'xls':
+                case 'xlsx':
+                    return 'fileExcel';
+                case 'ppt':
+                case 'pptx':
+                    return 'filePowerpoint';
+                case 'msg':
+                case 'eml':
+                    return 'mail';
+                case 'pdf':
+                    return 'filePdf';
+                case 'txt':
+                    return 'fileText';
+                case 'zip':
+                    return 'fileArchive';
+                default:
+                    return 'file';
+            }
+        }
+        let name = iconName(extension);
+
+        return Icon[name]({prefix});
     }
-    return Icon.file();
-};
+});
+// export const fileIcon = function(extension) {
+//     switch (toLower(extension)) {
+//         case 'png':
+//         case 'gif':
+//         case 'jpg':
+//         case 'jpeg':
+//             return Icon.fileImage();
+//         case 'doc':
+//         case 'docx':
+//             return Icon.fileWord();
+//         case 'csv':
+//             return Icon.fileCsv();
+//         case 'xls':
+//         case 'xlsx':
+//             return Icon.fileExcel();
+//         case 'ppt':
+//         case 'pptx':
+//             return Icon.filePowerpoint();
+//         case 'msg':
+//         case 'eml':
+//             return Icon.mail();
+//         case 'pdf':
+//             return Icon.filePdf();
+//         case 'txt':
+//             return Icon.fileText();
+//         case 'zip':
+//             return Icon.fileArchive();
+//     }
+//     return Icon.file();
+// };
 
 //-----------------------------
 // Implementation
