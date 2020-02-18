@@ -73,7 +73,6 @@ Chart.propTypes = {
 class LocalModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
-    _chart = null;
     model;
     prevSeriesConfig;
 
@@ -96,12 +95,11 @@ class LocalModel {
 
     @action
     set chart(newChart) {
-        this._chart = newChart;
         this.model.highchart = newChart;
     }
 
     get chart() {
-        return this._chart;
+        return this.model.highchart;
     }
 
     updateSeries() {
