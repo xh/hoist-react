@@ -26,6 +26,7 @@ export class MenuModel {
      * @param {number} [c.yPos] - Screen Y position to display the menu. Can be set via openAt().
      */
     constructor({itemModels = [], xPos = 0, yPos = 0}) {
+        itemModels = itemModels.filter(it => !it.omit);
         this.itemModels = itemModels.map(i => isPlainObject(i) ? new MenuItemModel(i) : i);
         this.xPos = xPos;
         this.yPos = yPos;
