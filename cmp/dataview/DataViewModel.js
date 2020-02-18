@@ -78,8 +78,8 @@ export class DataViewModel {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
-        apiRemoved(restArgs.rowCls, 'Use RowClassFn instead.');
-        apiRemoved(restArgs.itemRenderer, 'Use elementRenderer instead.');
+        apiRemoved(restArgs.rowCls, 'rowCls', 'Use RowClassFn instead.');
+        apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use elementRenderer instead.');
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
