@@ -125,7 +125,15 @@ export class DashContainerModel {
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
             when: () => this.containerRef.current,
-            run: () => this.loadStateAsync(initialState)
+            run: () => {
+                this.loadStateAsync(initialState);
+
+                // Re-initialize GoldenLayout if container is remounted
+                this.addReaction({
+                    track: () => this.containerRef.current,
+                    run: () => this.loadStateAsync(this.state)
+                });
+            }
         });
 
         this.addReaction({
@@ -200,8 +208,8 @@ export class DashContainerModel {
     // Implementation
     //------------------------
     updateState() {
-        const {goldenLayout} = this;
-        if (!goldenLayout.isInitialised) return;
+        const {goldenLayout, containerRef} = this;
+        if (!goldenLayout.isInitialised || !containerRef.current) return;
 
         // If the layout becomes completely empty, ensure we have our minimal empty layout
         if (!goldenLayout.root.contentItems.length) {
