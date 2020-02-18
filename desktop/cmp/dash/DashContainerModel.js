@@ -118,22 +118,15 @@ export class DashContainerModel {
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
 
+        this.state = initialState;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
-            when: () => this.containerRef.current,
-            run: () => {
-                this.loadStateAsync(initialState);
-
-                // Re-initialize GoldenLayout if container is remounted
-                this.addReaction({
-                    track: () => this.containerRef.current,
-                    run: () => this.loadStateAsync(this.state)
-                });
-            }
+            track: () => this.containerRef.current,
+            run: () => this.loadStateAsync(this.state)
         });
 
         this.addReaction({
