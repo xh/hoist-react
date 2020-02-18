@@ -6,7 +6,7 @@
  */
 import PT from 'prop-types';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, action} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
@@ -73,7 +73,6 @@ Chart.propTypes = {
 class LocalModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
-    chart = null;
     model;
     prevSeriesConfig;
 
@@ -92,6 +91,15 @@ class LocalModel {
             track: () => model.series,
             run: () => this.updateSeries()
         });
+    }
+
+    @action
+    set chart(newChart) {
+        this.model.highchart = newChart;
+    }
+
+    get chart() {
+        return this.model.highchart;
     }
 
     updateSeries() {
