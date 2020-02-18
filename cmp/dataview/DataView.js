@@ -53,19 +53,18 @@ DataView.propTypes = {
 @HoistModel
 class LocalModel {
     model;
+    agOptions;
 
     constructor(model) {
         this.model = model;
+        const {groupRowElementRenderer} = model;
+
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],
             run: () => model.gridModel.agApi?.resetRowHeights()
         });
-    }
 
-    get agOptions() {
-        const {model} = this,
-            {groupRowElementRenderer} = model;
-        return {
+        this.agOptions = {
             headerHeight: 0,
             getRowHeight: (params) => {
 

@@ -11,6 +11,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, isNumber} from 'lodash';
+import {apiRemoved} from '../../utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -53,9 +54,9 @@ export class DataViewModel {
      *      or token strings with which to create grid context menu items.  May also be specified
      *      as a function returning a StoreContextMenu. Desktop only.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
-     * @param {Object} [c.gridModelConfig] - additional configs passed to the underlying gridModel.
-     *      Note this is for advanced usage - not all configs supported, and many will override
-     *      DataView defaults in ways that will break this component.
+     * @param {...*} [c.restArgs] - additional configs will be passed to the underlying
+     *      GridModel. Note this is for advanced usage - not all configs supported, and many will
+     *      override DataView defaults in ways that will break this component.
      */
     constructor({
         store,
@@ -67,16 +68,18 @@ export class DataViewModel {
         sortBy = [],
         selModel,
         emptyText,
-        showHover= false,
-        rowBorders= false,
+        showHover = false,
+        rowBorders = false,
         stripeRows = false,
         contextMenu = null,
         rowClassFn,
-        gridModelConfig = {}
+        ...restArgs
     }) {
         sortBy = castArray(sortBy);
         throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
+        apiRemoved(restArgs.rowCls, 'Use RowClassFn instead.');
+        apiRemoved(restArgs.itemRenderer, 'Use elementRenderer instead.');
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
@@ -117,7 +120,7 @@ export class DataViewModel {
             groupBy,
             rowClassFn,
             columns,
-            ...gridModelConfig
+            ...restArgs
         });
     }
 
