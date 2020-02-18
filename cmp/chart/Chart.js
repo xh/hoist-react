@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {runInAction} from 'mobx';
 import PT from 'prop-types';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, runInAction} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
