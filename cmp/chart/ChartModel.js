@@ -14,20 +14,28 @@ import {throwIf} from '@xh/hoist/utils/js';
 @HoistModel
 export class ChartModel {
 
-    @bindable.ref highchartsConfig = {};
-    @bindable.ref series = [];
     /**
-     * The HighCharts chart instance currently being displayed. This may be used for reading
-     * information about the chart, e.g. the current extremes, but any mutations to the chart should
+     * Highcharts configuration object for the managed chart. May include
+     * any Highcharts opts other than `series`, which should be set via dedicated config.
+     */
+    @bindable.ref highchartsConfig = {};
+    
+    /**
+     * Data series to be displayed.
+     */
+    @bindable.ref series = [];
+
+    /**
+     * The HighCharts instance currently being displayed. This may be used for reading
+     * information about the chart, but any mutations to the chart should
      * be done with ChartModel.setHighchartsConfig() or ChartModel.setSeries().
      */
     @observable.ref highchart;
 
     /**
      * @param {Object} c - ChartModel configuration.
-     * @param {Object} c.highchartsConfig - Highcharts configuration object for the managed chart. May include
-     *      any Highcharts opts other than `series`, which should be set via dedicated config.
-     * @param {Object[]} c.series - Data series to be displayed.
+     * @param {Object} c.highchartsConfig - The initial highchartsConfig for this chart.
+     * @param {Object[]} c.series - The initial data series to be displayed.
      */
     constructor({highchartsConfig, series = [], config} = {}) {
         throwIf(config, 'ChartModel "config" has been removed. Please use "highchartsConfig" instead.');
