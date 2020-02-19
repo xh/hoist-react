@@ -900,6 +900,7 @@ export const convertIconToSvg = function(iconElem, opts) {
 };
 
 export const serializeIcon = function(iconElem) {
+    console.log(iconElem);
     return {
         prefix: iconElem.props.icon[0],
         iconName: iconElem.props.icon[1]
@@ -918,75 +919,18 @@ export const deserializeIcon = function(iconDef) {
  */
 
 export const [FileIcon, fileIcon] = hoistCmp.withFactory({
-    render(props) {
-        let {extension, prefix, ...rest} = props;
-        console.log(props)
-        prefix = withDefault(prefix, 'fas');
-        function iconName(extension) {
-            switch (toLower(extension)) {
-                case 'png':
-                case 'gif':
-                case 'jpg':
-                case 'jpeg':
-                    return 'fileImage';
-                case 'doc':
-                case 'docx':
-                    return 'fileWord';
-                case 'csv':
-                    return 'fileCsv';
-                case 'xls':
-                case 'xlsx':
-                    return 'fileExcel';
-                case 'ppt':
-                case 'pptx':
-                    return 'filePowerpoint';
-                case 'msg':
-                case 'eml':
-                    return 'mail';
-                case 'pdf':
-                    return 'filePdf';
-                case 'txt':
-                    return 'fileText';
-                case 'zip':
-                    return 'fileArchive';
-                default:
-                    return 'file';
-            }
-        }
-        let name = iconName(extension);
-        return fa({prefix, ...rest}, name);
+    model: null,
+    observable: false,
+    displayName: 'FileIcon',
+    render({extension, tooltip, ...props}) {
+        const name = getIconConfig(extension).name;
+        const className = getIconConfig(extension).className;
+        const title = tooltip ? tooltip : extension;
+
+        return Icon[name]({className, title, ...props});
     }
 });
-// export const fileIcon = function(extension) {
-//     switch (toLower(extension)) {
-//         case 'png':
-//         case 'gif':
-//         case 'jpg':
-//         case 'jpeg':
-//             return Icon.fileImage();
-//         case 'doc':
-//         case 'docx':
-//             return Icon.fileWord();
-//         case 'csv':
-//             return Icon.fileCsv();
-//         case 'xls':
-//         case 'xlsx':
-//             return Icon.fileExcel();
-//         case 'ppt':
-//         case 'pptx':
-//             return Icon.filePowerpoint();
-//         case 'msg':
-//         case 'eml':
-//             return Icon.mail();
-//         case 'pdf':
-//             return Icon.filePdf();
-//         case 'txt':
-//             return Icon.fileText();
-//         case 'zip':
-//             return Icon.fileArchive();
-//     }
-//     return Icon.file();
-// };
+
 
 //-----------------------------
 // Implementation
@@ -997,3 +941,37 @@ const fa = function({prefix, className, ...rest} = {}, name) {
 
     return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
 };
+
+// Helper Function
+
+function getIconConfig(extension) {
+    switch (toLower(extension)) {
+        case 'png':
+        case 'gif':
+        case 'jpg':
+        case 'jpeg':
+            return {name: 'fileImage'};
+        case 'doc':
+        case 'docx':
+            return {name: 'fileWord', className: 'xh-blue'};
+        case 'csv':
+            return {name: 'fileCsv'};
+        case 'xls':
+        case 'xlsx':
+            return {name: 'fileExcel', className: 'xh-green'};
+        case 'ppt':
+        case 'pptx':
+            return {name: 'filePowerpoint', className: 'xh-orange'};
+        case 'msg':
+        case 'eml':
+            return {name: 'mail', className: 'xh-red-muted'};
+        case 'pdf':
+            return {name: 'filePdf', className: 'xh-red'};
+        case 'txt':
+            return {name: 'fileText'};
+        case 'zip':
+            return {name: 'fileArchive'};
+        default:
+            return {name: 'file'};
+    }
+}
