@@ -36,6 +36,10 @@
 * `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
   automatically hide.
 
+### 📚 Libraries
+
+* react-dates `21.7 -> 21.8`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 
 ## v29.1.0 - 2020-02-07
