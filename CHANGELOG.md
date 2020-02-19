@@ -6,14 +6,16 @@
 
 * `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, and
   `groupElementRenderer` configs. `DataViewModel` also now supports additional configs from the
-  underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and `rowBorders`.
+  underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and
+  `rowBorders`.
+* `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
+  via Hoist's built-in activity tracking.
+* The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
+  multiple javascript client apps.
+* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
-* The browser document title is now set to the `clientAppName` from `AppSpec`. This is especially
-  useful for projects with multiple javascript client apps.
-* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
-  and `spellCheck`).
-* Clicking on a summary row in `Grid` now clears its record selection.
-* Added a `highchart` property to ChartModel, which exposes the underlying HighChart component.
+* New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
+
 
 ### 💥 Breaking Changes
 
