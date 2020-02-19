@@ -883,7 +883,14 @@ export const Icon = {
     window(p)           {return fa(p, 'window')},
     wrench(p)           {return fa(p, 'wrench')},
     x(p)                {return fa(p, 'times')},
-    xCircle(p)          {return fa(p, 'times-circle')}
+    xCircle(p)          {return fa(p, 'times-circle')},
+
+    fileIcon({extension, tooltip, ...props}) {
+        const {name, className} = getIconConfig(extension),
+            title = tooltip ?? extension;
+
+        return Icon[name]({className, title, ...props});
+    }
 };
 
 export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
@@ -895,12 +902,10 @@ export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
  * @return {string}
  */
 export const convertIconToSvg = function(iconElem, opts) {
-    const iconDef = findIconDefinition(serializeIcon(iconElem));
-    return icon(iconDef, opts).html[0];
+    // throw XH.exception('Method Removed -- use asSvg flag on Icon methods instead');
 };
 
 export const serializeIcon = function(iconElem) {
-    console.log(iconElem);
     return {
         prefix: iconElem.props.icon[0],
         iconName: iconElem.props.icon[1]
@@ -922,12 +927,8 @@ export const [FileIcon, fileIcon] = hoistCmp.withFactory({
     model: null,
     observable: false,
     displayName: 'FileIcon',
-    render({extension, tooltip, ...props}) {
-        const name = getIconConfig(extension).name;
-        const className = getIconConfig(extension).className;
-        const title = tooltip ? tooltip : extension;
-
-        return Icon[name]({className, title, ...props});
+    render(props) {
+        return Icon.fileIcon(props);
     }
 });
 
@@ -935,11 +936,20 @@ export const [FileIcon, fileIcon] = hoistCmp.withFactory({
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function({prefix, className, ...rest} = {}, name) {
+const fa = function({prefix, className, asSvg = false, title, ...rest} = {}, name) {
     prefix = withDefault(prefix, 'far');
     className = classNames('fa-fw', className);  // apply fa-fw for consistent icon widths in buttons, etc
 
-    return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
+    if (!asSvg) {
+        return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
+    } else {
+        const iconDef = findIconDefinition({
+            prefix: prefix,
+            iconName: name
+        });
+        const opts = {classes: className, title};
+        return icon(iconDef, opts).html[0];
+    }
 };
 
 // Helper Function
@@ -955,18 +965,18 @@ function getIconConfig(extension) {
         case 'docx':
             return {name: 'fileWord', className: 'xh-blue'};
         case 'csv':
-            return {name: 'fileCsv'};
+            return {name: 'fileCsv', className: 'xh-fileIcon-excel'};
         case 'xls':
         case 'xlsx':
-            return {name: 'fileExcel', className: 'xh-green'};
+            return {name: 'fileExcel', className: 'xh-fileIcon-excel'};
         case 'ppt':
         case 'pptx':
-            return {name: 'filePowerpoint', className: 'xh-orange'};
+            return {name: 'filePowerpoint', className: 'xh-fileIcon-powerpoint'};
         case 'msg':
         case 'eml':
-            return {name: 'mail', className: 'xh-red-muted'};
+            return {name: 'mail', className: 'xh-fileIcon-mail'};
         case 'pdf':
-            return {name: 'filePdf', className: 'xh-red'};
+            return {name: 'filePdf', className: 'xh-fileIcon-pdf'};
         case 'txt':
             return {name: 'fileText'};
         case 'zip':
