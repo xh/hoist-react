@@ -151,7 +151,7 @@ export class DialogModel {
     handleKeyDown(evt, onClose) {
         switch (evt.key) {
             case 'Escape':
-                this.handleEscapKey(evt, onClose); break;
+                this.handleEscapKey(onClose); break;
         }
     }
 
