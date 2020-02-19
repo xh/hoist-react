@@ -4,13 +4,27 @@
 
 ### 🎁 New Features
 
-* The browser document title is now set to the `clientAppName` from `AppSpec`. This is especially
-  useful for projects with multiple javascript client apps.
-* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`, `textAlign`,
-  and `spellCheck`).
+* `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, and
+  `groupElementRenderer` configs. `DataViewModel` also now supports additional configs from the
+  underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and
+  `rowBorders`.
+* `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
+  via Hoist's built-in activity tracking.
+* The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
+  multiple javascript client apps.
+* `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
-* `TabContainerModel` now accepts a `track` property for tracking tab views in admin track log. The
-  default value is set to `false`.
+* New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
+
+
+### 💥 Breaking Changes
+
+* `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
+  flexibility and better symmetry with `GridModel`.
+* `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`
+* `DataView` styling has been updated to avoid applying several unwanted styles from `Grid`. Note
+  that apps might rely on these styles (intentionally or not) for their `itemRenderer` components
+  and appearance and will need to adjust.
 
 ### 🐞 Bug Fixes
 
