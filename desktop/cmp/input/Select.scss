@@ -55,6 +55,7 @@
 
     &__value-container input {
       opacity: 1 !important;
+      line-height: 15px;
     }
 
     &__indicator {
@@ -123,10 +124,6 @@
     &__value-container--is-multi {
       height: 28px;
       overflow-y: auto !important;
-
-      & > div {
-        margin: 0 2px;
-      }
     }
   }
 }
