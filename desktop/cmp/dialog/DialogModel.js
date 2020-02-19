@@ -54,8 +54,6 @@ export class DialogModel {
     resizable;
     /** @member {boolean} */
     draggable;
-    /** @member {boolean} */
-    closeOnEscape;
     /** @member {DialogStateModel} */
     stateModel;
 
@@ -81,14 +79,12 @@ export class DialogModel {
     constructor({
         resizable = false,
         draggable = false,
-        stateModel = null,
-        closeOnEscape = true
+        stateModel = null
     } = {}) {
 
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
-        this.closeOnEscape = closeOnEscape;
         this.stateModel = this.parseStateModel(stateModel);
     }
 
@@ -148,15 +144,8 @@ export class DialogModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    handleKeyDown(evt, onClose) {
-        switch (evt.key) {
-            case 'Escape':
-                this.handleEscapKey(onClose); break;
-        }
-    }
-
     handleEscapKey(onClose) {
-        if (this.closeOnEscape) this.hide(onClose);
+        this.hide(onClose);
     }
 
     handleOutsideClick(evt, onClose) {

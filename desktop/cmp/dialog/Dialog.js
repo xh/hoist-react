@@ -129,6 +129,9 @@ Dialog.propTypes = {
     /** True to close dialog on click outside of dialog. */
     closeOnOutsideClick: PT.bool,
 
+    /** True to close dialog with escape key (defaults to true) */
+    closeOnEscape: PT.bool,
+
     /** Width of dialog */
     width: PT.number,
 
@@ -152,7 +155,7 @@ const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
             {resizable, draggable} = model,
-            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style, onClose} = props;
+            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style, onClose, closeOnEscape} = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -195,6 +198,16 @@ const rndDialog = hoistCmp.factory({
             }
         };
 
+        const onKeyDown = (evt) => {
+            switch (evt.key) {
+                case 'Escape':
+                    if (closeOnEscape !== false) {
+                        model.handleEscapKey(onClose);
+                    }
+                    break;
+            }
+        };
+
         if (style) RnDOptions.style = style;
         let zIndex = DialogModel.DIALOG_ZINDEX_BASE;
         if (RnDOptions.style?.zIndex) zIndex += RnDOptions.style.zIndex;
@@ -222,7 +235,7 @@ const rndDialog = hoistCmp.factory({
                 onDragStop,
                 onResizeStop,
                 item: div({
-                    onKeyDown: (evt) => model.handleKeyDown(evt, onClose),
+                    onKeyDown,
                     tabIndex: 0,
                     ref: model.dialogWrapperDivRef,
                     className: props.className,
