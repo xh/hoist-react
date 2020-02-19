@@ -54,7 +54,7 @@ import {ColumnHeader} from './impl/ColumnHeader';
  * @see GridModel
  */
 export const [Grid, grid] = hoistCmp.withFactory({
-    displayName: 'GridModel',
+    displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',
 
