@@ -919,7 +919,8 @@ export const deserializeIcon = function(iconDef) {
 
 export const [FileIcon, fileIcon] = hoistCmp.withFactory({
     render(props) {
-        let {extension, prefix} = props;
+        let {extension, prefix, ...rest} = props;
+        console.log(props)
         prefix = withDefault(prefix, 'fas');
         function iconName(extension) {
             switch (toLower(extension)) {
@@ -953,8 +954,7 @@ export const [FileIcon, fileIcon] = hoistCmp.withFactory({
             }
         }
         let name = iconName(extension);
-
-        return Icon[name]({prefix});
+        return fa({prefix, ...rest}, name);
     }
 });
 // export const fileIcon = function(extension) {

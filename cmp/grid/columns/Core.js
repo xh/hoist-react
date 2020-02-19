@@ -8,6 +8,7 @@
 import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
 import {numberRenderer} from '@xh/hoist/format';
 
+
 export const emptyFlexCol =  {
     colId: 'emptyFlex',
     headerName: null,
@@ -41,5 +42,5 @@ export const fileExtCol = {
     width: 28,
     align: 'center',
     resizable: false,
-    renderer: (v) => convertIconToSvg(fileIcon(v))
+    renderer: (v) => convertIconToSvg(fileIcon({extension: v, prefix: 'fas'}))
 };
