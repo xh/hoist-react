@@ -123,6 +123,10 @@
     &__value-container--is-multi {
       height: 28px;
       overflow-y: auto !important;
+
+      & > div {
+        margin: 0 2px;
+      }
     }
   }
 }
