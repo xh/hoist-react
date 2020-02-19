@@ -9,7 +9,7 @@ import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -197,15 +197,9 @@ class LocalModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: convertIconToSvg(
-                    Icon.angleDown(),
-                    {classes: ['ag-group-expanded']}
-                ),
-                groupContracted: convertIconToSvg(
-                    Icon.angleRight(),
-                    {classes: ['ag-group-contracted']}
-                ),
-                clipboardCopy: convertIconToSvg(Icon.copy())
+                groupExpanded: Icon.angleDown({className: 'ag-group-expanded', asSvg: true}),
+                groupContracted: Icon.angleRight({className: 'ag-group-contracted', asSvg: true}),
+                clipboardCopy: Icon.copy({asSvg: true})
             },
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
@@ -342,7 +336,7 @@ class LocalModel {
 
             let icon = displaySpec.icon;
             if (isValidElement(icon)) {
-                icon = convertIconToSvg(icon);
+                icon = icon({asSvg: true})
             }
 
             items.push({

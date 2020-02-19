@@ -8,7 +8,7 @@ import {required} from '@xh/hoist/cmp/form';
 import {compactDateCol, emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -52,8 +52,8 @@ export class WebSocketModel {
                 align: 'center',
                 width: 40,
                 renderer: v => v ?
-                    convertIconToSvg(Icon.circle({prefix: 'fas'}), {classes: ['xh-green']}) :
-                    convertIconToSvg(Icon.circle({prefix: 'fal'}), {classes: ['xh-red']})
+                    Icon.circle({prefix: 'fas', className: 'xh-green', asSvg: true}) :
+                    Icon.circle({prefix: 'fal', className: 'xh-red', asSvg: true})
             },
             {field: 'key', width: 160},
             {field: 'user', width: 250},

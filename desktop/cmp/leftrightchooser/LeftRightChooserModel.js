@@ -6,7 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {computed} from '@xh/hoist/mobx';
 
 /**
@@ -165,7 +165,7 @@ export class LeftRightChooserModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
+            lockSvg = Icon.lock({prefix: 'fal', asSvg: true});
 
         return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
