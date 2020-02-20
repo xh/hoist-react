@@ -90,7 +90,7 @@ export class LogViewerModel {
                 this.file = rec?.data?.filename;
                 this.loadLog();
             },
-            debounce: 300
+            debounce: {interval: 300, leading: true}
         };
     }
 
