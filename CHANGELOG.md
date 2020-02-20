@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* `GridModel` now supports `groupRowRenderer` and `groupRowElementRenderer` configs.
 * `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, and
   `groupElementRenderer` configs. `DataViewModel` also now supports additional configs from the
   underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and
