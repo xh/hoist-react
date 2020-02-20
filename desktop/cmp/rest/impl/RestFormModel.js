@@ -136,7 +136,7 @@ export class RestFormModel {
         return saveFn()
             .then(() => this.close())
             .linkTo(this.loadModel)
-            .catchDefault();
+            .catchDefault({logOnServer: false});
     }
 
     fieldModelConfig(editor) {
