@@ -4,9 +4,9 @@
 
 ### 🎁 New Features
 
-* `GridModel` now supports `groupRowRenderer` and `groupRowElementRenderer` configs.
-* `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, and
-  `groupElementRenderer` configs. `DataViewModel` also now supports additional configs from the
+* `GridModel` now supports `groupRowHeight`, `groupRowRenderer` and `groupRowElementRenderer` configs.
+* `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, `groupRowRenderer` and
+  `groupRowElementRenderer` configs. `DataViewModel` also now supports additional configs from the
   underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and
   `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views

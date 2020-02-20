@@ -73,6 +73,8 @@ export class GridModel {
     rowClassFn;
     /** @member {(Array|function)} */
     contextMenu;
+    /** @member {number} */
+    groupRowHeight;
     /** @member {Grid~groupRowRendererFn} */
     groupRowRenderer;
     /** @member {Grid~groupRowElementRendererFn} */
@@ -152,6 +154,8 @@ export class GridModel {
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will override
+     *      `sizingMode` for group rows.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
@@ -190,6 +194,7 @@ export class GridModel {
 
         rowClassFn = null,
 
+        groupRowHeight,
         groupRowRenderer,
         groupRowElementRenderer,
         groupSortFn,
@@ -203,6 +208,7 @@ export class GridModel {
 
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
+        this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);

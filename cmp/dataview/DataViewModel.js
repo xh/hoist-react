@@ -27,6 +27,7 @@ export class DataViewModel {
 
     @bindable
     itemHeight;
+
     @bindable
     groupRowHeight;
 
@@ -38,6 +39,8 @@ export class DataViewModel {
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
      * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
+     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
+     *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -62,6 +65,7 @@ export class DataViewModel {
         itemHeight,
         groupBy,
         groupRowHeight,
+        groupRowRenderer,
         groupRowElementRenderer,
         sortBy = [],
         selModel,
@@ -115,13 +119,13 @@ export class DataViewModel {
             rowBorders,
             stripeRows,
             groupBy,
+            groupRowRenderer,
             groupRowElementRenderer,
             rowClassFn,
             columns,
             ...restArgs
         });
     }
-
 
     // Getters and methods trampolined from GridModel.
     // Explicit trampolining to aid code-editor, future docs.

@@ -66,7 +66,6 @@ class LocalModel {
         this.agOptions = {
             headerHeight: 0,
             getRowHeight: (params) => {
-
                 // Return (required) itemHeight for data rows.
                 if (!params.node?.group) return model.itemHeight;
 

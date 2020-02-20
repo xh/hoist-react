@@ -159,6 +159,11 @@ class LocalModel {
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
     }
 
+    @computed
+    get groupRowHeight() {
+        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    }
+
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
     @observable _dataVersion = 0;
@@ -210,7 +215,7 @@ class LocalModel {
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => this.rowHeight,
+            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
             onRowClicked: (e) => {
