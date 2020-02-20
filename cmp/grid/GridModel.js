@@ -147,8 +147,7 @@ export class GridModel {
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
-     * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
-     *      Called with record data, returns a string or array of strings.
+     * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
@@ -840,4 +839,10 @@ export class GridModel {
  * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
  * @param {GridModel} gridModel - controlling GridModel instance
  * @returns {StoreContextMenu} - context menu to display, or null
+ */
+
+/**
+ * @callback RowClassFn - closure to generate CSS class names for a row.
+ * @param {Object} data - the inner data object from the Record associated with the rendered row.
+ * @returns {(String|String[])} - CSS class(es) to apply to the row level.
  */
