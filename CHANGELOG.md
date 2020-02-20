@@ -4,21 +4,17 @@
 
 ### 🎁 New Features
 
-* `DataViewModel` now supports grouping, with new `groupBy`, `groupRowHeight`, and
-  `groupElementRenderer` configs. `DataViewModel` also now supports additional configs from the
-  underlying `GridModel` that make sense in a `DataView` context, such as `showHover` and
-  `rowBorders`.
+* `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
+  `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
+  a `groupBy` config.
+* `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
+  sense in a `DataView` context, such as `showHover` and `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
   via Hoist's built-in activity tracking.
 * The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
-* New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
-* The `addReaction` and `addAutorun` methods on `ReactiveSupport` now support a configurable
-`debounce` argument. In many cases, this is preferable to the built-in MobX `delay` argument which
- supports just a simple throttle.
-
 
 ### 💥 Breaking Changes
 
@@ -42,6 +38,14 @@
   [#1652](https://github.com/xh/hoist-react/issues/1652)
 * `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
   automatically hide.
+
+### ⚙️ Technical
+
+* The `addReaction` and `addAutorun` methods (added to Hoist models, components, and services by the
+  `ReactiveSupport` mixin) now support a configurable `debounce` argument. In many cases, this is
+  preferable to the built-in MobX `delay` argument, which only provides throttling and not true
+  debouncing.
+* New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
 
 ### 📚 Libraries
 

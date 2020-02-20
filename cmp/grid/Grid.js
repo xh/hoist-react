@@ -159,6 +159,11 @@ class LocalModel {
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
     }
 
+    @computed
+    get groupRowHeight() {
+        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+    }
+
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
     // Used to ensure proper re-running / sequencing of data and selection reactions.
     @observable _dataVersion = 0;
@@ -210,7 +215,7 @@ class LocalModel {
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => this.rowHeight,
+            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
             onRowClicked: (e) => {
@@ -232,6 +237,8 @@ class LocalModel {
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            groupRowInnerRenderer: model.groupRowRenderer,
+            groupRowRendererFramework: model.groupRowElementRenderer,
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
@@ -699,7 +706,13 @@ class LocalModel {
 }
 
 /**
- * @callback Grid~groupElementRendererFn - renderer for a group row
+ * @callback Grid~groupRowRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Grid~groupRowElementRendererFn - renderer for a group row
  * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
  * @return {Element} - the React element to render.
  */
