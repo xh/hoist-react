@@ -103,7 +103,9 @@ export class DataViewModel {
             flex: true,
             elementRenderer,
             rendererIsComplex: true
-        }];
+        }, ...store.fields.map(field => {
+            return {colId: field, hidden: true};
+        })];
 
         if (groupBy) {
             columns.push({field: groupBy, hidden: true});
@@ -142,4 +144,6 @@ export class DataViewModel {
     loadData(...args)           {return this.gridModel.loadData(...args)}
     updateData(...args)         {return this.gridModel.updateData(...args)}
     clear()                     {return this.gridModel.clear()}
+    setGroupBy(colIds)          {return this.gridModel.setGroupBy(colIds)}
+    setSortBy(sorters)          {return this.gridModel.setSortBy(sorters)}
 }
