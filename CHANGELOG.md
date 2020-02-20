@@ -15,6 +15,10 @@
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
 * New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
+* The `addReaction` and `addAutorun` methods on `ReactiveSupport` now support a configurable
+`debounce` argument. In many cases, this is preferable to the built-in MobX `delay` argument which
+ supports just a simple throttle.
+
 
 ### 💥 Breaking Changes
 
