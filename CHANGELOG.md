@@ -41,6 +41,10 @@
 
 ### ⚙️ Technical
 
+* The `addReaction` and `addAutorun` methods (added to Hoist models, components, and services by the
+  `ReactiveSupport` mixin) now support a configurable `debounce` argument. In many cases, this is
+  preferable to the built-in MobX `delay` argument, which only provides throttling and not true
+  debouncing.
 * New `ChartModel.highchart` property provides a reference to the underlying HighChart component.
 
 ### 📚 Libraries
