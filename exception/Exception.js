@@ -81,6 +81,8 @@ export class Exception {
         return this.createInternal({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
+            isRoutine: true,
+            isFetchAborted: true,
             fetchOptions
         });
     }
