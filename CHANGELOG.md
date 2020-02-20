@@ -50,6 +50,7 @@
 ### 📚 Libraries
 
 * react-dates `21.7 -> 21.8`
+* react-beautiful-dnd `11.0 -> 12.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
 

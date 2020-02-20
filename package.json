@@ -57,7 +57,7 @@
     "onsenui": "~2.10.10",
     "prop-types": "~15.7.2",
     "qs": "~6.9.1",
-    "react-beautiful-dnd": "~11.0.5",
+    "react-beautiful-dnd": "^12.2.0",
     "react-dates": "~21.8.0",
     "react-dropzone": "~10.2.1",
     "react-onsenui": "~1.11.2",
