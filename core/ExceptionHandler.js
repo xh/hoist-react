@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 
 /**
  * Provides Centralized Exception Handling for Hoist Application.
@@ -147,9 +147,8 @@ export class ExceptionHandler {
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
-
         ret.requireReload = ret.requireReload ?? false;
-        ret.showAsError = ret.showAsError ?? isRoutine;
+        ret.showAsError = ret.showAsError ?? !isRoutine;
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
 

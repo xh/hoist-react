@@ -57,10 +57,11 @@ export class Exception {
             const cType = response.headers.get('Content-Type');
             if (cType && cType.includes('application/json')) {
                 const serverDetails = JSON.parse(response.responseText);
-                if (serverDetails && serverDetails.name) {
+                if (serverDetails?.name) {
                     return this.createInternal(defaults, {
                         name: serverDetails.name,
                         message: serverDetails.message,
+                        isRoutine: serverDetails.isRoutine ?? false,
                         serverDetails
                     });
                 }
