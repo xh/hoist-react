@@ -57,7 +57,6 @@ class LocalModel {
 
     constructor(model) {
         this.model = model;
-        const {groupRowElementRenderer} = model;
 
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],
@@ -74,8 +73,7 @@ class LocalModel {
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
                 return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
-            },
-            ...(groupRowElementRenderer ? {groupRowRendererFramework: groupRowElementRenderer} : null)
+            }
         };
     }
 }

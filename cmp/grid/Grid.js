@@ -232,6 +232,8 @@ class LocalModel {
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            groupRowInnerRenderer: model.groupRowRenderer,
+            groupRowRendererFramework: model.groupRowElementRenderer,
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
@@ -699,7 +701,13 @@ class LocalModel {
 }
 
 /**
- * @callback Grid~groupElementRendererFn - renderer for a group row
+ * @callback Grid~groupRowRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Grid~groupRowElementRendererFn - renderer for a group row
  * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
  * @return {Element} - the React element to render.
  */

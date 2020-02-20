@@ -30,8 +30,6 @@ export class DataViewModel {
     @bindable
     groupRowHeight;
 
-    groupRowElementRenderer;
-
     /**
      * @param {Object} c - DataViewModel configuration.
      * @param {(Store|Object)} c.store - a Store instance, or a config to create one.
@@ -41,7 +39,7 @@ export class DataViewModel {
      * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
-     *      element used to render groups.
+     *      element used to render group rows.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
@@ -83,7 +81,6 @@ export class DataViewModel {
 
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowElementRenderer = groupRowElementRenderer;
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
         // initially and through updates via transactions. For this reason, we set the field of our
@@ -118,6 +115,7 @@ export class DataViewModel {
             rowBorders,
             stripeRows,
             groupBy,
+            groupRowElementRenderer,
             rowClassFn,
             columns,
             ...restArgs

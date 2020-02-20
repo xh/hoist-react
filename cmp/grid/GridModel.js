@@ -73,6 +73,10 @@ export class GridModel {
     rowClassFn;
     /** @member {(Array|function)} */
     contextMenu;
+    /** @member {Grid~groupRowRendererFn} */
+    groupRowRenderer;
+    /** @member {Grid~groupRowElementRendererFn} */
+    groupRowElementRenderer;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -148,6 +152,10 @@ export class GridModel {
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
+     *      render group rows.
+     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
+     *      element used to render group rows.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
@@ -181,7 +189,11 @@ export class GridModel {
         exportOptions = {},
 
         rowClassFn = null,
+
+        groupRowRenderer,
+        groupRowElementRenderer,
         groupSortFn,
+
         contextMenu,
         experimental,
         ...rest
@@ -191,6 +203,8 @@ export class GridModel {
 
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
+        this.groupRowRenderer = groupRowRenderer;
+        this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
 
