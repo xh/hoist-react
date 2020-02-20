@@ -25,6 +25,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
+        apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
 
         const [layoutProps, {onRowDoubleClicked}] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));
