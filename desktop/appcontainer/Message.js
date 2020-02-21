@@ -6,14 +6,14 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {withDefault} from '@xh/hoist/utils/js';
 
 import './Message.scss';
@@ -33,17 +33,22 @@ export const message = hoistCmp.factory({
 
         return dialog({
             isOpen: true,
-            isCloseButtonShown: false,
+            showCloseButton: false,
             title: model.title,
             icon: model.icon,
+            mask: true,
             items: [
-                dialogBody(
-                    model.message,
-                    inputCmp()
-                ),
+                vframe({
+                    margin: '20px',
+                    items: [
+                        model.message,
+                        inputCmp()
+                    ]
+                }),
                 bbar()
             ],
             onClose: () => {if (model.cancelProps) model.doCancel();},
+            width: 500,
             ...props
         });
     }
