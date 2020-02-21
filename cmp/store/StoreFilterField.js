@@ -32,6 +32,9 @@ import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dyna
  *
  * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
  * customized via the include/excludeFields props. See prop comments for details.
+ *
+ * This component supports all props available to TextInput and will pass them along to its
+ * underlying TextInput.
  */
 export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
     displayName: 'StoreFilterField',
@@ -56,6 +59,7 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 });
 
 StoreFilterField.propTypes = {
+
     /**
      * Field on optional model to which this component should bind its value. Not required
      * for filtering functionality (see `gridModel`, `onFilterChange`, and `store` props), but

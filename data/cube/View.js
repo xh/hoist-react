@@ -227,8 +227,8 @@ export class View {
 
         // 2) Examine, accounting for filters
         // 2a) Relevant adds or removes fail us
-        if (t.add?.any(recordFilter)) return false;
-        if (t.remove?.any(id => _leafMap.has(id))) return false;
+        if (t.add?.some(recordFilter)) return false;
+        if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
