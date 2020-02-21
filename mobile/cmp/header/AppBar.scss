@@ -1,4 +1,5 @@
-.xh-appbar {
+// Note both classes selected below to ensure higher specificity than .xh-toolbar alone.
+.xh-appbar.xh-toolbar {
   display: flex;
   background-color: var(--xh-navbar-bg);
   color: var(--xh-navbar-title-color);

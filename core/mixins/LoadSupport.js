@@ -62,6 +62,9 @@ export function LoadSupport(C) {
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
+                // Skip auto-refresh if we have a pending triggered refresh
+                if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
+
                 runInAction(() => this.lastLoadRequested = new Date());
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
                 return this

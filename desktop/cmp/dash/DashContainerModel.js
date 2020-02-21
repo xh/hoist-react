@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
-import {find, reject, cloneDeep, isFinite} from 'lodash';
+import {find, reject, cloneDeep, isFinite, defaultsDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
@@ -99,6 +99,7 @@ export class DashContainerModel {
     /**
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
+     * @param {Object} [viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
      * @param {Object[]} [initialState] - Default layout state for this container.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
@@ -109,6 +110,7 @@ export class DashContainerModel {
      */
     constructor({
         viewSpecs,
+        viewSpecDefaults,
         initialState = [],
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
@@ -116,7 +118,9 @@ export class DashContainerModel {
     }) {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
-        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
+        this.viewSpecs = viewSpecs.map(cfg => {
+            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+        });
 
         this.state = initialState;
         this.renderMode = renderMode;
