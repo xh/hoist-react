@@ -126,6 +126,7 @@ export class Column {
         flex,
         rowHeight,
         absSort,
+        allowedSorts,
         comparator,
         resizable,
         movable,
@@ -194,6 +195,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
+        this.allowedSorts = allowedSorts;
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);

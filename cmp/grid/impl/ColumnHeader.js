@@ -5,13 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {clone, isFunction, remove} from 'lodash';
+import {clone, isEmpty, isEqual, isFunction, isString, remove} from 'lodash';
 
 /**
  * A custom ag-Grid header component.
@@ -92,6 +93,7 @@ class LocalModel {
     menuButtonRef = createObservableRef();
     @bindable isFiltered = false;
     enableSorting;
+    allowedSorts;
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
         this.gridModel = gridModel;
@@ -100,6 +102,23 @@ class LocalModel {
         this.colId = agColumn.colId;
         this.isFiltered = agColumn.isFilterActive();
         this.enableSorting = enableSorting;
+
+        this.allowedSorts = xhColumn.allowedSorts ?? (xhColumn.absSort ? [
+            {sort: 'asc', abs: false},
+            {sort: 'desc', abs: true},
+            {sort: 'desc', abs: false}
+        ] : [
+            {sort: 'asc', abs: false},
+            {sort: 'desc', abs: false}
+        ]);
+
+        this.allowedSorts = this.allowedSorts.map(sort => {
+            if (isEmpty(sort)) return null;
+            if (isString(sort)) sort = {sort: sort};
+            sort = {...sort, colId: xhColumn.colId};
+            return GridSorter.parse(sort);
+        });
+
         agColumn.addEventListener('filterChanged', this.onFilterChanged);
     }
 
@@ -141,15 +160,11 @@ class LocalModel {
     onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
 
     getNextSortBy() {
-        const {colId, xhColumn, activeGridSorter} = this,
-            {sort, abs = false} = activeGridSorter || {};
+        const {allowedSorts, activeGridSorter} = this;
 
-        if (sort === 'asc') {
-            return {colId, sort: 'desc', abs: false};
-        } else if (xhColumn.absSort && !abs && (!activeGridSorter || sort === 'desc')) {
-            return {colId, sort: 'desc', abs: true};
-        } else {
-            return {colId, sort: 'asc', abs: false};
-        }
+        const currentId = allowedSorts.findIndex(it => isEqual(it, activeGridSorter)) + 1;
+        const ret = allowedSorts[currentId % allowedSorts.length];
+
+        return ret;
     }
 }
