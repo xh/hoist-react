@@ -10,7 +10,7 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -87,8 +87,6 @@ export class GridModel {
     enableExport;
     /** @member {ExportOptions} */
     exportOptions;
-    /** @member {number} */
-    maxRows;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -110,6 +108,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
+    /** @member {number} */
+    @bindable maxRows;
 
     static defaultContextMenu = [
         'copy',
@@ -264,7 +264,11 @@ export class GridModel {
         if (maxRows) {
             this.addReaction({
                 when: () => this.agApi,
-                run: () => this.agApi.paginationSetPageSize(maxRows)
+                run: (api) => api.paginationSetPageSize(maxRows)
+            });
+            this.addReaction({
+                track: () => this.maxRows,
+                run: (maxRows) => this.agApi?.paginationSetPageSize(maxRows)
             });
         }
     }
