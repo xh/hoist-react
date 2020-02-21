@@ -9,6 +9,7 @@ import {isEmpty, isNumber, isPlainObject, isString, isUndefined} from 'lodash';
 import {HoistModel, LoadSupport} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import PT from 'prop-types';
 
 import {DialogStateModel} from './DialogStateModel';
 
@@ -23,18 +24,18 @@ import {DialogStateModel} from './DialogStateModel';
 export class DialogModel {
 
     /**
-     * The base zIndex that will be used for all dialogs;
+     * The base zIndex that will be used for all dialogs
      */
-    static DIALOG_ZINDEX_BASE= 1; // go too high and your dialog covers datepicker and select popups
+    static Z_INDEX_BASE = 1; // go too high and your dialog covers datepicker and select popups
 
     /**
      * Set the base zIndex to a custom value for all dialogs in your app.
      * You would set this early in app life cycle.
      *
-     * @param {number} zIndex - the base zIndex to use for all dialogs in an app.
+     * @param {number} zIndex - the base z-index to use for all dialogs in an app.
      */
-    static setZindexBase(zIndex) {
-        DialogModel.DIALOG_ZINDEX_BASE = zIndex;
+    static setZIndexBase(zIndex) {
+        DialogModel.Z_INDEX_BASE = zIndex;
     }
 
     //-----------------------
@@ -47,6 +48,10 @@ export class DialogModel {
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
 
+    /** @member {DialogStateModel} */
+    @managed
+    stateModel;
+
     //-----------------------
     // Immutable Properties
     //-----------------------
@@ -54,12 +59,43 @@ export class DialogModel {
     resizable;
     /** @member {boolean} */
     draggable;
-    /** @member {DialogStateModel} */
-    stateModel;
+    /** @member {boolean} */
+    closeOnOutsideClick;
+    /** @member {boolean} */
+    closeOnEscape;
+    /** @member {boolean} */
+    showBackgroundMask;
+    /** @member {boolean} */
+    showCloseButton;
 
-    //---------------------
-    // Observable State
-    //---------------------
+
+    /**
+     * @member {function}
+     * Callback invoked when dialog is closed.
+     */
+    onClose;
+
+
+    //-------------------
+    // Mutable Public State
+    //--------------------
+    /** @member {number} */
+    @observable width;
+    /** @member {number} */
+    @observable height;
+    /** @member {number} */
+    @observable x;
+    /** @member {number} */
+    @observable y;
+    /** @member {boolean} */
+    @observable isMaximized;
+    /** @member {boolean} */
+    @observable isOpen;
+
+
+    //---------------------------------
+    // Observable Implementation State
+    //----------------------------------
     /** Is the Dialog mounted into React's virtual DOM? */
     /** @member {boolean} */
     @observable hasMounted = false;
@@ -87,6 +123,8 @@ export class DialogModel {
         this.draggable = draggable;
         this.stateModel = this.parseStateModel(stateModel);
     }
+
+
 
     isComponentModel() {
         return true;

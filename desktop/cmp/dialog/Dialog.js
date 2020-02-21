@@ -15,6 +15,7 @@ import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core'
 import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
+import {GridModel} from '../../../cmp/grid';
 
 import {DialogModel} from './DialogModel';
 import {dialogHeader} from './impl/DialogHeader';
@@ -105,14 +106,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 });
 
 Dialog.propTypes = {
-    /** True to render the dialog */
-    isOpen: PT.bool,
-
-    /** Callback invoked when user interaction triggers onClose call
-     * (closeOnOutsideClick overlay, close button, escape key)
-     *
-     * */
-    onClose: PT.func,
 
     /** An icon placed at the left-side of the dialog's header. */
     icon: PT.element,
@@ -120,35 +113,11 @@ Dialog.propTypes = {
     /** Title text added to the dialog's header. */
     title: PT.oneOfType([PT.string, PT.node]),
 
-    /** True to show close button in dialog's header */
-    showCloseButton: PT.bool,
+    /** Primary component model instance. */
+    model: PT.oneOfType([PT.instanceOf(DialogModel), PT.object]),
 
-    /** True to show a shaded background mask behind dialog. */
-    mask: PT.bool,
-
-    /** True to close dialog on click outside of dialog. */
-    closeOnOutsideClick: PT.bool,
-
-    /** True to close dialog with escape key (defaults to true) */
-    closeOnEscape: PT.bool,
-
-    /** Width of dialog */
-    width: PT.number,
-
-    /** Height of dialog */
-    height: PT.number,
-
-    /** Left edge position of dialog */
-    x: PT.number,
-
-    /** Top edge position of dialog */
-    y: PT.number,
-
-    /** Escape hatch to pass any ReactRnD props to ReactRnD comp */
-    RnDOptions: PT.object,
-
-    /** CSS style object passed into ReactRnD */
-    style: PT.object
+    /** Escape hatch to pass any props to underlying react-rnd API */
+    rndOptions: PT.object,
 };
 
 const rndDialog = hoistCmp.factory({
