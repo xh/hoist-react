@@ -266,10 +266,14 @@ const clickCaptureComp = hoistCmp.factory({
 const content = hoistCmp.factory({
     render(props) {
         const dialogModel = useContextModel(DialogModel),
+            {width, height} = props,
             dims = dialogModel.resizable ? {
                 width: '100%',
                 height: '100%'
-            } : {};
+            } : {
+                width,
+                height
+            };
 
         return vframe({
             ...dims,
