@@ -119,7 +119,7 @@ export class DashContainerModel {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults))
+            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
         this.state = initialState;
