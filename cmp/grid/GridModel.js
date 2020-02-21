@@ -263,10 +263,6 @@ export class GridModel {
 
         if (maxRows) {
             this.addReaction({
-                when: () => this.agApi,
-                run: (api) => api.paginationSetPageSize(maxRows)
-            });
-            this.addReaction({
                 track: () => this.maxRows,
                 run: (maxRows) => this.agApi?.paginationSetPageSize(maxRows)
             });

@@ -245,7 +245,8 @@ class LocalModel {
             },
             autoSizePadding: 3, // allow cells to get a little tighter when autosizing
             pagination: !isNil(model.maxRows),
-            suppressPaginationPanel: !isNil(model.maxRows)
+            suppressPaginationPanel: !isNil(model.maxRows),
+            paginationPageSize: model.maxRows
         };
 
         if (props.hideHeaders) {
