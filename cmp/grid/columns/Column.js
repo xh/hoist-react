@@ -59,6 +59,9 @@ export class Column {
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
      *      with column header clicks progressing from ASC > DESC > DESC (abs value).
+     * @param {(string | Column~SortSpec)[]} [c.allowedSorts] - the sorting options for this column,
+     *      with column header clicks cycling through the options. Strings may be one of 'asc' or
+     *      'desc'. Null elements will disable sorting when selected.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
@@ -184,6 +187,10 @@ export class Column {
         warnIf(
             width && !isFinite(width),
             `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
+        );
+        warnIf(
+            absSort && allowedSorts,
+            `allowedSorts overrides default sorting. absSort will have no effect. [colId = ${this.colId}]`
         );
         this.flex = withDefault(flex, false);
         this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
@@ -611,4 +618,10 @@ export function getAgHeaderClassFn(column) {
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
  * @param {ValueGetterParams} [params.agParams] - the ag-Grid value getter params.
+ */
+
+/**
+ * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @param {string} sort - direction to sort, either 'asc' or 'desc'
+ * @param {boolean} [abs] - true to sort by absolute value
  */

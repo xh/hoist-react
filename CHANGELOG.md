@@ -15,6 +15,7 @@
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
+* `Column` now supports `allowedSorts` config for specifying sorting options.
 
 ### 💥 Breaking Changes
 
