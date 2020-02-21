@@ -162,9 +162,7 @@ class LocalModel {
     getNextSortBy() {
         const {allowedSorts, activeGridSorter} = this;
 
-        const currentId = allowedSorts.findIndex(it => isEqual(it, activeGridSorter)) + 1;
-        const ret = allowedSorts[currentId % allowedSorts.length];
-
-        return ret;
+        const currentId = allowedSorts.findIndex(it => isEqual(it, activeGridSorter));
+        return allowedSorts[(currentId + 1) % allowedSorts.length];
     }
 }
