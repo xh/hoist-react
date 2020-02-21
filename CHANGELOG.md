@@ -15,6 +15,7 @@
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
+* `GridModel` now accepts a `maxRows` config to enable limiting the number of rows displayed.
 
 ### 💥 Breaking Changes
 

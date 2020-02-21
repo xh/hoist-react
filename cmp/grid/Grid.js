@@ -243,7 +243,9 @@ class LocalModel {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
+            autoSizePadding: 3, // allow cells to get a little tighter when autosizing
+            pagination: !!model.maxRows,
+            suppressPaginationPanel: !!model.maxRows
         };
 
         if (props.hideHeaders) {

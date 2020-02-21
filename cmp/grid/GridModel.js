@@ -87,6 +87,8 @@ export class GridModel {
     enableExport;
     /** @member {ExportOptions} */
     exportOptions;
+    /** @member {number} */
+    maxRows;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -162,6 +164,7 @@ export class GridModel {
      *      element used to render group rows.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {number} [c.maxRows] - the maximum number of rows to display in the grid
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
@@ -199,6 +202,8 @@ export class GridModel {
         groupRowElementRenderer,
         groupSortFn,
 
+        maxRows,
+
         contextMenu,
         experimental,
         ...rest
@@ -224,6 +229,8 @@ export class GridModel {
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
         this.exportOptions = exportOptions;
+
+        this.maxRows = maxRows;
 
         Object.assign(this, rest);
 
@@ -253,6 +260,13 @@ export class GridModel {
             useDeltaSort: false,
             ...experimental
         };
+
+        if (maxRows) {
+            this.addReaction({
+                when: () => this.agApi,
+                run: () => this.agApi.paginationSetPageSize(maxRows)
+            });
+        }
     }
 
     /**
