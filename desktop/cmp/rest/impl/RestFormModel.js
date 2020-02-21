@@ -128,7 +128,7 @@ export class RestFormModel {
     }
 
     @action
-    saveRecordAsync() {
+    async saveRecordAsync() {
         const {isAdd, store, formModel, currentRecord} = this,
             record = {id: currentRecord.id, data: formModel.getData(!isAdd)},
             saveFn = () => isAdd ? store.addRecordAsync(record) : store.saveRecordAsync(record);
