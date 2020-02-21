@@ -16,39 +16,37 @@ import {stripTags} from '@xh/hoist/utils/js';
 export class ExceptionHandler {
 
     /**
-     * Called by framework constructs to handle an exception.
+     * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
+     * Hoist-specific exception options, displaying an appropriate error dialog to users, and
+     * logging back to the server for stateful error tracking in the Admin Console.
      *
-     * Typical application entry points to this method are via the XH.handleException() alias and
-     * Promise.catchDefault().
+     * Typical application entry points to this method are the `XH.handleException()` alias and
+     * `Promise.catchDefault()`.
      *
-     * This handler works best when presented with Exceptions created by Exception.create().  Hoist
-     * will automatically create such exceptions in most instances, and most notably in
-     * FetchService, which generates de-serialized versions of server exceptions.
-     * See XH.exception() for a convenient way to create such exceptions directly in
-     * application code.
+     * This handler provides the most value when passed Exceptions created by `Exception.create()`.
+     * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
+     * which generates de-serialized versions of server exceptions. See `XH.exception()` for a
+     * convenient way to create these enhanced exceptions in application code.
      *
-     * In particular note that this handler will look for an 'isRoutine' flag on the exception.  If
-     * set true, this will cause this handler to use defaults that avoid overly alarming the user
-     * or generating system logging.
+     * This handler will respect an 'isRoutine' flag set on Exceptions that can be thrown in the
+     * course of "normal" app operation and do not represent unexpected errors. When true, this
+     * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
      * @param {Object} [options]
-     * @param {string} [options.message] - introductory text to describe the error.
-     * @param {string} [options.title] - title for a modal alert dialog, if shown.
-     * @param {string} [options.alertKey] - key for modal alert - when specified, only one dialog
-     *      will be allowed to be created with that key. If one is already created, it will be
-     *      replaced with a new instance. Avoids a repeated failure creating a stack of popups.
-     * @param {boolean} [options.showAsError] - display to user/log as "error".  If true, error
-     *      details and reporting options will be shown. Default to false for exceptions marked
-     *      as 'isRoutine', otherwise true.
-     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored in DB
-     *      for review in the system admin app. Default true when `showAsError` is true, excepting
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
+     *      this is an unexpected error. Default true for most exceptions, false for those marked
+     *      as `isRoutine`.
+     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
+     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
      *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' exceptions.
+     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session expired exceptions.
+     *      dismiss - default false, excepting session-related exceptions.
      * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
      *      the exception log and alert.
      */
@@ -147,10 +145,10 @@ export class ExceptionHandler {
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
-        ret.requireReload = ret.requireReload ?? false;
         ret.showAsError = ret.showAsError ?? !isRoutine;
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
+        ret.requireReload = ret.requireReload ?? false;
 
         ret.title = ret.title ?? (ret.showAsError ? 'Error' : 'Message');
         ret.message = ret.message ?? e.message ?? e.name ?? 'An unknown error occurred.';
