@@ -38,6 +38,8 @@
   [#1652](https://github.com/xh/hoist-react/issues/1652)
 * `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
   automatically hide.
+* Fixed an issue where multiple buttons in a `ButtonGroupInput` could be shown as active
+  simultaneously. [#1592](https://github.com/xh/hoist-react/issues/1592)
 
 ### ⚙️ Technical
 
