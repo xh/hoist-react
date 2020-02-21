@@ -5,8 +5,8 @@
     user-select: none;
     height: var(--xh-title-height-px);
     padding: var(--xh-title-pad-px);
-    background-color: var(--xh-title-bg);
-    color: var(--xh-title-text-color);
+    background-color: var(--xh-popup-title-bg);
+    color: var(--xh-popup-title-text-color);
 
     &--draggable {
       cursor: move;
