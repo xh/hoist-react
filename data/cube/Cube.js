@@ -7,6 +7,7 @@
 
 
 import {managed} from '@xh/hoist/core';
+import {forEachAsync} from '../../utils/async';
 import {Query, View, CubeField} from './';
 import {Store} from '../';
 
@@ -134,13 +135,19 @@ export class Cube {
      * This method largely delegates to Store.loadData().  See that method for more
      * information.
      *
+     * Note that this method will update its views asynchronously, in order to avoid locking
+     * up the browser when attached to multiple expensive views.
+     *
      * @param {Object[]} rawData - flat array of lowest/leaf level data rows.
      * @param {Object} info - optional metadata to associate with this cube/dataset.
      */
-    loadData(rawData, info = {}) {
+    async loadDataAsync(rawData, info = {}) {
         this.store.loadData(rawData);
         this._info = Object.freeze(info);
-        this._connectedViews.forEach(view => view.noteCubeLoaded());
+        await forEachAsync(
+            this._connectedViews,
+            (v) => v.noteCubeLoaded()
+        );
     }
 
     /**
@@ -149,10 +156,13 @@ export class Cube {
      * This method largely delegates to Store.updateData().  See that method for more
      * information.
      *
+     * Note that this method will update its views asynchronously, in order to avoid locking
+     * up the browser when attached to multiple expensive views.
+     *
      * @param {(Object[]|StoreTransaction)} rawData
      * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    updateData(rawData, infoUpdates) {
+    async updateDataAsync(rawData, infoUpdates) {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
@@ -164,9 +174,10 @@ export class Cube {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
-            this._connectedViews.forEach(view => {
-                view.noteCubeUpdated(changeLog);
-            });
+            await forEachAsync(
+                this._connectedViews,
+                (v) => v.noteCubeUpdated(changeLog)
+            );
         }
     }
 
