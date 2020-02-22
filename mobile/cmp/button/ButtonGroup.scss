@@ -13,17 +13,14 @@ body.xh-app .xh-button-group .xh-button {
     }
   }
 
-  &:not(.button--outline):not(.button--quiet):not(.button--light) {
-    background-color: var(--xh-border-color);
-
-    &.xh-button-active {
-      background-color: var(--xh-btn-color);
-      opacity: 1;
-    }
+  &:not(.button--outline):not(.button--quiet):not(.button--light).xh-button-active {
+    background-color: var(--xh-button-active-bg);
+    color: var(--xh-button-active-text-color);
+    opacity: 1;
   }
 
   &.button--outline.xh-button-active {
-    background-color: var(--xh-btn-color);
+    background-color: var(--xh-button-bg);
     color: white;
   }
 
