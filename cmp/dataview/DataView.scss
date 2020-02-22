@@ -146,6 +146,10 @@
     //------------------------
     // Other overrides
     //------------------------
+    .ag-group-checkbox.ag-invisible {
+      display: none;
+    }
+
     .ag-side-bar { border: none; }
 
     .ag-status-bar { border: none; }
