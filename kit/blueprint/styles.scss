@@ -188,6 +188,11 @@ $pt-transition-duration: 100ms !default;
   &:not(.bp3-minimal) {
     &:not([class*="bp3-intent-"]):not(:hover) {
       background-color: var(--xh-button-bg);
+
+      // Handle background of buttons in minimal button groups, such as in toasts
+      .bp3-button-group.bp3-minimal & {
+        background: none;
+      }
     }
 
     &.bp3-intent-primary {
