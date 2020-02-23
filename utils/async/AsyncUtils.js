@@ -9,7 +9,7 @@ import {wait} from '@xh/hoist/promise';
 
 
 /**
- * Iterate over an array and run a closure on each element - as with `Array.forEach` - but do so
+ * Iterate over a collection and run a closure on each item - as with `for ... of` - but do so
  * asynchronously and with minimal waits inserted after a configurable time interval.
  *
  * Intended for long-running or compute-intensive loops that would otherwise lock up the browser
@@ -17,8 +17,8 @@ import {wait} from '@xh/hoist/promise';
  * allowing ongoing rendering of UI updates (e.g. load masks) and generally keeping the browser
  * event loop running.
  *
- * @param {Array} array - the collection to process.
- * @param {Function} fn - called with each element in the array.
+ * @param {iterable} collection - items to iterate over
+ * @param {Function} fn - called with each item.
  * @param {Object} [opts] - additional options.
  * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.
  *      If the loop completes before this interval has passed, no waits will be inserted.
@@ -27,18 +27,19 @@ import {wait} from '@xh/hoist/promise';
  * @param {string?} [opts.debug] - if provided, loop will debug log basic run info on completion.
  * @returns {Promise<void>}
  */
-export async function forEachAsync(array, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
+export async function forEachAsync(collection, fn, {waitAfter = 50, waitFor = 1, debug = null} = {}) {
     const initialStart = Date.now();
     let nextBreak = initialStart + waitAfter,
         waitCount = 0;
 
-    for (let idx = 0; idx < array.length; idx++) {
+    let idx = 0;
+    for (const item of collection) {
         if (Date.now() > nextBreak) {
             await wait(waitFor);
             nextBreak = Date.now() + waitAfter;
             waitCount++;
         }
-        fn(array[idx], idx, array);
+        fn(item, idx++, collection);
     }
 
     writeDebug(debug, waitCount, initialStart);
