@@ -15,6 +15,7 @@ import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
+import {bindable} from '@xh/hoist/mobx';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 
@@ -37,7 +38,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChartAsync(e), 100);
+            ref = useOnResize((e) => impl.setDimensions(
+                {
+                    width: e[0].contentRect.width,
+                    height: e[0].contentRect.height
+                }
+            ), 100);
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -94,6 +100,7 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     clickCount = 0;
+    @bindable.ref dimensions;
 
     constructor(model) {
         this.model = model;
@@ -113,6 +120,11 @@ class LocalModel {
                 model.data
             ],
             run: () => this.createOrReloadHighChart()
+        });
+
+        this.addReaction({
+            track: () => this.dimensions,
+            run: () => this.resizeChartAsync()
         });
 
         // Sync selection on a deferred basis when model selection or data changes.
@@ -150,9 +162,14 @@ class LocalModel {
         const newData = config.series[0].data,
             parentEl = chartElem.parentElement;
 
-        assign(config.chart, {
+        const dimensions = {
             width: parentEl.offsetWidth,
             height: parentEl.offsetHeight,
+            ...this.dimensions
+        };
+
+        assign(config.chart, {
+            ...dimensions,
             renderTo: chartElem
         });
 
@@ -170,11 +187,11 @@ class LocalModel {
         }, this);
     }
 
-    async resizeChartAsync(e) {
+    async resizeChartAsync() {
         if (!this.chart) return;
 
         await start(() => {
-            const {width, height} = e[0].contentRect;
+            const {width, height} = this.dimensions;
             if (width > 0 && height > 0) {
                 this.chart.setSize(width, height, false);
             }

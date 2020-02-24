@@ -33,7 +33,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChart(e));
+            ref = useOnResize((e) => impl.setDimensions(
+                {
+                    width: e[0].contentRect.width,
+                    height: e[0].contentRect.height
+                }
+            ));
 
         impl.setAspectRatio(aspectRatio);
 
@@ -75,9 +80,14 @@ class LocalModel {
     chartRef = createObservableRef();
     model;
     prevSeriesConfig;
+    @bindable.ref dimensions;
 
     constructor(model) {
         this.model = model;
+        this.addReaction({
+            track: () => this.dimensions,
+            run: () => this.resizeChart()
+        });
         this.addReaction({
             track: () => [
                 this.aspectRatio,
@@ -127,7 +137,8 @@ class LocalModel {
                 parentEl = chartElem.parentElement,
                 dims = this.getChartDims({
                     width: parentEl.offsetWidth,
-                    height: parentEl.offsetHeight
+                    height: parentEl.offsetHeight,
+                    ...this.dimensions
                 });
 
             assign(config.chart, dims);
@@ -137,8 +148,8 @@ class LocalModel {
         }
     }
 
-    resizeChart(e) {
-        const {width, height} = this.getChartDims(e[0].contentRect);
+    resizeChart() {
+        const {width, height} = this.dimensions;
         this.chart.setSize(width, height, false);
     }
 
