@@ -15,7 +15,6 @@ import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core'
 import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
-import {GridModel} from '../../../cmp/grid';
 
 import {DialogModel} from './DialogModel';
 import {dialogHeader} from './impl/DialogHeader';
@@ -26,7 +25,7 @@ import './DialogStyles.scss';
 export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Dialog',
     model: uses(DialogModel, {
-        fromContext: false,
+        fromContext: true,
         publishMode: ModelPublishMode.LIMITED,
         createDefault: true
     }),
@@ -34,7 +33,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     className: 'xh-dialog',
 
     render({model, ...props}) {
-        const {isOpen} = props,
+        const {isOpen} = model,
             maybeSetFocus = () => {
             // always delay focus manipulation to just before repaint to prevent scroll jumping
                 window.requestAnimationFrame(() => {
@@ -83,7 +82,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             // (may not be necessary to ensure only called once, not seeing any re-renders)
             maybeSetFocus();
 
-            const {width, height, x, y} = props;
+            const {width, height, x, y} = model;
             model.positionDialogOnRender({width, height, x, y});
         });
 
@@ -106,7 +105,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 });
 
 Dialog.propTypes = {
-
     /** An icon placed at the left-side of the dialog's header. */
     icon: PT.element,
 
@@ -117,14 +115,14 @@ Dialog.propTypes = {
     model: PT.oneOfType([PT.instanceOf(DialogModel), PT.object]),
 
     /** Escape hatch to pass any props to underlying react-rnd API */
-    rndOptions: PT.object,
+    rndOptions: PT.object
 };
 
 const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
-            {resizable, draggable} = model,
-            {width, height, mask, closeOnOutsideClick, RnDOptions = {}, style, onClose, closeOnEscape} = props;
+            {resizable, draggable, width, height, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
+            {rndOptions = {}, onClose } = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -138,7 +136,7 @@ const rndDialog = hoistCmp.factory({
             if (!model.isMaximizedState) {
                 model.setPositionState({x: data.x, y: data.y});
             }
-            if (isFunction(RnDOptions.onDragStop)) RnDOptions.onDragStop(evt, data);
+            if (isFunction(rndOptions.onDragStop)) rndOptions.onDragStop(evt, data);
         };
 
         const onResizeStop = (
@@ -156,8 +154,8 @@ const rndDialog = hoistCmp.factory({
                 model.setSizeState({width, height});
                 model.setPositionState(position);
             }
-            if (isFunction(RnDOptions.onResizeStop)) {
-                RnDOptions.onResizeStop(
+            if (isFunction(rndOptions.onResizeStop)) {
+                rndOptions.onResizeStop(
                     evt,
                     resizeDirection,
                     domEl,
@@ -171,23 +169,22 @@ const rndDialog = hoistCmp.factory({
             switch (evt.key) {
                 case 'Escape':
                     if (closeOnEscape !== false) {
-                        model.handleEscapKey(onClose);
+                        model.handleEscapKey();
                     }
                     break;
             }
         };
 
-        if (style) RnDOptions.style = style;
-        let zIndex = DialogModel.DIALOG_ZINDEX_BASE;
-        if (RnDOptions.style?.zIndex) zIndex += RnDOptions.style.zIndex;
-        merge(RnDOptions, {style: {zIndex}});
+        let zIndex = DialogModel.Z_INDEX_BASE;
+        if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
+        merge(rndOptions, {style: {zIndex}});
 
         return fragment(
-            mask ? maskComp({zIndex}) : null,
+            showBackgroundMask ? maskComp({zIndex}) : null,
             closeOnOutsideClick ? clickCaptureComp({zIndex, onClose}) : null,
             rnd({
                 ref: c =>  model.rndRef = c,
-                ...RnDOptions,
+                ...rndOptions,
                 disableDragging: !draggable,
                 enableResizing: {
                     bottom: resizable,
@@ -227,7 +224,7 @@ const clickCaptureComp = hoistCmp.factory({
             className: 'xh-dialog-root__click-capture',
             style: {zIndex},
             ref: model.clickCaptureCompRef,
-            onClick: (evt) => model.handleOutsideClick(evt, onClose)
+            onClick: (evt) => model.handleOutsideClick(evt)
         });
     }
 });
@@ -235,7 +232,7 @@ const clickCaptureComp = hoistCmp.factory({
 const content = hoistCmp.factory({
     render(props) {
         const dialogModel = useContextModel(DialogModel),
-            {width, height} = props,
+            {width, height} = dialogModel,
             dims = dialogModel.resizable ? {
                 width: '100%',
                 height: '100%'

@@ -6,10 +6,9 @@
  */
 import {isEmpty, isNumber, isPlainObject, isString, isUndefined} from 'lodash';
 
-import {HoistModel, LoadSupport} from '@xh/hoist/core';
+import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
 
 import {DialogStateModel} from './DialogStateModel';
 
@@ -108,22 +107,53 @@ export class DialogModel {
 
     /**
      * @param {Object} config
+     * @param {number} [config.width] - Optional initial width of dialog
+     * @param {number} [config.height] - Optional initial height of dialog
+     * @param {number} [config.x] - Optional initial x position of dialog
+     * @param {number} [config.y] - Optional initial y position of dialog
+     * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
+     * @param {boolean} [config.isOpen] - Is dialog open?
      * @param {boolean} [config.resizable] - Can dialog be resized?
      * @param {boolean} [config.draggable] - Can dialog be dragged?
+     * @param {boolean} [config.closeOnOutsideClick] - Can dialog be closed by clicking outside dialog?
+     * @param {boolean} [config.closeOnEscape] - Can dialog be closed by pressing escape key?
+     * @param {boolean} [config.showBackgroundMask] - Show a background mask between dialog and app?
+     * @param {boolean} [config.showCloseButton] - Show close button in dialog header?
      * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
+        width,
+        height,
+        x,
+        y,
+        isMaximized = false,
+        isOpen = true,
         resizable = false,
         draggable = false,
+        closeOnOutsideClick = true,
+        closeOnEscape = true,
+        showBackgroundMask = true,
+        showCloseButton = true,
         stateModel = null
     } = {}) {
-
+        this;
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
         this.stateModel = this.parseStateModel(stateModel);
-    }
 
+        // set observables
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setX(x);
+        this.setY(y);
+        this.setIsMaximized(isMaximized);
+        this.setIsOpen(isOpen);
+        this.setCloseOnOutsideClick(closeOnOutsideClick);
+        this.setCloseOnEscape(closeOnEscape);
+        this.setShowBackgroundMask(showBackgroundMask);
+        this.setShowCloseButton(showCloseButton);
+    }
 
 
     isComponentModel() {
@@ -139,8 +169,13 @@ export class DialogModel {
     }
 
     @action
-    hide(onClose) {
-        onClose();
+    open() {
+        this.setIsOpen(true);
+    }
+
+    @action
+    close() {
+        this.setIsOpen(false);
         if (this.stateModel) return;
 
         this.setSizeState({});
@@ -159,6 +194,59 @@ export class DialogModel {
     }
 
     @action
+    setWidth(v) {
+        this.width = v;
+    }
+
+    @action
+    setHeight(v) {
+        this.height = v;
+    }
+    @action
+    setX(v) {
+        this.x = v;
+    }
+
+    @action
+    setY(v) {
+        this.y = v;
+    }
+
+    @action
+    setIsMaximized(v) {
+        this.isMaximized = v;
+    }
+
+    @action
+    setIsOpen(v) {
+        this.isOpen = v;
+    }
+
+    @action
+    setCloseOnOutsideClick(v) {
+        this.closeOnOutsideClick = v;
+    }
+
+    @action
+    setCloseOnEscape(v) {
+        this.closeOnEscape = v;
+    }
+
+    @action
+    setShowBackgroundMask(v) {
+        this.showBackgroundMask = v;
+    }
+
+    @action
+    setShowCloseButton(v) {
+        this.showCloseButton = v;
+    }
+
+    //---------------------------------------------
+    // Implementation (for related private classes)
+    //---------------------------------------------
+
+    @action
     setSizeState(v) {
         this.sizeState = v;
     }
@@ -174,21 +262,17 @@ export class DialogModel {
         this.isMaximizedState = v;
     }
 
-    //---------------------------------------------
-    // Implementation (for related private classes)
-    //---------------------------------------------
-
 
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    handleEscapKey(onClose) {
-        this.hide(onClose);
+    handleEscapKey() {
+        this.close();
     }
 
-    handleOutsideClick(evt, onClose) {
+    handleOutsideClick(evt) {
         if (evt.target != this.clickCaptureCompRef.current) return;
-        this.hide(onClose);
+        this.close();
     }
 
     positionDialogOnRender({width, height, x, y}) {
