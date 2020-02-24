@@ -39,10 +39,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.setDimensions(
-                {
-                    width: e[0].contentRect.width,
-                    height: e[0].contentRect.height
-                }
+                e[0].contentRect.pick('width', 'height')
             ), 100);
 
         const renderError = (error) => frame({
@@ -57,7 +54,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
         const renderChartHolder = () => div({
             className: 'xh-treemap__chart-holder',
-            ref:  impl.chartRef
+            ref: impl.chartRef
         });
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
@@ -100,7 +97,7 @@ class LocalModel {
     chartRef = createObservableRef();
     chart = null;
     clickCount = 0;
-    @bindable.ref dimensions;
+    @bindable.ref dimensions = {};
 
     constructor(model) {
         this.model = model;
@@ -159,17 +156,10 @@ class LocalModel {
         const chartElem = this.chartRef.current;
         if (!chartElem) return;
 
-        const newData = config.series[0].data,
-            parentEl = chartElem.parentElement;
-
-        const dimensions = {
-            width: parentEl.offsetWidth,
-            height: parentEl.offsetHeight,
-            ...this.dimensions
-        };
+        const newData = config.series[0].data;
 
         assign(config.chart, {
-            ...dimensions,
+            ...this.dimensions,
             renderTo: chartElem
         });
 
@@ -279,7 +269,7 @@ class LocalModel {
         this.clickCount++;
         this.debouncedClickHandler(e.point.record, e);
         if (this.clickCount >= 2) this.debouncedClickHandler.flush();
-    }
+    };
 
     clickHandler(record, e) {
         try {

@@ -19,6 +19,7 @@ import {DarkTheme} from './theme/Dark';
 
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+
 installZoomoutGesture(Highcharts);
 
 /**
@@ -34,11 +35,8 @@ export const [Chart, chart] = hoistCmp.withFactory({
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.setDimensions(
-                {
-                    width: e[0].contentRect.width,
-                    height: e[0].contentRect.height
-                }
-            ));
+                e[0].contentRect.pick(['width', 'height']
+                )));
 
         impl.setAspectRatio(aspectRatio);
 
@@ -80,7 +78,7 @@ class LocalModel {
     chartRef = createObservableRef();
     model;
     prevSeriesConfig;
-    @bindable.ref dimensions;
+    @bindable.ref dimensions = {};
 
     constructor(model) {
         this.model = model;
@@ -134,12 +132,7 @@ class LocalModel {
         const chartElem = this.chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement,
-                dims = this.getChartDims({
-                    width: parentEl.offsetWidth,
-                    height: parentEl.offsetHeight,
-                    ...this.dimensions
-                });
+                dims = this.getChartDims(this.dimensions);
 
             assign(config.chart, dims);
 
@@ -149,7 +142,7 @@ class LocalModel {
     }
 
     resizeChart() {
-        const {width, height} = this.dimensions;
+        const {width, height} = this.getChartDims(this.dimensions);
         this.chart.setSize(width, height, false);
     }
 
@@ -280,5 +273,5 @@ class LocalModel {
     //---------------------------
     onSetExtremes = () => {
 
-    }
+    };
 }
