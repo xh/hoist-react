@@ -90,6 +90,8 @@ export class DialogModel {
     @observable isMaximized;
     /** @member {boolean} */
     @observable isOpen;
+    /** @member {(Object|function)} */
+    @observable content;
 
 
     //---------------------------------
@@ -107,27 +109,29 @@ export class DialogModel {
 
     /**
      * @param {Object} config
-     * @param {number} [config.width] - Optional initial width of dialog
-     * @param {number} [config.height] - Optional initial height of dialog
-     * @param {number} [config.x] - Optional initial x position of dialog
-     * @param {number} [config.y] - Optional initial y position of dialog
-     * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
-     * @param {boolean} [config.isOpen] - Is dialog open?
-     * @param {boolean} [config.resizable] - Can dialog be resized?
-     * @param {boolean} [config.draggable] - Can dialog be dragged?
-     * @param {boolean} [config.closeOnOutsideClick] - Can dialog be closed by clicking outside dialog?
-     * @param {boolean} [config.closeOnEscape] - Can dialog be closed by pressing escape key?
-     * @param {boolean} [config.showBackgroundMask] - Show a background mask between dialog and app?
-     * @param {boolean} [config.showCloseButton] - Show close button in dialog header?
+     * @param {(Object|function)} [config.content] - content to be rendered by this Dialog.
+     * @param {number} [config.width] - Optional initial width of Dialog.
+     * @param {number} [config.height] - Optional initial height of Dialog.
+     * @param {number} [config.x] - Optional initial x position of Dialog.
+     * @param {number} [config.y] - Optional initial y position of Dialog.
+     * @param {boolean} [config.isMaximized] - Does Dialog cover entire viewport?
+     * @param {boolean} [config.isOpen] - Is Dialog open?
+     * @param {boolean} [config.resizable] - Can Dialog be resized?
+     * @param {boolean} [config.draggable] - Can Dialog be dragged?
+     * @param {boolean} [config.closeOnOutsideClick] - Can Dialog be closed by clicking outside Dialog?
+     * @param {boolean} [config.closeOnEscape] - Can Dialog be closed by pressing escape key?
+     * @param {boolean} [config.showBackgroundMask] - Show a background mask between Dialog and app?
+     * @param {boolean} [config.showCloseButton] - Show close button in Dialog header?
      * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
+        content,
         width,
         height,
         x,
         y,
         isMaximized = false,
-        isOpen = true,
+        isOpen = false,
         resizable = false,
         draggable = false,
         closeOnOutsideClick = true,
@@ -136,13 +140,13 @@ export class DialogModel {
         showCloseButton = true,
         stateModel = null
     } = {}) {
-        this;
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
         this.stateModel = this.parseStateModel(stateModel);
 
         // set observables
+        this.setContent(content);
         this.setWidth(width);
         this.setHeight(height);
         this.setX(x);
@@ -166,6 +170,11 @@ export class DialogModel {
     @action
     setHasMounted(bool) {
         this.hasMounted = bool;
+    }
+
+    @action
+    setContent(v) {
+        this.content = v;
     }
 
     @action

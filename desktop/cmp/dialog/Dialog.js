@@ -8,11 +8,11 @@
 import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
-import {castArray, isFunction, merge} from 'lodash';
+import {isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
-import {useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {elementFromContent, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -245,7 +245,7 @@ const content = hoistCmp.factory({
             ...dims,
             items: [
                 dialogHeader({dialogModel, ...props}),
-                ...castArray(props.children)
+                elementFromContent(dialogModel.content)
             ]
         });
     }
