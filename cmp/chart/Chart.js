@@ -138,6 +138,11 @@ class LocalModel {
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
+
+            const parentEl = chartElem.parentElement;
+            // Unsure why we need to resize here, but the Range selector appears in the wrong
+            // position if we don't.
+            if (parentEl.offsetWidth === 0 || parentEl.offsetHeight === 0) this.resizeChart();
         }
     }
 

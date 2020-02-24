@@ -167,6 +167,10 @@ class LocalModel {
             this.destroyHighChart();
             this.chart = Highcharts.chart(config);
         }, this);
+
+        const parentEl = chartElem.parentElement;
+        // Unsure if we need to resize here. It is required in Chart.js, so duplicated here.
+        if (parentEl.offsetWidth === 0 || parentEl.offsetHeight === 0) this.resizeChartAsync();
     }
 
     reloadSeriesData(newData) {
