@@ -188,7 +188,7 @@ export class Cube {
      */
     updateInfo(infoUpdates = {}) {
         this._info = Object.freeze({...this._info, ...infoUpdates});
-        this._connectedViews.forEach((v) => v.noteCubeLoaded());
+        this._connectedViews.forEach((v) => v.noteCubeUpdated(null));
     }
 
     //---------------------
