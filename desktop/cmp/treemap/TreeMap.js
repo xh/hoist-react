@@ -37,7 +37,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChartAsync(e), 100);
+            ref = useOnResize((e) => impl.resizeChartAsync(e), {debounce: 100});
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',

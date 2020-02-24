@@ -7,7 +7,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce} from 'lodash';
+import {isFinite, debounce as lodashDebounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -33,14 +33,17 @@ export function useOnUnmount(fn) {
 
 /**
  * Hook to run a function when component is resized.
- * This will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
- * size. This is to improve performance by avoiding unneeded resizing.
+ * This will not run the hook when the size is changed to 0. By default, it will not run when
+ * the size is changed back from 0 to a previous size. This is to improve performance by
+ * avoiding unneeded resizing. However, this behavior can be overridden with `runOnVisible`.
  * @param {function} fn
- * @param {number} [delay] - milliseconds to debounce
- * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
+ * @param {Object} [opts]
+ * @param {number} [opts.debounce] - milliseconds to debounce
+ * @param {boolean} [opts.runOnVisible] - always run function when component becomes visible.
+ * @param {Ref} [opts.ref] - existing ref to observe. If not provided, a ref will be created
  * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn, delay, ref) {
+export function useOnResize(fn, {debounce, runOnVisible, ref} = {}) {
     if (!ref) ref = useRef(null);
 
     useEffect(() => {
@@ -54,19 +57,19 @@ export function useOnResize(fn, delay, ref) {
                 isVisible = width !== 0 && height !== 0,
                 hasChanged = width !== prevWidth || height !== prevHeight;
 
-            if (isVisible && hasChanged) {
+            if (isVisible && (hasChanged || runOnVisible)) {
                 prevWidth = width;
                 prevHeight = height;
                 fn(e);
             }
         };
 
-        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(wrappedFn, delay) : wrappedFn,
+        const callbackFn = isFinite(debounce) && debounce >= 0 ? lodashDebounce(wrappedFn, debounce) : wrappedFn,
             resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);
         return () => resizeObserver.unobserve(current);
-    }, [ref.current, delay]);
+    }, [ref.current, debounce]);
 
     return ref;
 }

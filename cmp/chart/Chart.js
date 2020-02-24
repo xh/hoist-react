@@ -33,7 +33,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChart(e));
+            ref = useOnResize((e) => impl.resizeChart(e), {runOnVisible: true});
 
         impl.setAspectRatio(aspectRatio);
 
