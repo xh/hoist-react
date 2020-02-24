@@ -165,7 +165,7 @@ export class Store {
      */
     @action
     updateData(rawData) {
-        if (isEmpty(rawData)) return;
+        if (isEmpty(rawData)) return null;
 
         const changeLog = {};
 
