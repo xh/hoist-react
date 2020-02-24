@@ -15,6 +15,8 @@
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
+* The `@LoadSupport` decorator now provides an additional observable property `lastException`.
+The decorator also now logs load execution times and failures to `console.debug` automatically.
 
 ### 💥 Breaking Changes
 
