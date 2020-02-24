@@ -12,7 +12,7 @@ import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
-import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import {assign, cloneDeep, debounce, isFunction, merge, omit, pick} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {bindable} from '@xh/hoist/mobx';
@@ -39,7 +39,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.setDimensions(
-                e[0].contentRect.pick('width', 'height')
+                pick(e[0].contentRect, ['width', 'height'])
             ), 100);
 
         const renderError = (error) => frame({

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import {assign, castArray, clone, isEqual, merge, omit, pick} from 'lodash';
 import {bindable, runInAction} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 
@@ -35,8 +35,8 @@ export const [Chart, chart] = hoistCmp.withFactory({
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = useOnResize((e) => impl.setDimensions(
-                e[0].contentRect.pick(['width', 'height']
-                )));
+                pick(e[0].contentRect, ['width', 'height'])
+            ));
 
         impl.setAspectRatio(aspectRatio);
 
