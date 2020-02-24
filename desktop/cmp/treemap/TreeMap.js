@@ -123,7 +123,6 @@ class LocalModel {
         });
     }
 
-
     createOrReloadHighChart() {
         const chartElem = this.chartRef.current;
         if (!chartElem) return;
@@ -220,10 +219,10 @@ class LocalModel {
     }
 
     getModelConfig() {
-        const {data, highchartsConfig, algorithm, tooltip, maxNodes} = this.model,
+        const {data, algorithm, tooltip, maxNodes, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
-        return {
+        return merge({
             tooltip: {
                 enabled: !!tooltip,
                 useHTML: true,
@@ -252,9 +251,8 @@ class LocalModel {
                     style: {textOutline: 'none', visibility: 'hidden'}
                 },
                 events: {click: this.onClick}
-            }],
-            ...highchartsConfig
-        };
+            }]
+        }, highchartsConfig);
     }
 
     //----------------------

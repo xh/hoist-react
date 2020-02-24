@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isFunction, isNil} from 'lodash';
+import {isFunction, isNil, debounce as lodashDebounce, isNumber, isPlainObject} from 'lodash';
 import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
 import {throwIf, applyMixin} from '@xh/hoist/utils/js';
 
@@ -42,19 +42,19 @@ export function ReactiveSupport(C) {
              * @param {(Object|function)} conf - function to run, or a config object containing options
              *      accepted by MobX autorun() API as well as argument below.
              * @param {function} [conf.run] - function to run - first arg to underlying autorun() call.
+             * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
+             *      When specified as Object, should contain an 'interval' and other optional keys for
+             *      lodash debounce.  If specified as number the default lodash debounce will be used.
              * @returns {function} - disposer to manually dispose of the created autorun.
              */
             addAutorun(conf) {
-                let run, options;
-                if (isFunction(conf)) {
-                    run = conf;
-                    options = {};
-                } else {
-                    ({run, ...options} = conf);
-                }
-                this.validateMobxOptions(options);
-                run = run.bind(this);
-                return this.addMobxDisposer(mobxAutorun(run, options));
+                if (isFunction(conf)) conf = {run: conf};
+                let {run, debounce, ...opts} = conf;
+
+                this.validateMobxOptions(opts);
+                run = this.bindAndDebounce(run, debounce);
+
+                return this.addMobxDisposer(mobxAutorun(run, opts));
             },
 
 
@@ -87,18 +87,23 @@ export function ReactiveSupport(C) {
              * @param {function} [conf.when] - function returning data to observe - first arg to the
              *      underlying when() call. Specify this or `track`.
              * @param {function} conf.run - function to run - second arg to underlying reaction()/when() call.
+             * @param {(number|Object)} [conf.debounce] - Specify to debounce run function with lodash.
+             *      When specified as object, should contain an 'interval' and other optional keys for
+             *      lodash.  If specified as number the default lodash debounce will be used.
              * @returns {function} - disposer to manually dispose of the created reaction.
              */
-            addReaction({track, when, run, ...options}) {
+            addReaction({track, when, run, debounce, ...opts}) {
                 throwIf(
                     (track && when) || (!track && !when),
                     "Must specify either 'track' or 'when' in addReaction."
                 );
-                this.validateMobxOptions(options);
+                this.validateMobxOptions(opts);
+
+                run = this.bindAndDebounce(run, debounce);
 
                 return track ?
-                    this.addMobxDisposer(mobxReaction(track, run.bind(this), options)):
-                    this.addMobxDisposer(mobxWhen(when, run.bind(this), options));
+                    this.addMobxDisposer(mobxReaction(track, run, opts)):
+                    this.addMobxDisposer(mobxWhen(when, run, opts));
             },
 
 
@@ -116,6 +121,13 @@ export function ReactiveSupport(C) {
                     !isNil(options.runImmediately),
                     '"runImmediately" is not a reaction option.  Did you mean "fireImmediately"?'
                 );
+            },
+
+            bindAndDebounce(fn, debounce) {
+                let ret = fn.bind(this);
+                if (isNumber(debounce)) return lodashDebounce(ret, debounce);
+                if (isPlainObject(debounce)) return lodashDebounce(ret, debounce.interval, debounce);
+                return ret;
             }
         },
 

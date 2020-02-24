@@ -13,7 +13,12 @@ export class UniqueAggregator extends Aggregator {
     aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;
 
-        const val = rows[0][fieldName];
-        return rows.every(it => it[fieldName] === val) ? val : null;
+        const val = rows[0].data[fieldName];
+        return rows.every(it => it.data[fieldName] === val) ? val : null;
+    }
+
+    replace(rows, currAgg, update) {
+        const {newValue} = update;
+        return rows.length === 1 || newValue === currAgg ? newValue : null;
     }
 }

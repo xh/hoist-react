@@ -34,7 +34,7 @@ export class DashViewSpec {
      * @param {string} title - Title text added to the tab header.
      * @param {Icon} [icon] - An icon placed at the left-side of the tab header.
      * @param {string} [groupName] - Group name to display within the add view component.
-     *      The default AddViewMenu will automatically group its available views if provided.
+     *      The default context menu will automatically group its available views if provided.
      * @param {boolean} [omit] - true to prevent any instances of this view. References to this
      *      view in state will be quietly dropped. Default false.
      * @param {boolean} [unique] - true to prevent multiple instances of this view. Default false.

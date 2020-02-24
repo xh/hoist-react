@@ -949,9 +949,9 @@ export const fileIcon = function(extension) {
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props = {}, name) {
-    const prefix = withDefault(props.prefix, 'far'),
-        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+const fa = function({prefix, className, ...rest} = {}, name) {
+    prefix = withDefault(prefix, 'far');
+    className = classNames('fa-fw', className);  // apply fa-fw for consistent icon widths in buttons, etc
 
-    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
+    return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
 };

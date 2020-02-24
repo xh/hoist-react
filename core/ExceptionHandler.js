@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {XH} from './XH';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 
 /**
  * Provides Centralized Exception Handling for Hoist Application.
@@ -16,29 +16,37 @@ import {stripTags, withDefault} from '@xh/hoist/utils/js';
 export class ExceptionHandler {
 
     /**
-     * Called by framework constructs to handle an exception.
+     * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
+     * Hoist-specific exception options, displaying an appropriate error dialog to users, and
+     * logging back to the server for stateful error tracking in the Admin Console.
      *
-     * Typical application entry points to this method are via the XH.handleException() alias and
-     * Promise.catchDefault().
+     * Typical application entry points to this method are the `XH.handleException()` alias and
+     * `Promise.catchDefault()`.
+     *
+     * This handler provides the most value when passed Exceptions created by `Exception.create()`.
+     * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
+     * which generates de-serialized versions of server exceptions. See `XH.exception()` for a
+     * convenient way to create these enhanced exceptions in application code.
+     *
+     * This handler will respect an 'isRoutine' flag set on Exceptions that can be thrown in the
+     * course of "normal" app operation and do not represent unexpected errors. When true, this
+     * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
      * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
      *      Exception will be created via Exception.create().
      * @param {Object} [options]
-     * @param {string} [options.message] - introductory text to describe the error.
-     * @param {string} [options.title] - title for a modal alert dialog, if shown.
-     * @param {string} [options.alertKey] - key for modal alert - when specified, only one dialog
-     *      will be allowed to be created with that key. If one is already created, it will be
-     *      replaced with a new instance. Avoids a repeated failure creating a stack of popups.
-     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored in DB
-     *      for review in the system admin app. Default true when `showAsError`, excepting
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
+     *      this is an unexpected error. Default true for most exceptions, false for those marked
+     *      as `isRoutine`.
+     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
+     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
      *      'isAutoRefresh' fetch exceptions.
      * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
-     *      excepting 'isAutoRefresh' exceptions.
-     * @param {boolean} [options.showAsError] - display to user/log as "error" - default true.
-     *      If true, error details and reporting options will be shown. Apps should set to false
-     *      for "expected" exceptions.
+     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
      * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
-     *      dismiss - default false, excepting session expired exceptions.
+     *      dismiss - default false, excepting session-related exceptions.
      * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
      *      the exception log and alert.
      */
@@ -115,7 +123,7 @@ export class ExceptionHandler {
         const {fetchOptions} = exception,
             {hideParams} = options;
 
-        if (!fetchOptions || !fetchOptions.params) return;
+        if (!fetchOptions?.params) return;
 
         // body will just be stringfied params -- currently hide all for simplicity.
         fetchOptions.body = '******';
@@ -126,38 +134,32 @@ export class ExceptionHandler {
     }
 
     logException(exception, options) {
-        return (options.showAsError) ?
+        return options.showAsError ?
             console.error(options.message, exception) :
-            console.log(options.message);
+            console.debug(options.message);
     }
 
-    parseOptions(exception, options) {
-        const ret = Object.assign({}, options),
-            {fetchOptions} = exception,
-            isAutoRefresh = fetchOptions && fetchOptions.loadSpec && fetchOptions.loadSpec.isAutoRefresh;
+    parseOptions(e, options) {
+        const ret = {...options},
+            isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
+            isRoutine = e.isRoutine ?? false,
+            isFetchAborted = e.isFetchAborted ?? false;
 
-        ret.requireReload = !!ret.requireReload;
+        ret.showAsError = ret.showAsError ?? !isRoutine;
+        ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
+        ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
+        ret.requireReload = ret.requireReload ?? false;
 
-        if (exception.name == 'Fetch Aborted') {
-            ret.showAsError = withDefault(ret.showAsError, false);
-            ret.logOnServer = withDefault(ret.logOnServer, false);
-            ret.showAlert = withDefault(ret.showAlert, false);
-        } else {
-            ret.showAsError = withDefault(ret.showAsError, true);
-            ret.logOnServer = withDefault(ret.logOnServer, ret.showAsError && !isAutoRefresh);
-            ret.showAlert = withDefault(ret.showAlert, !isAutoRefresh);
-        }
+        ret.title = ret.title ?? (ret.showAsError ? 'Error' : 'Message');
+        ret.message = ret.message ?? e.message ?? e.name ?? 'An unknown error occurred.';
 
-        ret.title = ret.title || (ret.showAsError ? 'Error' : 'Message');
-        ret.message = ret.message || exception.message || exception.name || 'An unknown error occurred.';
-
-        if (this.sessionMismatch(exception)) {
+        if (this.sessionMismatch(e)) {
             ret.title = 'Session Mismatch';
             ret.message = 'Your session may no longer be active, or no longer matches with the server. Please refresh.';
             ret.requireReload = true;
         }
 
-        if (this.sessionExpired(exception)) {
+        if (this.sessionExpired(e)) {
             ret.title = 'Authentication Error';
             ret.message = 'Your session has expired. Please login.';
             ret.requireReload = true;
@@ -174,8 +176,7 @@ export class ExceptionHandler {
     // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
     sessionExpired(exception) {
         const {httpStatus, fetchOptions} = exception,
-            url = fetchOptions ? fetchOptions.url : null,
-            relativeRequest = url && !url.startsWith('http');
+            relativeRequest = !fetchOptions?.url?.startsWith('http');
 
         return relativeRequest && httpStatus === 401;
     }

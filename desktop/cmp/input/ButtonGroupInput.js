@@ -49,6 +49,8 @@ export class ButtonGroupInput extends HoistInput {
             const active = (this.renderValue === value);
             return React.cloneElement(button, {
                 active,
+                // key is a workaround for https://github.com/palantir/blueprint/issues/3971
+                key: `${active} ${value}`,
                 minimal: withDefault(minimal, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => {

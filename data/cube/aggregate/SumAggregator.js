@@ -10,10 +10,17 @@ import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 export class SumAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-        return rows.reduce((ret, it) => {
-            const val = it[fieldName];
+        let ret = null;
+        for (const row of rows) {
+            const val = row.data[fieldName];
             if (val != null) ret += val;
-            return ret;
-        }, null);
+        }
+        return ret;
+    }
+
+    replace(rows, currAgg, update) {
+        if (update.oldValue != null) currAgg -= update.oldValue;
+        if (update.newValue != null) currAgg += update.newValue;
+        return currAgg;
     }
 }
