@@ -165,6 +165,8 @@ export class Store {
      */
     @action
     updateData(rawData) {
+        if (isEmpty(rawData)) return;
+
         const changeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates

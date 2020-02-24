@@ -181,6 +181,16 @@ export class Cube {
         }
     }
 
+    /**
+     * Populate the metadata associated with this cube.
+     *
+     * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
+     */
+    updateInfo(infoUpdates = {}) {
+        this._info = Object.freeze({...this._info, ...infoUpdates});
+        this._connectedViews.forEach((v) => v.noteCubeLoaded());
+    }
+
     //---------------------
     // Implementation
     //---------------------
