@@ -13,11 +13,10 @@ import {hbox, div, filler} from '@xh/hoist/cmp/layout';
  */
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
-    className: 'xh-panel__header',
+    className: 'xh-panel-header',
     model: false, memo: false, observer: false,
 
     render({className, title, icon, headerItems = []}) {
-
         if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
@@ -26,8 +25,7 @@ export const panelHeader = hoistCmp.factory({
                 icon || null,
                 title ?
                     div({
-                        className: 'xh-panel__header__title',
-                        flex: 1,
+                        className: 'xh-panel-header__title',
                         item: title
                     }) :
                     filler(),

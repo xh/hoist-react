@@ -8,7 +8,7 @@ import {isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {div, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, vbox} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -58,19 +58,26 @@ export const [Panel, panel] = hoistCmp.withFactory({
             layoutProps.flex = 'auto';
         }
 
-        // 1) Prepare combined layout with header above core.
+        // 2) Set coreContents element based on scrollable.
+        const coreContentsEl = scrollable ? div : vbox,
+            coreContents = coreContentsEl({
+                className: 'xh-panel__content',
+                items: castArray(children)
+            });
+
+        // 3) Prepare combined layout.
         return vbox({
+            className: classNames(className, scrollable ? 'xh-panel--scrollable' : null),
             items: [
                 panelHeader({title, icon, headerItems}),
                 parseToolbar(tbar),
-                panelContent({children, scrollable}),
+                coreContents,
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
             ...rest,
-            ...layoutProps,
-            className: classNames(className, scrollable ? 'xh-panel--scrollable' : null)
+            ...layoutProps
         });
     }
 });
@@ -118,16 +125,6 @@ Panel.propTypes = {
 //------------------------
 // Implementation
 //------------------------
-const panelContent = hoistCmp.factory({
-    displayName: 'PanelContent',
-    className: 'xh-panel__content',
-
-    render({children, scrollable, className}) {
-        const el = scrollable ? div : vframe;
-        return el({className, items: castArray(children)});
-    }
-});
-
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator);
     if (prop === true)                      return cmp({isDisplayed: true});

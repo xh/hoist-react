@@ -15,8 +15,11 @@
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
-* The `@LoadSupport` decorator now provides an additional observable property `lastException`.
-The decorator also now logs load execution times and failures to `console.debug` automatically.
+* The `@LoadSupport` decorator now provides an additional observable property `lastException`. The
+  decorator also now logs load execution times and failures to `console.debug` automatically.
+* Support for mobile `Panel.scrollable` prop made more robust with re-implementation of inner
+  content element. Note this change included a tweak to some CSS class names for mobile `Panel`
+  internals that could require adjustments if directly targeted by app stylesheets.
 
 ### 💥 Breaking Changes
 
