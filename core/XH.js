@@ -639,7 +639,7 @@ class XHClass {
                     ...errs.map(it => p(it.reason.message + ' (' + it.name + ')'))
                 ],
                 details: errs,
-                isRoutine: !errs.some(it => !it.reason.isRoutine)
+                isRoutine: errs.every(it => it.reason.isRoutine)
             });
         }
     }
