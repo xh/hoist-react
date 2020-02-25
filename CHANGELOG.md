@@ -20,6 +20,7 @@
 * Support for mobile `Panel.scrollable` prop made more robust with re-implementation of inner
   content element. Note this change included a tweak to some CSS class names for mobile `Panel`
   internals that could require adjustments if directly targeted by app stylesheets.
+* Added new `useOnVisible` hook.
 
 ### 💥 Breaking Changes
 
@@ -39,6 +40,8 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed an issue where charts that are rendered while invisible would have the incorrect size.
+  [#1703](https://github.com/xh/hoist-react/issues/1703)
 * Fixed an issue where zeroes entered by the user in `PinPad` would be displayed as blanks.
 * Fixed `fontAwesomeIcon` elem factory component to always include the default 'fa-fw' className.
   Previously, it was overridden if a `className` prop was provided.
