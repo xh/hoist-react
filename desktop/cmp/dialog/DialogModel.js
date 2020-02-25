@@ -246,7 +246,6 @@ export class DialogModel {
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
-
     @action
     setSizeState(v) {
         this.sizeState = v;
