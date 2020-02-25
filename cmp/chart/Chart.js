@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
+import {useRef} from 'react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import {bindable, runInAction} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
@@ -12,7 +13,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize, useOnVisible} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -32,9 +33,10 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model));
-        let ref = useOnResize(e => impl.onResize(e));
-        ref = useOnVisible(v => impl.onVisible(v), ref);
+        const impl = useLocalModel(() => new LocalModel(model)),
+            ref = useRef(null);
+        useOnResize(impl.onResize, {ref});
+        useOnVisibleChange(impl.onVisibleChange, {ref});
 
         impl.setAspectRatio(aspectRatio);
 
@@ -145,17 +147,17 @@ class LocalModel {
         }
     }
 
-    onResize(e) {
+    onResize = (e) => {
         if (!this.chart) return;
         const {width, height} = this.getChartDims(e[0].contentRect);
         this.chart.setSize(width, height, false);
-    }
+    };
 
-    onVisible(visible) {
+    onVisibleChange = (visible) => {
         if (visible && !this.chart) {
             this.renderHighChart();
         }
-    }
+    };
 
     getChartDims({width, height}) {
         const {aspectRatio} = this;

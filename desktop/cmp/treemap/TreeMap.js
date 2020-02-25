@@ -4,17 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps, useOnResize, useOnVisible} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
-import React from 'react';
+import React, {useRef} from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 
@@ -36,9 +37,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model));
-        let ref = useOnResize(e => impl.onResizeAsync(e), 100);
-        ref = useOnVisible(v => impl.onVisible(v), ref);
+        const impl = useLocalModel(() => new LocalModel(model)),
+            ref = useRef(null);
+        useOnResize(impl.onResizeAsync, {ref, buffer: 100});
+        useOnVisibleChange(impl.onVisibleChange, {ref});
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -179,7 +181,7 @@ class LocalModel {
         }, this);
     }
 
-    async onResizeAsync(e) {
+    onResizeAsync = async (e) => {
         if (!this.chart) return;
         await start(() => {
             const {width, height} = e[0].contentRect;
@@ -188,13 +190,13 @@ class LocalModel {
             }
         });
         this.updateLabelVisibility();
-    }
+    };
 
-    onVisible(visible) {
+    onVisibleChange = (visible) => {
         if (visible && !this.chart) {
             this.createOrReloadHighChart();
         }
-    }
+    };
 
     destroy() {
         this.destroyHighChart();
