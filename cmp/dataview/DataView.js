@@ -25,6 +25,7 @@ export const [DataView, dataView] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         apiRemoved(props.itemHeight, 'itemHeight', 'Specify itemHeight on the DataViewModel instead.');
+        apiRemoved(props.rowCls, 'rowCls', 'Specify rowClassFn on the DataViewModel instead.');
 
         const [layoutProps, {onRowDoubleClicked}] = splitLayoutProps(props);
         const localModel = useLocalModel(() => new LocalModel(model));
@@ -57,7 +58,6 @@ class LocalModel {
 
     constructor(model) {
         this.model = model;
-        const {groupRowElementRenderer} = model;
 
         this.addReaction({
             track: () => [model.itemHeight, model.groupRowHeight],
@@ -67,15 +67,13 @@ class LocalModel {
         this.agOptions = {
             headerHeight: 0,
             getRowHeight: (params) => {
-
                 // Return (required) itemHeight for data rows.
                 if (!params.node?.group) return model.itemHeight;
 
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
                 return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
-            },
-            ...(groupRowElementRenderer ? {groupRowRendererFramework: groupRowElementRenderer} : null)
+            }
         };
     }
 }

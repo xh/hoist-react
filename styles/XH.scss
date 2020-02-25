@@ -25,6 +25,7 @@ body.xh-app {
   // Important for using the body as the `popupParent` for our ag-grids
   height: 100vh;
   margin: 0;
+  overflow: hidden;
 
   ::-webkit-scrollbar {
     -webkit-appearance: none;

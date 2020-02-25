@@ -26,7 +26,8 @@ export function LoadSupport(C) {
 
     decorate(C,  {
         lastLoadRequested: observable.ref,
-        lastLoadCompleted: observable.ref
+        lastLoadCompleted: observable.ref,
+        lastLoadException: observable.ref
     });
 
     return applyMixin(C, {
@@ -62,13 +63,34 @@ export function LoadSupport(C) {
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
+                // Skip auto-refresh if we have a pending triggered refresh
+                if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
+
                 runInAction(() => this.lastLoadRequested = new Date());
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
+
+                let exception = null;
                 return this
                     .doLoadAsync(loadSpec)
                     .linkTo(loadModel)
+                    .catch(e => {
+                        exception = e;
+                        throw e;
+                    })
                     .finally(() => {
-                        runInAction(() => this.lastLoadCompleted = new Date());
+                        runInAction(() => {
+                            this.lastLoadCompleted = new Date();
+                            this.lastLoadException = exception;
+                        });
+
+                        if (C.isRefreshContextModel) return;
+
+                        const msg = `[${C.name}] | ${exception ? 'failed' : 'completed'} | ${getLoadTypeFromSpec(loadSpec)} | ${this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime()}`;
+                        if (exception) {
+                            console.error(msg, exception);
+                        } else {
+                            console.debug(msg);
+                        }
                     });
             },
 
@@ -108,6 +130,12 @@ export function LoadSupport(C) {
             }
         }
     });
+}
+
+function getLoadTypeFromSpec(loadSpec) {
+    if (loadSpec.isAutoRefresh) return 'Auto-Refresh';
+    if (loadSpec.isRefresh) return 'Refresh';
+    return 'Load';
 }
 
 /**

@@ -55,6 +55,8 @@
 
     &__value-container input {
       opacity: 1 !important;
+      // Avoid unexpected scrollbar within input when using a custom font-face.
+      line-height: 15px;
     }
 
     &__indicator {

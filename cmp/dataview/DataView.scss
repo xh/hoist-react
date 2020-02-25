@@ -50,7 +50,7 @@
       }
 
       // Carry over grouped header styles from grid. DVs can optionally specify a custom
-      // groupElementRenderer, but this ensures the default style looks consistent.
+      // groupRowElementRenderer, but this ensures the default style looks consistent.
       &.ag-row-group.ag-full-width-row {
         color: var(--xh-grid-group-text-color);
         background-color: var(--xh-grid-group-bg);
@@ -146,6 +146,10 @@
     //------------------------
     // Other overrides
     //------------------------
+    .ag-group-checkbox.ag-invisible {
+      display: none;
+    }
+
     .ag-side-bar { border: none; }
 
     .ag-status-bar { border: none; }

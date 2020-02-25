@@ -64,6 +64,11 @@ function createMenuItems(props) {
             menuDivider({title: 'Add'}),
             ...addMenuItems
         );
+    } else {
+        ret.push(
+            '-',
+            {text: 'No available views to add', disabled: true}
+        );
     }
 
     return ret;
