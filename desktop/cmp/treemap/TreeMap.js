@@ -26,7 +26,7 @@ import {TreeMapModel} from './TreeMapModel';
 /**
  * Component for rendering a TreeMap.
  *
- * It is a managed wrapper around a Highcharts TreeMap visualization, which renders
+ * It is a ma`naged wrapper around a Highcharts TreeMap visualization, which renders
  * records from a Store and optionally binds to a GridModel.
  *
  * @see TreeMapModel
@@ -39,7 +39,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = useRef(null);
-        useOnResize(impl.onResizeAsync, {ref, buffer: 100});
+        useOnResize(impl.onResizeAsync, {ref, debounce: 100});
         useOnVisibleChange(impl.onVisibleChange, {ref});
 
         const renderError = (error) => frame({
