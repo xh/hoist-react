@@ -8,6 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {truncate} from 'lodash';
 
 export const preferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -75,7 +76,7 @@ const modelSpec = {
         {field: 'local', ...boolCheckCol, width: 70},
         {field: 'name', width: 200},
         {field: 'type', width: 100},
-        {field: 'defaultValue', width: 200},
+        {field: 'defaultValue', width: 200, renderer: truncateIfJson},
         {field: 'groupName', hidden: true},
         {field: 'notes', minWidth: 200, flex: true}
     ],
@@ -90,3 +91,7 @@ const modelSpec = {
         {field: 'lastUpdatedBy'}
     ]
 };
+
+function truncateIfJson(defaultValue, {record}) {
+    return record.data.type === 'json' ? truncate(defaultValue, {length: 500}) : defaultValue;
+}

@@ -29,7 +29,7 @@
         background-color: var(--xh-navbar-bg);
         color: var(--xh-navbar-title-color);
 
-        .xh-panel-header-title {
+        &__title {
           font-size: var(--xh-font-size-small-px);
         }
       }

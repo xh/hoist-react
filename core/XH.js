@@ -626,7 +626,8 @@ class XHClass {
         const results = await Promise.allSettled(promises),
             errs = results.filter(it => it.status === 'rejected');
 
-        if (errs.length > 0) {
+        if (errs.length === 1) throw errs[0].reason;
+        if (errs.length > 1) {
             // Enhance entire result col w/class name, we care about errs only
             results.forEach((it, idx) => {
                 it.name = svcs[idx].constructor.name;
@@ -637,7 +638,8 @@ class XHClass {
                     p('Failed to initialize services:'),
                     ...errs.map(it => p(it.reason.message + ' (' + it.name + ')'))
                 ],
-                details: errs
+                details: errs,
+                isRoutine: errs.every(it => it.reason.isRoutine)
             });
         }
     }
