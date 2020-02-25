@@ -11,7 +11,7 @@ import {createAggregateRow, createLeafRow} from './impl';
 import {observable, action} from 'mobx';
 import {throwIf} from '../../utils/js';
 
-import {isEmpty, groupBy, map} from 'lodash';
+import {isEmpty, groupBy, map, castArray} from 'lodash';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
@@ -37,10 +37,10 @@ export class View {
     result = null;
 
     /**
-     * @member {Store}
-     * Store to which results of this view should be (re)loaded
+     * @member {Store[]}
+     * Stores to which results of this view should be (re)loaded
      */
-    store = null;
+    stores = null;
 
     /**
      * @member {Object}
@@ -60,15 +60,15 @@ export class View {
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {Store} [c.store] - Store to be loaded/reloaded with
+     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with
      *      data from this view.  Optional. To receive data only, use the
      *      rows property instead.
      * @param {boolean} [c.connect] - true to updated rows property and loaded
      *      store when data in the underlying cube is changed.
      */
-    constructor({query, connect = false, store = null}) {
+    constructor({query, connect = false, stores = []}) {
         this.query = query;
-        this.store = store;
+        this.stores = castArray(stores);
         this.fullUpdate();
 
         if (connect) {
@@ -152,29 +152,29 @@ export class View {
     //------------------------
     @action
     fullUpdate() {
-        const {store} = this;
         this.generateRows();
 
-        if (store) store.loadData(this._rows);
+        this.stores.forEach(s => s.loadData(this._rows));
         this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
 
     @action
     dataOnlyUpdate(updates) {
-        const {store, _leafMap} = this;
+        const {_leafMap} = this;
 
         const updatedRows = new Set();
         updates.forEach(rec => {
             const leaf = _leafMap.get(rec.id);
             leaf?._meta.applyDataUpdate(rec, updatedRows);
         });
-        const recordUpdates = [];
-        updatedRows.forEach(row => {
-            if (store.getById(row.id)) recordUpdates.push(row);
+        this.stores.forEach(store => {
+            const recordUpdates = [];
+            updatedRows.forEach(row => {
+                if (store.getById(row.id)) recordUpdates.push(row);
+            });
+            store.updateData({update: recordUpdates});
         });
-
-        if (store) store.updateData({update: recordUpdates});
         this.result = {rows: this._rows, leafMap: this._leafMap};
         this.info = this.cube.info;
     }
