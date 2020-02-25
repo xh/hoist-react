@@ -12,7 +12,7 @@ import {isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
-import {elementFromContent, useOnUnmount} from '@xh/hoist/utils/react';
+import {elementFromContent, useOnUnmount, useOnResize} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -67,10 +67,10 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             // todo: explore how to ensure called only once.
             // (may not be necessary to ensure only called once, not seeing any re-renders)
             maybeSetFocus();
-
-            const {width, height, x, y} = model;
-            model.positionDialogOnRender({width, height, x, y});
+            model.positionDialogOnRender();
         });
+
+        useOnResize(() => model.positionDialogOnRender(), null, {current: document.body});
 
         if (!isOpen || !hasPortal) {
             return null;

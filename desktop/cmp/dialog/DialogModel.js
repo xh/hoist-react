@@ -308,8 +308,10 @@ export class DialogModel {
         this.setHasPortal(false);
     }
 
-    positionDialogOnRender({width, height, x, y}) {
+    positionDialogOnRender() {
         if (!this.rndRef) return;
+
+        let {width, height, x, y} = this;
 
         this.setState({width, height, x, y});
 
