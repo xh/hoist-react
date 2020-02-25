@@ -6,11 +6,10 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, isNumber} from 'lodash';
+import {isNumber} from 'lodash';
 import {apiRemoved} from '../../utils/js';
 
 /**
@@ -37,7 +36,7 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
-     * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {(string|string[]} [c.groupBy] - colId(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
@@ -67,7 +66,7 @@ export class DataViewModel {
         groupRowHeight,
         groupRowRenderer,
         groupRowElementRenderer,
-        sortBy = [],
+        sortBy,
         selModel,
         emptyText,
         showHover = false,
@@ -77,8 +76,6 @@ export class DataViewModel {
         rowClassFn,
         ...restArgs
     }) {
-        sortBy = castArray(sortBy);
-        throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
@@ -88,28 +85,26 @@ export class DataViewModel {
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
         // initially and through updates via transactions. For this reason, we set the field of our
-        // single column to the desired sort field. (The field setting should not have any other
-        // meaningful impact on the grid, since we use a custom renderer and mark it as complex to
-        // ensure each item re-renders on any record change.)
-        let field = 'id';
-        if (sortBy.length === 1) {
-            let sorter = sortBy[0];
-            if (!(sorter instanceof GridSorter)) sorter = GridSorter.parse(sorter);
-            field = sorter.colId;
-        }
+        // single visible column to the desired sort field while other fields are hidden columns to allow
+        // for multiple sorters and groupings or using setGroupBy and setSortBy methods on the model itself.
 
-        const columns = [{
-            field,
+        const columns = store.fields.filter(field => {
+            return field !== sortBy;
+        }).map(field => {
+            return {
+                colId: field,
+                field: field,
+                hidden: true
+            };
+        });
+
+        columns.push({
+            colId: sortBy,
+            field: sortBy,
             flex: true,
             elementRenderer,
             rendererIsComplex: true
-        }, ...store.fields.map(field => {
-            return {colId: field, hidden: true};
-        })];
-
-        if (groupBy) {
-            columns.push({field: groupBy, hidden: true});
-        }
+        });
 
         this.gridModel = new GridModel({
             store,

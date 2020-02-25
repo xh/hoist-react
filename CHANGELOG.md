@@ -7,7 +7,9 @@
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
-* `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
+  * `DataViewModel` also allows for settable and multiple groupings and sorters, via `GridModel` methods
+  `setGroupBy()` and `setSortBy()`.
+* `DataViewModel` now supports additional configs from the underlying `GridModel` that make
   sense in a `DataView` context, such as `showHover` and `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
   via Hoist's built-in activity tracking.
