@@ -98,7 +98,7 @@ export class ConfigModel {
         columns: [
             {field: 'name', width: 200},
             {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.maskIfPwd && this.truncateIfJson, tooltip: this.maskIfPwd && this.truncateIfJson},
+            {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
             {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
             {field: 'note', minWidth: 60, flex: true, tooltip: true}
@@ -122,11 +122,14 @@ export class ConfigModel {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
-    maskIfPwd(value, {record}) {
-        return record.data.valueType === 'pwd' ? '*****' : value;
-    }
-
-    truncateIfJson(value, {record}) {
-        return record.data.valueType === 'json' ? truncate(value, {length: 500}) : value;
+    configRenderer(value, {record}) {
+        switch (record.data.valueType) {
+            case 'pwd':
+                return '*****';
+            case 'json':
+                return truncate(value, {length: 500});
+            default:
+                return value;
+        }
     }
 }
