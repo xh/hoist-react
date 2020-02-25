@@ -38,8 +38,7 @@
   the generated config. This could cause a change in behavior for apps using this config to
   customize map instances, but provides more flexibility for e.g. customizing the `series`.
 * The signature of `useOnResize` hook has been modified slightly for API consistency and clarity.
-Options are now passed in a configuration object.
-
+  Options are now passed in a configuration object.
 
 ### 🐞 Bug Fixes
 
@@ -48,7 +47,7 @@ Options are now passed in a configuration object.
 * Fixed an issue where zeroes entered by the user in `PinPad` would be displayed as blanks.
 * Fixed `fontAwesomeIcon` elem factory component to always include the default 'fa-fw' className.
   Previously, it was overridden if a `className` prop was provided.
-* Fixed an issue where ConfigDiffer would always warn about deletions.
+* Fixed an issue where ConfigDiffer would always warn about deletions, even when there weren't any.
   [#1652](https://github.com/xh/hoist-react/issues/1652)
 * `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
   automatically hide.
