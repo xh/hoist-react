@@ -126,7 +126,12 @@ class LocalModel {
 
     createOrReloadHighChart() {
         const chartElem = this.chartRef.current;
-        if (!chartElem) return;
+        if (!chartElem) {
+            // Ensure any chart instance is cleaned up if the ref drops.
+            // This will ensure it is recreated on next render cycle when the ref and DOM are back.
+            this.destroyHighChart();
+            return;
+        }
 
         // Extract and compare a subset of the config across calls to determine if we should
         // recreate the entire chart or just reload the series data.
