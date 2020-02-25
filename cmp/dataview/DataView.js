@@ -73,7 +73,9 @@ class LocalModel {
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
                 return model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
-            }
+            },
+            groupSuppressAutoColumn: true,
+            suppressMakeVisibleAfterUnGroup: true
         };
     }
 }

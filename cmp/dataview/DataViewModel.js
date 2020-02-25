@@ -85,22 +85,21 @@ export class DataViewModel {
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
         // initially and through updates via transactions. For this reason, we set the field of our
-        // single visible column to the desired sort field while other fields are hidden columns to allow
+        // single visible column to the desired sortBy field while other fields are hidden columns to allow
         // for multiple sorters and groupings or using setGroupBy and setSortBy methods on the model itself.
 
-        const columns = store.fields.filter(field => {
-            return field !== sortBy;
-        }).map(field => {
+        const columns = store.fields.map(field => {
             return {
-                colId: field,
-                field: field,
-                hidden: true
+                field,
+                hidden: true,
+                agOptions: {
+                    showRowGroup: false
+                }
             };
         });
 
         columns.push({
-            colId: sortBy,
-            field: sortBy,
+            colId: 'xhDisplayColumn',
             flex: true,
             elementRenderer,
             rendererIsComplex: true
@@ -132,6 +131,8 @@ export class DataViewModel {
     get hasSelection()          {return this.gridModel.hasSelection}
     get selection()             {return this.gridModel.selection}
     get selectedRecord()        {return this.gridModel.selectedRecord}
+    get groupBy()               {return this.gridModel.groupBy}
+    get sortBy()                {return this.gridModel.sortBy}
 
     selectFirst()               {return this.gridModel.selectFirst()}
     ensureSelectionVisible()    {return this.gridModel.ensureSelectionVisible()}
