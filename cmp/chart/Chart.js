@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
+import {useRef} from 'react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import {bindable, runInAction} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
@@ -12,7 +13,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -33,7 +34,9 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChart(e));
+            ref = useRef(null);
+        useOnResize(impl.onResize, {ref});
+        useOnVisibleChange(impl.onVisibleChange, {ref});
 
         impl.setAspectRatio(aspectRatio);
 
@@ -104,13 +107,15 @@ class LocalModel {
     updateSeries() {
         const newSeries = this.model.series,
             seriesConfig = newSeries.map(it => omit(it, 'data')),
-            {prevSeriesConfig, chart} = this;
+            {prevSeriesConfig, chart} = this,
+            sameConfig = chart && isEqual(seriesConfig, prevSeriesConfig),
+            sameSeriesCount = chart && prevSeriesConfig?.length === seriesConfig.length;
 
         // If metadata not changed or # of series the same we can do more minimal in-place updates
-        if (isEqual(seriesConfig, prevSeriesConfig)) {
+        if (sameConfig) {
             newSeries.forEach((s, i) => chart.series[i].setData(s.data, false));
             chart.redraw();
-        } else if (prevSeriesConfig?.length === seriesConfig.length) {
+        } else if (sameSeriesCount) {
             newSeries.forEach((s, i) => chart.series[i].update(s, false));
             chart.redraw();
         } else {
@@ -125,11 +130,16 @@ class LocalModel {
         if (chartElem) {
             const config = this.getMergedConfig(),
                 parentEl = chartElem.parentElement,
-                dims = this.getChartDims({
+                parentDims = {
                     width: parentEl.offsetWidth,
                     height: parentEl.offsetHeight
-                });
+                };
 
+            // Skip creating HighCharts instance if hidden - we will
+            // instead create when it becomes visible
+            if (parentDims.width === 0 || parentDims.height === 0) return;
+
+            const dims = this.getChartDims(parentDims);
             assign(config.chart, dims);
 
             config.chart.renderTo = chartElem;
@@ -137,10 +147,17 @@ class LocalModel {
         }
     }
 
-    resizeChart(e) {
+    onResize = (e) => {
+        if (!this.chart) return;
         const {width, height} = this.getChartDims(e[0].contentRect);
         this.chart.setSize(width, height, false);
-    }
+    };
+
+    onVisibleChange = (visible) => {
+        if (visible && !this.chart) {
+            this.renderHighChart();
+        }
+    };
 
     getChartDims({width, height}) {
         const {aspectRatio} = this;
