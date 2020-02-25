@@ -98,7 +98,7 @@ export class ConfigModel {
         columns: [
             {field: 'name', width: 200},
             {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.maskIfPwd, getValueFn: this.truncateJson, tooltip: this.maskIfPwd},
+            {field: 'value', width: 200, renderer: this.maskIfPwd, getValueFn: this.truncateIfJson, tooltip: this.maskIfPwd},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
             {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
             {field: 'note', minWidth: 60, flex: true, tooltip: true}
@@ -126,7 +126,7 @@ export class ConfigModel {
         return record.data.valueType === 'pwd' ? '*****' : value;
     }
 
-    truncateJson({record}) {
+    truncateIfJson({record}) {
         return record.data.valueType === 'json' ? truncate(record.data.value, {length: 50}) : record.data.value;
     }
 }
