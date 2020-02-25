@@ -43,8 +43,8 @@ export function useOnUnmount(fn) {
 export function useOnResize(fn, delay, ref) {
     if (!ref) ref = useRef(null);
 
+    const {current} = ref;
     useEffect(() => {
-        const {current} = ref;
         if (!current) return;
 
         let prevWidth, prevHeight;
@@ -66,7 +66,7 @@ export function useOnResize(fn, delay, ref) {
 
         resizeObserver.observe(current);
         return () => resizeObserver.unobserve(current);
-    }, [ref.current, delay]);
+    }, [current, delay]);
 
     return ref;
 }
@@ -81,8 +81,8 @@ export function useOnResize(fn, delay, ref) {
 export function useOnVisible(fn, ref) {
     if (!ref) ref = useRef(null);
 
+    const {current} = ref;
     useEffect(() => {
-        const {current} = ref;
         if (!current) return;
 
         let prevVisible;
@@ -100,7 +100,7 @@ export function useOnVisible(fn, ref) {
 
         resizeObserver.observe(current);
         return () => resizeObserver.unobserve(current);
-    }, [ref.current]);
+    }, [current]);
 
     return ref;
 }
