@@ -7,7 +7,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce} from 'lodash';
+import {isFinite, debounce as lodashDebounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -36,15 +36,16 @@ export function useOnUnmount(fn) {
  * This will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
  * size. This is to improve performance by avoiding unneeded resizing.
  * @param {function} fn
- * @param {number} [delay] - milliseconds to debounce
- * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
+ * @param {Object} [c] - configuration object
+ * @param {number} [c.debounce] - milliseconds to debounce
+ * @param {Ref} [c.ref] - existing ref to observe. If not provided, a ref will be created
  * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn, delay, ref) {
+export function useOnResize(fn, {debounce, ref} = {}) {
     if (!ref) ref = useRef(null);
 
+    const {current} = ref;
     useEffect(() => {
-        const {current} = ref;
         if (!current) return;
 
         let prevWidth, prevHeight;
@@ -61,12 +62,47 @@ export function useOnResize(fn, delay, ref) {
             }
         };
 
-        const callbackFn = isFinite(delay) && delay >= 0 ? debounce(wrappedFn, delay) : wrappedFn,
+        const callbackFn = isFinite(debounce) && debounce >= 0 ? lodashDebounce(wrappedFn, debounce) : wrappedFn,
             resizeObserver = new ResizeObserver(callbackFn);
 
         resizeObserver.observe(current);
         return () => resizeObserver.unobserve(current);
-    }, [ref.current, delay]);
+    }, [current, debounce]);
+
+    return ref;
+}
+
+/**
+ * Hook to run a function when component becomes visible / invisible.
+ * The function with receive boolean visible as its argument.
+ * @param {function} fn
+ * @param {Object} [c] - configuration object
+ * @param {Ref} [c.ref] - existing ref to observe. If not provided, a ref will be created
+ * @returns {Ref} - ref to be placed on target component
+ */
+export function useOnVisibleChange(fn, {ref} = {}) {
+    if (!ref) ref = useRef(null);
+
+    const {current} = ref;
+    useEffect(() => {
+        if (!current) return;
+
+        let prevVisible;
+
+        const resizeObserver = new ResizeObserver((e) => {
+            const {width, height} = e[0].contentRect,
+                visible = width !== 0 && height !== 0,
+                hasChanged = visible !== prevVisible;
+
+            if (hasChanged) {
+                prevVisible = visible;
+                fn(visible);
+            }
+        });
+
+        resizeObserver.observe(current);
+        return () => resizeObserver.unobserve(current);
+    }, [current]);
 
     return ref;
 }
