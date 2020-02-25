@@ -26,8 +26,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Dialog',
     model: uses(DialogModel, {
         fromContext: true,
-        publishMode: ModelPublishMode.LIMITED,
-        createDefault: true
+        publishMode: ModelPublishMode.LIMITED
     }),
     memo: false,
     className: 'xh-dialog',
