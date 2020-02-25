@@ -58,14 +58,6 @@ export class DialogModel {
     resizable;
     /** @member {boolean} */
     draggable;
-    /** @member {boolean} */
-    closeOnOutsideClick;
-    /** @member {boolean} */
-    closeOnEscape;
-    /** @member {boolean} */
-    showBackgroundMask;
-    /** @member {boolean} */
-    showCloseButton;
 
 
     /**
@@ -90,6 +82,14 @@ export class DialogModel {
     @observable isMaximized;
     /** @member {boolean} */
     @observable isOpen;
+    /** @member {boolean} */
+    @observable closeOnOutsideClick;
+    /** @member {boolean} */
+    @observable closeOnEscape;
+    /** @member {boolean} */
+    @observable showBackgroundMask;
+    /** @member {boolean} */
+    @observable showCloseButton;
     /** @member {(Object|function)} */
     @observable content;
 
@@ -99,7 +99,7 @@ export class DialogModel {
     //----------------------------------
     /** Is the Dialog mounted into React's virtual DOM? */
     /** @member {boolean} */
-    @observable hasMounted = false;
+    @observable hasPortal = false;
     /** @member {object} */
     @observable.ref sizeState = {};
     /** @member {object} */
@@ -159,17 +159,12 @@ export class DialogModel {
         this.setShowCloseButton(showCloseButton);
     }
 
-
-    isComponentModel() {
-        return true;
-    }
-
     //----------------------
     // Actions
     //----------------------
     @action
-    setHasMounted(bool) {
-        this.hasMounted = bool;
+    setHasPortal(bool) {
+        this.hasPortal = bool;
     }
 
     @action
@@ -282,6 +277,35 @@ export class DialogModel {
     handleOutsideClick(evt) {
         if (evt.target != this.clickCaptureCompRef.current) return;
         this.close();
+    }
+
+    togglePortal() {
+        if (this.isOpen) {
+            this.setUpPortal();
+        } else {
+            this.removePortal();
+        }
+    }
+
+    setUpPortal() {
+        /**
+             * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
+             * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
+             */
+        if (this.containerElement) return;
+
+        this.portalContainer = document.getElementById(this.dialogRootId);
+        this.portalContainer.appendChild(document.createElement('div'));
+        this.containerElement = this.portalContainer.lastChild;
+        this.setHasPortal(true);
+    }
+
+    removePortal() {
+        if (!this.containerElement) return;
+
+        this.portalContainer.removeChild(this.containerElement);
+        this.containerElement = null;
+        this.setHasPortal(false);
     }
 
     positionDialogOnRender({width, height, x, y}) {

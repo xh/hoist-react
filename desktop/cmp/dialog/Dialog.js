@@ -12,7 +12,7 @@ import {isFunction, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
-import {elementFromContent, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {elementFromContent, useOnUnmount} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -32,7 +32,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     className: 'xh-dialog',
 
     render({model, ...props}) {
-        const {isOpen} = model,
+        const {isOpen, hasPortal} = model,
             maybeSetFocus = () => {
             // always delay focus manipulation to just before repaint to prevent scroll jumping
                 window.requestAnimationFrame(() => {
@@ -57,22 +57,9 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
                     }
                 });
             };
-
-        useOnMount(() => {
-            /**
-             * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
-             * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
-             */
-            model.portalContainer = document.getElementById(model.dialogRootId);
-
-            model.containerElement = document.createElement('div');
-            model.portalContainer.appendChild(model.containerElement);
-            model.setHasMounted(true);
-        });
-
-        useOnUnmount(() => {
-            model.portalContainer.removeChild(model.containerElement);
-        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        useEffect(() => model.togglePortal(), [isOpen]);
+        useOnUnmount(() => model.removePortal());
 
         useEffect(() => {
             // these need to be called on 2nd render cycle
@@ -85,9 +72,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             model.positionDialogOnRender({width, height, x, y});
         });
 
-        const {hasMounted} = model;
-
-        if (!isOpen || !hasMounted) {
+        if (!isOpen || !hasPortal) {
             return null;
         }
 
