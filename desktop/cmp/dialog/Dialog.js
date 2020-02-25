@@ -89,12 +89,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         const {hasMounted} = model;
 
         if (!isOpen || !hasMounted) {
-            document.body.style.overflow = null;
             return null;
         }
-
-        // do we need to store prior overflow setting to be able to reset it when modal closes?
-        document.body.style.overflow = 'hidden';
 
         return ReactDOM.createPortal(
             rndDialog(props),
