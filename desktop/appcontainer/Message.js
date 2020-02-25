@@ -6,7 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -24,33 +24,32 @@ import './Message.scss';
  * @private
  */
 export const message = hoistCmp.factory({
-    model: uses(MessageModel),
+    model: uses(m => m instanceof MessageModel),
     className: 'xh-message',
 
     render({model, ...props}) {
 
-        if (!model.isOpen) return null;
-
         return dialog({
-            isOpen: true,
-            showCloseButton: false,
             title: model.title,
             icon: model.icon,
-            mask: true,
-            items: [
-                vframe({
-                    margin: '20px',
-                    items: [
-                        model.message,
-                        inputCmp()
-                    ]
-                }),
-                bbar()
-            ],
-            onClose: () => {if (model.cancelProps) model.doCancel();},
-            width: 500,
             ...props
         });
+    }
+});
+
+export const messageContent = hoistCmp.factory({
+    model: uses(m => m instanceof MessageModel),
+    render({model}) {
+        return fragment(
+            vframe({
+                margin: '20px',
+                items: [
+                    model.message,
+                    inputCmp()
+                ]
+            }),
+            bbar()
+        );
     }
 });
 

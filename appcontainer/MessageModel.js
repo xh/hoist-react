@@ -5,9 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {warnIf} from '@xh/hoist/utils/js';
+import {DialogModel} from '@xh/hoist/desktop/cmp/dialog';
+import {messageContent} from '@xh/hoist/desktop/appcontainer/Message';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -31,7 +33,13 @@ export class MessageModel {
     result;
     _resolver;
 
-    @observable isOpen = true;
+    dialogModel = new DialogModel({
+        content: () => messageContent({model: this}),
+        closeOnOutsideClick: false,
+        showCloseButton: false,
+        closeOnEscape: false,
+        width: 500
+    });
 
     constructor({
         title,
@@ -108,7 +116,7 @@ export class MessageModel {
     //-----------------------
     @action
     close() {
-        this.isOpen = false;
+        this.dialogModel.close();
     }
 
     destroy() {
