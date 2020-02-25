@@ -32,7 +32,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     className: 'xh-dialog',
 
     render({model, ...props}) {
-        const {isOpen, hasPortal} = model,
+        const {isOpen, hasPortal, inPortal} = model,
             maybeSetFocus = () => {
             // always delay focus manipulation to just before repaint to prevent scroll jumping
                 window.requestAnimationFrame(() => {
@@ -72,15 +72,18 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
 
         useOnResize(() => model.positionDialogOnRender(), null, {current: document.body});
 
-        if (!isOpen || !hasPortal) {
+        if (!isOpen || (inPortal && !hasPortal)) {
             return null;
         }
 
-        return ReactDOM.createPortal(
-            rndDialog(props),
-            model.containerElement
-        );
-
+        if (inPortal) {
+            return ReactDOM.createPortal(
+                rndDialog(props),
+                model.containerElement
+            );
+        } else {
+            return rndDialog(props);
+        }
     }
 });
 
@@ -101,8 +104,8 @@ Dialog.propTypes = {
 const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
-            {resizable, draggable, width, height, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
-            {rndOptions = {}, onClose } = props;
+            {inPortal, resizable, draggable, width, height, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
+            {rndOptions = {}} = props;
 
         throwIf(
             resizable && (!width || !height),
@@ -159,9 +162,9 @@ const rndDialog = hoistCmp.factory({
         if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
         merge(rndOptions, {style: {zIndex}});
 
-        return fragment(
+        const items = [
             showBackgroundMask ? maskComp({zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({zIndex, onClose}) : null,
+            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
             rnd({
                 ref: c =>  model.rndRef = c,
                 ...rndOptions,
@@ -176,7 +179,7 @@ const rndDialog = hoistCmp.factory({
                     topLeft: resizable,
                     topRight: resizable
                 },
-                bounds: 'body',
+                bounds: inPortal ? 'body' : 'parent',
                 dragHandleClassName: 'xh-dialog__header',
                 onDragStop,
                 onResizeStop,
@@ -188,20 +191,26 @@ const rndDialog = hoistCmp.factory({
                     item: content(props)
                 })
             })
-        );
+        ];
+
+        return inPortal ? fragment(...items) : div({className: model.baseClass, items});
     }
 });
 
-const maskComp = hoistCmp.factory(
-    ({zIndex}) => div({className: 'xh-dialog-root__mask', style: {zIndex}})
-);
+const maskComp = hoistCmp.factory({
+    render({zIndex}) {
+        const model = useContextModel(DialogModel);
+
+        return div({className: `${model.baseClass}__mask`, style: {zIndex}});
+    }
+});
 
 const clickCaptureComp = hoistCmp.factory({
-    render({zIndex, onClose}) {
+    render({zIndex}) {
         const model = useContextModel(DialogModel);
 
         return div({
-            className: 'xh-dialog-root__click-capture',
+            className: `${model.baseClass}__click-capture`,
             style: {zIndex},
             ref: model.clickCaptureCompRef,
             onClick: (evt) => model.handleOutsideClick(evt)

@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-.xh-dialog-root {
+.xh-dialog-portal,
+.xh-dialog-container {
   .react-draggable {
     background-color: var(--xh-bg);
     box-shadow: var(--xh-dialog-box-shadow);
@@ -41,5 +42,19 @@
     background-color: transparent;
     overflow: auto;
     user-select: none;
+  }
+}
+
+.xh-dialog-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  &__mask {
+    position: absolute;
+  }
+
+  &__click-capture {
+    position: absolute;
   }
 }

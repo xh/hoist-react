@@ -42,7 +42,7 @@ export class DialogModel {
     //-----------------------
     containerElement = null;
     portalContainer = null;
-    dialogRootId = 'xh-dialog-root';
+    dialogPortalId = 'xh-dialog-portal';
     dialogWrapperDivRef = createObservableRef();
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
@@ -58,14 +58,8 @@ export class DialogModel {
     resizable;
     /** @member {boolean} */
     draggable;
-
-
-    /**
-     * @member {function}
-     * Callback invoked when dialog is closed.
-     */
-    onClose;
-
+    /** @member {boolean} */
+    inPortal;
 
     //-------------------
     // Mutable Public State
@@ -116,6 +110,7 @@ export class DialogModel {
      * @param {number} [config.y] - Optional initial y position of Dialog.
      * @param {boolean} [config.isMaximized] - Does Dialog cover entire viewport?
      * @param {boolean} [config.isOpen] - Is Dialog open?
+     * @param {boolean} [config.inPortal] - Open in React Portal? (default true) If false, dialog will be bound by parent DOM el.
      * @param {boolean} [config.resizable] - Can Dialog be resized?
      * @param {boolean} [config.draggable] - Can Dialog be dragged?
      * @param {boolean} [config.closeOnOutsideClick] - Can Dialog be closed by clicking outside Dialog?
@@ -132,6 +127,7 @@ export class DialogModel {
         y,
         isMaximized = false,
         isOpen = false,
+        inPortal = true,
         resizable = false,
         draggable = false,
         closeOnOutsideClick = true,
@@ -144,6 +140,7 @@ export class DialogModel {
         this.resizable = resizable;
         this.draggable = draggable;
         this.stateModel = this.parseStateModel(stateModel);
+        this.inPortal = inPortal;
 
         // set observables
         this.setContent(content);
@@ -280,6 +277,7 @@ export class DialogModel {
     }
 
     togglePortal() {
+        if (!this.inPortal) return;
         if (this.isOpen) {
             this.setUpPortal();
         } else {
@@ -294,7 +292,7 @@ export class DialogModel {
              */
         if (this.containerElement) return;
 
-        this.portalContainer = document.getElementById(this.dialogRootId);
+        this.portalContainer = document.getElementById(this.dialogPortalId);
         this.portalContainer.appendChild(document.createElement('div'));
         this.containerElement = this.portalContainer.lastChild;
         this.setHasPortal(true);
@@ -430,5 +428,9 @@ export class DialogModel {
             offsetHeight: height
         } = this.dialogWrapperDivRef.current;
         return {width, height};
+    }
+
+    get baseClass() {
+        return this.inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
     }
 }
