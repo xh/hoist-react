@@ -12,6 +12,9 @@ import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {boolCheckCol, compactDateCol} from '@xh/hoist/cmp/grid';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {DialogModel} from '@xh/hoist/desktop/cmp/dialog';
+import {detail} from '@xh/hoist/admin/tabs/activity/clienterrors/ClientErrorDetail';
+
 
 @HoistModel
 @LoadSupport
@@ -44,6 +47,11 @@ export class ClientErrorModel {
             {field: 'msg', width: 130, hidden: true},
             {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)}
         ]
+    });
+
+    dialogModel = new DialogModel({
+        content: detail,
+        width: 1000
     });
 
     constructor() {
@@ -88,11 +96,13 @@ export class ClientErrorModel {
     @action
     openDetail(rec) {
         this.detailRecord = rec;
+        this.dialogModel.open();
     }
 
     @action
     closeDetail() {
         this.detailRecord = null;
+        this.dialogModel.close();
     }
 
     //------------------------
