@@ -70,3 +70,37 @@ export function useOnResize(fn, delay, ref) {
 
     return ref;
 }
+
+/**
+ * Hook to run a function when component becomes visible / invisible.
+ * The function with receive boolean visible as its argument.
+ * @param {function} fn
+ * @param {Ref} [ref] - existing ref to observe. If not provided, a ref will be created
+ * @returns {Ref} - ref to be placed on target component
+ */
+export function useOnVisible(fn, ref) {
+    if (!ref) ref = useRef(null);
+
+    useEffect(() => {
+        const {current} = ref;
+        if (!current) return;
+
+        let prevVisible;
+
+        const resizeObserver = new ResizeObserver((e) => {
+            const {width, height} = e[0].contentRect,
+                visible = width !== 0 && height !== 0,
+                hasChanged = visible !== prevVisible;
+
+            if (hasChanged) {
+                prevVisible = visible;
+                fn(visible);
+            }
+        });
+
+        resizeObserver.observe(current);
+        return () => resizeObserver.unobserve(current);
+    }, [ref.current]);
+
+    return ref;
+}

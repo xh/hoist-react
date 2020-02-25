@@ -10,7 +10,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps, useOnResize, useOnVisible} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
@@ -36,8 +36,9 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChartAsync(e), 100);
+        const impl = useLocalModel(() => new LocalModel(model));
+        let ref = useOnResize(e => impl.onResizeAsync(e), 100);
+        ref = useOnVisible(v => impl.onVisible(v), ref);
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -148,31 +149,33 @@ class LocalModel {
         if (!chartElem) return;
 
         const newData = config.series[0].data,
-            parentEl = chartElem.parentElement;
+            parentEl = chartElem.parentElement,
+            parentDims = {
+                width: parentEl.offsetWidth,
+                height: parentEl.offsetHeight
+            };
 
-        assign(config.chart, {
-            width: parentEl.offsetWidth,
-            height: parentEl.offsetHeight,
-            renderTo: chartElem
-        });
+        this.destroyHighChart();
 
+        // Skip creating HighCharts instance if hidden - we will
+        // instead create when it becomes visible
+        if (parentDims.width === 0 || parentDims.height === 0) return;
+
+        assign(config.chart, parentDims, {renderTo: chartElem});
         withShortDebug(`Creating new TreeMap | ${newData.length} records`, () => {
-            this.destroyHighChart();
             this.chart = Highcharts.chart(config);
         }, this);
     }
 
     reloadSeriesData(newData) {
         if (!this.chart) return;
-
         withShortDebug(`Updating TreeMap series | ${newData.length} records`, () => {
             this.chart.series[0].setData(newData, true, false);
         }, this);
     }
 
-    async resizeChartAsync(e) {
+    async onResizeAsync(e) {
         if (!this.chart) return;
-
         await start(() => {
             const {width, height} = e[0].contentRect;
             if (width > 0 && height > 0) {
@@ -180,6 +183,12 @@ class LocalModel {
             }
         });
         this.updateLabelVisibility();
+    }
+
+    onVisible(visible) {
+        if (visible && !this.chart) {
+            this.createOrReloadHighChart();
+        }
     }
 
     destroy() {
