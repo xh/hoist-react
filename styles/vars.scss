@@ -78,6 +78,8 @@ body {
   --xh-button-bg: var(--button-bg, #{mc('grey', '50')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
+  --xh-button-inactive-bg: var(--button-inactive-bg, var(--xh-button-bg));
+  --xh-button-inactive-text-color: var(--button-inactive-text-color, var(--xh-button-text-color));
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 
   // Chart
@@ -372,6 +374,8 @@ body.xh-dark {
   --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '900')});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '800')});
+  --xh-button-inactive-bg: var(--button-inactive-bg, var(--xh-button-bg));
+  --xh-button-inactive-text-color: var(--button-inactive-text-color, var(--xh-button-text-color));
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 }
 
@@ -386,6 +390,8 @@ body.xh-mobile {
   --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '600')});
   --xh-button-active-text-color: var(--button-active-text-color, white);
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
+  --xh-button-inactive-bg: var(--button-inactive-bg, #{mc('grey', '400')});
+  --xh-button-inactive-text-color: var(--button-inactive-text-color, white);
   --xh-button-text-color: var(--button-text-color, white);
   --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
@@ -414,6 +420,7 @@ body.xh-mobile {
 }
 
 body.xh-mobile.xh-dark {
+  --xh-button-inactive-bg: var(--button-inactive-bg, #{mc('blue-grey', '800')});
   --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});

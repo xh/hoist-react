@@ -13,6 +13,12 @@ body.xh-app .xh-button-group .xh-button {
     }
   }
 
+  &:not(.button--outline):not(.button--quiet):not(.button--light):not(.xh-button-active) {
+    background-color: var(--xh-button-inactive-bg);
+    color: var(--xh-button-inactive-text-color);
+    opacity: 1;
+  }
+
   &:not(.button--outline):not(.button--quiet):not(.button--light).xh-button-active {
     background-color: var(--xh-button-active-bg);
     color: var(--xh-button-active-text-color);
