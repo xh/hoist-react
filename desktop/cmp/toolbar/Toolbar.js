@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement, cloneElement} from 'react';
+import React from 'react';
 import {hoistCmp} from '@xh/hoist/core';
 import {hbox, vbox, fragment, filler} from '@xh/hoist/cmp/layout';
 import {overflowList, popover} from '@xh/hoist/kit/blueprint';
@@ -50,30 +50,24 @@ const itemContainer = hoistCmp.factory({
         if (vertical) return fragment(items);
 
         return overflowList({
-            $items: items,
+            $items: React.Children.toArray(items),
             minVisibleItems,
             collapseFrom,
-            visibleItemRenderer: (item, key) => {
-                return isValidElement(item) ? cloneElement(item, {key}) : item;
-            },
-            overflowRenderer: (overflowItems) => {
-                return itemOverflowButton({overflowItems});
-            }
+            visibleItemRenderer: (item) => item,
+            overflowRenderer: (items) => itemOverflowButton(items)
         });
     }
 });
 
 const itemOverflowButton = hoistCmp.factory({
-    render({overflowItems}) {
+    render({children}) {
         return fragment(
             filler(),
             popover({
                 popoverClassName: 'xh-toolbar-overflow-popover',
                 position: 'bottom-right',
                 target: button({icon: Icon.ellipsisVertical()}),
-                content: vbox(
-                    ...overflowItems
-                )
+                content: vbox(React.Children.toArray(children))
             })
         );
     }
@@ -86,9 +80,15 @@ Toolbar.propTypes = {
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool,
 
-    /** Which direction the items should collapse from: 'start' or 'end' of the children. */
+    /**
+     * For horizontal toolbars that overflow, manages which direction the items collapse from.
+     * Valid values are 'start' or 'end'. Defaults to 'end'.
+     */
     collapseFrom: PT.string,
 
-    /** The minimum number of visible items that should never collapse into the overflow menu */
+    /**
+     * For horizontal toolbars that overflow, manages the minimum number of visible items
+     * that should never collapse into the overflow menu.
+     */
     minVisibleItems: PT.number
 };

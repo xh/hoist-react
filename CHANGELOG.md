@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Horizontal toolbars will collapse overflowing items into a drop down menu.
+* Horizontal `Toolbar` will collapse overflowing items into a drop down menu.
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
@@ -25,6 +25,8 @@
 
 ### 💥 Breaking Changes
 
+* `Toolbar` items must be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
 * `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
   flexibility and better symmetry with `GridModel`.
 * `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`
