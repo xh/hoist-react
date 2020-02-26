@@ -201,7 +201,6 @@ class LocalModel {
             },
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
-            suppressMakeColumnVisibleAfterUnGroup: true,
             icons: {
                 groupExpanded: convertIconToSvg(
                     Icon.angleDown(),
