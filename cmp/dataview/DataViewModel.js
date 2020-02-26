@@ -91,10 +91,7 @@ export class DataViewModel {
         const columns = store.fields.map(field => {
             return {
                 field,
-                hidden: true,
-                agOptions: {
-                    showRowGroup: false
-                }
+                hidden: true
             };
         });
 
