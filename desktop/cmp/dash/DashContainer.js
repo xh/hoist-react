@@ -30,7 +30,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
         // Get container ref for GoldenLayout resize handling
-        const ref = useOnResize(() => model.onResize(), 100, model.containerRef);
+        const ref = useOnResize(() => model.onResize(), {debounce: 100, ref: model.containerRef});
 
         return frame(
             frame({className, ref}),
