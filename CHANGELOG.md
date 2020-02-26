@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Horizontal toolbars will collapse overflowing items into a drop down menu.
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.

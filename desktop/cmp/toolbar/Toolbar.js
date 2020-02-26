@@ -19,6 +19,7 @@ import './Toolbar.scss';
 /**
  * A toolbar with built-in styling and padding.
  * Child items provided as raw configs will be created as buttons by default.
+ * In horizontal toolbars, items which overflow will be collapsed into a drop down menu.
  */
 export const [Toolbar, toolbar] = hoistCmp.withFactory({
     displayName: 'Toolbar',
@@ -28,7 +29,6 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     render(props) {
         const {children, className, vertical, collapseFrom = 'end', minVisibleItems, ...rest} = props;
 
-        // Todo: Doesn't work with form fields?
         return (vertical ? vbox : hbox)({
             ...rest,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
@@ -45,6 +45,10 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
 const itemContainer = hoistCmp.factory({
     render({items, vertical, minVisibleItems, collapseFrom}) {
         if (!items || !items.length) return null;
+
+        // Overflow collapse is not supported for vertical toolbars
+        if (vertical) return fragment(items);
+
         return overflowList({
             $items: items,
             minVisibleItems,
@@ -52,23 +56,23 @@ const itemContainer = hoistCmp.factory({
             visibleItemRenderer: (item, key) => {
                 return isValidElement(item) ? cloneElement(item, {key}) : item;
             },
-            overflowRenderer: (items) => itemOverflowButton({$items: items, vertical})
+            overflowRenderer: (overflowItems) => {
+                return itemOverflowButton({overflowItems});
+            }
         });
     }
 });
 
 const itemOverflowButton = hoistCmp.factory({
-    render({items, vertical}) {
+    render({overflowItems}) {
         return fragment(
             filler(),
             popover({
                 popoverClassName: 'xh-toolbar-overflow-popover',
-                position: vertical ? 'auto' : 'bottom',
-                target: button({
-                    icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
-                }),
+                position: 'bottom-right',
+                target: button({icon: Icon.ellipsisVertical()}),
                 content: vbox(
-                    ...items
+                    ...overflowItems
                 )
             })
         );

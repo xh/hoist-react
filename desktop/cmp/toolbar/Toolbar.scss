@@ -49,13 +49,9 @@
     width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
-    .bp3-overflow-list {
-      flex-direction: column;
-
-      > *:not([class*='xh-no-pad']) {
-        margin-top: var(--xh-tbar-item-pad-px);
-        margin-left: 0;
-      }
+    > *:not([class*='xh-no-pad']) {
+      margin-top: var(--xh-tbar-item-pad-px);
+      margin-left: 0;
     }
 
     .xh-toolbar__separator {
