@@ -84,8 +84,8 @@ export class DataViewModel {
         this.groupRowHeight = groupRowHeight;
 
         // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
-        // initially and through updates via transactions. For this reason, we set the field of our
-        // single visible column to the desired sortBy field while other fields are hidden columns to allow
+        // initially and through updates via transactions. For this reason, we set the colId of our
+        // single visible column to 'xhDisplayColumn' while other fields are hidden columns to allow
         // for multiple sorters and groupings or using setGroupBy and setSortBy methods on the model itself.
 
         const columns = store.fields.map(field => {
