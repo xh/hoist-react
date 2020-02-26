@@ -73,7 +73,7 @@ body {
 
   // Buttons
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
-  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '100')});
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '100'), mc('blue', '200'), 90%)});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('grey', '50')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
@@ -369,7 +369,7 @@ body.xh-dark {
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 
   // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '900')});
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '600'), mc('light-blue', '700'), 90%)});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '800')});
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
@@ -383,7 +383,7 @@ body.xh-mobile {
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mc('grey', '400')});
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
   --xh-button-active-text-color: var(--button-active-text-color, white);
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
   --xh-button-text-color: var(--button-text-color, white);
@@ -414,7 +414,7 @@ body.xh-mobile {
 }
 
 body.xh-mobile.xh-dark {
-  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '800')});
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
   --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
