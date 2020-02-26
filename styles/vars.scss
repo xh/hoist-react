@@ -383,7 +383,7 @@ body.xh-mobile {
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '600')});
+  --xh-button-active-bg: var(--button-active-bg, #{mc('grey', '400')});
   --xh-button-active-text-color: var(--button-active-text-color, white);
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
   --xh-button-text-color: var(--button-text-color, white);
@@ -414,6 +414,7 @@ body.xh-mobile {
 }
 
 body.xh-mobile.xh-dark {
+  --xh-button-active-bg: var(--button-active-bg, #{mc('blue-grey', '800')});
   --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
