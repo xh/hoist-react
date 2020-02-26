@@ -68,6 +68,7 @@
 
 ### 📚 Libraries
 
+* @blueprintjs/core `3.23 -> 3.24`
 * react-dates `21.7 -> 21.8`
 * react-beautiful-dnd `11.0 -> 12.2`
 
