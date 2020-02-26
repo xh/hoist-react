@@ -36,13 +36,13 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
-     * @param {(string|string[]} [c.groupBy] - colId(s) by which to do full-width row grouping.
+     * @param {(string|string[]} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
+     * @param {(string|string[]|Object|Object[])} [c.sortBy] - field(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
