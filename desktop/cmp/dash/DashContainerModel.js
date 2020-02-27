@@ -7,7 +7,7 @@
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {deserializeIcon} from '@xh/hoist/icon';
+import {convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
@@ -365,11 +365,13 @@ export class DashContainerModel {
 
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
-                    newIcon = icon
+                    currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
+                    newIconType = icon.props.icon[1];
 
-                if ($currentIcon !== newIcon) {
+                if (currentIconType !== newIconType) {
+                    const iconSvg = convertIconToSvg(icon);
                     $el.find(iconSelector).remove();
-                    $titleEl.before(icon);
+                    $titleEl.before(iconSvg);
                 }
             }
 

@@ -47,7 +47,7 @@ export class DashViewModel {
     /**
      * @param {string} id - Typically created by GoldenLayouts.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this view.
-     * @param {Icon} [icon] - Icon with which to initialize the view
+     * @param {Element} [icon] - Icon with which to initialize the view
      * @param {string} [title] - Title with which to initialize the view
      * @param {Object} [viewState] - State with which to initialize the view
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the
