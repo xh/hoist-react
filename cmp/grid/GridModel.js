@@ -255,6 +255,9 @@ export class GridModel {
         };
     }
 
+    /** true if the grid fully initialized and its state can be queried/mutated */
+    get isReady() {return this.agGridModel.isReady}
+
     /**
      * Export grid data using Hoist's server-side export.
      *
@@ -274,7 +277,7 @@ export class GridModel {
      */
     localExport(filename, type, params = {}) {
         const {agApi} = this.agGridModel;
-        if (!agApi) return;
+        if (!this.isReady) return;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
@@ -287,7 +290,7 @@ export class GridModel {
     /** Select the first row in the grid. */
     selectFirst() {
         const {agGridModel, selModel} = this;
-        if (!agGridModel.agApi) {
+        if (!this.isReady) {
             console.warn('Called selectFirst before the grid was ready!');
             return;
         }
@@ -308,7 +311,7 @@ export class GridModel {
         const {records} = this.selModel,
             {agApi} = this;
 
-        if (!agApi) return;
+        if (!this.isReady) return;
 
         const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
 

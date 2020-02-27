@@ -9,6 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {runInAction} from 'mobx';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -80,14 +81,15 @@ export class AgGridModel {
                 }
             }
         });
+        this.addReaction({
+            track: () => this.agApi,
+            run: () => runInAction(() => this.isReady = true),
+            delay: 1
+        });
     }
 
-    /**
-     * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
-     */
-    get isReady() {
-        return !isNil(this.agApi);
-    }
+    /** true if the grid fully initialized and its state can be queried/mutated */
+    @observable isReady = false;
 
     /**
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
