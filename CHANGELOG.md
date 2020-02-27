@@ -41,6 +41,8 @@
   customize map instances, but provides more flexibility for e.g. customizing the `series`.
 * The signature of `useOnResize` hook has been modified slightly for API consistency and clarity.
   Options are now passed in a configuration object.
+* The behavior of `AgGridModel.isReady` has changed to be more restrictive. It is now possible for
+  API calls to fail because the grid is not ready even if `AgGridModel.agApi` is defined.
 
 ### 🐞 Bug Fixes
 
