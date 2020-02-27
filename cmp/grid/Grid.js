@@ -9,7 +9,7 @@ import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {Icon} from '@xh/hoist/icon';
+import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -30,7 +30,7 @@ import {
     xor
 } from 'lodash';
 import PT from 'prop-types';
-import {createRef} from 'react';
+import {createRef, isValidElement} from 'react';
 import './Grid.scss';
 
 import {GridModel} from './GridModel';
@@ -202,9 +202,15 @@ class LocalModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: Icon.angleDown({className: 'ag-group-expanded', asSvg: true}),
-                groupContracted: Icon.angleRight({className: 'ag-group-contracted', asSvg: true}),
-                clipboardCopy: Icon.copy({asSvg: true})
+                groupExpanded: convertIconToSvg(
+                    Icon.angleDown(),
+                    {classes: ['ag-group-expanded']}
+                ),
+                groupContracted: convertIconToSvg(
+                    Icon.angleRight(),
+                    {classes: ['ag-group-contracted']}
+                ),
+                clipboardCopy: convertIconToSvg(Icon.copy())
             },
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
@@ -341,10 +347,15 @@ class LocalModel {
                 childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
             }
 
+            let icon = displaySpec.icon;
+            if (isValidElement(icon)) {
+                icon = convertIconToSvg(icon);
+            }
+
             items.push({
                 name: displaySpec.text,
                 shortcut: displaySpec.secondaryText,
-                icon: displaySpec.icon,
+                icon,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,

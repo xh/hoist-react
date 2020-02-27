@@ -897,9 +897,7 @@ export const Icon = {
 export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
 
 /**
- * Translate an enumerated Icon element into an SVG string for use directly in markup. This function
- * is used by DashContainerModel to render GoldenLayout's tab icons. Icons
- * rendered by AgGrid, however, must be configured with `asSvg` set to true.
+ * Translate an enumerated Icon element into an SVG string for use directly in markup.
  * @param {Element} iconElem
  * @param {Object} [opts]
  * @return {string}

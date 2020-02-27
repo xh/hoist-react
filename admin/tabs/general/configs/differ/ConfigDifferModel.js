@@ -38,7 +38,7 @@ export class ConfigDifferModel  {
 
     applyRemoteAction = {
         text: 'Apply Remote',
-        icon: Icon.cloudDownload({asSvg: true}),
+        icon: Icon.cloudDownload(),
         // Account for use in both action column (record only) and context menu (selectedRecords).
         actionFn: ({record, selectedRecords}) => {
             const selection = selectedRecords || [record];

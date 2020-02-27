@@ -6,6 +6,7 @@
  */
 
 import {RecordAction} from '@xh/hoist/data';
+import {convertIconToSvg} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 
 import {actionColPad} from './Actions.scss';
@@ -69,7 +70,7 @@ export const actionCol = {
             if (!isEmpty(tooltip)) buttonEl.setAttribute('title', tooltip);
             if (!isEmpty(intent)) buttonEl.classList.add(`bp3-intent-${intent}`);
 
-            buttonEl.innerHTML = icon;
+            buttonEl.innerHTML = convertIconToSvg(icon);
             buttonEl.addEventListener('click', (ev) => {
                 ev.stopPropagation();
                 action.call({record, selectedRecords: [record], gridModel, column, buttonEl});

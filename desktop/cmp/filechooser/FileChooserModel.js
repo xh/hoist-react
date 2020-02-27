@@ -41,7 +41,7 @@ export class FileChooserModel {
                 ...actionCol,
                 width: calcActionColWidth(1),
                 actions: [{
-                    icon: Icon.delete({asSvg: true}),
+                    icon: Icon.delete(),
                     tooltip: 'Remove file',
                     intent: 'danger',
                     actionFn: ({record}) => {
