@@ -30,7 +30,7 @@ import {
     xor
 } from 'lodash';
 import PT from 'prop-types';
-import {createRef, isValidElement} from 'react';
+import {createRef} from 'react';
 import './Grid.scss';
 
 import {GridModel} from './GridModel';
@@ -341,15 +341,10 @@ class LocalModel {
                 childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
             }
 
-            let icon = displaySpec.icon;
-            if (isValidElement(icon)) {
-                icon = icon({asSvg: true})
-            }
-
             items.push({
                 name: displaySpec.text,
                 shortcut: displaySpec.secondaryText,
-                icon,
+                icon: displaySpec.icon,
                 subMenu: childItems,
                 tooltip: displaySpec.tooltip,
                 disabled: displaySpec.disabled,

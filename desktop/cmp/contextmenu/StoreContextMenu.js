@@ -63,7 +63,7 @@ export class StoreContextMenu {
             case 'copyCell':
                 return new RecordAction({
                     text: 'Copy Cell',
-                    icon: Icon.copy(),
+                    icon: Icon.copy({asSvg: true}),
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
@@ -73,7 +73,7 @@ export class StoreContextMenu {
             case 'colChooser':
                 return new RecordAction({
                     text: 'Columns...',
-                    icon: Icon.gridPanel(),
+                    icon: Icon.gridPanel({asSvg: true}),
                     hidden: !gridModel || !gridModel.colChooserModel,
                     actionFn: () => gridModel.colChooserModel.open()
                 });
@@ -81,7 +81,7 @@ export class StoreContextMenu {
             case 'exportExcel':
                 return new RecordAction({
                     text: 'Export to Excel',
-                    icon: Icon.download(),
+                    icon: Icon.download({asSvg: true}),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
@@ -89,7 +89,7 @@ export class StoreContextMenu {
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
-                    icon: Icon.download(),
+                    icon: Icon.download({asSvg: true}),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
@@ -98,13 +98,13 @@ export class StoreContextMenu {
                 return [
                     new RecordAction({
                         text: 'Expand All',
-                        icon: Icon.angleDown(),
+                        icon: Icon.angleDown({asSvg: true}),
                         hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.expandAll()
                     }),
                     new RecordAction({
                         text: 'Collapse All',
-                        icon: Icon.angleRight(),
+                        icon: Icon.angleRight({asSvg: true}),
                         hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                         actionFn: () => gridModel.collapseAll()
                     })
@@ -114,7 +114,7 @@ export class StoreContextMenu {
             case 'autoSizeColumns':
                 return new RecordAction({
                     text: 'Autosize Columns',
-                    icon: Icon.arrowsLeftRight(),
+                    icon: Icon.arrowsLeftRight({asSvg: true}),
                     actionFn: () => gridModel.autoSizeColumns()
                 });
             default:
