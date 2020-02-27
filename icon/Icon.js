@@ -11,7 +11,6 @@ import {library, findIconDefinition, icon} from '@fortawesome/fontawesome-svg-co
 import {elemFactory} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import {toLower} from 'lodash';
-import {hoistCmp} from '@xh/hoist/core';
 
 import {
     faAddressCard,
@@ -885,10 +884,12 @@ export const Icon = {
     x(p)                {return fa(p, 'times')},
     xCircle(p)          {return fa(p, 'times-circle')},
 
+    // Return an Icon element for a given file extension with default configs and tooltip,
+    // or a generic file icon if null or unmapped.
+
     fileIcon({extension, tooltip, ...props}) {
         const {name, className} = getIconConfig(extension),
             title = tooltip ?? extension;
-
         return Icon[name]({className, title, ...props});
     }
 };
@@ -919,22 +920,6 @@ export const deserializeIcon = function(iconDef) {
     const {prefix, iconName} = iconDef;
     return fa({prefix}, iconName);
 };
-
-/**
- * Return an Icon element for a given file extension, or a generic file icon if null or unmapped.
- * @param {String} extension
- * @return {Element}
- */
-
-export const [FileIcon, fileIcon] = hoistCmp.withFactory({
-    model: null,
-    observable: false,
-    displayName: 'FileIcon',
-    render(props) {
-        return Icon.fileIcon(props);
-    }
-});
-
 
 //-----------------------------
 // Implementation
