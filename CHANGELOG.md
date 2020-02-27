@@ -56,6 +56,8 @@
   simultaneously. [#1592](https://github.com/xh/hoist-react/issues/1592)
 * `StoreFilterField` will again match on `Record.id` if bound to a Store or a GridModel with the
   `id` column visible. [#1697](https://github.com/xh/hoist-react/issues/1697)
+* A number of fixes have been applied to `RelativeTimeStamp` and `getRelativeTimestamp`, especially
+around its handling of 'equal' or 'epsilon equal' times.
 
 ### ⚙️ Technical
 
