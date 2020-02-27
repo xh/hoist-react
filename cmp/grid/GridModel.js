@@ -276,8 +276,9 @@ export class GridModel {
      * @param {Object} params - passed to agGrid's export functions.
      */
     localExport(filename, type, params = {}) {
-        const {agApi} = this.agGridModel;
         if (!this.isReady) return;
+
+        const {agApi} = this.agGridModel;
         defaults(params, {fileName: filename, processCellCallback: this.formatValuesForExport});
 
         if (type === 'excel') {
@@ -289,11 +290,12 @@ export class GridModel {
 
     /** Select the first row in the grid. */
     selectFirst() {
-        const {agGridModel, selModel} = this;
         if (!this.isReady) {
             console.warn('Called selectFirst before the grid was ready!');
             return;
         }
+
+        const {agGridModel, selModel} = this;
 
         // Find first displayed row with data - i.e. backed by a record, not a full-width group row.
         const id = agGridModel.getFirstSelectableRowNodeId();
@@ -308,10 +310,10 @@ export class GridModel {
      * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
      */
     ensureSelectionVisible() {
+        if (!this.isReady) return;
+
         const {records} = this.selModel,
             {agApi} = this;
-
-        if (!this.isReady) return;
 
         const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
 
@@ -391,22 +393,20 @@ export class GridModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
+        if (!this.isReady) return;
         const {agApi} = this;
-        if (agApi) {
-            agApi.expandAll();
-            agApi.sizeColumnsToFit();
-            this.noteAgExpandStateChange();
-        }
+        agApi.expandAll();
+        agApi.sizeColumnsToFit();
+        this.noteAgExpandStateChange();
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
+        if (!this.isReady) return;
         const {agApi} = this;
-        if (agApi) {
-            agApi.collapseAll();
-            agApi.sizeColumnsToFit();
-            this.noteAgExpandStateChange();
-        }
+        agApi.collapseAll();
+        agApi.sizeColumnsToFit();
+        this.noteAgExpandStateChange();
     }
 
     /**

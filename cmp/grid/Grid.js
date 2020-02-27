@@ -376,9 +376,9 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary, this.model.isReady],
             run: ([api, lastLoaded, lastUpdated, newRs]) => {
-                if (!api) return;
+                if (!model.isReady) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
@@ -434,9 +434,9 @@ class LocalModel {
             {agGridModel} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.selection, this._dataVersion],
+            track: () => [agGridModel.agApi, model.selection, this._dataVersion, this.model.isReady],
             run: ([api]) => {
-                if (!api) return;
+                if (!model.isReady) return;
 
                 const modelSelection = model.selModel.ids,
                     selectedIds = agGridModel.getSelectedRowNodeIds(),
@@ -453,9 +453,10 @@ class LocalModel {
     sortReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.agApi, this.model.sortBy],
+            track: () => [agGridModel.agApi, this.model.sortBy, this.model.isReady],
             run: ([api, sortBy]) => {
-                if (api) api.setSortModel(sortBy);
+                if (!this.model.isReady) return;
+                api.setSortModel(sortBy);
             }
         };
     }
@@ -463,9 +464,10 @@ class LocalModel {
     groupReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.agColumnApi, this.model.groupBy],
+            track: () => [agGridModel.agColumnApi, this.model.groupBy, this.model.isReady],
             run: ([colApi, groupBy]) => {
-                if (colApi) colApi.setRowGroupColumns(groupBy);
+                if (!this.model.isReady || !colApi) return;
+                colApi.setRowGroupColumns(groupBy);
             }
         };
     }
@@ -473,9 +475,9 @@ class LocalModel {
     columnsReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.agApi, this.model.columns],
+            track: () => [agGridModel.agApi, this.model.columns, this.model.isReady],
             run: ([api]) => {
-                if (!api) return;
+                if (!this.model.isReady) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
@@ -488,9 +490,9 @@ class LocalModel {
     columnStateReaction() {
         const {agGridModel} = this.model;
         return {
-            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.model.columnState],
+            track: () => [agGridModel.agApi, agGridModel.agColumnApi, this.model.columnState, this.model.isReady],
             run: ([api, colApi, colState]) => {
-                if (!api || !colApi) return;
+                if (!this.model.isReady || !colApi) return;
 
                 const agColState = colApi.getColumnState();
 

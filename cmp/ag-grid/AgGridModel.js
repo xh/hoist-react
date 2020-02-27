@@ -76,13 +76,13 @@ export class AgGridModel {
             track: () => this.sizingMode,
             run: () => {
                 const api = this.agApi;
-                if (api) {
+                if (this.isReady) {
                     api.resetRowHeights();
                 }
             }
         });
         this.addReaction({
-            track: () => this.agApi,
+            when: () => !isNil(this.agApi),
             run: () => runInAction(() => this.isReady = true),
             delay: 1
         });
