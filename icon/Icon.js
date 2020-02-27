@@ -897,7 +897,8 @@ export const Icon = {
 export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
 
 /**
- * Translate an enumerated Icon element into an SVG string for use directly in markup.
+ * Translate an enumerated Icon element into an SVG string for use directly in markup. For icon use
+ * in agGrid renderers, set `asSvg` to true in Icon config.
  * @param {Element} iconElem
  * @param {Object} [opts]
  * @return {string}
