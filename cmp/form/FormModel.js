@@ -110,7 +110,7 @@ export class FormModel {
 
     /**
      * @param {String} fieldName
-     * @return {Field}
+     * @return {FieldModel}
      */
     getField(fieldName) {
         return this.fields[fieldName];
