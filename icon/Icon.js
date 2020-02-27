@@ -902,7 +902,8 @@ export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
  * @return {string}
  */
 export const convertIconToSvg = function(iconElem, opts) {
-    // throw XH.exception('Method Removed -- use asSvg flag on Icon methods instead');
+    const iconDef = findIconDefinition(serializeIcon(iconElem));
+    return icon(iconDef, opts).html[0];
 };
 
 export const serializeIcon = function(iconElem) {
@@ -948,7 +949,10 @@ const fa = function({prefix, className, asSvg = false, title, ...rest} = {}, nam
             iconName: name
         });
         const opts = {classes: className, title};
-        return icon(iconDef, opts).html[0];
+        const svgIcon = icon(iconDef, opts).html[0];
+        console.log(svgIcon);
+        return svgIcon;
+        // return icon(iconDef, opts).html[0];
     }
 };
 
