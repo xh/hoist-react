@@ -43,7 +43,7 @@ export class RecordAction {
      * @param {Object} c - RecordAction configuration.
      * @param {string} [c.text] - label to be displayed.
      * @param {string} [c.secondaryText] - additional label to be displayed, usually in a minimal fashion.
-     * @param {Element} [c.icon] - icon to be displayed.
+     * @param {Element} [c.icon] - icon to be displayed. Always specify with config {asSvg: true}.
      * @param {string} [c.intent] - intent to be used for rendering the action.
      * @param {string} [c.tooltip] - tooltip to display when hovering over the action.
      * @param {Object[]} [c.items] - child actions.
