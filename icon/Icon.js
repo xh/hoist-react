@@ -896,7 +896,9 @@ export const Icon = {
 export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
 
 /**
- * Translate an enumerated Icon element into an SVG string for use directly in markup.
+ * Translate an enumerated Icon element into an SVG string for use directly in markup. This function
+ * is used by DashContainerModel to render GoldenLayout's tab icons. Icons
+ * rendered by AgGrid, however, must be configured with `asSvg` set to true.
  * @param {Element} iconElem
  * @param {Object} [opts]
  * @return {string}
@@ -949,14 +951,11 @@ const fa = function({prefix, className, asSvg = false, title, ...rest} = {}, nam
             iconName: name
         });
         const opts = {classes: className, title};
-        const svgIcon = icon(iconDef, opts).html[0];
-        console.log(svgIcon);
-        return svgIcon;
-        // return icon(iconDef, opts).html[0];
+        return icon(iconDef, opts).html[0];
     }
 };
 
-// Helper Function
+// Helper function to get default fileIcon config. Can be overridden by passing additional props.
 
 function getIconConfig(extension) {
     switch (toLower(extension)) {
