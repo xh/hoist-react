@@ -22,6 +22,8 @@
   content element. Note this change included a tweak to some CSS class names for mobile `Panel`
   internals that could require adjustments if directly targeted by app stylesheets.
 * Added new `useOnVisibleChange` hook.
+* Columns now support a `headerAlign` config to allow headers to be aligned differently from column
+  contents.
 
 ### 💥 Breaking Changes
 
