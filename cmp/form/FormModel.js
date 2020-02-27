@@ -116,14 +116,6 @@ export class FormModel {
         return this.fields[fieldName];
     }
 
-    /**
-     * @param {String} fieldName
-     * @return {*} - an observable reference to the field's current value
-     */
-    getValue(fieldName) {
-        return this.values[fieldName];
-    }
-
     /** Reset fields to initial values and reset validation. */
     @action
     reset() {
