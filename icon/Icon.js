@@ -886,11 +886,14 @@ export const Icon = {
 
     // Return an Icon element for a given file extension with default configs and tooltip,
     // or a generic file icon if null or unmapped.
-
-    fileIcon({extension, tooltip, ...props}) {
+    fileIcon({extension, tooltip, showTooltip = true, ...props}) {
         const {name, className} = getIconConfig(extension),
             title = tooltip ?? extension;
-        return Icon[name]({className, title, ...props});
+        if (showTooltip) {
+            return Icon[name]({className, title, ...props});
+        } else {
+            return Icon[name]({className, ...props});
+        }
     }
 };
 
@@ -898,7 +901,7 @@ export const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
 
 /**
  * Translate an enumerated Icon element into an SVG string for use directly in markup. For icon use
- * in agGrid renderers, set `asSvg` to true in Icon config.
+ * in agGrid renderers, set `asSvg` to true in Icon config instead.
  * @param {Element} iconElem
  * @param {Object} [opts]
  * @return {string}

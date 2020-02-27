@@ -22,6 +22,9 @@
   content element. Note this change included a tweak to some CSS class names for mobile `Panel`
   internals that could require adjustments if directly targeted by app stylesheets.
 * Added new `useOnVisibleChange` hook.
+* Added new `fileIcon` method to `Icon` class, returning an element that provides a default tooltip
+  and color config based on file extension. Like all `Icon` elements, can accept additional props to
+  customize default behavior.
 
 ### 💥 Breaking Changes
 
