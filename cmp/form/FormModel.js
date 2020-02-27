@@ -96,6 +96,14 @@ export class FormModel {
     }
 
     /**
+     * @param {String} fieldName
+     * @return {FieldModel}
+     */
+    getField(fieldName) {
+        return this.fields[fieldName];
+    }
+
+    /**
      * Get a snapshot of the current values for this form as an object keyed by field name.
      * Note this is *not* a live or observable object - see the `values` getter for an alternative.
      *
