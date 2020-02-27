@@ -22,6 +22,7 @@
   content element. Note this change included a tweak to some CSS class names for mobile `Panel`
   internals that could require adjustments if directly targeted by app stylesheets.
 * Added new `useOnVisibleChange` hook.
+* `GridModel` now exposes `isReady` from `AgGridModel`
 
 ### 💥 Breaking Changes
 
@@ -56,6 +57,8 @@
   simultaneously. [#1592](https://github.com/xh/hoist-react/issues/1592)
 * `StoreFilterField` will again match on `Record.id` if bound to a Store or a GridModel with the
   `id` column visible. [#1697](https://github.com/xh/hoist-react/issues/1697)
+* `AgGridModel.isReady` now delays a short time before reporting it is ready.
+  [#1683](https://github.com/xh/hoist-react/issues/1638)
 
 ### ⚙️ Technical
 
