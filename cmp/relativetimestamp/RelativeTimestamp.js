@@ -131,13 +131,13 @@ function doFormat(opts) {
         elapsed = Math.abs(diff),
         suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
 
+    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
+        return opts.equalString;
+    }
+
     if (isFuture && !opts.allowFuture) {
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         return '[???]';
-    }
-
-    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
-        return opts.equalString;
     }
 
     // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
