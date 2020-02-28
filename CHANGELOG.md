@@ -24,6 +24,9 @@
 * Added new `useOnVisibleChange` hook.
 * Columns now support a `headerAlign` config to allow headers to be aligned differently from column
   contents.
+* Mobile `NavigatorModel` and `NavigatorPageModel` now support `refreshMode` and `renderMode` configs
+  to allow better control over how inactive pages are mounted/unmounted and how pages handle refresh
+  requests when inactive or (re)activated.
 
 ### 💥 Breaking Changes
 

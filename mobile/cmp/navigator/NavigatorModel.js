@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RenderMode, RefreshMode} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {elementFromContent} from '@xh/hoist/utils/react';
 import {keys, find, merge, isEqual} from 'lodash';
 
 import {NavigatorPageModel} from './NavigatorPageModel';
+import {navigatorPage} from './impl/NavigatorPage';
 
 /**
  * Model for handling stack-based navigation between Onsen pages.
@@ -27,18 +27,34 @@ export class NavigatorModel {
     /** @member {Object[]} */
     routes = [];
 
+    /** @member {RenderMode} */
+    renderMode;
+
+    /** @member {RefreshMode} */
+    refreshMode;
+
     _navigator = null;
     _callback = null;
 
     /**
      * {Object[]} routes - configs for NavigatorPageModels, representing all supported top-level
      *      pages within this Navigator/App.
+     * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
+     *      via `NavigatorPageModel.renderMode`. See enum for description of supported modes.
+     * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
+     *      via `NavigatorPageModel.refreshMode`. See enum for description of supported modes.
      */
-    constructor({routes}) {
+    constructor({
+        routes,
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY
+    }) {
         ensureNotEmpty(routes, 'NavigatorModel needs at least one route.');
         ensureUniqueBy(routes, 'id', 'Multiple NavigatorModel routes share a non-unique id.');
 
         this.routes = routes;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
 
         this.addReaction({
             track: () => XH.routerState,
@@ -111,7 +127,11 @@ export class NavigatorModel {
                 return;
             }
 
-            const page = new NavigatorPageModel(merge({}, route, part));
+            const page = new NavigatorPageModel({
+                navigatorModel: this,
+                ...merge({}, route, part)
+            });
+
             pages.push(page);
         }
 
@@ -136,25 +156,31 @@ export class NavigatorModel {
             keyStack = pages.map(it => it.key),
             prevKeyStack = this._prevKeyStack || [],
             backOnePage = isEqual(keyStack, prevKeyStack.slice(0, -1)),
-            forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack);
+            forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack),
+            currentPage = this.getCurrentPageModel();
+
+        // Skip transition animation if the current page is going to be unmounted
+        let options;
+        if (currentPage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
+            options = {animation: 'none'};
+        }
 
         this._prevKeyStack = keyStack;
 
         if (backOnePage) {
             // If we have gone back one page in the same stack, we can safely pop() the page
-            return this._navigator.popPage();
+            return this._navigator.popPage(options);
         } else if (forwardOnePage) {
             // If we have gone forward one page in the same stack, we can safely push() the new page
-            return this._navigator.pushPage(pages[pages.length - 1]);
+            return this._navigator.pushPage(pages[pages.length - 1], options);
         } else {
             // Otherwise, we should reset the page stack
             return this._navigator.resetPageStack(pages, {animation: 'none'});
         }
     }
 
-    renderPage(pageModel, navigator) {
-        const {init, content, props} = pageModel;
-        let key = pageModel.key;
+    renderPage(model, navigator) {
+        const {init, key} = model;
 
         // Note: We use the special "init" object to obtain a reference to the
         // navigator and to read the initial route.
@@ -179,13 +205,13 @@ export class NavigatorModel {
             hasDupes = onsenNavPages.filter(it => it.key === key).length > 1;
 
         if (hasDupes) {
-            const onsenIdx = onsenNavPages.indexOf(pageModel),
+            const onsenIdx = onsenNavPages.indexOf(model),
                 ourIdx = this.pages.findIndex(it => it.key === key);
 
             if (onsenIdx !== ourIdx) return null;
         }
 
-        return elementFromContent(content, {key, ...props});
+        return navigatorPage({model, key});
     }
 
     @action
