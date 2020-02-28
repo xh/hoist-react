@@ -10,7 +10,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {Field} from '@xh/hoist/data';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNumber} from 'lodash';
+import {isNumber, isString} from 'lodash';
 import {apiRemoved} from '../../utils/js';
 
 /**
@@ -87,10 +87,8 @@ export class DataViewModel {
         // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
         // Also add hidden columns for all other fields to make sure grouping and sorting works!
         const columns = store.fields.map(field => {
-            if (field instanceof Field || typeof field === 'object') {
-                field = field.name;
-            }
-            return {field, hidden: true};
+            const fieldName = field.name ?? field,   // May be a StoreField, or just a config for one 
+            return {field: fieldName, hidden: true};
         });
 
         columns.push({
