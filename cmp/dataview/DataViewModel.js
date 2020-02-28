@@ -10,7 +10,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {Field} from '@xh/hoist/data';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNumber, isString} from 'lodash';
+import {isNumber} from 'lodash';
 import {apiRemoved} from '../../utils/js';
 
 /**
