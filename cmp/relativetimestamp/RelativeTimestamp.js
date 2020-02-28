@@ -133,7 +133,7 @@ function doFormat(opts) {
     const {prefix, equalString, epsilon, allowFuture, short} = opts,
         diff = opts.relativeTo - opts.timestamp,
         elapsed = Math.abs(diff),
-        isEqual =  elapsed < epsilon * SECONDS,
+        isEqual = elapsed <= (epsilon ?? 0) * SECONDS,
         isFuture = !isEqual && diff < 0;
 
     let ret;
