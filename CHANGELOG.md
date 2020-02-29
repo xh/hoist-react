@@ -1,6 +1,6 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - unreleased
+## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
 
@@ -76,7 +76,7 @@ around its handling of 'equal' or 'epsilon equal' times.  Remove unintended lead
 * react-dates `21.7 -> 21.8`
 * react-beautiful-dnd `11.0 -> 12.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...v29.1.0)
 
 ## v29.1.0 - 2020-02-07
 
