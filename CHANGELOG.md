@@ -4,6 +4,12 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
+### 🐞 Bug Fixes
+
+* Fixed an issue where WebSocketServer would report `connected` before server `channelKey`
+assigned and received from server.
+
+
 ## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
