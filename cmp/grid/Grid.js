@@ -552,7 +552,7 @@ class LocalModel {
     clearSelectionReaction() {
         return {
             track: () => [this.model.maxRows, this.model.sortBy],
-            run: this.model.sortModel.clear
+            run: () => this.model.selModel.clear()
         };
     }
 
