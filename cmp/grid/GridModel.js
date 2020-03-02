@@ -214,9 +214,6 @@ export class GridModel {
         apiRemoved(exportOptions.includeHiddenCols,
             'exportOptions.includeHiddenCols', 'Replace with {columns: \'ALL\'}'
         );
-        warnIf(maxRows && !(selModel || selModel === 'disabled'),
-            'GridModel has both maxRows and selection enabled. Selection may not work as expected.'
-        );
 
         this.treeMode = treeMode;
         this.showSummary = showSummary;

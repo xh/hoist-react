@@ -179,6 +179,7 @@ class LocalModel {
         this.addReaction(this.columnStateReaction());
         this.addReaction(this.dataReaction());
         this.addReaction(this.groupReaction());
+        if (model.maxRows) this.addReaction(this.clearSelectionReaction());
 
         this.agOptions = merge(this.createDefaultAgOptions(props), props.agOptions || {});
         this.propsKeyDown = props.onKeyDown;
@@ -545,6 +546,13 @@ class LocalModel {
                 });
                 api.sizeColumnsToFit();
             }
+        };
+    }
+
+    clearSelectionReaction() {
+        return {
+            track: () => [this.model.maxRows, this.model.sortBy],
+            run: this.model.sortModel.clear
         };
     }
 
