@@ -33,14 +33,13 @@ export const ColumnHeader = hoistCmp({
         const sortIcon = () => {
             const activeGridSorter = impl.activeGridSorter;
             if (!activeGridSorter) return null;
+            const {abs, sort} = activeGridSorter;
 
             let icon;
-            if (activeGridSorter.abs) {
-                icon = Icon.arrowToBottom();
-            } else if (activeGridSorter.sort === 'asc') {
-                icon = Icon.arrowUp({size: 'sm'});
-            } else if (activeGridSorter.sort === 'desc') {
-                icon = Icon.arrowDown({size: 'sm'});
+            if (sort === 'asc') {
+                icon = abs ? Icon.arrowToTop({size: 'sm'}) : Icon.arrowUp({size: 'sm'});
+            } else if (sort === 'desc') {
+                icon = abs ? Icon.arrowToBottom({size: 'sm'}) : Icon.arrowDown({size: 'sm'});
             }
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
@@ -113,7 +112,7 @@ class LocalModel {
         ]);
 
         this.allowedSorts = this.allowedSorts.map(sort => {
-            if (isEmpty(sort)) return null;
+            if (isEmpty(sort)) sort = {sort: null};
             if (isString(sort)) sort = {sort: sort};
             sort = {...sort, colId: xhColumn.colId};
             return GridSorter.parse(sort);
