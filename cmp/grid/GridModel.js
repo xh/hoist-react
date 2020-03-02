@@ -225,6 +225,9 @@ export class GridModel {
         errorIf(exportOptions.includeHiddenCols,
             "GridModel 'exportOptions.includeHiddenCols' has been removed.  Replace with {columns: 'ALL'}."
         );
+        warnIf(selModel && maxRows,
+            'GridModel has both selection and maxRows enabled. Selection may not work as expected.'
+        );
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
