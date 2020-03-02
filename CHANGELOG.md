@@ -6,7 +6,6 @@
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
-* The `startLine` input on the Log Viewer will now be disabled when tail mode is on.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
