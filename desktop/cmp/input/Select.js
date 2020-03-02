@@ -6,7 +6,7 @@
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {elemFactory, HoistComponent, LayoutSupport, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -220,6 +220,13 @@ export class Select extends HoistInput {
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
+                // Provide a custom dropdown indicator component, which allows us
+                // to reduce its size without shrinking the icon.
+                components: {
+                    DropdownIndicator: () => dropdownIndicator(),
+                    IndicatorSeparator: () => null
+                },
+
                 // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.
                 menuPortalTarget: this.getOrCreatePortalDiv(),
@@ -257,8 +264,7 @@ export class Select extends HoistInput {
         if (props.hideDropdownIndicator) {
             rsProps.components = {
                 ...rsProps.components,
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null
+                DropdownIndicator: () => null
             };
         }
 
@@ -547,3 +553,7 @@ export class Select extends HoistInput {
 
 }
 export const select = elemFactory(Select);
+
+const dropdownIndicator = hoistCmp.factory(
+    () => Icon.chevronDown({className: 'xh-select__indicator'})
+);
