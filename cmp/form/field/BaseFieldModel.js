@@ -204,7 +204,7 @@ export class BaseFieldModel {
     /** Validation state of the field. */
     @computed
     get validationState() {
-        return this.deriveValidationState()
+        return this.deriveValidationState();
     }
 
     /** @member {boolean} - true if this field is confirmed to be Valid. */
