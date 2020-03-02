@@ -5,14 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {clone, isEmpty, isEqual, isFunction, isString, remove} from 'lodash';
+import {clone, isEmpty, isFunction, isString, remove} from 'lodash';
 
 /**
  * A custom ag-Grid header component.
@@ -93,6 +92,7 @@ class LocalModel {
     @bindable isFiltered = false;
     enableSorting;
     allowedSorts;
+    sortIndex;
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
         this.gridModel = gridModel;
@@ -112,10 +112,9 @@ class LocalModel {
         ]);
 
         this.allowedSorts = this.allowedSorts.map(sort => {
-            if (isEmpty(sort)) sort = {sort: null};
+            if (isEmpty(sort)) sort = {sort: 'none'};
             if (isString(sort)) sort = {sort: sort};
-            sort = {...sort, colId: xhColumn.colId};
-            return GridSorter.parse(sort);
+            return {...sort, colId: xhColumn.colId};
         });
 
         agColumn.addEventListener('filterChanged', this.onFilterChanged);
@@ -160,8 +159,8 @@ class LocalModel {
 
     getNextSortBy() {
         const {allowedSorts, activeGridSorter} = this;
+        this.sortIndex = activeGridSorter ? (this.sortIndex + 1) % allowedSorts.length : 0;
 
-        const currentId = allowedSorts.findIndex(it => isEqual(it, activeGridSorter));
-        return allowedSorts[(currentId + 1) % allowedSorts.length];
+        return allowedSorts[this.sortIndex];
     }
 }
