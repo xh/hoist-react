@@ -103,14 +103,18 @@ export function getRelativeTimestamp(timestamp, options = {}) {
     apiRemoved(options.nowEpsilon, 'nowEpsilon', "Use 'epsilon' instead.");
     apiRemoved(options.nowString, 'nowString', "Use 'equalString' instead.");
 
+    const relTo = options.relativeTo,
+        relFmt = relTo ? fmtCompactDate(relTo) : null,
+        relFmtIsTime = relFmt?.includes(':');
+
     options = {
         timestamp,
         allowFuture: false,
         short: XH.isMobile,
-        futureSuffix: options.relativeTo ? `after ${fmtCompactDate(options.relativeTo)}` : 'from now',
-        pastSuffix: options.relativeTo ? `before ${fmtCompactDate(options.relativeTo)}` : 'ago',
-        equalString: null,
-        epsilon: 30,
+        futureSuffix: relTo ? `after ${relFmt}` : 'from now',
+        pastSuffix: relTo ? `before ${relFmt}` : 'ago',
+        equalString: relTo ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}` : 'just now',
+        epsilon: 10,
         emptyResult: '',
         prefix: '',
         relativeTo: Date.now(),
@@ -126,29 +130,29 @@ export function getRelativeTimestamp(timestamp, options = {}) {
 // Implementation
 //------------------------
 function doFormat(opts) {
-    const diff = opts.relativeTo - opts.timestamp,
-        isFuture = diff < 0,
+    const {prefix, equalString, epsilon, allowFuture, short} = opts,
+        diff = opts.relativeTo - opts.timestamp,
         elapsed = Math.abs(diff),
-        suffix = isFuture ? opts.futureSuffix : opts.pastSuffix;
+        isEqual = elapsed <= (epsilon ?? 0) * SECONDS,
+        isFuture = !isEqual && diff < 0;
 
-    if (isFuture && !opts.allowFuture) {
+    let ret;
+    if (isEqual) {
+        ret = equalString;
+    } else if (isFuture && !allowFuture) {
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
-        return '[???]';
+        ret = '[????]';
+    } else {
+        // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
+        // end of that range that output is a bit too inaccurate, so we replace as per below.
+        ret = (elapsed < 60 * SECONDS) ?
+            '<1 minute' :
+            moment.duration(elapsed).humanize();
+
+        if (short) ret = ret.replace('minute', 'min').replace('second', 'sec');
+
+        ret += ' ' + (isFuture ? opts.futureSuffix : opts.pastSuffix);
     }
 
-    if (elapsed < opts.epsilon * SECONDS && opts.equalString) {
-        return opts.equalString;
-    }
-
-    // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
-    // end of that range that output is a bit too inaccurate, so we replace as per below.
-    let ret = (elapsed < 60 * SECONDS) ?
-        '<1 minute' :
-        moment.duration(elapsed).humanize();
-
-    if (opts.short) {
-        ret = ret.replace('minute', 'min').replace('second', 'sec');
-    }
-
-    return `${opts.prefix} ${ret} ${suffix}`;
+    return prefix ? prefix + ' ' + ret : ret;
 }
