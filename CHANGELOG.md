@@ -9,6 +9,10 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
+### ⚙️ Technical
+
+* `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
 ## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
