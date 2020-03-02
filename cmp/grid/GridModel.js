@@ -11,7 +11,14 @@ import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    deepFreeze,
+    ensureUnique,
+    throwIf,
+    warnIf,
+    withDefault,
+    apiRemoved
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -208,6 +215,16 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        apiRemoved(rest.contextMenuFn,
+            'contextMenuFn', 'Use contextMenu instead'
+        );
+        apiRemoved(exportOptions.includeHiddenCols,
+            'exportOptions.includeHiddenCols', 'Replace with {columns: \'ALL\'}'
+        );
+        warnIf(selModel && maxRows,
+            'GridModel has both selection and maxRows enabled. Selection may not work as expected.'
+        );
+
         this.treeMode = treeMode;
         this.showSummary = showSummary;
 
@@ -218,16 +235,6 @@ export class GridModel {
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
-
-        errorIf(rest.contextMenuFn,
-            "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
-        );
-        errorIf(exportOptions.includeHiddenCols,
-            "GridModel 'exportOptions.includeHiddenCols' has been removed.  Replace with {columns: 'ALL'}."
-        );
-        warnIf(selModel && maxRows,
-            'GridModel has both selection and maxRows enabled. Selection may not work as expected.'
-        );
 
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
