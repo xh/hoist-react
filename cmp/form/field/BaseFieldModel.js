@@ -97,7 +97,7 @@ export class BaseFieldModel {
             this.computeValidationAsync();
         });
         this.addAutorun(() => {
-            if (this.isDirty) this.displayValidation(false);
+            if (this.isDirty && !this.isValidationPending) this.displayValidation(false);
         });
     }
 
@@ -261,7 +261,7 @@ export class BaseFieldModel {
         return this
             .evaluateAsync(this.rules)
             .thenAction(errors => {
-                if (runId == this._validationRunId) {
+                if (runId === this._validationRunId) {
                     this.errors = errors;
                 }
                 return this.validationState;
