@@ -6,6 +6,8 @@
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
+* `GridStateModel` will no longer track width of non-resizable columns, which could lead to
+  non-resizable columns getting stuck with a bad width. [#1718](https://github.com/xh/hoist-react/issues/1718)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
