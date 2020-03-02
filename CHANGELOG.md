@@ -2,13 +2,12 @@
 
 ## v31.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
-
 ### 🐞 Bug Fixes
 
-* Fixed an issue where WebSocketServer would report `connected` before server `channelKey`
-assigned and received from server.
+* Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
+  server.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
 ## v30.0.0 - 2020-02-29
 
