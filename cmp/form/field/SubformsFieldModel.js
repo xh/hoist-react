@@ -92,9 +92,8 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     get allErrors() {
-        const {errors} = this,
-            subErrs = flatMap(this.value, s => s.allErrors);
-        return errors ? [...errors, subErrs] : subErrs;
+        const subErrs = flatMap(this.value, s => s.allErrors);
+        return [...this.errors, ...subErrs];
     }
 
     @action
@@ -109,17 +108,6 @@ export class SubformsFieldModel extends BaseFieldModel {
         if (includeSubforms) {
             this.value.forEach(s => s.displayValidation());
         }
-    }
-
-    @computed
-    get validationState() {
-        const VS = ValidationState,
-            states = this.value.map(s => s.validationState);
-        states.push(super.validationState);
-
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown))  return VS.Unknown;
-        return VS.Valid;
     }
 
     @computed
@@ -188,5 +176,15 @@ export class SubformsFieldModel extends BaseFieldModel {
             [keep, destroy] = partition(_createdModels, m => initialValue.includes(m) || value.includes(m));
         this._createdModels = keep;
         XH.safeDestroy(destroy);
+    }
+
+    deriveValidationState() {
+        const VS = ValidationState,
+            states = this.value.map(s => s.validationState);
+        states.push(super.deriveValidationState());
+
+        if (states.includes(VS.NotValid)) return VS.NotValid;
+        if (states.includes(VS.Unknown)) return VS.Unknown;
+        return VS.Valid;
     }
 }

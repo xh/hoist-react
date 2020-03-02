@@ -23,8 +23,8 @@ import moment from 'moment';
 export const required = ({value, displayName}) => {
     if (
         isNil(value) ||
-        (isString(value) && value.trim().length == 0) ||
-        (isArray(value) && value.length == 0)
+        (isString(value) && value.trim().length === 0) ||
+        (isArray(value) && value.length === 0)
     ) return `${displayName} is required.`;
 };
 
@@ -103,8 +103,8 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
             maxMoment = moment(max);
         }
 
-        if (minMoment && minMoment.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
-        if (maxMoment && maxMoment.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
+        if (minMoment?.isAfter(value)) return `${displayName} must not be before ${minMoment.format(fmt)}.`;
+        if (maxMoment?.isBefore(value)) return `${displayName} must not be after ${maxMoment.format(fmt)}.`;
     };
 }
 
