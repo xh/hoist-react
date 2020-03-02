@@ -6,7 +6,7 @@
  */
 
 import {isFunction, isNil, debounce as lodashDebounce, isNumber, isPlainObject} from 'lodash';
-import {autorun as mobxAutorun, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
+import {autorun as mobxAutorun, action, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
 import {throwIf, applyMixin} from '@xh/hoist/utils/js';
 
 /**
@@ -125,8 +125,11 @@ export function ReactiveSupport(C) {
 
             bindAndDebounce(fn, debounce) {
                 let ret = fn.bind(this);
-                if (isNumber(debounce)) return lodashDebounce(ret, debounce);
-                if (isPlainObject(debounce)) return lodashDebounce(ret, debounce.interval, debounce);
+
+                //  See https://github.com/mobxjs/mobx/issues/1956 and note we cannot use mobx scheduler.
+                //  ensure the async run of the effect also occurs in action as expected.
+                if (isNumber(debounce)) return lodashDebounce(action(ret), debounce);
+                if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
                 return ret;
             }
         },
