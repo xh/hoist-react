@@ -6,6 +6,9 @@
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
+* Fixed an issue where `StoreFilterField` `filterOption.includeChildren` could not be changed
+  dynamically.
+  [#1644](https://github.com/xh/hoist-react/issu
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
@@ -70,9 +73,6 @@
 * A number of fixes have been applied to `RelativeTimeStamp` and `getRelativeTimestamp`, especially
   around its handling of 'equal' or 'epsilon equal' times. Remove unintended leading whitespace from
   `getRelativeTimestamp`.
-* Fixed an issue where `StoreFilterField` `filterOption.includeChildren` could not be changed
-  dynamically.
-  [#1644](https://github.com/xh/hoist-react/issu
 
 ### ⚙️ Technical
 
