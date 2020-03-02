@@ -6,11 +6,10 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {GridSorter} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, isNumber} from 'lodash';
+import {isNumber} from 'lodash';
 import {apiRemoved} from '../../utils/js';
 
 /**
@@ -37,13 +36,13 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
-     * @param {string} [c.groupBy] - Column ID by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
+     * @param {(string|string[]|Object|Object[])} [c.sortBy] - field(s) or sorter config(s) with
      *      `colId` and `sort` (asc|desc) keys.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` from which to create.
@@ -67,7 +66,7 @@ export class DataViewModel {
         groupRowHeight,
         groupRowRenderer,
         groupRowElementRenderer,
-        sortBy = [],
+        sortBy,
         selModel,
         emptyText,
         showHover = false,
@@ -77,8 +76,6 @@ export class DataViewModel {
         rowClassFn,
         ...restArgs
     }) {
-        sortBy = castArray(sortBy);
-        throwIf(sortBy.length > 1, 'DataViewModel does not support multiple sorters.');
         throwIf(!isNumber(itemHeight), 'Must specify DataViewModel.itemHeight as a number to set a fixed pixel height for each item.');
         apiRemoved(restArgs.rowCls, 'rowCls', 'Use \'rowClassFn\' instead.');
         apiRemoved(restArgs.itemRenderer, 'itemRenderer', 'Use \'elementRenderer\' instead.');
@@ -86,28 +83,19 @@ export class DataViewModel {
         this.itemHeight = itemHeight;
         this.groupRowHeight = groupRowHeight;
 
-        // We only have a single visible column in our DataView grid and rely on ag-Grid for sorting,
-        // initially and through updates via transactions. For this reason, we set the field of our
-        // single column to the desired sort field. (The field setting should not have any other
-        // meaningful impact on the grid, since we use a custom renderer and mark it as complex to
-        // ensure each item re-renders on any record change.)
-        let field = 'id';
-        if (sortBy.length === 1) {
-            let sorter = sortBy[0];
-            if (!(sorter instanceof GridSorter)) sorter = GridSorter.parse(sorter);
-            field = sorter.colId;
-        }
+        // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
+        // Also add hidden columns for all other fields to make sure grouping and sorting works!
+        const columns = store.fields.map(field => {
+            const fieldName = field.name ?? field;   // May be a StoreField, or just a config for one 
+            return {field: fieldName, hidden: true};
+        });
 
-        const columns = [{
-            field,
+        columns.push({
+            colId: 'xhDataViewColumn',
             flex: true,
             elementRenderer,
             rendererIsComplex: true
-        }];
-
-        if (groupBy) {
-            columns.push({field: groupBy, hidden: true});
-        }
+        });
 
         this.gridModel = new GridModel({
             store,
@@ -135,6 +123,8 @@ export class DataViewModel {
     get hasSelection()          {return this.gridModel.hasSelection}
     get selection()             {return this.gridModel.selection}
     get selectedRecord()        {return this.gridModel.selectedRecord}
+    get groupBy()               {return this.gridModel.groupBy}
+    get sortBy()                {return this.gridModel.sortBy}
 
     selectFirst()               {return this.gridModel.selectFirst()}
     ensureSelectionVisible()    {return this.gridModel.ensureSelectionVisible()}
@@ -142,4 +132,6 @@ export class DataViewModel {
     loadData(...args)           {return this.gridModel.loadData(...args)}
     updateData(...args)         {return this.gridModel.updateData(...args)}
     clear()                     {return this.gridModel.clear()}
+    setGroupBy(colIds)          {return this.gridModel.setGroupBy(colIds)}
+    setSortBy(sorters)          {return this.gridModel.setSortBy(sorters)}
 }

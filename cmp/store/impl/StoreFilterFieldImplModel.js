@@ -115,8 +115,8 @@ export class StoreFilterFieldImplModel {
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
             fn = (rec) => activeFields.some(f => {
-                const fieldVal = rec.data[f];
-                return fieldVal && regex.test(fieldVal);
+                const fieldVal = (f == 'id') ? rec.id : rec.data[f];
+                return regex.test(fieldVal);
             });
         }
         this.filter = fn ? {...filterOptions, fn} : null;
@@ -142,7 +142,7 @@ export class StoreFilterFieldImplModel {
     getActiveFields() {
         let {gridModel, includeFields, excludeFields, store} = this;
 
-        let ret = store ? store.fields.map(f => f.name).concat(['id']) : [];
+        let ret = store ? ['id', ...store.fields.map(f => f.name)] : [];
         if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
         if (excludeFields) ret = without(ret, ...excludeFields);
 

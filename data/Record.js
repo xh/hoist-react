@@ -37,6 +37,8 @@ export class Record {
     /** @member {string[]|number[]} */
     treePath;
 
+    get isRecord() {return true}
+
     /** @returns {boolean} - true if the Record has never been committed. */
     get isAdd() {
         return this.committedData === null;

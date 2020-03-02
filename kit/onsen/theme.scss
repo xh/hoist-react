@@ -28,15 +28,6 @@ body.xh-app.xh-mobile {
     color: var(--xh-title-text-color);
   }
 
-  .toolbar-button,
-  .back-button {
-    color: var(--xh-toolbar-btn-color);
-  }
-
-  .back-button__icon {
-    fill: var(--xh-toolbar-btn-color);
-  }
-
   // Borders
   .toolbar,
   .tabbar,
@@ -90,18 +81,20 @@ body.xh-app.xh-mobile {
 
   // Buttons
   .button:not(.button--outline):not(.button--quiet):not(.button--light) {
-    background-color: var(--xh-btn-color);
+    background-color: var(--xh-button-bg);
+    color: var(--xh-button-text-color);
 
     &:active {
-      background-color: var(--xh-btn-color);
+      background-color: var(--xh-button-active-bg);
+      color: var(--xh-button-active-text-color);
     }
   }
 
   .button--outline,
   .button--outline:active,
   .button--outline:hover {
-    border-color: var(--xh-btn-color);
-    color: var(--xh-btn-color);
+    border-color: var(--xh-button-bg);
+    color: var(--xh-button-bg);
   }
 
   .button--light,

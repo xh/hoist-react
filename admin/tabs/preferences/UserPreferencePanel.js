@@ -7,6 +7,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {truncate} from 'lodash';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -67,7 +68,7 @@ const modelSpec = {
         {field: 'type', width: 100},
         {field: 'username', ...usernameCol},
         {field: 'groupName', hidden: true},
-        {field: 'userValue', minWidth: 200, flex: true}
+        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson}
     ],
     editors: [
         {field: 'name'},
@@ -77,3 +78,7 @@ const modelSpec = {
         {field: 'lastUpdatedBy'}
     ]
 };
+
+function truncateIfJson(userValue, {record}) {
+    return record.data.type === 'json' ? truncate(userValue, {length: 500}) : userValue;
+}
