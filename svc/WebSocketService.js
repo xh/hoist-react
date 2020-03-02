@@ -42,17 +42,17 @@ export class WebSocketService {
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     TEST_MSG_TOPIC = 'xhTestMessage';
 
-    /** @property {string} - unique channel ID assigned by server upon successful registration. */
-    channelKey;
+    /** @property {string} - unique channel assigned by server upon successful connection. */
+    @observable channelKey = null;
+
+    /** @property {Date} - Last time a message was received, including heartbeat messages. */
+    @observable lastMessageTime = null;
+
+    /** @property {boolean} - Observable flag indicating service is connected and available for use. */
+    get connected() {return !!this.channelKey}
 
     /** @property {boolean} - set to true to log all sent/received messages - very chatty. */
     logMessages = false;
-
-    @observable
-    connected = false;
-
-    @observable
-    lastMessageTime;
 
     _timer;
     _socket;
@@ -183,14 +183,20 @@ export class WebSocketService {
             const msg = JSON.parse(rawMsg.data),
                 {topic, data} = msg;
 
-            if (topic === this.REG_SUCCESS_TOPIC) {
-                this.channelKey = data.channelKey;
-            } else if (topic === this.TEST_MSG_TOPIC) {
-                this.showTestMessageAlert(data);
-            }
-
+            // Record arrival
             this.updateLastMessageTime();
             this.maybeLogMessage('Received message', rawMsg);
+
+            // Hoist and app handling
+            switch (topic) {
+                case this.REG_SUCCESS_TOPIC:
+                    this.installChannelKey(data.channelKey);
+                    break;
+                case this.TEST_MSG_TOPIC:
+                    this.showTestMessageAlert(data);
+                    break;
+            }
+
             this.notifySubscribers(msg);
         } catch (e) {
             console.error('Error decoding websocket message', rawMsg, e);
@@ -222,18 +228,24 @@ export class WebSocketService {
         return ret;
     }
 
-
     //------------------------
     // Other impl
     //------------------------
-    @action
-    updateLastMessageTime() {
-        this.lastMessageTime = new Date();
+    updateConnectedStatus() {
+        const socketOpen = this._socket?.readyState === WebSocket.OPEN;
+        if (!socketOpen && this.channelKey) {
+            this.installChannelKey(null);
+        }
     }
 
     @action
-    updateConnectedStatus() {
-        this.connected = (this._socket && this._socket.readyState == WebSocket.OPEN);
+    installChannelKey(key) {
+        this.channelKey = key;
+    }
+
+    @action
+    updateLastMessageTime() {
+        this.lastMessageTime = new Date();
     }
 
     buildWebSocketUrl() {

@@ -36,7 +36,7 @@ export class DataViewModel {
      * @param {Column~elementRendererFn} c.elementRenderer - function returning a React element for
      *      each data row.
      * @param {number} itemHeight - Row height (in px) for each item displayed in the view.
-     * @param {(string|string[]} [c.groupBy] - field(s) by which to do full-width row grouping.
+     * @param {(string|string[])} [c.groupBy] - field(s) by which to do full-width row grouping.
      * @param {number} [c.groupRowHeight] - Height (in px) of a group row.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
@@ -85,7 +85,11 @@ export class DataViewModel {
 
         // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
         // Also add hidden columns for all other fields to make sure grouping and sorting works!
-        const columns = store.fields.map(field => ({field, hidden: true}));
+        const columns = store.fields.map(field => {
+            const fieldName = field.name ?? field;   // May be a StoreField, or just a config for one 
+            return {field: fieldName, hidden: true};
+        });
+
         columns.push({
             colId: 'xhDataViewColumn',
             flex: true,
