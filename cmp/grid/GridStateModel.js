@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel} from '@xh/hoist/core';
-import {cloneDeep, debounce, find, remove, isUndefined} from 'lodash';
+import {cloneDeep, debounce, find, remove, isUndefined, omit} from 'lodash';
 import {start} from '@xh/hoist/promise';
 
 /**
@@ -124,7 +124,7 @@ export class GridStateModel {
         return {
             track: () => this.gridModel.columnState,
             run: (columnState) => {
-                this.state.columns = columnState;
+                this.state.columns = this.removeWidthOfResizable(columnState);
                 this.saveStateChange();
             }
         };
@@ -134,8 +134,8 @@ export class GridStateModel {
         const {gridModel, state, trackColumns} = this;
         if (!trackColumns || !state.columns) return;
 
-        const cols = gridModel.getLeafColumns(),
-            colState = [...state.columns];
+        const cols = gridModel.getLeafColumns();
+        let colState = [...state.columns];
 
         // Remove any stale column state entries
         remove(colState, ({colId}) => !gridModel.findColumn(cols, colId));
@@ -147,6 +147,8 @@ export class GridStateModel {
                 colState.splice(idx, 0, {colId});
             }
         });
+
+        colState = this.removeWidthOfResizable(colState);
 
         gridModel.applyColumnStateChanges(colState);
     }
@@ -189,9 +191,24 @@ export class GridStateModel {
     }
 
     //--------------------------
-    // Helper
+    // Helpers
     //--------------------------
     saveStateChange = debounce(() => {
         this.saveState(this.getStateKey(), this.state);
     }, GridStateModel.STATE_SAVE_DEBOUNCE_MS);
+
+    /**
+     * Return a copy of the passed-in columnState with the width removed from non-resizable columns.
+     * Does not mutate the input.
+     * @param columnState The column state to be processed.
+     * @returns A copy of columnState with width removed from non-resizable columns.
+     */
+    removeWidthOfResizable(columnState) {
+        const cols = this.gridModel.getLeafColumns();
+
+        return columnState.map(state => {
+            const col = this.gridModel.findColumn(cols, state.colId);
+            return col.resizable ? state : omit(state, 'width');
+        });
+    }
 }
