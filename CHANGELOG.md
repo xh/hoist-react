@@ -1,15 +1,24 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - unreleased
+## v31.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
+  server.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
+
+## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
 
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
-  * `DataViewModel` allows for settable and multiple groupings and sorters like GridModel.
+  * `DataViewModel` allows for settable and multiple groupings and sorters.
   * `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
-  sense in a `DataView` context, such as `showHover` and `rowBorders`.
+    sense in a `DataView` context, such as `showHover` and `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
   via Hoist's built-in activity tracking.
 * The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
@@ -59,7 +68,8 @@
 * `StoreFilterField` will again match on `Record.id` if bound to a Store or a GridModel with the
   `id` column visible. [#1697](https://github.com/xh/hoist-react/issues/1697)
 * A number of fixes have been applied to `RelativeTimeStamp` and `getRelativeTimestamp`, especially
-around its handling of 'equal' or 'epsilon equal' times.
+  around its handling of 'equal' or 'epsilon equal' times. Remove unintended leading whitespace from
+  `getRelativeTimestamp`.
 * Fixed an issue where `StoreFilterField` `filterOption.includeChildren` could not be changed
   dynamically.
   [#1644](https://github.com/xh/hoist-react/issu
@@ -78,7 +88,7 @@ around its handling of 'equal' or 'epsilon equal' times.
 * react-dates `21.7 -> 21.8`
 * react-beautiful-dnd `11.0 -> 12.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v30.0.0)
 
 ## v29.1.0 - 2020-02-07
 
