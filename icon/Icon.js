@@ -953,20 +953,20 @@ function getIconConfig(extension) {
             return {name: 'fileImage'};
         case 'doc':
         case 'docx':
-            return {name: 'fileWord', className: 'xh-blue'};
+            return {name: 'fileWord', className: 'xh-file-icon-word'};
         case 'csv':
-            return {name: 'fileCsv', className: 'xh-fileIcon-excel'};
+            return {name: 'fileCsv', className: 'xh-file-icon-excel'};
         case 'xls':
         case 'xlsx':
-            return {name: 'fileExcel', className: 'xh-fileIcon-excel'};
+            return {name: 'fileExcel', className: 'xh-file-icon-excel'};
         case 'ppt':
         case 'pptx':
-            return {name: 'filePowerpoint', className: 'xh-fileIcon-powerpoint'};
+            return {name: 'filePowerpoint', className: 'xh-file-icon-powerpoint'};
         case 'msg':
         case 'eml':
-            return {name: 'mail', className: 'xh-fileIcon-mail'};
+            return {name: 'mail', className: 'xh-file-icon-mail'};
         case 'pdf':
-            return {name: 'filePdf', className: 'xh-fileIcon-pdf'};
+            return {name: 'filePdf', className: 'xh-file-icon-pdf'};
         case 'txt':
             return {name: 'fileText'};
         case 'zip':
