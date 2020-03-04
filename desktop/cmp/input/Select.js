@@ -19,7 +19,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {assign, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import {merge, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
@@ -224,6 +224,12 @@ export class Select extends HoistInput {
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
 
+                // Minimize (or hide) bulky dropdown
+                components: {
+                    DropdownIndicator: this.getDropdownIndicatorFactory(),
+                    IndicatorSeparator: () => null
+                },
+
                 // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.
                 menuPortalTarget: this.getOrCreatePortalDiv(),
@@ -258,17 +264,9 @@ export class Select extends HoistInput {
             rsProps.formatCreateLabel = this.createMessageFn;
         }
 
-        if (props.hideDropdownIndicator) {
-            rsProps.components = {
-                ...rsProps.components,
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null
-            };
-        }
-
         const factory = this.getSelectFactory();
 
-        assign(rsProps, props.rsOptions);
+        merge(rsProps, props.rsOptions);
         return box({
             item: factory(rsProps),
             className: this.getClassName(),
@@ -277,7 +275,7 @@ export class Select extends HoistInput {
                 // propagation only if react-select already likely to have used for menu management.
                 // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
                 const {menuIsOpen} = this.reactSelectRef.current ? this.reactSelectRef.current.state : {};
-                if (menuIsOpen && (e.key == 'Escape' || e.key == 'Enter')) {
+                if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
                     e.stopPropagation();
                 }
             },
@@ -313,11 +311,11 @@ export class Select extends HoistInput {
     @action
     onInputChange = (value, {action}) => {
         if (this.manageInputValue) {
-            if (action == 'input-change') {
+            if (action === 'input-change') {
                 this.inputValue = value;
                 this._inputChangedSinceSelect = true;
                 if (!value) this.noteValueChange(null);
-            } else if (action == 'input-blur') {
+            } else if (action === 'input-blur') {
                 this.inputValue = null;
                 this._inputChangedSinceSelect = false;
             }
@@ -339,10 +337,10 @@ export class Select extends HoistInput {
                 // Use of creatable and async variants will create another level of nesting we must
                 // traverse to get to the underlying Select comp and its inputRef.
                 const refComp = rsRef.select,
-                    selectComp = refComp.constructor.name == 'Select' ? refComp : refComp.select,
+                    selectComp = refComp.constructor.name === 'Select' ? refComp : refComp.select,
                     inputElem = selectComp.inputRef;
 
-                if (this.hasFocus && inputElem && document.activeElement == inputElem) {
+                if (this.hasFocus && inputElem && document.activeElement === inputElem) {
                     inputElem.select();
                 }
             });
@@ -474,7 +472,7 @@ export class Select extends HoistInput {
     formatOptionLabel = (opt, params) => {
         // Always display the standard label string in the value container (context == 'value').
         // If we need to expose customization here, we could consider a dedicated prop.
-        if (params.context != 'menu') {
+        if (params.context !== 'menu') {
             return opt.label;
         }
 
@@ -511,6 +509,12 @@ export class Select extends HoistInput {
     //------------------------
     // Other Implementation
     //------------------------
+    getDropdownIndicatorFactory() {
+        return this.props.hideDropdownIndicator ?
+            () => null :
+            () => Icon.chevronDown({className: 'xh-select__indicator'});
+    }
+
     getThemeConfig() {
         return (base) => {
             return {
