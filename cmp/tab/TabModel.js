@@ -77,11 +77,11 @@ export class TabModel {
     }
 
     get renderMode() {
-        return this._renderMode || this.containerModel.renderMode;
+        return this._renderMode ?? this.containerModel.renderMode;
     }
 
     get refreshMode() {
-        return this._refreshMode || this.containerModel.refreshMode;
+        return this._refreshMode ?? this.containerModel.refreshMode;
     }
 
     @computed

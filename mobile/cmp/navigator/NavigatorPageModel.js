@@ -41,11 +41,11 @@ export class NavigatorPageModel {
     }
 
     get renderMode() {
-        return this._renderMode || this.navigatorModel.renderMode;
+        return this._renderMode ?? this.navigatorModel.renderMode;
     }
 
     get refreshMode() {
-        return this._refreshMode || this.navigatorModel.refreshMode;
+        return this._refreshMode ?? this.navigatorModel.refreshMode;
     }
 
     @computed
