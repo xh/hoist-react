@@ -52,7 +52,9 @@ export class BaseFieldModel {
     @observable _disabled;
     @observable _readonly;
 
-    // An array with the result of evaluating each rule (null for not complete, or list of errors)
+    // An array with the result of evaluating each rule.  Each element will be array of strings
+    // containing any validation errors for the rule.  If validation for the rule has not
+    // completed will contain null
     @observable _errors;
 
     @managed

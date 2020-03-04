@@ -28,7 +28,9 @@ export class Rule {
     }
 
     /**
-     * Compute current set of errors (if any) for this rule
+     * Compute current set of errors (if any) for this rule.
+     * @param {FieldModel} field - field being evaluated.
+     * @returns {Promise<string[]>}
      */
     async evaluateAsync(field) {
         if (this.isActive(field)) {
