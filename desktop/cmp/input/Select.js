@@ -167,6 +167,10 @@ export class Select extends HoistInput {
     get windowedMode() {return !!this.props.enableWindowed}
     get multiMode() {return !!this.props.enableMulti}
     get filterMode() {return withDefault(this.props.enableFilter, true)}
+    get selectOnFocus() {
+        return withDefault(this.props.selectOnFocus,
+            !this.multiMode && (this.filterMode || this.creatableMode));
+    }
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
@@ -332,7 +336,7 @@ export class Select extends HoistInput {
             const {renderValue} = this;
             this.inputValue = renderValue ? renderValue.label : null;
         }
-        if (this.props.selectOnFocus) {
+        if (this.selectOnFocus) {
             wait(1).then(() => {
                 // Delay to allow re-render. For safety, only select if still focused!
                 const rsRef = this.reactSelectRef.current;
