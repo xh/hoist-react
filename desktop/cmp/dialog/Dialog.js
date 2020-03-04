@@ -70,7 +70,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             model.positionDialogOnRender();
         });
 
-        useOnResize(() => model.positionDialogOnRender(), {ref: {current: document.body}});
+        useOnResize(() => model.centerOnParentResize(), {ref: {current: document.body}});
 
         if (!isOpen || (inPortal && !hasPortal)) {
             return null;
@@ -116,8 +116,9 @@ const rndDialog = hoistCmp.factory({
             // ignore drags on close or maximize button in title bar
             if (evt.target.closest('button')) return;
 
-            if (!model.isMaximizedState) {
-                model.setPositionState({x: data.x, y: data.y});
+            if (!model.isMaximized) {
+                model.wasDragged = true;
+                model.setXY({x: data.x, y: data.y});
             }
             if (isFunction(rndOptions.onDragStop)) rndOptions.onDragStop(evt, data);
         };
@@ -129,13 +130,13 @@ const rndDialog = hoistCmp.factory({
             resizableDelta,
             position
         ) => {
-            if (!model.isMaximizedState) {
+            if (!model.isMaximized) {
                 const {
                     offsetWidth: width,
                     offsetHeight: height
                 } = domEl;
-                model.setSizeState({width, height});
-                model.setPositionState(position);
+                model.setWidthHeight({width, height});
+                model.setXY(position);
             }
             if (isFunction(rndOptions.onResizeStop)) {
                 rndOptions.onResizeStop(

@@ -4,11 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isNumber, isPlainObject, isString, isUndefined} from 'lodash';
+import {isNumber, isPlainObject, isString, isUndefined} from 'lodash';
 
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {withDefault} from '@xh/hoist/utils/js';
 
 import {DialogStateModel} from './DialogStateModel';
 
@@ -46,6 +47,8 @@ export class DialogModel {
     dialogWrapperDivRef = createObservableRef();
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
+    startsCentered = true;
+    wasDragged = false;
 
     /** @member {DialogStateModel} */
     @managed
@@ -60,6 +63,10 @@ export class DialogModel {
     draggable;
     /** @member {boolean} */
     inPortal;
+    /** @member {number} */
+    initialX;
+    /** @member {number} */
+    initialY;
 
     //-------------------
     // Mutable Public State
@@ -91,7 +98,7 @@ export class DialogModel {
     //---------------------------------
     // Observable Implementation State
     //----------------------------------
-    /** Is the Dialog mounted into React's virtual DOM? */
+    /** Is the Dialog mounted into React's virtual DOM via the React "portal" method? */
     /** @member {boolean} */
     @observable hasPortal = false;
     /** @member {object} */
@@ -99,7 +106,7 @@ export class DialogModel {
     /** @member {object} */
     @observable.ref positionState = {};
     /** @member {boolean} */
-    @observable isMaximizedState = false;
+    @observable isMaximizedState;
 
     /**
      * @param {Object} config
@@ -146,7 +153,9 @@ export class DialogModel {
         this.setContent(content);
         this.setWidth(width);
         this.setHeight(height);
+        this.initialX = x;
         this.setX(x);
+        this.initialY = y;
         this.setY(y);
         this.setIsMaximized(isMaximized);
         this.setIsOpen(isOpen);
@@ -154,6 +163,8 @@ export class DialogModel {
         this.setCloseOnEscape(closeOnEscape);
         this.setShowBackgroundMask(showBackgroundMask);
         this.setShowCloseButton(showCloseButton);
+
+        if (isUndefined(x) || isUndefined(y)) this.startsCentered = true;
     }
 
     //----------------------
@@ -176,41 +187,82 @@ export class DialogModel {
 
     @action
     close() {
+        this.rndRef = null;
         this.setIsOpen(false);
-        if (this.stateModel) return;
-
-        this.setSizeState({});
-        this.setPositionState({});
-        this.setIsMaximizedState(false);
-    }
-
-    @action
-    toggleIsMaximized() {
-        this.isMaximizedState = !this.isMaximizedState;
-        if (this.isMaximizedState) {
-            this.maximize();
-        } else {
-            this.unMaximize();
-        }
+        this.setIsMaximized(false);
+        this.wasDragged = false;
+        this.x = undefined;
+        this.y = undefined;
     }
 
     @action
     setWidth(v) {
         this.width = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setSizeState();
+            }
+            this.positionDialog();
+        }
     }
 
     @action
     setHeight(v) {
         this.height = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setSizeState();
+            }
+            this.positionDialog();
+        }
     }
+
+    @action
+    setWidthHeight({width, height}) {
+        this.width = width;
+        this.height = height;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setSizeState();
+            }
+            this.positionDialog();
+        }
+    }
+
     @action
     setX(v) {
         this.x = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setPositionState();
+            }
+            this.positionDialog();
+        }
     }
 
     @action
     setY(v) {
         this.y = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setPositionState();
+            }
+            this.positionDialog();
+        }
+    }
+
+    @action
+    setXY({x, y}) {
+        const noChange = this.x == x && this.y == y;
+        this.x = x;
+        this.y = y;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setPositionState();
+            }
+            if (noChange) return;
+            this.positionDialog();
+        }
     }
 
     @action
@@ -243,18 +295,37 @@ export class DialogModel {
         this.showCloseButton = v;
     }
 
+    @action
+    maximize() {
+        if (!this.rndRef) return;
+
+        if (this.stateModel) this.isMaximizedState = true;
+        this.isMaximized = true;
+
+        this.rndRef.updatePosition({x: 0, y: 0});
+        this.rndRef.updateSize(this.windowSize);
+    }
+
+    @action
+    unMaximize() {
+        if (!this.rndRef) return;
+        if (this.stateModel) this.isMaximizedState = false;
+        this.isMaximized = false;
+        this.positionDialog();
+    }
+
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
     @action
-    setSizeState(v) {
-        this.sizeState = v;
+    setSizeState() {
+        this.sizeState = {width: this.width, height: this.height};
     }
 
     @action
-    setPositionState(v) {
-        if (isUndefined(v.x) && isUndefined(v.y)) v = {};
-        this.positionState = v;
+    setPositionState() {
+        // if (isUndefined(v.x) && isUndefined(v.y)) v = {};
+        this.positionState = {x: this.x, y: this.y};
     }
 
     @action
@@ -308,52 +379,55 @@ export class DialogModel {
     positionDialogOnRender() {
         if (!this.rndRef) return;
 
-        let {width, height, x, y} = this;
-
-        this.setState({width, height, x, y});
-
-        if (this.isMaximizedState) {
-            this.maximize();
-            return;
-        }
-
-        width = this.sizeState.width;
-        height = this.sizeState.height;
-        if (isNumber(width) && isNumber(height)) {
-            this.applySizeStateChanges({width, height});
-        }
-
-        x = this.positionState.x;
-        y = this.positionState.y;
-        if (!isNumber(x) || !isNumber(y)) {
-            this.centerDialog();
-        } else {
-            this.applyPositionStateChanges({x, y});
-        }
-    }
-
-    setState({width, height, x, y}) {
         if (this.stateModel) {
             this.stateModel.initializeState();
         }
 
-        const {width: stateWidth, height: stateHeight} = this.sizeState;
-        width = isNumber(stateWidth) ? stateWidth : width;
-        height = isNumber(stateHeight) ? stateHeight : height;
-        this.setSizeState({width, height});
+        this.positionDialog();
+    }
 
-        const {x: stateX, y: stateY} = this.positionState;
-        x = isNumber(stateX) ? stateX : x;
-        y = isNumber(stateY) ? stateY :y;
-        this.setPositionState({x, y});
+    positionDialog() {
+        if (!this.rndRef) return;
 
+        const currentX = withDefault(this.positionState.x, this.x, this.initialX);
+        const currentY = withDefault(this.positionState.y, this.y, this.initialY);
+        const currentWidth = withDefault(this.sizeState.width, this.width);
+        const currentHeight = withDefault(this.sizeState.height, this.height);
+        const currentIsMaximized = withDefault(this.isMaximizedState, this.isMaximized);
+
+        if (currentIsMaximized) {
+            this.maximize();
+            return;
+        }
+
+        if (isNumber(currentWidth) && isNumber(currentHeight)) {
+            this.applySizeChanges({width: currentWidth, height: currentHeight});
+        }
+
+        // animation frame lets any new width/height be considered
+        window.requestAnimationFrame(() => {
+            if (!isNumber(currentX) || !isNumber(currentY)) {
+                this.centerDialog();
+            } else {
+                this.applyPositionChanges({x: currentX, y: currentY});
+            }
+        });
+    }
+
+    centerOnParentResize() {
+        if (!this.rndRef) return;
+        if (this.startsCentered && !this.wasDragged) {
+            this.centerDialog();
+        }
     }
 
     centerDialog() {
-        window.requestAnimationFrame(() => this.rndRef.updatePosition(this.calcCenteredPos(this.dialogSize)));
+        const coords = this.calcCenteredPos(this.dialogSize);
+        this.rndRef.updatePosition(coords);
+        this.setXY(coords);
     }
 
-    applySizeStateChanges({width, height}) {
+    applySizeChanges({width, height}) {
         const {windowSize: wSize} = this;
 
         width = Math.min(wSize.width - 20, width);
@@ -361,40 +435,20 @@ export class DialogModel {
         this.rndRef.updateSize({width, height});
     }
 
-    applyPositionStateChanges({x, y}) {
-        // delay so that correct dialog size can be calculated from DOM
-        window.requestAnimationFrame(() => {
-            const {windowSize: wSize, dialogSize: dSize} = this;
-            x = Math.min(x, wSize.width - dSize.width);
-            y = Math.min(y, wSize.height - dSize.height);
-            this.rndRef.updatePosition({x, y});
-        });
+    applyPositionChanges({x, y}) {
+        const {windowSize: wSize, dialogSize: dSize} = this;
+        x = Math.min(x, wSize.width - dSize.width),
+        y = Math.min(y, wSize.height - dSize.height);
+        this.rndRef.updatePosition({x, y});
+        this.setXY({x, y}); // ??? needed?
     }
 
     calcCenteredPos({width, height}) {
-        const wSize = this.windowSize;
+        const pSize = this.inPortal ? this.windowSize : this.parentSize;
         return {
-            x: Math.max((wSize.width - width) / 2, 0),
-            y: Math.max((wSize.height - height) / 2, 0)
+            x: Math.max((pSize.width - width) / 2, 0),
+            y: Math.max((pSize.height - height) / 2, 0)
         };
-    }
-
-    maximize() {
-        if (!this.rndRef) return;
-
-        this.rndRef.updatePosition({x: 0, y: 0});
-        this.rndRef.updateSize(this.windowSize);
-    }
-
-    unMaximize() {
-        if (!this.rndRef) return;
-
-        this.rndRef.updateSize(this.sizeState);
-        if (isEmpty(this.positionState)) {
-            this.centerDialog();
-        } else {
-            this.rndRef.updatePosition(this.positionState);
-        }
     }
 
     parseStateModel(stateModel) {
@@ -409,6 +463,15 @@ export class DialogModel {
             this.markManaged(ret);
         }
         return ret;
+    }
+
+    get parentSize() {
+        const p = this.rndRef.getParent().parentElement;
+
+        return {
+            width: p.offsetWidth || p.clientWidth,
+            height: p.offsetHeight || p.clientHeight
+        };
     }
 
     get windowSize() {
