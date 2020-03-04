@@ -12,11 +12,9 @@
 * Enhancements to form validation to improve handling of asynchronous validation.  Individual rules
 and constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
-
-### ⚙️ Technical
-
 * `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
 ## v30.0.0 - 2020-02-29
 
