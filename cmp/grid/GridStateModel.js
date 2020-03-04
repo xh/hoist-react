@@ -134,21 +134,7 @@ export class GridStateModel {
         const {gridModel, state, trackColumns} = this;
         if (!trackColumns || !state.columns) return;
 
-        const cols = gridModel.getLeafColumns();
-        let colState = [...state.columns];
-
-        // Remove any stale column state entries
-        remove(colState, ({colId}) => !gridModel.findColumn(cols, colId));
-
-        // Any grid columns that were not found in state are newly added to the code.
-        // Insert these columns in position based on the index at which they are defined.
-        cols.forEach(({colId}, idx) => {
-            if (!find(colState, {colId})) {
-                colState.splice(idx, 0, {colId});
-            }
-        });
-
-        colState = this.removeWidthOfResizable(colState);
+        let colState = this.cleanColumnState(state.columns);
 
         gridModel.applyColumnStateChanges(colState);
     }
@@ -197,18 +183,29 @@ export class GridStateModel {
         this.saveState(this.getStateKey(), this.state);
     }, GridStateModel.STATE_SAVE_DEBOUNCE_MS);
 
-    /**
-     * Return a copy of the passed-in columnState with the width removed from non-resizable columns.
-     * Does not mutate the input.
-     * @param columnState The column state to be processed.
-     * @returns A copy of columnState with width removed from non-resizable columns.
-     */
-    removeWidthOfResizable(columnState) {
-        const cols = this.gridModel.getLeafColumns();
+    cleanColumnState(columnState) {
+        const {gridModel} = this;
+        const cols = gridModel.getLeafColumns();
 
-        return columnState.map(state => {
+        let cleanedState = [...columnState];
+
+        // Remove any columns which are saved in state but not found in the grid
+        remove(cleanedState, ({colId}) => !gridModel.findColumn(cols, colId));
+
+        // Any grid columns that were not found in state are newly added to the code.
+        // Insert these columns in position based on the index at which they are defined.
+        cols.forEach(({colId}, idx) => {
+            if (!find(cleanedState, {colId})) {
+                cleanedState.splice(idx, 0, {colId});
+            }
+        });
+
+        // Remove the width from any non-resizable column
+        cleanedState = cleanedState.map(state => {
             const col = this.gridModel.findColumn(cols, state.colId);
             return col.resizable ? state : omit(state, 'width');
         });
+
+        return cleanedState;
     }
 }
