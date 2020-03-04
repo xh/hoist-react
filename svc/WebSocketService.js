@@ -124,9 +124,9 @@ export class WebSocketService {
         try {
             // Create new socket and wire up events.  Be sure to ignore obsolete sockets
             const s = new WebSocket(this.buildWebSocketUrl());
-            s.onopen = () => {if (s === this._socket) this.onOpen();};
-            s.onclose = () => {if (s === this._socket) this.onClose();};
-            s.onerror = (e) => {if (s === this._socket) this.onError(e);};
+            s.onopen = (ev) => {if (s === this._socket) this.onOpen(ev);};
+            s.onclose = (ev) => {if (s === this._socket) this.onClose(ev);};
+            s.onerror = (ev) => {if (s === this._socket) this.onError(ev);};
             s.onmessage = (data) => {if (s === this._socket) this.onMessage(data);};
             this._socket = s;
         } catch (e) {
@@ -163,18 +163,18 @@ export class WebSocketService {
     //------------------------
     // Socket events impl
     //------------------------
-    onOpen() {
-        console.debug('WebSocket connection opened');
+    onOpen(ev) {
+        console.debug('WebSocket connection opened', ev);
         this.updateConnectedStatus();
     }
 
-    onClose() {
-        console.debug('WebSocket connection closed');
+    onClose(ev) {
+        console.debug('WebSocket connection closed', ev);
         this.updateConnectedStatus();
     }
 
-    onError(e) {
-        console.error('WebSocket connection error', e);
+    onError(ev) {
+        console.error('WebSocket connection error', ev);
         this.updateConnectedStatus();
     }
 
