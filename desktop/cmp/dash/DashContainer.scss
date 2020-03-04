@@ -1,0 +1,12 @@
+.xh-dash-container {
+  &--empty-overlay {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .bp3-overlay-backdrop {
+      background-color: var(--xh-bg);
+    }
+  }
+}

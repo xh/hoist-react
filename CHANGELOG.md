@@ -9,6 +9,13 @@
 * `GridStateModel` will no longer track width of non-resizable columns, which could lead to
   non-resizable columns getting stuck with a bad width. [#1718](https://github.com/xh/hoist-react/issues/1718)
 
+### ⚙️ Technical
+
+* Enhancements to form validation to improve handling of asynchronous validation.  Individual rules
+and constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
+
+* `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
 
 ## v30.0.0 - 2020-02-29

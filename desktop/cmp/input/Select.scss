@@ -60,8 +60,19 @@
     }
 
     &__indicator {
-      padding: 0 var(--xh-pad-half-px);
-      color: var(--xh-border-color);
+      padding: 0 8px 0 0;
+      width: 20px;
+      color: #999;
+      stroke: #999;
+      stroke-width: 1em;
+    }
+
+    &__indicators:hover {
+      cursor: pointer;
+
+      svg {
+        color: var(--xh-text-color);
+      }
     }
 
     &__indicator-separator {
