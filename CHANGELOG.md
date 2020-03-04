@@ -1,5 +1,10 @@
 # Changelog
 
+## v31.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+
+
 ## v30.1.0 - 2020-03-04
 
 ### 🐞 Bug Fixes
