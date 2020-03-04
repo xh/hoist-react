@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {flatten, remove, castArray, isNil} from 'lodash';
+import {flatten, compact, castArray} from 'lodash';
 import {required} from './constraints';
 
 /**
@@ -28,19 +28,17 @@ export class Rule {
     }
 
     /**
-     * Compute current set of errors (if any) for this rule
+     * Compute current set of errors (if any) for this rule.
+     * @param {FieldModel} field - field being evaluated.
+     * @returns {Promise<string[]>}
      */
     async evaluateAsync(field) {
-        const {check} = this;
-        let ret = [];
         if (this.isActive(field)) {
-            const promises = check.map(it => this.evalConstraintAsync(it, field));
-            ret = await Promise.all(promises);
-            ret = flatten(ret);
-            remove(ret, (v) => isNil(v));
-            return ret;
+            const promises = this.check.map(it => this.evalConstraintAsync(it, field));
+            const ret = await Promise.all(promises);
+            return compact(flatten(ret));
         }
-        return ret;
+        return [];
     }
 
     /**
