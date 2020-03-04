@@ -9,7 +9,6 @@ import { hoistCmp} from '@xh/hoist/core';
 import { box, hbox, filler } from '@xh/hoist/cmp/layout';
 import { button } from '@xh/hoist/desktop/cmp/button';
 import { Icon } from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
 
 import './DialogHeader.scss';
 
@@ -44,13 +43,12 @@ export const dialogHeader = hoistCmp.factory({
 
 const maxMinButton = hoistCmp.factory(
     ({dialogModel}) => {
-        const {resizable, isMaximizedState, isMaximized} = dialogModel,
-            currentIsMaximized = withDefault(isMaximizedState, isMaximized);
+        const {resizable, currentIsMaximized} = dialogModel;
 
         return button({
             omit: !resizable,
             icon: Icon[currentIsMaximized ? 'collapse' : 'expand'](),
-            onClick: () => dialogModel[currentIsMaximized ? 'unMaximize' : 'maximize']()
+            onClick: () => dialogModel.setIsMaximized(!currentIsMaximized)
         });
     }
 );

@@ -107,7 +107,7 @@ export class DialogStateModel {
         const {dialogModel, state} = this;
         if (!state.size) return;
 
-        dialogModel.setSizeState(state.size);
+        dialogModel.setWidthHeight(state.size);
     }
 
     //--------------------------
@@ -128,7 +128,7 @@ export class DialogStateModel {
         const {dialogModel, state} = this;
         if (!state.position) return;
 
-        dialogModel.setPositionState(state.position);
+        dialogModel.setXY(state.position);
     }
 
     //--------------------------

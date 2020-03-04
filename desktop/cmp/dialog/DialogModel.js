@@ -7,7 +7,7 @@
 import {isNumber, isPlainObject, isString, isUndefined} from 'lodash';
 
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {withDefault} from '@xh/hoist/utils/js';
 
@@ -165,6 +165,16 @@ export class DialogModel {
         this.setShowCloseButton(showCloseButton);
 
         if (isUndefined(x) || isUndefined(y)) this.startsCentered = true;
+
+        this.addReaction({
+            track: () => [this.currentX, this.currentY, this.currentWidth, this.currentHeight],
+            run: () => this.positionDialog()
+        });
+
+        this.addReaction({
+            track: () => this.currentIsMaximized,
+            run: () => this.currentIsMaximized ? this.maximize() : this.unMaximize()
+        });
     }
 
     //----------------------
@@ -189,7 +199,7 @@ export class DialogModel {
     close() {
         this.rndRef = null;
         this.setIsOpen(false);
-        this.setIsMaximized(false);
+        this.isMaximized = false; // deliberately skip setter here to avoid changing state
         this.wasDragged = false;
         this.x = undefined;
         this.y = undefined;
@@ -202,7 +212,6 @@ export class DialogModel {
             if (this.stateModel) {
                 this.setSizeState();
             }
-            this.positionDialog();
         }
     }
 
@@ -213,7 +222,6 @@ export class DialogModel {
             if (this.stateModel) {
                 this.setSizeState();
             }
-            this.positionDialog();
         }
     }
 
@@ -225,8 +233,17 @@ export class DialogModel {
             if (this.stateModel) {
                 this.setSizeState();
             }
-            this.positionDialog();
         }
+    }
+
+    @computed
+    get currentWidth() {
+        return withDefault(this.sizeState.width, this.width);
+    }
+
+    @computed
+    get currentHeight() {
+        return withDefault(this.sizeState.height, this.height);
     }
 
     @action
@@ -236,7 +253,6 @@ export class DialogModel {
             if (this.stateModel) {
                 this.setPositionState();
             }
-            this.positionDialog();
         }
     }
 
@@ -247,27 +263,43 @@ export class DialogModel {
             if (this.stateModel) {
                 this.setPositionState();
             }
-            this.positionDialog();
         }
     }
 
     @action
     setXY({x, y}) {
-        const noChange = this.x == x && this.y == y;
         this.x = x;
         this.y = y;
         if (this.rndRef) {
             if (this.stateModel) {
                 this.setPositionState();
             }
-            if (noChange) return;
-            this.positionDialog();
         }
+    }
+
+    @computed
+    get currentX() {
+        return withDefault(this.positionState.x, this.x, this.initialX);
+    }
+
+    @computed
+    get currentY() {
+        return withDefault(this.positionState.y, this.y, this.initialY);
     }
 
     @action
     setIsMaximized(v) {
         this.isMaximized = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setIsMaximizedState(v);
+            }
+        }
+    }
+
+    @computed
+    get currentIsMaximized() {
+        return withDefault(this.isMaximizedState, this.isMaximized);
     }
 
     @action
@@ -299,9 +331,6 @@ export class DialogModel {
     maximize() {
         if (!this.rndRef) return;
 
-        if (this.stateModel) this.isMaximizedState = true;
-        this.isMaximized = true;
-
         this.rndRef.updatePosition({x: 0, y: 0});
         this.rndRef.updateSize(this.windowSize);
     }
@@ -309,8 +338,6 @@ export class DialogModel {
     @action
     unMaximize() {
         if (!this.rndRef) return;
-        if (this.stateModel) this.isMaximizedState = false;
-        this.isMaximized = false;
         this.positionDialog();
     }
 
@@ -324,7 +351,6 @@ export class DialogModel {
 
     @action
     setPositionState() {
-        // if (isUndefined(v.x) && isUndefined(v.y)) v = {};
         this.positionState = {x: this.x, y: this.y};
     }
 
@@ -383,33 +409,25 @@ export class DialogModel {
             this.stateModel.initializeState();
         }
 
-        this.positionDialog();
+        this.currentIsMaximized ? this.maximize() : this.positionDialog();
     }
 
     positionDialog() {
-        if (!this.rndRef) return;
+        if (!this.rndRef || this.currentIsMaximized) return;
 
-        const currentX = withDefault(this.positionState.x, this.x, this.initialX);
-        const currentY = withDefault(this.positionState.y, this.y, this.initialY);
-        const currentWidth = withDefault(this.sizeState.width, this.width);
-        const currentHeight = withDefault(this.sizeState.height, this.height);
-        const currentIsMaximized = withDefault(this.isMaximizedState, this.isMaximized);
+        const {currentX: x, currentY: y, currentWidth: width, currentHeight: height} = this;
 
-        if (currentIsMaximized) {
-            this.maximize();
-            return;
+
+        if (isNumber(width) && isNumber(height)) {
+            this.applySizeChanges({width, height});
         }
 
-        if (isNumber(currentWidth) && isNumber(currentHeight)) {
-            this.applySizeChanges({width: currentWidth, height: currentHeight});
-        }
-
-        // animation frame lets any new width/height be considered
+        // animation frame lets any new width/height be considered positioning calcs
         window.requestAnimationFrame(() => {
-            if (!isNumber(currentX) || !isNumber(currentY)) {
+            if (!isNumber(x) || !isNumber(y)) {
                 this.centerDialog();
             } else {
-                this.applyPositionChanges({x: currentX, y: currentY});
+                this.applyPositionChanges({x, y});
             }
         });
     }
@@ -469,8 +487,8 @@ export class DialogModel {
         const p = this.rndRef.getParent().parentElement;
 
         return {
-            width: p.offsetWidth || p.clientWidth,
-            height: p.offsetHeight || p.clientHeight
+            width: p.offsetWidth,
+            height: p.offsetHeight
         };
     }
 
