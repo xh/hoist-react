@@ -5046,10 +5046,10 @@ he@1.2.x:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-highcharts@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-8.0.0.tgz#fcf77a511d6ea477b9d8447afd9dedbfc85e2727"
-  integrity sha512-jRKLiP0i29zKSEgMDASyrfpivrM3e8V8yTv8YUZtRzB2mXR+hsBNHWZw2hNRZVxqq1QCVmW/9Z/BLFvYlJELqA==
+highcharts@~8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-8.0.2.tgz#8ae17855b458c270ef2ffb3c649cc70b5cf41402"
+  integrity sha512-M1N8xrO01ZRr+rvgGrFWqbqlvIGbQNGebd4kMej7GYshUIj27DiOAtYmVeP8W+IrghmuvmqZ1G4eBoLsZ3OkAA==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
