@@ -420,8 +420,12 @@ export class DialogModel {
         });
     }
 
-    centerOnParentResize() {
+    onParentResize() {
         if (!this.rndRef) return;
+        if (this.isMaximized) {
+            this.maximize();
+            return;
+        }
         if (isNil(this.currentX) || isNil(this.currentY)) {
             this.centerDialog();
         }

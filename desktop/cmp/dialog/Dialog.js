@@ -70,7 +70,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             model.positionDialogOnRender();
         });
 
-        useOnResize(() => model.centerOnParentResize(), {ref: {current: document.body}});
+        useOnResize(() => model.onParentResize(), {ref: {current: document.body}});
 
         if (!isOpen || (inPortal && !hasPortal)) {
             return null;
