@@ -2,10 +2,17 @@
 
 ## v31.0.0-SNAPSHOT - unreleased
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+
+
+## v30.1.0 - 2020-03-04
+
 ### 🐞 Bug Fixes
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
+
+* `DashContainer` now supports an affordance for adding items to an empty dashboard.
 
 ### ⚙️ Technical
 
@@ -14,7 +21,10 @@ and constraints are now re-evaluated in parallel, allowing for improved asynchro
 
 * `Select` will now default to selecting contents on focus if in filter or creatable mode.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
+* `Select` now has a less bulky dropdown indicator that is more inline with the rest of
+hoist inputs.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...30.1.0)
 
 ## v30.0.0 - 2020-02-29
 
