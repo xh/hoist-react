@@ -8,7 +8,7 @@
 import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
-import {isFunction, merge} from 'lodash';
+import {isFunction, isNil, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
@@ -117,7 +117,6 @@ const rndDialog = hoistCmp.factory({
             if (evt.target.closest('button')) return;
 
             if (!model.isMaximized) {
-                model.wasDragged = true;
                 model.setXY({x: data.x, y: data.y});
             }
             if (isFunction(rndOptions.onDragStop)) rndOptions.onDragStop(evt, data);
@@ -136,7 +135,11 @@ const rndDialog = hoistCmp.factory({
                     offsetHeight: height
                 } = domEl;
                 model.setWidthHeight({width, height});
-                model.setXY(position);
+                if (isNil(model.currentX) || isNil(model.currentY)) {
+                    model.centerDialog();
+                } else  {
+                    model.setXY(position);
+                }
             }
             if (isFunction(rndOptions.onResizeStop)) {
                 rndOptions.onResizeStop(

@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isNumber, isPlainObject, isString, isUndefined} from 'lodash';
+import {isNil, isNumber, isPlainObject, isString} from 'lodash';
 
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
@@ -47,8 +47,6 @@ export class DialogModel {
     dialogWrapperDivRef = createObservableRef();
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
-    startsCentered = true;
-    wasDragged = false;
 
     /** @member {DialogStateModel} */
     @managed
@@ -63,10 +61,6 @@ export class DialogModel {
     draggable;
     /** @member {boolean} */
     inPortal;
-    /** @member {number} */
-    initialX;
-    /** @member {number} */
-    initialY;
 
     //-------------------
     // Mutable Public State
@@ -153,9 +147,7 @@ export class DialogModel {
         this.setContent(content);
         this.setWidth(width);
         this.setHeight(height);
-        this.initialX = x;
         this.setX(x);
-        this.initialY = y;
         this.setY(y);
         this.setIsMaximized(isMaximized);
         this.setIsOpen(isOpen);
@@ -163,8 +155,6 @@ export class DialogModel {
         this.setCloseOnEscape(closeOnEscape);
         this.setShowBackgroundMask(showBackgroundMask);
         this.setShowCloseButton(showCloseButton);
-
-        if (isUndefined(x) || isUndefined(y)) this.startsCentered = true;
 
         this.addReaction({
             track: () => [this.currentX, this.currentY, this.currentWidth, this.currentHeight],
@@ -200,7 +190,6 @@ export class DialogModel {
         this.rndRef = null;
         this.setIsOpen(false);
         this.isMaximized = false; // deliberately skip setter here to avoid changing state
-        this.wasDragged = false;
         this.x = undefined;
         this.y = undefined;
     }
@@ -279,12 +268,12 @@ export class DialogModel {
 
     @computed
     get currentX() {
-        return withDefault(this.positionState.x, this.x, this.initialX);
+        return withDefault(this.positionState.x, this.x);
     }
 
     @computed
     get currentY() {
-        return withDefault(this.positionState.y, this.y, this.initialY);
+        return withDefault(this.positionState.y, this.y);
     }
 
     @action
@@ -417,7 +406,6 @@ export class DialogModel {
 
         const {currentX: x, currentY: y, currentWidth: width, currentHeight: height} = this;
 
-
         if (isNumber(width) && isNumber(height)) {
             this.applySizeChanges({width, height});
         }
@@ -434,7 +422,7 @@ export class DialogModel {
 
     centerOnParentResize() {
         if (!this.rndRef) return;
-        if (this.startsCentered && !this.wasDragged) {
+        if (isNil(this.currentX) || isNil(this.currentY)) {
             this.centerDialog();
         }
     }
@@ -442,7 +430,6 @@ export class DialogModel {
     centerDialog() {
         const coords = this.calcCenteredPos(this.dialogSize);
         this.rndRef.updatePosition(coords);
-        this.setXY(coords);
     }
 
     applySizeChanges({width, height}) {
