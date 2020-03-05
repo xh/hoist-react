@@ -24,7 +24,7 @@ export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
     }) {
         const model = useContextModel(NavigatorModel);
 
-        if (!model || model.pages.length < 2) return null;
+        if (!model || model.stack.length < 2) return null;
         return button({icon, onClick, ...props});
     }
 });

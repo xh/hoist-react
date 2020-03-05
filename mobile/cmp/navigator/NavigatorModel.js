@@ -6,11 +6,11 @@
  */
 import {XH, HoistModel, RenderMode, RefreshMode} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureNotEmpty, ensureUniqueBy, warnIf, throwIf} from '@xh/hoist/utils/js';
 import {keys, find, merge, isEqual} from 'lodash';
 
-import {NavigatorPageModel} from './NavigatorPageModel';
-import {navigatorPage} from './impl/NavigatorPage';
+import {PageModel} from './PageModel';
+import {page} from './impl/Page';
 
 /**
  * Model for handling stack-based navigation between Onsen pages.
@@ -21,11 +21,11 @@ export class NavigatorModel {
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
-    /** @member {NavigatorPageModel[]} */
-    @observable.ref pages = [];
+    /** @member {PageModel[]} */
+    @observable.ref stack = [];
 
     /** @member {Object[]} */
-    routes = [];
+    pages = [];
 
     /** @member {RenderMode} */
     renderMode;
@@ -36,23 +36,36 @@ export class NavigatorModel {
     _navigator = null;
     _callback = null;
 
+    /** @type String */
+    get activePageId() {
+        return this.activePage?.id;
+    }
+
+    /** @type PageModel */
+    get activePage() {
+        const {stack} = this;
+        return stack[stack.length - 1];
+    }
+
     /**
-     * {Object[]} routes - configs for NavigatorPageModels, representing all supported top-level
+     * @param {Object[]} pages - configs for PageModels, representing all supported
      *      pages within this Navigator/App.
      * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
-     *      via `NavigatorPageModel.renderMode`. See enum for description of supported modes.
+     *      via `PageModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
-     *      via `NavigatorPageModel.refreshMode`. See enum for description of supported modes.
+     *      via `PageModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
-        routes,
+        pages,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     }) {
-        ensureNotEmpty(routes, 'NavigatorModel needs at least one route.');
-        ensureUniqueBy(routes, 'id', 'Multiple NavigatorModel routes share a non-unique id.');
+        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
 
-        this.routes = routes;
+        ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
+        ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
+
+        this.pages = pages;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
 
@@ -62,8 +75,8 @@ export class NavigatorModel {
         });
 
         this.addReaction({
-            track: () => this.pages,
-            run: this.onPagesChangeAsync
+            track: () => this.stack,
+            run: this.onStackChangeAsync
         });
     }
 
@@ -75,11 +88,11 @@ export class NavigatorModel {
     }
 
     /**
-     * @param {NavigatorPageModel[]} pages
+     * @param {PageModel[]} stack
      */
     @action
-    setPages(pages) {
-        this.pages = pages;
+    setStack(stack) {
+        this.stack = stack;
     }
 
     //--------------------
@@ -107,18 +120,18 @@ export class NavigatorModel {
         });
 
         // Loop through the route parts, rebuilding the page stack to match.
-        const pages = [];
+        const stack = [];
 
         for (let i = 0; i < routeParts.length; i++) {
             const part = routeParts[i],
-                route = find(this.routes, {id: part.id});
+                pageModelCfg = find(this.pages, {id: part.id});
 
-            // Ensure route exists
-            throwIf(!route, `Route ${part.id} is not configured in the NavigatorModel`);
+            // Ensure PageModel that matches route exists
+            throwIf(!pageModelCfg, `Route ${part.id} does not match any PageModel.id configured in the NavigatorModel`);
 
             // If, on the initial pass, we encounter a route that prevents direct linking,
             // we drop the rest of the route and redirect to the route so far
-            if (init && route.disableDirectLink) {
+            if (init && pageModelCfg.disableDirectLink) {
                 const completedRouteParts = routeParts.slice(0, i),
                     newRouteName = completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
@@ -127,18 +140,18 @@ export class NavigatorModel {
                 return;
             }
 
-            const page = new NavigatorPageModel({
+            const page = new PageModel({
                 navigatorModel: this,
-                ...merge({}, route, part)
+                ...merge({}, pageModelCfg, part)
             });
 
-            pages.push(page);
+            stack.push(page);
         }
 
-        this.setPages(pages);
+        this.setStack(stack);
     }
 
-    async onPagesChangeAsync() {
+    async onStackChangeAsync() {
         await this.updateNavigatorPagesAsync();
 
         // Ensure only the last page is visible after a page transition.
@@ -151,17 +164,17 @@ export class NavigatorModel {
     }
 
     async updateNavigatorPagesAsync() {
+        // Sync Onsen Navigator's pages with our stack
         if (!this._navigator) return;
-        const {pages} = this,
-            keyStack = pages.map(it => it.key),
+        const {stack} = this,
+            keyStack = stack.map(it => it.key),
             prevKeyStack = this._prevKeyStack || [],
             backOnePage = isEqual(keyStack, prevKeyStack.slice(0, -1)),
-            forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack),
-            currentPage = this.getCurrentPageModel();
+            forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack);
 
-        // Skip transition animation if the current page is going to be unmounted
+        // Skip transition animation if the active page is going to be unmounted
         let options;
-        if (currentPage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
+        if (this.activePage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
             options = {animation: 'none'};
         }
 
@@ -172,17 +185,17 @@ export class NavigatorModel {
             return this._navigator.popPage(options);
         } else if (forwardOnePage) {
             // If we have gone forward one page in the same stack, we can safely push() the new page
-            return this._navigator.pushPage(pages[pages.length - 1], options);
+            return this._navigator.pushPage(stack[stack.length - 1], options);
         } else {
             // Otherwise, we should reset the page stack
-            return this._navigator.resetPageStack(pages, {animation: 'none'});
+            return this._navigator.resetPageStack(stack, {animation: 'none'});
         }
     }
 
     renderPage(model, navigator) {
         const {init, key} = model;
 
-        // Note: We use the special "init" object to obtain a reference to the
+        // Note: We use the special 'init' object to obtain a reference to the
         // navigator and to read the initial route.
         if (init) {
             if (!this._navigator) {
@@ -206,24 +219,18 @@ export class NavigatorModel {
 
         if (hasDupes) {
             const onsenIdx = onsenNavPages.indexOf(model),
-                ourIdx = this.pages.findIndex(it => it.key === key);
+                ourIdx = this.stack.findIndex(it => it.key === key);
 
             if (onsenIdx !== ourIdx) return null;
         }
 
-        return navigatorPage({model, key});
+        return page({model, key});
     }
 
     @action
     onPageChange() {
-        const {disableAppRefreshButton} = this.getCurrentPageModel();
-        this.disableAppRefreshButton = disableAppRefreshButton;
+        this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
-    }
-
-    getCurrentPageModel() {
-        const {pages} = this;
-        return pages[pages.length - 1];
     }
 
     doCallback() {

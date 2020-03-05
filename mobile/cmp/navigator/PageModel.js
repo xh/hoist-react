@@ -4,22 +4,22 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, RenderMode} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 
 import {NavigatorRefreshContextModel} from './impl/NavigatorRefreshContextModel';
 
 /**
- * Model for a NavigatorPage within a Navigator. Specifies the actual content (i.e. page)
+ * Model for a Page within a Navigator. Specifies the actual content (i.e. page)
  * to be rendered for a given route.
  *
  * This model is not typically created directly within applications. Instead, specify a
- * configuration for it via the `NavigatorModel.routes` constructor config.
+ * configuration for it via the `NavigatorModel.pages` constructor config.
  */
 @HoistModel
-export class NavigatorPageModel {
+export class PageModel {
 
     id;
     content;
@@ -50,8 +50,7 @@ export class NavigatorPageModel {
 
     @computed
     get isActive() {
-        const current = this.navigatorModel.getCurrentPageModel();
-        return current?.id === this.id;
+        return this.id === this.navigatorModel.activePageId;
     }
 
     /**
@@ -65,9 +64,9 @@ export class NavigatorPageModel {
      *      default to its Navigator's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this Page. If null, will
      *      default to its Navigator's mode. See enum for description of supported modes.
-     * @param {boolean} [disableDirectLink] - Don't allow the route can be arrived at in a new browser session.
+     * @param {boolean} [disableDirectLink] - Don't allow the Page route to be arrived at in a new browser session.
      *      Non-linkable routes are unwound to a safe starting point at the start of a new session.
-     * @param {boolean} [disableAppRefreshButton] - Hide any visible app refresh button when at this page.
+     * @param {boolean} [disableAppRefreshButton] - Hide any visible app refresh button when at this Page.
      */
     constructor({
         id,
@@ -79,6 +78,8 @@ export class NavigatorPageModel {
         disableDirectLink,
         disableAppRefreshButton
     }) {
+        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in PageModel. Pages are always can\'t exist before being mounted.');
+
         this.id = id;
         this.navigatorModel = navigatorModel;
         this.content = content;

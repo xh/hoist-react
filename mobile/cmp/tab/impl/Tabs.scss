@@ -15,12 +15,19 @@
   }
 }
 
-.xh-tabbar {
-  &.xh-tabbar-top .tabbar {
+.xh-tab-page .page__content {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  transform: translateX(0);
+}
+
+.xh-tab-container {
+  &--top .tabbar {
     border-bottom: var(--xh-border-solid);
   }
 
-  &.xh-tabbar-bottom .tabbar {
+  &--bottom .tabbar {
     border-top: var(--xh-border-solid);
   }
 

@@ -13,21 +13,21 @@ import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
 @RefreshContextModel
 export class NavigatorRefreshContextModel {
 
-    navigatorPageModel;
+    pageModel;
 
-    constructor(navigatorPageModel)  {
-        this.navigatorPageModel = navigatorPageModel;
+    constructor(pageModel)  {
+        this.pageModel = pageModel;
         this.addReaction({
-            track: () => navigatorPageModel.isActive,
+            track: () => pageModel.isActive,
             run: this.noteActiveChanged
         });
     }
 
     async doLoadAsync(loadSpec) {
-        const {navigatorPageModel} = this,
-            mode = navigatorPageModel.refreshMode;
+        const {pageModel} = this,
+            mode = pageModel.refreshMode;
 
-        if (navigatorPageModel.isActive || mode === RefreshMode.ALWAYS) {
+        if (pageModel.isActive || mode === RefreshMode.ALWAYS) {
             return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
@@ -38,7 +38,7 @@ export class NavigatorRefreshContextModel {
 
     noteActiveChanged(isActive) {
         if (isActive) {
-            const mode = this.navigatorPageModel.refreshMode;
+            const mode = this.pageModel.refreshMode;
             if (mode === RefreshMode.ON_SHOW_ALWAYS) {
                 this.refreshAsync();
             } else if (mode === RefreshMode.ON_SHOW_LAZY && this.refreshPending) {

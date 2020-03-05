@@ -2,6 +2,21 @@
 
 ## v31.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Mobile `NavigatorModel` and `PageModel` now support `refreshMode` and `renderMode` configs to
+  allow better control over how inactive pages are mounted/unmounted and how pages handle refresh
+  requests when inactive or (re)activated.
+
+### 💥 Breaking Changes
+
+* `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`. `NavigatorModel`'s
+  observable `pages[]` has been renamed `stack[]`. Furthermore, `NavigatorPageModel` has been
+  renamed `PageModel`.
+* `Page` has been removed from the mobile toolkit. Components that previously returned `Pages` for
+  inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended you
+  replace `Page` with `Panel` where appropriate.
+  
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
 
@@ -50,9 +65,6 @@ hoist inputs.
 * Added new `useOnVisibleChange` hook.
 * Columns now support a `headerAlign` config to allow headers to be aligned differently from column
   contents.
-* Mobile `NavigatorModel` and `NavigatorPageModel` now support `refreshMode` and `renderMode` configs
-  to allow better control over how inactive pages are mounted/unmounted and how pages handle refresh
-  requests when inactive or (re)activated.
 
 ### 💥 Breaking Changes
 

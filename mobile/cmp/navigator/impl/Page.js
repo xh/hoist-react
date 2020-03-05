@@ -6,24 +6,25 @@
  */
 import {useRef} from 'react';
 import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {page} from '@xh/hoist/mobile/cmp/page';
+import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {elementFromContent} from '@xh/hoist/utils/react';
 
-import {NavigatorPageModel} from '../NavigatorPageModel';
+import './Page.scss';
+import {PageModel} from '../PageModel';
 
 /**
  * Wrapper for contents to be shown within a Navigator. This Component is used by Navigator's
  * internal implementation to:
  *
- *      - Mount/unmount its contents according to `NavigatorPageModel.renderMode`.
- *      - Track and trigger refreshes according to `NavigatorPageModel.refreshMode`.
+ *      - Mount/unmount its contents according to `PageModel.renderMode`.
+ *      - Track and trigger refreshes according to `PageModel.refreshMode`.
  *
  * @private
  */
-export const navigatorPage = hoistCmp.factory({
-    displayName: 'NavigatorPage',
-    model: uses(NavigatorPageModel, {publishMode: ModelPublishMode.LIMITED}),
+export const page = hoistCmp.factory({
+    displayName: 'Page',
+    model: uses(PageModel, {publishMode: ModelPublishMode.LIMITED}),
 
     render({model}) {
         const {content, props, isActive, renderMode, refreshContextModel} = model,
@@ -39,12 +40,15 @@ export const navigatorPage = hoistCmp.factory({
             )
         ) {
             // Note: We must render an empty placeholder page to work with the Navigator.
-            return page();
+            return onsenPage({className: 'xh-page'});
         }
 
         return refreshContextView({
             model: refreshContextModel,
-            item: elementFromContent(content, props)
+            item: onsenPage({
+                className: 'xh-page',
+                item: elementFromContent(content, props)
+            })
         });
     }
 });
