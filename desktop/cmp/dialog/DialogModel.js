@@ -292,7 +292,7 @@ export class DialogModel {
         this.isMaximized = v;
         if (this.rndRef) {
             if (this.stateModel) {
-                this.setIsMaximizedState(v);
+                this.setIsMaximizedState();
             }
         }
     }
@@ -356,7 +356,7 @@ export class DialogModel {
 
     @action
     setIsMaximizedState(v) {
-        this.isMaximizedState = v;
+        this.isMaximizedState = this.isMaximized;
     }
 
 
@@ -458,7 +458,6 @@ export class DialogModel {
         x = Math.min(x, wSize.width - dSize.width),
         y = Math.min(y, wSize.height - dSize.height);
         this.rndRef.updatePosition({x, y});
-        this.setXY({x, y}); // ??? needed?
     }
 
     calcCenteredPos({width, height}) {
