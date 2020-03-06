@@ -1,6 +1,26 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - unreleased
+## v31.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+
+## v30.1.0 - 2020-03-04
+
+### 🐞 Bug Fixes
+
+* Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
+  server.
+* When empty, `DashContainer` now displays a user-friendly prompt to add an initial view.
+
+### ⚙️ Technical
+
+* Form validation enhanced to improve handling of asynchronous validation. Individual rules and
+  constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
+* `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...30.1.0)
+
+## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
 
@@ -8,8 +28,9 @@
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
-* `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
-  sense in a `DataView` context, such as `showHover` and `rowBorders`.
+  * `DataViewModel` allows for settable and multiple groupings and sorters.
+  * `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
+    sense in a `DataView` context, such as `showHover` and `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
   via Hoist's built-in activity tracking.
 * The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
@@ -22,6 +43,8 @@
   content element. Note this change included a tweak to some CSS class names for mobile `Panel`
   internals that could require adjustments if directly targeted by app stylesheets.
 * Added new `useOnVisibleChange` hook.
+* Columns now support a `headerAlign` config to allow headers to be aligned differently from column
+  contents.
 
 ### 💥 Breaking Changes
 
@@ -58,6 +81,9 @@
   simultaneously. [#1592](https://github.com/xh/hoist-react/issues/1592)
 * `StoreFilterField` will again match on `Record.id` if bound to a Store or a GridModel with the
   `id` column visible. [#1697](https://github.com/xh/hoist-react/issues/1697)
+* A number of fixes have been applied to `RelativeTimeStamp` and `getRelativeTimestamp`, especially
+  around its handling of 'equal' or 'epsilon equal' times. Remove unintended leading whitespace from
+  `getRelativeTimestamp`.
 
 ### ⚙️ Technical
 
@@ -73,7 +99,7 @@
 * react-dates `21.7 -> 21.8`
 * react-beautiful-dnd `11.0 -> 12.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v30.0.0)
 
 ## v29.1.0 - 2020-02-07
 
