@@ -9,6 +9,11 @@
   requests when collapsed.
 * Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
 
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
 ## v30.1.0 - 2020-03-04
