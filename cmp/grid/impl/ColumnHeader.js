@@ -10,6 +10,7 @@ import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {clone, isFunction, remove} from 'lodash';
 
@@ -72,7 +73,8 @@ export const ColumnHeader = hoistCmp({
         return div({
             className: classNames(props.className, extraClasses),
             onClick: impl.onClick,
-            onTouchEnd: impl.onClick,
+            onDoubleClick: impl.onDoubleClick,
+            onTouchEnd: impl.onTouchEnd,
             items: [
                 span(headerName),
                 sortIcon(),
@@ -92,6 +94,9 @@ class LocalModel {
     menuButtonRef = createObservableRef();
     @bindable isFiltered = false;
     enableSorting;
+
+    _doubleClick = false;
+    _lastTouch = Date.now();
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
         this.gridModel = gridModel;
@@ -121,24 +126,50 @@ class LocalModel {
     }
 
     onClick = (e) => {
-        if (!this.enableSorting || !this.gridModel) return;
+        this._doubleClick = false;
+        this.updateSort(e.shiftKey);
+    };
+
+    onDoubleClick = () => {
+        this._doubleClick = true;
+        this.autosize();
+    };
+
+    onTouchEnd = () => {
+        const time = Date.now();
+        if (time - this._lastTouch < 300) {
+            this._doubleClick = true;
+            this.autosize();
+        } else {
+            this._doubleClick = false;
+            this.updateSort();
+        }
+        this._lastTouch = time;
+    };
+
+    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
+
+    //-------------------
+    // Implementation
+    //-------------------
+    @debounced(300)
+    updateSort(shiftKey) {
+        if (!this.enableSorting || !this.gridModel || this._doubleClick) return;
 
         const {gridModel, activeGridSorter, colId} = this,
             nextSortBy = this.getNextSortBy();
 
         // Add to existing sorters if holding shift, else replace
-        let sortBy = e.shiftKey ? clone(gridModel.sortBy) : [];
+        let sortBy = shiftKey ? clone(gridModel.sortBy) : [];
         if (activeGridSorter) {
-            remove(sortBy, it => it.colId == colId);
+            remove(sortBy, it => it.colId === colId);
         }
         if (nextSortBy) {
             sortBy.push(nextSortBy);
         }
 
         gridModel.setSortBy(sortBy);
-    };
-
-    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
+    }
 
     getNextSortBy() {
         const {colId, xhColumn, activeGridSorter} = this,
@@ -151,5 +182,10 @@ class LocalModel {
         } else {
             return {colId, sort: 'asc', abs: false};
         }
+    }
+
+    autosize() {
+        if (!this.gridModel) return;
+        this.gridModel.autoSizeColumns(this.colId);
     }
 }

@@ -4,6 +4,10 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
+### 🎁 New Features
+
+* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
+
 ## v30.1.0 - 2020-03-04
 
 ### 🐞 Bug Fixes
