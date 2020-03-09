@@ -46,7 +46,7 @@ export class DockContainerModel {
     constructor({
         views = [],
         direction = 'rtl',
-        renderMode = RenderMode.UNMOUNT_ON_HIDE,
+        renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
     } = {}) {
         views = views.filter(v => !v.omit);
