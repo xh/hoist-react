@@ -7,12 +7,9 @@
 * `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
   allow better control over how collapsed views are mounted/unmounted and how views handle refresh
   requests when collapsed.
+* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
-
-### 🎁 New Features
-
-* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
 
 ## v30.1.0 - 2020-03-04
 

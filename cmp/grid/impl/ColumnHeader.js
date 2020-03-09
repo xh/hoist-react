@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -125,17 +126,22 @@ class LocalModel {
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
     }
 
+    // Desktop click handling
     onClick = (e) => {
+        if (XH.isMobile) return;
         this._doubleClick = false;
         this.updateSort(e.shiftKey);
     };
 
     onDoubleClick = () => {
+        if (XH.isMobile) return;
         this._doubleClick = true;
         this.autosize();
     };
 
+    // Mobile touch handling
     onTouchEnd = () => {
+        if (!XH.isMobile) return;
         const time = Date.now();
         if (time - this._lastTouch < 300) {
             this._doubleClick = true;
@@ -185,7 +191,6 @@ class LocalModel {
     }
 
     autosize() {
-        if (!this.gridModel) return;
-        this.gridModel.autoSizeColumns(this.colId);
+        this.gridModel?.autoSizeColumns(this.colId);
     }
 }
