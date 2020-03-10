@@ -73,6 +73,11 @@ export class IdentityService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
+        try {
+            await XH.appModel.logoutAsync();
+        } catch (e) {
+            console.error('Error calling XH.appModel.logoutAsync()', e);
+        }
         return XH
             .fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
