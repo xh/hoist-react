@@ -84,26 +84,27 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
 AppMenuButton.propTypes = {
     ...Button.propTypes,
 
+    /** Array of configs for any app-specific menu items. */
+    extraItems: PT.array,
+
     /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
     hideAdminItem: PT.bool,
 
-    /** True to hide the Impersonate Item. Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled. */
+    /**
+     * True to hide the Impersonate Item.
+     * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
+     */
     hideImpersonateItem: PT.bool,
 
     /** True to hide the Feedback Item. */
     hideFeedbackItem: PT.bool,
 
+    /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
+    hideLogoutItem: PT.bool,
+
     /** True to hide the Options button. */
     hideOptionsItem: PT.bool,
 
     /** True to hide the Theme Toggle button. */
-    hideThemeItem: PT.bool,
-
-    /** True to hide the Logout button. Always hidden when `appSpec.isSSO == true`. */
-    hideLogoutItem: PT.bool,
-
-    /**
-     * Array of configs for additional menu items to be shown.
-     */
-    extraItems: PT.array
+    hideThemeItem: PT.bool
 };
