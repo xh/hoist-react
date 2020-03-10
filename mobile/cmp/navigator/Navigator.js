@@ -13,8 +13,8 @@ import {NavigatorModel} from './NavigatorModel';
 import './Navigator.scss';
 
 /**
- * Top-level Component within an application, responsible for rendering pages and managing
- * transitions between pages.
+ * Top-level Component within an application, responsible for rendering a stack of
+ * pages and managing transitions between pages.
  */
 export const [Navigator, navigator] = hoistCmp.withFactory({
     displayName: 'Navigator',
@@ -37,7 +37,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
 Navigator.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]),
-    
+
     /** Set animation style or turn off, default 'slide' */
     animation: PT.oneOf(['slide', 'lift', 'fade', 'none'])
 };
