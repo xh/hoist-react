@@ -48,12 +48,12 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
             icon: Icon.gridPanel(),
             className,
             item: div({
-                className: 'xh-col-chooser-internal',
+                className: 'xh-col-chooser__internal',
                 item: dragDropContext({
                     onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
-                            className: 'xh-col-chooser-section',
+                            className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
                                 droppable({
@@ -79,7 +79,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
 
                         panel({
                             title: 'Available Columns',
-                            className: 'xh-col-chooser-section',
+                            className: 'xh-col-chooser__section',
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
@@ -127,7 +127,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
 const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
-            className: classNames('xh-col-chooser-list', className),
+            className: classNames('xh-col-chooser__list', className),
             items: [
                 ...cols.map((col, idx) => draggableRow({col, idx})),
                 placeholder
@@ -172,17 +172,17 @@ const row = hoistCmp.factory({
 
         return div({
             className: classNames(
-                'xh-col-chooser-row',
-                pinned ? 'xh-col-chooser-row-pinned' : null,
-                isDragging ? 'xh-col-chooser-row-dragging' : null
+                'xh-col-chooser__row',
+                pinned ? 'xh-col-chooser__row--pinned' : null,
+                isDragging ? 'xh-col-chooser__row--dragging' : null
             ),
             items: [
                 div({
-                    className: 'xh-col-chooser-row-grabber',
+                    className: 'xh-col-chooser__row__grabber',
                     item: pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'})
                 }),
                 div({
-                    className: 'xh-col-chooser-row-text',
+                    className: 'xh-col-chooser__row__text',
                     item: text
                 }),
                 button({
