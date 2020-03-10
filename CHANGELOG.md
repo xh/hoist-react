@@ -18,7 +18,8 @@
 * Added new `fileIcon` method to `Icon` class, returning an element that provides a default tooltip
   and color config based on file extension. Like all `Icon` elements, can accept additional props to
   customize default behavior.
-  * `Icon` elements can now accept a `asSvg` prop, which converts the element into an SVG string.
+  * `Icon` elements can now accept an `asSvg` prop, a cleaner alternative to calling the helper
+  function `convertIconToSVG()` on the element to render icons as SVGs within `Grid` columns.
 
 ### 💥 Breaking Changes
 
