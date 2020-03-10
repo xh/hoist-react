@@ -4,22 +4,29 @@
 
 ### 🎁 New Features
 
+* The core `Navigator` / `NavigatorModel` API on mobile has been improved and made consistent
+  with other Hoist content container APIs such as `TabContainer`, `DashContainer`, and
+  `DockContainer`.  It now supports the specification of `RenderMode` and `RefreshMode` on
+  `NavigatorModel` and `PageModel`, to allow better control over how inactive pages are
+  mounted/unmounted and how pages handle refresh requests when inactive or (re)activated.
+  Furthermore, `Navigator` pages are no longer required to to return `Page` components - they
+  can now return any suitable component.
 * `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
   allow better control over how collapsed views are mounted/unmounted and how views handle refresh
   requests when collapsed.
 * Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
-* Mobile `NavigatorModel` and `PageModel` now support `refreshMode` and `renderMode` configs to
-  allow better control over how inactive pages are mounted/unmounted and how pages handle refresh
-  requests when inactive or (re)activated.
 
 ### 💥 Breaking Changes
 
-* `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`. `NavigatorModel`'s
-  observable `pages[]` has been renamed `stack[]`. Furthermore, `NavigatorPageModel` has been
-  renamed `PageModel`.
-* `Page` has been removed from the mobile toolkit. Components that previously returned `Pages` for
-  inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended you
-  replace `Page` with `Panel` where appropriate.
+* To facilitate the increased symmetry between `NavigatorModel` and our other containers, apps
+  may need to adjust to the following changes:
+  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
+  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
+  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
+    directly, so this change is unlikely to require code updates.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned `Pages`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is
+    recommended you replace `Page` with `Panel` where appropriate.
 
 ### 🐞 Bug Fixes
 
