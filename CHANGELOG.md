@@ -2,6 +2,18 @@
 
 ## v31.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
+  allow better control over how collapsed views are mounted/unmounted and how views handle refresh
+  requests when collapsed.
+* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
+
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
 ## v30.1.0 - 2020-03-04
