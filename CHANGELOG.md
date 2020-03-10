@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 
+* `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
+  allow better control over how collapsed views are mounted/unmounted and how views handle refresh
+  requests when collapsed.
+* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
 * Mobile `NavigatorModel` and `PageModel` now support `refreshMode` and `renderMode` configs to
   allow better control over how inactive pages are mounted/unmounted and how pages handle refresh
   requests when inactive or (re)activated.
@@ -16,9 +20,13 @@
 * `Page` has been removed from the mobile toolkit. Components that previously returned `Pages` for
   inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended you
   replace `Page` with `Panel` where appropriate.
-  
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
 ## v30.1.0 - 2020-03-04
 
@@ -26,18 +34,13 @@
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
-
-* `DashContainer` now supports an affordance for adding items to an empty dashboard.
+* When empty, `DashContainer` now displays a user-friendly prompt to add an initial view.
 
 ### ⚙️ Technical
 
-* Enhancements to form validation to improve handling of asynchronous validation.  Individual rules
-and constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
-
+* Form validation enhanced to improve handling of asynchronous validation. Individual rules and
+  constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
 * `Select` will now default to selecting contents on focus if in filter or creatable mode.
-
-* `Select` now has a less bulky dropdown indicator that is more inline with the rest of
-hoist inputs.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...30.1.0)
 

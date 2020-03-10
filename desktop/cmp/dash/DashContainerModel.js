@@ -275,7 +275,7 @@ export class DashContainerModel {
     // Views
     //-----------------
     get isEmpty() {
-        return this.viewModels.length === 0;
+        return this.goldenLayout && this.viewModels.length === 0;
     }
 
     get viewState() {
