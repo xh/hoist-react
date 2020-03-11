@@ -42,7 +42,9 @@ export class PinPadModel {
 
         this.addReaction({
             track: () => this.ref.current,
-            run: (current) => FastClick.attach(current)
+            run: (current) => {
+                if (current) FastClick.attach(current);
+            }
         });
     }
 
