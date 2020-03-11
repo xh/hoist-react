@@ -20,7 +20,7 @@ import './LockoutPanel.scss';
  */
 export const lockoutPanel = hoistCmp.factory({
     displayName: 'LockoutPanel',
-    render({model}) {
+    render() {
         const user = XH.getUser(),
             {appSpec, identityService} = XH;
 
