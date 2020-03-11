@@ -7,14 +7,12 @@
 
 import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
-import FastClick from '@onsenui/fastclick';
 
 import './theme.scss';
 import './styles.scss';
 
 import ons from 'onsenui';
 ons.disableAutoStyling();
-ons.fastClick = FastClick.attach(document.body);
 
 import {elemFactory} from '@xh/hoist/core';
 import {
