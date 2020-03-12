@@ -15,11 +15,17 @@
   allow better control over how collapsed views are mounted/unmounted and how views handle refresh
   requests when collapsed.
 * Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
-* Added new `fileIcon` method to `Icon` class, returning an element that provides a default tooltip
-  and color config based on file extension. Like all `Icon` elements, can accept additional props to
-  customize default behavior.
-  * `Icon` elements can now accept an `asSvg` prop, a cleaner alternative to calling the helper
-  function `convertIconToSVG()` on the element to render icons as SVGs within `Grid` columns.
+
+* Enhancements to the Icon API:
+    * Added a new general `Icon.icon()` factory method.  This method is now the common entry point
+        for creating new FontAwesome based icons in Hoist. It should typically be used instead of
+        using the `FontAwesomeIcon` component directly.
+    * Added a new `Icon.fileIcon()` factory method. This method returns a standard,
+        conventionally colored icon, based on a filename extension.
+    * All Icon factories can now accept an `asSvg` parameter, a cleaner alternative to calling the
+        helper function `convertIconToSVG()` on the element.  Use this to render icons as raw html
+        where needed (e.g. grid renderers).
+    * Icons rendered as svg will now preserve their classnames, tooltips, and size.
 
 ### 💥 Breaking Changes
 

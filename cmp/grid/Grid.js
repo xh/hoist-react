@@ -202,15 +202,9 @@ class LocalModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: convertIconToSvg(
-                    Icon.angleDown(),
-                    {classes: ['ag-group-expanded']}
-                ),
-                groupContracted: convertIconToSvg(
-                    Icon.angleRight(),
-                    {classes: ['ag-group-contracted']}
-                ),
-                clipboardCopy: convertIconToSvg(Icon.copy())
+                groupExpanded: Icon.angleDown({asSvg: true, className: 'ag-group-expanded'}),
+                groupContracted: Icon.angleRight({asSvg: true, className: 'ag-group-contracted'}),
+                clipboardCopy: Icon.copy({asSvg: true})
             },
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,

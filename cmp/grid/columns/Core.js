@@ -42,5 +42,5 @@ export const fileExtCol = {
     width: 28,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.fileIcon({extension: v, asSvg: true}) : ''
+    renderer: (v) => v ? Icon.fileIcon({filename: v, title: v, asSvg: true}) : ''
 };
