@@ -73,6 +73,12 @@ export class GridModel {
     rowClassFn;
     /** @member {(Array|function)} */
     contextMenu;
+    /** @member {number} */
+    groupRowHeight;
+    /** @member {Grid~groupRowRendererFn} */
+    groupRowRenderer;
+    /** @member {Grid~groupRowElementRendererFn} */
+    groupRowElementRenderer;
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
@@ -147,8 +153,13 @@ export class GridModel {
      * @param {boolean} [c.enableExport] - true to enable exporting this grid and
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
-     * @param {function} [c.rowClassFn] - closure to generate css class names for a row.
-     *      Called with record data, returns a string or array of strings.
+     * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
+     * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will override
+     *      `sizingMode` for group rows.
+     * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
+     *      render group rows.
+     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
+     *      element used to render group rows.
      * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
      *      group values to compare, returns a number as per a standard JS comparator.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
@@ -182,7 +193,12 @@ export class GridModel {
         exportOptions = {},
 
         rowClassFn = null,
+
+        groupRowHeight,
+        groupRowRenderer,
+        groupRowElementRenderer,
         groupSortFn,
+
         contextMenu,
         experimental,
         ...rest
@@ -192,6 +208,9 @@ export class GridModel {
 
         this.emptyText = emptyText;
         this.rowClassFn = rowClassFn;
+        this.groupRowHeight = groupRowHeight;
+        this.groupRowRenderer = groupRowRenderer;
+        this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
 
@@ -838,4 +857,10 @@ export class GridModel {
  * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
  * @param {GridModel} gridModel - controlling GridModel instance
  * @returns {StoreContextMenu} - context menu to display, or null
+ */
+
+/**
+ * @callback RowClassFn - closure to generate CSS class names for a row.
+ * @param {Object} data - the inner data object from the Record associated with the rendered row.
+ * @returns {(String|String[])} - CSS class(es) to apply to the row level.
  */

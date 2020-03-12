@@ -54,7 +54,7 @@ import {ColumnHeader} from './impl/ColumnHeader';
  * @see GridModel
  */
 export const [Grid, grid] = hoistCmp.withFactory({
-    displayName: 'GridModel',
+    displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',
 
@@ -153,11 +153,15 @@ class LocalModel {
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const platformHeights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS,
-            gridDefaultHeight = platformHeights[this.model.sizingMode],
+        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
             maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
 
         return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
+    }
+
+    @computed
+    get groupRowHeight() {
+        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
@@ -211,10 +215,13 @@ class LocalModel {
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => this.rowHeight,
+            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
             noRowsOverlayComponentFramework: observer(() => model.emptyText),
-            onRowClicked: props.onRowClicked,
+            onRowClicked: (e) => {
+                this.onRowClicked(e);
+                if (props.onRowClicked) props.onRowClicked(e);
+            },
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
@@ -229,6 +236,8 @@ class LocalModel {
             defaultGroupSortComparator: this.groupSortComparator,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
+            groupRowInnerRenderer: model.groupRowRenderer,
+            groupRowRendererFramework: model.groupRowElementRenderer,
             rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
@@ -663,5 +672,24 @@ class LocalModel {
         }
 
         if (this.propsKeyDown) this.propsKeyDown(evt);
-    }
+    };
+
+    onRowClicked = (evt) => {
+        const {selModel} = this.model;
+        if (evt.rowPinned) {
+            selModel.clear();
+        }
+    };
 }
+
+/**
+ * @callback Grid~groupRowRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Grid~groupRowElementRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {Element} - the React element to render.
+ */

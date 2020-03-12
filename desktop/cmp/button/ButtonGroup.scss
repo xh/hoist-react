@@ -5,6 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-.xh-button-group .xh-button.bp3-active {
-  background-color: var(--xh-btn-active-color) !important;
+:not(.bp3-dark) .xh-button-group .xh-button.bp3-active {
+  background-color: var(--xh-button-active-bg);
+  color: var(--xh-button-active-text-color);
+}
+
+.bp3-dark .xh-button-group .xh-button.bp3-active {
+  background-color: var(--xh-button-active-bg);
+  color: var(--xh-button-active-text-color);
 }

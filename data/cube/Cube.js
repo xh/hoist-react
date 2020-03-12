@@ -7,6 +7,7 @@
 
 
 import {managed} from '@xh/hoist/core';
+import {forEachAsync} from '../../utils/async';
 import {Query, View, CubeField} from './';
 import {Store} from '../';
 
@@ -58,9 +59,25 @@ export class Cube {
         this._info = info;
     }
 
-    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
+    /**
+     * @returns {Object} - optional metadata associated with this Cube at the last data load.
+     */
     get info() {
         return this._info;
+    }
+
+    /**
+     * @returns {CubeField[]} - fields associated with this cube.
+     */
+    get fields() {
+        return this.store.fields;
+    }
+
+    /**
+     * @returns {Record[]} - records loaded in to this cube.
+     */
+    get records() {
+        return this.store.records;
     }
 
     //------------------
@@ -80,8 +97,7 @@ export class Cube {
     executeQuery(query) {
         query = new Query({...query, cube: this});
         const view = new View({query}),
-            rows = view.rows;
-
+            rows = view.result.rows;
 
         view.destroy();
         return rows;
@@ -99,15 +115,15 @@ export class Cube {
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {Store} [c.store] - Store to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'rows' property of the returned object instead.
+     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     *      To receive data only, use the 'results' property of the returned object instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
      * @returns {View}.
      */
-    createView({query, store, connect = false}) {
+    createView({query, stores, connect = false}) {
         query = new Query({...query, cube: this});
-        return new View({query, store, connect});
+        return new View({query, stores, connect});
     }
 
     //-------------------
@@ -119,13 +135,19 @@ export class Cube {
      * This method largely delegates to Store.loadData().  See that method for more
      * information.
      *
+     * Note that this method will update its views asynchronously, in order to avoid locking
+     * up the browser when attached to multiple expensive views.
+     *
      * @param {Object[]} rawData - flat array of lowest/leaf level data rows.
      * @param {Object} info - optional metadata to associate with this cube/dataset.
      */
-    loadData(rawData, info = {}) {
+    async loadDataAsync(rawData, info = {}) {
         this.store.loadData(rawData);
         this._info = Object.freeze(info);
-        this._connectedViews.forEach(view => view.noteCubeLoaded());
+        await forEachAsync(
+            this._connectedViews,
+            (v) => v.noteCubeLoaded()
+        );
     }
 
     /**
@@ -134,25 +156,39 @@ export class Cube {
      * This method largely delegates to Store.updateData().  See that method for more
      * information.
      *
+     * Note that this method will update its views asynchronously, in order to avoid locking
+     * up the browser when attached to multiple expensive views.
+     *
      * @param {(Object[]|StoreTransaction)} rawData
-     * @param {Object} info
+     * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    updateData(rawData, info) {
+    async updateDataAsync(rawData, infoUpdates) {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
         // 2) Process info
-        const infoUpdated = isEmpty(info);
-        if (!isEmpty(info)) {
-            this._info = {...this._info, info};
+        const hasInfoUpdates = !isEmpty(infoUpdates);
+        if (hasInfoUpdates) {
+            this._info = Object.freeze({...this._info, ...infoUpdates});
         }
 
         // 3) Notify connected views
-        if (changeLog || infoUpdated) {
-            this._connectedViews.forEach(view => {
-                view.noteCubeUpdated(changeLog, infoUpdated);
-            });
+        if (changeLog || hasInfoUpdates) {
+            await forEachAsync(
+                this._connectedViews,
+                (v) => v.noteCubeUpdated(changeLog)
+            );
         }
+    }
+
+    /**
+     * Populate the metadata associated with this cube.
+     *
+     * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
+     */
+    updateInfo(infoUpdates = {}) {
+        this._info = Object.freeze({...this._info, ...infoUpdates});
+        this._connectedViews.forEach((v) => v.noteCubeUpdated(null));
     }
 
     //---------------------

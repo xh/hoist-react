@@ -5,4 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-export * from './Page';
+/**
+ * @private
+ */
+export class RowUpdate {
+
+    constructor(field, oldValue, newValue) {
+        this.field = field;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+    }
+}

@@ -12,8 +12,9 @@ import {PinPadModel} from './PinPadModel';
  */
 export const pinPad = hoistCmp.factory({
     model: uses(PinPadModel),
-    render() {
+    render({model}) {
         return frame({
+            ref: model.ref,
             className: 'xh-auth-pinpad',
             item: vframe({
                 className: 'xh-auth-pinpad__frame',
@@ -55,7 +56,7 @@ const digit = hoistCmp.factory(
         if (isActive) className += ' active';
         return span({
             className,
-            item: num
+            item: `${num}`
         });
     }
 );

@@ -88,12 +88,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
  */
 AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
 AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
+AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
 /**
  * Header heights (in pixels)
  */
 AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
+AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
 @HoistModel
 class LocalModel {
@@ -112,8 +114,8 @@ class LocalModel {
             this.addReaction({
                 track: () => this.model.sizingMode,
                 run: (sizingMode) => {
-                    const headerHeights = XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS;
-                    this.model.agApi.setHeaderHeight(headerHeights[sizingMode]);
+                    const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
+                    this.model.agApi.setHeaderHeight(height);
                 }
             });
         }
@@ -139,10 +141,7 @@ class LocalModel {
         if (this.rowKeyNavSupport) {
             return this.rowKeyNavSupport.navigateToNextCell(agParams);
         }
-    }
-
-    getRowHeight = () => {
-        const heights = XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS;
-        return heights[this.model.sizingMode];
     };
+
+    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
 }

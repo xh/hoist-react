@@ -13,7 +13,7 @@ import {find} from 'lodash';
  */
 export class Query {
 
-    /** @member {CubeFields[]} */
+    /** @member {CubeField[]} */
     fields;
     /** @member {CubeField[]} */
     dimensions;

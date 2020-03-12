@@ -23,11 +23,16 @@
 }
 
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-.ag-theme-balham.xh-ag-grid,
-.ag-theme-balham-dark.xh-ag-grid {
+// Note DataView excluded from these style customizations to give those views control over their
+// component-based item styling w/o being affected by default grid styles / sizing modes.
+// Please review DataView.scss when adjusting these styles, however, as some have been carried over
+// or modified for use with that component.
+*:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+*:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
+  background-color: var(--xh-grid-bg);
 
   .ag-root {
     border: none;
@@ -128,13 +133,10 @@
     }
   }
 
-  // TODO - why do we need to specify this, as opposed to simply not putting the class on above?
-  //  This creates a highly specific selector and makes it hard to customize background
-  //  row colors even with striping off - you perversely end up with striping coming BACK
-  //  because this specific class applies --xh-grid-bg and overrides a custom color.
+  // When striping disabled, remove default ag-Grid striping.
   &--no-stripe-rows {
     .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg);
+      background-color: unset;
     }
   }
 

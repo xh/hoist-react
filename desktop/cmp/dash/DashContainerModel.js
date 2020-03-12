@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import ReactDOM from 'react-dom';
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
@@ -13,13 +12,13 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {find, reject, cloneDeep} from 'lodash';
+import {ContextMenu} from '@xh/hoist/kit/blueprint';
+import {find, reject, cloneDeep, isFinite, defaultsDeep} from 'lodash';
 
 import {DashViewSpec} from './DashViewSpec';
 import {dashView} from './impl/DashView';
 import {DashViewModel} from './DashViewModel';
-import {addViewMenu} from './impl/AddViewMenu';
-import {addViewButton} from './impl/AddViewButton';
+import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
 
 /**
@@ -83,16 +82,14 @@ export class DashContainerModel {
     //------------------------
     /** @member {DashViewSpec[]} */
     viewSpecs = [];
-    /** @member {boolean} */
-    showAddButton;
-    /** @member {(Object|function)} */
-    addViewContent;
     /** @member {RenderMode} */
     renderMode;
     /** @member {RefreshMode} */
     refreshMode;
     /** @member {Object} */
     goldenLayoutSettings;
+    emptyText;
+    addViewButtonText;
 
     //------------------------
     // Implementation properties
@@ -104,42 +101,44 @@ export class DashContainerModel {
     /**
      * @param {DashViewSpec[]} viewSpecs - A collection of viewSpecs, each describing a type of view
      *      that can be displayed in this container
+     * @param {Object} [viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
      * @param {Object[]} [initialState] - Default layout state for this container.
-     * @param {boolean} [showAddButton] - true (default) to include a '+' button in each stack header,
-     *      which opens the provided 'Add View' popover.
-     * @param {(Object|function)} [addViewContent] - content to be rendered in the 'Add View' popover.
-     *      HoistComponent or a function returning a react element. Defaults to the provided
-     *      @see AddViewMenu. Will receive the clicked `stack` and this `dashContainerModel` as props.
      * @param {RenderMode} [renderMode] - strategy for rendering DashViews. Can be set
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
+     * @param {string} [emptyText] - text to display when the container is empty
+     * @param {string} [addViewButtonText] - text to display on the add view button
      */
     constructor({
         viewSpecs,
+        viewSpecDefaults,
         initialState = [],
-        showAddButton = true,
-        addViewContent = addViewMenu,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        goldenLayoutSettings
+        goldenLayoutSettings,
+        emptyText = 'No views have been added to the container.',
+        addViewButtonText = 'Add View'
     }) {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
-        this.viewSpecs = viewSpecs.map(cfg => new DashViewSpec(cfg));
+        this.viewSpecs = viewSpecs.map(cfg => {
+            return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+        });
 
-        this.showAddButton = showAddButton;
-        this.addViewContent = addViewContent;
+        this.state = initialState;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
+        this.emptyText = emptyText;
+        this.addViewButtonText = addViewButtonText;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
-            when: () => this.containerRef.current,
-            run: () => this.loadStateAsync(initialState)
+            track: () => this.containerRef.current,
+            run: () => this.loadStateAsync(this.state)
         });
 
         this.addReaction({
@@ -171,8 +170,9 @@ export class DashContainerModel {
      *
      * @param {string} id - DashViewSpec id to add to the container
      * @param {object} container - GoldenLayout container to add it to. If not provided, will be added to the root container.
+     * @param {number} [index] - An optional index that determines at which position the new item should be added.
      */
-    addView(id, container) {
+    addView(id, container, index) {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
@@ -184,15 +184,37 @@ export class DashContainerModel {
         throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashViewSpec with unique=true. id=${id}`);
 
         if (!container) container = goldenLayout.root.contentItems[0];
-        container.addChild(viewSpec.goldenLayoutConfig);
+
+        if (!isFinite(index)) index = container.contentItems.length;
+        container.addChild(viewSpec.goldenLayoutConfig, index);
+    }
+
+    /**
+     * Remove a view from the container.
+     * @param {string} id - DashViewModel id to remove from the container
+     */
+    removeView(id) {
+        const view = this.getItemByViewModel(id);
+        if (!view) return;
+        view.parent.removeChild(view);
+    }
+
+    /**
+     * Enable the rename field for a given view
+     * @param {string} id - DashViewModel id to rename
+     */
+    renameView(id) {
+        const view = this.getItemByViewModel(id);
+        if (!view) return;
+        this.showTitleForm(view.tab.element);
     }
 
     //------------------------
     // Implementation
     //------------------------
     updateState() {
-        const {goldenLayout} = this;
-        if (!goldenLayout.isInitialised) return;
+        const {goldenLayout, containerRef} = this;
+        if (!goldenLayout.isInitialised || !containerRef.current) return;
 
         // If the layout becomes completely empty, ensure we have our minimal empty layout
         if (!goldenLayout.root.contentItems.length) {
@@ -244,9 +266,18 @@ export class DashContainerModel {
         return this.getItems().filter(it => it.config.component === id);
     }
 
+    // Get the view instance with the given DashViewModel.id
+    getItemByViewModel(id) {
+        return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
+    }
+
     //-----------------
     // Views
     //-----------------
+    get isEmpty() {
+        return this.goldenLayout && this.viewModels.length === 0;
+    }
+
     get viewState() {
         const ret = {};
         this.viewModels.map(({id, icon, title, viewState}) => {
@@ -272,17 +303,30 @@ export class DashContainerModel {
     }
 
     //-----------------
-    // Add View Button
+    // Context Menu
     //-----------------
     onStackCreated(stack) {
         // Listen to active item change to support RenderMode
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
-        // Add '+' icon and attach click listener for adding components
-        if (this.showAddButton) {
-            const containerEl = stack.header.controlsContainer[0];
-            ReactDOM.render(addViewButton({dashContainerModel: this, stack}), containerEl);
-        }
+        // Add context menu listener for adding components
+        const $el = stack.header.element;
+        $el.off('contextmenu').contextmenu(e => {
+            this.showContextMenu(e, {stack});
+            return false;
+        });
+    }
+
+    showContextMenu(e, {stack, viewModel, index}) {
+        const offset = {left: e.clientX, top: e.clientY},
+            menu = dashContainerContextMenu({
+                stack,
+                viewModel,
+                index,
+                dashContainerModel: this
+            });
+
+        ContextMenu.show(menu, offset, null, XH.darkTheme);
     }
 
     //-----------------
@@ -319,10 +363,17 @@ export class DashContainerModel {
             if (!viewModel) return;
 
             const $el = item.tab.element, // Note: this is a jquery element
+                stack = item.parent,
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
                 {icon, title} = viewModel;
+
+            $el.off('contextmenu').contextmenu(e => {
+                const index = stack.contentItems.indexOf(item);
+                this.showContextMenu(e, {stack, viewModel, index});
+                return false;
+            });
 
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
@@ -343,7 +394,6 @@ export class DashContainerModel {
 
             if (viewSpec.allowRename) {
                 this.insertTitleForm($el, viewModel);
-                $titleEl.prop('title', `${$titleEl.text()}. Double-click to edit.`);
                 $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
             }
         });
@@ -374,18 +424,18 @@ export class DashContainerModel {
         });
     }
 
-    showTitleForm($el) {
-        const $titleEl = $el.find('.lm_title').first(),
-            $inputEl = $el.find('.title-form input').first(),
+    showTitleForm($tabEl) {
+        const $titleEl = $tabEl.find('.lm_title').first(),
+            $inputEl = $tabEl.find('.title-form input').first(),
             currentTitle = $titleEl.text();
 
-        $el.addClass('show-title-form');
+        $tabEl.addClass('show-title-form');
         $inputEl.val(currentTitle);
         $inputEl.focus().select();
     }
 
-    hideTitleForm($el) {
-        $el.removeClass('show-title-form');
+    hideTitleForm($tabEl) {
+        $tabEl.removeClass('show-title-form');
     }
 
     //-----------------

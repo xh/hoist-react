@@ -122,11 +122,11 @@ export class Store {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary = true.
         if (rawData.length !== 0 && this._loadRootAsSummary) {
             throwIf(
-                rawData.length !== 1 || isEmpty(rawData[0].children) || rawSummaryData,
+                rawData.length !== 1 || rawSummaryData,
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
             );
             rawSummaryData = rawData[0];
-            rawData = rawData[0].children;
+            rawData = rawData[0].children ?? [];
         }
 
         const records = this.createRecords(rawData);
@@ -154,7 +154,7 @@ export class Store {
      *
      * Records loaded or removed via this method will be considered to be "committed", with the
      * expectation that inputs to this method were provided by the server or other data source of
-     * record. For modifying particular fields on existing Records, see `modifyData()`. For local
+     * record. For modifying particular fields on existing Records, see `modifyRecords()`. For local
      * adds/removes not sourced from the server, see `addRecords()` and `removeRecords()`. Those
      * APIs will modify the current RecordSet but leave those changes in an uncommitted state.
      *
@@ -165,6 +165,8 @@ export class Store {
      */
     @action
     updateData(rawData) {
+        if (isEmpty(rawData)) return null;
+
         const changeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates

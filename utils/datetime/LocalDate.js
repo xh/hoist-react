@@ -211,5 +211,5 @@ export class LocalDate {
  * Convenience alias for LocalDate.isLocalDate()
  */
 export function isLocalDate(val) {
-    return val && val.isLocalDate;
+    return !!(val && val.isLocalDate);
 }

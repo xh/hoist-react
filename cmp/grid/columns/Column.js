@@ -47,6 +47,8 @@ export class Column {
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
+     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
+     *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
      * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
@@ -120,6 +122,7 @@ export class Column {
         cellClass,
         hidden,
         align,
+        headerAlign,
         width,
         minWidth,
         maxWidth,
@@ -174,6 +177,7 @@ export class Column {
         this.headerClass = headerClass;
         this.cellClass = cellClass;
         this.align = align;
+        this.headerAlign = headerAlign ?? align;
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
         warnIf(
@@ -263,7 +267,7 @@ export class Column {
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
                 pinned: this.pinned,
-                lockVisible: !gridModel.colChooserModel,
+                lockVisible: !gridModel.colChooserModel || XH.isMobile,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
@@ -444,7 +448,7 @@ export class Column {
 
     defaultGetValueFn = ({record}) => {
         const {fieldPath} = this;
-        if (!record || isNil(fieldPath)) return null;
+        if (!record || isNil(fieldPath)) return '';
 
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
@@ -455,7 +459,7 @@ export class Column {
 export function getAgHeaderClassFn(column) {
     // Generate CSS classes for headers.
     // Default alignment classes are mixed in with any provided custom classes.
-    const {headerClass, align, gridModel} = column;
+    const {headerClass, headerAlign, gridModel} = column;
     return (agParams) => {
         let r = [];
         if (headerClass) {
@@ -466,8 +470,8 @@ export function getAgHeaderClassFn(column) {
             );
         }
 
-        if (align === 'center' || align === 'right') {
-            r.push('xh-column-header-align-' + align);
+        if (headerAlign === 'center' || headerAlign === 'right') {
+            r.push('xh-column-header-align-' + headerAlign);
         }
 
         return r;

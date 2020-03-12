@@ -104,6 +104,7 @@ import {
     faFilePowerpoint,
     faFileWord,
     faFilter,
+    faFlag,
     faFlask,
     faFolder,
     faFolderOpen,
@@ -274,6 +275,7 @@ import {
     faFilePowerpoint as faFilePowerpointLight,
     faFileWord as faFileWordLight,
     faFilter as faFilterLight,
+    faFlag as faFlagLight,
     faFlask as faFlaskLight,
     faFolder as faFolderLight,
     faFolderOpen as faFolderOpenLight,
@@ -444,6 +446,7 @@ import {
     faFilePowerpoint as faFilePowerpointSolid,
     faFileWord as faFileWordSolid,
     faFilter as faFilterSolid,
+    faFlag as faFlagSolid,
     faFlask as faFlaskSolid,
     faFolder as faFolderSolid,
     faFolderOpen as faFolderOpenSolid,
@@ -616,6 +619,7 @@ library.add(
     faFilePowerpoint, faFilePowerpointLight, faFilePowerpointSolid,
     faFileWord, faFileWordLight, faFileWordSolid,
     faFilter, faFilterLight, faFilterSolid,
+    faFlag, faFlagLight, faFlagSolid,
     faFlask, faFlaskLight, faFlaskSolid,
     faFolder, faFolderLight, faFolderSolid,
     faFolderOpen, faFolderOpenLight, faFolderOpenSolid,
@@ -797,6 +801,7 @@ export const Icon = {
     fileText(p)         {return fa(p, 'file-alt')},
     fileWord(p)         {return fa(p, 'file-word')},
     filter(p)           {return fa(p, 'filter')},
+    flag(p)             {return fa(p, 'flag')},
     folder(p)           {return fa(p, 'folder')},
     folderOpen(p)       {return fa(p, 'folder-open')},
     fund(p)             {return fa(p, 'university')},
@@ -949,9 +954,9 @@ export const fileIcon = function(extension) {
 //-----------------------------
 // Implementation
 //-----------------------------
-const fa = function(props = {}, name) {
-    const prefix = withDefault(props.prefix, 'far'),
-        iconClassNames = classNames('fa-fw', props.className);  // apply fa-fw for consistent icon widths in buttons, etc
+const fa = function({prefix, className, ...rest} = {}, name) {
+    prefix = withDefault(prefix, 'far');
+    className = classNames('fa-fw', className);  // apply fa-fw for consistent icon widths in buttons, etc
 
-    return fontAwesomeIcon({icon: [prefix, name], className: iconClassNames, ...props});
+    return fontAwesomeIcon({icon: [prefix, name], className, ...rest});
 };

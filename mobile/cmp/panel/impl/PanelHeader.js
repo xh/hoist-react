@@ -17,7 +17,6 @@ export const panelHeader = hoistCmp.factory({
     model: false, memo: false, observer: false,
 
     render({className, title, icon, headerItems = []}) {
-
         if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
@@ -26,8 +25,7 @@ export const panelHeader = hoistCmp.factory({
                 icon || null,
                 title ?
                     div({
-                        className: 'xh-panel-header-title',
-                        flex: 1,
+                        className: 'xh-panel-header__title',
                         item: title
                     }) :
                     filler(),

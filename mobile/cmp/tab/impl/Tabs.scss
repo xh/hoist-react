@@ -15,17 +15,24 @@
   }
 }
 
-.xh-tabbar {
-  &.xh-tabbar-top .tabbar {
+.xh-tab-page .page__content {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  transform: translateX(0);
+}
+
+.xh-tab-container {
+  &--top .tabbar {
     border-bottom: var(--xh-border-solid);
   }
 
-  &.xh-tabbar-bottom .tabbar {
+  &--bottom .tabbar {
     border-top: var(--xh-border-solid);
   }
 
   // Tab visibility is managed via TabContainerModel.renderMode, rather than Onsen's internal state.
-  .ons-swiper-target.active:not(.swiping) > .xh-page:not([shown]) {
+  .ons-swiper-target.active:not(.swiping) > .xh-tab-page:not([shown]) {
     visibility: initial;
   }
 }

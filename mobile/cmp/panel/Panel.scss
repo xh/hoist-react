@@ -1,8 +1,14 @@
 .xh-panel {
   background-color: var(--xh-panel-bg);
 
-  &.xh-panel-scrollable > .xh-vframe {
-    overflow-y: auto !important;
+  &__content {
+    flex: 1;
+  }
+
+  &--scrollable {
+    .xh-panel__content {
+      overflow-y: auto;
+    }
   }
 
   .xh-panel-header {
@@ -14,7 +20,7 @@
     flex: none;
     user-select: none;
 
-    .xh-panel-header-title {
+    &__title {
       flex: 1;
       overflow: hidden;
       white-space: nowrap;

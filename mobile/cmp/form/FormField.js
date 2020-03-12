@@ -196,7 +196,7 @@ const editableChild = hoistCmp.factory({
         const overrides = {
             model,
             bind: 'value',
-            disabled
+            disabled: props.disabled || disabled
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,

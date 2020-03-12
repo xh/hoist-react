@@ -37,11 +37,11 @@ export class DashViewModel {
     @managed refreshContextModel;
 
     get renderMode() {
-        return this.viewSpec.renderMode || this.containerModel.renderMode;
+        return this.viewSpec.renderMode ?? this.containerModel.renderMode;
     }
 
     get refreshMode() {
-        return this.viewSpec.refreshMode || this.containerModel.refreshMode;
+        return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
     }
 
     /**
