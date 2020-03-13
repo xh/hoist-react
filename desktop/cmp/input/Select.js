@@ -227,6 +227,7 @@ export class Select extends HoistInput {
                 // Minimize (or hide) bulky dropdown
                 components: {
                     DropdownIndicator: this.getDropdownIndicatorFactory(),
+                    ClearIndicator: this.getClearIndicatorFactory(),
                     IndicatorSeparator: () => null
                 },
 
@@ -513,6 +514,18 @@ export class Select extends HoistInput {
         return this.props.hideDropdownIndicator ?
             () => null :
             () => Icon.chevronDown({className: 'xh-select__indicator'});
+    }
+
+    // As per example @ https://react-select.com/components#replaceable-components
+    getClearIndicatorFactory() {
+        return (props) => {
+            const {ref, ...restInnerProps} = props.innerProps;
+            return div({
+                ...restInnerProps,
+                ref: ref,
+                item: Icon.x({className: 'xh-select__indicator'})
+            });
+        };
     }
 
     getThemeConfig() {
