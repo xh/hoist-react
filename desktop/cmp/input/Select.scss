@@ -59,6 +59,11 @@
       line-height: 15px;
     }
 
+    &__indicators > div {
+      display: flex;
+      align-items: flex-end;
+    }
+
     &__indicator {
       padding: 0 8px 0 0;
       width: 20px;
