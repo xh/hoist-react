@@ -14,6 +14,14 @@
     font-size: var(--xh-title-font-size-px);
   }
 
+  &__items {
+    align-items: center;
+
+    > :not(:last-child) {
+      margin-right: var(--xh-tbar-item-pad-px);
+    }
+  }
+
   // Header glyph.
   & > .svg-inline--fa {
     font-size: var(--xh-title-icon-size-px);
