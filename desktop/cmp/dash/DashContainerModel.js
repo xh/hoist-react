@@ -378,7 +378,7 @@ export class DashContainerModel {
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
-                    newIconType = icon.props.icon[1];
+                    newIconType = icon.props.iconName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToSvg(icon);

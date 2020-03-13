@@ -6,11 +6,11 @@
  */
 
 import classNames from 'classnames';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {findIconDefinition, icon as faIcon} from '@fortawesome/fontawesome-svg-core';
-import {elemFactory} from '@xh/hoist/core';
-import {toLower, last, split, without, pickBy} from 'lodash';
+import {toLower, last, split, pickBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import {iconCmp} from './impl/IconCmp';
+import {iconSvg} from './impl/IconSvg';
+
 
 /**
  * Singleton class to provide factories for creating standard FontAwesome-based icons.
@@ -39,8 +39,9 @@ export const Icon = {
      *      variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
      *      or 'fal' for a lighter-weight variant.
      * @param {string} [c.className] - additional css class(es) to apply.
-     * @param {string} [c.size] - size of the icon, as specified by FontAwesome API.
      * @param {string} [c.title] - optional tooltip string
+     * @param {string} [c.size] - size of the icon, as specified by FontAwesome API.
+     *      One of: 'xs','sm', 'lg', '1x','2x','3x','4x','5x','6x','7x','8x','9x','10x'
      * @param {boolean} [c.asSvg] - Set to true to return the output as a string containing the
      *      raw <svg/> tag.  Use this option for non-react APIs, such as when writing renderers
      *      for ag-Grid.
@@ -54,15 +55,8 @@ export const Icon = {
         size,
         asSvg = false
     } = {}) {
-
-        className = classNames('fa-fw', className);
-
-        if (asSvg) {
-            const iconDef = findIconDefinition({prefix, iconName});
-            return faIcon(iconDef, {classes: className, title, size}).html[0];
-        }
-        return fontAwesomeIcon({icon: [prefix, iconName], className, title, size});
-
+        const opts = {iconName, prefix, className, title, size};
+        return asSvg ? iconSvg(opts) : iconCmp(opts);
     },
 
     accessDenied(p)     {return Icon.icon({...p,  iconName: 'ban'})},
@@ -264,41 +258,36 @@ export const Icon = {
 
 
 /**
- * Translate a native Hoist/FontAwesome icon into an <svg/> tag.
+ * Translate an icon into an <svg/> tag.
  *
- * @param {Element} iconElem - react element representing a FontAwesome icon component.
- *      This is the form of element created by Hoist's built-in Icon factories.
+ * @param {Element} iconElem - react element representing a Hoist Icon component.
+ *      This must be element created by Hoist's built-in Icon factories.
  * @return {string} - html of the <svg> tag representing the icon.
  */
 export function convertIconToSvg(iconElem) {
-    const s = serializeIcon(iconElem),
-        options = pickBy({classes: s.className, title: s.title, size: s.size}),
-        iconDef = findIconDefinition(s);
-
-    return faIcon(iconDef, options).html[0];
+    throwIf(iconElem.type?.displayName !== 'Icon',
+        'Icon not created by a Hoist Icon factory - cannot convert to SVG'
+    );
+    return iconSvg(iconElem.props);
 }
 
 /**
- * Serialize a native Hoist/FontAwesome icon into a form that can be persisted.
+ * Serialize an icon into a form that can be persisted.
  *
- * @param {Element} iconElem - react element representing a FontAwesome icon component.
- *      This is the form of element created by Hoist's built-in Icon factories.
+ * @param {Element} iconElem - react element representing a icon component.
+ *      This must be an element created by Hoist's built-in Icon factories.
  * @returns {Object} - json representation of icon.
  */
 export function serializeIcon(iconElem) {
-    throwIf(
-        iconElem.type?.name !== 'FontAwesomeIcon',
+    throwIf(iconElem.type?.displayName !== 'Icon',
         'Attempted to serialize an icon not created by a Hoist Icon factory.'
     );
-    let {icon, className, title, size} = iconElem.props;
 
-    className = without(split(className, ' '), 'fa-fw').join(' ');  // Don't serialize default style
-
-    return pickBy({prefix: icon[0], iconName: icon[1], className, title, size});
+    return pickBy(iconElem.props);
 }
 
 /**
- * Deserialize a native Hoist/FontAwesome icon.
+ * Deserialize an icon.
  *
  * This is the inverse operation of serializeIcon().
  *
@@ -345,5 +334,3 @@ function getFileIconConfig(filename) {
             return {factory: Icon.file};
     }
 }
-
-const fontAwesomeIcon = elemFactory(FontAwesomeIcon);
