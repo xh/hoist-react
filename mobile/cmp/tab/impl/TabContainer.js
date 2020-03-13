@@ -18,7 +18,7 @@ import './Tabs.scss';
  *
  * @private
  */
-export function tabContainerImpl({model, ...props}) {
+export function tabContainerImpl({model, className, ...props}) {
     throwIf(
         !['top', 'bottom', 'none'].includes(model.switcherPosition),
         "Mobile TabContainer tab switcher position must be 'none', 'top', or 'bottom'"
@@ -27,9 +27,8 @@ export function tabContainerImpl({model, ...props}) {
     const {activeTab, switcherPosition} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher);
 
-    // TODO:  This should use the standard TabContainer className.
     return tabbar({
-        className: classNames('xh-tabbar', props, `xh-tabbar-${switcherPosition}`),
+        className: classNames(className, `xh-tab-container--${switcherPosition}`),
         position: switcherPosition,
         index: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: () => tabs.map(renderTabModel),
