@@ -79,7 +79,7 @@ Toolbar.propTypes = {
 
 //-----------------
 // Implementation
-///--------------
+//--------------
 const overflowBox = hoistCmp.factory({
     model: false, observer: false, memo: false,
     render({children, minVisibleItems, collapseFrom}) {
