@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import {toLower, last, split, pickBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 import {iconCmp} from './impl/IconCmp';
-import {iconSvg} from './impl/IconSvg';
+import {iconHtml} from './impl/IconHtml';
 
 
 /**
@@ -42,7 +42,7 @@ export const Icon = {
      * @param {string} [c.title] - optional tooltip string
      * @param {string} [c.size] - size of the icon, as specified by FontAwesome API.
      *      One of: 'xs','sm', 'lg', '1x','2x','3x','4x','5x','6x','7x','8x','9x','10x'
-     * @param {boolean} [c.asSvg] - Set to true to return the output as a string containing the
+     * @param {boolean} [c.asHtml] - Set to true to return the output as a string containing the
      *      raw <svg/> tag.  Use this option for non-react APIs, such as when writing renderers
      *      for ag-Grid.
      * @returns {(Element| string)}
@@ -53,10 +53,10 @@ export const Icon = {
         className,
         title,
         size,
-        asSvg = false
+        asHtml = false
     } = {}) {
         const opts = {iconName, prefix, className, title, size};
-        return asSvg ? iconSvg(opts) : iconCmp(opts);
+        return asHtml ? iconHtml(opts) : iconCmp(opts);
     },
 
     accessDenied(p)     {return Icon.icon({...p,  iconName: 'ban'})},
@@ -258,17 +258,21 @@ export const Icon = {
 
 
 /**
- * Translate an icon into an <svg/> tag.
+ * Translate an icon into an html <svg/> tag.
+ *
+ * Not typically used by applications.  Applications that need html for an icon, e.g.
+ * for a grid column renderer should use the 'asHtml' flag on the Icon factory functions
+ * instead.
  *
  * @param {Element} iconElem - react element representing a Hoist Icon component.
  *      This must be element created by Hoist's built-in Icon factories.
  * @return {string} - html of the <svg> tag representing the icon.
  */
-export function convertIconToSvg(iconElem) {
+export function convertIconToHtml(iconElem) {
     throwIf(iconElem.type?.displayName !== 'Icon',
         'Icon not created by a Hoist Icon factory - cannot convert to SVG'
     );
-    return iconSvg(iconElem.props);
+    return iconHtml(iconElem.props);
 }
 
 /**

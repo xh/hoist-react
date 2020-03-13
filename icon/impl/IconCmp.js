@@ -9,7 +9,7 @@ import {hoistCmp} from '@xh/hoist/core';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {elemFactory} from '@xh/hoist/core';
-import {enhanceFaClasses} from './IconSvg';
+import {enhanceFaClasses} from './IconHtml';
 
 /**
  * @private

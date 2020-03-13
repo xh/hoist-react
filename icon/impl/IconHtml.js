@@ -16,7 +16,7 @@ import {isString} from 'lodash';
  *
  * Applications should use the factory methods on Icon instead.
  */
-export function iconSvg({iconName, prefix, title, className, size}) {
+export function iconHtml({iconName, prefix, title, className, size}) {
     const iconDef = findIconDefinition({prefix, iconName}),
         classes = enhanceFaClasses(className, size);
 

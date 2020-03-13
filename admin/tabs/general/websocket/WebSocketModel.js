@@ -52,8 +52,8 @@ export class WebSocketModel {
                 align: 'center',
                 width: 40,
                 renderer: v => v ?
-                    Icon.circle({prefix: 'fas', className: 'xh-green', asSvg: true}) :
-                    Icon.circle({prefix: 'fal', className: 'xh-red', asSvg: true})
+                    Icon.circle({prefix: 'fas', className: 'xh-green', asHtml: true}) :
+                    Icon.circle({prefix: 'fal', className: 'xh-red', asHtml: true})
             },
             {field: 'key', width: 160},
             {field: 'user', width: 250},

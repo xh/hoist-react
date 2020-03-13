@@ -165,7 +165,7 @@ export class LeftRightChooserModel {
     //------------------------
     getTextColRenderer(side) {
         const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            lockSvg = Icon.lock({prefix: 'fal', asSvg: true});
+            lockSvg = Icon.lock({prefix: 'fal', asHtml: true});
 
         return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
