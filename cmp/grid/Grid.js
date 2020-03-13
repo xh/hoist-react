@@ -392,6 +392,12 @@ class LocalModel {
                         api.setRowData(newRs.list);
                     }
 
+                    if (experimental.externalSort) {
+                        const {sortBy} = model;
+                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
+                        this._lastSortBy = sortBy;
+                    }
+
                     this.updatePinnedSummaryRowData();
 
                     // If row count changing to/from a small amt, force col resizing to account for
@@ -445,11 +451,13 @@ class LocalModel {
     }
 
     sortReaction() {
-        const {agGridModel} = this.model;
+        const {agGridModel} = this.model,
+            {externalSort} = this.model.experimental;
+
         return {
             track: () => [agGridModel.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api) api.setSortModel(sortBy);
+                if (api && !externalSort) api.setSortModel(sortBy);
             }
         };
     }
