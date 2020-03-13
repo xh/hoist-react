@@ -12,13 +12,6 @@ import {iconCmp} from './impl/IconCmp';
 import {iconHtml} from './impl/IconHtml';
 
 
-//faEllipsisH as faEllipsisHSolid,
-//faEllipsisV as faEllipsisVSolid,
-
-// faEllipsisH, faEllipsisHLight, faEllipsisHSolid,
-// faEllipsisV, faEllipsisVLight, faEllipsisVSolid,
-
-
 /**
  * Singleton class to provide factories for creating standard FontAwesome-based icons.
  *
