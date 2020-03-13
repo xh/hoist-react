@@ -4,74 +4,52 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
+import {Children} from 'react';
 import {hoistCmp} from '@xh/hoist/core';
 import {hbox, vbox, fragment, filler} from '@xh/hoist/cmp/layout';
 import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {castArray} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
+import {throwIf} from '@xh/hoist/utils/js';
 
 import './Toolbar.scss';
 
 /**
  * A toolbar with built-in styling and padding.
- * Child items provided as raw configs will be created as buttons by default.
- * In horizontal toolbars, items which overflow will be collapsed into a drop down menu.
+ * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
 export const [Toolbar, toolbar] = hoistCmp.withFactory({
     displayName: 'Toolbar',
-    model: false, memo: false, observable: false,
+    model: false, memo: false, observer: false,
     className: 'xh-toolbar',
 
-    render(props) {
-        const {children, className, vertical, collapseFrom = 'end', minVisibleItems, ...rest} = props;
+    render({
+        children,
+        className,
+        vertical,
+        enableOverflowMenu = !vertical,
+        collapseFrom = 'end',
+        minVisibleItems,
+        ...rest
+    }) {
 
-        return (vertical ? vbox : hbox)({
+        throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
+
+        const container = vertical ? vbox : hbox,
+            overflow = enableOverflowMenu && Children.count(children) > 0;
+
+        return container({
             ...rest,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
-            item: itemContainer({
-                $items: castArray(children),
-                vertical,
-                minVisibleItems,
-                collapseFrom
-            })
+            items: overflow ?
+                overflowBox({items: children, minVisibleItems, collapseFrom}) :
+                children
         });
     }
 });
 
-const itemContainer = hoistCmp.factory({
-    render({items, vertical, minVisibleItems, collapseFrom}) {
-        if (!items || !items.length) return null;
-
-        // Overflow collapse is not supported for vertical toolbars
-        if (vertical) return fragment(items);
-
-        return overflowList({
-            $items: React.Children.toArray(items),
-            minVisibleItems,
-            collapseFrom,
-            visibleItemRenderer: (item) => item,
-            overflowRenderer: (items) => itemOverflowButton(items)
-        });
-    }
-});
-
-const itemOverflowButton = hoistCmp.factory({
-    render({children}) {
-        return fragment(
-            filler(),
-            popover({
-                popoverClassName: 'xh-toolbar-overflow-popover',
-                position: 'bottom-right',
-                target: button({icon: Icon.ellipsisVertical()}),
-                content: vbox(React.Children.toArray(children))
-            })
-        );
-    }
-});
 
 Toolbar.propTypes = {
     /** Custom classes that will be applied to this component */
@@ -79,6 +57,12 @@ Toolbar.propTypes = {
 
     /** Set to true to vertically align the items of this toolbar */
     vertical: PT.bool,
+
+    /**
+     * Place items that overflow in a menu. Only available for horizontal toolbars.
+     * Default to true.
+     */
+    enableOverflowMenu: PT.bool,
 
     /**
      * For horizontal toolbars that overflow, manages which direction the items collapse from.
@@ -92,3 +76,34 @@ Toolbar.propTypes = {
      */
     minVisibleItems: PT.number
 };
+
+//-----------------
+// Implementation
+///--------------
+const overflowBox = hoistCmp.factory({
+    model: false, observer: false, memo: false,
+    render({children, minVisibleItems, collapseFrom}) {
+        return overflowList({
+            $items: Children.toArray(children),
+            minVisibleItems,
+            collapseFrom,
+            visibleItemRenderer: (item) => item,
+            overflowRenderer: overflowButton
+        });
+    }
+});
+
+const overflowButton = hoistCmp.factory({
+    model: false, observer: false, memo: false,
+    render({children}) {
+        return fragment(
+            filler(),
+            popover({
+                popoverClassName: 'xh-toolbar-overflow-popover',
+                position: 'bottom-right',
+                target: button({icon: Icon.ellipsisVertical()}),
+                content: vbox(children)
+            })
+        );
+    }
+});
