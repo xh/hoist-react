@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
-import {find, last, uniqBy, without} from 'lodash';
+import {find, uniqBy, without} from 'lodash';
 
 
 @HoistModel
@@ -27,7 +27,8 @@ export class FileChooserModel {
         store: {idSpec: 'name'},
         columns: [
             {
-                field: 'extension',
+                colId: 'icon',
+                field: 'name',
                 ...fileExtCol
             },
             {field: 'name', flex: 1},
@@ -112,19 +113,7 @@ export class FileChooserModel {
     }
 
     onFilesChange(files) {
-        const fileData = files.map(file => {
-            const name = file.name,
-                extension = name.includes('.') ? last(name.split('.')) : null;
-
-            return {
-                id: name,
-                name,
-                extension,
-                size: file.size
-            };
-        });
-
+        const fileData = files.map(file => ({name: file.name, size: file.size}));
         this.gridModel.loadData(fileData);
     }
-
 }
