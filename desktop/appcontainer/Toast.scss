@@ -10,3 +10,10 @@
     position: absolute;
   }
 }
+
+.xh-toast {
+  &__icon {
+    align-self: center;
+    margin: 0 0 0 var(--xh-pad-half-px);
+  }
+}

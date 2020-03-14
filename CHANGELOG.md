@@ -29,15 +29,6 @@
 
 ### 💥 Breaking Changes
 
-* To facilitate the increased symmetry between `NavigatorModel` and our other containers, mobile
-  apps may need to adjust to the following changes:
-  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
-  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
-  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
-    directly, so this change is unlikely to require code updates.
-  * `Page` has been removed from the mobile toolkit. Components that previously returned `Pages` for
-    inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended you
-    replace `Page` with `Panel` where appropriate.
 * The application's primary `HoistApplicationModel` is now instantiated and installed as
   `XH.appModel` earlier within the application initialization sequence, with construction happening
   prior to the init of the core identity, config, and preference services.
@@ -46,8 +37,21 @@
     services for field initialization or in its constructor.
   * Such code should be moved to the core `initAsync()` method instead, which is called (as before)
     after all XH-level services are up and running.
-* `convertIconToSvg()` has been removed. Applications should use the new `asHtml` flag on icon
-  factory functions instead. If absolutely necessary, use the new `convertIconToHtml()` instead.
+* To facilitate the increased symmetry between `NavigatorModel` and our other containers, mobile
+  apps may need to adjust to the following changes:
+  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
+  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
+  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
+    directly, so this change is unlikely to require code updates.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned a `Page`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended
+    you replace `Page` with `Panel` where appropriate.
+* Icon enhancements described above have resulted in two public methods being removed:
+  * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by Hoist)
+    has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
+    'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`;
+  * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on icon
+    factory functions. If you need to convert an existing icon element, use `convertIconToHtml()`.
 
 ### 🐞 Bug Fixes
 
