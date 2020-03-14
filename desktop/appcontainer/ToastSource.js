@@ -4,22 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {HoistModel, uses, hoistCmp, useLocalModel} from '@xh/hoist/core';
-import {defaultTo, defaults, isElement} from 'lodash';
-import {withDefault} from '@xh/hoist/utils/js';
-import {Position, Toaster} from '@xh/hoist/kit/blueprint';
-
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {Position, Toaster} from '@xh/hoist/kit/blueprint';
+import {withDefault} from '@xh/hoist/utils/js';
+import {isElement} from 'lodash';
 
 import './Toast.scss';
 
 /**
- *  Support for showing Toasts in a  application.
- *
- *  Unusually, this component does not actually render any content, declaratively,
- *  but for technical reasons, (primarily symmetry with mobile) it remains a component.
- *
+ *  Support for showing Toasts in a application. This component does not render any content
+ *  directly, but for technical reasons (primarily symmetry with mobile) it remains a component.
  *  @private
  */
 export const toastSource = hoistCmp.factory({
@@ -28,7 +24,6 @@ export const toastSource = hoistCmp.factory({
 
     render({model}) {
         useLocalModel(() => new LocalModel(model));
-
         return null;
     }
 });
@@ -46,10 +41,9 @@ class LocalModel {
         });
     }
 
-
-    //-----------------------------------
+    //------------------------
     // Implementation
-    //------------------------------------
+    //------------------------
     displayPendingToasts(models) {
         models.forEach(model => {
             let {wasShown, isOpen, icon, position, containerRef, ...rest} = model;
@@ -57,8 +51,8 @@ class LocalModel {
 
             position = position || Position.BOTTOM_RIGHT;
             this.getToaster(position, containerRef).show({
-                icon: this.getStyledIcon(icon),
                 className: 'xh-toast',
+                icon: div({className: 'xh-toast__icon', item: icon}),
                 onDismiss: () => model.dismiss(),
                 ...rest
             });
@@ -68,14 +62,14 @@ class LocalModel {
     }
 
     /**
-     * Get a toaster instance.  If the instance doesn't exist, it will be made.
+     * Get a toaster instance. If the instance doesn't exist, it will be made.
      * This method lets you get/create toasters by their Position enum values.
      * Other toaster options cannot be set via this method.
 
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param {string} [position] - see Blueprint Position enum for allowed values.
-     * @params {HTMLElement} [containerRef] - DOM Element used to position (contain) the toast.
+     * @param {HTMLElement} [containerRef] - DOM Element used to position (contain) the toast.
      */
     getToaster(position, containerRef) {
 
@@ -94,14 +88,5 @@ class LocalModel {
         if (!toasters[position]) toasters[position] = Toaster.create({position, className}, container);
         toasterMap.set(container, toasters);
         return toasters[position];
-    }
-
-    getStyledIcon(icon) {
-        const props = {};
-
-        props.style = defaultTo(icon.props.style, {});
-        defaults(props.style, {alignSelf: 'center', marginLeft: '5px'});
-
-        return React.cloneElement(icon, props);
     }
 }
