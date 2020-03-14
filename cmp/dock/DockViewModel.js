@@ -53,7 +53,7 @@ export class DockViewModel {
      * @param {DockContainerModel} c.containerModel - parent DockContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - Title text added to the header.
-     * @param {Icon} [c.icon] - An icon placed at the left-side of the header.
+     * @param {Element} [c.icon] - An icon placed at the left-side of the header.
      * @param {(Object|function)} c.content - content to be rendered by this DockView.
      *      HoistComponent or a function returning a react element.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will

@@ -16,6 +16,17 @@
   requests when collapsed.
 * Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
 
+* Enhancements to the Icon API:
+    * Added a new general `Icon.icon()` factory method.  This method is now the common entry point
+        for creating new FontAwesome based icons in Hoist. It should typically be used instead of
+        using the `FontAwesomeIcon` component directly.
+    * Added a new `Icon.fileIcon()` factory method. This method returns a standard,
+        conventionally colored icon, based on a filename extension.
+    * All Icon factories can now accept an `asHtml` parameter, as an alternative to calling the
+        helper function `convertIconToSVG()` on the element.  Use this to render icons as raw html
+        where needed (e.g. grid renderers).
+    * Icons rendered as html will now preserve their styling, tooltips, and size.
+
 ### 💥 Breaking Changes
 
 * To facilitate the increased symmetry between `NavigatorModel` and our other containers, apps
@@ -35,6 +46,8 @@
     services for field initialization or in its constructor.
   * Such code should be moved to the core `initAsync()` method instead, which is called (as before)
     after all XH-level services are up and running.
+* `convertIconToSvg()` has been removed. Applications should use the new `asHtml` flag on  icon
+  factory functions instead. If absolutely necessary, use the new `convertIconToHtml()` instead.
 
 ### 🐞 Bug Fixes
 
