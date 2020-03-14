@@ -35,11 +35,15 @@
   * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
   * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
     directly, so this change is unlikely to require code updates.
-  * `Page` has been removed from the mobile toolkit. Components that previously returned `Pages` for
-    inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended you
-    replace `Page` with `Panel` where appropriate.
-* `convertIconToSvg()` has been removed. Applications should use the new `asHtml` flag on icon
-  factory functions instead. If absolutely necessary, use the new `convertIconToHtml()` instead.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned a `Page`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended
+    you replace `Page` with `Panel` where appropriate.
+* Icon enhancements described above have resulted in two public methods being removed:
+  * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by Hoist)
+    has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
+    'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`;
+  * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on icon
+    factory functions. If you need to convert an existing icon element, use `convertIconToHtml()`.
 
 ### 🐞 Bug Fixes
 
