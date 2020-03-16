@@ -173,7 +173,7 @@ const rndDialog = hoistCmp.factory({
                 ref: c =>  model.rndRef = c,
                 ...rndOptions,
                 disableDragging: !draggable,
-                enableResizing: {
+                enableResizing: model.isMaximized ? null : {
                     bottom: resizable,
                     bottomLeft: resizable,
                     bottomRight: resizable,
