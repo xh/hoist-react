@@ -14,6 +14,8 @@
   allow better control over how collapsed views are mounted/unmounted and how views handle refresh
   requests when collapsed.
 * `Column` now auto-sizes when double-clicking / double-tapping its header.
+* `Column` now supports optional `appOverrides` parameter, which can be provided as an object of
+  the form `{clientAppCode: {}}`.
 
 #### 🎨 Icons
 

@@ -95,7 +95,7 @@ export class Column {
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
      *      may have performance implications. Default false.
-     * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
+     * @param {boolean} [c.highlightOnChange] - set to true to call attention to cell changes by
      *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
      * @param {boolean|Column~editableFn} [c.editable] - true to make cells in this column editable.
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
@@ -105,6 +105,8 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
+     * @param {Object} [c.appOverrides] - An object of the form `{clientAppCode: {}}`, which
+     *      can be used to override any column property for specific client apps.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -112,51 +114,60 @@ export class Column {
      * @param {...*} [rest] - additional properties to store on the column
      * @param {GridModel} gridModel - the model which owns this column.
      */
-    constructor({
-        field,
-        colId,
-        isTreeColumn,
-        headerName,
-        headerTooltip,
-        headerClass,
-        cellClass,
-        hidden,
-        align,
-        headerAlign,
-        width,
-        minWidth,
-        maxWidth,
-        flex,
-        rowHeight,
-        absSort,
-        comparator,
-        resizable,
-        movable,
-        sortable,
-        pinned,
-        renderer,
-        rendererIsComplex,
-        highlightOnChange,
-        elementRenderer,
-        chooserName,
-        chooserGroup,
-        chooserDescription,
-        excludeFromChooser,
-        hideable,
-        exportName,
-        exportValue,
-        exportFormat,
-        exportWidth,
-        excludeFromExport,
-        tooltip,
-        tooltipElement,
-        editable,
-        setValueFn,
-        getValueFn,
-        enableDotSeparatedFieldPath,
-        agOptions,
-        ...rest
-    }, gridModel) {
+    constructor(c, gridModel) {
+        // Merge in app overrides
+        const {appOverrides} = c;
+        if (appOverrides && appOverrides[XH.clientAppCode]) {
+            Object.assign(c, appOverrides[XH.clientAppCode]);
+        }
+
+        // Extract and set properties
+        const {
+            field,
+            colId,
+            isTreeColumn,
+            headerName,
+            headerTooltip,
+            headerClass,
+            cellClass,
+            hidden,
+            align,
+            headerAlign,
+            width,
+            minWidth,
+            maxWidth,
+            flex,
+            rowHeight,
+            absSort,
+            comparator,
+            resizable,
+            movable,
+            sortable,
+            pinned,
+            renderer,
+            rendererIsComplex,
+            highlightOnChange,
+            elementRenderer,
+            chooserName,
+            chooserGroup,
+            chooserDescription,
+            excludeFromChooser,
+            hideable,
+            exportName,
+            exportValue,
+            exportFormat,
+            exportWidth,
+            excludeFromExport,
+            tooltip,
+            tooltipElement,
+            editable,
+            setValueFn,
+            getValueFn,
+            enableDotSeparatedFieldPath,
+            agOptions,
+            ...rest
+        } = c;
+
         Object.assign(this, rest);
 
         this.field = field;
