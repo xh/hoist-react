@@ -192,7 +192,7 @@ const rndDialog = hoistCmp.factory({
                     tabIndex: 0,
                     ref: model.dialogWrapperDivRef,
                     className: props.className,
-                    item: content(props)
+                    item: contentContainer(props)
                 })
             })
         ];
@@ -222,11 +222,11 @@ const clickCaptureComp = hoistCmp.factory({
     }
 });
 
-const content = hoistCmp.factory({
+const contentContainer = hoistCmp.factory({
     render(props) {
         const dialogModel = useContextModel(DialogModel),
             {controlledWidth: width, controlledHeight: height} = dialogModel,
-            dims = dialogModel.resizable ? {
+            size = dialogModel.resizable ? {
                 width: '100%',
                 height: '100%'
             } : {
@@ -235,7 +235,7 @@ const content = hoistCmp.factory({
             };
 
         return vframe({
-            ...dims,
+            ...size,
             items: [
                 dialogHeader({dialogModel, ...props}),
                 elementFromContent(dialogModel.content)
