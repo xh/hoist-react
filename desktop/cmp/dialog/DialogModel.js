@@ -320,8 +320,9 @@ export class DialogModel {
     maximize() {
         if (!this.rndRef) return;
 
+        const size = this.inPortal ? this.windowSize : this.parentSize;
         this.rndRef.updatePosition({x: 0, y: 0});
-        this.rndRef.updateSize(this.windowSize);
+        this.rndRef.updateSize(size);
     }
 
     @action
