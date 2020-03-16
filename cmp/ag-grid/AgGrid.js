@@ -12,7 +12,7 @@ import {useOnUnmount} from '@xh/hoist/utils/react';
 import {ContextKeyNavSupport} from './impl/ContextKeyNavSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {isNil} from 'lodash';
-
+import {wait} from '@xh/hoist/promise';
 import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
 
@@ -122,10 +122,12 @@ class LocalModel {
     }
 
     noteGridReady = (agParams) => {
-        this.model.handleGridReady(agParams);
-        if (this.onGridReady) {
-            this.onGridReady(agParams);
-        }
+        wait(0).then(() => {
+            this.model.handleGridReady(agParams);
+            if (this.onGridReady) {
+                this.onGridReady(agParams);
+            }
+        });
     };
 
     noteCellContextMenu = (agParams) => {
