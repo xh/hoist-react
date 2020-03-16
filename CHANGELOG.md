@@ -1,6 +1,6 @@
 # Changelog
 
-## v31.0.0-SNAPSHOT - unreleased
+## v31.0.0 - 2020-03-16
 
 ### 🎁 New Features
 
@@ -63,7 +63,7 @@
 * New lifecycle methods `preAuthInitAsync()` and `logoutAsync()` added to the `HoistAppModel`
   decorator (aka the primary `XH.appModel`).
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...v31.0.0)
 
 ## v30.1.0 - 2020-03-04
 
