@@ -61,6 +61,14 @@ export class DialogModel {
     draggable;
     /** @member {boolean} */
     inPortal;
+    /** @member {number} */
+    initialX;
+    /** @member {number} */
+    initialY;
+    /** @member {number} */
+    initialWidth;
+    /** @member {number} */
+    initialHeight;
 
     //-------------------
     // Mutable Public State
@@ -145,9 +153,13 @@ export class DialogModel {
 
         // set observables
         this.setContent(content);
+        this.initialWidth = width;
         this.setWidth(width);
+        this.initialHeight = height;
         this.setHeight(height);
+        this.initialX = x;
         this.setX(x);
+        this.initialY = y;
         this.setY(y);
         this.setIsMaximized(isMaximized);
         this.setIsOpen(isOpen);
@@ -192,6 +204,8 @@ export class DialogModel {
         this.isMaximized = false; // deliberately skip setter here to avoid changing state
         this.x = undefined;
         this.y = undefined;
+        this.width = undefined;
+        this.height = undefined;
     }
 
     @action
@@ -227,12 +241,12 @@ export class DialogModel {
 
     @computed
     get currentWidth() {
-        return withDefault(this.sizeState.width, this.width);
+        return withDefault(this.sizeState.width, this.width, this.initialWidth);
     }
 
     @computed
     get currentHeight() {
-        return withDefault(this.sizeState.height, this.height);
+        return withDefault(this.sizeState.height, this.height, this.initialHeight);
     }
 
     @action
@@ -268,12 +282,12 @@ export class DialogModel {
 
     @computed
     get currentX() {
-        return withDefault(this.positionState.x, this.x);
+        return withDefault(this.positionState.x, this.x, this.initialX);
     }
 
     @computed
     get currentY() {
-        return withDefault(this.positionState.y, this.y);
+        return withDefault(this.positionState.y, this.y, this.initialY);
     }
 
     @action

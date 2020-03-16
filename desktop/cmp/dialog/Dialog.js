@@ -104,11 +104,11 @@ Dialog.propTypes = {
 const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
-            {inPortal, resizable, draggable, width, height, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
+            {inPortal, resizable, draggable, currentWidth, currentHeight, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
             {rndOptions = {}} = props;
 
         throwIf(
-            resizable && (!width || !height),
+            resizable && (!currentWidth || !currentHeight),
             'Resizable dialogs must also have width and height props set.'
         );
 
