@@ -16,11 +16,10 @@ export const loggingTab = hoistCmp.factory(
         model: {
             route: 'default.logging',
             switcherPosition: 'left',
-            tabs: XH.getConf('xhEnableLogViewer') ? [
-                {id: 'viewer', icon: Icon.fileText(), content: logViewer},
+            tabs: [
+                {id: 'viewer', icon: Icon.fileText(), content: logViewer, omit: !XH.getConf('xhEnableLogViewer')},
                 {id: 'config', icon: Icon.settings(), content: logLevelPanel}
-            ] :
-                [{id: 'config', icon: Icon.settings(), content: logLevelPanel}]
+            ]
         }
     })
 );
