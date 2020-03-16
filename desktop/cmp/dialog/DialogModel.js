@@ -190,6 +190,7 @@ export class DialogModel {
         this.content = v;
     }
 
+    // todo: allow x,y width,height params passed here?
     @action
     open() {
         this.setIsOpen(true);
