@@ -154,13 +154,11 @@ export class DialogModel {
         // set observables
         this.setContent(content);
         this.initialWidth = width;
-        this.setWidth(width);
         this.initialHeight = height;
-        this.setHeight(height);
+        this.setSize({width, height});
         this.initialX = x;
-        this.setX(x);
         this.initialY = y;
-        this.setY(y);
+        this.setPosition({x, y});
         this.setIsMaximized(isMaximized);
         this.setIsOpen(isOpen);
         this.setCloseOnOutsideClick(closeOnOutsideClick);
@@ -169,7 +167,7 @@ export class DialogModel {
         this.setShowCloseButton(showCloseButton);
 
         this.addReaction({
-            track: () => [this.currentX, this.currentY, this.currentWidth, this.currentHeight],
+            track: () => [this.controlledX, this.controlledY, this.controlledWidth, this.controlledHeight],
             run: () => this.positionDialog()
         });
 
@@ -209,8 +207,9 @@ export class DialogModel {
     }
 
     @action
-    setWidth(v) {
-        this.width = v;
+    setSize({width, height}) {
+        this.width = withDefault(width, this.size.width);
+        this.height = withDefault(height, this.size.height);
         if (this.rndRef) {
             if (this.stateModel) {
                 this.setSizeState();
@@ -218,40 +217,15 @@ export class DialogModel {
         }
     }
 
-    @action
-    setHeight(v) {
-        this.height = v;
-        if (this.rndRef) {
-            if (this.stateModel) {
-                this.setSizeState();
-            }
-        }
+    get size() {
+        if (!this.rndRef) return {};
+        return this.dialogSize;
     }
 
     @action
-    setWidthHeight({width, height}) {
-        this.width = width;
-        this.height = height;
-        if (this.rndRef) {
-            if (this.stateModel) {
-                this.setSizeState();
-            }
-        }
-    }
-
-    @computed
-    get currentWidth() {
-        return withDefault(this.sizeState.width, this.width, this.initialWidth);
-    }
-
-    @computed
-    get currentHeight() {
-        return withDefault(this.sizeState.height, this.height, this.initialHeight);
-    }
-
-    @action
-    setX(v) {
-        this.x = v;
+    setPosition({x, y}) {
+        this.x = withDefault(x, this.position.x);
+        this.y = withDefault(y, this.position.y);
         if (this.rndRef) {
             if (this.stateModel) {
                 this.setPositionState();
@@ -259,35 +233,9 @@ export class DialogModel {
         }
     }
 
-    @action
-    setY(v) {
-        this.y = v;
-        if (this.rndRef) {
-            if (this.stateModel) {
-                this.setPositionState();
-            }
-        }
-    }
-
-    @action
-    setXY({x, y}) {
-        this.x = x;
-        this.y = y;
-        if (this.rndRef) {
-            if (this.stateModel) {
-                this.setPositionState();
-            }
-        }
-    }
-
-    @computed
-    get currentX() {
-        return withDefault(this.positionState.x, this.x, this.initialX);
-    }
-
-    @computed
-    get currentY() {
-        return withDefault(this.positionState.y, this.y, this.initialY);
+    get position() {
+        if (!this.rndRef) return {};
+        return this.rndRef.getDraggablePosition();
     }
 
     @action
@@ -367,6 +315,26 @@ export class DialogModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
+    @computed
+    get controlledWidth() {
+        return withDefault(this.sizeState.width, this.width, this.initialWidth);
+    }
+
+    @computed
+    get controlledHeight() {
+        return withDefault(this.sizeState.height, this.height, this.initialHeight);
+    }
+
+    @computed
+    get controlledX() {
+        return withDefault(this.positionState.x, this.x, this.initialX);
+    }
+
+    @computed
+    get controlledY() {
+        return withDefault(this.positionState.y, this.y, this.initialY);
+    }
+
     handleEscapKey() {
         this.close();
     }
@@ -419,7 +387,7 @@ export class DialogModel {
     positionDialog() {
         if (!this.rndRef || this.currentIsMaximized) return;
 
-        const {currentX: x, currentY: y, currentWidth: width, currentHeight: height} = this;
+        const {controlledX: x, controlledY: y, controlledWidth: width, controlledHeight: height} = this;
 
         if (isNumber(width) && isNumber(height)) {
             this.applySizeChanges({width, height});
@@ -441,7 +409,7 @@ export class DialogModel {
             this.maximize();
             return;
         }
-        if (isNil(this.currentX) || isNil(this.currentY)) {
+        if (isNil(this.controlledX) || isNil(this.controlledY)) {
             this.centerDialog();
         }
     }
@@ -508,6 +476,8 @@ export class DialogModel {
     }
 
     get dialogSize() {
+        if (!this.dialogWrapperDivRef.current) return {};
+
         const {
             offsetWidth: width,
             offsetHeight: height

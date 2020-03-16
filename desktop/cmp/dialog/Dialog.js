@@ -104,11 +104,11 @@ Dialog.propTypes = {
 const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
-            {inPortal, resizable, draggable, currentWidth, currentHeight, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
+            {inPortal, resizable, draggable, controlledWidth, controlledHeight, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
             {rndOptions = {}} = props;
 
         throwIf(
-            resizable && (!currentWidth || !currentHeight),
+            resizable && (!controlledWidth || !controlledHeight),
             'Resizable dialogs must also have width and height props set.'
         );
 
@@ -117,7 +117,7 @@ const rndDialog = hoistCmp.factory({
             if (evt.target.closest('button')) return;
 
             if (!model.isMaximized) {
-                model.setXY({x: data.x, y: data.y});
+                model.setPosition({x: data.x, y: data.y});
             }
             if (isFunction(rndOptions.onDragStop)) rndOptions.onDragStop(evt, data);
         };
@@ -134,11 +134,11 @@ const rndDialog = hoistCmp.factory({
                     offsetWidth: width,
                     offsetHeight: height
                 } = domEl;
-                model.setWidthHeight({width, height});
-                if (isNil(model.currentX) || isNil(model.currentY)) {
+                model.setSize({width, height});
+                if (isNil(model.controlledX) || isNil(model.controlledY)) {
                     model.centerDialog();
                 } else  {
-                    model.setXY(position);
+                    model.setPosition(position);
                 }
             }
             if (isFunction(rndOptions.onResizeStop)) {
@@ -225,7 +225,7 @@ const clickCaptureComp = hoistCmp.factory({
 const content = hoistCmp.factory({
     render(props) {
         const dialogModel = useContextModel(DialogModel),
-            {currentWidth: width, currentHeight: height} = dialogModel,
+            {controlledWidth: width, controlledHeight: height} = dialogModel,
             dims = dialogModel.resizable ? {
                 width: '100%',
                 height: '100%'
