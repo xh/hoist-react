@@ -29,6 +29,14 @@
 
 ### 💥 Breaking Changes
 
+* The application's primary `HoistApplicationModel` is now instantiated and installed as
+  `XH.appModel` earlier within the application initialization sequence, with construction happening
+  prior to the init of the core identity, config, and preference services.
+  * This allows for a new `preAuthInitAsync()` lifecycle method to be called on the model before
+    auth has completed, but could be a breaking change for appModel code that relied on these
+    services for field initialization or in its constructor.
+  * Such code should be moved to the core `initAsync()` method instead, which is called (as before)
+    after all XH-level services are up and running.
 * To facilitate the increased symmetry between `NavigatorModel` and our other containers, mobile
   apps may need to adjust to the following changes:
   * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
@@ -49,6 +57,11 @@
 
 * The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
   documented.
+
+### ⚙️ Technical
+
+* New lifecycle methods `preAuthInitAsync()` and `logoutAsync()` added to the `HoistAppModel`
+  decorator (aka the primary `XH.appModel`).
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
 
