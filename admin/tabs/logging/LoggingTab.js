@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 
@@ -16,10 +16,11 @@ export const loggingTab = hoistCmp.factory(
         model: {
             route: 'default.logging',
             switcherPosition: 'left',
-            tabs: [
+            tabs: XH.getConf('xhEnableLogViewer') ? [
                 {id: 'viewer', icon: Icon.fileText(), content: logViewer},
                 {id: 'config', icon: Icon.settings(), content: logLevelPanel}
-            ]
+            ] :
+                [{id: 'config', icon: Icon.settings(), content: logLevelPanel}]
         }
     })
 );
