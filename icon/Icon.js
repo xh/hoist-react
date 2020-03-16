@@ -136,6 +136,8 @@ export const Icon = {
     download(p)         {return Icon.icon({...p,  iconName: 'download'})},
     edit(p)             {return Icon.icon({...p,  iconName: 'edit'})},
     envelope(p)         {return Icon.icon({...p,  iconName: 'envelope'})},
+    ellipsisHorizontal(p) {return Icon.icon({...p, iconName: 'ellipsis-h'})},
+    ellipsisVertical(p) {return Icon.icon({...p, iconName: 'ellipsis-v'})},
     error(p)            {return Icon.icon({...p,  iconName: 'times-hexagon'})},
     expand(p)           {return Icon.icon({...p,  iconName: 'expand-alt'})},
     experiment(p)       {return Icon.icon({...p,  iconName: 'flask'})},
