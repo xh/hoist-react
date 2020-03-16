@@ -8,7 +8,6 @@
 /**
  * Options for how contents should be rendered by their parent container.
  *
- *
  * Used by TabContainerModel, DashContainerModel, and PanelModel.
  *
  * @enum {RenderMode}

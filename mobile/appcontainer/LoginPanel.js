@@ -10,7 +10,6 @@ import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
-import {page} from '@xh/hoist/mobile/cmp/page';
 import {panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 
@@ -30,7 +29,7 @@ export const loginPanel = hoistCmp.factory({
         const {loginMessage} = XH.appSpec,
             {isValid, loadModel, warning} = model;
 
-        return page({
+        return panel({
             className: 'xh-login',
             items: [
                 toolbar(

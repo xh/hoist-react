@@ -34,7 +34,7 @@
     "@fortawesome/pro-light-svg-icons": "~5.12.1",
     "@fortawesome/pro-regular-svg-icons": "~5.12.1",
     "@fortawesome/pro-solid-svg-icons": "~5.12.1",
-    "@fortawesome/react-fontawesome": "~0.1.8",
+    "@fortawesome/react-fontawesome": "~0.1.9",
     "ag-grid-community": "~21.2.2",
     "ag-grid-enterprise": "~21.2.2",
     "ag-grid-react": "~21.2.2",
@@ -46,8 +46,8 @@
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.0.1",
-    "golden-layout": "^1.5.9",
-    "highcharts": "~8.0.2",
+    "golden-layout": "~1.5.9",
+    "highcharts": "~8.0.4",
     "http-status-codes": "~1.4.0",
     "lodash": "~4.17.15",
     "lodash-inflection": "~1.5.0",
@@ -58,7 +58,7 @@
     "onsenui": "~2.10.10",
     "prop-types": "~15.7.2",
     "qs": "~6.9.1",
-    "react-beautiful-dnd": "^12.2.0",
+    "react-beautiful-dnd": "~12.2.0",
     "react-dates": "~21.8.0",
     "react-dropzone": "~10.2.1",
     "react-onsenui": "~1.11.2",
@@ -66,7 +66,7 @@
     "react-select": "3.0.8",
     "react-transition-group": "~4.3.0",
     "react-windowed-select": "~2.0.2",
-    "regenerator-runtime": "~0.13.3",
+    "regenerator-runtime": "~0.13.5",
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
@@ -84,8 +84,8 @@
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
-    "stylelint": "~13.2.0",
+    "stylelint": "~13.2.1",
     "stylelint-config-standard": "~20.0.0",
-    "stylelint-scss": "~3.14.2"
+    "stylelint-scss": "~3.15.0"
   }
 }

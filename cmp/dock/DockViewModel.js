@@ -4,9 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+
+import {DockViewRefreshContextModel} from './impl/DockViewRefreshContextModel';
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -28,6 +30,22 @@ export class DockViewModel {
     allowDialog;
 
     containerModel;
+    @managed refreshContextModel;
+
+    /**
+     * RenderMode and RefreshMode consider this view 'active' when it is not collapsed
+     */
+    get isActive() {
+        return !this.collapsed;
+    }
+
+    get renderMode() {
+        return this._renderMode ?? this.containerModel.renderMode;
+    }
+
+    get refreshMode() {
+        return this._refreshMode ?? this.containerModel.refreshMode;
+    }
 
     /**
      * @param {Object} c - DockViewModel configuration.
@@ -35,9 +53,13 @@ export class DockViewModel {
      * @param {DockContainerModel} c.containerModel - parent DockContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - Title text added to the header.
-     * @param {Icon} [c.icon] - An icon placed at the left-side of the header.
-     * @param {(Object|function)} c.content - content to be rendered by this DockedView.
+     * @param {Element} [c.icon] - An icon placed at the left-side of the header.
+     * @param {(Object|function)} c.content - content to be rendered by this DockView.
      *      HoistComponent or a function returning a react element.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will
+     *      default to its container's mode. See enum for description of supported modes.
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this DockView. If null, will
+     *      default to its container's mode. See enum for description of supported modes.
      * @param {boolean} [c.docked] - true (default) to initialise in dock, false to use Dialog.
      *      Respects allowDialog.
      * @param {boolean} [c.collapsed] - true to initialise collapsed, false (default) for expanded.
@@ -51,6 +73,8 @@ export class DockViewModel {
         title,
         icon,
         content,
+        refreshMode,
+        renderMode,
         docked = true,
         collapsed = false,
         allowClose = true,
@@ -66,6 +90,11 @@ export class DockViewModel {
         this.collapsed = collapsed;
         this.allowClose = allowClose;
         this.allowDialog = allowDialog;
+
+        this._renderMode = renderMode;
+        this._refreshMode = refreshMode;
+
+        this.refreshContextModel = new DockViewRefreshContextModel(this);
     }
 
     //-----------------------

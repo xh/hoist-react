@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, RenderMode, RefreshMode} from '@xh/hoist/core';
 import {bindable, observable, action} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {elementFromContent} from '@xh/hoist/utils/react';
+import {ensureNotEmpty, ensureUniqueBy, warnIf, throwIf} from '@xh/hoist/utils/js';
 import {keys, find, merge, isEqual} from 'lodash';
 
-import {NavigatorPageModel} from './NavigatorPageModel';
+import {PageModel} from './PageModel';
+import {page} from './impl/Page';
 
 /**
  * Model for handling stack-based navigation between Onsen pages.
@@ -21,24 +21,53 @@ export class NavigatorModel {
     /** @member {boolean} */
     @bindable disableAppRefreshButton;
 
-    /** @member {NavigatorPageModel[]} */
-    @observable.ref pages = [];
+    /** @member {PageModel[]} */
+    @observable.ref stack = [];
 
     /** @member {Object[]} */
-    routes = [];
+    pages = [];
+
+    /** @member {RenderMode} */
+    renderMode;
+
+    /** @member {RefreshMode} */
+    refreshMode;
 
     _navigator = null;
     _callback = null;
 
-    /**
-     * {Object[]} routes - configs for NavigatorPageModels, representing all supported top-level
-     *      pages within this Navigator/App.
-     */
-    constructor({routes}) {
-        ensureNotEmpty(routes, 'NavigatorModel needs at least one route.');
-        ensureUniqueBy(routes, 'id', 'Multiple NavigatorModel routes share a non-unique id.');
+    /** @type String */
+    get activePageId() {
+        return this.activePage?.id;
+    }
 
-        this.routes = routes;
+    /** @type PageModel */
+    get activePage() {
+        const {stack} = this;
+        return stack[stack.length - 1];
+    }
+
+    /**
+     * @param {Object[]} pages - configs for PageModels, representing all supported
+     *      pages within this Navigator/App.
+     * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
+     *      via `PageModel.renderMode`. See enum for description of supported modes.
+     * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
+     *      via `PageModel.refreshMode`. See enum for description of supported modes.
+     */
+    constructor({
+        pages,
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY
+    }) {
+        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
+
+        ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
+        ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
+
+        this.pages = pages;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
 
         this.addReaction({
             track: () => XH.routerState,
@@ -46,8 +75,8 @@ export class NavigatorModel {
         });
 
         this.addReaction({
-            track: () => this.pages,
-            run: this.onPagesChangeAsync
+            track: () => this.stack,
+            run: this.onStackChangeAsync
         });
     }
 
@@ -59,11 +88,11 @@ export class NavigatorModel {
     }
 
     /**
-     * @param {NavigatorPageModel[]} pages
+     * @param {PageModel[]} stack
      */
     @action
-    setPages(pages) {
-        this.pages = pages;
+    setStack(stack) {
+        this.stack = stack;
     }
 
     //--------------------
@@ -91,18 +120,18 @@ export class NavigatorModel {
         });
 
         // Loop through the route parts, rebuilding the page stack to match.
-        const pages = [];
+        const stack = [];
 
         for (let i = 0; i < routeParts.length; i++) {
             const part = routeParts[i],
-                route = find(this.routes, {id: part.id});
+                pageModelCfg = find(this.pages, {id: part.id});
 
-            // Ensure route exists
-            throwIf(!route, `Route ${part.id} is not configured in the NavigatorModel`);
+            // Ensure PageModel that matches route exists
+            throwIf(!pageModelCfg, `Route ${part.id} does not match any PageModel.id configured in the NavigatorModel`);
 
             // If, on the initial pass, we encounter a route that prevents direct linking,
             // we drop the rest of the route and redirect to the route so far
-            if (init && route.disableDirectLink) {
+            if (init && pageModelCfg.disableDirectLink) {
                 const completedRouteParts = routeParts.slice(0, i),
                     newRouteName = completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
@@ -111,14 +140,18 @@ export class NavigatorModel {
                 return;
             }
 
-            const page = new NavigatorPageModel(merge({}, route, part));
-            pages.push(page);
+            const page = new PageModel({
+                navigatorModel: this,
+                ...merge({}, pageModelCfg, part)
+            });
+
+            stack.push(page);
         }
 
-        this.setPages(pages);
+        this.setStack(stack);
     }
 
-    async onPagesChangeAsync() {
+    async onStackChangeAsync() {
         await this.updateNavigatorPagesAsync();
 
         // Ensure only the last page is visible after a page transition.
@@ -131,32 +164,38 @@ export class NavigatorModel {
     }
 
     async updateNavigatorPagesAsync() {
+        // Sync Onsen Navigator's pages with our stack
         if (!this._navigator) return;
-        const {pages} = this,
-            keyStack = pages.map(it => it.key),
+        const {stack} = this,
+            keyStack = stack.map(it => it.key),
             prevKeyStack = this._prevKeyStack || [],
             backOnePage = isEqual(keyStack, prevKeyStack.slice(0, -1)),
             forwardOnePage = isEqual(keyStack.slice(0, -1), prevKeyStack);
+
+        // Skip transition animation if the active page is going to be unmounted
+        let options;
+        if (this.activePage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
+            options = {animation: 'none'};
+        }
 
         this._prevKeyStack = keyStack;
 
         if (backOnePage) {
             // If we have gone back one page in the same stack, we can safely pop() the page
-            return this._navigator.popPage();
+            return this._navigator.popPage(options);
         } else if (forwardOnePage) {
             // If we have gone forward one page in the same stack, we can safely push() the new page
-            return this._navigator.pushPage(pages[pages.length - 1]);
+            return this._navigator.pushPage(stack[stack.length - 1], options);
         } else {
             // Otherwise, we should reset the page stack
-            return this._navigator.resetPageStack(pages, {animation: 'none'});
+            return this._navigator.resetPageStack(stack, {animation: 'none'});
         }
     }
 
-    renderPage(pageModel, navigator) {
-        const {init, content, props} = pageModel;
-        let key = pageModel.key;
+    renderPage(model, navigator) {
+        const {init, key} = model;
 
-        // Note: We use the special "init" object to obtain a reference to the
+        // Note: We use the special 'init' object to obtain a reference to the
         // navigator and to read the initial route.
         if (init) {
             if (!this._navigator) {
@@ -179,25 +218,19 @@ export class NavigatorModel {
             hasDupes = onsenNavPages.filter(it => it.key === key).length > 1;
 
         if (hasDupes) {
-            const onsenIdx = onsenNavPages.indexOf(pageModel),
-                ourIdx = this.pages.findIndex(it => it.key === key);
+            const onsenIdx = onsenNavPages.indexOf(model),
+                ourIdx = this.stack.findIndex(it => it.key === key);
 
             if (onsenIdx !== ourIdx) return null;
         }
 
-        return elementFromContent(content, {key, ...props});
+        return page({model, key});
     }
 
     @action
     onPageChange() {
-        const {disableAppRefreshButton} = this.getCurrentPageModel();
-        this.disableAppRefreshButton = disableAppRefreshButton;
+        this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this.doCallback();
-    }
-
-    getCurrentPageModel() {
-        const {pages} = this;
-        return pages[pages.length - 1];
     }
 
     doCallback() {

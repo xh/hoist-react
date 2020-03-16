@@ -8,6 +8,7 @@
     "rules": {
         "at-rule-no-unknown": null,
         "no-descending-specificity": null,
+        "no-missing-end-of-source-newline": null,
         "property-no-unknown": [
             true,
             {"ignoreSelectors": [":export"]}
