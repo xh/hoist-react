@@ -7,6 +7,7 @@
   align-items: center;
   flex-wrap: nowrap;
 
+  // Overflow box
   .bp3-overflow-list {
     flex: 1;
     align-items: center;
@@ -22,6 +23,16 @@
       &:not([class*='xh-no-pad']) {
         margin-left: var(--xh-tbar-item-pad-px);
       }
+    }
+  }
+
+  // Non-overflow mode
+  &:not(&--overflow) > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:not([class*='xh-no-pad']) {
+      margin-left: var(--xh-tbar-item-pad-px);
     }
   }
 
@@ -45,6 +56,7 @@
     }
   }
 
+  // Vertical mode
   &--vertical {
     width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);

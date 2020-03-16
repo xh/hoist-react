@@ -34,7 +34,6 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
         minVisibleItems,
         ...rest
     }) {
-
         throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
 
         const container = vertical ? vbox : hbox,
@@ -42,7 +41,11 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
 
         return container({
             ...rest,
-            className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
+            className: classNames(
+                className,
+                overflow ? 'xh-toolbar--overflow' : null,
+                vertical ? 'xh-toolbar--vertical' : null
+            ),
             items: overflow ?
                 overflowBox({items: children, minVisibleItems, collapseFrom}) :
                 children
