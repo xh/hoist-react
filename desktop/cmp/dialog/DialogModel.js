@@ -9,7 +9,7 @@ import {isNil, isNumber, isPlainObject, isString} from 'lodash';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {withDefault} from '@xh/hoist/utils/js';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
 
 import {DialogStateModel} from './DialogStateModel';
 
@@ -208,8 +208,14 @@ export class DialogModel {
 
     @action
     setSize({width, height}) {
-        this.width = withDefault(width, this.size.width);
-        this.height = withDefault(height, this.size.height);
+        if (isNil(width) && isNil(height)) return;
+
+        throwIf(
+            isNil(width) || isNil(height),
+            'The DialogModel.setSize method requires both "width" and "height" properties in the size {width: Number, height: Number} argument.'
+        );
+        this.width = width;
+        this.height = height;
         if (this.rndRef) {
             if (this.stateModel) {
                 this.setSizeState();
@@ -224,8 +230,14 @@ export class DialogModel {
 
     @action
     setPosition({x, y}) {
-        this.x = withDefault(x, this.position.x);
-        this.y = withDefault(y, this.position.y);
+        if (isNil(x) && isNil(y)) return;
+
+        throwIf(
+            isNil(x) || isNil(x),
+            'The DialogModel.setPosition method requires both "x" and "y" properties in the position {x: Number, y: Number} argument.'
+        );
+        this.x = x;
+        this.y = y;
         if (this.rndRef) {
             if (this.stateModel) {
                 this.setPositionState();
