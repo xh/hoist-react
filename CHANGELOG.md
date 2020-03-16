@@ -14,7 +14,7 @@
   allow better control over how collapsed views are mounted/unmounted and how views handle refresh
   requests when collapsed.
 * `Column` now auto-sizes when double-clicking / double-tapping its header.
-* Added a new `xhEnableLogViewer` to enable or disable the Admin Log Viewer. Defaults to `true`.
+* Added a new `xhEnableLogViewer` config to enable or disable the Admin Log Viewer. Defaults to `true`.
 
 #### 🎨 Icons
 
