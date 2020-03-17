@@ -6,7 +6,8 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
-import {cloneDeep, debounce, find, isUndefined, omit} from 'lodash';
+import {cloneDeep, find, isUndefined, omit} from 'lodash';
+import {debounced} from '@xh/hoist/utils/js';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions
@@ -27,7 +28,6 @@ export class GridStateModel {
      * user workstations to ensure compatibility with a new serialization or approach.
      */
     static GRID_STATE_VERSION = 1;
-    static STATE_SAVE_DEBOUNCE_MS = 500;
 
     gridModel = null;
     gridId = null;
@@ -205,7 +205,8 @@ export class GridStateModel {
         return ret;
     }
 
-    saveStateChange = debounce(() => {
+    @debounced(500)
+    saveStateChange() {
         this.saveState(this.getStateKey(), this.state);
-    }, GridStateModel.STATE_SAVE_DEBOUNCE_MS);
+    }
 }
