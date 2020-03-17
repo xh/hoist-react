@@ -2,6 +2,11 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `GridStateModel` no longer saves/restores the width of non-resizable columns.
+  [#1718](https://github.com/xh/hoist-react/issues/1718)
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
 ## v31.0.0 - 2020-03-16
