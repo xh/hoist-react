@@ -182,29 +182,27 @@ export class GridStateModel {
         const {gridModel} = this,
             gridCols = gridModel.getLeafColumns();
 
-        let cleanedState = [...columnState];
-
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
         // under a prior release of the app and have since been removed from the code.
-        cleanedState = cleanedState.filter(({colId}) => gridModel.findColumn(gridCols, colId));
+        let ret = columnState.filter(({colId}) => gridModel.findColumn(gridCols, colId));
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
         gridCols.forEach(({colId}, idx) => {
-            if (!find(cleanedState, {colId})) {
-                cleanedState.splice(idx, 0, {colId});
+            if (!find(ret, {colId})) {
+                ret.splice(idx, 0, {colId});
             }
         });
 
         // Remove the width from any non-resizable column - we don't want to track those widths as
         // they are set programmatically (e.g. fixed / action columns), and saved state should not
         // conflict with any code-level updates to their widths.
-        cleanedState = cleanedState.map(state => {
+        ret = ret.map(state => {
             const col = gridModel.findColumn(gridCols, state.colId);
             return col.resizable ? state : omit(state, 'width');
         });
 
-        return cleanedState;
+        return ret;
     }
 
     saveStateChange = debounce(() => {
