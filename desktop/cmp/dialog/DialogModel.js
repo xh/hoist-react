@@ -267,11 +267,6 @@ export class DialogModel {
     }
 
     @action
-    setIsOpen(v) {
-        this.isOpen = v;
-    }
-
-    @action
     setCloseOnOutsideClick(v) {
         this.closeOnOutsideClick = v;
     }
@@ -291,21 +286,6 @@ export class DialogModel {
         this.showCloseButton = v;
     }
 
-    @action
-    maximize() {
-        if (!this.rndRef) return;
-
-        const size = this.inPortal ? this.windowSize : this.parentSize;
-        this.rndRef.updatePosition({x: 0, y: 0});
-        this.rndRef.updateSize(size);
-    }
-
-    @action
-    unMaximize() {
-        if (!this.rndRef) return;
-        this.positionDialog();
-    }
-
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
@@ -323,7 +303,6 @@ export class DialogModel {
     setIsMaximizedState(v) {
         this.isMaximizedState = this.isMaximized;
     }
-
 
     //---------------------------------------------
     // Implementation (internal)
@@ -346,6 +325,26 @@ export class DialogModel {
     @computed
     get controlledY() {
         return withDefault(this.positionState.y, this.y, this.initialY);
+    }
+
+    @action
+    setIsOpen(v) {
+        this.isOpen = v;
+    }
+
+    @action
+    maximize() {
+        if (!this.rndRef) return;
+
+        const size = this.inPortal ? this.windowSize : this.parentSize;
+        this.rndRef.updatePosition({x: 0, y: 0});
+        this.rndRef.updateSize(size);
+    }
+
+    @action
+    unMaximize() {
+        if (!this.rndRef) return;
+        this.positionDialog();
     }
 
     handleEscapKey() {
