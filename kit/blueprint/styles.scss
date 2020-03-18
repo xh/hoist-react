@@ -311,6 +311,11 @@ textarea.bp3-input,
   }
 }
 
+/* Apply blueprint's z-index of 16 for icons within a control group */
+.bp3-control-group .bp3-input-group svg:not(.bp3-icon) {
+  z-index: 16;
+}
+
 // Avoid misaligned rightIcon within inputs.
 .bp3-button svg:not(.bp3-icon):first-child:last-child,
 .bp3-button .bp3-spinner + svg:not(.bp3-icon):last-child {
