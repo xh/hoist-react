@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import React from 'react';
 import PT from 'prop-types';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
@@ -19,15 +19,32 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     render(props) {
         let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideImpersonateItem, hideLogoutItem, extraItems, ...rest} = props;
         extraItems = extraItems ?
-            [...extraItems.map(m => menuItem(m)), menuDivider()] :
+            [
+                ...extraItems.map(m => {
+                    if (m == '-') return menuDivider();
+                    return React.isValidElement(m) ? m : menuItem(m);
+                }),
+                menuDivider()
+            ] :
             [];
+
 
         hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
         hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
         hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
         hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
+        extraItems = extraItems.filter((it, idx, arr) => {
+            if (it.type.name === 'MenuDivider') {
+                // Remove starting separators
+                if (idx === 0) return false;
 
-        // TODO:  Need logic from context menu to remove duplicate separators!
+                // Remove consecutive separators
+                const prev = idx > 0 ? arr[idx - 1] : null;
+                if (prev?.type.name === 'MenuDivider') return false;
+            }
+            return true;
+        });
+
         return popover({
             className,
             position: 'bottom-right',
