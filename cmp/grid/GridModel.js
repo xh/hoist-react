@@ -267,7 +267,7 @@ export class GridModel {
             useDeltaSort: false,
             ...experimental
         };
-        apiRemoved(experimental.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
+        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
     }
 
     /**
