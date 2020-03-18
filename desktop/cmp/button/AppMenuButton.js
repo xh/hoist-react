@@ -88,7 +88,6 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
 
         menuItems.push(menuDivider());
 
-
         if (!hideLogoutItem) {
             menuItems.push(
                 menuItem({
