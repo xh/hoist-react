@@ -2,6 +2,10 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* The appMenuButton.extraItems property will now support valid react elements (like menuDivider).
+
 ### 🐞 Bug Fixes
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
