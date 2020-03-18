@@ -2,6 +2,11 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` parameters, to
+  offer better control over sizing.
+
 ### 🐞 Bug Fixes
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
