@@ -75,9 +75,13 @@ export class AgGridModel {
             track: () => this.sizingMode,
             run: () => {
                 const api = this.agApi;
-                if (api) {
-                    api.resetRowHeights();
-                }
+                if (!api) return;
+                api.resetRowHeights();
+
+                // Reset summary row data to respond to row height change
+                // See: https://www.ag-grid.com/javascript-grid-row-height/#height-for-pinned-rows
+                this.setPinnedTopRowData(this.getPinnedTopRowData());
+                this.setPinnedBottomRowData(this.getPinnedBottomRowData());
             }
         });
     }
