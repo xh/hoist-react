@@ -59,8 +59,6 @@ function parseMenuItems(items) {
 
     items = filterMenuSeperators(items);
 
-    debugger;
-
     return items.map(item => {
         if (item === '-') {
             return menuDivider();
