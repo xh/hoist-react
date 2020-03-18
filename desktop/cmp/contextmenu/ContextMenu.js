@@ -10,6 +10,7 @@ import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
+import {filterMenuSeperators} from '@xh/hoist/utils/cmp';
 
 import {ContextMenuItem} from './ContextMenuItem';
 
@@ -42,6 +43,7 @@ ContextMenu.propTypes = {
 // Implementation
 //---------------------------
 function parseMenuItems(items) {
+    console.log('parseMenuItems')
     items = items.map(item => {
         if (item === '-' || isValidElement(item)) return item;
 
@@ -52,19 +54,15 @@ function parseMenuItems(items) {
         return item;
     });
 
-    return items.filter(it => {
+    items = items.filter(it => {
         return !it.hidden;
-    }).filter((it, idx, arr) => {
-        if (it === '-') {
-            // Remove starting / ending separators
-            if (idx === 0 || idx === (arr.length - 1)) return false;
+    });
 
-            // Remove consecutive separators
-            const prev = idx > 0 ? arr[idx - 1] : null;
-            if (prev === '-') return false;
-        }
-        return true;
-    }).map(item => {
+    items = filterMenuSeperators(items);
+
+    debugger;
+
+    return items.map(item => {
         if (item === '-') {
             return menuDivider();
         }
