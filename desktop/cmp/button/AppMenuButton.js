@@ -101,7 +101,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
 AppMenuButton.propTypes = {
     ...Button.propTypes,
 
-    /** Array of configs for any app-specific menu items. */
+    /** Array of configs or valid React Elements (such as menuDividers) for any app-specific menu items. */
     extraItems: PT.array,
 
     /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
