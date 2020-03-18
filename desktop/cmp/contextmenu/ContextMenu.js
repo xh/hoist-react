@@ -43,7 +43,6 @@ ContextMenu.propTypes = {
 // Implementation
 //---------------------------
 function parseMenuItems(items) {
-    console.log('parseMenuItems')
     items = items.map(item => {
         if (item === '-' || isValidElement(item)) return item;
 
