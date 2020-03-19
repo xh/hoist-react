@@ -236,9 +236,10 @@ export class Column {
         this.tooltipElement = tooltipElement;
 
         this.editable = editable;
+        this.emptyGroupedValue = emptyGroupedValue;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
-        this.emptyGroupedValue = emptyGroupedValue;
+        if (emptyGroupedValue) this.getValueFn = this.generateEmptyGroupGetValueFn(this.getValueFn);
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -451,25 +452,30 @@ export class Column {
     };
 
     defaultGetValueFn = ({record}) => {
-        const {fieldPath, emptyGroupedValue} = this;
+        const {fieldPath} = this;
         if (!record || isNil(fieldPath)) return '';
 
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
+        return record.data[fieldPath];
+    };
 
-        const v = isArray(fieldPath) ? get(record.data, fieldPath) : record.data[fieldPath],
-            isGrouped = this.gridModel.groupBy.includes(this.colId);
-
-        return isGrouped && isEmpty(v) && emptyGroupedValue ? emptyGroupedValue : v;
+    generateEmptyGroupGetValueFn(getValueFn) {
+        return (params) => {
+            const v = getValueFn(params),
+                isGrouped = params.gridModel.groupBy.includes(this.colId);
+            // if (v == 'Albuquerque (relocated)') console.log(v);
+            return isGrouped && isEmpty(v) ? this.emptyGroupedValue : v;
+        };
     };
 
     generateEmptyGroupRenderer(renderer) {
-        return (v, obj) => {
-            const {fieldPath} = this,
-                isGrouped = this.gridModel.groupBy.includes(this.colId);
+        return (v, ctx) => {
+            const isGrouped = ctx.gridModel.groupBy.includes(this.colId);
 
-            if (isGrouped) v = isArray(fieldPath) ? get(obj.record.data, fieldPath) : obj.record.data[fieldPath];
-            return renderer ? renderer(v, obj) : v;
+            if (isGrouped && v == this.emptyGroupedValue) v = '';
+
+            return renderer ? renderer(v, ctx) : v;
         };
     };
 }
