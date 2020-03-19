@@ -411,9 +411,7 @@ class LocalModel {
                         api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
-                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                        model.noteAgExpandStateChange();
-                    }
+                    model.noteAgExpandStateChange();
                 }, this);
 
                 runInAction(() => {
