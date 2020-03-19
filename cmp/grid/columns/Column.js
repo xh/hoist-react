@@ -14,6 +14,7 @@ import {
     find,
     get,
     isArray,
+    isEmpty,
     isFinite,
     isFunction,
     isNil,
@@ -101,6 +102,8 @@ export class Column {
      * @param {Column~setValueFn} [c.setValueFn] - function for updating Record field for this
      *      column after inline editing.
      * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
+     * @param {string} [c.emptyGroupedValue] - placeholder for rows with empty
+     *      values used to allow ag-grid to group these rows
      * @param {boolean} [c.enableDotSeparatedFieldPath] - true (default) to enable configuration
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
@@ -153,6 +156,7 @@ export class Column {
         editable,
         setValueFn,
         getValueFn,
+        emptyGroupedValue,
         enableDotSeparatedFieldPath,
         agOptions,
         ...rest
@@ -207,7 +211,7 @@ export class Column {
         // Pinned supports convenience true -> 'left'. OK to leave undefined if not given.
         this.pinned = (pinned === true) ? 'left' : pinned;
 
-        this.renderer = renderer;
+        this.renderer = emptyGroupedValue ? this.generateEmptyGroupRenderer(renderer) : renderer;
         this.elementRenderer = elementRenderer;
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
@@ -234,6 +238,7 @@ export class Column {
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+        this.emptyGroupedValue = emptyGroupedValue;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -446,12 +451,26 @@ export class Column {
     };
 
     defaultGetValueFn = ({record}) => {
-        const {fieldPath} = this;
+        const {fieldPath, emptyGroupedValue} = this;
         if (!record || isNil(fieldPath)) return '';
 
         if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
-        return record.data[fieldPath];
+
+        const v = isArray(fieldPath) ? get(record.data, fieldPath) : record.data[fieldPath],
+            isGrouped = this.gridModel.groupBy.includes(this.colId);
+
+        return isGrouped && isEmpty(v) && emptyGroupedValue ? emptyGroupedValue : v;
+    };
+
+    generateEmptyGroupRenderer(renderer) {
+        return (v, obj) => {
+            const {fieldPath} = this,
+                isGrouped = this.gridModel.groupBy.includes(this.colId);
+
+            if (isGrouped) v = isArray(fieldPath) ? get(obj.record.data, fieldPath) : obj.record.data[fieldPath];
+            return renderer ? renderer(v, obj) : v;
+        };
     };
 }
 
