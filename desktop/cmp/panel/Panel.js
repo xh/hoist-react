@@ -9,7 +9,7 @@ import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {vbox, vframe, frame} from '@xh/hoist/cmp/layout';
+import {vbox, vframe} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -43,7 +43,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
     memo: false,
     className: 'xh-panel',
 
-    render({model, className,  ...props}, ref) {
+    render({model, ...props}, ref) {
 
         const contextModel = useContextModel('*');
 
@@ -93,7 +93,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode === RenderMode.ALWAYS || (collapsedRenderMode === RenderMode.LAZY && wasDisplayed.current)) {
+        if (!collapsed || collapsedRenderMode == RenderMode.ALWAYS || (collapsedRenderMode == RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -120,7 +120,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
 
         const item = vbox({
-            className: 'xh-panel__content',
+            ref: !requiresContainer ? ref : undefined,
             items: [
                 processedPanelHeader,
                 coreContents,
@@ -133,8 +133,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
-            resizeContainer({ref, item, className}) :
-            frame({ref, item, className});
+            resizeContainer({ref, item}) :
+            item;
     }
 });
 
