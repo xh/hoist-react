@@ -10,7 +10,7 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {filterMenuSeperators} from '@xh/hoist/utils/cmp';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/js';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',
@@ -18,66 +18,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        let {className, hideOptionsItem, hideFeedbackItem, hideThemeItem, hideAdminItem, hideImpersonateItem, hideLogoutItem, extraItems = [], ...rest} = props;
-
-        hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
-        hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-        hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
-        hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
-
-        let menuItems = [
-            ...extraItems,
-            menuDivider(),
-            {
-                omit: hideOptionsItem,
-                text: 'Options',
-                icon: Icon.options(),
-                onClick: () => XH.showOptionsDialog()
-            },
-            {
-                omit: hideFeedbackItem,
-                text: 'Feedback',
-                icon: Icon.comment({className: 'fa-flip-horizontal'}),
-                onClick: () => XH.showFeedbackDialog()
-            },
-            {
-                omit: hideThemeItem,
-                text: XH.darkTheme ? 'Light Theme' : 'Dark Theme',
-                icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-                onClick: () => XH.toggleTheme()
-            },
-            menuDivider(),
-            {
-                omit: hideAdminItem,
-                text: 'Admin',
-                icon: Icon.wrench(),
-                onClick: () => window.open('/admin')
-            },
-            {
-                omit: hideImpersonateItem,
-                text: 'Impersonate',
-                icon: Icon.impersonate(),
-                onClick: () => XH.showImpersonationBar()
-            },
-            menuDivider(),
-            {
-                omit: hideLogoutItem,
-                text: 'Logout',
-                icon: Icon.logout(),
-                intent: 'danger',
-                onClick: () => XH.identityService.logoutAsync()
-            }
-        ];
-
-        menuItems = menuItems
-            .filter(it => !it.omit)
-            .map(m => {
-                if (m == '-') return menuDivider();
-                return React.isValidElement(m) ? m : menuItem(m);
-            });
-
-        menuItems = filterMenuSeperators(menuItems);
-
+        const {className, ...rest} = props;
         return popover({
             className,
             position: 'bottom-right',
@@ -86,11 +27,11 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
                 icon: Icon.bars(),
                 ...rest
             }),
-            content: menu(...menuItems)
-
+            content: menu(buildMenuItems(props))
         });
     }
 });
+
 AppMenuButton.propTypes = {
     ...Button.propTypes,
 
@@ -118,3 +59,75 @@ AppMenuButton.propTypes = {
     /** True to hide the Theme Toggle button. */
     hideThemeItem: PT.bool
 };
+
+//---------------------------
+// Implementation
+//---------------------------
+function buildMenuItems({
+    hideOptionsItem,
+    hideFeedbackItem,
+    hideThemeItem,
+    hideAdminItem,
+    hideImpersonateItem,
+    hideLogoutItem,
+    extraItems = []
+}) {
+    hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
+    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+    hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
+    hideLogoutItem = hideLogoutItem || XH.appSpec.isSSO;
+
+    const defaultItems = [
+        {
+            omit: hideOptionsItem,
+            text: 'Options',
+            icon: Icon.options(),
+            onClick: () => XH.showOptionsDialog()
+        },
+        {
+            omit: hideFeedbackItem,
+            text: 'Feedback',
+            icon: Icon.comment({className: 'fa-flip-horizontal'}),
+            onClick: () => XH.showFeedbackDialog()
+        },
+        {
+            omit: hideThemeItem,
+            text: XH.darkTheme ? 'Light Theme' : 'Dark Theme',
+            icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
+            onClick: () => XH.toggleTheme()
+        },
+        '-',
+        {
+            omit: hideAdminItem,
+            text: 'Admin',
+            icon: Icon.wrench(),
+            onClick: () => window.open('/admin')
+        },
+        {
+            omit: hideImpersonateItem,
+            text: 'Impersonate',
+            icon: Icon.impersonate(),
+            onClick: () => XH.showImpersonationBar()
+        },
+        '-',
+        {
+            omit: hideLogoutItem,
+            text: 'Logout',
+            icon: Icon.logout(),
+            intent: 'danger',
+            onClick: () => XH.identityService.logoutAsync()
+        }
+    ];
+
+    return [
+        ...extraItems,
+        '-',
+        ...defaultItems
+    ]
+        .filter(it => !it.omit)
+        .filter(filterConsecutiveMenuSeparators())
+        .map(it => {
+            if (it === '-') return menuDivider();
+            return React.isValidElement(it) ? it : menuItem(it);
+        });
+}

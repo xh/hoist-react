@@ -11,12 +11,10 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug, filterConsecutiveMenuSeparators} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
-    dropRightWhile,
-    dropWhile,
     isArray,
     isEmpty,
     isEqual,
@@ -24,7 +22,6 @@ import {
     isFunction,
     isNil,
     isString,
-    last,
     map,
     merge,
     xor
@@ -312,10 +309,11 @@ class LocalModel {
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
-        let items = [];
+        const items = [];
+
         recordActions.forEach(action => {
             if (action === '-') {
-                if (last(items) !== 'separator') items.push('separator');
+                items.push('separator');
                 return;
             }
 
@@ -357,9 +355,7 @@ class LocalModel {
             });
         });
 
-        items = dropRightWhile(items, it => it === 'separator');
-        items = dropWhile(items, it => it === 'separator');
-        return items;
+        return items.filter(filterConsecutiveMenuSeparators());
     }
 
     //------------------------
