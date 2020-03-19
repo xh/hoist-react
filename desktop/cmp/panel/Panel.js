@@ -44,7 +44,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
     className: 'xh-panel',
 
     render({model, ...props}, ref) {
-
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -80,7 +79,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
             resizable,
             collapsible,
             collapsed,
-            collapsedRenderMode,
+            renderMode,
             vertical,
             showSplitter
         } = model;
@@ -93,7 +92,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == RenderMode.ALWAYS || (collapsedRenderMode == RenderMode.LAZY && wasDisplayed.current)) {
+        if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };

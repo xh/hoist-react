@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
+import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
-import {DashRefreshContextModel} from './impl/DashRefreshContextModel';
 
 /**
  * Model for a content item within a DashContainer. Supports state management,
@@ -71,7 +70,7 @@ export class DashViewModel {
         this.viewState = viewState;
         this.containerModel = containerModel;
 
-        this.refreshContextModel = new DashRefreshContextModel(this);
+        this.refreshContextModel = new RefreshModeContextModel(this);
     }
 
     /**

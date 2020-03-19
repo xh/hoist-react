@@ -2,6 +2,16 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `PanelModel` now supports setting a `RefreshMode` to control how collapsed panels
+  respond to refresh requests.
+    
+### 💥 Breaking Changes
+
+* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
+  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
 ### 🐞 Bug Fixes
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
