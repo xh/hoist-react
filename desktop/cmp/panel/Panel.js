@@ -9,7 +9,7 @@ import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {div, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {vbox, vframe, frame} from '@xh/hoist/cmp/layout';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -120,7 +120,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
 
 
         const item = vbox({
-            className: 'xh-panel-contents',
+            className: 'xh-panel__content',
             items: [
                 processedPanelHeader,
                 coreContents,
@@ -134,7 +134,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
             resizeContainer({ref, item, className}) :
-            div({ref, item, className});
+            frame({ref, item, className});
     }
 });
 
