@@ -262,7 +262,7 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = {
-            externalSort: true,
+            externalSort: false,
             useTransactions: true,
             useDeltaSort: false,
             ...experimental
