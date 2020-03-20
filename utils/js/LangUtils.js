@@ -184,28 +184,6 @@ export function findIn(collection, fn) {
 }
 
 /**
- * A function to be passed to `array.filter()`, than excludes consecutive separators
- * for both Blueprint and AgGrid menus.
- * @returns {Function}
- */
-export function filterConsecutiveMenuSeparators() {
-    return filterConsecutive(it => {
-        return it === '-' || it === 'separator' || it?.type?.name === 'MenuDivider';
-    });
-}
-
-/**
- * A function to be passed to `array.filter()`, than excludes consecutive separators
- * for both toolbars.
- * @returns {Function}
- */
-export function filterConsecutiveToolbarSeparators() {
-    return filterConsecutive(it => {
-        return it === '-' || it?.type?.displayName === 'ToolbarSeparator';
-    });
-}
-
-/**
  * A function to be passed to `array.filter()`, than excludes consecutive items
  * that match the provided predicate.
  * @returns {Function}

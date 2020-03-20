@@ -10,7 +10,7 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',

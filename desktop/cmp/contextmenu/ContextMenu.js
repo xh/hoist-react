@@ -10,7 +10,7 @@ import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
 import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 
 import {ContextMenuItem} from './ContextMenuItem';
 

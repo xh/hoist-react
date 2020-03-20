@@ -11,7 +11,8 @@ import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynam
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
-import {isDisplayed, withShortDebug, filterConsecutiveMenuSeparators} from '@xh/hoist/utils/js';
+import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
