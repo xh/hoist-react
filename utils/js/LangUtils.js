@@ -182,3 +182,23 @@ export function findIn(collection, fn) {
 
     return null;
 }
+
+/**
+ * A function to be passed to `array.filter()`, than excludes consecutive items
+ * that match the provided predicate.
+ * @returns {Function}
+ */
+export function filterConsecutive(predicate) {
+    return (it, idx, arr) => {
+        if (!predicate(it)) return true;
+
+        // Remove if first / last
+        if (idx === 0 || idx === (arr.length - 1)) return false;
+
+        // Remove if previous item matches predicate
+        const prev = idx > 0 ? arr[idx - 1] : null,
+            prevMatch = prev && predicate(prev);
+
+        return !prevMatch;
+    };
+}

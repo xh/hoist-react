@@ -10,11 +10,14 @@ import {hbox, vbox, fragment, filler} from '@xh/hoist/cmp/layout';
 import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {throwIf} from '@xh/hoist/utils/js';
+import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
+import {castArray} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
-import {throwIf} from '@xh/hoist/utils/js';
 
 import './Toolbar.scss';
+import {toolbarSeparator} from './ToolbarSep';
 
 /**
  * A toolbar with built-in styling and padding.
@@ -36,8 +39,14 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
     }) {
         throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
 
+        const items = castArray(children)
+            .filter(filterConsecutiveToolbarSeparators())
+            .map(it => {
+                return it === '-' ? toolbarSeparator() : it;
+            });
+
         const container = vertical ? vbox : hbox,
-            overflow = enableOverflowMenu && Children.count(children) > 0;
+            overflow = enableOverflowMenu && Children.count(items) > 0;
 
         return container({
             ...rest,
@@ -47,8 +56,8 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
                 vertical ? 'xh-toolbar--vertical' : null
             ),
             items: overflow ?
-                overflowBox({items: children, minVisibleItems, collapseFrom}) :
-                children
+                overflowBox({items, minVisibleItems, collapseFrom}) :
+                items
         });
     }
 });
