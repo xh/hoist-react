@@ -10,12 +10,14 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
@@ -81,7 +83,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
             collapsed,
             renderMode,
             vertical,
-            showSplitter
+            showSplitter,
+            refreshContextModel
         } = model;
 
         const requiresContainer = resizable || collapsible || showSplitter;
@@ -131,9 +134,12 @@ export const [Panel, panel] = hoistCmp.withFactory({
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.
-        return requiresContainer ?
-            resizeContainer({ref, item}) :
-            item;
+        return refreshContextView({
+            model: refreshContextModel,
+            item: requiresContainer ?
+                resizeContainer({ref, item}) :
+                item
+        });
     }
 });
 

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {action, bindable, observable, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
@@ -68,7 +68,7 @@ export class TabModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new RefreshModeContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     activate() {

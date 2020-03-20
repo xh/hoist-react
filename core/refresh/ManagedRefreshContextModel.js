@@ -8,7 +8,7 @@ import {RefreshContextModel} from '@xh/hoist/core/refresh';
 import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
 
 /**
- * A refresh context model that consults a model's RefreshMode and active state to co-ordinate
+ * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.
  *
  * The associated model must have both:
@@ -16,7 +16,7 @@ import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
 @RefreshContextModel
-export class RefreshModeContextModel {
+export class ManagedRefreshContextModel {
 
     model;
 

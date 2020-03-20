@@ -6,7 +6,7 @@
  */
 
 import {XH, HoistModel, managed, RenderMode, RefreshMode} from '@xh/hoist/core';
-import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {observable, action} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
@@ -51,9 +51,6 @@ export class PanelModel {
     /** Is this panel currently resizing? */
     @observable isResizing = false;
 
-    /**
-     * RenderMode and RefreshMode consider this panel 'active' when it is not collapsed
-     */
     get isActive() {
         return !this.collapsed;
     }
@@ -121,7 +118,7 @@ export class PanelModel {
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
 
-        this.refreshContextModel = new RefreshModeContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
             console.warn(`Unknown preference for storing state of Panel '${prefName}'`);

@@ -7,7 +7,6 @@
 import {Children} from 'react';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {refreshContextView} from '@xh/hoist/core/refresh';
 
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
@@ -21,7 +20,7 @@ export const resizeContainer = hoistCmp.factory({
 
     render({className, children}, ref) {
         const panelModel = useContextModel(PanelModel);
-        let {size, resizable, collapsed, vertical, contentFirst, showSplitter, refreshContextModel} = panelModel,
+        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
             items = [collapsed ? box(child) : box({item: child, [dim]: size})];
@@ -38,15 +37,12 @@ export const resizeContainer = hoistCmp.factory({
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
 
-        return refreshContextView({
-            model: refreshContextModel,
-            item: cmp({
-                ref,
-                className,
-                flex: 'none',
-                [maxDim]: '100%',
-                items
-            })
+        return cmp({
+            ref,
+            className,
+            flex: 'none',
+            [maxDim]: '100%',
+            items
         });
     }
 });

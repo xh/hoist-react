@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RenderMode} from '@xh/hoist/core';
-import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {computed} from '@xh/hoist/mobx';
 import {withDefault, warnIf} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
@@ -89,6 +89,6 @@ export class PageModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new RefreshModeContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 }

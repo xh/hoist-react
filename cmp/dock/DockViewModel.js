@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {bindable, observable, action} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -31,9 +31,6 @@ export class DockViewModel {
     containerModel;
     @managed refreshContextModel;
 
-    /**
-     * RenderMode and RefreshMode consider this view 'active' when it is not collapsed
-     */
     get isActive() {
         return !this.collapsed;
     }
@@ -93,7 +90,7 @@ export class DockViewModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new RefreshModeContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     //-----------------------

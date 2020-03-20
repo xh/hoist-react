@@ -7,5 +7,5 @@
 
 export * from './RefreshContextModel';
 export * from './RefreshContextView';
-export * from './RefreshModeContextModel';
 export * from './RootRefreshContextModel';
+export * from './ManagedRefreshContextModel';

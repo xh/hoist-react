@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
-import {RefreshModeContextModel} from '@xh/hoist/core/refresh';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
@@ -70,7 +70,7 @@ export class DashViewModel {
         this.viewState = viewState;
         this.containerModel = containerModel;
 
-        this.refreshContextModel = new RefreshModeContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     /**
