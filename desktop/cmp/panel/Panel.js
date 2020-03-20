@@ -88,8 +88,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
             refreshContextModel
         } = model;
 
-        const requiresContainer = resizable || collapsible || showSplitter;
-
         if (collapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
             delete layoutProps[vertical ? 'height' : 'width'];
@@ -121,25 +119,26 @@ export const [Panel, panel] = hoistCmp.withFactory({
             panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
-        const item = vbox({
-            className: 'xh-panel__content',
-            items: [
-                processedPanelHeader,
-                coreContents,
-                parseLoadDecorator(maskProp, 'mask', contextModel),
-                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
-            ],
-            ...rest
+        const item = refreshContextView({
+            model: refreshContextModel,
+            item: vbox({
+                className: 'xh-panel__content',
+                items: [
+                    processedPanelHeader,
+                    coreContents,
+                    parseLoadDecorator(maskProp, 'mask', contextModel),
+                    parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
+                ],
+                ...rest
+            })
         });
 
-        // 4) Return, wrapped in resizable and its affordances if needed.
-        return refreshContextView({
-            model: refreshContextModel,
-            item: requiresContainer ?
-                resizeContainer({ref, item, className}) :
-                box({ref, item, className, ...layoutProps});
-        });
+        // 4) Return wrapped in resizable and its affordances if needed.
+        return resizable || collapsible || showSplitter ?
+            resizeContainer({ref, item, className}) :
+            box({ref, item, className, ...layoutProps});
     }
+
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
