@@ -129,8 +129,6 @@ export const [Panel, panel] = hoistCmp.withFactory({
             ...rest
         });
 
-        console.log(layoutProps);
-
         // 4) Return, wrapped in resizable and its affordances if needed.
         return requiresContainer ?
             resizeContainer({ref, item, className}) :
