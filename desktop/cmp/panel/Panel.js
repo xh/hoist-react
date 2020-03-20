@@ -9,7 +9,7 @@ import {useRef, isValidElement} from 'react';
 import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {vbox, vframe, box} from '@xh/hoist/cmp/layout';
 import {refreshContextView} from '@xh/hoist/core/refresh';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -45,7 +45,8 @@ export const [Panel, panel] = hoistCmp.withFactory({
     memo: false,
     className: 'xh-panel',
 
-    render({model, ...props}, ref) {
+    render({model, className,  ...props}, ref) {
+
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -120,25 +121,23 @@ export const [Panel, panel] = hoistCmp.withFactory({
             panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
-
         const item = vbox({
-            ref: !requiresContainer ? ref : undefined,
+            className: 'xh-panel__content',
             items: [
                 processedPanelHeader,
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
-            ...rest,
-            ...layoutProps
+            ...rest
         });
 
         // 4) Return, wrapped in resizable and its affordances if needed.
         return refreshContextView({
             model: refreshContextModel,
             item: requiresContainer ?
-                resizeContainer({ref, item}) :
-                item
+                resizeContainer({ref, item, className}) :
+                box({ref, item, className, ...layoutProps});
         });
     }
 });

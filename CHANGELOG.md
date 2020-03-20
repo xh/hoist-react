@@ -6,7 +6,9 @@
 
 * `PanelModel` now supports setting a `RefreshMode` to control how collapsed panels
   respond to refresh requests.
-    
+* The appMenuButton.extraItems property will now support valid react elements (like menuDivider).
+
+
 ### 💥 Breaking Changes
 
 * `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
@@ -16,6 +18,12 @@
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
+  
+### 💥 Breaking Changes
+
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame
+  with class `.xh-panel__content`. You may need to update styling that targets the inner structure
+  of `Panel` via `.xh-panel`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
