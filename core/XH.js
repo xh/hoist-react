@@ -680,10 +680,10 @@ export const XH = window.XH = new XHClass();
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
- * @property {string} [confirmProps] - props for primary confirm button.
+ * @property {Object} [confirmProps] - props for primary confirm button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
- * @property {string} [cancelProps] - props for secondary cancel button.
+ * @property {Object} [cancelProps] - props for secondary cancel button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.
