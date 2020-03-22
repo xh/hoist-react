@@ -24,6 +24,7 @@ export const detail = hoistCmp.factory(
     ({model}) => {
         const {data} = model.detailRecord;
         return panel({
+            width: 1000,
             items: [
                 table({
                     className: 'xh-admin-error-detail',

@@ -50,8 +50,7 @@ export class ClientErrorModel {
     });
 
     dialogModel = new DialogModel({
-        content: detail,
-        width: 1000
+        content: detail
     });
 
     constructor() {
