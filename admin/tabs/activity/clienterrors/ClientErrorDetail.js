@@ -43,7 +43,7 @@ export const detail = hoistCmp.factory(
                 jsonInput({
                     value: data.error,
                     disabled: true,
-                    height: 450,
+                    height: '100%',
                     width: '100%',
                     editorProps: {lineWrapping: true}
                 })
