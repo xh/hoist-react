@@ -14,7 +14,6 @@ import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
 import {elementFromContent, useOnUnmount, useOnResize} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/js';
 
 import {DialogModel} from './DialogModel';
 import {dialogHeader} from './impl/DialogHeader';
@@ -104,13 +103,8 @@ Dialog.propTypes = {
 const rndDialog = hoistCmp.factory({
     render(props) {
         const model = useContextModel(DialogModel),
-            {inPortal, resizable, draggable, controlledWidth, controlledHeight, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
+            {inPortal, resizable, draggable, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
             {rndOptions = {}} = props;
-
-        throwIf(
-            resizable && (!controlledWidth || !controlledHeight),
-            'Resizable dialogs must also have width and height props set.'
-        );
 
         const onDragStop = (evt, data) => {
             // ignore drags on close or maximize button in title bar

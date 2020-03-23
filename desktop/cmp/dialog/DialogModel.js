@@ -4,7 +4,7 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isNil, isNumber, isPlainObject, isString} from 'lodash';
+import {isEmpty, isNil, isNumber, isPlainObject, isString} from 'lodash';
 
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
@@ -25,8 +25,10 @@ export class DialogModel {
 
     /**
      * The base zIndex that will be used for all dialogs
+     * 4 is the lowest we can go and still cover buttons in blueprint popopver targets, which are set to 4
+     * go too high and your dialog covers datepicker and select popups
      */
-    static Z_INDEX_BASE = 1; // go too high and your dialog covers datepicker and select popups
+    static Z_INDEX_BASE = 4;
 
     /**
      * Set the base zIndex to a custom value for all dialogs in your app.
@@ -47,6 +49,7 @@ export class DialogModel {
     dialogWrapperDivRef = createObservableRef();
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
+    unMaximizedSize = {};
 
     /** @member {DialogStateModel} */
     @managed
@@ -211,10 +214,6 @@ export class DialogModel {
     setSize({width, height}) {
         if (isNil(width) && isNil(height)) return;
 
-        throwIf(
-            isNil(width) || isNil(height),
-            'The DialogModel.setSize method requires both "width" and "height" properties in the size {width: Number, height: Number} argument.'
-        );
         this.width = width;
         this.height = height;
         if (this.rndRef) {
@@ -336,6 +335,9 @@ export class DialogModel {
     maximize() {
         if (!this.rndRef) return;
 
+        if (!isNumber(this.controlledWidth) || !isNumber(this.controlledWidth)) {
+            this.unMaximizedSize = this.dialogSize;
+        }
         const size = this.inPortal ? this.windowSize : this.parentSize;
         this.rndRef.updatePosition({x: 0, y: 0});
         this.rndRef.updateSize(size);
@@ -345,6 +347,7 @@ export class DialogModel {
     unMaximize() {
         if (!this.rndRef) return;
         this.positionDialog();
+        this.unMaximizedSize = {};
     }
 
     handleEscapKey() {
@@ -401,11 +404,13 @@ export class DialogModel {
 
         const {controlledX: x, controlledY: y, controlledWidth: width, controlledHeight: height} = this;
 
-        if (isNumber(width) && isNumber(height)) {
+        if (!isEmpty(this.unMaximizedSize)) {
+            this.applySizeChanges(this.unMaximizedSize);
+        } else if (isNumber(width) || isNumber(height)) {
             this.applySizeChanges({width, height});
         }
 
-        // animation frame lets any new width/height be considered positioning calcs
+        // animation frame lets any new width/height be considered by positioning calcs
         window.requestAnimationFrame(() => {
             if (!isNumber(x) || !isNumber(y)) {
                 this.centerDialog();
@@ -436,7 +441,10 @@ export class DialogModel {
 
         width = Math.min(wSize.width - 20, width);
         height = Math.min(wSize.height - 20, height);
-        this.rndRef.updateSize({width, height});
+        this.rndRef.updateSize({
+            width: isNumber(width) ? width : undefined,
+            height: isNumber(height) ? height : undefined
+        });
     }
 
     applyPositionChanges({x, y}) {
