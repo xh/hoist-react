@@ -43,7 +43,6 @@ export const messageContent = hoistCmp.factory({
         return fragment(
             vframe({
                 margin: '20px',
-                width: 500,
                 items: [
                     model.message,
                     inputCmp()

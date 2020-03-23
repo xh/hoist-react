@@ -37,7 +37,8 @@ export class MessageModel {
         content: () => messageContent({model: this}),
         closeOnOutsideClick: false,
         showCloseButton: false,
-        closeOnEscape: false
+        closeOnEscape: false,
+        width: 500
     });
 
     constructor({
