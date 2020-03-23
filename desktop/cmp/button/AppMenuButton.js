@@ -18,7 +18,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        const {className, ...rest} = props;
+        const {className, extraItems, ...rest} = props;
+
         return popover({
             className,
             position: 'bottom-right',
