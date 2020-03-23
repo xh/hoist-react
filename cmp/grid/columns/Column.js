@@ -253,7 +253,7 @@ export class Column {
      * Produce a Column definition appropriate for AG Grid.
      */
     getAgSpec() {
-        const {gridModel, field, headerName} = this,
+        const {gridModel, colId, emptyGroupedByValue, field, headerName} = this,
             me = this,
             ret = {
                 field,
@@ -391,8 +391,11 @@ export class Column {
             setElementRenderer(class extends Component {
                 render() {
                     const agParams = this.props,
-                        {value, data: record} = agParams;
-                    return elementRenderer(value, {record, column: me, gridModel, agParams});
+                        {value, data: record} = agParams,
+                        isGrouped = gridModel.groupBy.includes(colId);
+
+
+                    return isGrouped && emptyGroupedByValue && isEmpty(value) ?  elementRenderer(emptyGroupedByValue, {record, column: me, gridModel, agParams}) : elementRenderer(value, {record, column: me, gridModel, agParams});
                 }
 
                 refresh() {return false}
@@ -464,7 +467,6 @@ export class Column {
         return (params) => {
             const v = getValueFn(params),
                 isGrouped = params.gridModel.groupBy.includes(this.colId);
-            // if (v == 'Albuquerque (relocated)') console.log(v);
             return isGrouped && isEmpty(v) ? this.emptyGroupedValue : v;
         };
     };
