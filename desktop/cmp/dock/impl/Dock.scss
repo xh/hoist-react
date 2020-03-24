@@ -33,6 +33,7 @@
 }
 
 .xh-dock-view {
+  display: flex;
   flex: 0 0 auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
@@ -74,6 +75,7 @@
   }
 
   &__body {
+    flex: 1;
     background-color: var(--xh-bg);
     border: var(--xh-border-solid);
     border-width: 0 1px;
