@@ -14,16 +14,16 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 * Grid column `flex` param will now accept numbers, with available space divided between flex columns
   in proportion to their `flex` value.
 
-### 🐞 Bug Fixes
-
-* `GridStateModel` no longer saves/restores the width of non-resizable columns.
-  [#1718](https://github.com/xh/hoist-react/issues/1718)
-
 ### 💥 Breaking Changes
 
 * The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
+  
+### 🐞 Bug Fixes
+
+* `GridStateModel` no longer saves/restores the width of non-resizable columns.
+  [#1718](https://github.com/xh/hoist-react/issues/1718)
   
 ### ⚙️ Technical
   
@@ -34,6 +34,12 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 * ag-grid-community `removed @ 21.2`
 * ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `23.0`
 * ag-grid-react `21.2` replaced with @ag-grid-community/react `23.0`
+* @fortawesome/* `5.12 -> 5.13`
+* codemirror `5.51 -> 5.52`
+* filesize `6.0 -> 6.1`
+* numbro `2.1 -> 2.2`
+* react-beautiful-dnd `12.0 -> 13.0`
+* store2 `2.10 -> 2.11`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
