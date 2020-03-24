@@ -34,6 +34,14 @@ export function HoistAppModel(C) {
             async initAsync() {},
 
             /**
+             * Hoist will call this method early in the initialization sequence, prior to user
+             * authentication. This means that several core services (identity, configs, prefs)
+             * will *not* be available, but it provides the app a hook to do early service
+             * initialization or other work to support flows such as OAuth.
+             */
+            async preAuthInitAsync() {},
+
+            /**
              * Hoist will call this method during the global refresh process.
              *
              * This will be called after all core Hoist services have been refreshed and before the
@@ -43,6 +51,13 @@ export function HoistAppModel(C) {
              * ordering and phasing requirements that may exist.
              */
             async doLoadAsync(loadSpec) {},
+
+            /**
+             * Called by {@see IdentityService.logoutAsync} to provide an app-specific hook prior
+             * to logging out an authenticated user. Applicable only to apps that generally support
+             * logout (i.e. not SSO) and require handling in addition to Hoist server logout.
+             */
+            async logoutAsync() {},
 
             /**
              * Provide the initial set of Router5 Routes to be used by this application.

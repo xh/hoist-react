@@ -25,7 +25,7 @@ export class ContextMenuItem {
     /**
      * @param {Object} c - ContextMenuItem configuration.
      * @param {string} c.text - label to be displayed.
-     * @param {Object} [c.icon] - icon to be displayed.
+     * @param {Element} [c.icon] - icon to be displayed.
      * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.

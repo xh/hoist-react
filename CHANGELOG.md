@@ -1,6 +1,6 @@
 # Changelog
 
-## v31.0.0-SNAPSHOT - unreleased
+## v32.0.0-SNAPSHOT - unreleased
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
 consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
@@ -8,36 +8,22 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 
 ### 🎁 New Features
 
-* The core `Navigator` / `NavigatorModel` API on mobile has been improved and made consistent
-  with other Hoist content container APIs such as `TabContainer`, `DashContainer`, and
-  `DockContainer`.  It now supports the specification of `RenderMode` and `RefreshMode` on
-  `NavigatorModel` and `PageModel`, to allow better control over how inactive pages are
-  mounted/unmounted and how pages handle refresh requests when inactive or (re)activated.
-  Furthermore, `Navigator` pages are no longer required to to return `Page` components - they
-  can now return any suitable component.
-* `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
-  allow better control over how collapsed views are mounted/unmounted and how views handle refresh
-  requests when collapsed.
-* Added functionality to auto-size a `Column` upon double-clicking / double-tapping its header.
+* `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
+* The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
+  elements and the special string token '-' (shortcut to render a `MenuDivider`).
 * Grid column `flex` param will now accept numbers, with available space divided between flex columns
   in proportion to their `flex` value.
 
-### 💥 Breaking Changes
-
-* To facilitate the increased symmetry between `NavigatorModel` and our other containers, apps
-  may need to adjust to the following changes:
-  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
-  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
-  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
-    directly, so this change is unlikely to require code updates.
-  * `Page` has been removed from the mobile toolkit. Components that previously returned `Pages`
-    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is
-    recommended you replace `Page` with `Panel` where appropriate.
-
 ### 🐞 Bug Fixes
 
-* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
-  documented.
+* `GridStateModel` no longer saves/restores the width of non-resizable columns.
+  [#1718](https://github.com/xh/hoist-react/issues/1718)
+
+### 💥 Breaking Changes
+
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
+  class `.xh-panel__content`. You may need to update styling that targets the inner structure of
+  `Panel` via `.xh-panel`.
   
 ### ⚙️ Technical
   
@@ -49,7 +35,75 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 * ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `22.1`
 * ag-grid-react `21.2` replaced with @ag-grid-community/react `22.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
+
+## v31.0.0 - 2020-03-16
+
+### 🎁 New Features
+
+* The mobile `Navigator` / `NavigatorModel` API has been improved and made consistent with other
+  Hoist content container APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+  * `NavigatorModel` and `PageModel` now support setting a `RenderMode` and `RefreshMode` to control
+    how inactive pages are mounted/unmounted and how they respond to refresh requests.
+  * `Navigator` pages are no longer required to to return `Page` components - they can now return
+    any suitable component.
+* `DockContainerModel` and `DockViewModel` also now support `refreshMode` and `renderMode` configs.
+* `Column` now auto-sizes when double-clicking / double-tapping its header.
+* `Toolbar` will now collapse overflowing items into a drop down menu. (Supported for horizontal
+  toolbars only at this time.)
+* Added new `xhEnableLogViewer` config (default `true`) to enable or disable the Admin Log Viewer.
+
+#### 🎨 Icons
+
+* Added `Icon.icon()` factory method as a new common entry point for creating new FontAwesome based
+  icons in Hoist. It should typically be used instead of using the `FontAwesomeIcon` component
+  directly.
+* Also added a new `Icon.fileIcon()` factory. This method take a filename and returns an appropriate
+  icon based on its extension.
+* All Icon factories can now accept an `asHtml` parameter, as an alternative to calling the helper
+  function `convertIconToSVG()` on the element. Use this to render icons as raw html where needed
+  (e.g. grid renderers).
+* Icons rendered as html will now preserve their styling, tooltips, and size.
+
+### 💥 Breaking Changes
+
+* The application's primary `HoistApplicationModel` is now instantiated and installed as
+  `XH.appModel` earlier within the application initialization sequence, with construction happening
+  prior to the init of the XH identity, config, and preference services.
+  * This allows for a new `preAuthInitAsync()` lifecycle method to be called on the model before
+    auth has completed, but could be a breaking change for appModel code that relied on these
+    services for field initialization or in its constructor.
+  * Such code should be moved to the core `initAsync()` method instead, which continues to be called
+    after all XH-level services are initialized and ready.
+* Mobile apps may need to adjust to the following updates to `NavigatorModel` and related APIs:
+  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
+  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
+  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
+    directly, so this change is unlikely to require code updates.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned a `Page`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended
+    you replace `Page` with `Panel` where appropriate.
+* Icon enhancements described above removed the following public methods:
+  * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by Hoist)
+    has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
+    'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`.
+  * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on icon
+    factory functions. If you need to convert an existing icon element, use `convertIconToHtml()`.
+* `Toolbar` items should be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
+
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+* Mobile `PinPad` input responsiveness improved on certain browsers to avoid lag.
+
+### ⚙️ Technical
+
+* New lifecycle methods `preAuthInitAsync()` and `logoutAsync()` added to the `HoistAppModel`
+  decorator (aka the primary `XH.appModel`).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...v31.0.0)
 
 ## v30.1.0 - 2020-03-04
 
@@ -94,6 +148,8 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 
 ### 💥 Breaking Changes
 
+* `Toolbar` items must be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
 * `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
   flexibility and better symmetry with `GridModel`.
 * `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`

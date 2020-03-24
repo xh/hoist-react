@@ -59,18 +59,19 @@
       line-height: 15px;
     }
 
+    &__indicators > div {
+      display: flex;
+      align-items: flex-end;
+    }
+
     &__indicator {
       padding: 0 8px 0 0;
       width: 20px;
-      color: #999;
-      stroke: #999;
-      stroke-width: 1em;
-    }
+      color: var(--xh-text-color-muted);
+      font-size: var(--xh-font-size-large-px);
 
-    &__indicators:hover {
-      cursor: pointer;
-
-      svg {
+      &:hover {
+        cursor: pointer;
         color: var(--xh-text-color);
       }
     }

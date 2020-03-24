@@ -9,14 +9,13 @@ import {fragment, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
-    dropRightWhile,
-    dropWhile,
     isArray,
     isEmpty,
     isEqual,
@@ -24,7 +23,6 @@ import {
     isFunction,
     isNil,
     isString,
-    last,
     map,
     merge,
     xor
@@ -202,15 +200,9 @@ class LocalModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: convertIconToSvg(
-                    Icon.angleDown(),
-                    {classes: ['ag-group-expanded']}
-                ),
-                groupContracted: convertIconToSvg(
-                    Icon.angleRight(),
-                    {classes: ['ag-group-contracted']}
-                ),
-                clipboardCopy: convertIconToSvg(Icon.copy())
+                groupExpanded: Icon.angleDown({asHtml: true, className: 'ag-group-expanded'}),
+                groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
+                clipboardCopy: Icon.copy({asHtml: true})
             },
             frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
             rowSelection: model.selModel.mode,
@@ -317,10 +309,11 @@ class LocalModel {
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
-        let items = [];
+        const items = [];
+
         recordActions.forEach(action => {
             if (action === '-') {
-                if (last(items) !== 'separator') items.push('separator');
+                items.push('separator');
                 return;
             }
 
@@ -348,7 +341,7 @@ class LocalModel {
 
             let icon = displaySpec.icon;
             if (isValidElement(icon)) {
-                icon = convertIconToSvg(icon);
+                icon = convertIconToHtml(icon);
             }
 
             items.push({
@@ -362,9 +355,7 @@ class LocalModel {
             });
         });
 
-        items = dropRightWhile(items, it => it === 'separator');
-        items = dropWhile(items, it => it === 'separator');
-        return items;
+        return items.filter(filterConsecutiveMenuSeparators());
     }
 
     //------------------------
@@ -395,6 +386,12 @@ class LocalModel {
                         api.setRowData(newRs.list);
                     }
 
+                    if (experimental.externalSort) {
+                        const {sortBy} = model;
+                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
+                        this._lastSortBy = sortBy;
+                    }
+
                     this.updatePinnedSummaryRowData();
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
@@ -402,9 +399,7 @@ class LocalModel {
                         api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
-                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                        model.noteAgExpandStateChange();
-                    }
+                    model.noteAgExpandStateChange();
                 }, this);
 
                 runInAction(() => {
@@ -442,11 +437,13 @@ class LocalModel {
     }
 
     sortReaction() {
-        const {agGridModel} = this.model;
+        const {agGridModel} = this.model,
+            {externalSort} = this.model.experimental;
+
         return {
             track: () => [agGridModel.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api) api.setSortModel(sortBy);
+                if (api && !externalSort) api.setSortModel(sortBy);
             }
         };
     }
