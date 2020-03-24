@@ -22,6 +22,11 @@
   }
 }
 
+// Remove outer border applied by Ag-Grid - we usually render grids in bordered components like panels
+.ag-theme-balham.xh-ag-grid .ag-root-wrapper {
+  border: none;
+}
+
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
 // Note DataView excluded from these style customizations to give those views control over their
 // component-based item styling w/o being affected by default grid styles / sizing modes.

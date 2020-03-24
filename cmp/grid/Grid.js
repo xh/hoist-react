@@ -291,7 +291,6 @@ class LocalModel {
         }
         if (!menu) return null;
 
-
         const recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
             colId = params.column ? params.column.colId : null,

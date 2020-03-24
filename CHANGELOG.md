@@ -3,7 +3,7 @@
 ## v32.0.0-SNAPSHOT - unreleased
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
-consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0 + 22.1
+consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0, 22.1 + 23.0
 to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
 
 ### 🎁 New Features
@@ -32,8 +32,8 @@ to review any possible breaking changes to direct/custom use of ag-Grid APIs and
 ### 📚 Libraries
 
 * ag-grid-community `removed @ 21.2`
-* ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `22.1`
-* ag-grid-react `21.2` replaced with @ag-grid-community/react `22.1`
+* ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `23.0`
+* ag-grid-react `21.2` replaced with @ag-grid-community/react `23.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
