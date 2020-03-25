@@ -62,7 +62,7 @@
       }
 
       .ag-group-expanded {
-        margin: 0 var(--xh-pad-half-px);
+        margin: 0 var(--xh-pad-half-px) 0 0;
 
         svg {
           width: var(--xh-pad-px);
@@ -70,7 +70,7 @@
       }
 
       .ag-group-contracted {
-        margin: 0 var(--xh-pad-half-px);
+        margin: 0 var(--xh-pad-half-px) 0 0;
 
         svg {
           width: var(--xh-pad-px);

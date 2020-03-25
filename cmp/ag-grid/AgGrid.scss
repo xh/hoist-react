@@ -80,7 +80,7 @@
     // Set a constant width, since the two icons are different sizes.
     // This caused rows to jump around when expansion was toggled.
     .ag-group-expanded {
-      margin: 0 var(--xh-pad-half-px);
+      margin: 0 var(--xh-pad-half-px) 0 0;
 
       svg {
         width: var(--xh-pad-px);
@@ -88,7 +88,7 @@
     }
 
     .ag-group-contracted {
-      margin: 0 var(--xh-pad-half-px);
+      margin: 0 var(--xh-pad-half-px) 0 0;
 
       svg {
         width: var(--xh-pad-px);
@@ -328,17 +328,7 @@
     align-items: center;
   }
 
-  // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
-  // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
-  // (and in general tighter padding preferred here vs. full-width groups).
-  .ag-row {
-    .ag-group-expanded,
-    .ag-group-contracted {
-      margin: 0 var(--xh-pad-half-px) 0 0;
-    }
-  }
-
-  // Set right margin to an appropriate value for the smaller sizing modes.
+  // Reduce right margin to an appropriate value for the smaller sizing modes.
   &--compact .ag-row {
     .ag-group-expanded,
     .ag-group-contracted {
