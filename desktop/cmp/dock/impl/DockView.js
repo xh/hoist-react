@@ -28,7 +28,7 @@ export const dockView = hoistCmp.factory({
     className: 'xh-dock-view',
 
     render({model, className, compactHeaders}) {
-        const {collapsed, docked, isActive, renderMode, refreshContextModel} = model,
+        const {width, height, collapsedWidth, collapsed, docked, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -44,10 +44,21 @@ export const dockView = hoistCmp.factory({
                 item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
             });
 
-        // 1) Render docked
-        if (collapsed || docked) {
+        // 1) Render collapsed
+        if (collapsed) {
             return vbox({
-                className: classNames(className, collapsed ? 'xh-dock-view--collapsed' : null),
+                width: collapsedWidth,
+                className: classNames(className, 'xh-dock-view--collapsed'),
+                items: [header, unmount ? null : body]
+            });
+        }
+
+        // 1) Render docked
+        if (docked) {
+            return vbox({
+                width,
+                height,
+                className: classNames(className, 'xh-dock-view--docked'),
                 items: [header, unmount ? null : body]
             });
         }
@@ -55,6 +66,7 @@ export const dockView = hoistCmp.factory({
         // 2) Render in Dialog
         return dialog({
             className: classNames(className, 'xh-dock-view--dialog'),
+            style: {width, height},
             isOpen: true,
             onClose: () => model.onClose(),
             canOutsideClickClose: false,
