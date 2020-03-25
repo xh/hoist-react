@@ -4,18 +4,29 @@
 
 ### 🎁 New Features
 
-* The appMenuButton.extraItems property will now support valid react elements (like menuDivider).
+* `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
+* The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
+  elements and the special string token '-' (shortcut to render a `MenuDivider`).
+
+### 💥 Breaking Changes
+
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
+  class `.xh-panel__content`. You may need to update styling that targets the inner structure of
+  `Panel` via `.xh-panel`.
 
 ### 🐞 Bug Fixes
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
-  
-### 💥 Breaking Changes
 
-* The internal DOM structure of desktop `Panel` has changed to always include an inner frame
-  with class `.xh-panel__content`. You may need to update styling that targets the inner structure
-  of `Panel` via `.xh-panel`.
+### 📚 Libraries
+
+* @fortawesome/* `5.12 -> 5.13`
+* codemirror `5.51 -> 5.52`
+* filesize `6.0 -> 6.1`
+* numbro `2.1 -> 2.2`
+* react-beautiful-dnd `12.0 -> 13.0`
+* store2 `2.10 -> 2.11`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
