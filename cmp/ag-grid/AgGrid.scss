@@ -288,24 +288,6 @@
   }
 
   //------------------------
-  // Tree Mode
-  //------------------------
-  .xh-grid--hierarchical & {
-    // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
-    // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
-    // (and in general tighter padding preferred here vs. full-width groups).
-    .ag-row {
-      .ag-group-expanded {
-        margin: 0 var(--xh-pad-half-px) 0 0;
-      }
-
-      .ag-group-contracted {
-        margin: 0 var(--xh-pad-half-px) 0 0;
-      }
-    }
-  }
-
-  //------------------------
   // Other Optional Modifiers + Overrides
   //------------------------
   // As of agGrid 20, the group row always reserve space for a grouping checkbox.
@@ -329,6 +311,42 @@
 
   // Disabling the "row loading" render overlay
   .ag-bl-overlay { display: none; }
+}
+
+//------------------------
+// Tree Mode
+//------------------------
+.xh-grid--hierarchical > .ag-theme-balham.xh-ag-grid,
+.xh-grid--hierarchical > .ag-theme-balham-dark.xh-ag-grid {
+  // Vertically center tree grid affordances
+  .ag-row .ag-cell-wrapper.ag-row-group {
+    align-items: center;
+  }
+
+  // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
+  // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
+  // (and in general tighter padding preferred here vs. full-width groups).
+  .ag-row {
+    .ag-group-expanded,
+    .ag-group-contracted {
+      margin: 0 var(--xh-pad-half-px) 0 0;
+    }
+  }
+
+  // Set right margin to an appropriate value for the smaller sizing modes.
+  &--compact .ag-row {
+    .ag-group-expanded,
+    .ag-group-contracted {
+      margin: 0 2px 0 0;
+    }
+  }
+
+  &--tiny .ag-row {
+    .ag-group-expanded,
+    .ag-group-contracted {
+      margin: 0 1px 0 0;
+    }
+  }
 }
 
 //------------------------
