@@ -118,7 +118,7 @@ class LocalModel {
         ]);
 
         this.allowedSorts = this.allowedSorts.map(sort => {
-            if (isEmpty(sort)) sort = {sort: 'none'};
+            if (isEmpty(sort)) sort = {sort: null};
             if (isString(sort)) sort = {sort: sort};
             return {...sort, colId: xhColumn.colId};
         });
