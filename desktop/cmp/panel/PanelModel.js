@@ -14,7 +14,8 @@ import {isNil} from 'lodash';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse functionality, including the option to persist such state into a Hoist preference.
+ * expand/collapse functionality, including the option to persist such state into a Hoist
+ * preference.
  */
 @HoistModel
 export class PanelModel {
@@ -118,7 +119,9 @@ export class PanelModel {
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
 
-        this.refreshContextModel = new ManagedRefreshContextModel(this);
+        if (this.collapsible) {
+            this.refreshContextModel = new ManagedRefreshContextModel(this);
+        }
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
             console.warn(`Unknown preference for storing state of Panel '${prefName}'`);

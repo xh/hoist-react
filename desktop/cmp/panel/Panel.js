@@ -119,19 +119,20 @@ export const [Panel, panel] = hoistCmp.withFactory({
             panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
-        const item = refreshContextView({
-            model: refreshContextModel,
-            item: vbox({
-                className: 'xh-panel__content',
-                items: [
-                    processedPanelHeader,
-                    coreContents,
-                    parseLoadDecorator(maskProp, 'mask', contextModel),
-                    parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
-                ],
-                ...rest
-            })
+        let item = vbox({
+            className: 'xh-panel__content',
+            items: [
+                processedPanelHeader,
+                coreContents,
+                parseLoadDecorator(maskProp, 'mask', contextModel),
+                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
+            ],
+            ...rest
         });
+
+        if (refreshContextModel) {
+            item = refreshContextView({model: refreshContextModel, item});
+        }
 
         // 4) Return wrapped in resizable and its affordances if needed.
         return resizable || collapsible || showSplitter ?
