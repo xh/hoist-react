@@ -22,11 +22,6 @@
   }
 }
 
-// Remove outer border applied by Ag-Grid - we usually render grids in bordered components like panels
-.ag-theme-balham.xh-ag-grid .ag-root-wrapper {
-  border: none;
-}
-
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
 // Note DataView excluded from these style customizations to give those views control over their
 // component-based item styling w/o being affected by default grid styles / sizing modes.
@@ -37,11 +32,11 @@
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
-  background-color: var(--xh-grid-bg);
 
-  .ag-root {
-    border: none;
+  .ag-root-wrapper {
     background-color: var(--xh-grid-bg);
+    // Remove default outer border - we usually render grids in bordered components such as panels.
+    border: none;
   }
 
   // This ensures that rows will take up at least the full width of the grid in cases where there

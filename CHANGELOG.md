@@ -2,31 +2,31 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
-⚠ Note that this release includes a *new major version of ag-Grid*. Developers are encouraged to
-consult the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22.0, 22.1 + 23.0
-to review any possible breaking changes to direct/custom use of ag-Grid APIs and props.
+⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
+[ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
+possible breaking changes to any direct/custom use of ag-Grid APIs and props within applications.
 
 ### 🎁 New Features
 
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
-* Grid column `flex` param will now accept numbers, with available space divided between flex columns
-  in proportion to their `flex` value.
+* Grid column `flex` param will now accept numbers, with available space divided between flex
+  columns in proportion to their `flex` value.
 
 ### 💥 Breaking Changes
 
 * The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
-  
+
 ### 🐞 Bug Fixes
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
-  
+
 ### ⚙️ Technical
-  
+
 * Flex columns now use the built-in ag-Grid flex functionality.
 
 ### 📚 Libraries

@@ -54,9 +54,12 @@ export class Column {
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
      * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing above this value.
-     * @param {boolean|number} [c.flex] - columns with flex set will fill all available space in the grid,
-     *      with remaining space divided between flex columns in proportion to the value of flex.
-     *      If set to `true`, then the column will have a flex value of 1.
+     * @param {(boolean|number)} [c.flex] - flex columns stretch to fill the width of the grid after
+     *      all columns with a set pixel-width have been sized. If multiple columns have a flex
+     *      value set, their width will be set in proportion to their flex values. A flex value
+     *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
+     *      to avoid your column being squeezed down to the default 50px minimum or stretching so
+     *      wide that it compromises the overall legibility of the grid.
      * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
      *      determine an appropriate row height when the column is visible.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
