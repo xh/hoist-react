@@ -362,6 +362,8 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    get isReady() {return this.agGridModel.isReady}
+
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
