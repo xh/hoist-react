@@ -70,6 +70,11 @@
     &.ag-row-group.ag-full-width-row {
       color: var(--xh-grid-group-text-color);
       background-color: var(--xh-grid-group-bg);
+
+      .ag-group-expanded,
+      .ag-group-contracted {
+        color: var(--xh-grid-group-text-color);
+      }
     }
 
     // Set a constant width, since the two icons are different sizes.
