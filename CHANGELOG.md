@@ -5,18 +5,75 @@
 ### 🎁 New Features
 
 * `Column` now supports `allowedSorts` config for specifying sorting options.
+* The core `Navigator` / `NavigatorModel` API on mobile has been improved and made consistent with
+  other Hoist content container APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+  It now supports the specification of `RenderMode` and `RefreshMode` on `NavigatorModel` and
+  `PageModel`, to allow better control over how inactive pages are mounted/unmounted and how pages
+  handle refresh requests when inactive or (re)activated. Furthermore, `Navigator` pages are no
+  longer required to to return `Page` components - they can now return any suitable component.
+* `DockContainerModel` and `DockViewModel` now support `refreshMode` and `renderMode` configs to
+  allow better control over how collapsed views are mounted/unmounted and how views handle refresh
+  requests when collapsed.
+* `Column` now auto-sizes when double-clicking / double-tapping its header.
+
+#### 🎨 Icons
+
+* Added `Icon.icon()` factory method as a new common entry point for creating new FontAwesome based
+  icons in Hoist. It should typically be used instead of using the `FontAwesomeIcon` component
+  directly.
+* Added a new `Icon.fileIcon()` factory method. This method returns a standard, conventionally
+  colored icon, based on a filename extension.
+* All Icon factories can now accept an `asHtml` parameter, as an alternative to calling the helper
+  function `convertIconToSVG()` on the element. Use this to render icons as raw html where needed
+  (e.g. grid renderers).
+* Icons rendered as html will now preserve their styling, tooltips, and size.
+
+### 💥 Breaking Changes
+
+* To facilitate the increased symmetry between `NavigatorModel` and our other containers, mobile
+  apps may need to adjust to the following changes:
+  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
+  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
+  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
+    directly, so this change is unlikely to require code updates.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned a `Page`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended
+    you replace `Page` with `Panel` where appropriate.
+* Icon enhancements described above have resulted in two public methods being removed:
+  * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by Hoist)
+    has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
+    'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`;
+  * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on icon
+    factory functions. If you need to convert an existing icon element, use `convertIconToHtml()`.
+
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...develop)
+
+## v30.1.0 - 2020-03-04
 
 ### 🐞 Bug Fixes
 
 * Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
   server.
+* When empty, `DashContainer` now displays a user-friendly prompt to add an initial view.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...develop)
+### ⚙️ Technical
+
+* Form validation enhanced to improve handling of asynchronous validation. Individual rules and
+  constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
+* `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...30.1.0)
 
 ## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
 
+* Horizontal `Toolbar` will collapse overflowing items into a drop down menu.
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
@@ -40,6 +97,8 @@
 
 ### 💥 Breaking Changes
 
+* `Toolbar` items must be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
 * `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
   flexibility and better symmetry with `GridModel`.
 * `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`

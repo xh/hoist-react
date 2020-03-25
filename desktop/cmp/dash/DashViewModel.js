@@ -37,17 +37,17 @@ export class DashViewModel {
     @managed refreshContextModel;
 
     get renderMode() {
-        return this.viewSpec.renderMode || this.containerModel.renderMode;
+        return this.viewSpec.renderMode ?? this.containerModel.renderMode;
     }
 
     get refreshMode() {
-        return this.viewSpec.refreshMode || this.containerModel.refreshMode;
+        return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
     }
 
     /**
      * @param {string} id - Typically created by GoldenLayouts.
      * @param {DashViewSpec} viewSpec - DashViewSpec used to create this view.
-     * @param {Icon} [icon] - Icon with which to initialize the view
+     * @param {Element} [icon] - Icon with which to initialize the view
      * @param {string} [title] - Title with which to initialize the view
      * @param {Object} [viewState] - State with which to initialize the view
      * @param {DashContainerModel} containerModel - parent DashContainerModel. Provided by the

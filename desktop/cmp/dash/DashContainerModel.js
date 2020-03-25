@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {convertIconToSvg, deserializeIcon} from '@xh/hoist/icon';
+import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
@@ -88,6 +88,8 @@ export class DashContainerModel {
     refreshMode;
     /** @member {Object} */
     goldenLayoutSettings;
+    emptyText;
+    addViewButtonText;
 
     //------------------------
     // Implementation properties
@@ -107,6 +109,8 @@ export class DashContainerModel {
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
+     * @param {string} [emptyText] - text to display when the container is empty
+     * @param {string} [addViewButtonText] - text to display on the add view button
      */
     constructor({
         viewSpecs,
@@ -114,7 +118,9 @@ export class DashContainerModel {
         initialState = [],
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        goldenLayoutSettings
+        goldenLayoutSettings,
+        emptyText = 'No views have been added to the container.',
+        addViewButtonText = 'Add View'
     }) {
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
@@ -126,6 +132,8 @@ export class DashContainerModel {
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.goldenLayoutSettings = goldenLayoutSettings;
+        this.emptyText = emptyText;
+        this.addViewButtonText = addViewButtonText;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
@@ -266,6 +274,10 @@ export class DashContainerModel {
     //-----------------
     // Views
     //-----------------
+    get isEmpty() {
+        return this.goldenLayout && this.viewModels.length === 0;
+    }
+
     get viewState() {
         const ret = {};
         this.viewModels.map(({id, icon, title, viewState}) => {
@@ -366,10 +378,10 @@ export class DashContainerModel {
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
-                    newIconType = icon.props.icon[1];
+                    newIconType = icon.props.iconName;
 
                 if (currentIconType !== newIconType) {
-                    const iconSvg = convertIconToSvg(icon);
+                    const iconSvg = convertIconToHtml(icon);
                     $el.find(iconSelector).remove();
                     $titleEl.before(iconSvg);
                 }

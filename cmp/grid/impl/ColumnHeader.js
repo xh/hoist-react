@@ -5,11 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {clone, isEmpty, isFunction, isString, remove} from 'lodash';
 
@@ -71,7 +73,8 @@ export const ColumnHeader = hoistCmp({
         return div({
             className: classNames(props.className, extraClasses),
             onClick: impl.onClick,
-            onTouchEnd: impl.onClick,
+            onDoubleClick: impl.onDoubleClick,
+            onTouchEnd: impl.onTouchEnd,
             items: [
                 span(headerName),
                 sortIcon(),
@@ -93,6 +96,9 @@ class LocalModel {
     enableSorting;
     allowedSorts;
     sortIndex;
+
+    _doubleClick = false;
+    _lastTouch = Date.now();
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
         this.gridModel = gridModel;
@@ -137,30 +143,65 @@ class LocalModel {
         return activeGridSorter ? this.gridModel.sortBy.indexOf(activeGridSorter) > 0 : false;
     }
 
+    // Desktop click handling
     onClick = (e) => {
-        if (!this.enableSorting || !this.gridModel) return;
+        if (XH.isMobile) return;
+        this._doubleClick = false;
+        this.updateSort(e.shiftKey);
+    };
+
+    onDoubleClick = () => {
+        if (XH.isMobile) return;
+        this._doubleClick = true;
+        this.autosize();
+    };
+
+    // Mobile touch handling
+    onTouchEnd = () => {
+        if (!XH.isMobile) return;
+        const time = Date.now();
+        if (time - this._lastTouch < 300) {
+            this._doubleClick = true;
+            this.autosize();
+        } else {
+            this._doubleClick = false;
+            this.updateSort();
+        }
+        this._lastTouch = time;
+    };
+
+    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
+
+    //-------------------
+    // Implementation
+    //-------------------
+    @debounced(300)
+    updateSort(shiftKey) {
+        if (!this.enableSorting || !this.gridModel || this._doubleClick) return;
 
         const {gridModel, activeGridSorter, colId} = this,
             nextSortBy = this.getNextSortBy();
 
         // Add to existing sorters if holding shift, else replace
-        let sortBy = e.shiftKey ? clone(gridModel.sortBy) : [];
+        let sortBy = shiftKey ? clone(gridModel.sortBy) : [];
         if (activeGridSorter) {
-            remove(sortBy, it => it.colId == colId);
+            remove(sortBy, it => it.colId === colId);
         }
         if (nextSortBy) {
             sortBy.push(nextSortBy);
         }
 
         gridModel.setSortBy(sortBy);
-    };
-
-    onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
+    }
 
     getNextSortBy() {
         const {allowedSorts, activeGridSorter} = this;
         this.sortIndex = activeGridSorter ? (this.sortIndex + 1) % allowedSorts.length : 0;
 
         return allowedSorts[this.sortIndex];
+    }
+
+    autosize() {
+        this.gridModel?.autoSizeColumns(this.colId);
     }
 }
