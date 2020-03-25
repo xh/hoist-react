@@ -687,7 +687,11 @@ export class GridModel {
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
      */
     autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
-        this.agColumnApi.autoSizeColumns(castArray(colIds));
+        colIds = castArray(colIds).filter(id => {
+            const col = this.getColumn(id);
+            return col && !col.flex;
+        });
+        if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
     }
 
     //-----------------------
