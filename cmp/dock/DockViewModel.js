@@ -26,6 +26,9 @@ export class DockViewModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
+    width;
+    height;
+    collapsedWidth;
     allowClose;
     allowDialog;
 
@@ -56,6 +59,10 @@ export class DockViewModel {
      * @param {Element} [c.icon] - An icon placed at the left-side of the header.
      * @param {(Object|function)} c.content - content to be rendered by this DockView.
      *      HoistComponent or a function returning a react element.
+     * @param {number} [c.width] - width in pixels. If not set, width will be determined by the content.
+     * @param {number} [c.height] - height in pixels. If not set, height will be determined by the content.
+     * @param {number} [c.collapsedWidth] - width of collapsed header in pixels. If not set, width
+     *      will be determined by the length of the title.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this DockView. If null, will
@@ -73,6 +80,9 @@ export class DockViewModel {
         title,
         icon,
         content,
+        width,
+        height,
+        collapsedWidth,
         refreshMode,
         renderMode,
         docked = true,
@@ -86,6 +96,10 @@ export class DockViewModel {
         this.title = title;
         this.icon = icon;
         this.content = content;
+        this.width = width;
+        this.height = height;
+        this.collapsedWidth = collapsedWidth;
+
         this.docked = docked;
         this.collapsed = collapsed;
         this.allowClose = allowClose;

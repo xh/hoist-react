@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "31.0.0-SNAPSHOT",
+  "version": "32.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -28,23 +28,23 @@
   "dependencies": {
     "@blueprintjs/core": "~3.24.0",
     "@blueprintjs/datetime": "~3.15.2",
-    "@fortawesome/fontawesome-pro": "~5.12.1",
-    "@fortawesome/fontawesome-svg-core": "~1.2.27",
-    "@fortawesome/pro-light-svg-icons": "~5.12.1",
-    "@fortawesome/pro-regular-svg-icons": "~5.12.1",
-    "@fortawesome/pro-solid-svg-icons": "~5.12.1",
+    "@fortawesome/fontawesome-pro": "~5.13.0",
+    "@fortawesome/fontawesome-svg-core": "~1.2.28",
+    "@fortawesome/pro-light-svg-icons": "~5.13.0",
+    "@fortawesome/pro-regular-svg-icons": "~5.13.0",
+    "@fortawesome/pro-solid-svg-icons": "~5.13.0",
     "@fortawesome/react-fontawesome": "~0.1.9",
     "ag-grid-community": "~21.2.2",
     "ag-grid-enterprise": "~21.2.2",
     "ag-grid-react": "~21.2.2",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
-    "codemirror": "~5.51.0",
+    "codemirror": "~5.52.2",
     "core-js": "~3.6.4",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
-    "filesize": "~6.0.1",
+    "filesize": "~6.1.0",
     "golden-layout": "~1.5.9",
     "highcharts": "~8.0.4",
     "http-status-codes": "~1.4.0",
@@ -53,11 +53,11 @@
     "mobx": "~5.15.4",
     "mobx-react": "~6.1.8",
     "moment": "~2.24.0",
-    "numbro": "~2.1.2",
+    "numbro": "~2.2.0",
     "onsenui": "~2.10.10",
     "prop-types": "~15.7.2",
-    "qs": "~6.9.1",
-    "react-beautiful-dnd": "~12.2.0",
+    "qs": "~6.9.2",
+    "react-beautiful-dnd": "~13.0.0",
     "react-dates": "~21.8.0",
     "react-dropzone": "~10.2.1",
     "react-onsenui": "~1.11.2",
@@ -68,7 +68,7 @@
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "store2": "~2.10.0"
+    "store2": "~2.11.0"
   },
   "peerDependencies": {
     "react": "~16.8.0",
@@ -78,12 +78,12 @@
   "devDependencies": {
     "@xh/hoist-dev-utils": "^4.0.0",
     "husky": "~4.2.3",
-    "lint-staged": "~10.0.8",
+    "lint-staged": "~10.0.9",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
     "stylelint": "~13.2.1",
     "stylelint-config-standard": "~20.0.0",
-    "stylelint-scss": "~3.15.0"
+    "stylelint-scss": "~3.16.0"
   }
 }

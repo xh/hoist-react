@@ -466,11 +466,9 @@ class XHClass {
     /**
      * Called when application container first mounted in order to trigger initial
      * authentication and initialization of framework and application.
-     *
-     * Not intended for application use.
+     * @private - not intended for application use.
      */
     async initAsync() {
-
         // Avoid multiple calls, which can occur if AppContainer remounted.
         if (this._initCalled) return;
         this._initCalled = true;
@@ -506,7 +504,11 @@ class XHClass {
             this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
-            // Check if user has already been authenticated (prior login, SSO)...
+            // Instantiate appModel, await optional pre-auth init.
+            this.appModel = new this.appSpec.modelClass();
+            await this.appModel.preAuthInitAsync();
+
+            // Check if user has already been authenticated (prior login, OAuth, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
 
             // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
@@ -528,9 +530,7 @@ class XHClass {
     /**
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
-     * Used by framework.
-     *
-     * Not intended for application use.
+     * @private - not intended for application use.
      */
     @action
     async completeInitAsync() {
@@ -559,7 +559,6 @@ class XHClass {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
-            this.appModel = new this.appSpec.modelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -681,10 +680,10 @@ export const XH = window.XH = new XHClass();
  * @property {string} [title] - title of message box.
  * @property {Element} [icon] - icon to be displayed.
  * @property {MessageInput} [input] - config for input to be displayed (as a prompt).
- * @property {string} [confirmProps] - props for primary confirm button.
+ * @property {Object} [confirmProps] - props for primary confirm button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
- * @property {string} [cancelProps] - props for secondary cancel button.
+ * @property {Object} [cancelProps] - props for secondary cancel button.
  *      Must provide either text or icon for button to be displayed, or use a preconfigured
  *      helper such as `XH.alert()` or `XH.confirm()` for default buttons.
  * @property {function} [onConfirm] - Callback to execute when confirm is clicked.

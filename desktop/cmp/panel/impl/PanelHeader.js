@@ -45,8 +45,13 @@ export const panelHeader = hoistCmp.factory({
                             item: title
                         }) :
                         filler(),
-                    ...(!collapsed ? headerItems : []),
-                    collapseButton({panelModel})
+                    hbox({
+                        className: 'xh-panel-header__items',
+                        items: [...(!collapsed ? headerItems : []),
+                            collapseButton({panelModel})
+                        ],
+                        onDoubleClick: (e) => e.stopPropagation()
+                    })
                 ],
                 onDoubleClick
             });

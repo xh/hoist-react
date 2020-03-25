@@ -45,6 +45,8 @@ export const Icon = {
      * @param {boolean} [c.asHtml] - Set to true to return the output as a string containing the
      *      raw <svg/> tag.  Use this option for non-react APIs, such as when writing renderers
      *      for ag-Grid.
+     * @param {...*} [c.rest] - Additional props to be passed directly to underlying
+     *      component.  These arguments are ignored when asHtml = true.
      * @returns {(Element| string)}
      */
     icon({
@@ -53,10 +55,12 @@ export const Icon = {
         className,
         title,
         size,
-        asHtml = false
+        asHtml = false,
+        ...rest
     } = {}) {
-        const opts = {iconName, prefix, className, title, size};
-        return asHtml ? iconHtml(opts) : iconCmp(opts);
+        return asHtml ?
+            iconHtml({iconName, prefix, className, title, size}) :
+            iconCmp({iconName, prefix, className, title, size, ...rest});
     },
 
     accessDenied(p)     {return Icon.icon({...p,  iconName: 'ban'})},
