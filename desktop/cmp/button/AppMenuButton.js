@@ -18,7 +18,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     className: 'xh-app-menu',
 
     render(props) {
-        const {className, extraItems, ...rest} = props;
+        const {className, extraItems, hideAdminItem, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, ...rest} = props;
 
         return popover({
             className,
@@ -32,6 +32,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
         });
     }
 });
+
 
 AppMenuButton.propTypes = {
     ...Button.propTypes,
