@@ -4,23 +4,22 @@
 
 ### 🎁 New Features
 
-* `PanelModel` now supports setting a `RefreshMode` to control how collapsed panels
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
   respond to refresh requests.
 * The appMenuButton.extraItems property will now support valid react elements (like menuDivider).
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
 
-### 💥 Breaking Changes
-
-* The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
-  class `.xh-panel__content`. You may need to update styling that targets the inner structure of
-  `Panel` via `.xh-panel`.
 
 ### 💥 Breaking Changes
 
 * `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
   consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame
+  with class `.xh-panel__content`. You may need to update styling that targets the inner structure
+  of `Panel` via `.xh-panel`.
 
 ### 🐞 Bug Fixes
 

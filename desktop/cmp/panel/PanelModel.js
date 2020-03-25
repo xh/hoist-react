@@ -68,7 +68,9 @@ export class PanelModel {
      * @param {string} config.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
      * @param {RenderMode} [config.renderMode] - How should collapsed content be rendered?
+     *      Ignored if collapsible is false.
      * @param {RefreshMode} [config.refreshMode] - How should collapsed content be refreshed?
+     *      Ignored if collapsible is false.
      * @param {?string} [config.prefName] - preference name to store sizing and collapsed state.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
