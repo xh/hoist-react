@@ -17,8 +17,8 @@ export const dialogHeader = hoistCmp.factory({
     displayName: 'DialogHeader',
 
     render(props) {
-        const {dialogModel, icon, title, showCloseButton} = props,
-            {resizable, draggable} = dialogModel;
+        const {dialogModel, icon, title} = props,
+            {resizable, draggable, showCloseButton} = dialogModel;
 
         if (!title && !icon && !resizable && !draggable && !showCloseButton) return null;
 
@@ -34,7 +34,7 @@ export const dialogHeader = hoistCmp.factory({
                     }) :
                     filler(),
                 maxMinButton({dialogModel}),
-                closeButton(props)
+                closeButton({dialogModel})
             ]
         });
 
@@ -43,21 +43,22 @@ export const dialogHeader = hoistCmp.factory({
 
 const maxMinButton = hoistCmp.factory(
     ({dialogModel}) => {
-        const {resizable, isMaximizedState} = dialogModel;
+        const {resizable, currentIsMaximized} = dialogModel;
+
         return button({
             omit: !resizable,
-            icon: !isMaximizedState ? Icon.expand() : Icon.collapse(),
-            onClick: () => dialogModel.toggleIsMaximized()
+            icon: Icon[currentIsMaximized ? 'collapse' : 'expand'](),
+            onClick: () => dialogModel.setIsMaximized(!currentIsMaximized)
         });
     }
 );
 
 const closeButton = hoistCmp.factory(
-    ({dialogModel, showCloseButton, onClose}) => {
+    ({dialogModel}) => {
         return button({
-            omit: !showCloseButton,
+            omit: !dialogModel.showCloseButton,
             icon: Icon.close(),
-            onClick: () => dialogModel.hide(onClose)
+            onClick: () => dialogModel.close()
         });
     }
 );

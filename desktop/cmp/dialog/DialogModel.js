@@ -4,12 +4,12 @@
  *
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isNumber, isPlainObject, isString, isUndefined} from 'lodash';
+import {isEmpty, isNil, isNumber, isPlainObject, isString} from 'lodash';
 
-import {HoistModel, LoadSupport} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
+import {withDefault, throwIf} from '@xh/hoist/utils/js';
 
 import {DialogStateModel} from './DialogStateModel';
 
@@ -25,8 +25,10 @@ export class DialogModel {
 
     /**
      * The base zIndex that will be used for all dialogs
+     * 4 is the lowest we can go and still cover buttons in blueprint popopver targets, which are set to 4
+     * go too high and your dialog covers datepicker and select popups
      */
-    static Z_INDEX_BASE = 1; // go too high and your dialog covers datepicker and select popups
+    static Z_INDEX_BASE = 4;
 
     /**
      * Set the base zIndex to a custom value for all dialogs in your app.
@@ -43,10 +45,11 @@ export class DialogModel {
     //-----------------------
     containerElement = null;
     portalContainer = null;
-    dialogRootId = 'xh-dialog-root';
+    dialogPortalId = 'xh-dialog-portal';
     dialogWrapperDivRef = createObservableRef();
     clickCaptureCompRef = createObservableRef();
     rndRef = null;
+    unMaximizedSize = {};
 
     /** @member {DialogStateModel} */
     @managed
@@ -60,21 +63,15 @@ export class DialogModel {
     /** @member {boolean} */
     draggable;
     /** @member {boolean} */
-    closeOnOutsideClick;
-    /** @member {boolean} */
-    closeOnEscape;
-    /** @member {boolean} */
-    showBackgroundMask;
-    /** @member {boolean} */
-    showCloseButton;
-
-
-    /**
-     * @member {function}
-     * Callback invoked when dialog is closed.
-     */
-    onClose;
-
+    inPortal;
+    /** @member {number} */
+    initialX;
+    /** @member {number} */
+    initialY;
+    /** @member {number} */
+    initialWidth;
+    /** @member {number} */
+    initialHeight;
 
     //-------------------
     // Mutable Public State
@@ -91,194 +88,378 @@ export class DialogModel {
     @observable isMaximized;
     /** @member {boolean} */
     @observable isOpen;
+    /** @member {boolean} */
+    @observable closeOnOutsideClick;
+    /** @member {boolean} */
+    @observable closeOnEscape;
+    /** @member {boolean} */
+    @observable showBackgroundMask;
+    /** @member {boolean} */
+    @observable showCloseButton;
+    /** @member {(Object|function)} */
+    @observable content;
 
 
     //---------------------------------
     // Observable Implementation State
     //----------------------------------
-    /** Is the Dialog mounted into React's virtual DOM? */
+    /** Is the Dialog mounted into React's virtual DOM via the React "portal" method? */
     /** @member {boolean} */
-    @observable hasMounted = false;
+    @observable hasPortal = false;
     /** @member {object} */
     @observable.ref sizeState = {};
     /** @member {object} */
     @observable.ref positionState = {};
     /** @member {boolean} */
-    @observable isMaximizedState = false;
+    @observable isMaximizedState;
 
     /**
      * @param {Object} config
-     * @param {boolean} [config.resizable] - Can dialog be resized?
-     * @param {boolean} [config.draggable] - Can dialog be dragged?
+     * @param {(Object|function)} [config.content] - content to be rendered by this Dialog.
+     * @param {number} [config.width] - Optional initial width of Dialog.
+     * @param {number} [config.height] - Optional initial height of Dialog.
+     * @param {number} [config.x] - Optional initial x position of Dialog.
+     * @param {number} [config.y] - Optional initial y position of Dialog.
+     * @param {boolean} [config.isMaximized] - Does Dialog cover entire viewport?
+     * @param {boolean} [config.isOpen] - Is Dialog open?
+     * @param {boolean} [config.inPortal] - Open in React Portal? (default true) If false, dialog will be bound by parent DOM el.
+     * @param {boolean} [config.resizable] - Can Dialog be resized?
+     * @param {boolean} [config.draggable] - Can Dialog be dragged?
+     * @param {boolean} [config.closeOnOutsideClick] - Can Dialog be closed by clicking outside Dialog?
+     * @param {boolean} [config.closeOnEscape] - Can Dialog be closed by pressing escape key?
+     * @param {boolean} [config.showBackgroundMask] - Show a background mask between Dialog and app?
+     * @param {boolean} [config.showCloseButton] - Show close button in Dialog header?
      * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
+        content,
+        width,
+        height,
+        x,
+        y,
+        isMaximized = false,
+        isOpen = false,
+        inPortal = true,
         resizable = false,
         draggable = false,
+        closeOnOutsideClick = true,
+        closeOnEscape = true,
+        showBackgroundMask = true,
+        showCloseButton = true,
         stateModel = null
     } = {}) {
-
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
         this.stateModel = this.parseStateModel(stateModel);
-    }
+        this.inPortal = inPortal;
 
+        // set observables
+        this.setContent(content);
+        this.initialWidth = width;
+        this.initialHeight = height;
+        this.setSize({width, height});
+        this.initialX = x;
+        this.initialY = y;
+        this.setPosition({x, y});
+        this.setIsMaximized(isMaximized);
+        this.setIsOpen(isOpen);
+        this.setCloseOnOutsideClick(closeOnOutsideClick);
+        this.setCloseOnEscape(closeOnEscape);
+        this.setShowBackgroundMask(showBackgroundMask);
+        this.setShowCloseButton(showCloseButton);
 
+        this.addReaction({
+            track: () => [this.controlledX, this.controlledY, this.controlledWidth, this.controlledHeight],
+            run: () => this.positionDialog()
+        });
 
-    isComponentModel() {
-        return true;
+        this.addReaction({
+            track: () => this.currentIsMaximized,
+            run: () => this.currentIsMaximized ? this.maximize() : this.unMaximize()
+        });
     }
 
     //----------------------
     // Actions
     //----------------------
     @action
-    setHasMounted(bool) {
-        this.hasMounted = bool;
+    setHasPortal(bool) {
+        this.hasPortal = bool;
     }
 
     @action
-    hide(onClose) {
-        onClose();
-        if (this.stateModel) return;
+    setContent(v) {
+        this.content = v;
+    }
 
-        this.setSizeState({});
-        this.setPositionState({});
-        this.setIsMaximizedState(false);
+    // todo: allow x,y width,height params passed here?
+    @action
+    open() {
+        this.setIsOpen(true);
     }
 
     @action
-    toggleIsMaximized() {
-        this.isMaximizedState = !this.isMaximizedState;
-        if (this.isMaximizedState) {
-            this.maximize();
-        } else {
-            this.unMaximize();
+    close() {
+        this.rndRef = null;
+        this.setIsOpen(false);
+        this.isMaximized = false; // deliberately skip setter here to avoid changing state
+        this.x = undefined;
+        this.y = undefined;
+        this.width = undefined;
+        this.height = undefined;
+    }
+
+    @action
+    setSize({width, height}) {
+        if (isNil(width) && isNil(height)) return;
+
+        this.width = width;
+        this.height = height;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setSizeState();
+            }
         }
     }
 
-    @action
-    setSizeState(v) {
-        this.sizeState = v;
+    get size() {
+        if (!this.rndRef) return {};
+        return this.dialogSize;
     }
 
     @action
-    setPositionState(v) {
-        if (isUndefined(v.x) && isUndefined(v.y)) v = {};
-        this.positionState = v;
+    setPosition({x, y}) {
+        if (isNil(x) && isNil(y)) return;
+
+        throwIf(
+            isNil(x) || isNil(x),
+            'The DialogModel.setPosition method requires both "x" and "y" properties in the position {x: Number, y: Number} argument.'
+        );
+        this.x = x;
+        this.y = y;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setPositionState();
+            }
+        }
+    }
+
+    get position() {
+        if (!this.rndRef) return {};
+        return this.rndRef.getDraggablePosition();
     }
 
     @action
-    setIsMaximizedState(v) {
-        this.isMaximizedState = v;
+    setIsMaximized(v) {
+        this.isMaximized = v;
+        if (this.rndRef) {
+            if (this.stateModel) {
+                this.setIsMaximizedState();
+            }
+        }
+    }
+
+    @computed
+    get currentIsMaximized() {
+        return withDefault(this.isMaximizedState, this.isMaximized);
+    }
+
+    @action
+    setCloseOnOutsideClick(v) {
+        this.closeOnOutsideClick = v;
+    }
+
+    @action
+    setCloseOnEscape(v) {
+        this.closeOnEscape = v;
+    }
+
+    @action
+    setShowBackgroundMask(v) {
+        this.showBackgroundMask = v;
+    }
+
+    @action
+    setShowCloseButton(v) {
+        this.showCloseButton = v;
     }
 
     //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
+    @action
+    setSizeState() {
+        this.sizeState = {width: this.width, height: this.height};
+    }
 
+    @action
+    setPositionState() {
+        this.positionState = {x: this.x, y: this.y};
+    }
+
+    @action
+    setIsMaximizedState(v) {
+        this.isMaximizedState = this.isMaximized;
+    }
 
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    handleEscapKey(onClose) {
-        this.hide(onClose);
+    @computed
+    get controlledWidth() {
+        return withDefault(this.sizeState.width, this.width, this.initialWidth);
     }
 
-    handleOutsideClick(evt, onClose) {
-        if (evt.target != this.clickCaptureCompRef.current) return;
-        this.hide(onClose);
+    @computed
+    get controlledHeight() {
+        return withDefault(this.sizeState.height, this.height, this.initialHeight);
     }
 
-    positionDialogOnRender({width, height, x, y}) {
+    @computed
+    get controlledX() {
+        return withDefault(this.positionState.x, this.x, this.initialX);
+    }
+
+    @computed
+    get controlledY() {
+        return withDefault(this.positionState.y, this.y, this.initialY);
+    }
+
+    @action
+    setIsOpen(v) {
+        this.isOpen = v;
+    }
+
+    @action
+    maximize() {
         if (!this.rndRef) return;
 
-        this.setState({width, height, x, y});
-
-        if (this.isMaximizedState) {
-            this.maximize();
-            return;
+        if (!isNumber(this.controlledWidth) || !isNumber(this.controlledWidth)) {
+            this.unMaximizedSize = this.dialogSize;
         }
+        const size = this.inPortal ? this.windowSize : this.parentSize;
+        this.rndRef.updatePosition({x: 0, y: 0});
+        this.rndRef.updateSize(size);
+    }
 
-        width = this.sizeState.width;
-        height = this.sizeState.height;
-        if (isNumber(width) && isNumber(height)) {
-            this.applySizeStateChanges({width, height});
-        }
+    @action
+    unMaximize() {
+        if (!this.rndRef) return;
+        this.positionDialog();
+        this.unMaximizedSize = {};
+    }
 
-        x = this.positionState.x;
-        y = this.positionState.y;
-        if (!isNumber(x) || !isNumber(y)) {
-            this.centerDialog();
+    handleEscapKey() {
+        this.close();
+    }
+
+    handleOutsideClick(evt) {
+        if (evt.target != this.clickCaptureCompRef.current) return;
+        this.close();
+    }
+
+    togglePortal() {
+        if (!this.inPortal) return;
+        if (this.isOpen) {
+            this.setUpPortal();
         } else {
-            this.applyPositionStateChanges({x, y});
+            this.removePortal();
         }
     }
 
-    setState({width, height, x, y}) {
+    setUpPortal() {
+        /**
+             * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
+             * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
+             */
+        if (this.containerElement) return;
+
+        this.portalContainer = document.getElementById(this.dialogPortalId);
+        this.portalContainer.appendChild(document.createElement('div'));
+        this.containerElement = this.portalContainer.lastChild;
+        this.setHasPortal(true);
+    }
+
+    removePortal() {
+        if (!this.containerElement) return;
+
+        this.portalContainer.removeChild(this.containerElement);
+        this.containerElement = null;
+        this.setHasPortal(false);
+    }
+
+    positionDialogOnRender() {
+        if (!this.rndRef) return;
+
         if (this.stateModel) {
             this.stateModel.initializeState();
         }
 
-        const {width: stateWidth, height: stateHeight} = this.sizeState;
-        width = isNumber(stateWidth) ? stateWidth : width;
-        height = isNumber(stateHeight) ? stateHeight : height;
-        this.setSizeState({width, height});
+        this.currentIsMaximized ? this.maximize() : this.positionDialog();
+    }
 
-        const {x: stateX, y: stateY} = this.positionState;
-        x = isNumber(stateX) ? stateX : x;
-        y = isNumber(stateY) ? stateY :y;
-        this.setPositionState({x, y});
+    positionDialog() {
+        if (!this.rndRef || this.currentIsMaximized) return;
 
+        const {controlledX: x, controlledY: y, controlledWidth: width, controlledHeight: height} = this;
+
+        if (!isEmpty(this.unMaximizedSize)) {
+            this.applySizeChanges(this.unMaximizedSize);
+        } else if (isNumber(width) || isNumber(height)) {
+            this.applySizeChanges({width, height});
+        }
+
+        // animation frame lets any new width/height be considered by positioning calcs
+        window.requestAnimationFrame(() => {
+            if (!isNumber(x) || !isNumber(y)) {
+                this.centerDialog();
+            } else {
+                this.applyPositionChanges({x, y});
+            }
+        });
+    }
+
+    onParentResize() {
+        if (!this.rndRef) return;
+        if (this.isMaximized) {
+            this.maximize();
+            return;
+        }
+        if (isNil(this.controlledX) || isNil(this.controlledY)) {
+            this.centerDialog();
+        }
     }
 
     centerDialog() {
-        window.requestAnimationFrame(() => this.rndRef.updatePosition(this.calcCenteredPos(this.dialogSize)));
+        const coords = this.calcCenteredPos(this.dialogSize);
+        this.rndRef.updatePosition(coords);
     }
 
-    applySizeStateChanges({width, height}) {
+    applySizeChanges({width, height}) {
         const {windowSize: wSize} = this;
 
         width = Math.min(wSize.width - 20, width);
         height = Math.min(wSize.height - 20, height);
-        this.rndRef.updateSize({width, height});
-    }
-
-    applyPositionStateChanges({x, y}) {
-        // delay so that correct dialog size can be calculated from DOM
-        window.requestAnimationFrame(() => {
-            const {windowSize: wSize, dialogSize: dSize} = this;
-            x = Math.min(x, wSize.width - dSize.width);
-            y = Math.min(y, wSize.height - dSize.height);
-            this.rndRef.updatePosition({x, y});
+        this.rndRef.updateSize({
+            width: isNumber(width) ? width : undefined,
+            height: isNumber(height) ? height : undefined
         });
     }
 
+    applyPositionChanges({x, y}) {
+        const {windowSize: wSize, dialogSize: dSize} = this;
+        x = Math.min(x, wSize.width - dSize.width),
+        y = Math.min(y, wSize.height - dSize.height);
+        this.rndRef.updatePosition({x, y});
+    }
+
     calcCenteredPos({width, height}) {
-        const wSize = this.windowSize;
+        const pSize = this.inPortal ? this.windowSize : this.parentSize;
         return {
-            x: Math.max((wSize.width - width) / 2, 0),
-            y: Math.max((wSize.height - height) / 2, 0)
+            x: Math.max((pSize.width - width) / 2, 0),
+            y: Math.max((pSize.height - height) / 2, 0)
         };
-    }
-
-    maximize() {
-        if (!this.rndRef) return;
-
-        this.rndRef.updatePosition({x: 0, y: 0});
-        this.rndRef.updateSize(this.windowSize);
-    }
-
-    unMaximize() {
-        if (!this.rndRef) return;
-
-        this.rndRef.updateSize(this.sizeState);
-        if (isEmpty(this.positionState)) {
-            this.centerDialog();
-        } else {
-            this.rndRef.updatePosition(this.positionState);
-        }
     }
 
     parseStateModel(stateModel) {
@@ -295,6 +476,15 @@ export class DialogModel {
         return ret;
     }
 
+    get parentSize() {
+        const p = this.rndRef.getParent().parentElement;
+
+        return {
+            width: p.offsetWidth,
+            height: p.offsetHeight
+        };
+    }
+
     get windowSize() {
         const w = window, d = document, e = d.documentElement,
             g = d.getElementsByTagName('body')[0];
@@ -306,10 +496,16 @@ export class DialogModel {
     }
 
     get dialogSize() {
+        if (!this.dialogWrapperDivRef.current) return {};
+
         const {
             offsetWidth: width,
             offsetHeight: height
         } = this.dialogWrapperDivRef.current;
         return {width, height};
+    }
+
+    get baseClass() {
+        return this.inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
     }
 }

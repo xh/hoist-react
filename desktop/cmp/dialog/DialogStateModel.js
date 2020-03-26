@@ -85,9 +85,10 @@ export class DialogStateModel {
 
     loadState(state) {
         this.state = cloneDeep(state);
+        // updateIsMaximized must be first to short-circuit dialogModel.positionDialog
+        if (this.trackIsMaximized) this.updateIsMaximized();
         if (this.trackSize) this.updateSize();
         if (this.trackPosition) this.updatePosition();
-        if (this.trackIsMaximized) this.updateIsMaximized();
     }
 
     //--------------------------
@@ -107,7 +108,7 @@ export class DialogStateModel {
         const {dialogModel, state} = this;
         if (!state.size) return;
 
-        dialogModel.setSizeState(state.size);
+        dialogModel.setSize(state.size);
     }
 
     //--------------------------
@@ -128,7 +129,7 @@ export class DialogStateModel {
         const {dialogModel, state} = this;
         if (!state.position) return;
 
-        dialogModel.setPositionState(state.position);
+        dialogModel.setPosition(state.position);
     }
 
     //--------------------------
@@ -148,7 +149,7 @@ export class DialogStateModel {
         const {dialogModel, state} = this;
         if (isUndefined(state.isMaximized)) return;
 
-        dialogModel.setIsMaximizedState(state.isMaximized);
+        dialogModel.setIsMaximized(state.isMaximized);
     }
 
     //--------------------------

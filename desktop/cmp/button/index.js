@@ -14,6 +14,7 @@ export * from './ExportButton';
 export * from './FeedbackButton';
 export * from './LaunchAdminButton';
 export * from './LogoutButton';
+export * from './MenuButton';
 export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';

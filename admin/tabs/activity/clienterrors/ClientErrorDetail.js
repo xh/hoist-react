@@ -12,25 +12,15 @@ import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 
 export const clientErrorDetail = hoistCmp.factory(
-    ({model}) => {
-        const rec = model.detailRecord;
-
-        if (!rec) return null;
-
-        return dialog({
-            title: 'Error Details',
-            style: {width: 1000},
-            isOpen: true,
-            onClose: () => model.closeDetail(),
-            items: detail()
-        });
-    }
+    ({model}) => dialog({
+        title: 'Error Details'
+    })
 );
 
-const detail = hoistCmp.factory(
+export const detail = hoistCmp.factory(
     ({model}) => {
         const {data} = model.detailRecord;
         return panel({
@@ -53,7 +43,7 @@ const detail = hoistCmp.factory(
                 jsonInput({
                     value: data.error,
                     disabled: true,
-                    height: 450,
+                    height: '100%',
                     width: '100%',
                     editorProps: {lineWrapping: true}
                 })

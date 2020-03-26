@@ -5,7 +5,8 @@
  * Copyright © 2019 Extremely Heavy Industries Inc.
  */
 
-.xh-dialog-root {
+.xh-dialog-portal,
+.xh-dialog-container {
   .react-draggable {
     background-color: var(--xh-bg);
     box-shadow: var(--xh-dialog-box-shadow);
@@ -14,8 +15,11 @@
     max-width: 100vh;
 
     .xh-dialog {
+      // width & needed to make charts fill in space
       width: 100%;
       height: 100%;
+      // flex needed to get content sizes correct (comment out and test /app/other/popups) to see background bleed issue
+      display: flex;
     }
   }
 
@@ -41,5 +45,19 @@
     background-color: transparent;
     overflow: auto;
     user-select: none;
+  }
+}
+
+.xh-dialog-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  &__mask {
+    position: absolute;
+  }
+
+  &__click-capture {
+    position: absolute;
   }
 }
