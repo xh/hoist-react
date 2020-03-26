@@ -321,8 +321,8 @@
 //------------------------
 // Tree Mode
 //------------------------
-.xh-grid--hierarchical > .ag-theme-balham.xh-ag-grid,
-.xh-grid--hierarchical > .ag-theme-balham-dark.xh-ag-grid {
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
   // Vertically center tree grid affordances
   .ag-row .ag-cell-wrapper.ag-row-group {
     align-items: center;
