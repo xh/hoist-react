@@ -13,7 +13,7 @@ import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {filter, isEmpty, isFunction, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
 
 /**
  * A custom ag-Grid header component.
@@ -95,7 +95,6 @@ class LocalModel {
     @bindable isFiltered = false;
     enableSorting;
     availableSorts;
-    sortIndex;
 
     _doubleClick = false;
     _lastTouch = Date.now();
@@ -187,8 +186,17 @@ class LocalModel {
 
     getNextSortBy() {
         const {availableSorts, activeGridSorter} = this;
-        this.sortIndex = activeGridSorter ? (this.sortIndex + 1) % availableSorts.length : 0;
-        return availableSorts[this.sortIndex];
+        if (!availableSorts.length) return null;
+
+        let idx = 0;
+        if (activeGridSorter) {
+            const {colId, sort, abs} = activeGridSorter,
+                currIdx = findIndex(availableSorts, {colId, sort, abs});
+
+            if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
+        }
+
+        return availableSorts[idx];
     }
 
     autosize() {
@@ -201,7 +209,6 @@ class LocalModel {
             if (isString(spec) || spec === null) spec = {sort: spec};
             return {...spec, colId};
         });
-
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }
