@@ -7,6 +7,8 @@
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
+will be cycled through when the user clicks on the header.
 
 ### 💥 Breaking Changes
 
