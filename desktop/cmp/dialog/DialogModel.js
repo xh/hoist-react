@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isNil, isNumber, isPlainObject, isString} from 'lodash';
 
-import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {withDefault, throwIf} from '@xh/hoist/utils/js';
@@ -15,30 +15,13 @@ import {DialogStateModel} from './DialogStateModel';
 
 
 /**
- * DialogModel supports configuration and state-management for user-driven Dialog resizing and
- * repositioning (dragging) functionality,
- * including the option to persist such state into local storage.
+ * Main backing Model for Dialog Component.
+ *
+ * Provides the API for configuration and run-time manipulation of the Dialog's positioning
+ * and other state.
  */
 @HoistModel
-@LoadSupport
 export class DialogModel {
-
-    /**
-     * The base zIndex that will be used for all dialogs
-     * 4 is the lowest we can go and still cover buttons in blueprint popopver targets, which are set to 4
-     * go too high and your dialog covers datepicker and select popups
-     */
-    static Z_INDEX_BASE = 4;
-
-    /**
-     * Set the base zIndex to a custom value for all dialogs in your app.
-     * You would set this early in app life cycle.
-     *
-     * @param {number} zIndex - the base z-index to use for all dialogs in an app.
-     */
-    static setZIndexBase(zIndex) {
-        DialogModel.Z_INDEX_BASE = zIndex;
-    }
 
     //-----------------------
     // Private Properties

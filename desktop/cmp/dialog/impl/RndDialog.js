@@ -8,7 +8,7 @@
 import {isNil, merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {HoistModel, hoistCmp, uses, useLocalModel} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 
@@ -16,61 +16,28 @@ import {DialogModel} from '../DialogModel';
 import {dialogHeader} from './DialogHeader';
 
 /**
+ * The base zIndex that will be used for all dialogs.
+ * >4 is required to stay on top of blueprint popopver targets.
+ * Cannot be too high or you will cover datepicker and select popups
+ */
+const DIALOG_Z_INDEX_BASE = 4;
+
+
+/**
  * @private
  *
  * Main implementation component for Dialog.
  *
- * Wraps an react-rnd based component for showing content and header with draggable affordances
+ * Wraps content in a react-rnd component for showing in a window with draggable affordances.
  */
 export const rndDialog = hoistCmp.factory({
     model: uses(DialogModel),
     render({model, className, rndOptions = {}, ...props}) {
-        const {inPortal, resizable, draggable, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model;
+        const {inPortal, resizable, draggable, showBackgroundMask, closeOnOutsideClick} = model,
+            impl = useLocalModel(LocalModel);
+        impl.model = model;
 
-        const onDragStop = (evt, data) => {
-            // ignore drags on close or maximize button in title bar
-            if (evt.target.closest('button')) return;
-
-            if (!model.isMaximized) {
-                model.setPosition({x: data.x, y: data.y});
-            }
-            if (rndOptions.onDragStop) rndOptions.onDragStop(evt, data);
-        };
-
-        const onResizeStop = (
-            evt,
-            resizeDirection,
-            domEl,
-            resizableDelta,
-            position
-        ) => {
-            if (!model.isMaximized) {
-                const {offsetWidth: width, offsetHeight: height} = domEl;
-                model.setSize({width, height});
-                if (isNil(model.controlledX) || isNil(model.controlledY)) {
-                    model.centerDialog();
-                } else  {
-                    model.setPosition(position);
-                }
-            }
-            if (rndOptions.onResizeStop) {
-                rndOptions.onResizeStop(
-                    evt,
-                    resizeDirection,
-                    domEl,
-                    resizableDelta,
-                    position
-                );
-            }
-        };
-
-        const onKeyDown = (evt) => {
-            if (evt.key === 'Escape' && closeOnEscape) {
-                model.close();
-            }
-        };
-
-        let zIndex = DialogModel.Z_INDEX_BASE;
+        let zIndex = DIALOG_Z_INDEX_BASE;
         if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
         merge(rndOptions, {style: {zIndex}});
 
@@ -93,10 +60,10 @@ export const rndDialog = hoistCmp.factory({
                 },
                 bounds: inPortal ? 'body' : 'parent',
                 dragHandleClassName: 'xh-dialog__header',
-                onDragStop,
-                onResizeStop,
+                onDragStop: impl.onDragStop,
+                onResizeStop: impl.onResizeStop,
                 item: div({
-                    onKeyDown,
+                    onKeyDown: impl.onKeyDown,
                     tabIndex: 0,
                     ref: model.dialogWrapperDivRef,
                     className,
@@ -105,9 +72,51 @@ export const rndDialog = hoistCmp.factory({
             })
         ];
 
-        return inPortal ? fragment(...items) : div({className: model.baseClass, items});
+        return inPortal ? fragment(items) : div({className: model.baseClass, items});
     }
 });
+
+@HoistModel
+class LocalModel {
+
+    model;
+
+    onDragStop = (evt, data) => {
+        const {model} = this;
+
+        if (evt.target.closest('button')) return;    // ignore drags on close or maximize button
+
+        if (!model.isMaximized) {
+            model.setPosition({x: data.x, y: data.y});
+        }
+    };
+
+    onResizeStop = (
+        evt,
+        resizeDirection,
+        domEl,
+        resizableDelta,
+        position
+    ) => {
+        const {model} = this;
+        if (!model.isMaximized) {
+            model.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
+            if (isNil(model.controlledX) || isNil(model.controlledY)) {
+                model.centerDialog();
+            } else  {
+                model.setPosition(position);
+            }
+        }
+    };
+
+    onKeyDown = (evt) => {
+        const {model} = this;
+        if (evt.key === 'Escape' && model.closeOnEscape) {
+            model.close();
+        }
+    };
+}
+
 
 //-------------------
 // Helper Components

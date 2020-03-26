@@ -17,9 +17,8 @@ import {DialogModel} from './DialogModel';
 
 import './DialogStyles.scss';
 
-
 /**
- * Component for showing content in a 'pop-up' window.
+ * Component for showing content in a window.
  *
  * See DialogModel for the main API for specifying and controlling this component.
  */
@@ -74,22 +73,17 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             return null;
         }
 
-        if (inPortal) {
-            return ReactDOM.createPortal(
-                rndDialog(props),
-                model.containerElement
-            );
-        } else {
-            return rndDialog(props);
-        }
+        return inPortal ?
+            ReactDOM.createPortal(rndDialog(props), model.containerElement) :
+            rndDialog(props);
     }
 });
 
 Dialog.propTypes = {
-    /** An icon placed at the left-side of the dialog's header. */
+    /** An icon to be shown in the dialog's header. */
     icon: PT.element,
 
-    /** Title text added to the dialog's header. */
+    /** Title to be shown in the dialog's header. */
     title: PT.oneOfType([PT.string, PT.node]),
 
     /** Primary component model instance. */
