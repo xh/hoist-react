@@ -73,6 +73,9 @@ body {
 
   // Buttons
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '100'), mc('blue', '200'), 90%)});
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
+  --xh-button-bg: var(--button-bg, #{mc('grey', '50')});
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
@@ -289,9 +292,6 @@ body {
   --xh-intent-danger: var(--intent-danger, var(--xh-red));
   --xh-intent-success: var(--intent-success, var(--xh-green));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
-
-  // Buttons
-  --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '100')});
 }
 
 //------------------------
@@ -373,7 +373,10 @@ body.xh-dark {
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 
   // Buttons
-  --xh-btn-active-color: var(--btn-active-color, #{mc('blue-grey', '600')});
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '600'), mc('light-blue', '700'), 90%)});
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
+  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '800')});
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 }
 
 //------------------------
@@ -384,8 +387,11 @@ body.xh-mobile {
   --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
 
   // Buttons
-  --xh-btn-color: var(--btn-color, #{mc('blue-grey', '600')});
-  --xh-toolbar-btn-color: var(--toolbar-btn-color, var(--xh-btn-color));
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
+  --xh-button-active-text-color: var(--button-active-text-color, white);
+  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
+  --xh-button-text-color: var(--button-text-color, white);
+  --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
   // Grid
   --xh-grid-font-size: var(--grid-font-size, 14);
@@ -412,6 +418,7 @@ body.xh-mobile {
 }
 
 body.xh-mobile.xh-dark {
+  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
   --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
   --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
   --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});

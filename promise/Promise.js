@@ -79,8 +79,8 @@ const enhancePromise = (promisePrototype) => {
          * Version of catch() that will only catch certain exceptions.
          * @see Promise.catch()
          *
-         * @param {function} selector - closure that takes an exception and returns a boolean.
-         *      May also be specified as a list of exceptions names to be handled.
+         * @param {(function|string|string[])} selector - closure that takes an exception and
+         *      returns a boolean. May also be specified as an exception name or list of names.
          *      Only exceptions passing this selector will be handled by this method.
          * @param {function} [fn]
          */
@@ -104,7 +104,7 @@ const enhancePromise = (promisePrototype) => {
         /**
          * Version of catchDefault() that will only catch certain exceptions.
          *
-         * @param {function} selector - see catchWhen().
+         * @param {(function|string|string[])} selector - see catchWhen().
          * @param {Object} [options] - options suitable for passing to XH.handleException().
          */
         catchDefaultWhen(selector, options) {

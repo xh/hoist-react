@@ -4,8 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {useRef} from 'react';
+import {hoistCmp, uses, RenderMode} from '@xh/hoist/core';
 import {div, hbox, vbox, span, filler} from '@xh/hoist/cmp/layout';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -26,22 +28,45 @@ export const dockView = hoistCmp.factory({
     className: 'xh-dock-view',
 
     render({model, className, compactHeaders}) {
-        const {collapsed, docked} = model;
+        const {width, height, collapsedWidth, collapsed, docked, isActive, renderMode, refreshContextModel} = model,
+            wasActivated = useRef(false);
+
+        if (!wasActivated.current && isActive) wasActivated.current = true;
+
+        const unmount = !isActive && (
+            (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+            (renderMode === RenderMode.LAZY && !wasActivated.current)
+        );
 
         const header = headerCmp({compactHeaders}),
-            body = div({className: 'xh-dock-view__body', item: elementFromContent(model.content)});
+            body = refreshContextView({
+                model: refreshContextModel,
+                item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
+            });
+
+        // 1) Render collapsed
+        if (collapsed) {
+            return vbox({
+                width: collapsedWidth,
+                className: classNames(className, 'xh-dock-view--collapsed'),
+                items: [header, unmount ? null : body]
+            });
+        }
 
         // 1) Render docked
-        if (collapsed || docked) {
+        if (docked) {
             return vbox({
-                className: classNames(className, collapsed ? 'xh-dock-view--collapsed' : null),
-                items: [header, body]
+                width,
+                height,
+                className: classNames(className, 'xh-dock-view--docked'),
+                items: [header, unmount ? null : body]
             });
         }
 
         // 2) Render in Dialog
         return dialog({
             className: classNames(className, 'xh-dock-view--dialog'),
+            style: {width, height},
             isOpen: true,
             onClose: () => model.onClose(),
             canOutsideClickClose: false,

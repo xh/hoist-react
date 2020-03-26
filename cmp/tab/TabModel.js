@@ -36,7 +36,7 @@ export class TabModel {
      * @param {TabContainerModel} c.containerModel - parent TabContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - display title for the Tab in the container's TabSwitcher.
-     * @param {Icon} [c.icon] - display icon for the Tab in the container's TabSwitcher.
+     * @param {Element} [c.icon] - display icon for the Tab in the container's TabSwitcher.
      * @param {string} [c.disabled] - true to disable this tab in the TabSwitcher and block routing.
      * @param {string} [c.excludeFromSwitcher] - true to hide this Tab in the TabSwitcher,
      *      but still be able to activate the tab manually or via routing.
@@ -77,11 +77,11 @@ export class TabModel {
     }
 
     get renderMode() {
-        return this._renderMode || this.containerModel.renderMode;
+        return this._renderMode ?? this.containerModel.renderMode;
     }
 
     get refreshMode() {
-        return this._refreshMode || this.containerModel.refreshMode;
+        return this._refreshMode ?? this.containerModel.refreshMode;
     }
 
     @computed

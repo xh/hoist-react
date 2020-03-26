@@ -154,7 +154,7 @@ export class Store {
      *
      * Records loaded or removed via this method will be considered to be "committed", with the
      * expectation that inputs to this method were provided by the server or other data source of
-     * record. For modifying particular fields on existing Records, see `modifyData()`. For local
+     * record. For modifying particular fields on existing Records, see `modifyRecords()`. For local
      * adds/removes not sourced from the server, see `addRecords()` and `removeRecords()`. Those
      * APIs will modify the current RecordSet but leave those changes in an uncommitted state.
      *
@@ -165,6 +165,8 @@ export class Store {
      */
     @action
     updateData(rawData) {
+        if (isEmpty(rawData)) return null;
+
         const changeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates

@@ -59,9 +59,21 @@
       line-height: 15px;
     }
 
+    &__indicators > div {
+      display: flex;
+      align-items: flex-end;
+    }
+
     &__indicator {
-      padding: 0 var(--xh-pad-half-px);
-      color: var(--xh-border-color);
+      padding: 0 8px 0 0;
+      width: 20px;
+      color: var(--xh-text-color-muted);
+      font-size: var(--xh-font-size-large-px);
+
+      &:hover {
+        cursor: pointer;
+        color: var(--xh-text-color);
+      }
     }
 
     &__indicator-separator {

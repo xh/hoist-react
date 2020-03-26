@@ -5,8 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {convertIconToSvg, fileIcon, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {numberRenderer} from '@xh/hoist/format';
+
 
 export const emptyFlexCol =  {
     colId: 'emptyFlex',
@@ -28,7 +29,7 @@ export const boolCheckCol = {
     width: 34,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? convertIconToSvg(Icon.check({prefix: 'fas'}), {classes: ['xh-green']}) : ''
+    renderer: (v) => v ? Icon.check({prefix: 'fas', className: 'xh-green', asHtml: true}) : ''
 };
 
 export const numberCol = {
@@ -41,5 +42,5 @@ export const fileExtCol = {
     width: 28,
     align: 'center',
     resizable: false,
-    renderer: (v) => convertIconToSvg(fileIcon(v))
+    renderer: (v) => v ? Icon.fileIcon({filename: v, title: v, asHtml: true}) : ''
 };

@@ -15,8 +15,8 @@ import {elementFromContent} from '@xh/hoist/utils/react';
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
  * internal implementation to:
  *
- *   - Mount/unmount its contents according to `TabModel.renderMode`.
- *   - Track and trigger refreshes according to `TabModel.refreshMode`.
+ *   - Mount/unmount its contents according to {@see TabModel.renderMode}.
+ *   - Track and trigger refreshes according to {@see TabModel.refreshMode}.
  *   - Stretch its contents using a flex layout.
  *
  * @private

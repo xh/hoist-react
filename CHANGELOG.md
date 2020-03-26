@@ -1,45 +1,182 @@
 # Changelog
 
-## v30.0.0-SNAPSHOT - unreleased
+## v32.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
+* The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
+  elements and the special string token '-' (shortcut to render a `MenuDivider`).
+
+### 💥 Breaking Changes
+
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
+  class `.xh-panel__content`. You may need to update styling that targets the inner structure of
+  `Panel` via `.xh-panel`.
+
+### 🐞 Bug Fixes
+
+* `GridStateModel` no longer saves/restores the width of non-resizable columns.
+  [#1718](https://github.com/xh/hoist-react/issues/1718)
+
+### 📚 Libraries
+
+* @fortawesome/* `5.12 -> 5.13`
+* codemirror `5.51 -> 5.52`
+* filesize `6.0 -> 6.1`
+* numbro `2.1 -> 2.2`
+* react-beautiful-dnd `12.0 -> 13.0`
+* store2 `2.10 -> 2.11`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
+
+## v31.0.0 - 2020-03-16
+
+### 🎁 New Features
+
+* The mobile `Navigator` / `NavigatorModel` API has been improved and made consistent with other
+  Hoist content container APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+  * `NavigatorModel` and `PageModel` now support setting a `RenderMode` and `RefreshMode` to control
+    how inactive pages are mounted/unmounted and how they respond to refresh requests.
+  * `Navigator` pages are no longer required to to return `Page` components - they can now return
+    any suitable component.
+* `DockContainerModel` and `DockViewModel` also now support `refreshMode` and `renderMode` configs.
+* `Column` now auto-sizes when double-clicking / double-tapping its header.
+* `Toolbar` will now collapse overflowing items into a drop down menu. (Supported for horizontal
+  toolbars only at this time.)
+* Added new `xhEnableLogViewer` config (default `true`) to enable or disable the Admin Log Viewer.
+
+#### 🎨 Icons
+
+* Added `Icon.icon()` factory method as a new common entry point for creating new FontAwesome based
+  icons in Hoist. It should typically be used instead of using the `FontAwesomeIcon` component
+  directly.
+* Also added a new `Icon.fileIcon()` factory. This method take a filename and returns an appropriate
+  icon based on its extension.
+* All Icon factories can now accept an `asHtml` parameter, as an alternative to calling the helper
+  function `convertIconToSVG()` on the element. Use this to render icons as raw html where needed
+  (e.g. grid renderers).
+* Icons rendered as html will now preserve their styling, tooltips, and size.
+
+### 💥 Breaking Changes
+
+* The application's primary `HoistApplicationModel` is now instantiated and installed as
+  `XH.appModel` earlier within the application initialization sequence, with construction happening
+  prior to the init of the XH identity, config, and preference services.
+  * This allows for a new `preAuthInitAsync()` lifecycle method to be called on the model before
+    auth has completed, but could be a breaking change for appModel code that relied on these
+    services for field initialization or in its constructor.
+  * Such code should be moved to the core `initAsync()` method instead, which continues to be called
+    after all XH-level services are initialized and ready.
+* Mobile apps may need to adjust to the following updates to `NavigatorModel` and related APIs:
+  * `NavigatorModel`'s `routes` constructor parameter has been renamed `pages`.
+  * `NavigatorModel`'s observable `pages[]` has been renamed `stack[]`.
+  * `NavigatorPageModel` has been renamed `PageModel`. Apps do not usually create `PageModels`
+    directly, so this change is unlikely to require code updates.
+  * `Page` has been removed from the mobile toolkit. Components that previously returned a `Page`
+    for inclusion in a `Navigator` or `TabContainer` can now return any component. It is recommended
+    you replace `Page` with `Panel` where appropriate.
+* Icon enhancements described above removed the following public methods:
+  * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by Hoist)
+    has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
+    'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`.
+  * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on icon
+    factory functions. If you need to convert an existing icon element, use `convertIconToHtml()`.
+* `Toolbar` items should be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
+
+### 🐞 Bug Fixes
+
+* The `fmtDate()` utility now properly accepts, parses, and formats a string value input as
+  documented.
+* Mobile `PinPad` input responsiveness improved on certain browsers to avoid lag.
+
+### ⚙️ Technical
+
+* New lifecycle methods `preAuthInitAsync()` and `logoutAsync()` added to the `HoistAppModel`
+  decorator (aka the primary `XH.appModel`).
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.1.0...v31.0.0)
+
+## v30.1.0 - 2020-03-04
+
+### 🐞 Bug Fixes
+
+* Ensure `WebSocketService.connected` remains false until `channelKey` assigned and received from
+  server.
+* When empty, `DashContainer` now displays a user-friendly prompt to add an initial view.
+
+### ⚙️ Technical
+
+* Form validation enhanced to improve handling of asynchronous validation. Individual rules and
+  constraints are now re-evaluated in parallel, allowing for improved asynchronous validation.
+* `Select` will now default to selecting contents on focus if in filter or creatable mode.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v30.0.0...30.1.0)
+
+## v30.0.0 - 2020-02-29
 
 ### 🎁 New Features
 
 * `GridModel` and `DataViewModel` now support `groupRowHeight`, `groupRowRenderer` and
   `groupRowElementRenderer` configs. Grouping is new in general to `DataViewModel`, which now takes
   a `groupBy` config.
-* `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
-  sense in a `DataView` context, such as `showHover` and `rowBorders`.
+  * `DataViewModel` allows for settable and multiple groupings and sorters.
+  * `DataViewModel` also now supports additional configs from the underlying `GridModel` that make
+    sense in a `DataView` context, such as `showHover` and `rowBorders`.
 * `TabContainerModel` now accepts a `track` property (default false) for easily tracking tab views
   via Hoist's built-in activity tracking.
 * The browser document title is now set to match `AppSpec.clientAppName` - helpful for projects with
   multiple javascript client apps.
 * `StoreFilterField` accepts all other config options from `TextInput` (e.g. `disabled`).
 * Clicking on a summary row in `Grid` now clears its record selection.
+* The `@LoadSupport` decorator now provides an additional observable property `lastException`. The
+  decorator also now logs load execution times and failures to `console.debug` automatically.
+* Support for mobile `Panel.scrollable` prop made more robust with re-implementation of inner
+  content element. Note this change included a tweak to some CSS class names for mobile `Panel`
+  internals that could require adjustments if directly targeted by app stylesheets.
+* Added new `useOnVisibleChange` hook.
+* Columns now support a `headerAlign` config to allow headers to be aligned differently from column
+  contents.
 
 ### 💥 Breaking Changes
 
+* `Toolbar` items must be provided as direct children. Wrapping Toolbar items in container
+  components can result in unexpected item overflow.
 * `DataView.rowCls` prop removed, replaced by new `DataViewModel.rowClassFn` config for more
   flexibility and better symmetry with `GridModel`.
 * `DataViewModel.itemRenderer` renamed to `DataViewModel.elementRenderer`
 * `DataView` styling has been updated to avoid applying several unwanted styles from `Grid`. Note
   that apps might rely on these styles (intentionally or not) for their `itemRenderer` components
   and appearance and will need to adjust.
+* Several CSS variables related to buttons have been renamed for consistency, and button style rules
+  have been adjusted to ensure they take effect reliably across desktop and mobile buttons
+  ([#1568](https://github.com/xh/hoist-react/pull/1568)).
 * The optional `TreeMapModel.highchartsConfig` object will now be recursively merged with the
   top-level config generated by the Hoist model and component, where previously it was spread onto
   the generated config. This could cause a change in behavior for apps using this config to
   customize map instances, but provides more flexibility for e.g. customizing the `series`.
+* The signature of `useOnResize` hook has been modified slightly for API consistency and clarity.
+  Options are now passed in a configuration object.
 
 ### 🐞 Bug Fixes
 
+* Fixed an issue where charts that are rendered while invisible would have the incorrect size.
+  [#1703](https://github.com/xh/hoist-react/issues/1703)
 * Fixed an issue where zeroes entered by the user in `PinPad` would be displayed as blanks.
 * Fixed `fontAwesomeIcon` elem factory component to always include the default 'fa-fw' className.
   Previously, it was overridden if a `className` prop was provided.
-* Fixed an issue where ConfigDiffer would always warn about deletions.
+* Fixed an issue where ConfigDiffer would always warn about deletions, even when there weren't any.
   [#1652](https://github.com/xh/hoist-react/issues/1652)
 * `TextInput` will now set its value to `null` when all text is deleted and the clear icon will
   automatically hide.
 * Fixed an issue where multiple buttons in a `ButtonGroupInput` could be shown as active
   simultaneously. [#1592](https://github.com/xh/hoist-react/issues/1592)
+* `StoreFilterField` will again match on `Record.id` if bound to a Store or a GridModel with the
+  `id` column visible. [#1697](https://github.com/xh/hoist-react/issues/1697)
+* A number of fixes have been applied to `RelativeTimeStamp` and `getRelativeTimestamp`, especially
+  around its handling of 'equal' or 'epsilon equal' times. Remove unintended leading whitespace from
+  `getRelativeTimestamp`.
 
 ### ⚙️ Technical
 
@@ -51,10 +188,11 @@
 
 ### 📚 Libraries
 
+* @blueprintjs/core `3.23 -> 3.24`
 * react-dates `21.7 -> 21.8`
 * react-beautiful-dnd `11.0 -> 12.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v30.0.0)
 
 ## v29.1.0 - 2020-02-07
 

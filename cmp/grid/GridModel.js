@@ -37,7 +37,7 @@ import {
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
 import {managed} from '../../core/mixins';
-import {debounced} from '../../utils/js';
+import {apiRemoved, debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -165,6 +165,20 @@ export class GridModel {
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
+     *      for early client-access and testing, but are not yet part of the Hoist API.
+     * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
+     *      reloading data when the sortBy property changes on this model (either programmatically,
+     *      or via user-click.)  Useful for applications with large data sets that are performing
+     *      external, or server-side sorting and filtering.  Setting this flag mean that the grid
+     *      should not immediately respond to user or programmatic changes to the sortBy property,
+     *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
+     *      Default false.
+     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
+     *      'deltaSort' feature designed to do incremental sorting.  Default false.
+     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
+     *      deltaRowDataMode to internally generate transactions on data updates.  With the default
+     *      (true) Hoist will generate the transaction on data update.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -248,11 +262,12 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = {
-            suppressUpdateExpandStateOnDataLoad: false,
+            externalSort: false,
             useTransactions: true,
             useDeltaSort: false,
             ...experimental
         };
+        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
     }
 
     /**
@@ -346,6 +361,8 @@ export class GridModel {
     get selectedRecord() {
         return this.selModel.singleRecord;
     }
+
+    get isReady() {return this.agGridModel.isReady}
 
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
