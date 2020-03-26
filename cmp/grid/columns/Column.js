@@ -33,6 +33,19 @@ export class Column {
     static FLEX_COL_MIN_WIDTH = 30;
 
     /**
+     * The default sorting order to be used for columns with sorting enabled.
+     * Change here for global change, otherwise use sortingOrder prop on column.
+     *
+     * Note that values with abs: true will be ignored for columns that do not
+     * support absolute value sorting.  See Column.absSort.
+     */
+    static DEFAULT_SORTING_ORDER = [
+        {sort: 'asc', abs: false},
+        {sort: 'desc', abs: true},
+        {sort: 'desc', abs: false}
+    ];
+
+    /**
      * @param {Object} c - Column configuration.
      * @param {string} [c.field] - name of data store field to display within the column.
      * @param {string} [c.colId] - unique identifier for the Column within its grid.
@@ -62,8 +75,11 @@ export class Column {
      *      wide that it compromises the overall legibility of the grid.
      * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
      *      determine an appropriate row height when the column is visible.
-     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column,
-     *      with column header clicks progressing from ASC > DESC > DESC (abs value).
+     * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
+     *      will be applied by successive clicks on the column header. Values may be one of 'asc',
+     *      'desc', a SortSpec, or null.  Specify null to clear the sort on this column.
+     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
+     *      false (default) absolute value sorts will be ignored when cycling through the sortingOrder.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
      * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
      * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
@@ -132,6 +148,7 @@ export class Column {
         flex,
         rowHeight,
         absSort,
+        sortingOrder,
         comparator,
         resizable,
         movable,
@@ -191,6 +208,7 @@ export class Column {
             width && !isFinite(width),
             `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
         );
+
         this.flex = withDefault(flex, false);
         this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
 
@@ -201,6 +219,7 @@ export class Column {
         this.maxWidth = maxWidth;
 
         this.absSort = withDefault(absSort, false);
+        this.sortingOrder = withDefault(sortingOrder, Column.DEFAULT_SORTING_ORDER);
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -617,4 +636,10 @@ export function getAgHeaderClassFn(column) {
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
  * @param {ValueGetterParams} [params.agParams] - the ag-Grid value getter params.
+ */
+
+/**
+ * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
+ * @param {boolean} [abs] - true to sort by absolute value
  */

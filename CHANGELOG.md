@@ -13,6 +13,8 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
 * Grid column `flex` param will now accept numbers, with available space divided between flex
   columns in proportion to their `flex` value.
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
+will be cycled through when the user clicks on the header.
 
 ### 💥 Breaking Changes
 

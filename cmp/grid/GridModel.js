@@ -362,6 +362,8 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    get isReady() {return this.agGridModel.isReady}
+
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
@@ -440,7 +442,7 @@ export class GridModel {
     /**
      * This method is no-op if provided any sorters without a corresponding column.
      * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
-     *      GridSorter strings, or a falsey value to clear the sort config.
+     *      GridSorter strings, or a falsy value to clear the sort config.
      */
     @action
     setSortBy(sorters) {
