@@ -79,7 +79,7 @@ export class GridModel {
     groupRowRenderer;
     /** @member {Grid~groupRowElementRendererFn} */
     groupRowElementRenderer;
-    /** @member {GridGroupSortFn} */
+    /** @member {(null|GridGroupSortFn)} */
     groupSortFn;
     /** @member {boolean} */
     enableColumnPinning;
@@ -160,8 +160,9 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
-     *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {(null|GridGroupSortFn)} [c.groupSortFn] - null to disable sorting on group rows - or closure
+     *      to sort full-row groups. Called with two group values to compare,
+     *      returns a number as per a standard JS comparator.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
