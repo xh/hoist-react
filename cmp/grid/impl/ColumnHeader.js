@@ -13,7 +13,7 @@ import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {clone, isEmpty, isFunction, isString, remove} from 'lodash';
+import {filter, isEmpty, isFunction, isString} from 'lodash';
 
 /**
  * A custom ag-Grid header component.
@@ -94,7 +94,7 @@ class LocalModel {
     menuButtonRef = createObservableRef();
     @bindable isFiltered = false;
     enableSorting;
-    allowedSorts;
+    availableSorts;
     sortIndex;
 
     _doubleClick = false;
@@ -107,21 +107,7 @@ class LocalModel {
         this.colId = agColumn.colId;
         this.isFiltered = agColumn.isFilterActive();
         this.enableSorting = enableSorting;
-
-        this.allowedSorts = xhColumn.allowedSorts ?? (xhColumn.absSort ? [
-            {sort: 'asc', abs: false},
-            {sort: 'desc', abs: true},
-            {sort: 'desc', abs: false}
-        ] : [
-            {sort: 'asc', abs: false},
-            {sort: 'desc', abs: false}
-        ]);
-
-        this.allowedSorts = this.allowedSorts.map(sort => {
-            if (isEmpty(sort)) sort = {sort: null};
-            if (isString(sort)) sort = {sort: sort};
-            return {...sort, colId: xhColumn.colId};
-        });
+        this.availableSorts = this.parseAvailableSorts();
 
         agColumn.addEventListener('filterChanged', this.onFilterChanged);
     }
@@ -133,7 +119,7 @@ class LocalModel {
     // Get any active sortBy for this column, or null
     @computed
     get activeGridSorter() {
-        if (!this.gridModel || !this.enableSorting) return null; // ag-grid auto group column wont have a gridModel
+        if (!this.gridModel || !this.enableSorting) return null; // ag-grid auto group column won't have a gridModel
         return this.gridModel.sortBy.find(it => it.colId === this.colId);
     }
 
@@ -179,29 +165,43 @@ class LocalModel {
     updateSort(shiftKey) {
         if (!this.enableSorting || !this.gridModel || this._doubleClick) return;
 
-        const {gridModel, activeGridSorter, colId} = this,
-            nextSortBy = this.getNextSortBy();
+        const {gridModel, activeGridSorter, colId} = this;
 
-        // Add to existing sorters if holding shift, else replace
-        let sortBy = shiftKey ? clone(gridModel.sortBy) : [];
-        if (activeGridSorter) {
-            remove(sortBy, it => it.colId === colId);
-        }
-        if (nextSortBy) {
-            sortBy.push(nextSortBy);
+        let sortBy;
+        if (shiftKey) {
+            // For shift, modify sorters
+            sortBy = filter(gridModel.sortBy, it => it.colId !== colId);
+            // Add new sort if this was a complex sort or no sort on this column.
+            if (!activeGridSorter || !isEmpty(sortBy)) {
+                const nextSortBy = this.getNextSortBy();
+                if (nextSortBy) sortBy.push(nextSortBy);
+            }
+        } else {
+            // Otherwise straightforward replace
+            const nextSortBy = this.getNextSortBy();
+            sortBy = nextSortBy ? [nextSortBy] : [];
         }
 
         gridModel.setSortBy(sortBy);
     }
 
     getNextSortBy() {
-        const {allowedSorts, activeGridSorter} = this;
-        this.sortIndex = activeGridSorter ? (this.sortIndex + 1) % allowedSorts.length : 0;
-
-        return allowedSorts[this.sortIndex];
+        const {availableSorts, activeGridSorter} = this;
+        this.sortIndex = activeGridSorter ? (this.sortIndex + 1) % availableSorts.length : 0;
+        return availableSorts[this.sortIndex];
     }
 
     autosize() {
         this.gridModel?.autoSizeColumns(this.colId);
+    }
+
+    parseAvailableSorts() {
+        const {absSort, sortingOrder, colId} = this.xhColumn;
+        const ret = sortingOrder.map(spec => {
+            if (isString(spec) || spec === null) spec = {sort: spec};
+            return {...spec, colId};
+        });
+
+        return absSort ? ret : ret.filter(it => !it.abs);
     }
 }
