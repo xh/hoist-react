@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
