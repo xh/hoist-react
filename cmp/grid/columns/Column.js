@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from 'ag-grid-community';
+import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {
     castArray,
     clone,
@@ -16,7 +16,7 @@ import {
     isArray,
     isFinite,
     isFunction,
-    isNil,
+    isNil, isNumber,
     isString,
     startCase
 } from 'lodash';
@@ -67,9 +67,12 @@ export class Column {
      *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
      * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
      *      as auto-flex resizing above this value.
-     * @param {boolean} [c.flex] - true to auto-adjust column width based on space available
-     *      within the overall grid. Flex columns are not user-resizable as they will dynamically
-     *      adjust whenever the grid changes size to absorb available horizontal space.
+     * @param {(boolean|number)} [c.flex] - flex columns stretch to fill the width of the grid after
+     *      all columns with a set pixel-width have been sized. If multiple columns have a flex
+     *      value set, their width will be set in proportion to their flex values. A flex value
+     *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
+     *      to avoid your column being squeezed down to the default 50px minimum or stretching so
+     *      wide that it compromises the overall legibility of the grid.
      * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
      *      determine an appropriate row height when the column is visible.
      * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
@@ -199,7 +202,7 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column specified with both flex = true && width. Width will be ignored. [colId=${this.colId}]`
+            `Column specified with both flex && width. Width will be ignored. [colId=${this.colId}]`
         );
         warnIf(
             width && !isFinite(width),
@@ -288,7 +291,8 @@ export class Column {
                 pinned: this.pinned,
                 lockVisible: !gridModel.colChooserModel || XH.isMobile,
                 headerComponentParams: {gridModel, xhColumn: this},
-                suppressToolPanel: this.excludeFromChooser,
+                suppressColumnsToolPanel: this.excludeFromChooser,
+                suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 editable: (agParams) => {
                     const {editable} = this;
@@ -389,7 +393,7 @@ export class Column {
 
         if (this.flex) {
             ret.resizable = false;
-            ret.width = Number.MAX_SAFE_INTEGER;
+            ret.flex = isNumber(this.flex) ? this.flex : 1;
         } else {
             ret.suppressSizeToFit = true;
             ret.width = this.width;
