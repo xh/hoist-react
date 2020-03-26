@@ -2,31 +2,30 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
-import {isFunction, isNil, merge} from 'lodash';
 
-import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
-import {elementFromContent, useOnUnmount, useOnResize} from '@xh/hoist/utils/react';
-import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {useOnUnmount, useOnResize} from '@xh/hoist/utils/react';
+import {rndDialog} from './impl/RndDialog';
 
 import {DialogModel} from './DialogModel';
-import {dialogHeader} from './impl/DialogHeader';
 
 import './DialogStyles.scss';
 
 
+/**
+ * Component for showing content in a 'pop-up' window.
+ *
+ * See DialogModel for the main API for specifying and controlling this component.
+ */
 export const [Dialog, dialog] = hoistCmp.withFactory({
     displayName: 'Dialog',
-    model: uses(DialogModel, {
-        fromContext: true,
-        publishMode: ModelPublishMode.LIMITED
-    }),
+    model: uses(DialogModel, {publishMode: ModelPublishMode.LIMITED}),
     memo: false,
     className: 'xh-dialog',
 
@@ -100,140 +99,3 @@ Dialog.propTypes = {
     rndOptions: PT.object
 };
 
-const rndDialog = hoistCmp.factory({
-    render(props) {
-        const model = useContextModel(DialogModel),
-            {inPortal, resizable, draggable, showBackgroundMask, closeOnOutsideClick, closeOnEscape} = model,
-            {rndOptions = {}} = props;
-
-        const onDragStop = (evt, data) => {
-            // ignore drags on close or maximize button in title bar
-            if (evt.target.closest('button')) return;
-
-            if (!model.isMaximized) {
-                model.setPosition({x: data.x, y: data.y});
-            }
-            if (isFunction(rndOptions.onDragStop)) rndOptions.onDragStop(evt, data);
-        };
-
-        const onResizeStop = (
-            evt,
-            resizeDirection,
-            domEl,
-            resizableDelta,
-            position
-        ) => {
-            if (!model.isMaximized) {
-                const {
-                    offsetWidth: width,
-                    offsetHeight: height
-                } = domEl;
-                model.setSize({width, height});
-                if (isNil(model.controlledX) || isNil(model.controlledY)) {
-                    model.centerDialog();
-                } else  {
-                    model.setPosition(position);
-                }
-            }
-            if (isFunction(rndOptions.onResizeStop)) {
-                rndOptions.onResizeStop(
-                    evt,
-                    resizeDirection,
-                    domEl,
-                    resizableDelta,
-                    position
-                );
-            }
-        };
-
-        const onKeyDown = (evt) => {
-            switch (evt.key) {
-                case 'Escape':
-                    if (closeOnEscape !== false) {
-                        model.handleEscapKey();
-                    }
-                    break;
-            }
-        };
-
-        let zIndex = DialogModel.Z_INDEX_BASE;
-        if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
-        merge(rndOptions, {style: {zIndex}});
-
-        const items = [
-            showBackgroundMask ? maskComp({zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
-            rnd({
-                ref: c =>  model.rndRef = c,
-                ...rndOptions,
-                disableDragging: !draggable,
-                enableResizing: model.isMaximized ? null : {
-                    bottom: resizable,
-                    bottomLeft: resizable,
-                    bottomRight: resizable,
-                    left: resizable,
-                    right: resizable,
-                    top: resizable,
-                    topLeft: resizable,
-                    topRight: resizable
-                },
-                bounds: inPortal ? 'body' : 'parent',
-                dragHandleClassName: 'xh-dialog__header',
-                onDragStop,
-                onResizeStop,
-                item: div({
-                    onKeyDown,
-                    tabIndex: 0,
-                    ref: model.dialogWrapperDivRef,
-                    className: props.className,
-                    item: contentContainer(props)
-                })
-            })
-        ];
-
-        return inPortal ? fragment(...items) : div({className: model.baseClass, items});
-    }
-});
-
-const maskComp = hoistCmp.factory({
-    render({zIndex}) {
-        const model = useContextModel(DialogModel);
-
-        return div({className: `${model.baseClass}__mask`, style: {zIndex}});
-    }
-});
-
-const clickCaptureComp = hoistCmp.factory({
-    render({zIndex}) {
-        const model = useContextModel(DialogModel);
-
-        return div({
-            className: `${model.baseClass}__click-capture`,
-            style: {zIndex},
-            ref: model.clickCaptureCompRef,
-            onClick: (evt) => model.handleOutsideClick(evt)
-        });
-    }
-});
-
-const contentContainer = hoistCmp.factory({
-    render(props) {
-        const dialogModel = useContextModel(DialogModel),
-            {controlledWidth: width, controlledHeight: height} = dialogModel,
-            size = dialogModel.resizable ? {
-                width: '100%',
-                height: '100%'
-            } : {
-                width,
-                height
-            };
-
-        return vframe({
-            ...size,
-            items: [
-                dialogHeader({dialogModel, ...props}),
-                elementFromContent(dialogModel.content)
-            ]
-        });
-    }
-});

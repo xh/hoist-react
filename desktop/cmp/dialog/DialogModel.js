@@ -350,10 +350,6 @@ export class DialogModel {
         this.unMaximizedSize = {};
     }
 
-    handleEscapKey() {
-        this.close();
-    }
-
     handleOutsideClick(evt) {
         if (evt.target != this.clickCaptureCompRef.current) return;
         this.close();
