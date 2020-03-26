@@ -23,7 +23,7 @@ export class GridSorter {
     static parse(cfg) {
         if (isString(cfg)) {
             const [colId, sort, abs] = cfg.split('|');
-            cfg = {colId, sort, abs: !!abs};
+            cfg = {colId, sort, abs};
         }
         return new GridSorter(cfg);
     }
@@ -40,8 +40,8 @@ export class GridSorter {
         abs = false
     }) {
         this.colId = colId;
-        this.sort = sort;
-        this.abs = abs;
+        this.sort = isString(sort) ? sort.toLowerCase() : null;
+        this.abs = !!abs;
     }
 
     /**

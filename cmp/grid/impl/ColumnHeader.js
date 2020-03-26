@@ -15,6 +15,8 @@ import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
 
+import {GridSorter} from './GridSorter';
+
 /**
  * A custom ag-Grid header component.
  *
@@ -207,7 +209,7 @@ class LocalModel {
         const {absSort, sortingOrder, colId} = this.xhColumn;
         const ret = sortingOrder.map(spec => {
             if (isString(spec) || spec === null) spec = {sort: spec};
-            return {...spec, colId};
+            return new GridSorter({...spec, colId});
         });
         return absSort ? ret : ret.filter(it => !it.abs);
     }
