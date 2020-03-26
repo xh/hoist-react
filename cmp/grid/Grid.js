@@ -226,7 +226,7 @@ class LocalModel {
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupSortComparator: this.groupSortComparator,
+            defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             groupRowInnerRenderer: model.groupRowRenderer,
