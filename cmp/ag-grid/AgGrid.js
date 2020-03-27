@@ -107,10 +107,11 @@ class LocalModel {
         // Only update header height if was not explicitly provided to the component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => this.model.sizingMode,
-                run: (sizingMode) => {
+                track: () => [this.model.agApi, this.model.sizingMode],
+                run: ([api, sizingMode]) => {
+                    if (!api) return;
                     const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    this.model.agApi.setHeaderHeight(height);
+                    api.setHeaderHeight(height);
                 }
             });
         }
