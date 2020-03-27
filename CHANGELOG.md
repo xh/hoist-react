@@ -8,6 +8,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 
 ### 🎁 New Features
 
+* New `SplitButton` component added to button component collection.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
