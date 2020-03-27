@@ -112,7 +112,7 @@ export class DialogModel {
      * @param {boolean} [config.closeOnEscape] - Can Dialog be closed by pressing escape key?
      * @param {boolean} [config.showBackgroundMask] - Show a background mask between Dialog and app?
      * @param {boolean} [config.showCloseButton] - Show close button in Dialog header?
-     * @param {(Object|string)} [c.stateModel] - config or string `dialogId` for a DialogStateModel.
+     * @param {(Object|string)} [config.stateModel] - config or string `dialogId` for a DialogStateModel.
      */
     constructor({
         content,
