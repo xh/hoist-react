@@ -17,4 +17,5 @@ export * from './LogoutButton';
 export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
+export * from './SplitButton';
 export * from './ThemeToggleButton';
