@@ -38,17 +38,17 @@
   dependencies:
     "@ag-grid-community/core" "~23.0.0"
 
-"@ag-grid-community/react@~23.0.0":
-  version "23.0.0"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-23.0.0.tgz#8d1c3a6c6b6493cb98edcb12cc007ec1570d5a91"
-  integrity sha512-NFXPB5oH/VMYJDYYLsLfTWNBeFik2X2WVlqbc5bThfxUSIiQYp2rGNZ1FbRi1I0lRebJGHpTSXLCs4ZC+bbYUA==
+"@ag-grid-community/react@~23.0.2":
+  version "23.0.2"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-23.0.2.tgz#c282fdee02346edac1422b126ddd739cfef6c823"
+  integrity sha512-1oAvLOzzRhXUgm9A/NlFAX9DPhRrl2g/NSyINHejHGN3sxg7PfLMLK+HSluVlcqWs5HoWRN+NNOlczzIneCTyA==
   dependencies:
     prop-types "^15.6.2"
 
-"@ag-grid-enterprise/all-modules@~23.0.0":
-  version "23.0.0"
-  resolved "https://registry.yarnpkg.com/@ag-grid-enterprise/all-modules/-/all-modules-23.0.0.tgz#cdb425fe1f78d838f94f59f3741de23dedd2a659"
-  integrity sha512-QNjznsUDbJi/eeWvFxt0gRj68/wnGD2Sjwp+m+C3Lwm5fzPioXb7ukEkJDLlgjk3c2ljDwd8LKGG/AJ4xs8oqQ==
+"@ag-grid-enterprise/all-modules@~23.0.2":
+  version "23.0.2"
+  resolved "https://registry.yarnpkg.com/@ag-grid-enterprise/all-modules/-/all-modules-23.0.2.tgz#c59fadfecd891156f2c952abbe0f01f6ea6f5ad2"
+  integrity sha512-ZQZkpeTLTvQ1c9LsJtO6WTsEQzU6M9P8s8/jHLNS1/Qn96CquE5CE27WKDzX2bhXw+Yi0ctPdgVHn2urvTLxCg==
   dependencies:
     "@ag-grid-community/all-modules" "~23.0.0"
     "@ag-grid-enterprise/charts" "~23.0.0"
@@ -8399,10 +8399,10 @@ qs@~6.5.2:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
 
-qs@~6.9.2:
-  version "6.9.2"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.2.tgz#a27b695006544a04bf0e6c6a7e8120778926d5bd"
-  integrity sha512-2eQ6zajpK7HwqrY1rRtGw5IZvjgtELXzJECaEDuzDFo2jjnIXpJSimzd4qflWZq6bLLi+Zgfj5eDrAzl/lptyg==
+qs@~6.9.3:
+  version "6.9.3"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"
+  integrity sha512-EbZYNarm6138UKKq46tdx08Yo/q9ZhFoAXAI1meAFd2GtbRDhbZY2WQSICskT0c5q99aFzLG1D4nvTk9tqfXIw==
 
 query-string@^4.1.0:
   version "4.3.4"
@@ -8560,10 +8560,10 @@ react-dom@~16.8.0:
     prop-types "^15.6.2"
     scheduler "^0.13.6"
 
-react-dropzone@~10.2.1:
-  version "10.2.1"
-  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-10.2.1.tgz#b7520124c4a3b66f96d49f7879027c7a475eaa20"
-  integrity sha512-Me5nOu8hK9/Xyg5easpdfJ6SajwUquqYR/2YTdMotsCUgJ1pHIIwNsv0n+qcIno0tWR2V2rVQtj2r/hXYs2TnQ==
+react-dropzone@~10.2.2:
+  version "10.2.2"
+  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-10.2.2.tgz#67b4db7459589a42c3b891a82eaf9ade7650b815"
+  integrity sha512-U5EKckXVt6IrEyhMMsgmHQiWTGLudhajPPG77KFSvgsMqNEHSyGpqWvOMc5+DhEah/vH4E1n+J5weBNLd5VtyA==
   dependencies:
     attr-accept "^2.0.0"
     file-selector "^0.1.12"
