@@ -5,15 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isNil, merge} from 'lodash';
+import {merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {HoistModel, hoistCmp, uses, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 
-import {DialogModel} from '../DialogModel';
-import {dialogHeader} from './DialogHeader';
+import {RndModel} from './RndModel';
+import {rndHeader} from './RndHeader';
 
 /**
  * The base zIndex that will be used for all dialogs.
@@ -31,11 +31,16 @@ const DIALOG_Z_INDEX_BASE = 4;
  * Wraps content in a react-rnd component for showing in a window with draggable affordances.
  */
 export const rndDialog = hoistCmp.factory({
-    model: uses(DialogModel),
+    model: uses(RndModel),
     render({model, className, rndOptions = {}, ...props}) {
-        const {inPortal, resizable, draggable, showBackgroundMask, closeOnOutsideClick} = model,
-            impl = useLocalModel(LocalModel);
-        impl.model = model;
+        const {
+            inPortal,
+            resizable,
+            draggable,
+            showBackgroundMask,
+            closeOnOutsideClick,
+            isMaximized
+        } = model.dm;
 
         let zIndex = DIALOG_Z_INDEX_BASE;
         if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
@@ -45,10 +50,10 @@ export const rndDialog = hoistCmp.factory({
             showBackgroundMask ? maskComp({zIndex}) : null,
             closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
             rnd({
-                ref: c => model.rndRef = c,
+                ref: model.rndRef,
                 ...rndOptions,
                 disableDragging: !draggable,
-                enableResizing: model.isMaximized ? null : {
+                enableResizing: isMaximized ? null : {
                     bottom: resizable,
                     bottomLeft: resizable,
                     bottomRight: resizable,
@@ -60,12 +65,12 @@ export const rndDialog = hoistCmp.factory({
                 },
                 bounds: inPortal ? 'body' : 'parent',
                 dragHandleClassName: 'xh-dialog__header',
-                onDragStop: impl.onDragStop,
-                onResizeStop: impl.onResizeStop,
+                onDragStop: model.onDragStop,
+                onResizeStop: model.onResizeStop,
                 item: div({
-                    onKeyDown: impl.onKeyDown,
+                    onKeyDown: model.onKeyDown,
                     tabIndex: 0,
-                    ref: model.dialogWrapperDivRef,
+                    ref: model.wrapperDivRef,
                     className,
                     item: contentContainer(props)
                 })
@@ -75,47 +80,6 @@ export const rndDialog = hoistCmp.factory({
         return inPortal ? fragment(items) : div({className: model.baseClass, items});
     }
 });
-
-@HoistModel
-class LocalModel {
-
-    model;
-
-    onDragStop = (evt, data) => {
-        const {model} = this;
-
-        if (evt.target.closest('button')) return;    // ignore drags on close or maximize button
-
-        if (!model.isMaximized) {
-            model.setPosition({x: data.x, y: data.y});
-        }
-    };
-
-    onResizeStop = (
-        evt,
-        resizeDirection,
-        domEl,
-        resizableDelta,
-        position
-    ) => {
-        const {model} = this;
-        if (!model.isMaximized) {
-            model.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
-            if (isNil(model.controlledX) || isNil(model.controlledY)) {
-                model.centerDialog();
-            } else  {
-                model.setPosition(position);
-            }
-        }
-    };
-
-    onKeyDown = (evt) => {
-        const {model} = this;
-        if (evt.key === 'Escape' && model.closeOnEscape) {
-            model.close();
-        }
-    };
-}
 
 
 //-------------------
@@ -129,20 +93,20 @@ const clickCaptureComp = hoistCmp.factory(
     ({model, zIndex}) => div({
         className: `${model.baseClass}__click-capture`,
         style: {zIndex},
-        ref: model.clickCaptureCompRef,
+        ref: model.clickCaptureRef,
         onClick: (evt) => model.handleOutsideClick(evt)
     })
 );
 
 const contentContainer = hoistCmp.factory({
     render({model, ...props}) {
-        const {controlledWidth, controlledHeight, resizable, content} = model;
+        const {width, height, resizable, content} = model.dm;
 
         return vframe({
-            width: resizable ? '100%' : controlledWidth,
-            height: resizable ? '100%' : controlledHeight,
+            width: resizable ? '100%' : width,
+            height: resizable ? '100%' : height,
             items: [
-                dialogHeader(props),
+                rndHeader(props),
                 elementFromContent(content)
             ]
         });
