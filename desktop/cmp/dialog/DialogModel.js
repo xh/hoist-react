@@ -7,9 +7,8 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isPlainObject, isString} from 'lodash';
+import {isPlainObject, isString, assign} from 'lodash';
 import {DialogStateModel} from './DialogStateModel';
-
 
 /**
  * Main backing Model for Dialog Component.
@@ -41,45 +40,24 @@ export class DialogModel {
     showBackgroundMask;
     /** @member {boolean} */
     showCloseButton;
-
-    /** @member {number} */
-    initialX;
-    /** @member {number} */
-    initialY;
-    /** @member {number} */
-    initialWidth;
-    /** @member {number} */
-    initialHeight;
-
     /** @member {(Object|function)} */
     content;
 
-    //---------------------------
-    // Observable Public State
-    //----------------------------
+    //---------------------------------
+    // Observable/Settable Public State
+    //----------------------------------
     /**
-     * @member {number} Width of dialog (when not maximized).
-     * Undefined will allow dialog to take size of content.
+     * @member {SizeSpec} - Desired width and height (when not maximized).
+     * Null values in either dimension indicate dialog should take natural
+     * size of content in that dimension.
      */
-    @observable width;
+    @observable.ref size;
 
     /**
-     * @member {number} - Height of dialog (when not maximized).
-     * Undefined will allow dialog to take size of content.
+     * @member {PositionSpec} - Desired position of top-left corner (when not maximized).
+     * Null values in either dimension indicate dialog should be centered along that dimension.
      */
-    @observable height;
-
-    /**
-     * @member {number} - x position of top left corner (when not maximized).
-     * Undefined will center dialog along the horizontal dimension.
-     */
-    @observable x;
-
-    /**
-     * @member {number} - y position of top left corner (when not maximized).
-     * Undefined will center dialog along the horizontal dimension.
-     */
-    @observable y;
+    @observable.ref position;
 
     /** @member {boolean} - is the Dialog maximized within its parent. */
     @observable isMaximized;
@@ -87,31 +65,41 @@ export class DialogModel {
     /** @member {boolean} - is the Dialog visible (i.e. rendered) */
     @observable isOpen;
 
+    //------------------------
+    // Read-only Public State
+    //------------------------
+    /**
+     * @member {SizeSpec} - Rendered width and height.
+     */
+    @observable.ref renderedSize;
+
+    /**
+     * @member {PositionSpec} - Rendered position of top-left corner.
+     */
+    @observable.ref renderedPosition;
+
 
     /**
      * @param {Object} config
-     * @param {(Object|function)} [config.content] - content to be rendered by this Dialog.
-     * @param {number} [config.width] - Optional initial width of Dialog.
-     * @param {number} [config.height] - Optional initial height of Dialog.
-     * @param {number} [config.x] - Optional initial x position of Dialog.
-     * @param {number} [config.y] - Optional initial y position of Dialog.
-     * @param {boolean} [config.isMaximized] - Does Dialog cover entire viewport?
-     * @param {boolean} [config.isOpen] - Is Dialog open?
-     * @param {boolean} [config.inPortal] - Open in React Portal? (default true) If false, dialog will be bound by parent DOM el.
-     * @param {boolean} [config.resizable] - Can Dialog be resized?
-     * @param {boolean} [config.draggable] - Can Dialog be dragged?
-     * @param {boolean} [config.closeOnOutsideClick] - Can Dialog be closed by clicking outside Dialog?
-     * @param {boolean} [config.closeOnEscape] - Can Dialog be closed by pressing escape key?
-     * @param {boolean} [config.showBackgroundMask] - Show a background mask between Dialog and app?
-     * @param {boolean} [config.showCloseButton] - Show close button in Dialog header?
-     * @param {(Object|string)} [config.stateModel] - config or string `dialogId` for a DialogStateModel.
+     * @param {(Object|function)} config.content - content to be rendered by this Dialog.
+     * @param {SizeSpec} [config.size] - initial (unmaximized) size
+     * @param {PositionSpec} [config.position] - initial (unmaximized) position.
+     * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
+     * @param {boolean} [config.isOpen] - Is dialog open?
+     * @param {boolean} [config.resizable] - true to add draggable borders.
+     * @param {boolean} [config.draggable] - true to allow dragging the dialog via its title bar.
+     * @param {boolean} [config.closeOnOutsideClick] - true to allow closing by clicking outside dialog.
+     * @param {boolean} [config.closeOnEscape] - true to allow closing by pressing escape key
+     * @param {boolean} [config.showBackgroundMask] - true to show a background mask.
+     * @param {boolean} [config.showCloseButton] - true to show close button in header.
+     * @param {boolean} [config.inPortal] - Open in portal?  If true dialog will be positioned with
+     *      respect to the entire Viewport.  If false, dialog will be bound by parent DOM element.
+     * @param {(Object|string)} [config.stateModel] - config or string for a DialogStateModel.
      */
     constructor({
         content,
-        width,
-        height,
-        x,
-        y,
+        size,
+        position,
         isMaximized = false,
         isOpen = false,
         inPortal = true,
@@ -133,20 +121,13 @@ export class DialogModel {
         this.closeOnEscape = closeOnEscape;
         this.showBackgroundMask = showBackgroundMask;
         this.showCloseButton = showCloseButton;
-        this.initialWidth = width;
-        this.initialHeight = height;
-        this.initialX = x;
-        this.initialY = y;
         this.content = content;
 
         // set observables
         this.isOpen = isOpen;
-
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
         this.isMaximized = isMaximized;
+        this.setPosition(position);
+        this.setSize(size);
     }
 
     //----------------------
@@ -185,7 +166,7 @@ export class DialogModel {
     }
 
     /**
-     * Maximize or UnMaximize as appropriate.
+     * Maximize or unMaximize as appropriate.
      */
     @action
     toggleMaximized() {
@@ -196,18 +177,16 @@ export class DialogModel {
      * Set the (unmaximized) position of the dialog.
      */
     @action
-    setPosition({x, y}) {
-        this.x = x;
-        this.y = y;
+    setPosition(position) {
+        this.position = assign({x: undefined, y: undefined}, this.position, position);
     }
 
     /**
      * Set the (unmaximized) size of the dialog.
      */
     @action
-    setSize({width, height}) {
-        this.width = width;
-        this.height = height;
+    setSize(size) {
+        this.size = assign({width: undefined, height: undefined}, this.size, size);
     }
 
     //-----------------
@@ -226,3 +205,16 @@ export class DialogModel {
         return ret;
     }
 }
+
+/**
+ * @typedef {Object} SizeSpec
+ * @property {number} width
+ * @property {number} height
+ */
+
+
+/**
+ * @typedef {Object} PositionSpec
+ * @property {number} x - x co-ordinate from top-left corner of parent.
+ * @property {number} y - y co-ordinate of top-left corner of parent
+ */

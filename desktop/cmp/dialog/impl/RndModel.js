@@ -6,7 +6,6 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {isNumber} from 'lodash';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {observable, action, runInAction} from '@xh/hoist/mobx';
 
@@ -18,35 +17,23 @@ import {observable, action, runInAction} from '@xh/hoist/mobx';
 @HoistModel
 export class RndModel {
 
-    dialogModel;
+    static PORTAL_DOM_ID = 'xh-dialog-portal';
 
-    dialogPortalId = 'xh-dialog-portal';
+    dialogModel;
     baseClass;
 
-    // Refs
-    containerElement = null;
-    portalContainer = null;
     wrapperDivRef = createObservableRef();
     clickCaptureRef = createObservableRef();
     rndRef = createObservableRef();
-
-    @observable hasPortal = false;
+    @observable.ref portalEl;
 
     constructor(dialogModel) {
-        this.dialogModel = dialogModel;
-        const {dm} = this;
+        const dm = this.dialogModel = dialogModel;
 
         this.baseClass = dm.inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
 
         this.addReaction({
-            track: () => [
-                dm.x,
-                dm.y,
-                dm.width,
-                dm.height,
-                dm.isMaximized,
-                this.rndRef.current
-            ],
+            track: () => [dm.size, dm.position, dm.isMaximized, this.rnd],
             run: () => this.positionRnd()
         });
     }
@@ -58,92 +45,84 @@ export class RndModel {
     get inPortal()      {return this.dm.inPortal}
     get isMaximized()   {return this.dm.isMaximized}
     get isOpen()        {return this.dm.isOpen}
+    get rnd()           {return this.rndRef.current}
+    get portalRoot()    {return document.getElementById(RndModel.PORTAL_DOM_ID)}
+
 
     //------------------------
     // Portal maintenance
+    // see https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
+    // see https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
     //------------------------
-    togglePortal() {
-        if (!this.inPortal) return;
-        if (this.isOpen) {
-            this.setUpPortal();
-        } else {
-            this.removePortal();
+    @action
+    maintainPortal() {
+        const {inPortal, isOpen, portalEl} = this;
+
+        if (!inPortal) return;
+
+        if (isOpen && !portalEl) {
+            this.portalEl = this.portalRoot.appendChild(document.createElement('div'));
+        } else if (!isOpen && portalEl) {
+            this.portalRoot.removeChild(portalEl);
+            this.portalEl = null;
         }
-    }
-
-    @action
-    setUpPortal() {
-        /**
-         * @see {@link{https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
-         * @see {@link{https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
-         */
-        if (this.containerElement) return;
-
-        this.portalContainer = document.getElementById(this.dialogPortalId);
-        this.portalContainer.appendChild(document.createElement('div'));
-        this.containerElement = this.portalContainer.lastChild;
-        this.hasPortal = true;
-    }
-
-    @action
-    removePortal() {
-        if (!this.containerElement) return;
-
-        this.portalContainer.removeChild(this.containerElement);
-        this.containerElement = null;
-        this.hasPortal = false;
     }
 
     //------------------
     // Positioning
     //------------------
     positionRnd() {
-        const {dm, rndRef} = this;
+        const {dm, rnd} = this;
 
-        if (!rndRef.current) return;
+        if (!rnd) return;
 
         if (this.isMaximized) {
-            const size = this.inPortal ? this.windowSize : this.parentSize;
-            rndRef.current.updatePosition({x: 0, y: 0});
-            rndRef.current.updateSize(size);
+            rnd.updatePosition({x: 0, y: 0});
+            rnd.updateSize(this.containerSize);
         } else {
-            this.updateSizeBounded(dm.width, dm.height);
+            this.updateSizeBounded(dm.size);
             // Delay to allow calcs to be based on correct size above
             window.requestAnimationFrame(() => {
                 const centered = this.calcCenteredPos();
-                this.updatePositionBounded(dm.x ?? centered.x, dm.y ?? centered.y);
+                this.updatePositionBounded({
+                    x: dm.position.x ?? centered.x,
+                    y: dm.position.y ?? centered.y
+                });
             });
         }
     }
 
-    // Update the rendered size within the bounds of the window (not parent?)
-    updateSizeBounded(width, height) {
-        const {windowSize} = this;
-        width = Math.min(windowSize.width - 20, width);
-        height = Math.min(windowSize.height - 20, height);
-        this.rndRef.current.updateSize({
-            width: isNumber(width) ? width : undefined,
-            height: isNumber(height) ? height : undefined
-        });
+    updateSizeBounded(size) {
+        const {containerSize} = this;
+        size = {
+            width: max(0, min(containerSize.width - 10, size.width)),
+            height: max(0, min(containerSize.height - 10, size.height))
+        };
+        this.rnd?.updateSize(size);
     }
 
-    updatePositionBounded(x, y) {
-        const {windowSize, dialogSize} = this;
-        x = Math.min(x, windowSize.width - dialogSize.width);
-        y = Math.min(y, windowSize.height - dialogSize.height);
-        this.rndRef.current.updatePosition({x, y});
+    updatePositionBounded(pos) {
+        const {containerSize, dialogSize} = this;
+        pos = {
+            x: max(0, min(pos.x, containerSize.width - dialogSize.width)),
+            y: max(0, min(pos.y, containerSize.height - dialogSize.height))
+        };
+        this.rnd?.updatePosition(pos);
     }
 
     //-----------------------
     // Size calculations
     //------------------------
     calcCenteredPos() {
-        const {width, height} = this.dialogSize;
-        const pSize = this.inPortal ? this.windowSize : this.parentSize;
+        const {containerSize, dialogSize} = this;
         return {
-            x: Math.max((pSize.width - width) / 2, 0),
-            y: Math.max((pSize.height - height) / 2, 0)
+            x: max((containerSize.width - dialogSize.width) / 2, 0),
+            y: max((containerSize.height - dialogSize.height) / 2, 0)
         };
+    }
+
+    get containerSize() {
+        return this.inPortal ? this.windowSize : this.parentSize;
     }
 
     get windowSize() {
@@ -156,26 +135,23 @@ export class RndModel {
         };
     }
 
+    get parentSize() {
+        const p = this.rnd?.getParent()?.parentElement;
+        return p ? {width: p.offsetWidth, height: p.offsetHeight} : {};
+    }
+
     get dialogSize() {
         const curr = this.wrapperDivRef.current;
         return curr ? {width: curr.offsetWidth, height: curr.offsetHeight} : {};
-    }
-
-    get parentSize() {
-        const p = this.rndRef.current?.getParent().parentElement;
-        return p ? {width: p.offsetWidth, height: p.offsetHeight} : {};
     }
 
     //----------
     // Handlers
     //----------
     onDragStop = (evt, data) => {
-        const {dm} = this;
-
-        // ignore drags on buttons or when maximized
-        if (dm.isMaximized || evt.target.closest('button')) return;
-
-        dm.setPosition({x: data.x, y: data.y});
+        if (this.isMaximized) return;
+        if (evt.target.closest('button')) return; // ignore drags on buttons
+        this.dm.setPosition({x: data.x, y: data.y});
     };
 
     onResizeStop = (
@@ -185,9 +161,9 @@ export class RndModel {
         resizableDelta,
         position
     ) => {
-        const {dm} = this;
-        if (dm.isMaximized) return;
+        if (this.isMaximized) return;
 
+        const {dm} = this;
         runInAction(() => {
             dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
             dm.setPosition(position);
@@ -201,35 +177,47 @@ export class RndModel {
     };
 
     handleOutsideClick(evt) {
+        // TODO: Do we need this check if the handler is actually on the target below?
         if (evt.target === this.clickCaptureRef.current) {
             this.dm.close();
         }
     }
 
+    //---------
+    // Misc
+    //----------
     maybeSetFocus()  {
-
         // always delay focus manipulation to just before repaint to prevent scroll jumping
+        // portalEl may be undefined after mount, activeElement may be undefined in IE
+        // see https://github.com/facebook/react/blob/9fe1031244903e442de179821f1d383a9f2a59f2/packages/react-dom/src/shared/DOMProperty.js#L294}
+        // see https://github.com/facebook/react/blob/master/packages/react-dom/src/client/ReactDOMHostConfig.js#L379}
+        // for why we do not search for autofocus on dom element: TLDR:  it's not there!
         window.requestAnimationFrame(() => {
-            const {containerElement, isOpen} = this,
+            const {portalEl, isOpen} = this,
                 {activeElement} = document;
 
-            // containerElement may be undefined between mounting and portal rendering
-            // activeElement may be undefined in some rare cases in IE
-            if (containerElement == null || activeElement == null || !isOpen) return;
+            if (portalEl == null || activeElement == null || !isOpen) return;
 
-            if (!containerElement.contains(activeElement)) {
-                /**
-                 * @see {@link https://github.com/facebook/react/blob/9fe1031244903e442de179821f1d383a9f2a59f2/packages/react-dom/src/shared/DOMProperty.js#L294}
-                 * @see {@link https://github.com/facebook/react/blob/master/packages/react-dom/src/client/ReactDOMHostConfig.js#L379}
-                 * for why we do not search for autofocus on dom element: TLDR:  it's not there!
-                 */
-                const wrapperEl = containerElement.querySelector('[tabindex]');
+            if (!portalEl.contains(activeElement)) {
+                const wrapperEl = portalEl.querySelector('[tabindex]');
                 wrapperEl?.focus();
             }
         });
     }
 
     destroy() {
-        this.removePortal();
+        if (this.portalEl) {
+            this.portalRoot.removeChild(this.portalEl);
+        }
     }
+}
+
+function max(...args) {
+    const ret = Math.max(...args);
+    return isFinite(ret) ? ret : undefined;
+}
+
+function min(...args) {
+    const ret = Math.min(...args);
+    return isFinite(ret) ? ret : undefined;
 }

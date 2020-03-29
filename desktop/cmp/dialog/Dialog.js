@@ -30,23 +30,22 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     className: 'xh-dialog',
 
     render({model, ...props}) {
-        const rndModel = useLocalModel(() => new RndModel(model));
-        const {isOpen, hasPortal, inPortal} = rndModel;
+        const rndModel = useLocalModel(() => new RndModel(model)),
+            {isOpen, portalEl, inPortal} = rndModel;
 
-        useEffect(() => rndModel.togglePortal(), [rndModel, isOpen]);
+        useEffect(() => rndModel.maintainPortal(), [rndModel, isOpen]);
 
         useOnMount(() => rndModel.maybeSetFocus());
 
         // TODO: Shouldn't this be on resize of the parent?
         useOnResize(() => rndModel.positionRnd(), {ref: {current: document.body}});
 
-        if (!isOpen || (inPortal && !hasPortal)) {
+        if (!isOpen || (inPortal && !portalEl)) {
             return null;
         }
 
-        return inPortal ?
-            ReactDOM.createPortal(rndDialog({model: rndModel, ...props}), rndModel.containerElement) :
-            rndDialog({model: rndModel, ...props});
+        const ret = rndDialog({model: rndModel, ...props});
+        return inPortal ? ReactDOM.createPortal(ret, portalEl) : ret;
     }
 });
 
