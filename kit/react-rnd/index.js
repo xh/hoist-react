@@ -7,8 +7,4 @@
 import {elemFactory} from '@xh/hoist/core';
 import {Rnd} from 'react-rnd';
 
-export {
-    Rnd
-};
-
 export const rnd = elemFactory(Rnd);

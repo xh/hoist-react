@@ -47,14 +47,14 @@ export class DialogModel {
     // Observable/Settable Public State
     //----------------------------------
     /**
-     * @member {SizeSpec} - Desired width and height (when not maximized).
+     * @member {Size} - Desired width and height (when not maximized).
      * Null values in either dimension indicate dialog should take natural
      * size of content in that dimension.
      */
     @observable.ref size;
 
     /**
-     * @member {PositionSpec} - Desired position of top-left corner (when not maximized).
+     * @member {Position} - Desired position of top-left corner (when not maximized).
      * Null values in either dimension indicate dialog should be centered along that dimension.
      */
     @observable.ref position;
@@ -69,21 +69,20 @@ export class DialogModel {
     // Read-only Public State
     //------------------------
     /**
-     * @member {SizeSpec} - Rendered width and height.
+     * @member {Size} - Rendered width and height.
      */
     @observable.ref renderedSize;
 
     /**
-     * @member {PositionSpec} - Rendered position of top-left corner.
+     * @member {Position} - Rendered position of top-left corner.
      */
     @observable.ref renderedPosition;
-
 
     /**
      * @param {Object} config
      * @param {(Object|function)} config.content - content to be rendered by this Dialog.
-     * @param {SizeSpec} [config.size] - initial (unmaximized) size
-     * @param {PositionSpec} [config.position] - initial (unmaximized) position.
+     * @param {Size} [config.size] - initial (unmaximized) size
+     * @param {Position} [config.position] - initial (unmaximized) position.
      * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
      * @param {boolean} [config.isOpen] - Is dialog open?
      * @param {boolean} [config.resizable] - true to add draggable borders.
@@ -111,7 +110,6 @@ export class DialogModel {
         showCloseButton = true,
         stateModel = null
     } = {}) {
-
         // Set immutables
         this.resizable = resizable;
         this.draggable = draggable;
@@ -187,6 +185,7 @@ export class DialogModel {
     @action
     setSize(size) {
         this.size = assign({width: undefined, height: undefined}, this.size, size);
+        console.log(this.size);
     }
 
     //-----------------
@@ -204,17 +203,24 @@ export class DialogModel {
         }
         return ret;
     }
+
+    @action
+    noteRendered(size, position) {
+        this.renderedSize = size;
+        this.renderedPosition = position;
+    }
 }
 
+
 /**
- * @typedef {Object} SizeSpec
+ * @typedef {Object} Size
  * @property {number} width
  * @property {number} height
  */
 
 
 /**
- * @typedef {Object} PositionSpec
+ * @typedef {Object} Position
  * @property {number} x - x co-ordinate from top-left corner of parent.
  * @property {number} y - y co-ordinate of top-left corner of parent
  */

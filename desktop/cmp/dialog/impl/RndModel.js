@@ -22,7 +22,6 @@ export class RndModel {
     dialogModel;
     baseClass;
 
-    wrapperDivRef = createObservableRef();
     clickCaptureRef = createObservableRef();
     rndRef = createObservableRef();
     @observable.ref portalEl;
@@ -77,47 +76,55 @@ export class RndModel {
         if (!rnd) return;
 
         if (this.isMaximized) {
-            rnd.updatePosition({x: 0, y: 0});
             rnd.updateSize(this.containerSize);
+            rnd.updatePosition({x: 0, y: 0});
+            this.noteRendered();
         } else {
+            // Set size then position after delay -- allow position calcs to be based on size
             this.updateSizeBounded(dm.size);
-            // Delay to allow calcs to be based on correct size above
             window.requestAnimationFrame(() => {
                 const centered = this.calcCenteredPos();
                 this.updatePositionBounded({
                     x: dm.position.x ?? centered.x,
                     y: dm.position.y ?? centered.y
                 });
+                this.noteRendered();
             });
         }
     }
 
+    noteRendered() {
+        window.requestAnimationFrame(() => {
+            this.dm.noteRendered(this.renderedSize, this.renderedPosition);
+        });
+    }
+
     updateSizeBounded(size) {
-        const {containerSize} = this;
+        const {containerSize, rnd} = this;
         size = {
             width: max(0, min(containerSize.width - 10, size.width)),
             height: max(0, min(containerSize.height - 10, size.height))
         };
-        this.rnd?.updateSize(size);
+        rnd.updateSize(size);
     }
 
     updatePositionBounded(pos) {
-        const {containerSize, dialogSize} = this;
+        const {containerSize, renderedSize, rnd} = this;
         pos = {
-            x: max(0, min(pos.x, containerSize.width - dialogSize.width)),
-            y: max(0, min(pos.y, containerSize.height - dialogSize.height))
+            x: max(0, min(pos.x, containerSize.width - renderedSize.width)),
+            y: max(0, min(pos.y, containerSize.height - renderedSize.height))
         };
-        this.rnd?.updatePosition(pos);
+        rnd.updatePosition(pos);
     }
 
     //-----------------------
     // Size calculations
     //------------------------
     calcCenteredPos() {
-        const {containerSize, dialogSize} = this;
+        const {containerSize, renderedSize} = this;
         return {
-            x: max((containerSize.width - dialogSize.width) / 2, 0),
-            y: max((containerSize.height - dialogSize.height) / 2, 0)
+            x: max((containerSize.width - renderedSize.width) / 2, 0),
+            y: max((containerSize.height - renderedSize.height) / 2, 0)
         };
     }
 
@@ -140,9 +147,13 @@ export class RndModel {
         return p ? {width: p.offsetWidth, height: p.offsetHeight} : {};
     }
 
-    get dialogSize() {
-        const curr = this.wrapperDivRef.current;
-        return curr ? {width: curr.offsetWidth, height: curr.offsetHeight} : {};
+    get renderedSize() {
+        const el = this.rnd?.getSelfElement();
+        return el ? {width: el.offsetWidth, height: el.offsetHeight} : {};
+    }
+
+    get renderedPosition() {
+        return this.rnd?.getDraggablePosition() ?? {};
     }
 
     //----------
@@ -163,10 +174,9 @@ export class RndModel {
     ) => {
         if (this.isMaximized) return;
 
-        const {dm} = this;
         runInAction(() => {
-            dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
-            dm.setPosition(position);
+            this.dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
+            this.dm.setPosition(position);
         });
     };
 
@@ -193,12 +203,10 @@ export class RndModel {
         // see https://github.com/facebook/react/blob/master/packages/react-dom/src/client/ReactDOMHostConfig.js#L379}
         // for why we do not search for autofocus on dom element: TLDR:  it's not there!
         window.requestAnimationFrame(() => {
-            const {portalEl, isOpen} = this,
+            const {isOpen, portalEl} = this,
                 {activeElement} = document;
 
-            if (portalEl == null || activeElement == null || !isOpen) return;
-
-            if (!portalEl.contains(activeElement)) {
+            if (isOpen && portalEl && activeElement && !portalEl.contains(activeElement)) {
                 const wrapperEl = portalEl.querySelector('[tabindex]');
                 wrapperEl?.focus();
             }

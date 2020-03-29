@@ -22,7 +22,6 @@ import {rndHeader} from './RndHeader';
  */
 const DIALOG_Z_INDEX_BASE = 4;
 
-
 /**
  * @private
  *
@@ -70,7 +69,6 @@ export const rndDialog = hoistCmp.factory({
                 item: div({
                     onKeyDown: model.onKeyDown,
                     tabIndex: 0,
-                    ref: model.wrapperDivRef,
                     className,
                     item: contentContainer(props)
                 })
