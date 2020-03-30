@@ -166,15 +166,15 @@ export class DialogModel {
     }
 
     /**
-     * Revert a maximized dialog back to its pre-maximized state.
+     * Restore a maximized dialog back to its unmaximized state.
      */
     @action
-    unMaximize() {
+    restore() {
         this.isMaximized = false;
     }
 
     /**
-     * Maximize or unMaximize as appropriate.
+     * Maximize or restore as appropriate.
      */
     @action
     toggleMaximized() {
