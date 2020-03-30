@@ -2,11 +2,19 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
+[ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
+possible breaking changes to any direct/custom use of ag-Grid APIs and props within applications.
+
 ### 🎁 New Features
 
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
+* Grid column `flex` param will now accept numbers, with available space divided between flex
+  columns in proportion to their `flex` value.
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
+will be cycled through when the user clicks on the header.
 
 ### 💥 Breaking Changes
 
@@ -19,8 +27,15 @@
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 
+### ⚙️ Technical
+
+* Flex columns now use the built-in ag-Grid flex functionality.
+
 ### 📚 Libraries
 
+* ag-grid-community `removed @ 21.2`
+* ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `23.0`
+* ag-grid-react `21.2` replaced with @ag-grid-community/react `23.0`
 * @fortawesome/* `5.12 -> 5.13`
 * codemirror `5.51 -> 5.52`
 * filesize `6.0 -> 6.1`
