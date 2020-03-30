@@ -22,9 +22,9 @@ export const rndHeader = hoistCmp.factory({
     model: uses(RndModel),
 
     render({model, icon, title}) {
-        const {resizable, draggable, showCloseButton} = model.dm;
+        const {draggable, showCloseButton} = model.dm;
 
-        if (!title && !icon && !resizable && !draggable && !showCloseButton) return null;
+        if (!title && !icon && !showCloseButton) return null;
 
         return hbox({
             className: 'xh-dialog__header' + (draggable ? ' xh-dialog__header--draggable' : ''),
