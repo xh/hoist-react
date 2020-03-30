@@ -185,7 +185,6 @@ export class DialogModel {
     @action
     setSize(size) {
         this.size = assign({width: undefined, height: undefined}, this.size, size);
-        console.log(this.size);
     }
 
     //-----------------
