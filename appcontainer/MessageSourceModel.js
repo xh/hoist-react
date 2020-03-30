@@ -35,7 +35,6 @@ export class MessageSourceModel {
         }
 
         const ret = new MessageModel(config);
-        ret.dialogModel.open();
         this.addModel(ret);
         return ret.result;
     }
@@ -76,8 +75,8 @@ export class MessageSourceModel {
     @action
     cull() {
         const models = this.msgModels,
-            keepModels = models.filter(it => it.dialogModel.isOpen),
-            cullModels = models.filter(it => !it.dialogModel.isOpen);
+            keepModels = models.filter(it => it.isOpen),
+            cullModels = models.filter(it => !it.isOpen);
 
         this.msgModels = keepModels;
         cullModels.forEach(it => it.destroy());

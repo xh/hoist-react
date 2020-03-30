@@ -8,8 +8,8 @@
 import {merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {elementFromContent} from '@xh/hoist/utils/react';
+import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {Children} from 'react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
 
 import {RndModel} from './RndModel';
@@ -30,7 +30,7 @@ const DIALOG_Z_INDEX_BASE = 4;
  * Wraps content in a react-rnd component for showing in a window with draggable affordances.
  */
 export const rndDialog = hoistCmp.factory({
-    model: uses(RndModel),
+    model: uses(RndModel, {publishMode: ModelPublishMode.LIMITED}),
     render({model, className, rndOptions = {}, ...props}) {
         const {
             inPortal,
@@ -46,8 +46,8 @@ export const rndDialog = hoistCmp.factory({
         merge(rndOptions, {style: {zIndex}});
 
         const items = [
-            showBackgroundMask ? maskComp({zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({zIndex}) : null,
+            showBackgroundMask ? maskComp({model, zIndex}) : null,
+            closeOnOutsideClick ? clickCaptureComp({model, zIndex}) : null,
             rnd({
                 ref: model.rndRef,
                 ...rndOptions,
@@ -70,7 +70,7 @@ export const rndDialog = hoistCmp.factory({
                     onKeyDown: model.onKeyDown,
                     tabIndex: 0,
                     className,
-                    item: contentContainer(props)
+                    item: contentContainer({model, ...props})
                 })
             })
         ];
@@ -97,15 +97,15 @@ const clickCaptureComp = hoistCmp.factory(
 );
 
 const contentContainer = hoistCmp.factory({
-    render({model, ...props}) {
-        const {width, height, resizable, content} = model.dm;
+    render({model, children, ...props}) {
+        const {width, height, resizable} = model.dm;
 
         return vframe({
             width: resizable ? '100%' : width,
             height: resizable ? '100%' : height,
             items: [
                 rndHeader(props),
-                elementFromContent(content)
+                ...Children.toArray(children)
             ]
         });
     }

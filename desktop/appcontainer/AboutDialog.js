@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -32,12 +32,14 @@ export const aboutDialog = hoistCmp.factory({
         const onClose = () => model.hide();
 
         return dialog({
-            isOpen: true,
-            isCloseButtonShown: false,
+            model: {
+                showCloseButton: false,
+                size: {width: 450},
+                onClose
+            },
             icon: Icon.info({size: 'lg'}),
             className: 'xh-about-dialog',
             title: `About ${XH.appName}`,
-            style: {width: 450},
             items: [
                 frame({
                     className: 'xh-about-dialog__inner',
@@ -51,8 +53,7 @@ export const aboutDialog = hoistCmp.factory({
                         onClick: onClose
                     })
                 )
-            ],
-            onClose
+            ]
         });
     }
 });

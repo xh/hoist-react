@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {hoistCmp, XH, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
@@ -35,38 +35,35 @@ export const optionsDialog = hoistCmp.factory({
             title: `${XH.clientAppName} Options`,
             icon: Icon.options(),
             className,
-            isOpen: true,
-            onClose: () => model.hide(),
-            canOutsideClickClose: false,
-            item: [
-                panel({
-                    mask: 'onLoad',
-                    item: dialogBody(
-                        form({
-                            model: formModel,
-                            fieldDefaults: {minimal: true, inline: true},
-                            items: model.options.map(option => {
-                                return formField({field: option.name, ...option.formField});
-                            })
-                        })
-                    ),
-                    bbar: [
-                        restoreDefaultsButton(),
-                        filler(),
-                        button({
-                            text: 'Cancel',
-                            onClick: () => model.hide()
-                        }),
-                        button({
-                            disabled: !formModel.isDirty,
-                            text: reloadRequired ? 'Save & Reload' : 'Save',
-                            icon: reloadRequired ? Icon.refresh() : Icon.check(),
-                            intent: 'success',
-                            onClick: () => model.saveAsync()
-                        })
-                    ]
-                })
-            ]
+            model: {
+                closeOnOutsideClick: false,
+                onClose: () => model.hide()
+            },
+            item: panel({
+                mask: 'onLoad',
+                item: form({
+                    model: formModel,
+                    fieldDefaults: {minimal: true, inline: true},
+                    items: model.options.map(option => {
+                        return formField({field: option.name, ...option.formField});
+                    })
+                }),
+                bbar: [
+                    restoreDefaultsButton(),
+                    filler(),
+                    button({
+                        text: 'Cancel',
+                        onClick: () => model.hide()
+                    }),
+                    button({
+                        disabled: !formModel.isDirty,
+                        text: reloadRequired ? 'Save & Reload' : 'Save',
+                        icon: reloadRequired ? Icon.refresh() : Icon.check(),
+                        intent: 'success',
+                        onClick: () => model.saveAsync()
+                    })
+                ]
+            })
         });
     }
 });

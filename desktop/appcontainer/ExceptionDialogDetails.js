@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {XH, hoistCmp} from '@xh/hoist/core';
-import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
+import {pre, table, tbody, td, th, tr, filler, vframe} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -46,12 +46,13 @@ export const exceptionDialogDetails = hoistCmp.factory(
         return dialog({
             title: 'Error Details',
             icon: Icon.search(),
-            isOpen: true,
-            isCloseButtonShown: !requireReload,
-            onClose: !requireReload ? () => model.close() : null,
-            style: {width: 800},
+            model: {
+                showCloseButton: !requireReload,
+                onClose: !requireReload ? () => model.close() : null,
+                size: {width: 800}
+            },
             items: [
-                dialogBody({
+                vframe({
                     className: 'xh-exception-dialog-details',
                     items: [
                         header,

@@ -80,7 +80,6 @@ export class DialogModel {
 
     /**
      * @param {Object} config
-     * @param {(Object|function)} config.content - content to be rendered by this Dialog.
      * @param {Size} [config.size] - initial (unmaximized) size
      * @param {Position} [config.position] - initial (unmaximized) position.
      * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
@@ -96,36 +95,47 @@ export class DialogModel {
      * @param {(Object|string)} [config.stateModel] - config or string for a DialogStateModel.
      */
     constructor({
-        content,
-        size,
-        position,
-        isMaximized = false,
-        isOpen = false,
         inPortal = true,
+        showBackgroundMask = true,
+        showCloseButton = true,
         resizable = false,
         draggable = false,
         closeOnOutsideClick = true,
         closeOnEscape = true,
-        showBackgroundMask = true,
-        showCloseButton = true,
-        stateModel = null
+
+        size,
+        position,
+        isOpen = true,
+        isMaximized = false,
+
+        stateModel = null,
+        onClose = null,
+        onOpen = null
     } = {}) {
+
         // Set immutables
-        this.resizable = resizable;
-        this.draggable = draggable;
-        this.stateModel = this.parseStateModel(stateModel);
         this.inPortal = inPortal;
-        this.closeOnOutsideClick = closeOnOutsideClick;
-        this.closeOnEscape = closeOnEscape;
         this.showBackgroundMask = showBackgroundMask;
         this.showCloseButton = showCloseButton;
-        this.content = content;
+        this.resizable = resizable;
+        this.draggable = draggable;
+        this.closeOnOutsideClick = closeOnOutsideClick;
+        this.closeOnEscape = closeOnEscape;
 
         // set observables
+        this.setSize(size);
+        this.setPosition(position);
         this.isOpen = isOpen;
         this.isMaximized = isMaximized;
-        this.setPosition(position);
-        this.setSize(size);
+
+        // Other
+        this.stateModel = this.parseStateModel(stateModel);
+        if (onClose || onOpen) {
+            this.addReaction({
+                track: () => this.isOpen,
+                run: (isOpen) => isOpen ? onOpen?.call() : onClose?.call()
+            });
+        }
     }
 
     //----------------------

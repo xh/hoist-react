@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -26,12 +26,15 @@ export const feedbackDialog = hoistCmp.factory({
     render({model}) {
         if (!model.isOpen) return null;
 
+        const onClose = () => model.hide();
+
         return dialog({
             title: 'Submit Feedback',
-            style: {width: 450},
-            isOpen: true,
-            onClose: () => model.hide(),
-            canOutsideClickClose: false,
+            model: {
+                size: {width: 450},
+                closeOnOutsideClick: false,
+                onClose
+            },
             items: [
                 textArea({
                     placeholder: 'Please enter your comments...',
@@ -45,7 +48,7 @@ export const feedbackDialog = hoistCmp.factory({
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: () => model.hide()
+                        onClick: onClose
                     }),
                     button({
                         text: 'Send',

@@ -5,9 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -36,15 +37,17 @@ export const exceptionDialog = hoistCmp.factory({
 
         return fragment(
             dialog({
-                isOpen: true,
+                model: {
+                    showCloseButton: !options.requireReload,
+                    size: {width: 500},
+                    onClose
+                },
                 title: options.title,
-                isCloseButtonShown: !options.requireReload,
-                onClose,
                 icon: Icon.warning({size: 'lg'}),
-                items: [
-                    dialogBody(options.message),
-                    bbar()
-                ]
+                items: panel({
+                    item: options.message,
+                    bbar: bbar()
+                })
             }),
             exceptionDialogDetails()
         );
@@ -76,7 +79,6 @@ export const dismissButton = hoistCmp.factory(
     ({model}) => {
         const reloadRequired = model.options.requireReload,
             loginRequired = isSessionExpired(model.exception);
-
         return reloadRequired ?
             button({
                 icon: loginRequired ? Icon.login() : Icon.refresh(),
