@@ -11,11 +11,11 @@ import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
+import {createObservableRef, getLayoutProps, useOnVisDimsChange} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
-import React, {useRef} from 'react';
+import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 
@@ -38,9 +38,11 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
 
     render({model, className, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useRef(null);
-        useOnResize(impl.onResizeAsync, {ref, debounce: 100});
-        useOnVisibleChange(impl.onVisibleChange, {ref});
+            ref = useOnVisDimsChange({
+                fnDims: impl.onResizeAsync,
+                dimsDebounce: 100,
+                fnVis: impl.onVisibleChange
+            });
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
