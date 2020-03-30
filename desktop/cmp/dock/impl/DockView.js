@@ -80,37 +80,40 @@ const headerCmp = hoistCmp.factory(
     ({model, compactHeaders}) => {
         const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
 
-        return hbox({
+        return div({
             className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
-            items: [
-                span({
-                    omit: !icon,
-                    item: icon,
-                    className: 'xh-dock-view__header__icon',
-                    onDoubleClick: () => model.toggleCollapsed()
-                }),
-                span({
-                    omit: !title,
-                    item: title,
-                    className: 'xh-dock-view__header__title',
-                    onDoubleClick: () => model.toggleCollapsed()
-                }),
-                filler(),
-                button({
-                    icon: collapsed ? Icon.angleUp() : Icon.angleDown(),
-                    onClick: () => model.toggleCollapsed()
-                }),
-                button({
-                    omit: collapsed || !allowDialog,
-                    icon: docked ? Icon.expand() : Icon.collapse(),
-                    onClick: () => model.toggleDocked()
-                }),
-                button({
-                    omit: !allowClose,
-                    icon: Icon.close(),
-                    onClick: () => model.close()
-                })
-            ]
+            item: hbox({
+                className: `xh-dock-view__header__inner`,
+                items: [
+                    span({
+                        omit: !icon,
+                        item: icon,
+                        className: 'xh-dock-view__header__icon',
+                        onDoubleClick: () => model.toggleCollapsed()
+                    }),
+                    span({
+                        omit: !title,
+                        item: title,
+                        className: 'xh-dock-view__header__title',
+                        onDoubleClick: () => model.toggleCollapsed()
+                    }),
+                    filler(),
+                    button({
+                        icon: collapsed ? Icon.angleUp() : Icon.angleDown(),
+                        onClick: () => model.toggleCollapsed()
+                    }),
+                    button({
+                        omit: collapsed || !allowDialog,
+                        icon: docked ? Icon.expand() : Icon.collapse(),
+                        onClick: () => model.toggleDocked()
+                    }),
+                    button({
+                        omit: !allowClose,
+                        icon: Icon.close(),
+                        onClick: () => model.close()
+                    })
+                ]
+            })
         });
     }
 );
