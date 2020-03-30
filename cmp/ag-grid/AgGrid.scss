@@ -62,6 +62,7 @@
   //------------------------
   .ag-row {
     background-color: var(--xh-grid-bg);
+    color: var(--xh-grid-text-color);
 
     &.ag-row-selected {
       background-color: var(--xh-grid-bg-highlight);
