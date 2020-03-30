@@ -7,7 +7,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useEffect, useRef} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce as lodashDebounce} from 'lodash';
+import onResize from '@xh/hoist/utils/js';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -45,29 +45,7 @@ export function useOnResize(fn, {debounce, ref} = {}) {
     if (!ref) ref = useRef(null);
 
     const {current} = ref;
-    useEffect(() => {
-        if (!current) return;
-
-        let prevWidth, prevHeight;
-
-        const wrappedFn = (e) => {
-            const {width, height} = e[0].contentRect,
-                isVisible = width !== 0 && height !== 0,
-                hasChanged = width !== prevWidth || height !== prevHeight;
-
-            if (isVisible && hasChanged) {
-                prevWidth = width;
-                prevHeight = height;
-                fn(e);
-            }
-        };
-
-        const callbackFn = isFinite(debounce) && debounce >= 0 ? lodashDebounce(wrappedFn, debounce) : wrappedFn,
-            resizeObserver = new ResizeObserver(callbackFn);
-
-        resizeObserver.observe(current);
-        return () => resizeObserver.unobserve(current);
-    }, [current, debounce]);
+    useEffect(() => onResize(fn, {debounce, ref}), [current, debounce]);
 
     return ref;
 }
