@@ -60,11 +60,17 @@ export class NumberInput extends HoistInput {
         /** Alignment of entry text within control, default 'right'. */
         textAlign: PT.oneOf(['left', 'right']),
 
+        /**
+         * Text appended to the rendered value within control when not editing.
+         * Can be used to append e.g. "%" or a unit without need for an external right label.
+         */
+        valueLabel: PT.string,
+
         /** Allow/automatically fill in trailing zeros in accord with precision, defaults to false */
         zeroPad: PT.bool
     };
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/gi;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/gi;
 
     baseClassName = 'xh-number-input';
 
@@ -134,12 +140,14 @@ export class NumberInput extends HoistInput {
 
     formatValue(value) {
         if (value == null) return '';
-        const {props} = this,
-            precision = props.precision != null ? props.precision : 4,
-            zeroPad = !!props.zeroPad,
-            formattedVal = fmtNumber(value, {precision, zeroPad});
 
-        return props.displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
+        const {props} = this,
+            {valueLabel, displayWithCommas} = props,
+            precision = withDefault(props.precision, 4),
+            zeroPad = withDefault(props.zeroPad, false),
+            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null});
+
+        return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
 
     parseValue(value) {

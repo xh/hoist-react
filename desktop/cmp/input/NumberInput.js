@@ -91,11 +91,17 @@ export class NumberInput extends HoistInput {
         /** Alignment of entry text within control, default 'right'. */
         textAlign: PT.oneOf(['left', 'right']),
 
+        /**
+         * Text appended to the rendered value within control when not editing.
+         * Can be used to append e.g. "%" or a unit without need for an external right label.
+         */
+        valueLabel: PT.string,
+
         /** True to pad with trailing zeros out to precision, default false. */
         zeroPad: PT.bool
     };
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/i;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     baseClassName = 'xh-number-input';
 
@@ -143,7 +149,7 @@ export class NumberInput extends HoistInput {
 
     onValueChange = (val, valAsString) => {
         this.noteValueChange(valAsString);
-    }
+    };
 
     toExternal(val) {
         val = this.parseValue(val);
@@ -153,19 +159,19 @@ export class NumberInput extends HoistInput {
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
         if (this.props.onKeyDown) this.props.onKeyDown(ev);
-    }
+    };
 
     formatRenderValue(value) {
         if (value == null) return '';
-
         if (this.hasFocus) return value;
 
-        const props = this.props,
-            precision = props.precision != null ? props.precision : 4,
-            zeroPad = !!props.zeroPad,
-            formattedVal = fmtNumber(value, {precision, zeroPad});
+        const {props} = this,
+            {valueLabel, displayWithCommas} = props,
+            precision = withDefault(props.precision, 4),
+            zeroPad = withDefault(props.zeroPad, false),
+            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null});
 
-        return props.displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
+        return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
 
     parseValue(value) {
