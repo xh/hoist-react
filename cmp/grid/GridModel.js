@@ -160,10 +160,9 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {(null|GridGroupSortFn)} [c.groupSortFn] - closure to sort full-row groups. Called with two group values to compare,
-     *      returns a number as per a standard JS comparator.
-     *      To explicitly disable sorting on group rows, set to `null`.
-     *      Default is an ascending string sort.
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups. 
+     *      Called with two group values to compare in the form of a standard JS comparator.
+     *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
