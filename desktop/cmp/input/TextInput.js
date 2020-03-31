@@ -88,7 +88,8 @@ export class TextInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, flex, ...layoutProps} = this.getLayoutProps();
 
-        const isClearable = !isEmpty(this.internalValue);
+        const isClearable = !isEmpty(this.internalValue),
+            className = this.getClassName(props.rightElement?.type.displayName == 'Icon' ? 'icon-as-right-element' : null);
 
         return div({
             item: inputGroup({
@@ -117,7 +118,7 @@ export class TextInput extends HoistInput {
                 onKeyDown: this.onKeyDown
             }),
 
-            className: this.getClassName(),
+            className,
             style: {
                 width: withDefault(width, 200),
                 flex: withDefault(flex, null)

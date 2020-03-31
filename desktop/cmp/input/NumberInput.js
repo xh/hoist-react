@@ -111,7 +111,8 @@ export class NumberInput extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
+            {width, ...layoutProps} = this.getLayoutProps(),
+            className = this.getClassName(props.rightElement?.type.displayName == 'Icon' ? 'icon-as-right-element' : null);
 
         return numericInput({
             value: this.formatRenderValue(this.renderValue),
@@ -133,7 +134,7 @@ export class NumberInput extends HoistInput {
             autoFocus: props.autoFocus,
 
             id: props.id,
-            className: this.getClassName(),
+            className,
             style: {
                 ...props.style,
                 ...layoutProps,
