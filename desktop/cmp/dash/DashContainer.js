@@ -34,14 +34,17 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         const modelLookupContext = useContext(ModelLookupContext);
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
-        // Get container ref for GoldenLayout resize handling
-        const ref = useOnResize(() => model.onResize(), {debounce: 100, ref: model.containerRef});
+        // Get callBack ref for GoldenLayout resize handling
+        const resizeRef = useOnResize(() => model.onResize(), {debounce: 100});
 
-        return frame(
-            frame({className, ref}),
-            mask({spinner: true, model: model.loadingStateTask}),
-            emptyContainerOverlay()
-        );
+        return frame({
+            ref: resizeRef,
+            items: [
+                frame({className, ref: model.containerRef}),
+                mask({spinner: true, model: model.loadingStateTask}),
+                emptyContainerOverlay()
+            ]
+        });
     }
 });
 

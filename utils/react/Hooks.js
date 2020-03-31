@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useEffect, useRef} from 'react';
+import {useCallback, useEffect} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce as lodashDebounce} from 'lodash';
+import {isFinite, isNil, debounce as lodashDebounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -32,24 +32,91 @@ export function useOnUnmount(fn) {
 }
 
 /**
+ * Hook to run a function when component is resized or content becomes visible/invisible.
+ * The resize callback will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
+ * size. This is to improve performance by avoiding unneeded resizing.
+ * @param {function} fn
+ * @param {Object} [c] - configuration object
+ * @param {number} [c.dimsDebounce] - milliseconds to debounce
+ * @param {function} [c.fnDims] - called on width or height change
+ * @param {function} [c.fnVis] - called when visible change
+ * @returns {Ref} - ref to be placed on target component
+ */
+export function useOnVisDimsChange({fnDims, fnVis, dimsDebounce}) {
+    let node, dimsObserver, visObserver;
+
+    // see React example: https://reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            dimsObserver = onResize(fnDims, dimsDebounce, _node);
+            visObserver = onVisibleChange(fnVis, _node);
+            node = _node;
+        }
+    });
+
+    useEffect(() => {
+        return () => {
+            dimsObserver?.unobserve(node);
+            visObserver?.unobserve(node);
+        };
+    }, [dimsDebounce, node]);
+
+    return ret;
+}
+
+/**
  * Hook to run a function when component is resized.
  * This will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
  * size. This is to improve performance by avoiding unneeded resizing.
  * @param {function} fn
  * @param {Object} [c] - configuration object
  * @param {number} [c.debounce] - milliseconds to debounce
- * @param {Ref} [c.ref] - existing ref to observe. If not provided, a ref will be created
  * @returns {Ref} - ref to be placed on target component
  */
-export function useOnResize(fn, {debounce, ref} = {}) {
-    if (!ref) ref = useRef(null);
+export function useOnResize(fn, {debounce} = {}) {
+    let node, resizeObserver;
 
-    const {current} = ref;
+    // see React example: https://reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            resizeObserver = onResize(fn, debounce, _node);
+            node = _node;
+        }
+    });
+
     useEffect(() => {
-        if (!current) return;
+        return () => resizeObserver?.unobserve(node);
+    }, [debounce, node]);
 
+    return ret;
+}
+
+/**
+ * Hook to run a function when component becomes visible / invisible.
+ * The function with receive boolean visible as its argument.
+ * @param {function} fn
+ * @returns {Ref} - ref to be placed on target component
+ */
+export function useOnVisibleChange(fn) {
+    let node, resizeObserver;
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            resizeObserver = onVisibleChange(fn, _node);
+            node = _node;
+        }
+    });
+
+    useEffect(() => {
+        return () => resizeObserver?.unobserve(node);
+    }, [node]);
+
+    return ret;
+}
+
+
+function onResize(fn, debounce, node) {
+    if (fn) {
         let prevWidth, prevHeight;
-
         const wrappedFn = (e) => {
             const {width, height} = e[0].contentRect,
                 isVisible = width !== 0 && height !== 0,
@@ -62,34 +129,19 @@ export function useOnResize(fn, {debounce, ref} = {}) {
             }
         };
 
-        const callbackFn = isFinite(debounce) && debounce >= 0 ? lodashDebounce(wrappedFn, debounce) : wrappedFn,
-            resizeObserver = new ResizeObserver(callbackFn);
+        const callbackFn = isFinite(debounce) && debounce >= 0 ?
+                lodashDebounce(wrappedFn, debounce) : wrappedFn,
+            observer = new ResizeObserver(callbackFn);
 
-        resizeObserver.observe(current);
-        return () => resizeObserver.unobserve(current);
-    }, [current, debounce]);
-
-    return ref;
+        observer.observe(node);
+        return observer;
+    }
 }
 
-/**
- * Hook to run a function when component becomes visible / invisible.
- * The function with receive boolean visible as its argument.
- * @param {function} fn
- * @param {Object} [c] - configuration object
- * @param {Ref} [c.ref] - existing ref to observe. If not provided, a ref will be created
- * @returns {Ref} - ref to be placed on target component
- */
-export function useOnVisibleChange(fn, {ref} = {}) {
-    if (!ref) ref = useRef(null);
-
-    const {current} = ref;
-    useEffect(() => {
-        if (!current) return;
-
+function onVisibleChange(fn, node) {
+    if (fn) {
         let prevVisible;
-
-        const resizeObserver = new ResizeObserver((e) => {
+        const observer = new ResizeObserver((e) => {
             const {width, height} = e[0].contentRect,
                 visible = width !== 0 && height !== 0,
                 hasChanged = visible !== prevVisible;
@@ -100,9 +152,8 @@ export function useOnVisibleChange(fn, {ref} = {}) {
             }
         });
 
-        resizeObserver.observe(current);
-        return () => resizeObserver.unobserve(current);
-    }, [current]);
+        observer.observe(node);
+        return observer;
+    }
 
-    return ref;
 }

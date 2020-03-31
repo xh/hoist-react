@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import PT from 'prop-types';
-import {useRef} from 'react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import {bindable, runInAction} from '@xh/hoist/mobx';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
@@ -13,7 +12,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnVisDimsChange} from '@xh/hoist/utils/react';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -34,9 +33,11 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useRef(null);
-        useOnResize(impl.onResize, {ref});
-        useOnVisibleChange(impl.onVisibleChange, {ref});
+            ref = useOnVisDimsChange({
+                fnDims: impl.onResize,
+                fnVis: impl.onVisibleChange
+            });
+
 
         impl.setAspectRatio(aspectRatio);
 
