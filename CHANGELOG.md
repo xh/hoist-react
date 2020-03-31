@@ -26,7 +26,9 @@ will be cycled through when the user clicks on the header.
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
-
+* Inputs that accept a rightElement prop will now properly display an Icon pass as that element
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
+  
 ### ⚙️ Technical
 
 * Flex columns now use the built-in ag-Grid flex functionality.
@@ -1278,10 +1280,6 @@ leverage the context for model support discussed above.
 * The `LeftRightChooserModel` constructor no longer accepts a `leftSortBy` and `rightSortBy`
   property. The implementation of these properties was generally broken. Use `leftSorted` and
   `rightSorted` instead.
-
-### 🐞 Bug Fixes
- 
-* Inputs that accept a rightElement prop will now properly display an Icon pass as that element
 
 #### Mobile
 
