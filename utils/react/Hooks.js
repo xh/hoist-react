@@ -33,10 +33,12 @@ export function useOnUnmount(fn) {
 /**
  * Hook to run a function when a dom element is resized.
  *
- * @param {function} fn
+ * @see observeResize() for more details.
+ *
+ * @param {function} fn - size dimensions of the dom element.
  * @param {Object} [c] - configuration object
  * @param {number} [c.debounce] - milliseconds to debounce
- * @returns {Ref} - ref to be placed on target component
+ * @returns {function} - callback ref to be placed on target component
  */
 export function useOnResize(fn, {debounce} = {}) {
     const observer = useRef(null);
@@ -51,11 +53,10 @@ export function useOnResize(fn, {debounce} = {}) {
 /**
  * Hook to run a function when component becomes visible / invisible.
  *
- * @see observeVisibleChange() for more details on the
- *
+ * @see observeVisibleChange() for more details.
  *
  * @param {function} fn
- * @returns {Ref} - ref to be placed on target component
+ * @returns {function} - callback ref to be placed on target component
  */
 export function useOnVisibleChange(fn) {
     const observer = useRef(null);
