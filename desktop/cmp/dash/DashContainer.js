@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {useContext} from 'react';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ModelLookupContext} from '@xh/hoist/core/impl';
@@ -13,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import {useContext} from 'react';
+import composeRefs from '@seznam/compose-react-refs';
 
 import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';
@@ -34,17 +35,16 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory({
         const modelLookupContext = useContext(ModelLookupContext);
         useOnMount(() => model.setModelLookupContext(modelLookupContext));
 
-        // Get callBack ref for GoldenLayout resize handling
-        const resizeRef = useOnResize(() => model.onResize(), {debounce: 100});
-
-        return frame({
-            ref: resizeRef,
-            items: [
-                frame({className, ref: model.containerRef}),
-                mask({spinner: true, model: model.loadingStateTask}),
-                emptyContainerOverlay()
-            ]
-        });
+        // Get enhance container ref with GoldenLayout resize handling
+        const ref = composeRefs(
+            model.containerRef,
+            useOnResize(() => model.onResize(), {debounce: 100})
+        );
+        return frame(
+            frame({className, ref}),
+            mask({spinner: true, model: model.loadingStateTask}),
+            emptyContainerOverlay()
+        );
     }
 });
 

@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {onResize} from '@xh/hoist/utils/react';
+import {observeResize} from '@xh/hoist/utils/js';
 
 import {observable, action, runInAction} from '@xh/hoist/mobx';
 
@@ -216,7 +216,7 @@ export class RndModel {
     }
 
     setParentResizeObserver() {
-        this.parentResizeObserver = onResize(() => this.positionRnd(), 100, this.resizingParent);
+        this.parentResizeObserver = observeResize(() => this.positionRnd(), this.resizingParent, {debounce: 100});
     }
 
     get resizingParent() {
