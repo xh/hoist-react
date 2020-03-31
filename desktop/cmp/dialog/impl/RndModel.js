@@ -7,6 +7,8 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {onResize} from '@xh/hoist/utils/react';
+
 import {observable, action, runInAction} from '@xh/hoist/mobx';
 
 /**
@@ -213,12 +215,22 @@ export class RndModel {
         });
     }
 
+    setParentResizeObserver() {
+        this.parentResizeObserver = onResize(() => this.positionRnd(), 100, this.resizingParent);
+    }
+
+    get resizingParent() {
+        return this.portalEl ? document.body : this.rnd?.getParent()?.parentElement;
+    }
+
     destroy() {
         if (this.portalEl) {
             this.portalRoot.removeChild(this.portalEl);
         }
+        this.parentResizeObserver?.unobserve(this.resizingParent);
     }
 }
+
 
 function max(...args) {
     const ret = Math.max(...args);

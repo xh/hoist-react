@@ -10,7 +10,6 @@ import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 
 import {hoistCmp, uses, useLocalModel, ModelPublishMode} from '@xh/hoist/core';
-import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {rndDialog} from './impl/RndDialog';
 import {RndModel} from './impl/RndModel';
 
@@ -34,11 +33,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
             {isOpen, portalEl, inPortal} = rndModel;
 
         useEffect(() => rndModel.maintainPortal(), [rndModel, isOpen]);
-
-        useOnMount(() => rndModel.maybeSetFocus());
-
-        // TODO: Shouldn't this be on resize of the parent?
-        useOnResize(() => rndModel.positionRnd(), {ref: {current: document.body}});
 
         if (!isOpen || (inPortal && !portalEl)) {
             return null;

@@ -33,14 +33,13 @@ export function useOnUnmount(fn) {
 
 /**
  * Hook to run a function when component is resized or content becomes visible/invisible.
- * The resize callback will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
- * size. This is to improve performance by avoiding unneeded resizing.
  * @param {function} fn
  * @param {Object} [c] - configuration object
  * @param {number} [c.dimsDebounce] - milliseconds to debounce
  * @param {function} [c.fnDims] - called on width or height change
  * @param {function} [c.fnVis] - called when visible change
- * @returns {Ref} - ref to be placed on target component
+ * @returns {Ref} - callback ref to be placed on target component - this is not
+ *                  a DOM node.  Its the callback passed to `useCallBack`
  */
 export function useOnVisDimsChange({fnDims, fnVis, dimsDebounce}) {
     let node, dimsObserver, visObserver;
@@ -66,8 +65,6 @@ export function useOnVisDimsChange({fnDims, fnVis, dimsDebounce}) {
 
 /**
  * Hook to run a function when component is resized.
- * This will not run the hook when the size is changed to 0 or is changed back from 0 to a previous
- * size. This is to improve performance by avoiding unneeded resizing.
  * @param {function} fn
  * @param {Object} [c] - configuration object
  * @param {number} [c.debounce] - milliseconds to debounce
@@ -75,11 +72,9 @@ export function useOnVisDimsChange({fnDims, fnVis, dimsDebounce}) {
  */
 export function useOnResize(fn, {debounce} = {}) {
     let node, resizeObserver;
-
-    // see React example: https://reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
     const ret = useCallback(_node => {
         if (!isNil(_node)) {
-            resizeObserver = onResize(fn, debounce, _node);
+            resizeObserver = onResize(fn, _node, {debounce});
             node = _node;
         }
     });
@@ -113,8 +108,17 @@ export function useOnVisibleChange(fn) {
     return ret;
 }
 
-
-function onResize(fn, debounce, node) {
+/**
+ * Run a function when component is resized.
+ * This will not run the function when the size is changed to 0 or is changed back from 0 to a previous
+ * size. This is to improve performance by avoiding unneeded resizing.
+ * @param {function} fn
+ * @param {Object} node - The DOM node to observe
+ * @param {Object} [c] - configuration object
+ * @param {number} [c.debounce] - milliseconds to debounce
+ * @returns {Observer} - Observer that can be used to unobserver the node
+ */
+export function onResize(fn, node, {debounce}) {
     if (fn) {
         let prevWidth, prevHeight;
         const wrappedFn = (e) => {
@@ -138,7 +142,14 @@ function onResize(fn, debounce, node) {
     }
 }
 
-function onVisibleChange(fn, node) {
+/**
+ * Run a function when component becomes visible / invisible.
+ * The function with receive boolean visible as its argument.
+ * @param {function} fn
+ * @param {Object} node - The DOM node to observe
+ * @returns {Observer} - Observer that can be used to unobserver the node
+ */
+export function onVisibleChange(fn, node) {
     if (fn) {
         let prevVisible;
         const observer = new ResizeObserver((e) => {

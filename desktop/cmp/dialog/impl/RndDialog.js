@@ -11,6 +11,7 @@ import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {Children} from 'react';
 import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
+import {useOnMount} from '@xh/hoist/utils/react';
 
 import {RndModel} from './RndModel';
 import {rndHeader} from './RndHeader';
@@ -74,6 +75,9 @@ export const rndDialog = hoistCmp.factory({
                 })
             })
         ];
+
+        useOnMount(() => model.maybeSetFocus());
+        useOnMount(() => model.setParentResizeObserver());
 
         return inPortal ? fragment(items) : div({className: model.baseClass, items});
     }
