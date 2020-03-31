@@ -7,7 +7,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect} from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
-import {isFinite, debounce as lodashDebounce} from 'lodash';
+import {isFinite, isNil, debounce as lodashDebounce} from 'lodash';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -43,60 +43,21 @@ export function useOnUnmount(fn) {
  * @returns {Ref} - ref to be placed on target component
  */
 export function useOnVisDimsChange({fnDims, fnVis, dimsDebounce}) {
-    let node, resizeObserverDims, resizeObserverVis;
+    let node, dimsObserver, visObserver;
 
     // see React example: https://reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
-    const ret = useCallback(innerNode => {
-        if (innerNode !== null) {
-            let prevWidth, prevHeight, prevVisible;
-
-            if (fnDims) {
-                const wrappedFn = (e) => {
-                    const {width, height} = e[0].contentRect,
-                        isVisible = width !== 0 && height !== 0,
-                        hasChanged = width !== prevWidth || height !== prevHeight;
-
-                    if (isVisible && hasChanged) {
-                        prevWidth = width;
-                        prevHeight = height;
-                        fnDims(e);
-                    }
-                };
-
-                const callbackFn = isFinite(dimsDebounce) && dimsDebounce >= 0 ?
-                        lodashDebounce(wrappedFn, dimsDebounce) : wrappedFn,
-                    dimsObserver = new ResizeObserver(callbackFn);
-
-                dimsObserver.observe(innerNode);
-                resizeObserverDims = dimsObserver;
-            }
-
-
-            if (fnVis) {
-                const visObserver = new ResizeObserver((e) => {
-                    const {width, height} = e[0].contentRect,
-                        visible = width !== 0 && height !== 0,
-                        hasChanged = visible !== prevVisible;
-
-                    if (hasChanged) {
-                        prevVisible = visible;
-                        fnVis(visible);
-                    }
-                });
-
-                visObserver.observe(innerNode);
-                resizeObserverVis = visObserver;
-            }
-
-
-            node = innerNode;
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            dimsObserver = onResize(fnDims, dimsDebounce, _node);
+            visObserver = onVisibleChange(fnVis, _node);
+            node = _node;
         }
     });
 
     useEffect(() => {
         return () => {
-            resizeObserverDims?.unobserve(node);
-            resizeObserverVis?.unobserve(node);
+            dimsObserver?.unobserve(node);
+            visObserver?.unobserve(node);
         };
     }, [dimsDebounce, node]);
 
@@ -116,29 +77,10 @@ export function useOnResize(fn, {debounce} = {}) {
     let node, resizeObserver;
 
     // see React example: https://reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
-    const ret = useCallback(innerNode => {
-        if (innerNode !== null) {
-            let prevWidth, prevHeight;
-
-            const wrappedFn = (e) => {
-                const {width, height} = e[0].contentRect,
-                    isVisible = width !== 0 && height !== 0,
-                    hasChanged = width !== prevWidth || height !== prevHeight;
-
-                if (isVisible && hasChanged) {
-                    prevWidth = width;
-                    prevHeight = height;
-                    fn(e);
-                }
-            };
-
-            const callbackFn = isFinite(debounce) && debounce >= 0 ?
-                    lodashDebounce(wrappedFn, debounce) : wrappedFn,
-                innerResizeObserver = new ResizeObserver(callbackFn);
-
-            innerResizeObserver.observe(innerNode);
-            resizeObserver = innerResizeObserver;
-            node = innerNode;
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            resizeObserver = onResize(fn, debounce, _node);
+            node = _node;
         }
     });
 
@@ -157,27 +99,10 @@ export function useOnResize(fn, {debounce} = {}) {
  */
 export function useOnVisibleChange(fn) {
     let node, resizeObserver;
-
-
-    const ret = useCallback(innerNode => {
-        if (innerNode !== null) {
-
-            let prevVisible;
-
-            const innerResizeObserver = new ResizeObserver((e) => {
-                const {width, height} = e[0].contentRect,
-                    visible = width !== 0 && height !== 0,
-                    hasChanged = visible !== prevVisible;
-
-                if (hasChanged) {
-                    prevVisible = visible;
-                    fn(visible);
-                }
-            });
-
-            innerResizeObserver.observe(innerNode);
-            resizeObserver = innerResizeObserver;
-            node = innerNode;
+    const ret = useCallback(_node => {
+        if (!isNil(_node)) {
+            resizeObserver = onVisibleChange(fn, _node);
+            node = _node;
         }
     });
 
@@ -186,4 +111,49 @@ export function useOnVisibleChange(fn) {
     }, [node]);
 
     return ret;
+}
+
+
+function onResize(fn, debounce, node) {
+    if (fn) {
+        let prevWidth, prevHeight;
+        const wrappedFn = (e) => {
+            const {width, height} = e[0].contentRect,
+                isVisible = width !== 0 && height !== 0,
+                hasChanged = width !== prevWidth || height !== prevHeight;
+
+            if (isVisible && hasChanged) {
+                prevWidth = width;
+                prevHeight = height;
+                fn(e);
+            }
+        };
+
+        const callbackFn = isFinite(debounce) && debounce >= 0 ?
+                lodashDebounce(wrappedFn, debounce) : wrappedFn,
+            observer = new ResizeObserver(callbackFn);
+
+        observer.observe(node);
+        return observer;
+    }
+}
+
+function onVisibleChange(fn, node) {
+    if (fn) {
+        let prevVisible;
+        const observer = new ResizeObserver((e) => {
+            const {width, height} = e[0].contentRect,
+                visible = width !== 0 && height !== 0,
+                hasChanged = visible !== prevVisible;
+
+            if (hasChanged) {
+                prevVisible = visible;
+                fn(visible);
+            }
+        });
+
+        observer.observe(node);
+        return observer;
+    }
+
 }
