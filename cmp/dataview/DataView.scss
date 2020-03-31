@@ -38,6 +38,9 @@
     // Core Row Classes
     //------------------------
     .ag-row {
+      // Take general text color (not xh-grid-text-color, but also not ag-grid theme default).
+      color: var(--xh-text-color);
+
       // Container for DV items should take up all configured row height + flex contents.
       .ag-react-container {
         height: 100%;

@@ -37,6 +37,7 @@
     "@fortawesome/react-fontawesome": "~0.1.9",
     "@ag-grid-enterprise/all-modules": "~23.0.2",
     "@ag-grid-community/react": "~23.0.2",
+    "@seznam/compose-react-refs": "~1.0.4",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
     "codemirror": "~5.52.2",
