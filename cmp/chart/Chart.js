@@ -12,7 +12,8 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, box} from '@xh/hoist/cmp/layout';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnVisDimsChange} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
+import composeRefs from '@seznam/compose-react-refs';
 
 import {LightTheme} from './theme/Light';
 import {DarkTheme} from './theme/Dark';
@@ -33,11 +34,10 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnVisDimsChange({
-                fnDims: impl.onResize,
-                fnVis: impl.onVisibleChange
-            });
-
+            ref = composeRefs(
+                useOnResize(impl.onResize),
+                useOnVisibleChange(impl.onVisibleChange)
+            );
 
         impl.setAspectRatio(aspectRatio);
 
@@ -148,9 +148,9 @@ class LocalModel {
         }
     }
 
-    onResize = (e) => {
+    onResize = (size) => {
         if (!this.chart) return;
-        const {width, height} = this.getChartDims(e[0].contentRect);
+        const {width, height} = this.getChartDims(size);
         this.chart.setSize(width, height, false);
     };
 
