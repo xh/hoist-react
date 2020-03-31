@@ -24,6 +24,7 @@ will be cycled through when the user clicks on the header.
 
 ### 🐞 Bug Fixes
 
+* Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 
