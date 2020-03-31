@@ -1279,6 +1279,10 @@ leverage the context for model support discussed above.
   property. The implementation of these properties was generally broken. Use `leftSorted` and
   `rightSorted` instead.
 
+### 🐞 Bug Fixes
+ 
+* Inputs that accept a rightElement prop will now properly display an Icon pass as that element
+
 #### Mobile
 
 * Mobile `Page` has changed - `Pages` are now wrappers around `Panels` that are designed to be used
