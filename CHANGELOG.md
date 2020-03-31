@@ -22,8 +22,12 @@ will be cycled through when the user clicks on the header.
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
 
-* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a ref argument.  Use
+* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument.  Use
 `composeRefs` to combine the ref that they return with any ref you wish to compose them with.
+
+* The callback for `useOnResize()` will now receive an object representing the locations and
+dimensions of the element's content box. (Previously it incorrectly received an array of
+`ResizeObserver` entries that had to be de-referenced)
 
 ### 🐞 Bug Fixes
 
