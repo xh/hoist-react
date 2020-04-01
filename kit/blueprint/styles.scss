@@ -283,7 +283,7 @@ textarea.bp3-input,
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group {
-  svg:not(.bp3-icon) {
+  .xh-icon {
     position: absolute;
     top: 0;
     line-height: 1;
@@ -297,6 +297,15 @@ textarea.bp3-input,
     color: var(--xh-text-color-muted);
   }
 
+  // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
+  // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
+  .bp3-input-action {
+    > .xh-icon {
+      position: relative;
+      display: block;
+    }
+  }
+
   .bp3-button-group {
     margin-right: 3px;
 
@@ -305,7 +314,7 @@ textarea.bp3-input,
       margin-left: 0;
     }
 
-    svg:not(.bp3-icon) {
+    .xh-icon {
       margin-top: 4px;
     }
   }
