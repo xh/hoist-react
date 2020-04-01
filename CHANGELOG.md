@@ -32,6 +32,10 @@ will be cycled through when the user clicks on the header.
 dimensions of the element's content box. (Previously it incorrectly received an array of
 `ResizeObserver` entries that had to be de-referenced)
 
+* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
+  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
+
 ### 🐞 Bug Fixes
 
 * Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
