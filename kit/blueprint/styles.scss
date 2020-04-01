@@ -299,11 +299,9 @@ textarea.bp3-input,
 
   // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
   // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
-  .bp3-input-action {
-    > .xh-icon {
-      position: relative;
-      display: block;
-    }
+  .bp3-input-action > .xh-icon {
+    position: relative;
+    display: block;
   }
 
   .bp3-button-group {

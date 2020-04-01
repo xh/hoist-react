@@ -34,9 +34,11 @@ dimensions of the element's content box. (Previously it incorrectly received an 
 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
-
-* Fixed an issue with the hooks useOnResize and useOnVisibleChange.  In certain conditions these
-hooks would not be called.
+* Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
+  hooks would not be called.
+  [#1808](https://github.com/xh/hoist-react/issues/1808)
+* Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
 
 ### ⚙️ Technical
 
