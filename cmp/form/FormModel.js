@@ -44,7 +44,7 @@ export class FormModel {
     @observable.ref fields = {};
 
     /** @return {FieldModel[]} - all FieldModel instances, as an array. */
-    get allFields() {return values(this.fields)}
+    get fieldList() {return values(this.fields)}
 
     /** @member {FormModel} */
     parent = null;
