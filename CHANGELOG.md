@@ -8,6 +8,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 
 ### 🎁 New Features
 
+* GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
@@ -22,11 +23,23 @@ will be cycled through when the user clicks on the header.
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
 
+* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument.  Use
+`composeRefs` to combine the ref that they return with any ref you wish to compose them with.
+
+* The callback for `useOnResize()` will now receive an object representing the locations and
+dimensions of the element's content box. (Previously it incorrectly received an array of
+`ResizeObserver` entries that had to be de-referenced)
+
 ### 🐞 Bug Fixes
 
 * Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
+* Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
+  hooks would not be called.
+  [#1808](https://github.com/xh/hoist-react/issues/1808)
+* Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
 
 ### ⚙️ Technical
 
@@ -43,6 +56,7 @@ will be cycled through when the user clicks on the header.
 * numbro `2.1 -> 2.2`
 * react-beautiful-dnd `12.0 -> 13.0`
 * store2 `2.10 -> 2.11`
+* compose-react-refs `NEW 1.0.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 
