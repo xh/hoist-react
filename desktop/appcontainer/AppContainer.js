@@ -5,35 +5,34 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, elem, AppState, XH, uses} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {errorBoundary} from '@xh/hoist/core/impl';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-
-import {aboutDialog} from './AboutDialog';
-import {feedbackDialog} from './FeedbackDialog';
-import {optionsDialog} from './OptionsDialog';
-import {exceptionDialog} from './ExceptionDialog';
-import {impersonationBar} from './ImpersonationBar';
-import {loginPanel} from './LoginPanel';
-import {updateBar} from './UpdateBar';
-import {versionBar}  from './VersionBar';
-import {lockoutPanel} from './LockoutPanel';
-import {messageSource} from './MessageSource';
-import {IdleDialog} from './IdleDialog';
-import {toastSource} from './ToastSource';
-
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {AppState, elem, hoistCmp, uses, XH, refreshContextView} from '@xh/hoist/core';
+import {errorBoundary} from '@xh/hoist/core/impl/ErrorBoundary';
+import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
+import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserDialog';
+import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
-import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
-import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {colChooserDialog as colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid';
+import {useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount} from '@xh/hoist/utils/react';
-import {useHotkeys} from '@xh/hoist/desktop/hooks';
+
+import {aboutDialog} from './AboutDialog';
+import {exceptionDialog} from './ExceptionDialog';
+import {feedbackDialog} from './FeedbackDialog';
+import {IdleDialog} from './IdleDialog';
+import {impersonationBar} from './ImpersonationBar';
+import {lockoutPanel} from './LockoutPanel';
+import {loginPanel} from './LoginPanel';
+import {messageSource} from './MessageSource';
+import {optionsDialog} from './OptionsDialog';
+import {toastSource} from './ToastSource';
+import {updateBar} from './UpdateBar';
+import {versionBar} from './VersionBar';
 
 installDesktopImpls({
     tabContainerImpl,

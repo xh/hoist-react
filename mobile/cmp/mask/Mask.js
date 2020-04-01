@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
+import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {div, vbox, vspacer, box} from '@xh/hoist/cmp/layout';
 import {progressCircular} from '@xh/hoist/kit/onsen';
+import PT from 'prop-types';
 
 import './Mask.scss';
 

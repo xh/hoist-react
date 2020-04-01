@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp} from '@xh/hoist/core';
 import {tile} from './Tile';
 
 export const monitorResultsDisplay = hoistCmp.factory(

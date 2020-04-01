@@ -4,17 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {Children} from 'react';
+import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {hbox, vbox, fragment, filler} from '@xh/hoist/cmp/layout';
-import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
+import {overflowList, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
-import {castArray} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
+import {castArray} from 'lodash';
 import PT from 'prop-types';
+import {Children} from 'react';
 
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';

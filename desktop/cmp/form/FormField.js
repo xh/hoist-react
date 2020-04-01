@@ -4,22 +4,21 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React, {cloneElement, useContext, useState, Children} from 'react';
-import PT from 'prop-types';
-import {isUndefined, isDate, isEmpty, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
 
 import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
-import {tooltip} from '@xh/hoist/kit/blueprint';
-import {FormContext, FieldModel} from '@xh/hoist/cmp/form';
-import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
+import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
-import {throwIf, errorIf, withDefault} from '@xh/hoist/utils/js';
-import {getReactElementName} from '@xh/hoist/utils/react';
+import {tooltip} from '@xh/hoist/kit/blueprint';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import PT from 'prop-types';
+import React, {Children, cloneElement, useContext, useState} from 'react';
 
 import './FormField.scss';
 

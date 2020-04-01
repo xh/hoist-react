@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import Highcharts from 'highcharts/highstock';
-import highchartsExporting from 'highcharts/modules/exporting';
-import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
 import highchartsExportData from 'highcharts/modules/export-data';
-import highchartsTree from 'highcharts/modules/treemap';
+import highchartsExporting from 'highcharts/modules/exporting';
 import highchartsHeatmap from 'highcharts/modules/heatmap';
+import highchartsOfflineExporting from 'highcharts/modules/offline-exporting';
+import highchartsTree from 'highcharts/modules/treemap';
 
 Highcharts.setOptions({
     global: {

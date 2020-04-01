@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {switchControl} from '@xh/hoist/kit/onsen';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {switchControl} from '@xh/hoist/kit/onsen';
+import PT from 'prop-types';
 
 import './SwitchInput.scss';
 

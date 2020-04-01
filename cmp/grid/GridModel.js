@@ -4,40 +4,39 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
+import {deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
     defaults,
     defaultsDeep,
+    difference,
     find,
     findLast,
     isArray,
     isEmpty,
     isNil,
-    isUndefined,
     isPlainObject,
     isString,
+    isUndefined,
     last,
     map,
     max,
     min,
     pull,
-    sortBy,
-    difference
+    sortBy
 } from 'lodash';
+import {apiRemoved, debounced} from '../../utils/js';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {managed} from '../../core/mixins';
-import {apiRemoved, debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -160,7 +159,7 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups. 
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token

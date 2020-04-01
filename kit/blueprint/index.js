@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
-import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
 import './styles.scss';
 
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines

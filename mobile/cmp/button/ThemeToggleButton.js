@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, hoistCmp} from '@xh/hoist/core';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {button, Button} from '@xh/hoist/mobile/cmp/button';
 
 /**
  * Convenience Button preconfigured for use as a trigger for light/dark theme toggling.

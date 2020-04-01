@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import classNames from 'classnames';
-import {toLower, last, split, pickBy} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
+import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
 import {iconHtml} from './impl/IconHtml';
 

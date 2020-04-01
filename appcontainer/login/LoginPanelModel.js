@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {computed, bindable} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 /**

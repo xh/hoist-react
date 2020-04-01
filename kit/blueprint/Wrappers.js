@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {elemFactory} from '@xh/hoist/core';
 //--------------------
 // Blueprint Imports
 //--------------------
@@ -20,13 +19,13 @@ import {
     Dialog,
     FileInput,
     FormGroup,
-    Hotkeys,
     Hotkey,
+    Hotkeys,
     InputGroup,
     Label,
     Menu,
-    MenuItem,
     MenuDivider,
+    MenuItem,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -45,13 +44,14 @@ import {
     Tabs,
     Tag,
     TagInput,
-    TextArea,
     Text,
+    TextArea,
     Tooltip,
     Tree
 } from '@blueprintjs/core';
 
 import {DatePicker} from '@blueprintjs/datetime';
+import {elemFactory} from '@xh/hoist/core';
 
 //---------------------
 // Re-exports

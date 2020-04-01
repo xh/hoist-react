@@ -4,19 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
+import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
+import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
-import {
-    ModelLookup,
-    ModelLookupContext,
-    modelLookupContextProvider,
-    useOwnedModelLinker
-} from './impl';
-import {CreatesSpec, ModelSpec, uses} from './modelspec';
-import classNames from 'classnames';
+import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating

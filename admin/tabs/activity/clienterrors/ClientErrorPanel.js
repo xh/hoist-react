@@ -4,18 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, creates} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {textInput, dateInput} from '@xh/hoist/desktop/cmp/input';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {filler} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {clientErrorDetail} from './ClientErrorDetail';
 
 import {ClientErrorModel} from './ClientErrorModel';
-import {clientErrorDetail} from './ClientErrorDetail';
 
 export const clientErrorPanel = hoistCmp.factory({
     model: creates(ClientErrorModel),

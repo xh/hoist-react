@@ -5,14 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {isObject} from 'lodash';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
-
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
+import {action, observable} from '@xh/hoist/mobx';
+import {withDefault} from '@xh/hoist/utils/js';
+import {isObject} from 'lodash';
+import PT from 'prop-types';
 import './RadioInput.scss';
 
 /**

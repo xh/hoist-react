@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isValidElement, createElement, cloneElement} from 'react';
+import {cloneElement, createElement, isValidElement} from 'react';
 import {throwIf} from '../js';
 
 /**

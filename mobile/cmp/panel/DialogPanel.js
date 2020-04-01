@@ -5,10 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import {castArray} from 'lodash';
+import PT from 'prop-types';
 
 import './DialogPanel.scss';
 import {panel, Panel} from './Panel';

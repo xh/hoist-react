@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {elementFromContent} from '@xh/hoist/utils/react';
-import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {modelLookupContextProvider} from '@xh/hoist/core/impl';
-import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
+import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {useRef} from 'react';
 
 import {DashViewModel} from '../DashViewModel';
 

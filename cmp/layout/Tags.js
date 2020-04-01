@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
 import {elemFactory} from '@xh/hoist/core';
+import React from 'react';
 
 //--------------------------------
 // React

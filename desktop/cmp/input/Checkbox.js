@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/input';
+import PT from 'prop-types';
 
 /**
  * Checkbox control for boolean values.

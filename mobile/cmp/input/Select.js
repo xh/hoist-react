@@ -5,15 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {XH, HoistComponent, elemFactory, LayoutSupport} from '@xh/hoist/core';
-import {isEmpty, isPlainObject, assign} from 'lodash';
-import {observable, action} from '@xh/hoist/mobx';
-import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
+import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {reactSelect} from '@xh/hoist/kit/react-select';
+import {action, observable} from '@xh/hoist/mobx';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {assign, isEmpty, isPlainObject} from 'lodash';
+import PT from 'prop-types';
 
 import './Select.scss';
 

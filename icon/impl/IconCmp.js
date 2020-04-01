@@ -5,10 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp} from '@xh/hoist/core';
-
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {elemFactory} from '@xh/hoist/core';
+import {elemFactory, hoistCmp} from '@xh/hoist/core';
 import {enhanceFaClasses} from './IconHtml';
 
 /**

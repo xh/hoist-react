@@ -4,19 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
-import {RootRefreshContextModel} from '@xh/hoist/core/refresh';
-import {observable, action} from '@xh/hoist/mobx';
+import {HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
-import {OptionsDialogModel} from './OptionsDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
 import {MessageSourceModel} from './MessageSourceModel';
-import {ToastSourceModel} from './ToastSourceModel';
+import {OptionsDialogModel} from './OptionsDialogModel';
 import {ThemeModel} from './ThemeModel';
+import {ToastSourceModel} from './ToastSourceModel';
 
 /**
  *  Root object for Framework GUI State.

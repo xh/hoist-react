@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 

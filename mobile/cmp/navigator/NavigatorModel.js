@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, RenderMode, RefreshMode} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, warnIf, throwIf} from '@xh/hoist/utils/js';
-import {keys, find, merge, isEqual} from 'lodash';
+import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
+import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {find, isEqual, keys, merge} from 'lodash';
+import {page} from './impl/Page';
 
 import {PageModel} from './PageModel';
-import {page} from './impl/Page';
 
 /**
  * Model for handling stack-based navigation between Onsen pages.

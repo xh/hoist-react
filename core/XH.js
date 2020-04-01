@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {action, observable} from '@xh/hoist/mobx';
@@ -23,14 +24,13 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
-import {p} from '@xh/hoist/cmp/layout';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
+import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
 import {RouterModel} from './RouterModel';
-import '../styles/XH.scss';
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.

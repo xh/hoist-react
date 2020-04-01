@@ -7,9 +7,8 @@
 
 import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
-import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
+import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the

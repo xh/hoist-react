@@ -4,17 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useContext} from 'react';
+import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {ModelLookupContext} from '@xh/hoist/core/impl';
+import {ModelLookupContext} from '@xh/hoist/core/impl/ModelLookup';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {Icon} from '@xh/hoist/icon';
 import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
-import composeRefs from '@seznam/compose-react-refs';
+import {useContext} from 'react';
 
 import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';

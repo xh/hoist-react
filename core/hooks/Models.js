@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {useOwnedModelLinker} from '@xh/hoist/core/impl';
-import {useState, useContext} from 'react';
+import {useContext, useState} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
+import {useOwnedModelLinker} from '../impl/UseOwnedModelLinker';
 
 /**
  * Hook to allow a component to access a HoistModel provided in context by an ancestor component.

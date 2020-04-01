@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/input';
+import PT from 'prop-types';
 
 import './TextArea.scss';
 

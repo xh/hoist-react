@@ -1,7 +1,7 @@
-import {HoistModel} from '@xh/hoist/core';
-import {observable, action, bindable, computed} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import FastClick from '@onsenui/fastclick';
+import {HoistModel} from '@xh/hoist/core';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
 @HoistModel

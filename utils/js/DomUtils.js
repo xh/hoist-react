@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isFinite, debounce as lodashDebounce} from 'lodash';
+import {debounce as lodashDebounce, isFinite} from 'lodash';
 import ResizeObserver from 'resize-observer-polyfill';
 
 /**

@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import React from 'react';
-import {castArray} from 'lodash';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/input';
+import {castArray} from 'lodash';
 import PT from 'prop-types';
+import React from 'react';
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.

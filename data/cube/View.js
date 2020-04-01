@@ -5,13 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Cube} from './Cube';
-import {ValueFilter} from './filter';
-import {createAggregateRow, createLeafRow} from './impl';
-import {observable, action} from 'mobx';
+import {castArray, groupBy, isEmpty, map} from 'lodash';
+import {action, observable} from 'mobx';
+import {Cube, ValueFilter} from '../';
 import {throwIf} from '../../utils/js';
-
-import {isEmpty, groupBy, map, castArray} from 'lodash';
+import {createAggregateRow} from './impl/AggregateRow';
+import {createLeafRow} from './impl/LeafRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.

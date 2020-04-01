@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import PT from 'prop-types';
-import {HoistComponent, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
 import {div} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent} from '@xh/hoist/core';
+import PT from 'prop-types';
 
 import './Label.scss';
-import {HoistInput} from '@xh/hoist/cmp/input/HoistInput';
 
 /**
  * A simple label for a form.

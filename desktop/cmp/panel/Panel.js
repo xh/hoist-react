@@ -5,24 +5,30 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {useRef, isValidElement} from 'react';
-import PT from 'prop-types';
-import {castArray, omitBy} from 'lodash';
-import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {vbox, vframe, box} from '@xh/hoist/cmp/layout';
-import {refreshContextView} from '@xh/hoist/core/refresh';
+import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {
+    hoistCmp,
+    ModelPublishMode,
+    refreshContextView,
+    RenderMode,
+    useContextModel,
+    uses
+} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {castArray, omitBy} from 'lodash';
+import PT from 'prop-types';
+import {isValidElement, useRef} from 'react';
 
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-import {PanelModel} from './PanelModel';
 
 import './Panel.scss';
+import {PanelModel} from './PanelModel';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
