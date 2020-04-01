@@ -211,6 +211,6 @@ export class FormModel {
     }
 
     destroy() {
-        XH.safeDestroy(values(this.fields));
+        XH.safeDestroy(this.fieldList);
     }
 }
