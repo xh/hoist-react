@@ -287,6 +287,14 @@
     .ag-cell {
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+
+      .xh-check-box {
+        padding-top: 1px;
+
+        .bp3-control-indicator {
+          font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
+        }
+      }
     }
 
     .ag-header-cell,

@@ -32,6 +32,7 @@ dimensions of the element's content box. (Previously it incorrectly received an 
 
 ### 🐞 Bug Fixes
 
+* Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 * Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
