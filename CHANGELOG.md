@@ -16,6 +16,8 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
   columns in proportion to their `flex` value.
 * `Column` now supports a `sortingOrder` config to allow control of the sorting options that
 will be cycled through when the user clicks on the header.
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
+  respond to refresh requests.
 
 ### 💥 Breaking Changes
 
@@ -29,6 +31,10 @@ will be cycled through when the user clicks on the header.
 * The callback for `useOnResize()` will now receive an object representing the locations and
 dimensions of the element's content box. (Previously it incorrectly received an array of
 `ResizeObserver` entries that had to be de-referenced)
+
+* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
+  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
 
 ### 🐞 Bug Fixes
 

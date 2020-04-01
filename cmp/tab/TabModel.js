@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed} from '@xh/hoist/core';
+import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
 import {action, bindable, observable, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
-
-import {TabRefreshContextModel} from './impl/TabRefreshContextModel';
 
 /**
  * Model for a Tab within a TabContainer. Specifies the actual content (child component) to be
@@ -69,7 +68,7 @@ export class TabModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new TabRefreshContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     activate() {
