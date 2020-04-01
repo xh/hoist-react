@@ -288,11 +288,11 @@
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
 
-      .xh-check-box.bp3-control.bp3-inline {
+      .xh-check-box {
         padding-top: 1px;
 
         .bp3-control-indicator {
-          font-size: 12px;
+          font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
         }
       }
     }
