@@ -108,6 +108,8 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
+    /** @member {boolean} */
+    @observable frameworkCmpsMounted = false;
 
     static defaultContextMenu = [
         'copy',
@@ -160,7 +162,7 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups. 
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
@@ -695,6 +697,17 @@ export class GridModel {
             return col && !col.flex;
         });
         if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
+    }
+
+    /**
+     * Set a flag acknowledging that a framework component has been mounted.
+     * We debounce here catch the end of a collection of components mounted at
+     * the same time (i.e. column header initialisation)
+     */
+    @debounced(50)
+    @action
+    noteFrameworkCmpMounted() {
+        this.frameworkCmpsMounted = true;
     }
 
     //-----------------------

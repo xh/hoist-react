@@ -365,9 +365,9 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, lastLoaded, lastUpdated, newRs]) => {
-                if (!api) return;
+            track: () => [agGridModel.agApi, model.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!api || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,

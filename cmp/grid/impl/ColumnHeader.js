@@ -10,7 +10,7 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
+import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
@@ -32,6 +32,7 @@ export const ColumnHeader = hoistCmp({
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));
+        useOnMount(() => impl.noteMounted());
 
         const sortIcon = () => {
             const activeGridSorter = impl.activeGridSorter;
@@ -115,6 +116,11 @@ class LocalModel {
 
     destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
+    }
+
+    noteMounted() {
+        console.log('HERE');
+        this.gridModel.noteFrameworkCmpMounted();
     }
 
     // Get any active sortBy for this column, or null
