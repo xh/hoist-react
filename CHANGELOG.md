@@ -2,38 +2,63 @@
 
 ## v32.0.0-SNAPSHOT - unreleased
 
+⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
+[ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
+possible breaking changes to any direct/custom use of ag-Grid APIs and props within applications.
+
 ### 🎁 New Features
 
-* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
-  respond to refresh requests.
-* The appMenuButton.extraItems property will now support valid react elements (like menuDivider).
+* GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
-
+* Grid column `flex` param will now accept numbers, with available space divided between flex
+  columns in proportion to their `flex` value.
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
+will be cycled through when the user clicks on the header.
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
+  respond to refresh requests.
 
 ### 💥 Breaking Changes
 
-* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
-  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+* The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
+  class `.xh-panel__content`. You may need to update styling that targets the inner structure of
+  `Panel` via `.xh-panel`.
 
-* The internal DOM structure of desktop `Panel` has changed to always include an inner frame
-  with class `.xh-panel__content`. You may need to update styling that targets the inner structure
-  of `Panel` via `.xh-panel`.
+* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument.  Use
+`composeRefs` to combine the ref that they return with any ref you wish to compose them with.
+
+* The callback for `useOnResize()` will now receive an object representing the locations and
+dimensions of the element's content box. (Previously it incorrectly received an array of
+`ResizeObserver` entries that had to be de-referenced)
 
 ### 🐞 Bug Fixes
 
+* Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
+* Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
+  hooks would not be called.
+  [#1808](https://github.com/xh/hoist-react/issues/1808)
+* Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
+
+### ⚙️ Technical
+
+* Flex columns now use the built-in ag-Grid flex functionality.
 
 ### 📚 Libraries
 
+* ag-grid-community `removed @ 21.2`
+* ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `23.0`
+* ag-grid-react `21.2` replaced with @ag-grid-community/react `23.0`
 * @fortawesome/* `5.12 -> 5.13`
 * codemirror `5.51 -> 5.52`
 * filesize `6.0 -> 6.1`
 * numbro `2.1 -> 2.2`
 * react-beautiful-dnd `12.0 -> 13.0`
 * store2 `2.10 -> 2.11`
+* compose-react-refs `NEW 1.0.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
 

@@ -19,7 +19,7 @@
     font-family: var(--xh-font-family);
     font-size: var(--xh-font-size-px);
 
-    .ag-root {
+    .ag-root-wrapper {
       border: none;
       background-color: var(--xh-bg);
     }
@@ -38,6 +38,9 @@
     // Core Row Classes
     //------------------------
     .ag-row {
+      // Take general text color (not xh-grid-text-color, but also not ag-grid theme default).
+      color: var(--xh-text-color);
+
       // Container for DV items should take up all configured row height + flex contents.
       .ag-react-container {
         height: 100%;
@@ -54,10 +57,15 @@
       &.ag-row-group.ag-full-width-row {
         color: var(--xh-grid-group-text-color);
         background-color: var(--xh-grid-group-bg);
+
+        .ag-group-expanded,
+        .ag-group-contracted {
+          color: var(--xh-grid-group-text-color);
+        }
       }
 
       .ag-group-expanded {
-        margin: 0 var(--xh-pad-half-px);
+        margin: 0 var(--xh-pad-half-px) 0 0;
 
         svg {
           width: var(--xh-pad-px);
@@ -65,7 +73,7 @@
       }
 
       .ag-group-contracted {
-        margin: 0 var(--xh-pad-half-px);
+        margin: 0 var(--xh-pad-half-px) 0 0;
 
         svg {
           width: var(--xh-pad-px);

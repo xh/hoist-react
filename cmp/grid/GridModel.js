@@ -160,8 +160,9 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
-     *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups. 
+     *      Called with two group values to compare in the form of a standard JS comparator.
+     *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
@@ -362,6 +363,8 @@ export class GridModel {
         return this.selModel.singleRecord;
     }
 
+    get isReady() {return this.agGridModel.isReady}
+
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
@@ -406,7 +409,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
@@ -416,7 +418,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
@@ -442,7 +443,7 @@ export class GridModel {
     /**
      * This method is no-op if provided any sorters without a corresponding column.
      * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
-     *      GridSorter strings, or a falsey value to clear the sort config.
+     *      GridSorter strings, or a falsy value to clear the sort config.
      */
     @action
     setSortBy(sorters) {
@@ -689,7 +690,11 @@ export class GridModel {
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
      */
     autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
-        this.agColumnApi.autoSizeColumns(castArray(colIds));
+        colIds = castArray(colIds).filter(id => {
+            const col = this.getColumn(id);
+            return col && !col.flex;
+        });
+        if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
     }
 
     //-----------------------

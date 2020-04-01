@@ -24,7 +24,7 @@ export function iconHtml({iconName, prefix, title, className, size}) {
 }
 
 export function enhanceFaClasses(className, size) {
-    let ret = classNames(className, 'fa-fw');
+    let ret = classNames(className, 'fa-fw', 'xh-icon');
     if (isString(size)) {
         ret = classNames(ret, `fa-${size}`);
     }
