@@ -169,7 +169,10 @@ class LocalModel {
     // Do any root level records have children?
     @observable isHierarchical = false;
 
-    // Have framework components been mounted?
+    // Have framework components been mounted? As of AgGrid v23, there is a noticeable
+    // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
+    // being rendered. By tracking this, we can wait until they have been rendered
+    // before we trigger the first data reaction and remove the loading overlay.
     @observable frameworkCmpsMounted = false;
 
     constructor(model, props) {
