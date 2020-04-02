@@ -8,26 +8,31 @@ import {RefreshContextModel} from '@xh/hoist/core/refresh';
 import {loadAllAsync, RefreshMode} from '@xh/hoist/core';
 
 /**
- * @private
+ * A refresh context model that consults a model's RefreshMode and active state to manage
+ * refreshes of its target models.
+ *
+ * The associated model must have both:
+ *  a) An observable `isActive` property, that returns a boolean value.
+ *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
 @RefreshContextModel
-export class DashRefreshContextModel {
+export class ManagedRefreshContextModel {
 
-    viewModel;
+    model;
 
-    constructor(viewModel)  {
-        this.viewModel = viewModel;
+    constructor(model)  {
+        this.model = model;
         this.addReaction({
-            track: () => viewModel.isActive,
+            track: () => model.isActive,
             run: this.noteActiveChanged
         });
     }
 
     async doLoadAsync(loadSpec) {
-        const {viewModel} = this,
-            mode = viewModel.refreshMode;
+        const {model} = this,
+            mode = model.refreshMode;
 
-        if (viewModel.isActive || mode === RefreshMode.ALWAYS) {
+        if (model.isActive || mode === RefreshMode.ALWAYS) {
             return await loadAllAsync(this.refreshTargets, loadSpec);
         }
 
@@ -38,7 +43,7 @@ export class DashRefreshContextModel {
 
     noteActiveChanged(isActive) {
         if (isActive) {
-            const mode = this.viewModel.refreshMode;
+            const mode = this.model.refreshMode;
             if (mode === RefreshMode.ON_SHOW_ALWAYS) {
                 this.refreshAsync();
             } else if (mode === RefreshMode.ON_SHOW_LAZY && this.refreshPending) {
