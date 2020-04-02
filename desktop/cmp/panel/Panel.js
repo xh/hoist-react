@@ -10,12 +10,14 @@ import PT from 'prop-types';
 import {castArray, omitBy} from 'lodash';
 import {hoistCmp, uses, useContextModel, ModelPublishMode, RenderMode} from '@xh/hoist/core';
 import {vbox, vframe, box} from '@xh/hoist/cmp/layout';
+import {refreshContextView} from '@xh/hoist/core/refresh';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import {PanelModel} from './PanelModel';
@@ -80,12 +82,11 @@ export const [Panel, panel] = hoistCmp.withFactory({
             resizable,
             collapsible,
             collapsed,
-            collapsedRenderMode,
+            renderMode,
             vertical,
-            showSplitter
+            showSplitter,
+            refreshContextModel
         } = model;
-
-        const requiresContainer = resizable || collapsible || showSplitter;
 
         if (collapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
@@ -93,7 +94,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode === RenderMode.ALWAYS || (collapsedRenderMode === RenderMode.LAZY && wasDisplayed.current)) {
+        if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -118,7 +119,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
             panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
-        const item = vbox({
+        let item = vbox({
             className: 'xh-panel__content',
             items: [
                 processedPanelHeader,
@@ -129,11 +130,16 @@ export const [Panel, panel] = hoistCmp.withFactory({
             ...rest
         });
 
-        // 4) Return, wrapped in resizable and its affordances if needed.
-        return requiresContainer ?
+        if (refreshContextModel) {
+            item = refreshContextView({model: refreshContextModel, item});
+        }
+
+        // 4) Return wrapped in resizable and its affordances if needed.
+        return resizable || collapsible || showSplitter ?
             resizeContainer({ref, item, className}) :
             box({ref, item, className, ...layoutProps});
     }
+
 });
 
 function parseLoadDecorator(prop, name, contextModel) {

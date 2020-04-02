@@ -8,6 +8,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 
 ### 🎁 New Features
 
+* GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
@@ -15,6 +16,8 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
   columns in proportion to their `flex` value.
 * `Column` now supports a `sortingOrder` config to allow control of the sorting options that
 will be cycled through when the user clicks on the header.
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
+  respond to refresh requests.
 
 ### 💥 Breaking Changes
 
@@ -29,13 +32,20 @@ will be cycled through when the user clicks on the header.
 dimensions of the element's content box. (Previously it incorrectly received an array of
 `ResizeObserver` entries that had to be de-referenced)
 
+* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
+  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
+
 ### 🐞 Bug Fixes
 
+* Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
-
-* Fixed an issue with the hooks useOnResize and useOnVisibleChange.  In certain conditions these
-hooks would not be called.
+* Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
+  hooks would not be called.
+  [#1808](https://github.com/xh/hoist-react/issues/1808)
+* Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
 
 ### ⚙️ Technical
 
