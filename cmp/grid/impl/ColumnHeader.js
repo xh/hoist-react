@@ -25,14 +25,14 @@ import {GridSorter} from './GridSorter';
  *
  * @private
  */
-export const ColumnHeader = hoistCmp({
+export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
     model: false,
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));
-        useOnMount(() => impl.noteMounted());
+        useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
             const activeGridSorter = impl.activeGridSorter;
@@ -116,10 +116,6 @@ class LocalModel {
 
     destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
-    }
-
-    noteMounted() {
-        this.gridModel.noteFrameworkCmpMounted();
     }
 
     // Get any active sortBy for this column, or null

@@ -108,8 +108,6 @@ export class GridModel {
     @observable showSummary = false;
     /** @member {string} */
     @observable emptyText;
-    /** @member {boolean} */
-    @observable frameworkCmpsMounted = false;
 
     static defaultContextMenu = [
         'copy',
@@ -697,14 +695,6 @@ export class GridModel {
             return col && !col.flex;
         });
         if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
-    }
-
-    /**
-     * Set a flag acknowledging that a framework component has been mounted.
-     */
-    @action
-    noteFrameworkCmpMounted() {
-        this.frameworkCmpsMounted = true;
     }
 
     //-----------------------
