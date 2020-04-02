@@ -10,7 +10,7 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
-import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
+import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -32,8 +32,8 @@ import {createRef, isValidElement} from 'react';
 import './Grid.scss';
 
 import {GridModel} from './GridModel';
-import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
-import {ColumnHeader} from './impl/ColumnHeader';
+import {columnGroupHeader} from './impl/ColumnGroupHeader';
+import {columnHeader} from './impl/ColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -169,6 +169,9 @@ class LocalModel {
     // Do any root level records have children?
     @observable isHierarchical = false;
 
+    // Have framework components been mounted?
+    @observable frameworkCmpsMounted = false;
+
     constructor(model, props) {
         this.model = model;
         this.addReaction(this.selectionReaction());
@@ -204,7 +207,10 @@ class LocalModel {
                 groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
-            frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
+            frameworkComponents: {
+                agColumnHeader: (props) => columnHeader({gridLocalModel: this, ...props}),
+                agColumnGroupHeader: (props) => columnGroupHeader(props)
+            },
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
@@ -365,9 +371,9 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, lastLoaded, lastUpdated, newRs]) => {
-                if (!api) return;
+            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!api || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
@@ -582,6 +588,11 @@ class LocalModel {
 
     transactionLogStr(t) {
         return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
+    }
+
+    @action
+    noteFrameworkCmpMounted() {
+        this.frameworkCmpsMounted = true;
     }
 
     //------------------------
