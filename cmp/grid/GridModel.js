@@ -701,10 +701,7 @@ export class GridModel {
 
     /**
      * Set a flag acknowledging that a framework component has been mounted.
-     * We debounce here catch the end of a collection of components mounted at
-     * the same time (i.e. column header initialisation)
      */
-    @debounced(50)
     @action
     noteFrameworkCmpMounted() {
         this.frameworkCmpsMounted = true;

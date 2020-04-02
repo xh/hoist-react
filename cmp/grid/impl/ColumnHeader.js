@@ -119,7 +119,6 @@ class LocalModel {
     }
 
     noteMounted() {
-        console.log('HERE');
         this.gridModel.noteFrameworkCmpMounted();
     }
 
