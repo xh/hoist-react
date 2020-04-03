@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {observable, action, runInAction} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
 
 /**
@@ -179,19 +179,9 @@ export class RndModel {
         this.dm.setPosition({x: data.x, y: data.y});
     };
 
-    onResizeStop = (
-        evt,
-        resizeDirection,
-        domEl,
-        resizableDelta,
-        position
-    ) => {
+    onResizeStop = (evt, resizeDirection, domEl) => {
         if (this.isMaximized) return;
-
-        runInAction(() => {
-            this.dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
-            this.dm.setPosition(position);
-        });
+        this.dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
     };
 
     onKeyDown = (evt) => {
