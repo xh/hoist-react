@@ -1,6 +1,6 @@
 # Changelog
 
-## v32.0.0 - 2020-04-03
+## v32.0.2 - 2020-04-03
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
 [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
@@ -64,7 +64,7 @@ dimensions of the element's content box. (Previously it incorrectly received an 
 * store2 `2.10 -> 2.11`
 * compose-react-refs `NEW 1.0.4`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...v32.0.0)
+[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...v32.0.2)
 
 ## v31.0.0 - 2020-03-16
 
