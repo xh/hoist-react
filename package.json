@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "32.0.0-SNAPSHOT",
+  "version": "32.0.1",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -26,6 +26,8 @@
     }
   },
   "dependencies": {
+    "@ag-grid-community/react": "~23.0.2",
+    "@ag-grid-enterprise/all-modules": "~23.0.2",
     "@blueprintjs/core": "~3.24.0",
     "@blueprintjs/datetime": "~3.15.2",
     "@fortawesome/fontawesome-pro": "~5.13.0",
@@ -34,8 +36,6 @@
     "@fortawesome/pro-regular-svg-icons": "~5.13.0",
     "@fortawesome/pro-solid-svg-icons": "~5.13.0",
     "@fortawesome/react-fontawesome": "~0.1.9",
-    "@ag-grid-enterprise/all-modules": "~23.0.2",
-    "@ag-grid-community/react": "~23.0.2",
     "@seznam/compose-react-refs": "~1.0.4",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
