@@ -46,14 +46,15 @@ export class DialogModel {
     //----------------------------------
     /**
      * @member {Size} - Desired width and height (when not maximized).
-     * Null values in either dimension indicate dialog should take natural
+     * Null or undefined values in either dimension indicate dialog should take natural
      * size of content in that dimension.
      */
     @observable.ref size;
 
     /**
      * @member {Position} - Desired position of top-left corner (when not maximized).
-     * Null values in either dimension indicate dialog should be centered along that dimension.
+     * Null or undefined values in either dimension indicate dialog should be centered
+     * along that dimension.
      */
     @observable.ref position;
 
