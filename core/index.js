@@ -29,9 +29,10 @@ export * from './HoistComponentFunctional';
 export * from './HoistComponentClass';
 export * from './HoistModel';
 export * from './HoistService';
-export * from './XH';
 
 export * from './refresh/RefreshContextModel';
 export * from './refresh/RefreshContextView';
 export * from './refresh/RootRefreshContextModel';
 export * from './refresh/ManagedRefreshContextModel';
+
+export * from './XH';
