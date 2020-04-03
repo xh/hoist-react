@@ -31,17 +31,15 @@ export class DialogModel {
     /** @member {boolean} */
     draggable;
     /** @member {boolean} */
-    inPortal;
-    /** @member {boolean} */
     closeOnOutsideClick;
     /** @member {boolean} */
     closeOnEscape;
     /** @member {boolean} */
+    showCloseButton;
+    /** @member {boolean} */
     showBackgroundMask;
     /** @member {boolean} */
-    showCloseButton;
-    /** @member {(Object|function)} */
-    content;
+    inPortal;
 
     //---------------------------------
     // Observable/Settable Public State
@@ -59,11 +57,11 @@ export class DialogModel {
      */
     @observable.ref position;
 
-    /** @member {boolean} - is the Dialog maximized within its parent. */
-    @observable isMaximized;
-
     /** @member {boolean} - is the Dialog visible (i.e. rendered) */
     @observable isOpen;
+
+    /** @member {boolean} - is the Dialog maximized within its parent. */
+    @observable isMaximized;
 
     //------------------------
     // Read-only Public State
@@ -80,28 +78,30 @@ export class DialogModel {
 
     /**
      * @param {Object} config
-     * @param {Size} [config.size] - initial (unmaximized) size
-     * @param {Position} [config.position] - initial (unmaximized) position.
-     * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
-     * @param {boolean} [config.isOpen] - Is dialog open?
      * @param {boolean} [config.resizable] - true to add draggable borders.
      * @param {boolean} [config.draggable] - true to allow dragging the dialog via its title bar.
      * @param {boolean} [config.closeOnOutsideClick] - true to allow closing by clicking outside dialog.
      * @param {boolean} [config.closeOnEscape] - true to allow closing by pressing escape key
-     * @param {boolean} [config.showBackgroundMask] - true to show a background mask.
      * @param {boolean} [config.showCloseButton] - true to show close button in header.
+     * @param {boolean} [config.showBackgroundMask] - true to show a background mask.
      * @param {boolean} [config.inPortal] - Open in portal?  If true dialog will be positioned with
      *      respect to the entire Viewport.  If false, dialog will be bound by parent DOM element.
+     * @param {Size} [config.size] - initial (unmaximized) size
+     * @param {Position} [config.position] - initial (unmaximized) position.
+     * @param {boolean} [config.isOpen] - Is dialog open?
+     * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
      * @param {(Object|string)} [config.stateModel] - config or string for a DialogStateModel.
+     * @param {function} [config.onOpen] - callback function to run when dialog is opened.
+     * @param {function} [config.onClose] - callback function to run when dialog is closed.
      */
     constructor({
-        inPortal = true,
-        showBackgroundMask = true,
-        showCloseButton = true,
         resizable = false,
         draggable = false,
         closeOnOutsideClick = true,
         closeOnEscape = true,
+        showCloseButton = true,
+        showBackgroundMask = true,
+        inPortal = true,
 
         size,
         position,

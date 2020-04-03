@@ -8,6 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {observable, action, runInAction} from '@xh/hoist/mobx';
+import {observeResize} from '@xh/hoist/utils/js';
 
 /**
  * @private
@@ -25,6 +26,7 @@ export class RndModel {
     clickCaptureRef = createObservableRef();
     rndRef = createObservableRef();
     @observable.ref portalEl;
+    resizeObserver;
 
     constructor(dialogModel) {
         const dm = this.dialogModel = dialogModel;
@@ -34,6 +36,18 @@ export class RndModel {
         this.addReaction({
             track: () => [dm.size, dm.position, dm.isMaximized, this.rnd],
             run: () => this.positionRnd()
+        });
+
+        this.addReaction({
+            when: () => this.rnd,
+            run: () => {
+                this.maybeSetFocus();
+                this.resizeObserver = observeResize(
+                    () => this.positionRnd(),
+                    this.inPortal ? document.body : this.parentElement,
+                    {}
+                );
+            }
         });
     }
 
@@ -46,7 +60,7 @@ export class RndModel {
     get isOpen()        {return this.dm.isOpen}
     get rnd()           {return this.rndRef.current}
     get portalRoot()    {return document.getElementById(RndModel.PORTAL_DOM_ID)}
-
+    get parentElement() {return this.rnd?.getParent()?.parentElement}
 
     //------------------------
     // Portal maintenance
@@ -143,7 +157,7 @@ export class RndModel {
     }
 
     get parentSize() {
-        const p = this.rnd?.getParent()?.parentElement;
+        const p = this.parentElement;
         return p ? {width: p.offsetWidth, height: p.offsetHeight} : {};
     }
 
@@ -217,6 +231,7 @@ export class RndModel {
         if (this.portalEl) {
             this.portalRoot.removeChild(this.portalEl);
         }
+        this.resizeObserver?.disconnect();
     }
 }
 
