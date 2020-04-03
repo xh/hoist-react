@@ -1,5 +1,9 @@
 # Changelog
 
+## v33.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...develop)
+
 ## v32.0.2 - 2020-04-03
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
