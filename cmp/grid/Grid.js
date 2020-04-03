@@ -10,6 +10,7 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
+import {div} from '@xh/hoist/cmp/layout';
 import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
@@ -218,7 +219,7 @@ class LocalModel {
             rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            noRowsOverlayComponentFramework: observer(() => model.emptyText),
+            noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
                 this.onRowClicked(e);
                 if (props.onRowClicked) props.onRowClicked(e);
