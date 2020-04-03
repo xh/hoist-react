@@ -9,10 +9,10 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
+import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFinite, isFunction, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
 
 import {GridSorter} from './GridSorter';
 
@@ -24,13 +24,14 @@ import {GridSorter} from './GridSorter';
  *
  * @private
  */
-export const ColumnHeader = hoistCmp({
+export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
     model: false,
 
     render(props) {
         const impl = useLocalModel(() => new LocalModel(props));
+        useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
             const activeGridSorter = impl.activeGridSorter;

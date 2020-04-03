@@ -17,7 +17,7 @@ import {isFunction} from 'lodash';
  *
  * @private
  */
-export const ColumnGroupHeader = hoistCmp({
+export const columnGroupHeader = hoistCmp.factory({
     displayName: 'ColumnGroupHeader',
     className: 'xh-grid-group-header',
     model: false,
