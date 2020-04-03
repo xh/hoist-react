@@ -4,6 +4,12 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...develop)
 
+### 💥 Breaking Changes
+
+* Exports are now consolidated in top-level packages. Nested index files have been moved to
+  `@xh/react/core`, `@xh/react/data`, `@xh/react/cmp/grid`, and `@xh/desktop/cmp/grid`. Update all
+  imports from these subdirectories.
+
 ## v32.0.2 - 2020-04-03
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
