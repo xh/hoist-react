@@ -5,11 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-
 import {managed} from '@xh/hoist/core';
-
+import {CubeField} from './CubeField';
+import {Query} from './Query';
+import {View} from './View';
+import {Store} from '../Store';
 import {isEmpty} from 'lodash';
-import {CubeField, Query, Store, View} from '../';
 import {forEachAsync} from '../../utils/async';
 
 /**

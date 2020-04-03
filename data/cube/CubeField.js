@@ -16,7 +16,7 @@ import {
     SumAggregator,
     SumStrictAggregator,
     UniqueAggregator
-} from '../';
+} from '@xh/hoist/data';
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source

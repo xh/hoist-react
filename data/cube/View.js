@@ -7,8 +7,9 @@
 
 import {castArray, groupBy, isEmpty, map} from 'lodash';
 import {action, observable} from 'mobx';
-import {Cube, ValueFilter} from '../';
+import {ValueFilter} from './filter/ValueFilter';
 import {throwIf} from '../../utils/js';
+import {Cube} from './Cube';
 import {createAggregateRow} from './impl/AggregateRow';
 import {createLeafRow} from './impl/LeafRow';
 
