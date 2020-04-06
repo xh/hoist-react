@@ -1,8 +1,12 @@
 # Changelog
 
-## v33.0.0-SNAPSHOT - unreleased
+## v32.0.3 - 2020-04-06
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...develop)
+### 🐞 Bug Fixes
+* Fixes a persistent console warning from ag-Grid for `GridModel`s that do not specify
+an `emptyText`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
 
 ## v32.0.2 - 2020-04-03
 
