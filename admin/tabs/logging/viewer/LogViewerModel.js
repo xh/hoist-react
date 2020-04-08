@@ -11,7 +11,6 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {find} from 'lodash';
 import {createRef} from 'react';
 
 import {LogDisplayModel} from './LogDisplayModel';
@@ -72,7 +71,7 @@ export class LogViewerModel {
         const {store, selModel} = this.filesGridModel;
         await store.loadAsync(loadSpec);
         if (selModel.isEmpty) {
-            const latestAppLog = find(store.records, ['filename', `${XH.appCode}.log`]);
+            const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
             if (latestAppLog) {
                 selModel.select(latestAppLog);
             }
