@@ -1,5 +1,9 @@
 # Changelog
 
+## v33.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
+
 ## v32.0.4 - 2020-04-09
 
 ### 🐞 Bug Fixes
