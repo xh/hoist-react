@@ -21,7 +21,7 @@ export class ColumnGroup {
      * @param {Column~headerNameFn|element} [c.headerName] - display text for column group header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
-     * @param {string} [c.align] - horizontal alignment of cell contents.
+     * @param {string} [c.headerAlign] - horizontal alignment of header contents.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -34,10 +34,16 @@ export class ColumnGroup {
         groupId,
         headerName,
         headerClass,
-        align,
+        headerAlign,
         agOptions,
+        align,
         ...rest
     }, gridModel) {
+        if (align) {
+            console.warn("The 'align' config for ColumnGroups has been deprecated. Use 'headerAlign' instead");
+            if (!headerAlign) headerAlign = align;
+        }
+
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
         throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 
@@ -47,7 +53,7 @@ export class ColumnGroup {
 
         this.headerName = withDefault(headerName, startCase(this.groupId));
         this.headerClass = headerClass;
-        this.align = align;
+        this.headerAlign = headerAlign;
 
         this.children = children.map(c => gridModel.buildColumn(c));
 
