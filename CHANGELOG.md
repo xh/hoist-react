@@ -1,9 +1,14 @@
 # Changelog
 
-## v33.0.0-SNAPSHOT - unreleased
+## v32.0.4 - 2020-04-09
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...develop)
+### 🐞 Bug Fixes
+* Fixes a regression with the alignment of ColumnGroup Headers.
+* Fixes a bug with 'Copy Cell' context menu item for certain columns
+displaying the Record Id.
+* Quiets console logging of 'routine' exceptions to 'debug' instead of 'log'.
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...v32.0.4)
 
 ## v32.0.3 - 2020-04-06
 
