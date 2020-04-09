@@ -67,7 +67,17 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
-                        if (record && column) copy(record.data[column.field]);
+                        if (record && column) {
+                            const value = column.getValueFn({
+                                record,
+                                column,
+                                field: column.field,
+                                store: record.store,
+                                gridModel
+                            });
+
+                            copy(value);
+                        }
                     }
                 });
             case 'colChooser':

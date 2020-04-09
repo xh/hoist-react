@@ -2,7 +2,25 @@
 
 ## v33.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
+
+## v32.0.4 - 2020-04-09
+
+### 🐞 Bug Fixes
+* Fixes a regression with the alignment of ColumnGroup Headers.
+* Fixes a bug with 'Copy Cell' context menu item for certain columns
+displaying the Record Id.
+* Quiets console logging of 'routine' exceptions to 'debug' instead of 'log'.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...v32.0.4)
+
+## v32.0.3 - 2020-04-06
+
+### 🐞 Bug Fixes
+* Fixes a persistent console warning from ag-Grid for `GridModel`s that do not specify
+an `emptyText`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
 
 ### 💥 Breaking Changes
 

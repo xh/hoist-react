@@ -87,7 +87,11 @@ export function LoadSupport(C) {
 
                         const msg = `[${C.name}] | ${exception ? 'failed' : 'completed'} | ${getLoadTypeFromSpec(loadSpec)} | ${this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime()}`;
                         if (exception) {
-                            console.error(msg, exception);
+                            if (exception.isRoutine) {
+                                console.debug(msg, exception);
+                            } else {
+                                console.error(msg, exception);
+                            }
                         } else {
                             console.debug(msg);
                         }
