@@ -187,7 +187,7 @@ export class LocalDate {
      * @returns {LocalDate} - the same date if already a weekday, or the next weekday.
      */
     currentOrNextWeekday() {
-        return this.isWeekday ? this : this.previousWeekday().nextWeekday();
+        return this.isWeekday ? this : this.nextWeekday();
     }
 
     diff(other, unit = 'days') {
