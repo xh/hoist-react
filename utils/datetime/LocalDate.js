@@ -190,6 +190,13 @@ export class LocalDate {
         return this.isWeekday ? this : this.nextWeekday();
     }
 
+    /**
+     * @returns {LocalDate} - the same date if already a weekday, or the previous weekday.
+     */
+    currentOrPreviousWeekday() {
+        return this.isWeekday ? this : this.previousWeekday();
+    }
+
     diff(other, unit = 'days') {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);
