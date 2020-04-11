@@ -1,6 +1,32 @@
 # Changelog
 
-## v32.0.0-SNAPSHOT - unreleased
+## v33.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes
+* Removed the unnecessary and confusing `values` getter on `BaseFieldModel`.  This getter
+was not intended for public use and was intended for the framework's internal implementation only.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
+
+## v32.0.4 - 2020-04-09
+
+### 🐞 Bug Fixes
+* Fixes a regression with the alignment of ColumnGroup Headers.
+* Fixes a bug with 'Copy Cell' context menu item for certain columns
+displaying the Record Id.
+* Quiets console logging of 'routine' exceptions to 'debug' instead of 'log'.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...v32.0.4)
+
+## v32.0.3 - 2020-04-06
+
+### 🐞 Bug Fixes
+* Fixes a persistent console warning from ag-Grid for `GridModel`s that do not specify
+an `emptyText`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
+
+## v32.0.2 - 2020-04-03
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
 [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
@@ -64,7 +90,7 @@ dimensions of the element's content box. (Previously it incorrectly received an 
 * store2 `2.10 -> 2.11`
 * compose-react-refs `NEW 1.0.4`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...v32.0.2)
 
 ## v31.0.0 - 2020-03-16
 
