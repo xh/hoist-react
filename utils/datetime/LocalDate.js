@@ -114,6 +114,11 @@ export class LocalDate {
         return this.format('dddd');
     }
 
+    get isWeekday() {
+        const day = this._moment.day();
+        return day > 0 && day < 6;
+    }
+
     //----------------
     // Core overrides.
     //----------------
@@ -176,6 +181,13 @@ export class LocalDate {
             case 7:     return this.subtract(2);
             default:    return this.subtract(1);
         }
+    }
+
+    /**
+     * @returns {LocalDate} - the same date if already a weekday, or the next weekday.
+     */
+    currentOrNextWeekday() {
+        return this.isWeekday ? this : this.previousWeekday().nextWeekday();
     }
 
     diff(other, unit = 'days') {
