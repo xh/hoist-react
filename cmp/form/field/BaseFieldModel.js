@@ -107,12 +107,12 @@ export class BaseFieldModel {
         });
     }
 
-    /** Proxy for accessing all of the current data values in this field by name. */
-    get values() {
-        return this.value;
-    }
-
-    /** Current data in this field, fully enumerated. */
+    /**
+     * Current data/value stored within this field.
+     *
+     * For standard, single-field FieldModels, returns the current value stored in the field.
+     * Overridden by SubformsFieldModels, which return the data for each sub-form in an array.
+     */
     getData() {
         return this.value;
     }
@@ -254,6 +254,13 @@ export class BaseFieldModel {
     //------------------------
     // Implementation
     //------------------------
+
+    // Used by the dynamic FormModel.values proxy to dynamically navigate forms data by name.
+    getDataOrProxy() {
+        return this.value;
+    }
+
+
     processRuleSpecs(ruleSpecs) {
         return ruleSpecs.map(spec => {
             if (spec instanceof Rule) return spec;
