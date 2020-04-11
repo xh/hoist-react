@@ -108,12 +108,10 @@ export class BaseFieldModel {
     }
 
     /**
-     * Current data in this field.
+     * Current data/value stored within this field.
      *
-     * If this field is a simple field this will return the actual data value in the field.
-     * If it is a sub-form field, it will return an array of the data for each sub-form.
-     *
-     * @returns {(*|*[])}
+     * For standard, single-field FieldModels, returns the current value stored in the field.
+     * Overridden by SubformsFieldModels, which return the data for each sub-form in an array.
      */
     getData() {
         return this.value;
