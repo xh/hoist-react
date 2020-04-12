@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {useEffect} from 'react';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 
@@ -14,8 +13,6 @@ import {rndDialog} from './impl/RndDialog';
 import {RndModel} from './impl/RndModel';
 
 import {DialogModel} from './DialogModel';
-
-import './DialogStyles.scss';
 
 /**
  * Component for showing content in a window.
@@ -32,9 +29,7 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
         const rndModel = useLocalModel(() => new RndModel(model)),
             {isOpen, portalEl, inPortal} = rndModel;
 
-        useEffect(() => rndModel.maintainPortal(), [rndModel, isOpen]);
-
-        if (!isOpen || (inPortal && !portalEl)) {
+        if (!isOpen) {
             return null;
         }
 

@@ -38,7 +38,7 @@ export function isDisplayed(elem) {
  *
  *  For a hook that conveniently wraps this function see useOnResize().
  */
-export function observeResize(fn, node, {debounce}) {
+export function observeResize(fn, node, {debounce} = {}) {
     let prevWidth = null, prevHeight = null;
     let wrappedFn = (e) => {
         const {contentRect} = e[0],

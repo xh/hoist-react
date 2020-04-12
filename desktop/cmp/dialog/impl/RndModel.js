@@ -7,31 +7,35 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {observable, action} from '@xh/hoist/mobx';
+import {runInAction} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
+import {isNil} from 'lodash';
 
 /**
  * @private
  *
  * Implementation Model
+ *
+ * For Portal info:
+ * see https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
+ * see https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
  */
 @HoistModel
 export class RndModel {
 
-    static PORTAL_DOM_ID = 'xh-dialog-portal';
-
     dialogModel;
-    baseClass;
 
-    clickCaptureRef = createObservableRef();
+    contentRef = createObservableRef();
     rndRef = createObservableRef();
-    @observable.ref portalEl;
+    portalEl;
     resizeObserver;
 
     constructor(dialogModel) {
         const dm = this.dialogModel = dialogModel;
 
-        this.baseClass = dm.inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
+        if (this.inPortal) {
+            this.portalEl = this.portalRoot.appendChild(document.createElement('div'));
+        }
 
         this.addReaction({
             track: () => [dm.size, dm.position, dm.isMaximized, this.rnd],
@@ -39,13 +43,12 @@ export class RndModel {
         });
 
         this.addReaction({
-            when: () => this.rnd,
+            when: () => [this.rnd, this.contentRef.current],
             run: () => {
                 this.maybeSetFocus();
                 this.resizeObserver = observeResize(
                     () => this.positionRnd(),
-                    this.inPortal ? document.body : this.parentElement,
-                    {}
+                    this.inPortal ? document.body : this.parentElement
                 );
             }
         });
@@ -59,27 +62,8 @@ export class RndModel {
     get isMaximized()   {return this.dm.isMaximized}
     get isOpen()        {return this.dm.isOpen}
     get rnd()           {return this.rndRef.current}
-    get portalRoot()    {return document.getElementById(RndModel.PORTAL_DOM_ID)}
+    get portalRoot()    {return document.getElementById('xh-dialog-root')}
     get parentElement() {return this.rnd?.getParent()?.parentElement}
-
-    //------------------------
-    // Portal maintenance
-    // see https://reactjs.org/docs/portals.html#event-bubbling-through-portals}
-    // see https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/portal/portal.tsx}
-    //------------------------
-    @action
-    maintainPortal() {
-        const {inPortal, isOpen, portalEl} = this;
-
-        if (!inPortal) return;
-
-        if (isOpen && !portalEl) {
-            this.portalEl = this.portalRoot.appendChild(document.createElement('div'));
-        } else if (!isOpen && portalEl) {
-            this.portalRoot.removeChild(portalEl);
-            this.portalEl = null;
-        }
-    }
 
     //------------------
     // Positioning
@@ -114,19 +98,19 @@ export class RndModel {
     }
 
     updateSizeBounded(size) {
-        const {containerSize, rnd} = this;
+        const {containerSize, contentSize, rnd} = this;
         size = {
-            width: max(0, min(containerSize.width - 10, size.width)),
-            height: max(0, min(containerSize.height - 10, size.height))
+            width: max(0, min(containerSize.width - 10, contentSize.width)),
+            height: max(0, min(containerSize.height - 10, contentSize.height))
         };
         rnd.updateSize(size);
     }
 
     updatePositionBounded(pos) {
-        const {containerSize, renderedSize, rnd} = this;
+        const {containerSize, contentSize, rnd} = this;
         pos = {
-            x: max(0, min(pos.x, containerSize.width - renderedSize.width)),
-            y: max(0, min(pos.y, containerSize.height - renderedSize.height))
+            x: max(0, min(pos.x, containerSize.width - contentSize.width)),
+            y: max(0, min(pos.y, containerSize.height - contentSize.height))
         };
         rnd.updatePosition(pos);
     }
@@ -166,6 +150,11 @@ export class RndModel {
         return el ? {width: el.offsetWidth, height: el.offsetHeight} : {};
     }
 
+    get contentSize() {
+        const curr = this.contentRef.current;
+        return curr ? {width: curr.offsetWidth, height: curr.offsetHeight} : {};
+    }
+
     get renderedPosition() {
         return this.rnd?.getDraggablePosition() ?? {};
     }
@@ -179,9 +168,19 @@ export class RndModel {
         this.dm.setPosition({x: data.x, y: data.y});
     };
 
-    onResizeStop = (evt, resizeDirection, domEl) => {
+    onResizeStop = (evt, resizeDirection, domEl, delta, domPosition) => {
         if (this.isMaximized) return;
-        this.dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
+        runInAction(()=> {
+            const {dm} = this,
+                {position} = dm;
+
+            dm.setSize({width: domEl.offsetWidth, height: domEl.offsetHeight});
+            // also reposition for when resized left or up -- but don't overwrite if 'centered'.
+            dm.setPosition({
+                x: !isNil(position.x) ? domPosition.x : undefined,
+                y: !isNil(position.y) ? domPosition.y : undefined
+            });
+        });
     };
 
     onKeyDown = (evt) => {
@@ -189,13 +188,6 @@ export class RndModel {
             this.dm.close();
         }
     };
-
-    handleOutsideClick(evt) {
-        // TODO: Do we need this check if the handler is actually on the target below?
-        if (evt.target === this.clickCaptureRef.current) {
-            this.dm.close();
-        }
-    }
 
     //---------
     // Misc

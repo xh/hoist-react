@@ -10,10 +10,12 @@ import {merge} from 'lodash';
 import {rnd} from '@xh/hoist/kit/react-rnd';
 import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {Children} from 'react';
-import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
+import {div, vframe} from '@xh/hoist/cmp/layout';
 
 import {RndModel} from './RndModel';
 import {rndHeader} from './RndHeader';
+import './RndDialog.scss';
+
 
 /**
  * The base zIndex that will be used for all dialogs.
@@ -31,7 +33,7 @@ const DIALOG_Z_INDEX_BASE = 4;
  */
 export const rndDialog = hoistCmp.factory({
     model: uses(RndModel, {publishMode: ModelPublishMode.LIMITED}),
-    render({model, className, rndOptions = {}, ...props}) {
+    render({model, className, icon, title, rndOptions, children}) {
         const {
             inPortal,
             resizable,
@@ -41,13 +43,14 @@ export const rndDialog = hoistCmp.factory({
             isMaximized
         } = model.dm;
 
-        let zIndex = DIALOG_Z_INDEX_BASE;
-        if (rndOptions.style?.zIndex) zIndex += rndOptions.style.zIndex;
-        merge(rndOptions, {style: {zIndex}});
+        let zIndex = DIALOG_Z_INDEX_BASE,
+            baseClass = inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
+
+        rndOptions = merge({}, rndOptions, {style: {zIndex}});
 
         const items = [
-            showBackgroundMask ? maskComp({model, zIndex}) : null,
-            closeOnOutsideClick ? clickCaptureComp({model, zIndex}) : null,
+            maskComp({model, baseClass, zIndex, omit: !showBackgroundMask}),
+            clickCaptureComp({model, baseClass, zIndex, omit: !closeOnOutsideClick}),
             rnd({
                 ref: model.rndRef,
                 ...rndOptions,
@@ -66,16 +69,20 @@ export const rndDialog = hoistCmp.factory({
                 dragHandleClassName: 'xh-dialog__header',
                 onDragStop: model.onDragStop,
                 onResizeStop: model.onResizeStop,
-                item: div({
+                item: vframe({
                     onKeyDown: model.onKeyDown,
                     tabIndex: 0,
+                    ref: model.contentRef,
                     className,
-                    item: contentContainer({model, ...props})
+                    items: [
+                        rndHeader({icon, title}),
+                        ...Children.toArray(children)
+                    ]
                 })
             })
         ];
 
-        return inPortal ? fragment(items) : div({className: model.baseClass, items});
+        return div({className: baseClass, items});
     }
 });
 
@@ -84,29 +91,13 @@ export const rndDialog = hoistCmp.factory({
 // Helper Components
 //-------------------
 const maskComp = hoistCmp.factory(
-    ({model, zIndex}) => div({className: `${model.baseClass}__mask`, style: {zIndex}})
+    ({baseClass, zIndex}) => div({className: `${baseClass}__mask`, style: {zIndex}})
 );
 
 const clickCaptureComp = hoistCmp.factory(
-    ({model, zIndex}) => div({
-        className: `${model.baseClass}__click-capture`,
+    ({model, baseClass, zIndex}) => div({
+        className: `${baseClass}__click-capture`,
         style: {zIndex},
-        ref: model.clickCaptureRef,
-        onClick: (evt) => model.handleOutsideClick(evt)
+        onClick: () => model.dm.close()
     })
 );
-
-const contentContainer = hoistCmp.factory({
-    render({model, children, ...props}) {
-        const {width, height, resizable} = model.dm;
-
-        return vframe({
-            width: resizable ? '100%' : width,
-            height: resizable ? '100%' : height,
-            items: [
-                rndHeader(props),
-                ...Children.toArray(children)
-            ]
-        });
-    }
-});
