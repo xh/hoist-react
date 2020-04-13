@@ -8,8 +8,8 @@
 import {merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses, useLocalModel} from '@xh/hoist/core';
-import {Children} from 'react';
+import {hoistCmp, uses, useLocalModel, RenderMode} from '@xh/hoist/core';
+import {Children, useRef} from 'react';
 import {div, vframe} from '@xh/hoist/cmp/layout';
 import ReactDOM from 'react-dom';
 
@@ -38,7 +38,16 @@ export const rndDialog = hoistCmp.factory({
     render({model, className, icon, title, rndOptions, children}) {
         const rndModel = useLocalModel(() => new RndModel(model));
 
-        if (!rndModel.isOpen) {
+        let {isOpen, renderMode} = model,
+            wasOpen = useRef(false);
+        if (!wasOpen.current && isOpen) wasOpen.current = true;
+        if (
+            !isOpen &&
+            (
+                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode === RenderMode.LAZY && !wasOpen.current)
+            )
+        ) {
             return null;
         }
 
@@ -57,6 +66,7 @@ export const rndDialog = hoistCmp.factory({
         rndOptions = merge({}, rndOptions, {style: {zIndex}});
 
         const ret = div({
+            style: {display: isOpen ? 'flex' : 'none'},
             className: baseClass,
             items: [
                 maskComp({rndModel, baseClass, zIndex, omit: !showBackgroundMask}),

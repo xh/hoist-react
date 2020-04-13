@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, RenderMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isPlainObject, isString, isNumber, isFinite, isNil, endsWith, assign} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -41,6 +41,9 @@ export class DialogModel {
     showBackgroundMask;
     /** @member {boolean} */
     inPortal;
+
+    /** @member {RenderMode} */
+    renderMode = RenderMode.LAZY;
 
     //---------------------------------
     // Observable/Settable Public State
