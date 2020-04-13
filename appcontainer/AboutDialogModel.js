@@ -38,9 +38,12 @@ export class AboutDialogModel {
     getTable() {
         const svc = XH.environmentService,
             row = (label, data) => tr(th(label), td(data)),
-            configRows = XH.getConf('xhAboutMenuConfigs', []).map(it => {
-                return row(it.label, XH.getConf(it.key, ''));
-            });
+            configRows = [];
+
+        XH.getConf('xhAboutMenuConfigs', []).forEach(it => {
+            const confVal = XH.getConf(it.key, null);
+            if (confVal !== null) configRows.push(row(it.label, confVal));
+        });
 
         return table({
             item: tbody(

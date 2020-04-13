@@ -200,7 +200,7 @@ export class FormModel {
             get(target, name, receiver) {
 
                 const field = me.fields[name];
-                if (field) return field.values;
+                if (field) return field.getDataOrProxy();
 
                 const parent = (name === 'parent' ? me.parent : null);
                 if (parent) return parent.values;

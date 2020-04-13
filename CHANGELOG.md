@@ -2,6 +2,12 @@
 
 ## v33.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* Removed the unnecessary and confusing `values` getter on `BaseFieldModel`.  This getter
+was not intended for public use and was intended for the framework's internal implementation only.
+* `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`.  This avoids confusion with
+the `Column` API, where `align` refers to the alignment of cell contents within the column.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
 
 ## v32.0.4 - 2020-04-09

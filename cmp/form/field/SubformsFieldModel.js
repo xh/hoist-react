@@ -50,7 +50,7 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
-    get values() {
+    getDataOrProxy() {
         return this.value.map(s => s.values);
     }
 

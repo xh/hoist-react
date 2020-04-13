@@ -61,6 +61,7 @@ export class Column {
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
+     *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
      *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
