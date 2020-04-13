@@ -6,11 +6,9 @@
  */
 
 import PT from 'prop-types';
-import ReactDOM from 'react-dom';
 
-import {hoistCmp, uses, useLocalModel, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
 import {rndDialog} from './impl/RndDialog';
-import {RndModel} from './impl/RndModel';
 
 import {DialogModel} from './DialogModel';
 
@@ -25,16 +23,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory({
     memo: false,
     className: 'xh-dialog',
 
-    render({model, ...props}) {
-        const rndModel = useLocalModel(() => new RndModel(model)),
-            {isOpen, portalEl, inPortal} = rndModel;
-
-        if (!isOpen) {
-            return null;
-        }
-
-        const ret = rndDialog({model: rndModel, ...props});
-        return inPortal ? ReactDOM.createPortal(ret, portalEl) : ret;
+    render(props) {
+        return rndDialog(props);
     }
 });
 

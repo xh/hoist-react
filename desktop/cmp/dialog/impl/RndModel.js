@@ -25,7 +25,6 @@ export class RndModel {
 
     dialogModel;
 
-    contentRef = createObservableRef();
     rndRef = createObservableRef();
     portalEl;
     resizeObserver;
@@ -43,7 +42,7 @@ export class RndModel {
         });
 
         this.addReaction({
-            when: () => [this.rnd, this.contentRef.current],
+            when: () => this.rnd,
             run: () => {
                 this.maybeSetFocus();
                 this.resizeObserver = observeResize(
@@ -98,19 +97,19 @@ export class RndModel {
     }
 
     updateSizeBounded(size) {
-        const {containerSize, contentSize, rnd} = this;
+        const {containerSize, rnd} = this;
         size = {
-            width: max(0, min(containerSize.width - 10, contentSize.width)),
-            height: max(0, min(containerSize.height - 10, contentSize.height))
+            width: max(0, min(containerSize.width - 10, size.width)),
+            height: max(0, min(containerSize.height - 10, size.height))
         };
         rnd.updateSize(size);
     }
 
     updatePositionBounded(pos) {
-        const {containerSize, contentSize, rnd} = this;
+        const {containerSize, renderedSize, rnd} = this;
         pos = {
-            x: max(0, min(pos.x, containerSize.width - contentSize.width)),
-            y: max(0, min(pos.y, containerSize.height - contentSize.height))
+            x: max(0, min(pos.x, containerSize.width - renderedSize.width)),
+            y: max(0, min(pos.y, containerSize.height - renderedSize.height))
         };
         rnd.updatePosition(pos);
     }
@@ -150,11 +149,6 @@ export class RndModel {
         return el ? {width: el.offsetWidth, height: el.offsetHeight} : {};
     }
 
-    get contentSize() {
-        const curr = this.contentRef.current;
-        return curr ? {width: curr.offsetWidth, height: curr.offsetHeight} : {};
-    }
-
     get renderedPosition() {
         return this.rnd?.getDraggablePosition() ?? {};
     }
@@ -187,6 +181,11 @@ export class RndModel {
         if (evt.key === 'Escape' && this.dm.closeOnEscape) {
             this.dm.close();
         }
+    };
+
+    onCloseClick = (evt) => {
+        this.dm.close();
+        evt.stopPropagation();
     };
 
     //---------

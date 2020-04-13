@@ -9,8 +9,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {box, hbox, filler} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-
-import {RndModel} from './RndModel';
+import {DialogModel} from '../DialogModel';
 import './RndHeader.scss';
 
 /**
@@ -19,10 +18,10 @@ import './RndHeader.scss';
  * Header display for Dialog.
  */
 export const rndHeader = hoistCmp.factory({
-    model: uses(RndModel),
+    model: uses(DialogModel),
 
     render({model, icon, title}) {
-        const {draggable, showCloseButton} = model.dm;
+        const {draggable, showCloseButton} = model;
 
         if (!title && !icon && !showCloseButton) return null;
 
@@ -45,23 +44,20 @@ export const rndHeader = hoistCmp.factory({
 //-------------------
 const maxMinButton = hoistCmp.factory(
     ({model}) => {
-        const {dm} = model;
-
         return button({
-            omit: !dm.resizable,
-            icon: dm.isMaximized ? Icon.collapse() : Icon.expand(),
-            onClick: () => dm.toggleMaximized()
+            omit: !model.resizable,
+            icon: model.isMaximized ? Icon.collapse() : Icon.expand(),
+            onClick: () => model.toggleMaximized()
         });
     }
 );
 
 const closeButton = hoistCmp.factory(
     ({model}) => {
-        const {dm} = model;
         return button({
-            omit: !dm.showCloseButton,
+            omit: !model.showCloseButton,
             icon: Icon.close(),
-            onClick: () => dm.close()
+            onClick: () => model.close()
         });
     }
 );

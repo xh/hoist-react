@@ -8,10 +8,12 @@
 import {merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
+import {hoistCmp, uses, useLocalModel} from '@xh/hoist/core';
 import {Children} from 'react';
 import {div, vframe} from '@xh/hoist/cmp/layout';
+import ReactDOM from 'react-dom';
 
+import {DialogModel} from '../DialogModel';
 import {RndModel} from './RndModel';
 import {rndHeader} from './RndHeader';
 import './RndDialog.scss';
@@ -32,8 +34,14 @@ const DIALOG_Z_INDEX_BASE = 4;
  * Wraps content in a react-rnd component for showing in a window with draggable affordances.
  */
 export const rndDialog = hoistCmp.factory({
-    model: uses(RndModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DialogModel),
     render({model, className, icon, title, rndOptions, children}) {
+        const rndModel = useLocalModel(() => new RndModel(model));
+
+        if (!rndModel.isOpen) {
+            return null;
+        }
+
         const {
             inPortal,
             resizable,
@@ -41,48 +49,54 @@ export const rndDialog = hoistCmp.factory({
             showBackgroundMask,
             closeOnOutsideClick,
             isMaximized
-        } = model.dm;
+        } = model;
 
         let zIndex = DIALOG_Z_INDEX_BASE,
             baseClass = inPortal ? 'xh-dialog-portal' : 'xh-dialog-container';
 
         rndOptions = merge({}, rndOptions, {style: {zIndex}});
 
-        const items = [
-            maskComp({model, baseClass, zIndex, omit: !showBackgroundMask}),
-            clickCaptureComp({model, baseClass, zIndex, omit: !closeOnOutsideClick}),
-            rnd({
-                ref: model.rndRef,
-                ...rndOptions,
-                disableDragging: !draggable,
-                enableResizing: isMaximized ? null : {
-                    bottom: resizable,
-                    bottomLeft: resizable,
-                    bottomRight: resizable,
-                    left: resizable,
-                    right: resizable,
-                    top: resizable,
-                    topLeft: resizable,
-                    topRight: resizable
-                },
-                bounds: inPortal ? 'body' : 'parent',
-                dragHandleClassName: 'xh-dialog__header',
-                onDragStop: model.onDragStop,
-                onResizeStop: model.onResizeStop,
-                item: vframe({
-                    onKeyDown: model.onKeyDown,
-                    tabIndex: 0,
-                    ref: model.contentRef,
-                    className,
-                    items: [
-                        rndHeader({icon, title}),
-                        ...Children.toArray(children)
-                    ]
+        const ret = div({
+            className: baseClass,
+            items: [
+                maskComp({rndModel, baseClass, zIndex, omit: !showBackgroundMask}),
+                clickCaptureComp({rndModel, baseClass, zIndex, omit: !closeOnOutsideClick}),
+                rnd({
+                    ref: rndModel.rndRef,
+                    ...rndOptions,
+                    disableDragging: !draggable,
+                    enableResizing: isMaximized ? null : {
+                        bottom: resizable,
+                        bottomLeft: resizable,
+                        bottomRight: resizable,
+                        left: resizable,
+                        right: resizable,
+                        top: resizable,
+                        topLeft: resizable,
+                        topRight: resizable
+                    },
+                    bounds: inPortal ? 'body' : 'parent',
+                    dragHandleClassName: 'xh-dialog__header',
+                    onDragStop: rndModel.onDragStop,
+                    onResizeStop: rndModel.onResizeStop,
+                    item: div({
+                        onKeyDown: rndModel.onKeyDown,
+                        tabIndex: 0,
+                        className,
+                        item: vframe({
+                            width: '100%',
+                            height: '100%',
+                            items: [
+                                rndHeader({icon, title}),
+                                ...Children.toArray(children)
+                            ]
+                        })
+                    })
                 })
-            })
-        ];
+            ]
+        });
 
-        return div({className: baseClass, items});
+        return inPortal ? ReactDOM.createPortal(ret, rndModel.portalEl) : ret;
     }
 });
 
@@ -95,9 +109,9 @@ const maskComp = hoistCmp.factory(
 );
 
 const clickCaptureComp = hoistCmp.factory(
-    ({model, baseClass, zIndex}) => div({
+    ({rndModel, baseClass, zIndex}) => div({
         className: `${baseClass}__click-capture`,
         style: {zIndex},
-        onClick: () => model.dm.close()
+        onClick: rndModel.onCloseClick
     })
 );
