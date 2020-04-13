@@ -6,7 +6,6 @@
  */
 import {elemFactory, ManagedSupport, ReactiveSupport, XH, XhIdSupport} from '@xh/hoist/core';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
-
 import classNames from 'classnames';
 import {isPlainObject, isUndefined} from 'lodash';
 import {observer} from 'mobx-react';

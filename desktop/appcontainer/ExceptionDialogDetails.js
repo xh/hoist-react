@@ -13,7 +13,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-
 import {dismissButton} from './ExceptionDialog';
 
 /**

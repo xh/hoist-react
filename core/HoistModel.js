@@ -8,7 +8,6 @@ import {ManagedSupport, ReactiveSupport, XhIdSupport} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {isFunction, isString} from 'lodash';
 
-
 /**
  * Core decorator for State Models in Hoist.
  *

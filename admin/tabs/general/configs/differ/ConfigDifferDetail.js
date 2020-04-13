@@ -12,7 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {keys, toString} from 'lodash';
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
-
 import './Differ.scss';
 
 export const configDifferDetail = hoistCmp.factory({

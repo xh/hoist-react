@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
@@ -12,7 +11,6 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
-
 import './ButtonGroupInput.scss';
 
 /**

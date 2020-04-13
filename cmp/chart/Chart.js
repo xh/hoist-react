@@ -6,7 +6,6 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
-
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {bindable, runInAction} from '@xh/hoist/mobx';
@@ -18,11 +17,9 @@ import {
 } from '@xh/hoist/utils/react';
 import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
 import PT from 'prop-types';
-
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
-
 import {LightTheme} from './theme/Light';
 
 installZoomoutGesture(Highcharts);

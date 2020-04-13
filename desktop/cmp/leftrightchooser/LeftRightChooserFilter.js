@@ -10,7 +10,6 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
 import PT from 'prop-types';
-
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 /**

@@ -8,9 +8,7 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
-
 import './MonitorResultsPanel.scss';
-
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
 
 export const monitorResultsPanel = hoistCmp.factory({

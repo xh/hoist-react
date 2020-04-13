@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';

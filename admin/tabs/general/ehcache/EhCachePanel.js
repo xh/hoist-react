@@ -11,7 +11,6 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-
 import {EhCacheModel} from './EhCacheModel';
 
 export const ehCachePanel = hoistCmp.factory({

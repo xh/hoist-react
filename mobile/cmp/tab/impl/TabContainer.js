@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {div} from '@xh/hoist/cmp/layout';
 import {tab as onsenTab, tabbar} from '@xh/hoist/kit/onsen';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {tab} from './Tab';
-
 import './Tabs.scss';
 
 /**

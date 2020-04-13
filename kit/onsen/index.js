@@ -4,9 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {elemFactory} from '@xh/hoist/core';
-
 import ons from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
@@ -29,7 +27,6 @@ import {
     Toolbar
 } from 'react-onsenui';
 import './styles.scss';
-
 import './theme.scss';
 
 ons.disableAutoStyling();

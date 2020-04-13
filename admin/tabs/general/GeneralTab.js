@@ -7,7 +7,6 @@
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
 import {aboutPanel} from './about/AboutPanel';
 import {configPanel} from './configs/ConfigPanel';
 import {ehCachePanel} from './ehcache/EhCachePanel';

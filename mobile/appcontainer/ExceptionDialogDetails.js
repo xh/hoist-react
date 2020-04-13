@@ -12,7 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {textArea} from '@xh/hoist/mobile/cmp/input';
-
 import {dismissButton} from './ExceptionDialog';
 
 /**

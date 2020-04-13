@@ -3,7 +3,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {isNumber} from 'lodash';
-
 import './PinPad.scss';
 import {PinPadModel} from './PinPadModel';
 

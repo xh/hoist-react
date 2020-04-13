@@ -11,7 +11,6 @@ import {action} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
-
 import {RestFormModel} from './impl/RestFormModel';
 
 export const addAction = {

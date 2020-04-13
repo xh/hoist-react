@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isString, partition} from 'lodash';
 

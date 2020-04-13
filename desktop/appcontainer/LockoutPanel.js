@@ -10,7 +10,6 @@ import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button, logoutButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
-
 import './LockoutPanel.scss';
 
 /**

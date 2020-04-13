@@ -4,10 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {isArray, isEmpty, isNil, isString} from 'lodash';
-
 import moment from 'moment';
 /**
  * A set of validation functions to assist in form field validation.

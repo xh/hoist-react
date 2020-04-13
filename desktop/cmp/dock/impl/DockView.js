@@ -13,7 +13,6 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {useRef} from 'react';
-
 import './Dock.scss';
 
 /**

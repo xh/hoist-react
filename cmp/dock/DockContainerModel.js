@@ -7,7 +7,6 @@
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-
 import {DockViewModel} from './DockViewModel';
 
 /**

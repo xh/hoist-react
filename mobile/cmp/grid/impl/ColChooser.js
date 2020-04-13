@@ -7,14 +7,12 @@
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import classNames from 'classnames';
-
 import './ColChooser.scss';
 import {ColChooserModel} from './ColChooserModel';
 

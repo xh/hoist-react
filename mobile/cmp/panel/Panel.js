@@ -10,14 +10,12 @@ import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, omitBy} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
-
 import './Panel.scss';
 
 /**

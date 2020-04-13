@@ -14,7 +14,6 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {clientErrorDetail} from './ClientErrorDetail';
-
 import {ClientErrorModel} from './ClientErrorModel';
 
 export const clientErrorPanel = hoistCmp.factory({

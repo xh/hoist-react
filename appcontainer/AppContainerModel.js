@@ -7,7 +7,6 @@
 import {HoistModel, managed, RootRefreshContextModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-
 import {AboutDialogModel} from './AboutDialogModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';

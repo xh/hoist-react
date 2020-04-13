@@ -12,7 +12,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
-
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**

@@ -10,10 +10,8 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {cloneDeep} from 'lodash';
 import PT from 'prop-types';
 import {chooserToolbar} from './impl/ChooserToolbar';
-
 import {description} from './impl/Description';
 import './LeftRightChooser.scss';
-
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 /**

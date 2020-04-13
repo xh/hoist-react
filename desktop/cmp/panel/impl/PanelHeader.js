@@ -10,7 +10,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 import {PanelModel} from '../PanelModel';
-
 import './PanelHeader.scss';
 
 export const panelHeader = hoistCmp.factory({

@@ -8,7 +8,6 @@ import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
-
 import {tab} from './Tab';
 
 /**

@@ -8,7 +8,6 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-
 import classNames from 'classnames';
 import PT from 'prop-types';
 

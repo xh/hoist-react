@@ -15,7 +15,6 @@ import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, reject} from 'lodash';
 import {DashViewModel} from './DashViewModel';
-
 import {DashViewSpec} from './DashViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';

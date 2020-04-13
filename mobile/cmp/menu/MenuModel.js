@@ -7,7 +7,6 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isPlainObject} from 'lodash';
-
 import {MenuItemModel} from './MenuItemModel';
 
 @HoistModel

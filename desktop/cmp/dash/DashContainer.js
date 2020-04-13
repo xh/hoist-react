@@ -15,7 +15,6 @@ import {Classes, overlay, popover} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import PT from 'prop-types';
 import {useContext} from 'react';
-
 import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';

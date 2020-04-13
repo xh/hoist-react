@@ -11,7 +11,6 @@ import {compact, uniq} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
-
 import {treeMap} from './TreeMap';
 
 /**

@@ -8,7 +8,6 @@ import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
-
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 

@@ -4,9 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
-
 import {div, filler, fragment, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';

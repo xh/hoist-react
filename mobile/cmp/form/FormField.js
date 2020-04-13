@@ -7,7 +7,6 @@
 import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
@@ -18,7 +17,6 @@ import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import PT from 'prop-types';
 import {Children, cloneElement, useContext} from 'react';
-
 import './FormField.scss';
 
 /**

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {elemFactory, HoistComponent} from '@xh/hoist/core';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';

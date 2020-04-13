@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {useContext, useState} from 'react';
 import {ModelLookupContext} from '../impl/ModelLookup';
 import {useOwnedModelLinker} from '../impl/UseOwnedModelLinker';

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {ModelPublishMode, ModelSpec} from './ModelSpec';
