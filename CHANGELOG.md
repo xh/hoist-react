@@ -3,6 +3,13 @@
 ## v33.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
+
+* We have consolidated the import location for several packages, removing unintended
+nested index files and 'sub-packages'.  In particular, the following locations now provide a single
+index file for import for all of their public contents: `@xh/hoist/core`, `@xh/hoist/data`,
+`@xh/hoist/cmp/grid`, and `@xh/hoist/desktop/cmp/grid`.  Applications may need to update import
+statements that referred to internal packages within these locations.
+
 * Removed the unnecessary and confusing `values` getter on `BaseFieldModel`.  This getter
 was not intended for public use and was intended for the framework's internal implementation only.
 * `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`.  This avoids confusion with
@@ -27,12 +34,6 @@ displaying the Record Id.
 an `emptyText`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
-
-### 💥 Breaking Changes
-
-* Exports are now consolidated in top-level packages. Nested index files have been moved to
-  `@xh/react/core`, `@xh/react/data`, `@xh/react/cmp/grid`, and `@xh/desktop/cmp/grid`. Update all
-  imports from these subdirectories.
 
 ## v32.0.2 - 2020-04-03
 
