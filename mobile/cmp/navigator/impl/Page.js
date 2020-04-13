@@ -9,7 +9,6 @@ import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {PageModel} from '../PageModel';
-
 import './Page.scss';
 
 /**

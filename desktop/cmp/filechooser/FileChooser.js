@@ -10,7 +10,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
 import PT from 'prop-types';
-
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 

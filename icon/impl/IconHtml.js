@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {findIconDefinition, icon} from '@fortawesome/fontawesome-svg-core';
 import classNames from 'classnames';
 import {isString} from 'lodash';

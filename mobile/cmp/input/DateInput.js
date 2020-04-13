@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
@@ -16,7 +15,6 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import moment from 'moment';
 import PT from 'prop-types';
-
 import './DateInput.scss';
 
 /**

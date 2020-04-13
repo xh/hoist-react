@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistService, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import store from 'store2';

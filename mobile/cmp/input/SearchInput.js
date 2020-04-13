@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';

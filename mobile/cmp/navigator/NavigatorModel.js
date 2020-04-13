@@ -9,7 +9,6 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
-
 import {PageModel} from './PageModel';
 
 /**

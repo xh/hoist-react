@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
-
 import './TextArea.scss';
 
 /**

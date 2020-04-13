@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
@@ -15,9 +14,7 @@ import {
     switchInput,
     textInput
 } from '@xh/hoist/desktop/cmp/input';
-
 import {assign} from 'lodash';
-
 import {RestFormModel} from './RestFormModel';
 
 export const restFormField = hoistCmp.factory({

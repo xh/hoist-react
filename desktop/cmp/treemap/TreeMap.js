@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
@@ -20,14 +19,11 @@ import {
 } from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
-
 import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-
 import './TreeMap.scss';
-
 import {TreeMapModel} from './TreeMapModel';
 
 /**

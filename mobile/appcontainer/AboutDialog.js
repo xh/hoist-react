@@ -4,12 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-
 import './AboutDialog.scss';
 
 /**

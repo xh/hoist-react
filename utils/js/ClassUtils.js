@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {Exception} from '@xh/hoist/exception';
 import {throwIf} from '@xh/hoist/utils/js';
 import {forOwn, isPlainObject} from 'lodash';

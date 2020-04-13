@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {AppState, elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
@@ -15,12 +14,10 @@ import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/Co
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
-
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount} from '@xh/hoist/utils/react';
-
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';

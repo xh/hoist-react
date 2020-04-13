@@ -13,7 +13,6 @@ import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {formField} from '@xh/hoist/mobile/cmp/form';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {withDefault} from '@xh/hoist/utils/js';
-
 import './Message.scss';
 
 /**

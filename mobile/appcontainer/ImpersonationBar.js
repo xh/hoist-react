@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {select} from '@xh/hoist/mobile/cmp/input';
-
 import './ImpersonationBar.scss';
 
 /**

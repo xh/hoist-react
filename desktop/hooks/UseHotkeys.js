@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {hotkey as hotkeyBp, hotkeys as hotkeysBp, HotkeysEvents} from '@xh/hoist/kit/blueprint';
 import {isArray, isEmpty, isPlainObject} from 'lodash';

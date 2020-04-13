@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {span} from '@xh/hoist/cmp/layout';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
 import {fmtSpan} from './FormatMisc';
-
 import {createRenderer, saveOriginal} from './FormatUtils';
 
 export const DATE_FMT = 'YYYY-MM-DD',

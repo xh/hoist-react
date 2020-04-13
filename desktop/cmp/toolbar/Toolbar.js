@@ -15,7 +15,6 @@ import classNames from 'classnames';
 import {castArray} from 'lodash';
 import PT from 'prop-types';
 import {Children} from 'react';
-
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 

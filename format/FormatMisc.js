@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {span} from '@xh/hoist/cmp/layout';
 import {capitalize} from 'lodash';
 

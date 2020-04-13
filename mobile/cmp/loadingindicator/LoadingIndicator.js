@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {hoistCmp} from '@xh/hoist/core';
@@ -13,7 +12,6 @@ import {PendingTaskModel} from '@xh/hoist/utils/async';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import PT from 'prop-types';
-
 import './LoadingIndicator.scss';
 
 /**

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {upperFirst} from 'lodash';
 import {action, observable} from 'mobx';
 

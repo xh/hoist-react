@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -23,10 +22,8 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement, useRef} from 'react';
-
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 

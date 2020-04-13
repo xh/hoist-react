@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp} from '@xh/hoist/core';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {start} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
-
 import {ContextMenuItem} from './ContextMenuItem';
 
 /**

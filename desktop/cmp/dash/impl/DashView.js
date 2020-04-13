@@ -9,7 +9,6 @@ import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '
 import {modelLookupContextProvider} from '@xh/hoist/core/impl/ModelLookup';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-
 import {DashViewModel} from '../DashViewModel';
 
 /**

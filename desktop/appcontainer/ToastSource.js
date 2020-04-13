@@ -10,7 +10,6 @@ import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {Position, Toaster} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isElement} from 'lodash';
-
 import './Toast.scss';
 
 /**

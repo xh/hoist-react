@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {form} from '@xh/hoist/cmp/form';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -15,7 +14,6 @@ import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
 

@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {p} from '@xh/hoist/cmp/layout';
 import {AppSpec, AppState, elem, ReactiveSupport} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
@@ -26,7 +25,6 @@ import {
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
-
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';

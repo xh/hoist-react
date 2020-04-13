@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-
 import classNames from 'classnames';
 import './Dock.scss';
 import {dockView} from './DockView';

@@ -10,7 +10,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {toast as onsenToast} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
-
 import './Toast.scss';
 
 /**

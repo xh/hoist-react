@@ -9,7 +9,6 @@ import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '
 import {page} from '@xh/hoist/kit/onsen';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-
 import './Tabs.scss';
 
 /**

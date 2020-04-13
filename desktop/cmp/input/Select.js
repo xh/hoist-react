@@ -23,7 +23,6 @@ import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
-
 import './Select.scss';
 
 /**

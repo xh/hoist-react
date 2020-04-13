@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 //--------------------
 // Blueprint Imports
 //--------------------
@@ -49,7 +48,6 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-
 import {DatePicker} from '@blueprintjs/datetime';
 import {elemFactory} from '@xh/hoist/core';
 
