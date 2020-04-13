@@ -9,7 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {runInAction} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isNumber} from 'lodash';
 
 /**
  * @private
@@ -98,11 +98,14 @@ export class RndModel {
 
     updateSizeBounded(size) {
         const {containerSize, rnd} = this;
-        size = {
-            width: max(0, min(containerSize.width - 10, size.width)),
-            height: max(0, min(containerSize.height - 10, size.height))
-        };
-        rnd.updateSize(size);
+        rnd.updateSize({
+            width: this.parseSizeDim(size.width, containerSize.width),
+            height: this.parseSizeDim(size.height, containerSize.height)
+        });
+    }
+
+    parseSizeDim(dim, bound) {
+        return isNumber(dim) ? max(0, min(bound - 10, dim)) : dim;
     }
 
     updatePositionBounded(pos) {

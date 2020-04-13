@@ -5,9 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {isPlainObject, isString, assign} from 'lodash';
+import {isPlainObject, isString, isNumber, isFinite, isNil, endsWith, assign} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 import {DialogStateModel} from './DialogStateModel';
 
 /**
@@ -186,16 +187,24 @@ export class DialogModel {
      * Set the (unmaximized) position of the dialog.
      */
     @action
-    setPosition(position) {
-        this.position = assign({x: undefined, y: undefined}, this.position, position);
+    setPosition({x, y} = {}) {
+        this.position = assign(
+            {x: undefined, y: undefined},
+            this.position,
+            {x: this.parseCoordinate(x), y: this.parseCoordinate(y)}
+        );
     }
 
     /**
      * Set the (unmaximized) size of the dialog.
      */
     @action
-    setSize(size) {
-        this.size = assign({width: undefined, height: undefined}, this.size, size);
+    setSize({width, height} = {}) {
+        this.size = assign(
+            {width: undefined, height: undefined},
+            this.size,
+            {width: this.parseDim(width), height: this.parseDim(height)}
+        );
     }
 
     //-----------------
@@ -214,6 +223,37 @@ export class DialogModel {
         return ret;
     }
 
+    parseDim(val) {
+        if (isNumber(val)) {
+            throwIf(
+                !isFinite(val) || val < 0,
+                'Dimension must be a positive number.'
+            );
+        } else if (isString(val)) {
+            const numb = parseInt(val);
+            throwIf(
+                !endsWith(val, '%') || !isFinite(numb) || numb > 100 || numb < 0,
+                'String Dimension must be a percentage between 0 and 100.'
+            );
+        } else if (!isNil(val)) {
+            throw XH.exception('Incorrect dimension value.');
+        }
+        return val;
+    }
+
+    parseCoordinate(val) {
+        if (isNumber(val)) {
+            throwIf(
+                !isFinite(val) || val < 0,
+                'Position Co-ordinate must be a number greater than or equal to zero.'
+            );
+        } else if (!isNil(val)) {
+            throw XH.exception('Incorrect position co-ordinate.');
+        }
+        return val;
+    }
+
+
     @action
     noteRendered(size, position) {
         this.renderedSize = size;
@@ -224,8 +264,8 @@ export class DialogModel {
 
 /**
  * @typedef {Object} Size
- * @property {number} width
- * @property {number} height
+ * @property {(number|String)} width - pixel count or string percentage between '0%' and '100%'.
+ * @property {(number|String)} height - pixel count or string percentage between '0%' and '100%'.
  */
 
 
