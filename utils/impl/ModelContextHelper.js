@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode} from '@xh/hoist/core';
 import {useContext} from 'react';
-import {ModelLookupContext} from '../../core/impl';
-import {ModelPublishMode} from '../../core/modelspec';
+import {ModelLookupContext} from '@xh/hoist/core/impl/ModelLookup';
 
 /**
  * @private
