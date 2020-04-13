@@ -4,18 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {hoistCmp} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {hoistCmp} from '@xh/hoist/core';
 import {spinner} from '@xh/hoist/kit/blueprint';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {withDefault} from '@xh/hoist/utils/js';
-import {truncate} from 'lodash';
-
 import classNames from 'classnames';
-
+import {truncate} from 'lodash';
+import PT from 'prop-types';
 import './LoadingIndicator.scss';
 
 /**

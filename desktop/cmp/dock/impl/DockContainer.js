@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-
 import classNames from 'classnames';
-import {dockView} from './DockView';
 import './Dock.scss';
+import {dockView} from './DockView';
 
 /**
  * Desktop implementation of DockContainer.

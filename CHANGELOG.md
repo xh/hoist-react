@@ -3,6 +3,13 @@
 ## v33.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
+
+* We have consolidated the import location for several packages, removing unintended
+nested index files and 'sub-packages'.  In particular, the following locations now provide a single
+index file for import for all of their public contents: `@xh/hoist/core`, `@xh/hoist/data`,
+`@xh/hoist/cmp/grid`, and `@xh/hoist/desktop/cmp/grid`.  Applications may need to update import
+statements that referred to internal packages within these locations.
+
 * Removed the unnecessary and confusing `values` getter on `BaseFieldModel`.  This getter
 was not intended for public use and was intended for the framework's internal implementation only.
 * `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`.  This avoids confusion with

@@ -4,10 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {isFunction, isNil, debounce as lodashDebounce, isNumber, isPlainObject} from 'lodash';
-import {autorun as mobxAutorun, action, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
-import {throwIf, applyMixin} from '@xh/hoist/utils/js';
+import {
+    action,
+    autorun as mobxAutorun,
+    reaction as mobxReaction,
+    when as mobxWhen
+} from '@xh/hoist/mobx';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
+import {debounce as lodashDebounce, isFunction, isNil, isNumber, isPlainObject} from 'lodash';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.

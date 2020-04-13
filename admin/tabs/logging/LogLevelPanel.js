@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 
 export const logLevelPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})

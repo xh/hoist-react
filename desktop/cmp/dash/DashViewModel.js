@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
-import {ManagedRefreshContextModel} from '@xh/hoist/core/refresh';
+import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 

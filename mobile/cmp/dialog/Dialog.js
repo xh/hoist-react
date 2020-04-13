@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {dialog as onsenDialog} from '@xh/hoist/kit/onsen';
-
 import './Dialog.scss';
 
 /**

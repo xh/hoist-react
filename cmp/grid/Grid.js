@@ -31,7 +31,6 @@ import {
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
 import './Grid.scss';
-
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';

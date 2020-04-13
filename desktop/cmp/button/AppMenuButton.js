@@ -4,13 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import PT from 'prop-types';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {Button, button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import PT from 'prop-types';
+import React from 'react';
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     displayName: 'AppMenuButton',

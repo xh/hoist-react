@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {Timer} from '@xh/hoist/utils/async';
+import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
 import PT from 'prop-types';

@@ -1,9 +1,8 @@
+import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {frame, vframe, div, hbox, span, vbox, p, h1} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {isNumber} from 'lodash';
-
 import './PinPad.scss';
 import {PinPadModel} from './PinPadModel';
 

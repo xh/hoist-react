@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {
     castArray,
     clone,
@@ -16,7 +15,8 @@ import {
     isArray,
     isFinite,
     isFunction,
-    isNil, isNumber,
+    isNil,
+    isNumber,
     isString,
     startCase
 } from 'lodash';

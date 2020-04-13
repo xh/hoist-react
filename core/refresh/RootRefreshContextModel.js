@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, loadAllAsync}  from '@xh/hoist/core';
+import {loadAllAsync, XH} from '@xh/hoist/core';
 import {RefreshContextModel} from './RefreshContextModel';
 
 /**

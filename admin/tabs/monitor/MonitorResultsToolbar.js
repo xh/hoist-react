@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {hoistCmp} from '@xh/hoist/core';
-import {hbox, filler} from '@xh/hoist/cmp/layout';
-import {label} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {filler, hbox, label} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
 export const monitorResultsToolbar = hoistCmp.factory(

@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {Icon} from '@xh/hoist/icon';
 import {numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Column config intended to be used as the last column in a grid that either does not have flex

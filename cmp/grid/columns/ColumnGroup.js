@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {throwIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, startCase} from 'lodash';
 import {getAgHeaderClassFn} from './Column';

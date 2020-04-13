@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp} from '@xh/hoist/core';
 import {navbarDivider} from '@xh/hoist/kit/blueprint';
 

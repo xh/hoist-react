@@ -4,18 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
-
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-
-import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import './ExceptionDialog.scss';
+import {exceptionDialogDetails} from './ExceptionDialogDetails';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
