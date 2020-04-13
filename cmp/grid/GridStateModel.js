@@ -6,8 +6,8 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {start} from '@xh/hoist/promise';
-import {cloneDeep, find, isUndefined, omit} from 'lodash';
 import {debounced} from '@xh/hoist/utils/js';
+import {cloneDeep, find, isUndefined, omit} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions

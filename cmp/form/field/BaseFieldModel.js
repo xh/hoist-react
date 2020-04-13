@@ -4,15 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {managed} from '@xh/hoist/core';
-import {compact, flatten, isEmpty, startCase, isFunction, isUndefined, isNil} from 'lodash';
-import {observable, action, computed, runInAction} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-
-import {ValidationState} from '../validation/ValidationState';
+import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {compact, flatten, isEmpty, isFunction, isNil, isUndefined, startCase} from 'lodash';
 import {Rule} from '../validation/Rule';
+import {ValidationState} from '../validation/ValidationState';
 
 /**
  * Abstract Base class for FieldModels.

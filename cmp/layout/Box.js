@@ -4,11 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {merge, castArray} from 'lodash';
 import {hoistCmp} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {castArray, merge} from 'lodash';
 import {div} from './Tags';
-
 
 /**
  * A Component that supports flexbox-based layout of its contents.

@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {vspacer} from '@xh/hoist/cmp/layout';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
 /** @private */

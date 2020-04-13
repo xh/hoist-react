@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {errorIf, withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
 import {Button, button} from './Button';
-import {errorIf} from '@xh/hoist/utils/js';
-import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.

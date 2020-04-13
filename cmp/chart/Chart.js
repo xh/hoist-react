@@ -4,22 +4,24 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
-import {bindable, runInAction} from '@xh/hoist/mobx';
-import {Highcharts} from '@xh/hoist/kit/highcharts';
-
-import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
 import composeRefs from '@seznam/compose-react-refs';
-
-import {LightTheme} from './theme/Light';
-import {DarkTheme} from './theme/Dark';
-
+import {box, div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {Highcharts} from '@xh/hoist/kit/highcharts';
+import {bindable, runInAction} from '@xh/hoist/mobx';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
+import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+import {DarkTheme} from './theme/Dark';
+import {LightTheme} from './theme/Light';
+
 installZoomoutGesture(Highcharts);
 
 /**

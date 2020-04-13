@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
 import {BaseFieldModel} from './BaseFieldModel';
 

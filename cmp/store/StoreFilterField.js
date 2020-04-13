@@ -4,16 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {XH, hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {hoistCmp, useContextModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
-
-import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
+import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of

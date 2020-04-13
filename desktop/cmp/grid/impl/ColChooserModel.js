@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel,  managed} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * State management for the ColChooser component.

@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
 import {decorate, observable, runInAction} from 'mobx';
 

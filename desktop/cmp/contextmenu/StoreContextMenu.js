@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';

@@ -4,14 +4,13 @@
 *
 * Copyright © 2020 Extremely Heavy Industries Inc.
 */
-import {hoistCmp, creates} from '@xh/hoist/core';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {storeFilterField} from '@xh/hoist/cmp/store';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-
 import {EhCacheModel} from './EhCacheModel';
 
 export const ehCachePanel = hoistCmp.factory({

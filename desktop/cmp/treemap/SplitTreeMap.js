@@ -4,15 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import PT from 'prop-types';
+import {fragment, frame, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {hframe, vframe, frame, fragment} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {compact, uniq} from 'lodash';
-
-import {treeMap} from './TreeMap';
+import PT from 'prop-types';
+import React from 'react';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
+import {treeMap} from './TreeMap';
 
 /**
  * A component which divides data across two TreeMaps.

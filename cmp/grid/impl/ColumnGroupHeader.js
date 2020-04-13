@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
-import {isFunction} from 'lodash';
+import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
+import {isFunction} from 'lodash';
 
 /**
  * A custom ag-Grid group header component.

@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Cube} from '@xh/hoist/data/cube';
+import {castArray, flattenDeep, forEach, groupBy, map, uniq} from 'lodash';
 import {StoreFilter} from '../../StoreFilter';
-import {castArray, flattenDeep, groupBy, uniq, map, forEach} from 'lodash';
+import {Cube} from '../Cube';
 
 export class ValueFilter extends StoreFilter {
 

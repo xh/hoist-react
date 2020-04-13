@@ -4,25 +4,26 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import React from 'react';
+import composeRefs from '@seznam/compose-react-refs';
 import {box, div, frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
-import composeRefs from '@seznam/compose-react-refs';
-
 import PT from 'prop-types';
+import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-
 import './TreeMap.scss';
-
 import {TreeMapModel} from './TreeMapModel';
 
 /**

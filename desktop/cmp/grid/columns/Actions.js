@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {RecordAction} from '@xh/hoist/data';
 import {convertIconToHtml} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
-
 import {actionColPad} from './Actions.scss';
 
 /**

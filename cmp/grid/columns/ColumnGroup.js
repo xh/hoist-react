@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault, apiRemoved} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, startCase} from 'lodash';
 import {getAgHeaderClassFn} from './Column';
 
@@ -22,6 +21,7 @@ export class ColumnGroup {
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
      * @param {string} [c.headerAlign] - horizontal alignment of header contents.
+     *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -39,10 +39,7 @@ export class ColumnGroup {
         align,
         ...rest
     }, gridModel) {
-        if (align) {
-            console.warn("The 'align' config for ColumnGroups has been deprecated. Use 'headerAlign' instead");
-            if (!headerAlign) headerAlign = align;
-        }
+        apiRemoved(align, 'align', "Use 'headerAlign' instead.");
 
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
         throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');

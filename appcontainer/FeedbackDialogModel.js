@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
-import {observable, action} from '@xh/hoist/mobx';
 
 /**
  * Manages built-in collection of user feedback.

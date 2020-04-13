@@ -4,11 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the

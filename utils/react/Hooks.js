@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useRef} from 'react';
-import {observeVisibleChange, observeResize} from '@xh/hoist/utils/js';
 
 /**
  * Hook to run a function once after component has been mounted.

@@ -4,15 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
-import PT from 'prop-types';
-import {uses, hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {DataViewModel} from './DataViewModel';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {apiRemoved} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import PT from 'prop-types';
 import './DataView.scss';
+import {DataViewModel} from './DataViewModel';
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a

@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import React from 'react';
-import {XH, hoistCmp} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {div, h1, h2, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
-
+import {Icon} from '@xh/hoist/icon';
+import React from 'react';
 import './AboutPanel.scss';
 
 export const aboutPanel = hoistCmp.factory(
