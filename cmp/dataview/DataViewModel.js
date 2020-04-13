@@ -7,9 +7,8 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
-import {apiRemoved} from '../../utils/js';
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,

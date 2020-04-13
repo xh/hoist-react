@@ -6,12 +6,12 @@
  */
 
 import {managed} from '@xh/hoist/core';
+import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField} from './CubeField';
 import {Query} from './Query';
 import {View} from './View';
 import {Store} from '../Store';
 import {isEmpty} from 'lodash';
-import {forEachAsync} from '../../utils/async';
 
 /**
  * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
