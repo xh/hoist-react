@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';

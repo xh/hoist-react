@@ -4,12 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
-
 import {FormModel} from '../FormModel';
 import {ValidationState} from '../validation/ValidationState';
 import {BaseFieldModel} from './BaseFieldModel';

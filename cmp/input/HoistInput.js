@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -12,7 +11,6 @@ import classNames from 'classnames';
 import {isEqual, isFunction, upperFirst} from 'lodash';
 import PT from 'prop-types';
 import {Component} from 'react';
-
 import './HoistInput.scss';
 
 /**

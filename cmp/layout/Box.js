@@ -9,7 +9,6 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, merge} from 'lodash';
 import {div} from './Tags';
 
-
 /**
  * A Component that supports flexbox-based layout of its contents.
  *

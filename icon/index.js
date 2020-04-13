@@ -7,7 +7,6 @@
 
 export * from './Icon';
 import {library} from '@fortawesome/fontawesome-svg-core';
-
 import {
     faAddressCard as faAddressCardLight,
     faAlignJustify as faAlignJustifyLight,
@@ -182,7 +181,6 @@ import {
     faWindow as faWindowLight,
     faWrench as faWrenchLight
 } from '@fortawesome/pro-light-svg-icons';
-
 import {
     faAddressCard,
     faAlignJustify,
@@ -357,7 +355,6 @@ import {
     faWindow,
     faWrench
 } from '@fortawesome/pro-regular-svg-icons';
-
 import {
     faAddressCard as faAddressCardSolid,
     faAlignJustify as faAlignJustifySolid,

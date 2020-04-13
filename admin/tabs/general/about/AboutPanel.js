@@ -10,7 +10,6 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import React from 'react';
-
 import './AboutPanel.scss';
 
 export const aboutPanel = hoistCmp.factory(

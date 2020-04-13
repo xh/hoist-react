@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -13,7 +12,6 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
-
 import {GridSorter} from './GridSorter';
 
 /**

@@ -7,7 +7,6 @@
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
 import {logLevelPanel} from './LogLevelPanel';
 import {logViewer} from './viewer/LogViewer';
 

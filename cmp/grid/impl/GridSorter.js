@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {isNumber, isString} from 'lodash';
 

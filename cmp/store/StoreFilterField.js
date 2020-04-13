@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
@@ -12,7 +11,6 @@ import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dyn
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
-
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 
 /**

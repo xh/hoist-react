@@ -14,7 +14,6 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
-
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 /**

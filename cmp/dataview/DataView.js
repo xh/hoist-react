@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';

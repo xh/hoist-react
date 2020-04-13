@@ -4,10 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
-
 
 /**
  * Support automatic, on-demand generation of a unique ID string for class instances.

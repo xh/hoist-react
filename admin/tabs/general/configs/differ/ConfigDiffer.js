@@ -14,7 +14,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity} from 'lodash';
-
 import {configDifferDetail} from './ConfigDifferDetail';
 import {ConfigDifferModel} from './ConfigDifferModel';
 

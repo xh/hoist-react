@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-
 import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {throwIf} from '@xh/hoist/utils/js';
 import PT from 'prop-types';

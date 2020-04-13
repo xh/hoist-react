@@ -9,7 +9,6 @@ import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 
-
 /**
  * Model for a single instance of a Toast.
  *

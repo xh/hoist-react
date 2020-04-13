@@ -13,7 +13,6 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
 
-
 export const visitsChart = hoistCmp.factory({
     model: creates(VisitsChartModel),
 

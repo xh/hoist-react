@@ -9,7 +9,6 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {assign} from 'lodash';
-
 import {AppOption} from './AppOption';
 
 /**

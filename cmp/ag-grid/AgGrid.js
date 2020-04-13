@@ -11,7 +11,6 @@ import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-
 import {AgGridModel, agGridReact} from './index';
 
 /**

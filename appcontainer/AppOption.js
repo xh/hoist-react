@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-
 
 /**
  * Options specification for the app-wide options dialog.

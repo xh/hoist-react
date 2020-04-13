@@ -9,7 +9,6 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-
 import {ConfigModel} from './ConfigModel';
 import {configDiffer} from './differ/ConfigDiffer';
 

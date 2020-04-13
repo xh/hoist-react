@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {managed} from '@xh/hoist/core';
 import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
 import {compact, flatten, isEmpty, isFunction, isNil, isUndefined, startCase} from 'lodash';
 import {Rule} from '../validation/Rule';
-
 import {ValidationState} from '../validation/ValidationState';
 
 /**
