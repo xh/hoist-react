@@ -126,9 +126,11 @@ export class Record {
      * @param {Object} c - Record configuration
      * @param {(number|string)} c.id - record ID
      * @param {Store} c.store - store containing this record.
-     * @param {Object} c.data - data used to construct this record,
-     *      pre-processed if applicable by `store.processRawData()` and `Field.parseVal()`.
-     * @param {Object} [c.raw] - the same data, prior to any store pre-processing.
+     * @param {Object} c.data - data for this record, pre-processed if applicable by
+     *      `store.processRawData()` and `Field.parseVal()`.  Note: This must be a new object
+     *      dedicated to this record.  This object will be enhanced with an id and frozen.
+     * @param {Object} [c.raw] - the original data for the record, prior to any store
+     *      pre-processing.  This data is for reference only and will not be altered by this object.
      * @param {Object?} [c.committedData] - the committed version of the data that was loaded
      *      into a Record in the Store. Pass `null` to indicate that this is a "new" Record that has
      *      been added since the last load.
@@ -148,6 +150,7 @@ export class Record {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
 
         this.id = id;
+        this.data.id = id;
         this.store = store;
         this.data = data;
         this.raw = raw;
