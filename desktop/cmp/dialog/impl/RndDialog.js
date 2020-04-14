@@ -8,7 +8,7 @@
 import {merge} from 'lodash';
 
 import {rnd} from '@xh/hoist/kit/react-rnd';
-import {hoistCmp, uses, useLocalModel, RenderMode} from '@xh/hoist/core';
+import {hoistCmp, uses, useLocalModel, RenderMode, refreshContextView} from '@xh/hoist/core';
 import {Children, useRef} from 'react';
 import {div, vframe} from '@xh/hoist/cmp/layout';
 import ReactDOM from 'react-dom';
@@ -65,7 +65,7 @@ export const rndDialog = hoistCmp.factory({
 
         rndOptions = merge({}, rndOptions, {style: {zIndex}});
 
-        const ret = div({
+        let ret = div({
             style: {display: isOpen ? 'flex' : 'none'},
             className: baseClass,
             items: [
@@ -105,6 +105,8 @@ export const rndDialog = hoistCmp.factory({
                 })
             ]
         });
+
+        ret = refreshContextView({model: rndModel.refreshContextModel, item: ret});
 
         return inPortal ? ReactDOM.createPortal(ret, rndModel.portalEl) : ret;
     }

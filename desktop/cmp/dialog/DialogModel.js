@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel, managed, RenderMode} from '@xh/hoist/core';
+import {XH, HoistModel, managed, RenderMode, RefreshMode} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isPlainObject, isString, isNumber, isFinite, isNil, endsWith, assign} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -41,9 +41,11 @@ export class DialogModel {
     showBackgroundMask;
     /** @member {boolean} */
     inPortal;
-
     /** @member {RenderMode} */
-    renderMode = RenderMode.LAZY;
+    renderMode;
+    /** @member {RefreshMode} */
+    refreshMode;
+
 
     //---------------------------------
     // Observable/Settable Public State
@@ -95,6 +97,9 @@ export class DialogModel {
      * @param {Position} [config.position] - initial (unmaximized) position.
      * @param {boolean} [config.isOpen] - Is dialog open?
      * @param {boolean} [config.isMaximized] - Does dialog cover entire viewport?
+     * @param {RenderMode} [c.renderMode] - strategy for rendering closed dialog.
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing closed dialog.
+     *      See enum for description of supported modes.
      * @param {(Object|string)} [config.stateModel] - config or string for a DialogStateModel.
      * @param {function} [config.onOpen] - callback function to run when dialog is opened.
      * @param {function} [config.onClose] - callback function to run when dialog is closed.
@@ -112,6 +117,8 @@ export class DialogModel {
         position,
         isOpen = true,
         isMaximized = false,
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY,
 
         stateModel = null,
         onClose = null,
@@ -126,6 +133,8 @@ export class DialogModel {
         this.draggable = draggable;
         this.closeOnOutsideClick = closeOnOutsideClick;
         this.closeOnEscape = closeOnEscape;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
 
         // set observables
         this.setSize(size);

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, ManagedRefreshContextModel, managed} from '@xh/hoist/core';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {runInAction} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
@@ -28,6 +28,7 @@ export class RndModel {
     rndRef = createObservableRef();
     portalEl;
     resizeObserver;
+    @managed refreshContextModel;
 
     constructor(dialogModel) {
         const dm = this.dialogModel = dialogModel;
@@ -51,6 +52,8 @@ export class RndModel {
                 );
             }
         });
+
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     //--------------------
@@ -63,6 +66,9 @@ export class RndModel {
     get rnd()           {return this.rndRef.current}
     get portalRoot()    {return document.getElementById('xh-dialog-root')}
     get parentElement() {return this.rnd?.getParent()?.parentElement}
+
+    get isActive()      {return this.isOpen}
+    get refreshMode()   {return this.dm.refreshMode}
 
     //------------------
     // Positioning
