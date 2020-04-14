@@ -4,25 +4,30 @@
 
 ### 💥 Breaking Changes
 
-* We have consolidated the import location for several packages, removing unintended
-nested index files and 'sub-packages'.  In particular, the following locations now provide a single
-index file for import for all of their public contents: `@xh/hoist/core`, `@xh/hoist/data`,
-`@xh/hoist/cmp/grid`, and `@xh/hoist/desktop/cmp/grid`.  Applications may need to update import
-statements that referred to internal packages within these locations.
+* We have consolidated the import location for several packages, removing unintended nested index
+  files and 'sub-packages'. In particular, the following locations now provide a single index file
+  for import for all of their public contents: `@xh/hoist/core`, `@xh/hoist/data`,
+  `@xh/hoist/cmp/grid`, and `@xh/hoist/desktop/cmp/grid`. Applications may need to update import
+  statements that referred to index files nested within these directories.
+* Removed the unnecessary and confusing `values` getter on `BaseFieldModel`. This getter was not
+  intended for public use and was intended for the framework's internal implementation only.
+* `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`. This avoids confusion with the
+  `Column` API, where `align` refers to the alignment of cell contents within the column.
 
-* Removed the unnecessary and confusing `values` getter on `BaseFieldModel`.  This getter
-was not intended for public use and was intended for the framework's internal implementation only.
-* `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`.  This avoids confusion with
-the `Column` API, where `align` refers to the alignment of cell contents within the column.
+### 📚 Libraries
+
+* @blueprintjs/core `3.25 -> 3.25`
+* @blueprintjs/datetime `3.15 -> 3.16`
+* mobx-react `6.1 -> 6.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
 
 ## v32.0.4 - 2020-04-09
 
 ### 🐞 Bug Fixes
-* Fixes a regression with the alignment of ColumnGroup Headers.
-* Fixes a bug with 'Copy Cell' context menu item for certain columns
-displaying the Record Id.
+
+* Fixes a regression with the alignment of `ColumnGroup` headers.
+* Fixes a bug with 'Copy Cell' context menu item for certain columns displaying the Record ID.
 * Quiets console logging of 'routine' exceptions to 'debug' instead of 'log'.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...v32.0.4)
@@ -30,8 +35,8 @@ displaying the Record Id.
 ## v32.0.3 - 2020-04-06
 
 ### 🐞 Bug Fixes
-* Fixes a persistent console warning from ag-Grid for `GridModel`s that do not specify
-an `emptyText`.
+
+* Suppresses a console warning from ag-Grid for `GridModel`s that do not specify an `emptyText`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
 
@@ -49,24 +54,21 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
 * Grid column `flex` param will now accept numbers, with available space divided between flex
   columns in proportion to their `flex` value.
-* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
-will be cycled through when the user clicks on the header.
-* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels
-  respond to refresh requests.
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that will be
+  cycled through when the user clicks on the header.
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels respond to
+  refresh requests.
 
 ### 💥 Breaking Changes
 
 * The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
-
-* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument.  Use
-`composeRefs` to combine the ref that they return with any ref you wish to compose them with.
-
+* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument. Use
+  `composeRefs` to combine the ref that they return with any ref you wish to compose them with.
 * The callback for `useOnResize()` will now receive an object representing the locations and
-dimensions of the element's content box. (Previously it incorrectly received an array of
-`ResizeObserver` entries that had to be de-referenced)
-
+  dimensions of the element's content box. (Previously it incorrectly received an array of
+  `ResizeObserver` entries that had to be de-referenced)
 * `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
   consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
 
@@ -77,8 +79,7 @@ dimensions of the element's content box. (Previously it incorrectly received an 
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 * Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
-  hooks would not be called.
-  [#1808](https://github.com/xh/hoist-react/issues/1808)
+  hooks would not be called. [#1808](https://github.com/xh/hoist-react/issues/1808)
 * Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
   [#1803](https://github.com/xh/hoist-react/issues/1803)
 
