@@ -148,9 +148,9 @@ export class Record {
         isSummary = false
     }) {
         throwIf(isNil(id), 'Record has an undefined ID. Use \'Store.idSpec\' to resolve a unique ID for each record.');
+        data.id = id;
 
         this.id = id;
-        this.data.id = id;
         this.store = store;
         this.data = data;
         this.raw = raw;
