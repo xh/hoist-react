@@ -2,6 +2,10 @@
 
 ## v33.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* The object returned by the `data` property on `Record` now includes the record `id`.  This will
+  allow for convenient access of the id with the other field values on the record.
+
 ### 💥 Breaking Changes
 
 * We have consolidated the import location for several packages, removing unintended nested index
