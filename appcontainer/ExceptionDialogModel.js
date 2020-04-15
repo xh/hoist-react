@@ -39,6 +39,7 @@ export class ExceptionDialogModel {
 
     @action
     show(exception, options) {
+        if (this.displayData?.options.requireReload)  return;
         this.displayData = {exception, options};
     }
 

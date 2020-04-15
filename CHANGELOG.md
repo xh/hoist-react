@@ -14,6 +14,12 @@
 * `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`. This avoids confusion with the
   `Column` API, where `align` refers to the alignment of cell contents within the column.
 
+### 🐞 Bug Fixes
+
+* Exceptions will no longer overwrite the currently shown exception in the exception dialog if the
+  currently shown exception requires reloading the application.
+  [#1834](https://github.com/xh/hoist-react/issues/1834)
+
 ### 📚 Libraries
 
 * @blueprintjs/core `3.25 -> 3.25`
