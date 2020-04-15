@@ -331,7 +331,9 @@ textarea.bp3-input,
 
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
+// Hoist theme text-color applied to elements not styled with a more specific selector.
 .bp3-control {
+  color: var(--xh-text-color);
   margin-bottom: var(--xh-form-field-margin-bottom);
 
   &.bp3-inline {
