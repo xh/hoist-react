@@ -15,7 +15,8 @@ import {
     SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
-    UniqueAggregator
+    UniqueAggregator,
+    AverageAggregator
 } from '@xh/hoist/data';
 
 /**
@@ -43,6 +44,7 @@ export class CubeField extends Field {
     static sumStrictAggregator = new SumStrictAggregator();
     static uniqueAggregator = new UniqueAggregator();
     static singleAggregator = new SingleAggregator();
+    static averageAggregator = new AverageAggregator();
 
     /**
      * @param {Object} c - Field configuration.  See Field class for core parameters.
@@ -93,6 +95,7 @@ export class CubeField extends Field {
                 case 'SUM_STRICT':  return CubeField.sumStrictAggregator;
                 case 'UNIQUE':      return CubeField.uniqueAggregator;
                 case 'SINGLE':      return CubeField.singleAggregator;
+                case 'AVERAGE':      return CubeField.averageAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
