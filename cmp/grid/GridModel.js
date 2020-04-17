@@ -298,6 +298,14 @@ export class GridModel {
         }
     }
 
+    /**
+     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     */
+    select(records, clearSelection = true) {
+        this.selModel.select(records, clearSelection);
+    }
+
     /** Select the first row in the grid. */
     selectFirst() {
         const {agGridModel, selModel} = this;
@@ -334,35 +342,25 @@ export class GridModel {
         }
     }
 
-    /** Does the grid have any records to show? */
-    get empty() {
-        return this.store.empty;
-    }
-
     /** Are any records currently selected? */
-    get hasSelection() {
-        return !this.selModel.isEmpty;
-    }
+    get hasSelection() {return !this.selModel.isEmpty}
 
     /**
      * Shortcut to the currently selected records (observable).
      * @see StoreSelectionModel.records
      */
-    get selection() {
-        return this.selModel.records;
-    }
+    get selection() {return this.selModel.records}
 
     /**
-     * Shortcut to a single selected record (observable).
-     * Null if multiple records are selected.
+     * Shortcut to a single selected record (observable). Null if multiple records are selected.
      * @see StoreSelectionModel.singleRecord
      */
-    get selectedRecord() {
-        return this.selModel.singleRecord;
-    }
+    get selectedRecord() {return this.selModel.singleRecord}
+
+    /** Does the grid have any records to show? */
+    get empty() {return this.store.empty}
 
     get isReady() {return this.agGridModel.isReady}
-
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
