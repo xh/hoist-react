@@ -172,7 +172,7 @@ export class RecordAction {
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} p.defaultConfig - default display config for the action
  * @param {Object} [p.record] - row data object (entire row, if any).
- * @param {Object[]} [p.selection] - all currently selected records (if any).
+ * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
  * @param {*} [p...rest] - additional data provided by the context where this action presides
  * @returns {Object} - display configs to override for this render of the action.
  */
