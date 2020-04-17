@@ -56,7 +56,7 @@ Mask.propTypes = {
     isDisplayed: PT.bool,
 
     /** Optional text to be displayed. */
-    message: PT.string,
+    message: PT.oneOfType([PT.string, PT.element]),
 
     /** True to display a spinning image.  Default false. */
     spinner: PT.bool,
