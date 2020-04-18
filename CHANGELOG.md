@@ -2,6 +2,13 @@
 
 ## v33.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* The 'Timer' class has been enhanced and further standardized with its Hoist Core counterpart:
+    * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
+    allowing for dynamic lookup and reconfiguration.
+    * Added `intervalUnits` and `timeoutUnits` arguments.
+    * `delay` can now be specified as a boolean for greater convenience.
+
 ### 💥 Breaking Changes
 
 * We have consolidated the import location for several packages, removing unintended nested index

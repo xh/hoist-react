@@ -60,8 +60,8 @@ export class LogViewerModel {
 
         this.timer = Timer.create({
             runFn: () => this.autoRefreshLines(),
-            delay: 5 * SECONDS,
-            interval: 5 * SECONDS
+            interval: 5 * SECONDS,
+            delay: true
         });
     }
 
