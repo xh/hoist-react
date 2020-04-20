@@ -334,6 +334,17 @@
   .ag-bl-overlay {
     display: none;
   }
+
+  // Adds padding to select all checkbox option in column set filter
+  .ag-set-filter-select-all {
+    padding: var(--xh-pad-half-px) 0;
+  }
+
+  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+  // appear over bp dialogs with z-index of 20.
+  &.ag-popup-child {
+    z-index: 30;
+  }
 }
 
 //------------------------
@@ -386,7 +397,6 @@
 //------------------------
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
-  z-index: 9999 !important; // always show context menus above other content, e.g. dialog
   font-family: var(--xh-font-family);
   background-color: var(--xh-bg-alt);
 
@@ -402,14 +412,5 @@
     text-align: center;
     padding-left: 8px;
     padding-right: 8px;
-  }
-}
-
-.ag-theme-balham,
-.ag-theme-balham-dark {
-  &.ag-popup {
-    .ag-tooltip {
-      z-index: 99999 !important; // always show tooltips above other content, e.g. context menus
-    }
   }
 }

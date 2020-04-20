@@ -52,7 +52,7 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
             intent,
             title,
             disabled,
-            onClick: () => action.call({record, selection: selectedRecords, gridModel, column}),
+            onClick: () => action.call({record, selectedRecords, gridModel, column}),
             ...rest
         });
     }
