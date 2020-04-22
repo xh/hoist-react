@@ -3,6 +3,10 @@
 ## v33.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
+* The object returned by the `data` property on `Record` now includes the record `id`. This will
+  allow for convenient access of the id with the other field values on the record.
+
 * The 'Timer' class has been enhanced and further standardized with its Hoist Core counterpart:
     * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
     allowing for dynamic lookup and reconfiguration.
@@ -20,6 +24,18 @@
   intended for public use and was intended for the framework's internal implementation only.
 * `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`. This avoids confusion with the
   `Column` API, where `align` refers to the alignment of cell contents within the column.
+
+### 🐞 Bug Fixes
+
+* Exceptions will no longer overwrite the currently shown exception in the exception dialog if the
+  currently shown exception requires reloading the application.
+  [#1834](https://github.com/xh/hoist-react/issues/1834)
+
+### ⚙️ Technical
+
+* Note that the Mobx React bindings have been updated to 6.2, and we have enabled the recommended
+  "observer batching" feature as per
+  [the mobx-react docs](https://github.com/mobxjs/mobx-react-lite/#observer-batching).
 
 ### 📚 Libraries
 
