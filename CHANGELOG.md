@@ -11,8 +11,6 @@
     allowing for dynamic lookup and reconfiguration.
     * Added `intervalUnits` and `timeoutUnits` arguments.
     * `delay` can now be specified as a boolean for greater convenience.
-* The object returned by the `data` property on `Record` now includes the record `id`.  This will
-  allow for convenient access of the id with the other field values on the record.
 
 ### 💥 Breaking Changes
 
