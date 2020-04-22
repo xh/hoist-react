@@ -191,6 +191,7 @@ export const Icon = {
     mail(p)             {return Icon.icon({...p,  iconName: 'envelope'})},
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},
+    minusCircle(p)      {return Icon.icon({...p,  iconName: 'minus-circle'})},
     moon(p)             {return Icon.icon({...p,  iconName: 'moon'})},
     news(p)             {return Icon.icon({...p,  iconName: 'newspaper'})},
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
