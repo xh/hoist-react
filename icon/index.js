@@ -5,6 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 export * from './Icon';
+export * from './XHLogo';
+
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {
     faAddressCard as faAddressCardLight,
