@@ -1,6 +1,6 @@
 # Changelog
 
-## v33.0.0-SNAPSHOT - unreleased
+## v33.0.0 - 2020-04-22
 
 ### 🎁 New Features
 * The object returned by the `data` property on `Record` now includes the record `id`. This will
@@ -42,7 +42,7 @@
 * @blueprintjs/datetime `3.15 -> 3.16`
 * mobx-react `6.1 -> 6.2`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v33.0.0)
 
 ## v32.0.4 - 2020-04-09
 
