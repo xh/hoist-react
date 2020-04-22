@@ -77,7 +77,7 @@ export class WebSocketModel {
                 }
             },
             interval: 5 * SECONDS,
-            delay: 5 * SECONDS
+            delay: true
         });
     }
 

@@ -3,9 +3,14 @@
 ## v33.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
 * The object returned by the `data` property on `Record` now includes the record `id`. This will
   allow for convenient access of the id with the other field values on the record.
+
+* The `Timer` class has been enhanced and further standardized with its Hoist Core counterpart:
+    * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
+    allowing for dynamic lookup and reconfiguration.
+    * Added `intervalUnits` and `timeoutUnits` arguments.
+    * `delay` can now be specified as a boolean for greater convenience.
 
 ### 💥 Breaking Changes
 
