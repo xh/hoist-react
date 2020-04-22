@@ -1,5 +1,10 @@
 # Changelog
 
+## v34.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
+
+
 ## v33.0.0 - 2020-04-22
 
 ### 🎁 New Features
