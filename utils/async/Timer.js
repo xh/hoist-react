@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {olderThan, MILLISECONDS, SECONDS, ONE_SECOND} from '@xh/hoist/utils/datetime';
+import {olderThan, MILLISECONDS, MINUTES} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull, isNil, isFunction, isBoolean, isString} from 'lodash';
 
@@ -62,7 +62,7 @@ export class Timer {
     static create({
         runFn,
         interval,
-        timeout = 3000,
+        timeout = 3 * MINUTES,
         intervalUnits = MILLISECONDS,
         timeoutUnits = MILLISECONDS,
         delay = false,
@@ -114,7 +114,7 @@ export class Timer {
         this.intervalUnits = args.intervalUnits;
         this.timeoutUnits = args.timeoutUnits;
         this.delay = this.parseDelay(args.delay);
-        throwIf(this.interval == null ||  this.runFn == null, 'Missing req arguments for Timer');
+        throwIf(this.interval == null || this.runFn == null, 'Missing req arguments for Timer');
 
         wait(this.delay).then(() => this.heartbeatAsync());
     }
@@ -129,7 +129,8 @@ export class Timer {
         if (!cancelled && !isRunning && intervalMs > 0 && olderThan(lastRun, intervalMs)) {
             await this.doRunAsync();
         }
-        await wait((intervalMs > 2 * SECONDS) ? ONE_SECOND : 250);
+        const heartBeatInterval = intervalMs > 0 && intervalMs < 2000 ? 250 : 1000;
+        await wait(heartBeatInterval);
         this.heartbeatAsync();
     }
 
@@ -160,9 +161,12 @@ export class Timer {
     get intervalMs() {
         const {interval, intervalUnits} = this;
         if (isNil(interval)) return null;
-        const ret = (isFunction(interval) ? interval() : interval) * intervalUnits;
-        throwIf(ret > 0 && ret < 500, 'Object not appropriate for intervals < 500ms.');
-        return interval;
+        let ret = (isFunction(interval) ? interval() : interval) * intervalUnits;
+        if (ret > 0 && ret < 500) {
+            console.warn('Timer cannot be set for values less than 500ms.');
+            ret = 500;
+        }
+        return ret;
     }
 
     get timeoutMs() {
