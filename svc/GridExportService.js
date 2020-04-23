@@ -37,7 +37,8 @@ export class GridExportService {
 
         if (isFunction(filename)) filename = filename(gridModel);
 
-        const exportColumns = this.getExportableColumns(gridModel, columns),
+        const config = XH.configService.get('xhExportConfig'),
+            exportColumns = this.getExportableColumns(gridModel, columns),
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns),
             rows = [];
@@ -52,7 +53,14 @@ export class GridExportService {
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        if (rows.length * exportColumns.length > 3000) {
+        const cellCount = rows.length * exportColumns.length;
+        if (cellCount > config.streamingCellThreshold) {
+            XH.toast({
+                message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                intent: 'warning',
+                icon: Icon.download()
+            });
+        } else if (cellCount > config.toastCellThreshold) {
             XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
