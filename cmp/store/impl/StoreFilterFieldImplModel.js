@@ -169,6 +169,9 @@ export class StoreFilterFieldImplModel {
                 }
             });
 
+            // Run exclude once more to support explicitly excluding a dot-sep field added above.
+            if (excludeFields) ret = without(ret, ...excludeFields);
+
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
