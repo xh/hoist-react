@@ -2,6 +2,11 @@
 
 ## v34.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* This release requires a new config -- `xhExportConfig`.  This config will be provided by
+default in Hoist Core 7.x.  If necessary it should be added manually to your application.
+See https://github.com/xh/hoist-core/pull/137 for more information.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
 
 
