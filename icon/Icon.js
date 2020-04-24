@@ -47,7 +47,7 @@ export const Icon = {
      *      for ag-Grid.
      * @param {...*} [c.rest] - Additional props to be passed directly to underlying
      *      component.  These arguments are ignored when asHtml = true.
-     * @returns {(Element| string)}
+     * @returns {(Element|string)}
      */
     icon({
         iconName,
@@ -269,10 +269,14 @@ export const Icon = {
      * Returns an empty div with FA sizing classes applied. Can be used to take up room in a layout
      * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
      * not have an icon but others do.
-     * @returns {ReactElement}
+     * @param {Object} [c]
+     * @param {string} [c.size]
+     * @param {boolean} [c.asHtml]
+     * @returns {(Element|string)}
      */
-    placeholder({size} = {}) {
-        return div({className: enhanceFaClasses(null, size)});
+    placeholder({size, asHtml = false} = {}) {
+        const className = enhanceFaClasses('xh-icon--placeholder', size);
+        return asHtml ? `<div class="${className}"></div>` : div({className});
     }
 };
 
