@@ -2,20 +2,24 @@
 
 ## v34.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
+### 🎁 New Features
 
+* `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
+  match on columns with fields such as `address.city`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
 
 ## v33.0.0 - 2020-04-22
 
 ### 🎁 New Features
+
 * The object returned by the `data` property on `Record` now includes the record `id`. This will
   allow for convenient access of the id with the other field values on the record.
-
 * The `Timer` class has been enhanced and further standardized with its Hoist Core counterpart:
-    * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
+  * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
     allowing for dynamic lookup and reconfiguration.
-    * Added `intervalUnits` and `timeoutUnits` arguments.
-    * `delay` can now be specified as a boolean for greater convenience.
+  * Added `intervalUnits` and `timeoutUnits` arguments.
+  * `delay` can now be specified as a boolean for greater convenience.
 
 ### 💥 Breaking Changes
 
@@ -1467,9 +1471,10 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -2282,9 +2287,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method
