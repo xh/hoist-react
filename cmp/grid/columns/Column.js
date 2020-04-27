@@ -40,8 +40,8 @@ export class Column {
      * support absolute value sorting.  See Column.absSort.
      */
     static DEFAULT_SORTING_ORDER = [
-        {sort: 'asc', abs: false},
         {sort: 'desc', abs: true},
+        {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
 
