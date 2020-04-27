@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "33.0.0-SNAPSHOT",
+  "version": "34.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -27,10 +27,10 @@
     }
   },
   "dependencies": {
-    "@ag-grid-community/react": "~23.0.2",
+    "@ag-grid-community/react": "~23.0.3",
     "@ag-grid-enterprise/all-modules": "~23.0.2",
-    "@blueprintjs/core": "~3.24.0",
-    "@blueprintjs/datetime": "~3.15.2",
+    "@blueprintjs/core": "~3.25.0",
+    "@blueprintjs/datetime": "~3.16.0",
     "@fortawesome/fontawesome-pro": "~5.13.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.28",
     "@fortawesome/pro-light-svg-icons": "~5.13.0",
@@ -41,7 +41,7 @@
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
     "codemirror": "~5.52.2",
-    "core-js": "~3.6.4",
+    "core-js": "~3.6.5",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
     "fast-deep-equal": "~3.1.1",
@@ -52,7 +52,7 @@
     "lodash": "~4.17.15",
     "lodash-inflection": "~1.5.0",
     "mobx": "~5.15.4",
-    "mobx-react": "~6.1.8",
+    "mobx-react": "~6.2.2",
     "moment": "~2.24.0",
     "numbro": "~2.2.0",
     "onsenui": "~2.10.10",
@@ -70,7 +70,7 @@
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "store2": "~2.11.0"
+    "store2": "~2.11.1"
   },
   "peerDependencies": {
     "react": "~16.8.0",
@@ -79,13 +79,13 @@
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "^4.0.0",
-    "husky": "~4.2.3",
-    "lint-staged": "~10.0.9",
+    "husky": "~4.2.5",
+    "lint-staged": "~10.1.7",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
-    "stylelint": "~13.2.1",
+    "stylelint": "~13.3.3",
     "stylelint-config-standard": "~20.0.0",
-    "stylelint-scss": "~3.16.0"
+    "stylelint-scss": "~3.17.1"
   }
 }

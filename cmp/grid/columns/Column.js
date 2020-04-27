@@ -473,7 +473,6 @@ export class Column {
         const {fieldPath} = this;
         if (!record || isNil(fieldPath)) return '';
 
-        if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };

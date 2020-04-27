@@ -6,6 +6,9 @@
  */
 import {configure} from 'mobx';
 
+// As per https://github.com/mobxjs/mobx-react-lite/#observer-batching
+import 'mobx-react-lite/batchingForReactDom';
+
 export {
     action,
     autorun,
@@ -19,9 +22,7 @@ export {
     when,
     comparer
 } from 'mobx';
-
 export {observer} from 'mobx-react';
-
 export {settable, bindable} from './decorators';
 
 configure({enforceActions: 'observed'});

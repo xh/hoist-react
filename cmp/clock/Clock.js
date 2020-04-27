@@ -66,6 +66,7 @@ Clock.propTypes = {
 class LocalModel {
     timezone;
     format;
+    updateInterval;
     prefix;
     suffix;
     errorString;
@@ -78,6 +79,7 @@ class LocalModel {
 
     setData({timezone, format, updateInterval, prefix, suffix, errorString}) {
         this.format = format;
+        this.updateInterval = updateInterval;
         this.prefix = prefix;
         this.suffix = suffix;
         this.errorString = errorString;
@@ -87,12 +89,10 @@ class LocalModel {
             this.loadTimezoneOffsetAsync();
         }
 
-        if (this.timer) {
-            this.timer.setInterval(updateInterval);
-        } else {
+        if (!this.timer) {
             this.timer = Timer.create({
                 runFn: () => this.refreshDisplay(),
-                interval: updateInterval
+                interval: () => this.updateInterval
             });
         }
     }
