@@ -620,6 +620,14 @@ export class GridModel {
     }
 
     /**
+     * Return all currently-visible leaf-level columns.
+     * @returns {Column[]}
+     */
+    getVisibleLeafColumns() {
+        return this.getLeafColumns().filter(it => this.isColumnVisible(it.colId));
+    }
+
+    /**
      * Determine whether or not a given leaf-level column is currently visible.
      *
      * Call this method instead of inspecting the `hidden` property on the Column itself, as that
