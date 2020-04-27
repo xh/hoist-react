@@ -4,8 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {elemFactory} from '@xh/hoist/core';
 //--------------------
 // Blueprint Imports
 //--------------------
@@ -20,18 +18,19 @@ import {
     Dialog,
     FileInput,
     FormGroup,
-    Hotkeys,
     Hotkey,
+    Hotkeys,
     InputGroup,
     Label,
     Menu,
-    MenuItem,
     MenuDivider,
+    MenuItem,
     Navbar,
     NavbarDivider,
     NavbarGroup,
     NavbarHeading,
     NumericInput,
+    OverflowList,
     Overlay,
     Popover,
     Radio,
@@ -44,13 +43,13 @@ import {
     Tabs,
     Tag,
     TagInput,
-    TextArea,
     Text,
+    TextArea,
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-
 import {DatePicker} from '@blueprintjs/datetime';
+import {elemFactory} from '@xh/hoist/core';
 
 //---------------------
 // Re-exports
@@ -79,6 +78,7 @@ export {
     NavbarGroup,
     NavbarHeading,
     NumericInput,
+    OverflowList,
     Overlay,
     Popover,
     Radio,
@@ -121,6 +121,7 @@ export const
     navbarGroup = elemFactory(NavbarGroup),
     navbarDivider = elemFactory(NavbarDivider),
     numericInput = elemFactory(NumericInput),
+    overflowList = elemFactory(OverflowList),
     overlay = elemFactory(Overlay),
     popover = elemFactory(Popover),
     radio = elemFactory(Radio),

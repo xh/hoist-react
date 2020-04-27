@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {filler} from '@xh/hoist/cmp/layout';
-import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {textArea} from '@xh/hoist/mobile/cmp/input';
-
 import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
+import {filler} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {textArea} from '@xh/hoist/mobile/cmp/input';
 import './FeedbackDialog.scss';
 
 /**

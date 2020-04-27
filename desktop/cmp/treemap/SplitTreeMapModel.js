@@ -7,7 +7,6 @@
 import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-
 import {TreeMapModel} from './TreeMapModel';
 
 /**

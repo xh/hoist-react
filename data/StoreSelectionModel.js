@@ -6,8 +6,8 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, computed} from '@xh/hoist/mobx';
-import {castArray, intersection, union, isEqual} from 'lodash';
+import {action, computed, observable} from '@xh/hoist/mobx';
+import {castArray, compact, intersection, isEqual, union} from 'lodash';
 
 /**
  * Model for managing store selections.
@@ -44,7 +44,7 @@ export class StoreSelectionModel {
     /** Currently selected records. */
     @computed
     get records() {
-        return this.ids.map(it => this.store.getById(it));
+        return compact(this.ids.map(it => this.store.getById(it)));
     }
 
     /** Is the selection empty? */

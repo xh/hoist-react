@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {Icon} from '@xh/hoist/icon';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Desktop implementation of StoreFilterField.

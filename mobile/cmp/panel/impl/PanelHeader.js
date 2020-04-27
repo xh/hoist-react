@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {hbox, div, filler} from '@xh/hoist/cmp/layout';
 
 /**
  * A standardized header for a Panel component

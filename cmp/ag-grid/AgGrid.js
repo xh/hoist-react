@@ -4,17 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, XH, uses, useLocalModel} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {useOnUnmount} from '@xh/hoist/utils/react';
-import {ContextKeyNavSupport} from './impl/ContextKeyNavSupport';
-import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {isNil} from 'lodash';
-
-import {agGridReact, AgGridModel} from './index';
 import './AgGrid.scss';
+import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+import {AgGridModel, agGridReact} from './index';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -39,14 +36,13 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, onGridReady, onCellContextMenu, ...props}) {
+    render({model, key, className, onGridReady, ...props}) {
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isMobile} = XH;
 
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
-        impl.onCellContextMenu = onCellContextMenu;
 
         useOnUnmount(() => {
             if (model) model.handleGridUnmount();
@@ -74,8 +70,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 ...agGridProps,
 
                 // These handlers are overridden, but also delegate to props passed
-                onGridReady: impl.noteGridReady,
-                onCellContextMenu: impl.noteCellContextMenu
+                onGridReady: impl.noteGridReady
             })
         });
     }
@@ -102,20 +97,19 @@ class LocalModel {
 
     model;
     onGridReady;
-    onCellContextMenu;
 
     constructor(model, agGridProps) {
         this.model = model;
-        this.contextKeyNavSupport = !XH.isMobile ? new ContextKeyNavSupport(model) :  null;
         this.rowKeyNavSupport = !XH.isMobile ? new RowKeyNavSupport(model) :  null;
 
         // Only update header height if was not explicitly provided to the component
         if (isNil(agGridProps.headerHeight)) {
             this.addReaction({
-                track: () => this.model.sizingMode,
-                run: (sizingMode) => {
+                track: () => [this.model.agApi, this.model.sizingMode],
+                run: ([api, sizingMode]) => {
+                    if (!api) return;
                     const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
-                    this.model.agApi.setHeaderHeight(height);
+                    api.setHeaderHeight(height);
                 }
             });
         }
@@ -125,15 +119,6 @@ class LocalModel {
         this.model.handleGridReady(agParams);
         if (this.onGridReady) {
             this.onGridReady(agParams);
-        }
-    };
-
-    noteCellContextMenu = (agParams) => {
-        if (this.onCellContextMenu) {
-            this.onCellContextMenu(agParams);
-        }
-        if (this.contextKeyNavSupport) {
-            this.contextKeyNavSupport.addContextMenuKeyNavigation();
         }
     };
 

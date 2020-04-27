@@ -4,17 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import 'onsenui/css/onsenui.css';
-import 'onsenui/css/onsen-css-components.css';
-
-import './theme.scss';
-import './styles.scss';
-
-import ons from 'onsenui';
-ons.disableAutoStyling();
-
 import {elemFactory} from '@xh/hoist/core';
+import ons from 'onsenui';
+import 'onsenui/css/onsen-css-components.css';
+import 'onsenui/css/onsenui.css';
 import {
     BottomToolbar,
     Button,
@@ -33,6 +26,10 @@ import {
     Toast,
     Toolbar
 } from 'react-onsenui';
+import './styles.scss';
+import './theme.scss';
+
+ons.disableAutoStyling();
 
 export {
     BottomToolbar,

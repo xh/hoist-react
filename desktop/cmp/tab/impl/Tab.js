@@ -4,19 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
+import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
+import {useRef} from 'react';
 
 /**
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
  * internal implementation to:
  *
- *   - Mount/unmount its contents according to `TabModel.renderMode`.
- *   - Track and trigger refreshes according to `TabModel.refreshMode`.
+ *   - Mount/unmount its contents according to {@see TabModel.renderMode}.
+ *   - Track and trigger refreshes according to {@see TabModel.refreshMode}.
  *   - Stretch its contents using a flex layout.
  *
  * @private

@@ -10,13 +10,13 @@ import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
-import {computed, observable, observer, runInAction} from '@xh/hoist/mobx';
+import {div} from '@xh/hoist/cmp/layout';
+import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
-    dropRightWhile,
-    dropWhile,
     isArray,
     isEmpty,
     isEqual,
@@ -24,7 +24,6 @@ import {
     isFunction,
     isNil,
     isString,
-    last,
     map,
     merge,
     xor
@@ -32,10 +31,9 @@ import {
 import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
 import './Grid.scss';
-
 import {GridModel} from './GridModel';
-import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
-import {ColumnHeader} from './impl/ColumnHeader';
+import {columnGroupHeader} from './impl/ColumnGroupHeader';
+import {columnHeader} from './impl/ColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -171,6 +169,12 @@ class LocalModel {
     // Do any root level records have children?
     @observable isHierarchical = false;
 
+    // Have framework components been mounted? As of AgGrid v23, there is a noticeable
+    // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
+    // being rendered. By tracking this, we can wait until they have been rendered
+    // before we trigger the first data reaction and remove the loading overlay.
+    @observable frameworkCmpsMounted = false;
+
     constructor(model, props) {
         this.model = model;
         this.addReaction(this.selectionReaction());
@@ -206,12 +210,15 @@ class LocalModel {
                 groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
-            frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
+            frameworkComponents: {
+                agColumnHeader: (props) => columnHeader({gridLocalModel: this, ...props}),
+                agColumnGroupHeader: (props) => columnGroupHeader(props)
+            },
             rowSelection: model.selModel.mode,
             rowDeselection: true,
             getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            noRowsOverlayComponentFramework: observer(() => model.emptyText),
+            noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
             onRowClicked: (e) => {
                 this.onRowClicked(e);
                 if (props.onRowClicked) props.onRowClicked(e);
@@ -221,14 +228,13 @@ class LocalModel {
             onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
-            onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupSortComparator: this.groupSortComparator,
+            defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
             groupRowInnerRenderer: model.groupRowRenderer,
@@ -294,7 +300,6 @@ class LocalModel {
         }
         if (!menu) return null;
 
-
         const recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
             colId = params.column ? params.column.colId : null,
@@ -312,10 +317,11 @@ class LocalModel {
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
-        let items = [];
+        const items = [];
+
         recordActions.forEach(action => {
             if (action === '-') {
-                if (last(items) !== 'separator') items.push('separator');
+                items.push('separator');
                 return;
             }
 
@@ -357,9 +363,7 @@ class LocalModel {
             });
         });
 
-        items = dropRightWhile(items, it => it === 'separator');
-        items = dropWhile(items, it => it === 'separator');
-        return items;
+        return items.filter(filterConsecutiveMenuSeparators());
     }
 
     //------------------------
@@ -370,15 +374,13 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
-            run: ([api, lastLoaded, lastUpdated, newRs]) => {
-                if (!api) return;
+            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!api || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
-                    newCount = newRs.count,
-                    prevCount = prevRs ? prevRs.count : 0,
-                    deltaCount = newCount - prevCount;
+                    prevCount = prevRs ? prevRs.count : 0;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
                     if (prevCount !== 0 && experimental.useTransactions) {
@@ -400,20 +402,12 @@ class LocalModel {
 
                     this.updatePinnedSummaryRowData();
 
-                    // If row count changing to/from a small amt, force col resizing to account for
-                    // possible appearance/disappearance of the vertical scrollbar.
-                    if (deltaCount !== 0 && (prevCount < 100 || newCount < 100)) {
-                        api.sizeColumnsToFit();
-                    }
-
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
                         api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
-                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                        model.noteAgExpandStateChange();
-                    }
+                    model.noteAgExpandStateChange();
                 }, this);
 
                 runInAction(() => {
@@ -482,7 +476,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -504,25 +497,20 @@ class LocalModel {
 
                 // 1) Columns all in right place -- simply update incorrect props we maintain
                 if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
-                    let hadChanges = false;
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
 
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
-                            hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
-                            hadChanges = true;
                         }
                         if (agCol.pinned != col.pinned) {
                             colApi.setColumnPinned(id, col.pinned);
-                            hadChanges = true;
                         }
                     });
-                    if (hadChanges) api.sizeColumnsToFit();
                     return;
                 }
 
@@ -542,7 +530,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     colApi.setColumnState(colState);
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -606,6 +593,11 @@ class LocalModel {
         return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
+    @action
+    noteFrameworkCmpMounted() {
+        this.frameworkCmpsMounted = true;
+    }
+
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
@@ -637,7 +629,6 @@ class LocalModel {
     };
 
     onRowGroupOpened = () => {
-        this.model.agGridModel.agApi.sizeColumnsToFit();
         this.model.noteAgExpandStateChange();
     };
 
@@ -652,12 +643,6 @@ class LocalModel {
     onColumnVisible = (ev) => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
-        }
-    };
-
-    onGridSizeChanged = (ev) => {
-        if (isDisplayed(this.viewRef.current)) {
-            ev.api.sizeColumnsToFit();
         }
     };
 

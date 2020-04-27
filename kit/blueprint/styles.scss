@@ -256,6 +256,13 @@ textarea.bp3-input,
     color: var(--xh-input-placeholder-text-color);
     opacity: 1;
   }
+
+  // Use Hoist theme vars for disabled input styles.
+  &.bp3-disabled,
+  &:disabled {
+    background-color: var(--xh-input-disabled-bg);
+    color: var(--xh-input-disabled-text-color);
+  }
 }
 
 // Expose CSS var for box-shadow tweaking
@@ -283,7 +290,7 @@ textarea.bp3-input,
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
 .bp3-input-group {
-  svg:not(.bp3-icon) {
+  .xh-icon {
     position: absolute;
     top: 0;
     line-height: 1;
@@ -297,6 +304,13 @@ textarea.bp3-input,
     color: var(--xh-text-color-muted);
   }
 
+  // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
+  // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
+  .bp3-input-action > .xh-icon {
+    position: relative;
+    display: block;
+  }
+
   .bp3-button-group {
     margin-right: 3px;
 
@@ -305,10 +319,15 @@ textarea.bp3-input,
       margin-left: 0;
     }
 
-    svg:not(.bp3-icon) {
+    .xh-icon {
       margin-top: 4px;
     }
   }
+}
+
+/* Apply blueprint's z-index of 16 for icons within a control group */
+.bp3-control-group .bp3-input-group svg:not(.bp3-icon) {
+  z-index: 16;
 }
 
 // Avoid misaligned rightIcon within inputs.
@@ -319,7 +338,9 @@ textarea.bp3-input,
 
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
+// Hoist theme text-color applied to elements not styled with a more specific selector.
 .bp3-control {
+  color: var(--xh-text-color);
   margin-bottom: var(--xh-form-field-margin-bottom);
 
   &.bp3-inline {

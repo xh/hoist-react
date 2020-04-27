@@ -6,8 +6,8 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {Icon} from '@xh/hoist/icon';
+import {menuDivider} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 
 /**

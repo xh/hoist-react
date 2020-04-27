@@ -4,22 +4,24 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {useRef} from 'react';
-import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
-import {bindable, runInAction} from '@xh/hoist/mobx';
+import composeRefs from '@seznam/compose-react-refs';
+import {box, div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-
-import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
-
-import {LightTheme} from './theme/Light';
-import {DarkTheme} from './theme/Dark';
-
+import {bindable, runInAction} from '@xh/hoist/mobx';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
+import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+import {DarkTheme} from './theme/Dark';
+import {LightTheme} from './theme/Light';
+
 installZoomoutGesture(Highcharts);
 
 /**
@@ -34,9 +36,10 @@ export const [Chart, chart] = hoistCmp.withFactory({
 
     render({model, className, aspectRatio, ...props}) {
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useRef(null);
-        useOnResize(impl.onResize, {ref});
-        useOnVisibleChange(impl.onVisibleChange, {ref});
+            ref = composeRefs(
+                useOnResize(impl.onResize),
+                useOnVisibleChange(impl.onVisibleChange)
+            );
 
         impl.setAspectRatio(aspectRatio);
 
@@ -147,9 +150,9 @@ class LocalModel {
         }
     }
 
-    onResize = (e) => {
+    onResize = (size) => {
         if (!this.chart) return;
-        const {width, height} = this.getChartDims(e[0].contentRect);
+        const {width, height} = this.getChartDims(size);
         this.chart.setSize(width, height, false);
     };
 

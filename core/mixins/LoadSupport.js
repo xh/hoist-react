@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
 import {decorate, observable, runInAction} from 'mobx';
 
@@ -87,7 +87,11 @@ export function LoadSupport(C) {
 
                         const msg = `[${C.name}] | ${exception ? 'failed' : 'completed'} | ${getLoadTypeFromSpec(loadSpec)} | ${this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime()}`;
                         if (exception) {
-                            console.error(msg, exception);
+                            if (exception.isRoutine) {
+                                console.debug(msg, exception);
+                            } else {
+                                console.error(msg, exception);
+                            }
                         } else {
                             console.debug(msg);
                         }

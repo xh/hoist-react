@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {PanelModel} from '../../PanelModel';
-
-import {DraggerModel} from './DraggerModel';
 import './Dragger.scss';
+import {DraggerModel} from './DraggerModel';
 
 
 export const dragger = hoistCmp.factory({

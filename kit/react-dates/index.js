@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
+import {SingleDatePicker} from 'react-dates';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
-import {SingleDatePicker} from 'react-dates';
 
 export {SingleDatePicker};
 

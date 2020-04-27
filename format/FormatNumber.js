@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isFinite, isFunction, isPlainObject, isString} from 'lodash';
 import numbro from 'numbro';
-
 import {fmtSpan} from './FormatMisc';
 import {createRenderer, saveOriginal} from './FormatUtils';
 

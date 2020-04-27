@@ -15,8 +15,8 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
-import {ConfigDifferModel} from './differ/ConfigDifferModel';
 import {truncate} from 'lodash';
+import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
 @HoistModel
 @LoadSupport

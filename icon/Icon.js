@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import classNames from 'classnames';
-import {toLower, last, split, pickBy} from 'lodash';
+import {div} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
+import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
-import {iconHtml} from './impl/IconHtml';
+import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 
 
 /**
@@ -45,7 +45,9 @@ export const Icon = {
      * @param {boolean} [c.asHtml] - Set to true to return the output as a string containing the
      *      raw <svg/> tag.  Use this option for non-react APIs, such as when writing renderers
      *      for ag-Grid.
-     * @returns {(Element| string)}
+     * @param {...*} [c.rest] - Additional props to be passed directly to underlying
+     *      component.  These arguments are ignored when asHtml = true.
+     * @returns {(Element|string)}
      */
     icon({
         iconName,
@@ -53,10 +55,12 @@ export const Icon = {
         className,
         title,
         size,
-        asHtml = false
+        asHtml = false,
+        ...rest
     } = {}) {
-        const opts = {iconName, prefix, className, title, size};
-        return asHtml ? iconHtml(opts) : iconCmp(opts);
+        return asHtml ?
+            iconHtml({iconName, prefix, className, title, size}) :
+            iconCmp({iconName, prefix, className, title, size, ...rest});
     },
 
     accessDenied(p)     {return Icon.icon({...p,  iconName: 'ban'})},
@@ -136,6 +140,9 @@ export const Icon = {
     download(p)         {return Icon.icon({...p,  iconName: 'download'})},
     edit(p)             {return Icon.icon({...p,  iconName: 'edit'})},
     envelope(p)         {return Icon.icon({...p,  iconName: 'envelope'})},
+    ellipsisHorizontal(p) {return Icon.icon({...p, iconName: 'ellipsis-h'})},
+    ellipsisVertical(p) {return Icon.icon({...p, iconName: 'ellipsis-v'})},
+    equals(p)           {return Icon.icon({...p, iconName: 'equals'})},
     error(p)            {return Icon.icon({...p,  iconName: 'times-hexagon'})},
     expand(p)           {return Icon.icon({...p,  iconName: 'expand-alt'})},
     experiment(p)       {return Icon.icon({...p,  iconName: 'flask'})},
@@ -185,6 +192,7 @@ export const Icon = {
     mail(p)             {return Icon.icon({...p,  iconName: 'envelope'})},
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},
+    minusCircle(p)      {return Icon.icon({...p,  iconName: 'minus-circle'})},
     moon(p)             {return Icon.icon({...p,  iconName: 'moon'})},
     news(p)             {return Icon.icon({...p,  iconName: 'newspaper'})},
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
@@ -195,6 +203,8 @@ export const Icon = {
     pin(p)              {return Icon.icon({...p,  iconName: 'thumbtack'})},
     play(p)             {return Icon.icon({...p,  iconName: 'play'})},
     playCircle(p)       {return Icon.icon({...p,  iconName: 'play-circle'})},
+    plus(p)             {return Icon.icon({...p,  iconName: 'plus'})},
+    plusCircle(p)       {return Icon.icon({...p,  iconName: 'plus-circle'})},
     portfolio(p)        {return Icon.icon({...p,  iconName: 'briefcase'})},
     print(p)            {return Icon.icon({...p,  iconName: 'print'})},
     question(p)         {return Icon.icon({...p,  iconName: 'question'})},
@@ -253,6 +263,20 @@ export const Icon = {
         const {factory, className} = getFileIconConfig(filename);
 
         return factory({...rest, className: classNames(className, rest.className)});
+    },
+
+    /**
+     * Returns an empty div with FA sizing classes applied. Can be used to take up room in a layout
+     * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
+     * not have an icon but others do.
+     * @param {Object} [c]
+     * @param {string} [c.size]
+     * @param {boolean} [c.asHtml]
+     * @returns {(Element|string)}
+     */
+    placeholder({size, asHtml = false} = {}) {
+        const className = enhanceFaClasses('xh-icon--placeholder', size);
+        return asHtml ? `<div class="${className}"></div>` : div({className});
     }
 };
 

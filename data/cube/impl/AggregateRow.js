@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {reduce, isEmpty, has} from 'lodash';
+import {has, isEmpty, reduce} from 'lodash';
 
 /**
  *  Object used by views to gather Aggregate rows.

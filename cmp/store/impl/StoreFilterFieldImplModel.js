@@ -4,14 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
     escapeRegExp,
+    get,
     intersection,
+    isArray,
     isEmpty,
     isEqual,
     isFunction,
@@ -109,13 +110,16 @@ export class StoreFilterFieldImplModel {
     regenerateFilter({applyImmediately}) {
         const {applyFilterFn, onFilterChange, filterOptions} = this,
             activeFields = this.getActiveFields(),
+            supportDotSeparated = !!activeFields.find(it => it.includes('.')),
             searchTerm = escapeRegExp(this.value);
 
         let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
             fn = (rec) => activeFields.some(f => {
-                const fieldVal = (f == 'id') ? rec.id : rec.data[f];
+                // Use of lodash get() slower than direct access - use only when needed to support
+                // dot-separated field paths. (See note in getActiveFields() below.)
+                const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
                 return regex.test(fieldVal);
             });
         }
@@ -148,9 +152,25 @@ export class StoreFilterFieldImplModel {
 
         if (gridModel) {
             const groupBy = gridModel.groupBy,
-                visibleCols = gridModel
-                    .getLeafColumns()
-                    .filter(col => gridModel.isColumnVisible(col.colId));
+                visibleCols = gridModel.getVisibleLeafColumns();
+
+            // Push on dot-delimited grid column fields. These are supported by Grid and traverse
+            // sub-objects in Record.data to display nested properties. Given that Grid treats these
+            // as first-class fields and displays them w/o the need for renderers, we want to
+            // include them here. (But only if their "root" is in the field list derived from the
+            // Store and any given include/excludeField configs.)
+            visibleCols.forEach(col => {
+                const {fieldPath} = col;
+                if (!isArray(fieldPath)) return;
+
+                const rootFieldPath = fieldPath[0];
+                if (ret.includes(rootFieldPath)) {
+                    ret.push(col.field);
+                }
+            });
+
+            // Run exclude once more to support explicitly excluding a dot-sep field added above.
+            if (excludeFields) ret = without(ret, ...excludeFields);
 
             ret = ret.filter(f => {
                 return (

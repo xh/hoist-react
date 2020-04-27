@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
-import {DockViewRefreshContextModel} from './impl/DockViewRefreshContextModel';
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -26,15 +24,15 @@ export class DockViewModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
+    width;
+    height;
+    collapsedWidth;
     allowClose;
     allowDialog;
 
     containerModel;
     @managed refreshContextModel;
 
-    /**
-     * RenderMode and RefreshMode consider this view 'active' when it is not collapsed
-     */
     get isActive() {
         return !this.collapsed;
     }
@@ -56,6 +54,10 @@ export class DockViewModel {
      * @param {Element} [c.icon] - An icon placed at the left-side of the header.
      * @param {(Object|function)} c.content - content to be rendered by this DockView.
      *      HoistComponent or a function returning a react element.
+     * @param {number} [c.width] - width in pixels. If not set, width will be determined by the content.
+     * @param {number} [c.height] - height in pixels. If not set, height will be determined by the content.
+     * @param {number} [c.collapsedWidth] - width of collapsed header in pixels. If not set, width
+     *      will be determined by the length of the title.
      * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this DockView. If null, will
@@ -73,6 +75,9 @@ export class DockViewModel {
         title,
         icon,
         content,
+        width,
+        height,
+        collapsedWidth,
         refreshMode,
         renderMode,
         docked = true,
@@ -86,6 +91,10 @@ export class DockViewModel {
         this.title = title;
         this.icon = icon;
         this.content = content;
+        this.width = width;
+        this.height = height;
+        this.collapsedWidth = collapsedWidth;
+
         this.docked = docked;
         this.collapsed = collapsed;
         this.allowClose = allowClose;
@@ -94,7 +103,7 @@ export class DockViewModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new DockViewRefreshContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     //-----------------------

@@ -6,7 +6,7 @@
  */
 
 import equal from 'fast-deep-equal';
-import {throwIf} from '../../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Internal container for Record management within a Store.

@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {isValidElement} from 'react';
-import PT from 'prop-types';
 import {hoistCmp} from '@xh/hoist/core';
+import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {start} from '@xh/hoist/promise';
-import {menuDivider, menuItem, menu} from '@xh/hoist/kit/blueprint';
-
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import PT from 'prop-types';
+import {isValidElement} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
 
 /**
@@ -52,35 +51,24 @@ function parseMenuItems(items) {
         return item;
     });
 
-    return items.filter(it => {
-        return !it.hidden;
-    }).filter((it, idx, arr) => {
-        if (it === '-') {
-            // Remove starting / ending separators
-            if (idx === 0 || idx === (arr.length - 1)) return false;
+    return items
+        .filter(it => !it.hidden)
+        .filter(filterConsecutiveMenuSeparators())
+        .map(item => {
+            if (item === '-') return menuDivider();
+            if (isValidElement(item)) {
+                return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(item.type.displayName) ?
+                    item :
+                    menuItem({text: item});
+            }
 
-            // Remove consecutive separators
-            const prev = idx > 0 ? arr[idx - 1] : null;
-            if (prev === '-') return false;
-        }
-        return true;
-    }).map(item => {
-        if (item === '-') {
-            return menuDivider();
-        }
-        if (isValidElement(item)) {
-            return ['Blueprint3.MenuItem', 'Blueprint3.MenuDivider'].includes(item.type.displayName) ?
-                item :
-                menuItem({text: item});
-        }
-
-        const items = item.items ? parseMenuItems(item.items) : null;
-        return menuItem({
-            text: item.text,
-            icon: item.icon,
-            onClick: item.actionFn ? () => start(item.actionFn) : null,    // do async to allow menu to close
-            disabled: item.disabled,
-            items
+            const items = item.items ? parseMenuItems(item.items) : null;
+            return menuItem({
+                text: item.text,
+                icon: item.icon,
+                onClick: item.actionFn ? () => start(item.actionFn) : null,    // do async to allow menu to close
+                disabled: item.disabled,
+                items
+            });
         });
-    });
 }

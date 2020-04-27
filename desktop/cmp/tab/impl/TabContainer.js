@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
-
-import {tab} from './Tab';
-import {tabSwitcher} from '../TabSwitcher';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import '../Tabs.scss';
+import {tabSwitcher} from '../TabSwitcher';
+import {tab} from './Tab';
 
 /**
  * Desktop implementation of TabContainer.

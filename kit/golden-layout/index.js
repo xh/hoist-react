@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import ReactDOM from 'react-dom';
 import GoldenLayout from 'golden-layout';
-import {uniqueId} from 'lodash';
-
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
+import {uniqueId} from 'lodash';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import './styles.scss';
 
 // GoldenLayout looks for globally available React and ReactDOM.

@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';

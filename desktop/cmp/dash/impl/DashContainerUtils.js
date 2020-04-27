@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
 import {serializeIcon} from '@xh/hoist/icon';
-import {isEmpty, isFinite, isArray, isPlainObject, isNil, isString} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
+import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString} from 'lodash';
 
 /**
  * Lookup the DashViewModel id of a rendered view

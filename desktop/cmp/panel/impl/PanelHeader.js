@@ -4,14 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {box, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {box, hbox, vbox, filler} from '@xh/hoist/cmp/layout';
-
-import './PanelHeader.scss';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
 import {PanelModel} from '../PanelModel';
+import './PanelHeader.scss';
 
 export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
@@ -45,8 +44,13 @@ export const panelHeader = hoistCmp.factory({
                             item: title
                         }) :
                         filler(),
-                    ...(!collapsed ? headerItems : []),
-                    collapseButton({panelModel})
+                    hbox({
+                        className: 'xh-panel-header__items',
+                        items: [...(!collapsed ? headerItems : []),
+                            collapseButton({panelModel})
+                        ],
+                        onDoubleClick: (e) => e.stopPropagation()
+                    })
                 ],
                 onDoubleClick
             });

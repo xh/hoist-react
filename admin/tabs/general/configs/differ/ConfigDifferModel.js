@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
@@ -14,7 +13,6 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
-
 import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
 
 /**

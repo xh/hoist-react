@@ -12,7 +12,6 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-
 import './LoginPanel.scss';
 
 /**

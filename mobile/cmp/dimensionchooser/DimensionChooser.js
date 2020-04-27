@@ -4,19 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {div, filler, fragment, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import PT from 'prop-types';
-
-import {fragment, div, span, filler} from '@xh/hoist/cmp/layout';
+import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {Icon} from '@xh/hoist/icon';
 import {select} from '@xh/hoist/mobile/cmp/input';
-import {size, isEmpty} from 'lodash';
 import classNames from 'classnames';
-
-import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {isEmpty, size} from 'lodash';
+import PT from 'prop-types';
 import './DimensionChooser.scss';
 
 

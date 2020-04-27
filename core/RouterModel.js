@@ -4,9 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {merge} from 'lodash';
 import createRouter from 'router5';
 import browserPlugin from 'router5-plugin-browser';

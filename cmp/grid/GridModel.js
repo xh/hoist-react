@@ -4,40 +4,38 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
     defaults,
     defaultsDeep,
+    difference,
     find,
     findLast,
     isArray,
     isEmpty,
     isNil,
-    isUndefined,
     isPlainObject,
     isString,
+    isUndefined,
     last,
     map,
     max,
     min,
     pull,
-    sortBy,
-    difference
+    sortBy
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {managed} from '../../core/mixins';
-import {debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -160,11 +158,26 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
-     *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
+     *      Called with two group values to compare in the form of a standard JS comparator.
+     *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
+     *      for early client-access and testing, but are not yet part of the Hoist API.
+     * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
+     *      reloading data when the sortBy property changes on this model (either programmatically,
+     *      or via user-click.)  Useful for applications with large data sets that are performing
+     *      external, or server-side sorting and filtering.  Setting this flag mean that the grid
+     *      should not immediately respond to user or programmatic changes to the sortBy property,
+     *      but will instead wait for the next load of data, which is assumed to be pre-sorted.
+     *      Default false.
+     * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
+     *      'deltaSort' feature designed to do incremental sorting.  Default false.
+     * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
+     *      deltaRowDataMode to internally generate transactions on data updates.  With the default
+     *      (true) Hoist will generate the transaction on data update.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -248,11 +261,12 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = {
-            suppressUpdateExpandStateOnDataLoad: false,
+            externalSort: false,
             useTransactions: true,
             useDeltaSort: false,
             ...experimental
         };
+        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
     }
 
     /**
@@ -282,6 +296,14 @@ export class GridModel {
         } else if (type === 'csv') {
             agApi.exportDataAsCsv(params);
         }
+    }
+
+    /**
+     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     */
+    select(records, clearSelection = true) {
+        this.selModel.select(records, clearSelection);
     }
 
     /** Select the first row in the grid. */
@@ -320,33 +342,25 @@ export class GridModel {
         }
     }
 
-    /** Does the grid have any records to show? */
-    get empty() {
-        return this.store.empty;
-    }
-
     /** Are any records currently selected? */
-    get hasSelection() {
-        return !this.selModel.isEmpty;
-    }
+    get hasSelection() {return !this.selModel.isEmpty}
 
     /**
      * Shortcut to the currently selected records (observable).
      * @see StoreSelectionModel.records
      */
-    get selection() {
-        return this.selModel.records;
-    }
+    get selection() {return this.selModel.records}
 
     /**
-     * Shortcut to a single selected record (observable).
-     * Null if multiple records are selected.
+     * Shortcut to a single selected record (observable). Null if multiple records are selected.
      * @see StoreSelectionModel.singleRecord
      */
-    get selectedRecord() {
-        return this.selModel.singleRecord;
-    }
+    get selectedRecord() {return this.selModel.singleRecord}
 
+    /** Does the grid have any records to show? */
+    get empty() {return this.store.empty}
+
+    get isReady() {return this.agGridModel.isReady}
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
@@ -391,7 +405,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.expandAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
@@ -401,7 +414,6 @@ export class GridModel {
         const {agApi} = this;
         if (agApi) {
             agApi.collapseAll();
-            agApi.sizeColumnsToFit();
             this.noteAgExpandStateChange();
         }
     }
@@ -427,7 +439,7 @@ export class GridModel {
     /**
      * This method is no-op if provided any sorters without a corresponding column.
      * @param {(string|string[]|Object|Object[])} sorters - colId(s), GridSorter config(s)
-     *      GridSorter strings, or a falsey value to clear the sort config.
+     *      GridSorter strings, or a falsy value to clear the sort config.
      */
     @action
     setSortBy(sorters) {
@@ -608,6 +620,14 @@ export class GridModel {
     }
 
     /**
+     * Return all currently-visible leaf-level columns.
+     * @returns {Column[]}
+     */
+    getVisibleLeafColumns() {
+        return this.getLeafColumns().filter(it => this.isColumnVisible(it.colId));
+    }
+
+    /**
      * Determine whether or not a given leaf-level column is currently visible.
      *
      * Call this method instead of inspecting the `hidden` property on the Column itself, as that
@@ -674,7 +694,11 @@ export class GridModel {
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
      */
     autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
-        this.agColumnApi.autoSizeColumns(castArray(colIds));
+        colIds = castArray(colIds).filter(id => {
+            const col = this.getColumn(id);
+            return col && !col.flex;
+        });
+        if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
     }
 
     //-----------------------

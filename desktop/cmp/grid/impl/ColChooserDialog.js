@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog} from '@xh/hoist/kit/blueprint';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 

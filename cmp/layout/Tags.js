@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
 import {elemFactory} from '@xh/hoist/core';
+import React from 'react';
 
 //--------------------------------
 // React
@@ -24,6 +24,7 @@ export const h1 = elemFactory('h1');
 export const h2 = elemFactory('h2');
 export const h3 = elemFactory('h3');
 export const h4 = elemFactory('h4');
+export const iframe = elemFactory('iframe');
 export const img = elemFactory('img');
 export const input = elemFactory('input');
 export const label = elemFactory('label');

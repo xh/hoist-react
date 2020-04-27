@@ -6,8 +6,9 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {ValueFilter} from './filter';
 import {find} from 'lodash';
+import {ValueFilter} from './filter/ValueFilter';
+
 /**
  *  Specification used to define the shape of the data returned by a Cube.
  */

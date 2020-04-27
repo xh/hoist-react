@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';

@@ -19,11 +19,10 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {merge, castArray, isEmpty, isNil, isPlainObject, keyBy} from 'lodash';
+import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
-
 import './Select.scss';
 
 /**

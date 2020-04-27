@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {flatten, compact, castArray} from 'lodash';
+import {castArray, compact, flatten} from 'lodash';
 import {required} from './constraints';
 
 /**

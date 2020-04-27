@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, uses, ModelPublishMode} from '@xh/hoist/core';
-import PT from 'prop-types';
-import {throwIf} from '@xh/hoist/utils/js';
-
+import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
+import {throwIf} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
 import {TabContainerModel} from './TabContainerModel';
 
 /**

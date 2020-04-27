@@ -4,15 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {managed} from '@xh/hoist/core';
-import {compact, flatten, isEmpty, startCase, isFunction, isUndefined, isNil} from 'lodash';
-import {observable, action, computed, runInAction} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-
-import {ValidationState} from '../validation/ValidationState';
+import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {compact, flatten, isEmpty, isFunction, isNil, isUndefined, startCase} from 'lodash';
 import {Rule} from '../validation/Rule';
+import {ValidationState} from '../validation/ValidationState';
 
 /**
  * Abstract Base class for FieldModels.
@@ -107,12 +105,12 @@ export class BaseFieldModel {
         });
     }
 
-    /** Proxy for accessing all of the current data values in this field by name. */
-    get values() {
-        return this.value;
-    }
-
-    /** Current data in this field, fully enumerated. */
+    /**
+     * Current data/value stored within this field.
+     *
+     * For standard, single-field FieldModels, returns the current value stored in the field.
+     * Overridden by SubformsFieldModels, which return the data for each sub-form in an array.
+     */
     getData() {
         return this.value;
     }
@@ -254,6 +252,13 @@ export class BaseFieldModel {
     //------------------------
     // Implementation
     //------------------------
+
+    // Used by the dynamic FormModel.values proxy to dynamically navigate forms data by name.
+    getDataOrProxy() {
+        return this.value;
+    }
+
+
     processRuleSpecs(ruleSpecs) {
         return ruleSpecs.map(spec => {
             if (spec instanceof Rule) return spec;
