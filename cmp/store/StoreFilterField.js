@@ -39,26 +39,29 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 
     render({gridModel, store, ...props}) {
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
-
         if (!store) {
             gridModel = withDefault(gridModel, useContextModel(GridModel));
-            store = gridModel ? gridModel.store : null;
+            store = gridModel?.store ?? null;
         }
 
-        // Right now we freeze the initial props -- could be more dynamic.
         const implModel = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
-        return XH.isMobile ? mobileStoreFilterFieldImpl({implModel, ...props}) : desktopStoreFilterFieldImpl({implModel, ...props});
+        implModel.updateFilterProps(props);
+        return XH.isMobile ?
+            mobileStoreFilterFieldImpl({implModel, ...props}) :
+            desktopStoreFilterFieldImpl({implModel, ...props});
     }
 });
 
 StoreFilterField.propTypes = {
 
     /**
-     * Field on optional model to which this component should bind its value. Not required
-     * for filtering functionality (see `gridModel`, `onFilterChange`, and `store` props), but
-     * allows the value of this component to be controlled via an external model observable.
+     * Field on optional model to which this component should bind its value. Specify this
+     * field, or value to control the state of this component.
      */
     bind: PT.string,
+
+    /** Model for value binding - see comments on the `bind` prop for details. */
+    model: PT.object,
 
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
     excludeFields: PT.arrayOf(PT.string),
@@ -88,9 +91,6 @@ StoreFilterField.propTypes = {
      * visibility. Cannot be used with `excludeFields`.
      */
     includeFields: PT.arrayOf(PT.string),
-
-    /** Optional model for value binding - see comments on the `bind` prop for details. */
-    model: PT.object,
 
     /**
      * Callback to receive an updated StoreFilter. Can be used in place of the `store` or

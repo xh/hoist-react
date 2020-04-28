@@ -13,7 +13,7 @@ import {textInput} from '@xh/hoist/mobile/cmp/input';
 export function storeFilterFieldImpl({implModel, ...props}) {
     return textInput({
         value: implModel.value,
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        onChange: (v) => implModel.setValue(v),
         placeholder: 'Quick filter',
         width: 180,
         ...props

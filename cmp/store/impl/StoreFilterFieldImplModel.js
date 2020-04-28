@@ -23,81 +23,103 @@ import {
 @HoistModel
 export class StoreFilterFieldImplModel {
 
+    model;
+    bind;
     gridModel;
     store;
+
     filterBuffer;
     filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
-    model;
-    bind;
 
     @observable value = '';
-
     filter = null;
     applyFilterFn = null;
 
     constructor({
+        model,
+        bind,
         gridModel,
         store,
         filterBuffer = 200,
-        filterOptions,
         onFilterChange,
+        filterOptions,
         includeFields,
-        excludeFields,
-        model,
-        bind
+        excludeFields
     }) {
+        this.model = model;
+        this.bind = bind;
         this.gridModel = gridModel;
         this.store = store;
         this.filterBuffer = filterBuffer;
-        this.filterOptions = filterOptions;
         this.onFilterChange = onFilterChange;
+        this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
-        this.model = model;
-        this.bind = bind;
 
-        warnIf(includeFields && excludeFields,
-            "Cannot specify both 'includeFields' and 'excludeFields' props."
-        );
         warnIf(!gridModel && !store && isEmpty(includeFields),
-            "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op"
+            "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
 
-        if (store) {
-            this.applyFilterFn = debounce(
-                () => this.applyStoreFilter(),
-                filterBuffer
-            );
-
-            if (gridModel) {
-                this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy, filterOptions],
-                    run: () => this.regenerateFilter({applyImmediately: false})
-                });
-            }
-        }
+        this.setBufferedApply(filterBuffer);
 
         if (model && bind) {
+            this.value = model[bind];
             this.addReaction({
                 track: () => model[bind],
-                run: (boundVal) => this.setValue(boundVal),
-                fireImmediately: true
+                run: (boundVal) => this.setValue(boundVal)
             });
+        }
+
+        if (gridModel) {
+            this.addReaction({
+                track: () => [gridModel.columns, gridModel.groupBy],
+                run: () => this.regenerateFilter()
+            });
+        }
+
+        this.regenerateFilter();
+    }
+
+    // We allow these to be dynamic by updating on every render.
+    updateFilterProps({
+        filterBuffer,
+        onFilterChange,
+        filterOptions,
+        includeFields,
+        excludeFields
+    }) {
+
+        // 0) buffer change potentially rewire function
+        if (!isEqual(filterBuffer, this.filterBuffer)) {
+            this.setBufferedApply(filterBuffer);
+            this.filterBuffer = filterBuffer;
+        }
+
+        // 1) filter change just record
+        this.onFilterChange = onFilterChange;
+
+        // 2) Other changes require re-generation
+        if (!isEqual(
+            [filterOptions, includeFields, excludeFields],
+            [this.filterOptions, this.includeFields, this.excludeFields])
+        ) {
+            warnIf(includeFields && excludeFields, "Do not specify both 'includeFields' and 'excludeFields'");
+            this.filterOptions = filterOptions;
+            this.includeFields = includeFields;
+            this.excludeFields = excludeFields;
+            this.regenerateFilter();
         }
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
     @action
-    setValue(v, {applyImmediately} = {}) {
+    setValue(v) {
         if (isEqual(v, this.value)) return;
 
         this.value = v;
-        this.regenerateFilter({applyImmediately});
+        this.regenerateFilter();
 
         const {bind, model} = this;
         if (bind && model) {
@@ -107,11 +129,18 @@ export class StoreFilterFieldImplModel {
         }
     }
 
-    regenerateFilter({applyImmediately}) {
-        const {applyFilterFn, onFilterChange, filterOptions} = this,
+    setBufferedApply(buffer) {
+        this.applyFilterFn = debounce(() => this.store?.setFilter(this.filter), buffer);
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    regenerateFilter() {
+        const {value, filterOptions} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
-            searchTerm = escapeRegExp(this.value);
+            searchTerm = escapeRegExp(value);
 
         let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
@@ -125,22 +154,8 @@ export class StoreFilterFieldImplModel {
         }
         this.filter = fn ? {...filterOptions, fn} : null;
 
-        if (onFilterChange) onFilterChange(this.filter);
-
-        if (applyFilterFn) {
-            if (applyImmediately) {
-                applyFilterFn.cancel();
-                this.applyStoreFilter();
-            } else {
-                applyFilterFn();
-            }
-        }
-    }
-
-    applyStoreFilter() {
-        if (this.store) {
-            this.store.setFilter(this.filter);
-        }
+        if (this.onFilterChange) this.onFilterChange(this.filter);
+        this.applyFilterFn();
     }
 
     getActiveFields() {
@@ -175,7 +190,7 @@ export class StoreFilterFieldImplModel {
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
-                    visibleCols.find(c => c.field == f) ||
+                    visibleCols.find(c => c.field === f) ||
                     groupBy.includes(f)
                 );
             });

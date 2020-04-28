@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 export function storeFilterFieldImpl({implModel, ...props}) {
     return textInput({
         value: implModel.value,
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        onChange: (v) => implModel.setValue(v),
         leftIcon: Icon.filter(),
         enableClear: true,
         placeholder: 'Quick filter',
