@@ -59,7 +59,8 @@ export class EnvironmentService {
     startVersionChecking() {
         Timer.create({
             runFn: this.checkAppVersionAsync,
-            interval: XH.getConf('xhAppVersionCheckSecs') * SECONDS
+            interval: 'xhAppVersionCheckSecs',
+            intervalUnits: SECONDS
         });
     }
 

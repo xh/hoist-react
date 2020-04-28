@@ -68,7 +68,7 @@ export class WebSocketService {
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
             interval: 10 * SECONDS,
-            delay: 10 * SECONDS
+            delay: true
         });
     }
 

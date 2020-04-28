@@ -54,7 +54,7 @@
     font-family: var(--xh-grid-header-font-family);
 
     .ag-header-row {
-      font-size: var(--xh-grid-header-font-size);
+      font-size: var(--xh-grid-header-font-size-px);
       font-weight: var(--xh-grid-header-font-weight);
       color: var(--xh-grid-header-text-color);
     }
@@ -229,7 +229,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-large-font-size-px);
+      font-size: var(--xh-grid-large-header-font-size-px);
     }
 
     .ag-cell {
@@ -255,7 +255,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-compact-font-size-px);
+      font-size: var(--xh-grid-compact-header-font-size-px);
     }
 
     .ag-cell {
@@ -281,7 +281,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-tiny-font-size-px);
+      font-size: var(--xh-grid-tiny-header-font-size-px);
     }
 
     .ag-cell {
