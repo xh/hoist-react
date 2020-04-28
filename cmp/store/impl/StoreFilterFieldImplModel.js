@@ -33,7 +33,7 @@ export class StoreFilterFieldImplModel {
     excludeFields;
 
     filter = null;
-    applyFilterFn = null;
+    bufferedApplyFilter= null;
 
     constructor({
         model,
@@ -61,8 +61,7 @@ export class StoreFilterFieldImplModel {
         );
         throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
 
-
-        this.applyFilterFn = debounce(() => this.store?.setFilter(this.filter), filterBuffer);
+        this.bufferedApplyFilter = debounce(() => this.applyFilter(), filterBuffer);
 
         this.addReaction({
             track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
@@ -115,6 +114,10 @@ export class StoreFilterFieldImplModel {
     //------------------------
     // Implementation
     //------------------------
+    applyFilter() {
+        this.store?.setFilter(this.filter);
+    }
+
     regenerateFilter() {
         const {filterText, filterOptions} = this,
             activeFields = this.getActiveFields(),
@@ -134,7 +137,13 @@ export class StoreFilterFieldImplModel {
         this.filter = fn ? {...filterOptions, fn} : null;
 
         if (this.onFilterChange) this.onFilterChange(this.filter);
-        this.applyFilterFn();
+
+        // Only respect the buffer for non-null values.  Allows quick clearing
+        if (this.filter) {
+            this.bufferedApplyFilter();
+        } else {
+            this.applyFilter();
+        }
     }
 
     getActiveFields() {
