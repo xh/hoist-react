@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -15,8 +15,6 @@ import {
     isArray,
     isEmpty,
     isEqual,
-    isFunction,
-    upperFirst,
     without
 } from 'lodash';
 
@@ -28,13 +26,12 @@ export class StoreFilterFieldImplModel {
     gridModel;
     store;
 
-    filterBuffer;
+    filterBuffer = 200;
     filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
 
-    @observable value = '';
     filter = null;
     applyFilterFn = null;
 
@@ -62,46 +59,29 @@ export class StoreFilterFieldImplModel {
         warnIf(!gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
+        throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
 
-        this.setBufferedApply(filterBuffer);
 
-        if (model && bind) {
-            this.value = model[bind];
-            this.addReaction({
-                track: () => model[bind],
-                run: (boundVal) => this.setValue(boundVal)
-            });
-        }
+        this.applyFilterFn = debounce(() => this.store?.setFilter(this.filter), filterBuffer);
 
-        if (gridModel) {
-            this.addReaction({
-                track: () => [gridModel.columns, gridModel.groupBy],
-                run: () => this.regenerateFilter()
-            });
-        }
-
-        this.regenerateFilter();
+        this.addReaction({
+            track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
+            run: () => this.regenerateFilter(),
+            fireImmediately: true
+        });
     }
 
     // We allow these to be dynamic by updating on every render.
     updateFilterProps({
-        filterBuffer,
         onFilterChange,
         filterOptions,
         includeFields,
         excludeFields
     }) {
-
-        // 0) buffer change potentially rewire function
-        if (!isEqual(filterBuffer, this.filterBuffer)) {
-            this.setBufferedApply(filterBuffer);
-            this.filterBuffer = filterBuffer;
-        }
-
-        // 1) filter change just record
+        // just record change to callback
         this.onFilterChange = onFilterChange;
 
-        // 2) Other changes require re-generation
+        // ...other changes require re-generation
         if (!isEqual(
             [filterOptions, includeFields, excludeFields],
             [this.filterOptions, this.includeFields, this.excludeFields])
@@ -114,33 +94,32 @@ export class StoreFilterFieldImplModel {
         }
     }
 
-    @action
-    setValue(v) {
-        if (isEqual(v, this.value)) return;
-
-        this.value = v;
-        this.regenerateFilter();
-
-        const {bind, model} = this;
-        if (bind && model) {
-            const setterName = `set${upperFirst(bind)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](v);
-        }
+    //------------------------------------------------------------------
+    // Trampoline value to bindable -- from bound model, or store
+    //------------------------------------------------------------------
+    get filterText() {
+        const {bind, model, store} = this;
+        return bind ? model[bind] : store.xhFilterText;
     }
 
-    setBufferedApply(buffer) {
-        this.applyFilterFn = debounce(() => this.store?.setFilter(this.filter), buffer);
+    @action
+    setFilterText(v) {
+        const {bind, model, store} = this;
+        if (bind) {
+            model.setBindable(bind, v);
+        } else {
+            store.setXhFilterText(v);
+        }
     }
 
     //------------------------
     // Implementation
     //------------------------
     regenerateFilter() {
-        const {value, filterOptions} = this,
+        const {filterText, filterOptions} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
-            searchTerm = escapeRegExp(value);
+            searchTerm = escapeRegExp(filterText);
 
         let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {

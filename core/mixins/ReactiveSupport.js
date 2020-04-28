@@ -11,7 +11,13 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {applyMixin, throwIf} from '@xh/hoist/utils/js';
-import {debounce as lodashDebounce, isFunction, isNil, isNumber, isPlainObject} from 'lodash';
+import {
+    debounce as lodashDebounce,
+    isFunction,
+    isNil,
+    isNumber,
+    isPlainObject
+} from 'lodash';
 
 /**
  * Mixin to add MobX reactivity to Components, Models, and Services.
