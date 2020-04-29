@@ -2,6 +2,9 @@
 
 ## v34.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...develop)
 
 
