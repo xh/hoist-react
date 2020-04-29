@@ -1,5 +1,11 @@
 # Changelog
 
+## v34.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStictAggregator`
+
 ## v33.0.1 - 2020-04-29
 
 ### 🎁 New Features
