@@ -7,6 +7,10 @@
 * `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
   match on columns with fields such as `address.city`.
 
+### 🐞 Bug Fixes
+* Fixed an important bug with state management in `StoreFilterField`. See
+  https://github.com/xh/hoist-react/issues/1854
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
 
 ## v33.0.0 - 2020-04-22

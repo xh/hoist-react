@@ -60,7 +60,7 @@ StoreFilterField.propTypes = {
      */
     bind: PT.string,
 
-    /** Model for value binding - see comments on the `bind` prop for details. */
+    /** Optional model for value binding - see comments on the `bind` prop for details. */
     model: PT.object,
 
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
