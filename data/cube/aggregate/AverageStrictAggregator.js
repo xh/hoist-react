@@ -7,20 +7,22 @@
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 
-export class AverageAggregator extends Aggregator {
+export class AverageStrictAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
+        let total = null;
 
-        let total = null,
-            count = 0;
         for (const row of rows) {
             const val = row.data[fieldName];
-            if (val != null) {
-                total += val;
-                count++;
-            }
+            if (val == null) return null;
+            total += val;
         }
 
-        return total != null ? total / count : null;
+        return total / rows.length;
+    }
+
+    replace(rows, currAgg, update) {
+        if (update.newValue == null) return null;
+        return super.replace(rows, currAgg, update);
     }
 }
