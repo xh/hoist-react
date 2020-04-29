@@ -16,7 +16,8 @@ import {
     SumAggregator,
     SumStrictAggregator,
     UniqueAggregator,
-    AverageAggregator
+    AverageAggregator,
+    AverageStrictAggregator
 } from '@xh/hoist/data';
 
 /**
@@ -45,6 +46,7 @@ export class CubeField extends Field {
     static uniqueAggregator = new UniqueAggregator();
     static singleAggregator = new SingleAggregator();
     static averageAggregator = new AverageAggregator();
+    static averageStrictAggregator = new AverageStrictAggregator();
 
     /**
      * @param {Object} c - Field configuration.  See Field class for core parameters.
@@ -88,14 +90,15 @@ export class CubeField extends Field {
     parseAggregator(val) {
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return CubeField.maxAggregator;
-                case 'MIN':         return CubeField.minAggregator;
-                case 'NULL':        return CubeField.nullAggregator;
-                case 'SUM':         return CubeField.sumAggregator;
-                case 'SUM_STRICT':  return CubeField.sumStrictAggregator;
-                case 'UNIQUE':      return CubeField.uniqueAggregator;
-                case 'SINGLE':      return CubeField.singleAggregator;
-                case 'AVERAGE':      return CubeField.averageAggregator;
+                case 'MAX':             return CubeField.maxAggregator;
+                case 'MIN':             return CubeField.minAggregator;
+                case 'NULL':            return CubeField.nullAggregator;
+                case 'SUM':             return CubeField.sumAggregator;
+                case 'SUM_STRICT':      return CubeField.sumStrictAggregator;
+                case 'UNIQUE':          return CubeField.uniqueAggregator;
+                case 'SINGLE':          return CubeField.singleAggregator;
+                case 'AVERAGE':         return CubeField.averageAggregator;
+                case 'AVERAGE_STRICT':  return CubeField.averageStrictAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
