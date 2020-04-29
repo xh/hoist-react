@@ -28,8 +28,8 @@
   "dependencies": {
     "@ag-grid-community/react": "~23.0.3",
     "@ag-grid-enterprise/all-modules": "~23.0.2",
-    "@blueprintjs/core": "~3.25.0",
-    "@blueprintjs/datetime": "~3.16.0",
+    "@blueprintjs/core": "~3.26.0",
+    "@blueprintjs/datetime": "~3.16.1",
     "@fortawesome/fontawesome-pro": "~5.13.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.28",
     "@fortawesome/pro-light-svg-icons": "~5.13.0",
@@ -39,7 +39,7 @@
     "@seznam/compose-react-refs": "~1.0.4",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
-    "codemirror": "~5.52.2",
+    "codemirror": "~5.53.2",
     "core-js": "~3.6.5",
     "debounce-promise": "~3.1.0",
     "downloadjs": "~1.4.7",
@@ -78,7 +78,7 @@
   "devDependencies": {
     "@xh/hoist-dev-utils": "^4.0.0",
     "husky": "~4.2.5",
-    "lint-staged": "~10.1.7",
+    "lint-staged": "~10.2.0",
     "react": "~16.8.0",
     "react-dom": "~16.8.0",
     "react-dom-factories": "~1.0.2",
