@@ -10,9 +10,9 @@ import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 export class AverageAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-
         let total = null,
             count = 0;
+
         for (const row of rows) {
             const val = row.data[fieldName];
             if (val != null) {
