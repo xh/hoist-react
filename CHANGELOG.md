@@ -11,6 +11,10 @@
 * Fixed an important bug with state management in `StoreFilterField`. See
   https://github.com/xh/hoist-react/issues/1854
 
+### 📚 Libraries
+* @blueprintjs/core `3.25 -> 3.26`
+* codemirror `5.52 -> 5.53`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
 
 ## v33.0.0 - 2020-04-22
@@ -51,7 +55,7 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.25 -> 3.25`
+* @blueprintjs/core `3.24 -> 3.25`
 * @blueprintjs/datetime `3.15 -> 3.16`
 * mobx-react `6.1 -> 6.2`
 
