@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {elemFactory} from '@xh/hoist/core';
-import ons from 'onsenui';
-import 'onsenui/css/onsen-css-components.css';
-import 'onsenui/css/onsenui.css';
+import ons from '@xh/onsenui';
+import '@xh/onsenui/css/onsen-css-components.css';
+import '@xh/onsenui/css/onsenui.css';
 import {
     BottomToolbar,
     Button,
@@ -25,7 +25,7 @@ import {
     Tabbar,
     Toast,
     Toolbar
-} from 'react-onsenui';
+} from '@xh/react-onsenui';
 import './styles.scss';
 import './theme.scss';
 
