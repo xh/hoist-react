@@ -16,7 +16,8 @@ import {
     isFunction,
     isNil,
     isNumber,
-    isPlainObject
+    isPlainObject,
+    upperFirst
 } from 'lodash';
 
 /**
@@ -116,6 +117,23 @@ export function ReactiveSupport(C) {
                     this.addMobxDisposer(mobxWhen(when, run, opts));
             },
 
+            /**
+             * Set an observable/bindable value.
+             *
+             * This method is a convenience method for calling the conventional setXXX method
+             * for updating a mobx observable given the property name.
+             *
+             * @param {string} property
+             * @param {*} value
+             */
+            setBindable(property, value) {
+                const setter = `set${upperFirst(property)}`;
+                throwIf(!isFunction(this[setter]),
+                    `Required function '${setter}()' not found on bound model. ` +
+                    `Implement a setter, or use the @bindable annotation.`
+                );
+                this[setter](value);
+            },
 
             //------------------------
             // Implementation

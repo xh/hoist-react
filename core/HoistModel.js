@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {ManagedSupport, ReactiveSupport, XhIdSupport} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isString, upperFirst} from 'lodash';
+import {applyMixin} from '@xh/hoist/utils/js';
+import {isFunction, isString} from 'lodash';
 
 /**
  * Core decorator for State Models in Hoist.
@@ -34,24 +34,6 @@ export function HoistModel(C) {
                 if (isFunction(selector)) return selector.isHoistModel ? this instanceof selector : selector(this);
                 if (isString(selector)) return !!this['is' + selector];
                 return false;
-            },
-
-            /**
-             * Set an observable/bindable value.
-             *
-             * This method is a convenience method for calling the conventional setXXX method
-             * for updating a mobx observable given the property name.
-             *
-             * @param {string} prop
-             * @param {*} value
-             */
-            setBindable(prop, value) {
-                const setter = `set${upperFirst(prop)}`;
-                throwIf(!isFunction(this[setter]),
-                    `Required function '${setter}()' not found on bound model. ' +
-                    'Implement a setter, or use the @bindable annotation.`
-                );
-                this[setter](value);
             }
         }
     });

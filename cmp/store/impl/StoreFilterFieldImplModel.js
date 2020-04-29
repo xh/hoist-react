@@ -26,7 +26,7 @@ export class StoreFilterFieldImplModel {
     gridModel;
     store;
 
-    filterBuffer = 200;
+    filterBuffer;
     filterOptions;
     onFilterChange;
     includeFields;
@@ -85,7 +85,6 @@ export class StoreFilterFieldImplModel {
             [filterOptions, includeFields, excludeFields],
             [this.filterOptions, this.includeFields, this.excludeFields])
         ) {
-            warnIf(includeFields && excludeFields, "Do not specify both 'includeFields' and 'excludeFields'");
             this.filterOptions = filterOptions;
             this.includeFields = includeFields;
             this.excludeFields = excludeFields;

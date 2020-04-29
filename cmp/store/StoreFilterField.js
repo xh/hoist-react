@@ -56,12 +56,9 @@ StoreFilterField.propTypes = {
 
     /**
      * Field on optional model to which this component should bind its value. Specify this
-     * field, or value to control the state of this component.
+     * field to control the state of this component.
      */
     bind: PT.string,
-
-    /** Optional model for value binding - see comments on the `bind` prop for details. */
-    model: PT.object,
 
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
     excludeFields: PT.arrayOf(PT.string),
@@ -91,6 +88,9 @@ StoreFilterField.propTypes = {
      * visibility. Cannot be used with `excludeFields`.
      */
     includeFields: PT.arrayOf(PT.string),
+
+    /** Optional model for value binding - see comments on the `bind` prop for details. */
+    model: PT.object,
 
     /**
      * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
