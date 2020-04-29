@@ -97,8 +97,8 @@ export class CubeField extends Field {
                 case 'SUM_STRICT':      return CubeField.sumStrictAggregator;
                 case 'UNIQUE':          return CubeField.uniqueAggregator;
                 case 'SINGLE':          return CubeField.singleAggregator;
-                case 'MEAN':            return CubeField.averageAggregator;
-                case 'MEAN_STRICT':     return CubeField.averageStrictAggregator;
+                case 'AVG':             return CubeField.averageAggregator;
+                case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
             }
         }
         if (val instanceof Aggregator) return val;
