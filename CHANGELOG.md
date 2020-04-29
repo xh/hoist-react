@@ -7,8 +7,11 @@
 * `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
   match on columns with fields such as `address.city`.
 
-### 📚 Libraries
+### 🐞 Bug Fixes
+* Fixed an important bug with state management in `StoreFilterField`. See
+  https://github.com/xh/hoist-react/issues/1854
 
+### 📚 Libraries
 * @blueprintjs/core `3.25 -> 3.26`
 * codemirror `5.52 -> 5.53`
 
