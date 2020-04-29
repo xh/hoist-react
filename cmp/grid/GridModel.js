@@ -342,22 +342,16 @@ export class GridModel {
         }
     }
 
-    /** Are any records currently selected? */
+    /** @return {boolean} - true if any records are selected. */
     get hasSelection() {return !this.selModel.isEmpty}
 
-    /**
-     * Shortcut to the currently selected records (observable).
-     * @see StoreSelectionModel.records
-     */
+    /** @return {Record[]} - currently selected Records. */
     get selection() {return this.selModel.records}
 
-    /**
-     * Shortcut to a single selected record (observable). Null if multiple records are selected.
-     * @see StoreSelectionModel.singleRecord
-     */
+    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
     get selectedRecord() {return this.selModel.singleRecord}
 
-    /** Does the grid have any records to show? */
+    /** @return {boolean} - true if this grid has no records to show in its store. */
     get empty() {return this.store.empty}
 
     get isReady() {return this.agGridModel.isReady}
