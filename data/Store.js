@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -52,6 +52,9 @@ export class Store {
     @observable.ref _filtered;
     _filter = null;
     _loadRootAsSummary = false;
+
+    /** @private -- used internally by any StoreFilterField that is bound to this store. */
+    @bindable xhFilterText = null;
 
     /**
      * @param {Object} c - Store configuration.

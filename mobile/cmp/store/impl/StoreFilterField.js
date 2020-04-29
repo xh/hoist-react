@@ -10,10 +10,10 @@ import {textInput} from '@xh/hoist/mobile/cmp/input';
  * Mobile implementation of StoreFilterField.
  * @private
  */
-export function storeFilterFieldImpl({implModel, ...props}) {
+export function storeFilterFieldImpl(props) {
     return textInput({
-        value: implModel.value,
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false}),
+        bind: 'filterText',
+        commitOnChange: true,
         placeholder: 'Quick filter',
         width: 180,
         ...props
