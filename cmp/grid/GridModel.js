@@ -320,6 +320,11 @@ export class GridModel {
         if (id) selModel.select(id);
     }
 
+    /** Deselect all rows. */
+    clearSelection() {
+        this.selModel.clear();
+    }
+
     /**
      * Scroll to ensure the selected record is visible.
      *
