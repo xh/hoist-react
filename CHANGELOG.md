@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStictAggregator`
+* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
 
 ## v33.0.1 - 2020-04-29
 
