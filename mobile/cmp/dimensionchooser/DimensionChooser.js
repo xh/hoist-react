@@ -169,7 +169,7 @@ const selectMenu = hoistCmp.factory(
             children.push(addOrSelectButton({dialogWidth}));
         }
 
-        return children;
+        return fragment(children);
     }
 );
 
