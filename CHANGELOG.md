@@ -1,21 +1,26 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - unreleased
+## v33.0.1 - 2020-04-29
 
 ### 🎁 New Features
-
 * `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
   match on columns with fields such as `address.city`.
+
+* `Toolbar.enableOverflowMenu` now defaults to `false`.  This was determined safer and more
+appropriate due to issues with the underlying Blueprint implementation, and the need to configure it
+carefully.
 
 ### 🐞 Bug Fixes
 * Fixed an important bug with state management in `StoreFilterField`. See
   https://github.com/xh/hoist-react/issues/1854
 
+* Fixed the default sort order for grids.  ABS DESC should be first when present.
+
 ### 📚 Libraries
 * @blueprintjs/core `3.25 -> 3.26`
 * codemirror `5.52 -> 5.53`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...v33.0.1)
 
 ## v33.0.0 - 2020-04-22
 
