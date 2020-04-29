@@ -53,7 +53,7 @@ export class Store {
     _filter = null;
     _loadRootAsSummary = false;
 
-    /** @private -- used internally by StoreFilterField that is bound to this store. */
+    /** @private -- used internally by any StoreFilterField that is bound to this store. */
     @bindable xhFilterText = null;
 
     /**
