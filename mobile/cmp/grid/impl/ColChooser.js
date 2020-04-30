@@ -54,7 +54,6 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                             className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
-                                // Render pinned column row outside of droppable
                                 row({col: pinnedColumn}),
                                 droppable({
                                     droppableId: 'visible-columns',
@@ -167,8 +166,7 @@ const row = hoistCmp.factory({
         if (exclude) return null;
 
         const getDragIcon = (pinned) => {
-            if (pinned) return Icon.pin({prefix: 'fas'});
-            return Icon.grip({prefix: 'fas'});
+            return pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'});
         };
 
         const getButtonIcon = (locked, hidden) => {
