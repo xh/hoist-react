@@ -400,6 +400,7 @@ body.xh-mobile {
   --xh-grid-line-height: var(--grid-line-height, 30);
   --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
+  --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-half-px));
 
   // Fonts
   --xh-font-size: var(--font-size, 15);
