@@ -5,6 +5,10 @@
 ### 🎁 New Features
 * Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
 
+### 🐞 Bug Fixes
+* Fixed mobile menus to constrain to the bottom of the viewport, scrolling if necessary.
+  [#1862](https://github.com/xh/hoist-react/issues/1862)
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...develop)
 
 
