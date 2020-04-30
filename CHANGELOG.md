@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 * Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
+* `ColAutosizeButton` has been added to desktop and mobile
 
 ### 🐞 Bug Fixes
 * Fixed mobile menus to constrain to the bottom of the viewport, scrolling if necessary.
