@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 * Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
+* `ColAutosizeButton` has been added to desktop and mobile
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...develop)
 
