@@ -1,6 +1,6 @@
 # Changelog
 
-## v33.0.2 - 2020-04-30
+## v33.0.2 - 2020-05-01
 
 ### 🎁 New Features
 * Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
@@ -10,7 +10,8 @@
 * Fixed mobile menus to constrain to the bottom of the viewport, scrolling if necessary.
   [#1862](https://github.com/xh/hoist-react/issues/1862)
 * Tightened up mobile tree grid, fixed issues in mobile column chooser.
-
+* Fixed a bug with  reloading hierarchical data in `Store`.
+  [#1871](https://github.com/xh/hoist-react/issues/1871)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...33.0.2)
 
