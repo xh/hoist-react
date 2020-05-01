@@ -861,7 +861,7 @@ export class GridModel {
 
     saveInitialConfigs(columns, sortBy, groupBy) {
         return {
-            columns: columns, // TODO: If an app calls 'setColumns' does this need to get updated?
+            columns: columns,
             sortBy: sortBy,
             groupBy: groupBy
         };
