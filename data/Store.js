@@ -199,8 +199,9 @@ export class Store {
             updateRecs = update.map(it => {
                 const recId = this.idSpec(it),
                     rec = this.getOrThrow(recId),
-                    parent = rec.parent;
-                return this.createRecord(it, parent);
+                    parent = rec.parent,
+                    isSummary = recId === this.summaryRecord?.id;
+                return this.createRecord(it, parent, isSummary);
             });
         }
         if (add) {
@@ -223,7 +224,7 @@ export class Store {
         }
 
         if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord({...summaryRecord.raw, ...rawSummaryData}, null, true);
+            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
         }
 
         if (summaryUpdateRec) {
