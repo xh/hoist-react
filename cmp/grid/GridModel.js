@@ -85,6 +85,8 @@ export class GridModel {
     enableExport;
     /** @member {ExportOptions} */
     exportOptions;
+    /** @member {Object} */
+    defaultState
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -216,6 +218,8 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        this.defaultState = this.saveInitialConfigs(columns, sortBy, groupBy);
+
         this.treeMode = treeMode;
         this.showSummary = showSummary;
 
@@ -853,6 +857,21 @@ export class GridModel {
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
+    }
+
+    saveInitialConfigs(columns, sortBy, groupBy) {
+        return {
+            columns: columns, // TODO: If an app calls 'setColumns' does this need to get updated?
+            sortBy: sortBy,
+            groupBy: groupBy
+        };
+    }
+
+    restoreDefaults() {
+        const {columns, sortBy, groupBy} = this.defaultState;
+        this.setColumns(columns);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
     }
 
 }
