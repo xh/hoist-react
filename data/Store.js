@@ -20,7 +20,7 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {warnIf, withDefault} from '../utils/js';
+import {warnIf} from '../utils/js';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -132,7 +132,7 @@ export class Store {
             rawData = rawData[0].children ?? [];
         }
 
-        const records = this.createRecords(rawData);
+        const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
         this.rebuildFiltered();
 
@@ -196,7 +196,12 @@ export class Store {
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
         if (update) {
-            updateRecs = update.map(it => this.createRecord(it));
+            updateRecs = update.map(it => {
+                const recId = this.idSpec(it),
+                    rec = this.getOrThrow(recId),
+                    parent = rec.parent;
+                return this.createRecord(it, parent);
+            });
         }
         if (add) {
             addRecs = new Map();
@@ -697,15 +702,7 @@ export class Store {
         }
 
         // Note idSpec run against raw data here.
-        const id = this.idSpec(raw),
-            rec = this.getById(id);
-
-        if (rec) {
-            // We are creating a record for an update. Lookup our parent record and determine if
-            // this is the the summary record based on the current state (if not provided).
-            parent = withDefault(parent, rec.parent);
-            isSummary = withDefault(isSummary, rec.id === this.summaryRecord?.id);
-        }
+        const id = this.idSpec(raw);
 
         data = this.parseFieldValues(data);
         return new Record({id, data, raw, parent, store: this, isSummary});
