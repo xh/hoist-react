@@ -195,7 +195,7 @@
 
 .xh-grid-autosize-cell {
   // Add a slight padding buffer for security against ellipses
-  padding: 0 calc(var(--xh-grid-cell-lr-pad-px) + 2px);
+  padding: 0 calc(var(--xh-grid-cell-lr-pad-px) + 2px); // Todo: Add buffer to number in JS, make an option
   display: inline-block;
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
