@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {boolCheckCol, dateTimeCol, numberCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {boolCheckCol, numberCol} from '@xh/hoist/cmp/grid';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 
 export const monitorEditorPanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -83,6 +83,8 @@ const modelSpec = {
         {field: 'failThreshold', ...numberCol, headerName: 'Fail', width: 130},
         {field: 'metricUnit', headerName: 'Units', width: 100},
         {field: 'notes', minWidth: 70, flex: true},
+        {field: 'lastUpdatedBy', width: 160, hidden: true},
+        {field: 'lastUpdated', ...dateTimeCol, hidden: true},
         {field: 'sortOrder', ...numberCol, headerName: 'Sort', width: 100}
     ],
     editors: [

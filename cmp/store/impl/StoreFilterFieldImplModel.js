@@ -4,138 +4,149 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
     escapeRegExp,
+    get,
     intersection,
+    isArray,
     isEmpty,
     isEqual,
-    isFunction,
-    upperFirst,
-    without
+    without,
+    isUndefined
 } from 'lodash';
 
 @HoistModel
 export class StoreFilterFieldImplModel {
 
+    model;
+    bind;
     gridModel;
     store;
+
     filterBuffer;
     filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
-    model;
-    bind;
 
-    @observable value = '';
-
-    filter = null;
-    applyFilterFn = null;
+    filter;
+    bufferedApplyFilter;
 
     constructor({
+        model,
+        bind,
         gridModel,
         store,
         filterBuffer = 200,
-        filterOptions,
         onFilterChange,
+        filterOptions,
         includeFields,
-        excludeFields,
-        model,
-        bind
+        excludeFields
     }) {
+        this.model = model;
+        this.bind = bind;
         this.gridModel = gridModel;
         this.store = store;
         this.filterBuffer = filterBuffer;
-        this.filterOptions = filterOptions;
         this.onFilterChange = onFilterChange;
+        this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
-        this.model = model;
-        this.bind = bind;
 
-        warnIf(includeFields && excludeFields,
-            "Cannot specify both 'includeFields' and 'excludeFields' props."
-        );
         warnIf(!gridModel && !store && isEmpty(includeFields),
-            "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op"
+            "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
+        throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
 
-        if (store) {
-            this.applyFilterFn = debounce(
-                () => this.applyStoreFilter(),
-                filterBuffer
-            );
+        this.bufferedApplyFilter = debounce(() => this.applyFilter(), filterBuffer);
 
-            if (gridModel) {
-                this.addReaction({
-                    track: () => [gridModel.columns, gridModel.groupBy, filterOptions],
-                    run: () => this.regenerateFilter({applyImmediately: false})
-                });
-            }
+        this.addReaction({
+            track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
+            run: () => this.regenerateFilter(),
+            fireImmediately: true
+        });
+    }
+
+    // We allow these to be dynamic by updating on every render.
+    updateFilterProps({
+        onFilterChange,
+        filterOptions,
+        includeFields,
+        excludeFields
+    }) {
+        // just record change to callback
+        this.onFilterChange = onFilterChange;
+
+        // ...other changes require re-generation
+        if (!isEqual(
+            [filterOptions, includeFields, excludeFields],
+            [this.filterOptions, this.includeFields, this.excludeFields])
+        ) {
+            this.filterOptions = filterOptions;
+            this.includeFields = includeFields;
+            this.excludeFields = excludeFields;
+            this.regenerateFilter();
         }
+    }
 
-        if (model && bind) {
-            this.addReaction({
-                track: () => model[bind],
-                run: (boundVal) => this.setValue(boundVal),
-                fireImmediately: true
-            });
+    //------------------------------------------------------------------
+    // Trampoline value to bindable -- from bound model, or store
+    //------------------------------------------------------------------
+    get filterText() {
+        const {bind, model, store} = this;
+        return bind ? model[bind] : store.xhFilterText;
+    }
+
+    @action
+    setFilterText(v) {
+        const {bind, model, store} = this;
+        if (bind) {
+            model.setBindable(bind, v);
+        } else {
+            store.setXhFilterText(v);
         }
     }
 
     //------------------------
     // Implementation
     //------------------------
-    @action
-    setValue(v, {applyImmediately} = {}) {
-        if (isEqual(v, this.value)) return;
-
-        this.value = v;
-        this.regenerateFilter({applyImmediately});
-
-        const {bind, model} = this;
-        if (bind && model) {
-            const setterName = `set${upperFirst(bind)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-            model[setterName](v);
-        }
+    applyFilter() {
+        this.store?.setFilter(this.filter);
     }
 
-    regenerateFilter({applyImmediately}) {
-        const {applyFilterFn, onFilterChange, filterOptions} = this,
+    regenerateFilter() {
+        const {filter, filterText, filterOptions} = this,
             activeFields = this.getActiveFields(),
-            searchTerm = escapeRegExp(this.value);
+            supportDotSeparated = !!activeFields.find(it => it.includes('.')),
+            searchTerm = escapeRegExp(filterText),
+            initializing = isUndefined(filter);
 
         let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
             fn = (rec) => activeFields.some(f => {
-                const fieldVal = (f == 'id') ? rec.id : rec.data[f];
+                // Use of lodash get() slower than direct access - use only when needed to support
+                // dot-separated field paths. (See note in getActiveFields() below.)
+                const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
                 return regex.test(fieldVal);
             });
         }
-        this.filter = fn ? {...filterOptions, fn} : null;
 
-        if (onFilterChange) onFilterChange(this.filter);
+        const newFilter = fn ? {...filterOptions, fn} : null;
+        if (filter === newFilter) return;
 
-        if (applyFilterFn) {
-            if (applyImmediately) {
-                applyFilterFn.cancel();
-                this.applyStoreFilter();
-            } else {
-                applyFilterFn();
-            }
-        }
-    }
+        this.filter = newFilter;
+        if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
 
-    applyStoreFilter() {
-        if (this.store) {
-            this.store.setFilter(this.filter);
+        // Only respect the buffer for non-null changes.  Allows immediate initialization and quick clearing
+        if (!initializing && newFilter) {
+            this.bufferedApplyFilter();
+        } else {
+            this.applyFilter();
         }
     }
 
@@ -148,14 +159,30 @@ export class StoreFilterFieldImplModel {
 
         if (gridModel) {
             const groupBy = gridModel.groupBy,
-                visibleCols = gridModel
-                    .getLeafColumns()
-                    .filter(col => gridModel.isColumnVisible(col.colId));
+                visibleCols = gridModel.getVisibleLeafColumns();
+
+            // Push on dot-delimited grid column fields. These are supported by Grid and traverse
+            // sub-objects in Record.data to display nested properties. Given that Grid treats these
+            // as first-class fields and displays them w/o the need for renderers, we want to
+            // include them here. (But only if their "root" is in the field list derived from the
+            // Store and any given include/excludeField configs.)
+            visibleCols.forEach(col => {
+                const {fieldPath} = col;
+                if (!isArray(fieldPath)) return;
+
+                const rootFieldPath = fieldPath[0];
+                if (ret.includes(rootFieldPath)) {
+                    ret.push(col.field);
+                }
+            });
+
+            // Run exclude once more to support explicitly excluding a dot-sep field added above.
+            if (excludeFields) ret = without(ret, ...excludeFields);
 
             ret = ret.filter(f => {
                 return (
                     (includeFields && includeFields.includes(f)) ||
-                    visibleCols.find(c => c.field == f) ||
+                    visibleCols.find(c => c.field === f) ||
                     groupBy.includes(f)
                 );
             });

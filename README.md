@@ -791,7 +791,7 @@ sudo docker system prune -af
 - [ ] Theming and styles
 - [ ] Bundled formatters and renderers (Dates, numbers)
 - [ ] Exception handling and error reporting
-- [ ] Admin console + custom snap-ins
+- [ ] Admin console and custom snap-ins
 - [ ] ....
 
 🙏 Thanks for your patience as we continue to build out this documentation.

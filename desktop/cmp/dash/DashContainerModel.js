@@ -4,22 +4,21 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, RefreshMode, RenderMode} from '@xh/hoist/core';
-import {action, observable} from '@xh/hoist/mobx';
-import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
+import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {ensureUniqueBy, throwIf, debounced} from '@xh/hoist/utils/js';
-import {start} from '@xh/hoist/promise';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
-import {find, reject, cloneDeep, isFinite, defaultsDeep} from 'lodash';
-
-import {DashViewSpec} from './DashViewSpec';
-import {dashView} from './impl/DashView';
+import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
+import {action, observable} from '@xh/hoist/mobx';
+import {start} from '@xh/hoist/promise';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {cloneDeep, defaultsDeep, find, isFinite, reject} from 'lodash';
 import {DashViewModel} from './DashViewModel';
+import {DashViewSpec} from './DashViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
+import {dashView} from './impl/DashView';
 
 /**
  * Model for a DashContainer, representing its contents and layout state.

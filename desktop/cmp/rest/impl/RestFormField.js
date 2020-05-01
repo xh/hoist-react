@@ -4,21 +4,18 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {
-    jsonInput,
-    select,
-    numberInput,
-    switchInput,
-    textInput,
-    dateInput
-} from '@xh/hoist/desktop/cmp/input';
-
-import {RestFormModel} from './RestFormModel';
-
-import {assign} from 'lodash';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {
+    dateInput,
+    jsonInput,
+    numberInput,
+    select,
+    switchInput,
+    textInput
+} from '@xh/hoist/desktop/cmp/input';
+import {assign} from 'lodash';
+import {RestFormModel} from './RestFormModel';
 
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',

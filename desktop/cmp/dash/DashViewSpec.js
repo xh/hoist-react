@@ -29,7 +29,7 @@ export class DashViewSpec {
 
     /**
      * @param {string} id - unique identifier of the DashViewSpec
-     * @param {(Object|function)} c.content - content to be rendered by this DashView.
+     * @param {(Object|function)} content - content to be rendered by this DashView.
      *      HoistComponent or a function returning a react element.
      * @param {string} title - Title text added to the tab header.
      * @param {Element} icon - An icon placed at the left-side of the tab header.
@@ -46,6 +46,7 @@ export class DashViewSpec {
      *      default to its container's mode. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing this DashView. If null, will
      *      default to its container's mode. See enum for description of supported modes.
+     * @param {...*} [rest] - additional properties to store on the DashViewSpec
      */
     constructor({
         id,
@@ -59,11 +60,14 @@ export class DashViewSpec {
         allowRemove = true,
         allowRename = true,
         renderMode,
-        refreshMode
+        refreshMode,
+        ...rest
     }) {
         throwIf(!id, 'DashViewSpec requires an id');
         throwIf(!content, 'DashViewSpec requires content');
         throwIf(!title, 'DashViewSpec requires a title');
+
+        Object.assign(this, rest);
 
         this.id = id;
         this.content = content;

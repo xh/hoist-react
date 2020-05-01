@@ -4,15 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {Component} from 'react';
-import PT from 'prop-types';
-import {isEqual, isFunction, upperFirst} from 'lodash';
 import {FieldModel} from '@xh/hoist/cmp/form';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {observable, computed, action} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-
+import {isEqual} from 'lodash';
+import PT from 'prop-types';
+import {Component} from 'react';
 import './HoistInput.scss';
 
 /**
@@ -209,10 +207,7 @@ export class HoistInput extends Component {
         if (isEqual(newValue, currentValue)) return;
 
         if (model && bind) {
-            const setterName = `set${upperFirst(bind)}`;
-            throwIf(!isFunction(model[setterName]), `Required function '${setterName}()' not found on bound model`);
-
-            model[setterName](newValue);
+            model.setBindable(bind, newValue);
             newValue = this.externalValue; // Re-read effective value after set in case model setter had an opinion
         }
 

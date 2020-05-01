@@ -4,19 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
-import {div} from '@xh/hoist/cmp/layout';
-import {singleDatePicker} from '@xh/hoist/kit/react-dates';
-import {withDefault} from '@xh/hoist/utils/js';
-import {LocalDate, isLocalDate} from '@xh/hoist/utils/datetime';
-import {Icon} from '@xh/hoist/icon';
-import {fmtDate} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {div} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {fmtDate} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
+import {singleDatePicker} from '@xh/hoist/kit/react-dates';
+import {bindable} from '@xh/hoist/mobx';
+import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {withDefault} from '@xh/hoist/utils/js';
 import moment from 'moment';
-
+import PT from 'prop-types';
 import './DateInput.scss';
 
 /**

@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import moment from 'moment';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
+import moment from 'moment';
 
 /**
  * A Date representation that does not contain time information. Useful for business day or calendar
@@ -114,6 +113,11 @@ export class LocalDate {
         return this.format('dddd');
     }
 
+    get isWeekday() {
+        const day = this._moment.day();
+        return day > 0 && day < 6;
+    }
+
     //----------------
     // Core overrides.
     //----------------
@@ -176,6 +180,20 @@ export class LocalDate {
             case 7:     return this.subtract(2);
             default:    return this.subtract(1);
         }
+    }
+
+    /**
+     * @returns {LocalDate} - the same date if already a weekday, or the next weekday.
+     */
+    currentOrNextWeekday() {
+        return this.isWeekday ? this : this.nextWeekday();
+    }
+
+    /**
+     * @returns {LocalDate} - the same date if already a weekday, or the previous weekday.
+     */
+    currentOrPreviousWeekday() {
+        return this.isWeekday ? this : this.previousWeekday();
     }
 
     diff(other, unit = 'days') {

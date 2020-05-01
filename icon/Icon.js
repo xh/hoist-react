@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import classNames from 'classnames';
-import {toLower, last, split, pickBy} from 'lodash';
+import {div} from '@xh/hoist/cmp/layout';
 import {throwIf} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
+import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
-import {iconHtml} from './impl/IconHtml';
+import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 
 
 /**
@@ -47,7 +47,7 @@ export const Icon = {
      *      for ag-Grid.
      * @param {...*} [c.rest] - Additional props to be passed directly to underlying
      *      component.  These arguments are ignored when asHtml = true.
-     * @returns {(Element| string)}
+     * @returns {(Element|string)}
      */
     icon({
         iconName,
@@ -192,6 +192,7 @@ export const Icon = {
     mail(p)             {return Icon.icon({...p,  iconName: 'envelope'})},
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},
+    minusCircle(p)      {return Icon.icon({...p,  iconName: 'minus-circle'})},
     moon(p)             {return Icon.icon({...p,  iconName: 'moon'})},
     news(p)             {return Icon.icon({...p,  iconName: 'newspaper'})},
     office(p)           {return Icon.icon({...p,  iconName: 'building'})},
@@ -262,6 +263,20 @@ export const Icon = {
         const {factory, className} = getFileIconConfig(filename);
 
         return factory({...rest, className: classNames(className, rest.className)});
+    },
+
+    /**
+     * Returns an empty div with FA sizing classes applied. Can be used to take up room in a layout
+     * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
+     * not have an icon but others do.
+     * @param {Object} [c]
+     * @param {string} [c.size]
+     * @param {boolean} [c.asHtml]
+     * @returns {(Element|string)}
+     */
+    placeholder({size, asHtml = false} = {}) {
+        const className = enhanceFaClasses('xh-icon--placeholder', size);
+        return asHtml ? `<div class="${className}"></div>` : div({className});
     }
 };
 

@@ -1,6 +1,106 @@
 # Changelog
 
-## v32.0.0-SNAPSHOT - unreleased
+## v33.0.2 - 2020-05-01
+
+### 🎁 New Features
+* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
+* `ColAutosizeButton` has been added to desktop and mobile
+
+### 🐞 Bug Fixes
+* Fixed mobile menus to constrain to the bottom of the viewport, scrolling if necessary.
+  [#1862](https://github.com/xh/hoist-react/issues/1862)
+* Tightened up mobile tree grid, fixed issues in mobile column chooser.
+* Fixed a bug with  reloading hierarchical data in `Store`.
+  [#1871](https://github.com/xh/hoist-react/issues/1871)
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...33.0.2)
+
+
+## v33.0.1 - 2020-04-29
+
+### 🎁 New Features
+* `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
+  match on columns with fields such as `address.city`.
+
+* `Toolbar.enableOverflowMenu` now defaults to `false`.  This was determined safer and more
+appropriate due to issues with the underlying Blueprint implementation, and the need to configure it
+carefully.
+
+### 🐞 Bug Fixes
+* Fixed an important bug with state management in `StoreFilterField`. See
+  https://github.com/xh/hoist-react/issues/1854
+
+* Fixed the default sort order for grids.  ABS DESC should be first when present.
+
+### 📚 Libraries
+* @blueprintjs/core `3.25 -> 3.26`
+* codemirror `5.52 -> 5.53`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...v33.0.1)
+
+## v33.0.0 - 2020-04-22
+
+### 🎁 New Features
+
+* The object returned by the `data` property on `Record` now includes the record `id`. This will
+  allow for convenient access of the id with the other field values on the record.
+* The `Timer` class has been enhanced and further standardized with its Hoist Core counterpart:
+  * Both the `interval` and `timeout` arguments may be specified as functions, or config keys
+    allowing for dynamic lookup and reconfiguration.
+  * Added `intervalUnits` and `timeoutUnits` arguments.
+  * `delay` can now be specified as a boolean for greater convenience.
+
+### 💥 Breaking Changes
+
+* We have consolidated the import location for several packages, removing unintended nested index
+  files and 'sub-packages'. In particular, the following locations now provide a single index file
+  for import for all of their public contents: `@xh/hoist/core`, `@xh/hoist/data`,
+  `@xh/hoist/cmp/grid`, and `@xh/hoist/desktop/cmp/grid`. Applications may need to update import
+  statements that referred to index files nested within these directories.
+* Removed the unnecessary and confusing `values` getter on `BaseFieldModel`. This getter was not
+  intended for public use and was intended for the framework's internal implementation only.
+* `ColumnGroup.align` has been renamed to `ColumnGroup.headerAlign`. This avoids confusion with the
+  `Column` API, where `align` refers to the alignment of cell contents within the column.
+
+### 🐞 Bug Fixes
+
+* Exceptions will no longer overwrite the currently shown exception in the exception dialog if the
+  currently shown exception requires reloading the application.
+  [#1834](https://github.com/xh/hoist-react/issues/1834)
+
+### ⚙️ Technical
+
+* Note that the Mobx React bindings have been updated to 6.2, and we have enabled the recommended
+  "observer batching" feature as per
+  [the mobx-react docs](https://github.com/mobxjs/mobx-react-lite/#observer-batching).
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.24 -> 3.25`
+* @blueprintjs/datetime `3.15 -> 3.16`
+* mobx-react `6.1 -> 6.2`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v33.0.0)
+
+## v32.0.4 - 2020-04-09
+
+### 🐞 Bug Fixes
+
+* Fixes a regression with the alignment of `ColumnGroup` headers.
+* Fixes a bug with 'Copy Cell' context menu item for certain columns displaying the Record ID.
+* Quiets console logging of 'routine' exceptions to 'debug' instead of 'log'.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.3...v32.0.4)
+
+## v32.0.3 - 2020-04-06
+
+### 🐞 Bug Fixes
+
+* Suppresses a console warning from ag-Grid for `GridModel`s that do not specify an `emptyText`.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
+
+## v32.0.2 - 2020-04-03
 
 ⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
 [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
@@ -9,24 +109,40 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 ### 🎁 New Features
 
 * New `SplitButton` component added to button component collection.
+* GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
   elements and the special string token '-' (shortcut to render a `MenuDivider`).
 * Grid column `flex` param will now accept numbers, with available space divided between flex
   columns in proportion to their `flex` value.
-* `Column` now supports a `sortingOrder` config to allow control of the sorting options that
-will be cycled through when the user clicks on the header.
+* `Column` now supports a `sortingOrder` config to allow control of the sorting options that will be
+  cycled through when the user clicks on the header.
+* `PanelModel` now supports setting a `refreshMode` to control how collapsed panels respond to
+  refresh requests.
 
 ### 💥 Breaking Changes
 
 * The internal DOM structure of desktop `Panel` has changed to always include an inner frame with
   class `.xh-panel__content`. You may need to update styling that targets the inner structure of
   `Panel` via `.xh-panel`.
+* The hooks `useOnResize()` and `useOnVisibleChange()` no longer take a `ref` argument. Use
+  `composeRefs` to combine the ref that they return with any ref you wish to compose them with.
+* The callback for `useOnResize()` will now receive an object representing the locations and
+  dimensions of the element's content box. (Previously it incorrectly received an array of
+  `ResizeObserver` entries that had to be de-referenced)
+* `PanelModel.collapsedRenderMode` has been renamed to `PanelModel.renderMode`, to be more
+  consistent with other Hoist APIs such as `TabContainer`, `DashContainer`, and `DockContainer`.
+
 
 ### 🐞 Bug Fixes
 
+* Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
 * `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
+* Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
+  hooks would not be called. [#1808](https://github.com/xh/hoist-react/issues/1808)
+* Inputs that accept a rightElement prop will now properly display an Icon passed as that element.
+  [#1803](https://github.com/xh/hoist-react/issues/1803)
 
 ### ⚙️ Technical
 
@@ -43,8 +159,9 @@ will be cycled through when the user clicks on the header.
 * numbro `2.1 -> 2.2`
 * react-beautiful-dnd `12.0 -> 13.0`
 * store2 `2.10 -> 2.11`
+* compose-react-refs `NEW 1.0.4`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...v32.0.2)
 
 ## v31.0.0 - 2020-03-16
 
@@ -1384,9 +1501,10 @@ leverage the context for model support discussed above.
 * ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
-  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and `agOptions.enableFilter`
-  have been removed. You can replicate their effects by using `agOptions.defaultColDef`. For
-  `Columns`, `suppressFilter` has been removed, an should be replaced with `filter: false`.
+  For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting` and
+  `agOptions.enableFilter` have been removed. You can replicate their effects by using
+  `agOptions.defaultColDef`. For `Columns`, `suppressFilter` has been removed, an should be replaced
+  with `filter: false`.
 
 * `HoistAppModel.requestRefresh` and `TabContainerModel.requestRefresh` have been removed.
   Applications should use the new Refresh architecture described above instead.
@@ -2199,9 +2317,9 @@ and ag-Grid upgrade, and more. 🚀
   * `Panel` and `Resizable` components have moved to their own packages in
     `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes` ->
-    `route` (to specify a starting route as a string) and `switcherPosition` has moved from a model
-    config to a prop on the `TabContainer` component.
+  * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
+    -> `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
+    model config to a prop on the `TabContainer` component.
   * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with several
     related renames.
 * **Application entry-point classes decorated with `@HoistApp` must implement the new getter method

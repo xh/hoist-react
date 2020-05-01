@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-
 /**
  * Shared columns for the admin client.
  */

@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {Utils as agUtils} from '@ag-grid-enterprise/all-modules';
 import {
     castArray,
     clone,
@@ -16,7 +15,8 @@ import {
     isArray,
     isFinite,
     isFunction,
-    isNil, isNumber,
+    isNil,
+    isNumber,
     isString,
     startCase
 } from 'lodash';
@@ -40,8 +40,8 @@ export class Column {
      * support absolute value sorting.  See Column.absSort.
      */
     static DEFAULT_SORTING_ORDER = [
-        {sort: 'asc', abs: false},
         {sort: 'desc', abs: true},
+        {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
 
@@ -60,6 +60,7 @@ export class Column {
      *      Tree Grid. See GridModel.treeMode.
      * @param {boolean} [c.hidden] - true to suppress default display of the column.
      * @param {string} [c.align] - horizontal alignment of cell contents.
+     *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
      *      as cell alignment.
      * @param {number} [c.width] - default width in pixels.
@@ -472,7 +473,6 @@ export class Column {
         const {fieldPath} = this;
         if (!record || isNil(fieldPath)) return '';
 
-        if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };

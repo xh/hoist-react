@@ -4,13 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {Timer} from '@xh/hoist/utils/async';
+import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNumber} from 'lodash';
 import PT from 'prop-types';
@@ -67,6 +66,7 @@ Clock.propTypes = {
 class LocalModel {
     timezone;
     format;
+    updateInterval;
     prefix;
     suffix;
     errorString;
@@ -79,6 +79,7 @@ class LocalModel {
 
     setData({timezone, format, updateInterval, prefix, suffix, errorString}) {
         this.format = format;
+        this.updateInterval = updateInterval;
         this.prefix = prefix;
         this.suffix = suffix;
         this.errorString = errorString;
@@ -88,12 +89,10 @@ class LocalModel {
             this.loadTimezoneOffsetAsync();
         }
 
-        if (this.timer) {
-            this.timer.setInterval(updateInterval);
-        } else {
+        if (!this.timer) {
             this.timer = Timer.create({
                 runFn: () => this.refreshDisplay(),
-                interval: updateInterval
+                interval: () => this.updateInterval
             });
         }
     }

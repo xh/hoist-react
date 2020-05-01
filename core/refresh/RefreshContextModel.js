@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync}  from '../';
-import {throwIf, applyMixin} from '@xh/hoist/utils/js';
+import {HoistModel, LoadSupport, loadAllAsync} from '@xh/hoist/core';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
-import {HoistModel, LoadSupport}  from '@xh/hoist/core';
-
 
 /**
  * A model to manage refreshing sections of the application, where "refreshing" refers to app-

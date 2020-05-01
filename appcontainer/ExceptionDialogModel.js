@@ -4,8 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -39,6 +39,7 @@ export class ExceptionDialogModel {
 
     @action
     show(exception, options) {
+        if (this.displayData?.options.requireReload)  return;
         this.displayData = {exception, options};
     }
 

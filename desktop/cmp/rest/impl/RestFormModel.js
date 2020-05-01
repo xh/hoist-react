@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -19,7 +18,7 @@ export class RestFormModel {
     parent = null;
 
     // Mutable State
-    @observable currentRecord = null;
+    @observable.ref currentRecord = null;
     @observable readonly = null;
     @observable isAdd = null;
     @observable isOpen = false;
@@ -169,7 +168,7 @@ export class RestFormModel {
         let rawType = null;
         if (formField) {
             rawType = formField.value;
-        } else if (currentRecord && field) {
+        } else if (currentRecord?.data && field) {
             rawType = currentRecord.data[field.name];
         }
 
@@ -179,7 +178,7 @@ export class RestFormModel {
             case 'long':
                 return 'number';
             default:
-                return rawType || 'string';
+                return rawType ?? 'string';
         }
     }
 }

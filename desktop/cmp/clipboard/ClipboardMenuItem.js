@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {defaultsDeep} from 'lodash';
-import {clipboardButton} from './ClipboardButton';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {defaultsDeep} from 'lodash';
+import PT from 'prop-types';
+import {clipboardButton} from './ClipboardButton';
 
 /**
  * Convenience wrapper for a ClipboardButton to be rendered as a Blueprint menu item.

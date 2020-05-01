@@ -4,11 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
-import {DockViewRefreshContextModel} from './impl/DockViewRefreshContextModel';
 
 /**
  * Model for a DockView within a DockContainer. Specifies the actual content (child component)
@@ -35,9 +33,6 @@ export class DockViewModel {
     containerModel;
     @managed refreshContextModel;
 
-    /**
-     * RenderMode and RefreshMode consider this view 'active' when it is not collapsed
-     */
     get isActive() {
         return !this.collapsed;
     }
@@ -108,7 +103,7 @@ export class DockViewModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new DockViewRefreshContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     //-----------------------

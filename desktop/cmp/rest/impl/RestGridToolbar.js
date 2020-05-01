@@ -6,10 +6,10 @@
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';

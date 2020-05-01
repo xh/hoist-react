@@ -4,12 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, ManagedRefreshContextModel, RenderMode} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
-import {withDefault, warnIf} from '@xh/hoist/utils/js';
+import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
-
-import {NavigatorRefreshContextModel} from './impl/NavigatorRefreshContextModel';
 
 /**
  * Model for a Page within a Navigator. Specifies the actual content (i.e. page)
@@ -90,6 +88,6 @@ export class PageModel {
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
 
-        this.refreshContextModel = new NavigatorRefreshContextModel(this);
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 }

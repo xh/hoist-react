@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {contextMenu as contextMenuEl} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';

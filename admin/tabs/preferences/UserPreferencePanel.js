@@ -4,9 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {usernameCol} from '@xh/hoist/admin/columns';
+import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {usernameCol} from '@xh/hoist/admin/columns';
 import {truncate} from 'lodash';
 
 export const userPreferencePanel = hoistCmp.factory(
@@ -68,7 +69,9 @@ const modelSpec = {
         {field: 'type', width: 100},
         {field: 'username', ...usernameCol},
         {field: 'groupName', hidden: true},
-        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson}
+        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson},
+        {field: 'lastUpdatedBy', width: 160, hidden: true},
+        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
     ],
     editors: [
         {field: 'name'},

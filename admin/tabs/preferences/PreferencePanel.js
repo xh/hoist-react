@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
 
 export const preferencePanel = hoistCmp.factory(
@@ -70,7 +70,7 @@ const modelSpec = {
     unit: 'preference',
     filterFields: ['name', 'groupName'],
     actionWarning: {
-        del: 'Are you sure you want to delete? Deleting preferences can break running apps!'
+        del: 'Are you sure you want to delete? Deleting preferences can break running apps.'
     },
     columns: [
         {field: 'local', ...boolCheckCol, width: 70},
@@ -78,7 +78,9 @@ const modelSpec = {
         {field: 'type', width: 100},
         {field: 'defaultValue', width: 200, renderer: truncateIfJson},
         {field: 'groupName', hidden: true},
-        {field: 'notes', minWidth: 200, flex: true}
+        {field: 'notes', minWidth: 200, flex: true},
+        {field: 'lastUpdatedBy', width: 160, hidden: true},
+        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
     ],
     editors: [
         {field: 'name'},

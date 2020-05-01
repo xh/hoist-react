@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-
 import {preferencePanel} from './PreferencePanel';
 import {userPreferencePanel} from './UserPreferencePanel';
 

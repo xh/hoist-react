@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
@@ -13,10 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {defaultsDeep, isFunction} from 'lodash';
-import PT from 'prop-types';
-import ReactDOM from 'react-dom';
-
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
 import 'codemirror/addon/fold/foldcode.js';
@@ -28,7 +23,9 @@ import 'codemirror/addon/scroll/simplescrollbars.css';
 import 'codemirror/addon/scroll/simplescrollbars.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
-
+import {defaultsDeep, isFunction} from 'lodash';
+import PT from 'prop-types';
+import ReactDOM from 'react-dom';
 import './CodeInput.scss';
 
 /**

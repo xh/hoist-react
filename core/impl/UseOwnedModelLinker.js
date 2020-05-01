@@ -4,11 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
+import {useOnUnmount} from '@xh/hoist/utils/react';
 import {useEffect} from 'react';
 import {useContextModel} from '../hooks/Models';
-import {useOnUnmount} from '@xh/hoist/utils/react';
 
 /**
  * @private

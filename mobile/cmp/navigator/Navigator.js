@@ -4,13 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
-import {NavigatorModel} from './NavigatorModel';
-
+import PT from 'prop-types';
 import './Navigator.scss';
+import {NavigatorModel} from './NavigatorModel';
 
 /**
  * Top-level Component within an application, responsible for rendering a stack of

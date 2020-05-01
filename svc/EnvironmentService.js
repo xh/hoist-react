@@ -4,16 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {XH, HoistService} from '@xh/hoist/core';
+import {version as agGridVersion} from '@ag-grid-enterprise/all-modules/package.json';
+import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
+import {HoistService, XH} from '@xh/hoist/core';
+import {version as hoistReactVersion} from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {version as hoistReactVersion} from '@xh/hoist/package.json';
-import {version as agGridVersion} from '@ag-grid-enterprise/all-modules/package.json';
-import {version as mobxVersion} from 'mobx/package.json';
-import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
-import {defaults} from 'lodash';
 import {deepFreeze} from '@xh/hoist/utils/js';
+import {defaults} from 'lodash';
+import {version as mobxVersion} from 'mobx/package.json';
+import React from 'react';
 
 @HoistService
 export class EnvironmentService {
@@ -59,7 +59,8 @@ export class EnvironmentService {
     startVersionChecking() {
         Timer.create({
             runFn: this.checkAppVersionAsync,
-            interval: XH.getConf('xhAppVersionCheckSecs') * SECONDS
+            interval: 'xhAppVersionCheckSecs',
+            intervalUnits: SECONDS
         });
     }
 

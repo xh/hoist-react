@@ -4,40 +4,38 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, XH} from '@xh/hoist/core';
-import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import {Column, ColumnGroup} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
-import {deepFreeze, ensureUnique, throwIf, warnIf, errorIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
     cloneDeep,
     defaults,
     defaultsDeep,
+    difference,
     find,
     findLast,
     isArray,
     isEmpty,
     isNil,
-    isUndefined,
     isPlainObject,
     isString,
+    isUndefined,
     last,
     map,
     max,
     min,
     pull,
-    sortBy,
-    difference
+    sortBy
 } from 'lodash';
 import {GridStateModel} from './GridStateModel';
 import {GridSorter} from './impl/GridSorter';
-import {managed} from '../../core/mixins';
-import {apiRemoved, debounced} from '../../utils/js';
 
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
@@ -160,8 +158,9 @@ export class GridModel {
      *      render group rows.
      * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
      *      element used to render group rows.
-     * @param {GridGroupSortFn} [c.groupSortFn] - closure to sort full-row groups. Called with two
-     *      group values to compare, returns a number as per a standard JS comparator.
+     * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
+     *      Called with two group values to compare in the form of a standard JS comparator.
+     *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
@@ -299,6 +298,14 @@ export class GridModel {
         }
     }
 
+    /**
+     * @param {(Object[]|Object)} records - single record/ID or array of records/IDs to select.
+     * @param {boolean} [clearSelection] - true to clear previous selection (rather than add to it).
+     */
+    select(records, clearSelection = true) {
+        this.selModel.select(records, clearSelection);
+    }
+
     /** Select the first row in the grid. */
     selectFirst() {
         const {agGridModel, selModel} = this;
@@ -311,6 +318,11 @@ export class GridModel {
         const id = agGridModel.getFirstSelectableRowNodeId();
 
         if (id) selModel.select(id);
+    }
+
+    /** Deselect all rows. */
+    clearSelection() {
+        this.selModel.clear();
     }
 
     /**
@@ -335,35 +347,19 @@ export class GridModel {
         }
     }
 
-    /** Does the grid have any records to show? */
-    get empty() {
-        return this.store.empty;
-    }
+    /** @return {boolean} - true if any records are selected. */
+    get hasSelection() {return !this.selModel.isEmpty}
 
-    /** Are any records currently selected? */
-    get hasSelection() {
-        return !this.selModel.isEmpty;
-    }
+    /** @return {Record[]} - currently selected Records. */
+    get selection() {return this.selModel.records}
 
-    /**
-     * Shortcut to the currently selected records (observable).
-     * @see StoreSelectionModel.records
-     */
-    get selection() {
-        return this.selModel.records;
-    }
+    /** @return {?Record} - single selected record, or null if multiple or no records selected. */
+    get selectedRecord() {return this.selModel.singleRecord}
 
-    /**
-     * Shortcut to a single selected record (observable).
-     * Null if multiple records are selected.
-     * @see StoreSelectionModel.singleRecord
-     */
-    get selectedRecord() {
-        return this.selModel.singleRecord;
-    }
+    /** @return {boolean} - true if this grid has no records to show in its store. */
+    get empty() {return this.store.empty}
 
     get isReady() {return this.agGridModel.isReady}
-
     get agApi() {return this.agGridModel.agApi}
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
@@ -620,6 +616,14 @@ export class GridModel {
      */
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
+    }
+
+    /**
+     * Return all currently-visible leaf-level columns.
+     * @returns {Column[]}
+     */
+    getVisibleLeafColumns() {
+        return this.getLeafColumns().filter(it => this.isColumnVisible(it.colId));
     }
 
     /**

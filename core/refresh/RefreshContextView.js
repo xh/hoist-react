@@ -4,9 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useEffect} from 'react';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {useContextModel} from '@xh/hoist/core/index';
+import {useEffect} from 'react';
 
 /**
  * Establishes an area of the application with an independent RefreshContextModel.

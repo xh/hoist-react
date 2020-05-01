@@ -4,16 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {XH, hoistCmp, useLocalModel, useContextModel} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {hoistCmp, useContextModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {withDefault, throwIf} from '@xh/hoist/utils/js';
-
-import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
+import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
@@ -41,24 +39,24 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 
     render({gridModel, store, ...props}) {
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
-
         if (!store) {
             gridModel = withDefault(gridModel, useContextModel(GridModel));
-            store = gridModel ? gridModel.store : null;
+            store = gridModel?.store ?? null;
         }
 
-        // Right now we freeze the initial props -- could be more dynamic.
-        const implModel = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
-        return XH.isMobile ? mobileStoreFilterFieldImpl({implModel, ...props}) : desktopStoreFilterFieldImpl({implModel, ...props});
+        const model = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
+        model.updateFilterProps(props);
+        return XH.isMobile ?
+            mobileStoreFilterFieldImpl({...props, model}) :
+            desktopStoreFilterFieldImpl({...props, model});
     }
 });
 
 StoreFilterField.propTypes = {
 
     /**
-     * Field on optional model to which this component should bind its value. Not required
-     * for filtering functionality (see `gridModel`, `onFilterChange`, and `store` props), but
-     * allows the value of this component to be controlled via an external model observable.
+     * Field on optional model to which this component should bind its value. Specify this
+     * field to control the state of this component.
      */
     bind: PT.string,
 

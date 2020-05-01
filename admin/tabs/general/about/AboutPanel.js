@@ -4,20 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import React from 'react';
-import {XH, hoistCmp} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {div, h1, h2, table, tbody, tr, th, td} from '@xh/hoist/cmp/layout';
+import {div, h2, hbox, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
-
+import {Icon, xhLogo} from '@xh/hoist/icon';
+import React from 'react';
 import './AboutPanel.scss';
 
 export const aboutPanel = hoistCmp.factory(
     () => div({
-        className: 'xh-admin-about-panel xh-tiled-bg',
+        className: 'xh-admin-about-panel',
         items: [
-            h1(Icon.info(), 'About This Application'),
+            h2(Icon.info(), 'About This Application'),
             ...renderTables(),
             renderBlurb()
         ]
@@ -26,7 +25,10 @@ export const aboutPanel = hoistCmp.factory(
 
 function renderTables() {
     const svc = XH.environmentService,
-        row = (label, data) => tr(th(label), td(data));
+        startupTime = svc.get('startupTime'),
+        row = (label, data) => {
+            return data != null ? tr(th(label), td(data)) : null;
+        };
 
     // Snapshot versions are tagged with a timestamp - show that in local time here
     // to aid in identifying when/if a snapshot has been updated.
@@ -39,23 +41,25 @@ function renderTables() {
     return [
         table({
             item: tbody(
-                row('App', `${svc.get('appName')} (${svc.get('appCode')})`),
+                row('App Name / Code', `${svc.get('appName')} / ${svc.get('appCode')}`),
                 row('Environment', svc.get('appEnvironment')),
-                row('Server', `${svc.get('appVersion')} (build ${svc.get('appBuild')})`),
-                row('Client', `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`),
                 row('Database', svc.get('databaseConnectionString')),
-                row('Database User', svc.get('databaseUser')),
-                row('DB Create Mode', svc.get('databaseCreateMode'))
+                row('DB User / Create Mode', `${svc.get('databaseUser')} / ${svc.get('databaseCreateMode')}`),
+                startupTime ? row('Server Uptime', relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})) : null
             )
         }),
-        h2(Icon.books(), 'Framework Versions'),
+        h2(Icon.books(), 'Application and Library Versions'),
         table({
             item: tbody(
-                <tr><th colSpan={2} style={{textAlign: 'left'}}>Server</th></tr>,
+                row('UI Server', `${svc.get('appVersion')} (build ${svc.get('appBuild')})`),
                 row('Hoist Core', svc.get('hoistCoreVersion')),
                 row('Grails', svc.get('grailsVersion')),
-                row('Java', svc.get('javaVersion')),
-                <tr><th colSpan={2} style={{textAlign: 'left'}}>Client</th></tr>,
+                row('Java', svc.get('javaVersion'))
+            )
+        }),
+        table({
+            item: tbody(
+                row('JS Client', `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`),
                 row('Hoist React', hrVersion),
                 row('React', svc.get('reactVersion')),
                 row('ag-Grid', svc.get('agGridVersion')),
@@ -67,14 +71,17 @@ function renderTables() {
 }
 
 function renderBlurb() {
-    return div({
+    return hbox({
         className: 'xh-admin-about-panel__blurb',
         items: [
-            <p>
-                Built with Hoist: a plugin for rich web-application development provided by
-                <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy Industries</a>.
-            </p>,
-            <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
+            xhLogo(),
+            div(
+                <p>
+                    Built with Hoist: a plugin for rich web-application development provided by
+                    <a href="http://xh.io" target="_blank" rel="noopener noreferrer"> Extremely Heavy</a>.
+                </p>,
+                <p>Please contact <a href="mailto:support@xh.io">support@xh.io</a> with any questions.</p>
+            )
         ]
     });
 }

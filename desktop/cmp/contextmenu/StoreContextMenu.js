@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
@@ -67,7 +66,17 @@ export class StoreContextMenu {
                     hidden: !gridModel,
                     recordsRequired: true,
                     actionFn: ({record, column}) => {
-                        if (record && column) copy(record.data[column.field]);
+                        if (record && column) {
+                            const value = column.getValueFn({
+                                record,
+                                column,
+                                field: column.field,
+                                store: record.store,
+                                gridModel
+                            });
+
+                            copy(value);
+                        }
                     }
                 });
             case 'colChooser':

@@ -4,16 +4,23 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, HoistModel, RenderMode} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {
+    HoistModel,
+    managed,
+    ManagedRefreshContextModel,
+    RefreshMode,
+    RenderMode,
+    XH
+} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
+import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse functionality, including the option to persist such state into a Hoist preference.
+ * expand/collapse functionality, including the option to persist such state into a Hoist
+ * preference.
  */
 @HoistModel
 export class PanelModel {
@@ -29,11 +36,14 @@ export class PanelModel {
     maxSize;
     defaultCollapsed;
     side;
-    collapsedRenderMode;
+    renderMode;
+    refreshMode;
     prefName;
     showSplitter;
     showSplitterCollapseButton;
     showHeaderCollapseButton;
+
+    @managed refreshContextModel;
 
     //---------------------
     // Observable State
@@ -47,6 +57,10 @@ export class PanelModel {
     /** Is this panel currently resizing? */
     @observable isResizing = false;
 
+    get isActive() {
+        return !this.collapsed;
+    }
+
     /**
      * @param {Object} config
      * @param {boolean} [config.resizable] - Can panel be resized?
@@ -58,7 +72,10 @@ export class PanelModel {
      * @param {boolean} [config.defaultCollapsed] - Default collapsed state.
      * @param {string} config.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {RenderMode} [config.collapsedRenderMode] - How should collapsed content be rendered?
+     * @param {RenderMode} [config.renderMode] - How should collapsed content be rendered?
+     *      Ignored if collapsible is false.
+     * @param {RefreshMode} [config.refreshMode] - How should collapsed content be refreshed?
+     *      Ignored if collapsible is false.
      * @param {?string} [config.prefName] - preference name to store sizing and collapsed state.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
@@ -75,7 +92,8 @@ export class PanelModel {
         maxSize = null,
         defaultCollapsed = false,
         side,
-        collapsedRenderMode = RenderMode.LAZY,
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY,
         prefName = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
@@ -102,10 +120,15 @@ export class PanelModel {
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
-        this.collapsedRenderMode = collapsedRenderMode;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
+
+        if (this.collapsible) {
+            this.refreshContextModel = new ManagedRefreshContextModel(this);
+        }
 
         if (prefName && !XH.prefService.hasKey(prefName)) {
             console.warn(`Unknown preference for storing state of Panel '${prefName}'`);

@@ -4,14 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {hoistCmp, uses, ModelPublishMode, RenderMode} from '@xh/hoist/core';
+import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
-import {refreshContextView} from '@xh/hoist/core/refresh';
 import {elementFromContent} from '@xh/hoist/utils/react';
-
-import './Page.scss';
+import {useRef} from 'react';
 import {PageModel} from '../PageModel';
+import './Page.scss';
 
 /**
  * Wrapper for contents to be shown within a Navigator. This Component is used by Navigator's
