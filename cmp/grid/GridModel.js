@@ -697,7 +697,9 @@ export class GridModel {
             const col = this.getColumn(id);
             return col && !col.flex;
         });
-        if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
+        if (colIds.length) {
+            XH.gridAutosizeService.autoSizeColumnsAsync({gridModel: this, colIds});
+        }
     }
 
     //-----------------------

@@ -14,6 +14,7 @@ import {
     ConfigService,
     EnvironmentService,
     FetchService,
+    GridAutosizeService,
     GridExportService,
     IdentityService,
     IdleService,
@@ -78,6 +79,8 @@ class XHClass {
     environmentService;
     /** @member {FetchService} */
     fetchService;
+    /** @member {GridAutosizeService} */
+    gridAutosizeService;
     /** @member {GridExportService} */
     gridExportService;
     /** @member {IdentityService} */
@@ -550,7 +553,7 @@ class XHClass {
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridExportService, WebSocketService
+                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
