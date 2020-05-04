@@ -12,6 +12,7 @@ import {isFunction, isNil, isFinite, sortBy, reduce} from 'lodash';
 @HoistService
 export class GridAutosizeService {
 
+    _canvasContext;
     _cellEl;
 
     autoSizeColumns({gridModel, colIds = []}) {
@@ -54,11 +55,10 @@ export class GridAutosizeService {
                 values.add(value);
             });
 
-            // 2) Sort by string length. For columns that use renderers and may return html,
-            // strip html tags but include parentheses / units etc.
-            // Todo: Maybe use this: https://www.w3schools.com/tags/canvas_measuretext.asp : Maybe use this and just check max?
+            // 2) Use a canvas to estimate and sort by the pixel width of the string value.
+            // Strip html tags but include parentheses / units etc. for renderers that may return html,
             const sortedValues = sortBy(Array.from(values), value => {
-                return isNil(value) ? 0 : stripTags(value.toString()).length;
+                return isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             });
 
             // 3) Extract the sample set of longest values for rendering and sizing
@@ -80,6 +80,32 @@ export class GridAutosizeService {
         }
     }
 
+    //------------------
+    // Canvas-based width estimation
+    //------------------
+    getStringWidth(string) {
+        const canvasContext = this.getCanvasContext();
+        return canvasContext.measureText(string).width;
+    }
+
+    getCanvasContext() {
+        if (!this._canvasContext) {
+            // Create hidden canvas
+            const canvasEl = document.createElement('canvas');
+            canvasEl.classList.add('xh-grid-autosize-canvas');
+            document.body.appendChild(canvasEl);
+
+            // Create context which uses grid fonts
+            const canvasContext = canvasEl.getContext('2d');
+            canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
+            this._canvasContext = canvasContext;
+        }
+        return this._canvasContext;
+    }
+
+    //------------------
+    // Autosize cell for width calculation
+    //------------------
     getCellWidth(value, useRenderer) {
         const cellEl = this.getCellEl();
         this.setCellElActive(true);

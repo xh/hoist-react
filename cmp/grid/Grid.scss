@@ -193,6 +193,11 @@
   position: absolute;
 }
 
+.xh-grid-autosize-canvas {
+  position: absolute;
+  display: none;
+}
+
 .xh-grid-autosize-cell {
   padding: 0 var(--xh-grid-cell-lr-pad-px);
   font-family: var(--xh-grid-font-family);
