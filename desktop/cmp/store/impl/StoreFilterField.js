@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
  */
 export function storeFilterFieldImpl(props) {
     return textInput({
-        bind: 'filterText',
         commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
