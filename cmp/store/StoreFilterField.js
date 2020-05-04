@@ -44,11 +44,11 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
             store = gridModel?.store ?? null;
         }
 
-        const model = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
-        model.updateFilterProps(props);
+        const impl = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
+        impl.updateFilterProps(props);
         return XH.isMobile ?
-            mobileStoreFilterFieldImpl({...props, model}) :
-            desktopStoreFilterFieldImpl({...props, model});
+            mobileStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'}) :
+            desktopStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'});
     }
 });
 
