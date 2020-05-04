@@ -11,6 +11,7 @@ import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
+import {start, wait} from '@xh/hoist/promise';
 import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -695,10 +696,18 @@ export class GridModel {
     autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
         colIds = castArray(colIds).filter(id => {
             const col = this.getColumn(id);
-            return col && !col.flex;
+            return col && col.resizable && !col.hidden && !col.flex;
         });
         if (colIds.length) {
-            XH.gridAutosizeService.autoSizeColumnsAsync({gridModel: this, colIds});
+            start().then(async () => {
+                this.agApi.showLoadingOverlay();
+
+                const colStateChanges = XH.gridAutosizeService.autoSizeColumns({gridModel: this, colIds});
+                this.applyColumnStateChanges(colStateChanges);
+
+                await wait(100);
+                this.agApi.hideOverlay();
+            });
         }
     }
 

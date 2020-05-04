@@ -194,11 +194,14 @@
 }
 
 .xh-grid-autosize-cell {
-  // Add a slight padding buffer for security against ellipses
-  padding: 0 calc(var(--xh-grid-cell-lr-pad-px) + 2px); // Todo: Add buffer to number in JS, make an option
-  display: inline-block;
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
   -webkit-font-smoothing: subpixel-antialiased;
   visibility: hidden;
+  display: none;
+
+  &--active {
+    display: inline-block;
+  }
 }
