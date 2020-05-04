@@ -7,14 +7,27 @@
 
 import {HoistService} from '@xh/hoist/core';
 import {throwIf, stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, reduce} from 'lodash';
+import {isFunction, isNil, isFinite, sortBy, reduce, min, max} from 'lodash';
 
+/**
+ * Calculates the column width required to display all values in a column. Attempts to account
+ * for renderers and grid sizing modes.
+ * @see Column.autoSizeOptions for options to control this behaviour
+ */
 @HoistService
 export class GridAutosizeService {
 
     _canvasContext;
     _cellEl;
 
+    /**
+     * Calculates the required column widths for a GridModel. Returns an array of the
+     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
+     * Typically called via `GridModel.autoSizeColumns()`.
+     *
+     * @param {GridModel} gridModel - GridModel to calculate autosizes for.
+     * @param {string[]} colIds - which columns to autosize.
+     */
     autoSizeColumns({gridModel, colIds = []}) {
         throwIf(!gridModel, 'GridModel required for autosize');
         if (!colIds.length) return;
@@ -37,14 +50,11 @@ export class GridAutosizeService {
             const {store} = gridModel,
                 records = [...store.records, store.summaryRecord],
                 column = gridModel.findColumn(gridModel.columns, colId),
-                {autoSizeOptions, field, getValueFn, renderer, elementRenderer} = column,
+                {autoSizeOptions, field, getValueFn, renderer} = column,
                 {enabled, sampleCount, buffer, minWidth, maxWidth} = autoSizeOptions,
                 useRenderer = isFunction(renderer);
 
             if (!enabled) return;
-
-            // Columns with element renderers are not supported
-            if (elementRenderer) return;
 
             // 1) Get unique values
             const values = new Set();
@@ -65,13 +75,13 @@ export class GridAutosizeService {
             const longestValues = sortedValues.slice(Math.max(sortedValues.length - sampleCount, 0));
 
             // 4) Render to a hidden cell to calculate the max displayed width
-            const result = reduce(longestValues, (currMax, value) => {
+            let result = reduce(longestValues, (currMax, value) => {
                 const width = this.getCellWidth(value, useRenderer) + buffer;
                 return Math.max(currMax, width);
             }, 0);
 
-            if (isFinite(minWidth) && result < minWidth) return minWidth;
-            if (isFinite(maxWidth) && result > maxWidth) return maxWidth;
+            result = max([result, minWidth]);
+            result = min([result, maxWidth]);
             return result;
         } catch (e) {
             console.debug(`Could not calculate width for column "${colId}".`, e);

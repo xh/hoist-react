@@ -693,7 +693,9 @@ export class GridModel {
      * Autosize columns to fit their contents.
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
      */
-    autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
+    autoSizeColumns(colIds) {
+        if (!colIds) colIds = this.getLeafColumns().map(col => col.colId);
+
         colIds = castArray(colIds).filter(id => {
             const col = this.getColumn(id);
             return col && col.resizable && !col.hidden && !col.flex;
@@ -704,6 +706,8 @@ export class GridModel {
 
                 const colStateChanges = XH.gridAutosizeService.autoSizeColumns({gridModel: this, colIds});
                 this.applyColumnStateChanges(colStateChanges);
+
+                console.debug('Columns autosized:', colStateChanges);
 
                 await wait(100);
                 this.agApi.hideOverlay();
