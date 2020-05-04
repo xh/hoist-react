@@ -74,11 +74,11 @@ export class Column {
      *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
      *      to avoid your column being squeezed down to the default 50px minimum or stretching so
      *      wide that it compromises the overall legibility of the grid.
-     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
-     *      determine an appropriate row height when the column is visible.
-     * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
-     *      will be applied by successive clicks on the column header. Values may be one of 'asc',
-     *      'desc', a SortSpec, or null.  Specify null to clear the sort on this column.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this
+     *      to determine an appropriate row height when the column is visible.
+     * @param {(string[]|Column~SortSpec[])} [c.sortingOrder] - the sorting options for this column
+     *      to be applied by successive clicks on the column header. Values may be one of 'asc',
+     *      'desc', a SortSpec, or null. Specify null to clear the sort on this column.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the sortingOrder.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
@@ -650,7 +650,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
  */
