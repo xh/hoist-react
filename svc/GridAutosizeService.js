@@ -7,7 +7,7 @@
 
 import {HoistService} from '@xh/hoist/core';
 import {throwIf, stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, reduce, min, max} from 'lodash';
+import {isFunction, isNil, isFinite, sortBy, groupBy, forOwn, reduce, min, max} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column. Attempts to account
@@ -49,45 +49,64 @@ export class GridAutosizeService {
         try {
             const {store} = gridModel,
                 records = [...store.records, store.summaryRecord],
-                column = gridModel.findColumn(gridModel.columns, colId),
-                {autoSizeOptions, field, getValueFn, renderer} = column,
-                {enabled, sampleCount, buffer, minWidth, maxWidth} = autoSizeOptions,
-                useRenderer = isFunction(renderer);
+                column = gridModel.findColumn(gridModel.columns, colId);
 
-            if (!enabled) return;
+            if (!column.autoSizeOptions.enabled) return;
 
-            // 1) Get unique values
-            const values = new Set();
-            records.forEach(record => {
-                if (!record) return;
-                const rawValue = getValueFn({record, field, column, gridModel}),
-                    value = useRenderer ? renderer(rawValue, {record, column, gridModel}) : rawValue;
-                values.add(value);
-            });
+            if (gridModel.treeMode && store.allRootCount !== store.allCount && column.isTreeColumn) {
+                // For tree columns, we need to account for the indentation at the different depths.
+                // Here we group the records by tree depth and determine the max width at each depth.
+                const recordsByDepth = groupBy(records, record => record.ancestors.length),
+                    ret = [];
 
-            // 2) Use a canvas to estimate and sort by the pixel width of the string value.
-            // Strip html tags but include parentheses / units etc. for renderers that may return html,
-            const sortedValues = sortBy(Array.from(values), value => {
-                return isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
-            });
+                forOwn(recordsByDepth, (records, depth) => {
+                    ret.push(this.calcMaxWidth(records, column, gridModel, this.getIndentation(depth)));
+                });
 
-            // 3) Extract the sample set of longest values for rendering and sizing
-            const longestValues = sortedValues.slice(Math.max(sortedValues.length - sampleCount, 0));
-
-            // 4) Render to a hidden cell to calculate the max displayed width
-            let result = reduce(longestValues, (currMax, value) => {
-                const width = this.getCellWidth(value, useRenderer) + buffer;
-                return Math.max(currMax, width);
-            }, 0);
-
-            result = max([result, minWidth]);
-            result = min([result, maxWidth]);
-            return result;
+                return max(ret);
+            } else {
+                return this.calcMaxWidth(records, column, gridModel);
+            }
         } catch (e) {
             console.debug(`Could not calculate width for column "${colId}".`, e);
         } finally {
             this.setCellElActive(false);
         }
+    }
+
+    calcMaxWidth(records, column, gridModel, indentation = 0) {
+        const {autoSizeOptions, field, getValueFn, renderer} = column,
+            {sampleCount, buffer, minWidth, maxWidth} = autoSizeOptions,
+            useRenderer = isFunction(renderer);
+
+        // 1) Get unique values
+        const values = new Set();
+        records.forEach(record => {
+            if (!record) return;
+            const rawValue = getValueFn({record, field, column, gridModel}),
+                value = useRenderer ? renderer(rawValue, {record, column, gridModel}) : rawValue;
+            values.add(value);
+        });
+
+        // 2) Use a canvas to estimate and sort by the pixel width of the string value.
+        // Strip html tags but include parentheses / units etc. for renderers that may return html,
+        const sortedValues = sortBy(Array.from(values), value => {
+            const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
+            return width + indentation;
+        });
+
+        // 3) Extract the sample set of longest values for rendering and sizing
+        const longestValues = sortedValues.slice(Math.max(sortedValues.length - sampleCount, 0));
+
+        // 4) Render to a hidden cell to calculate the max displayed width
+        let result = reduce(longestValues, (currMax, value) => {
+            const width = this.getCellWidth(value, useRenderer) + indentation + buffer;
+            return Math.max(currMax, width);
+        }, 0);
+
+        result = max([result, minWidth]);
+        result = min([result, maxWidth]);
+        return result;
     }
 
     //------------------
@@ -148,6 +167,16 @@ export class GridAutosizeService {
             this._cellEl = cellEl;
         }
         return this._cellEl;
+    }
+
+    //-----------------
+    // Indentation
+    //-----------------
+    getIndentation(depth) {
+        const cellEl = this.getCellEl(),
+            indentation = parseInt(window.getComputedStyle(cellEl).getPropertyValue('top'));
+        depth = parseInt(depth) + 1; // Add 1 to account for expand / collapse arrow.
+        return indentation * depth;
     }
 
 }

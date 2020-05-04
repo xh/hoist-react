@@ -199,6 +199,7 @@
 }
 
 .xh-grid-autosize-cell {
+  top: var(--xh-grid-tree-indent-px);
   padding: 0 var(--xh-grid-cell-lr-pad-px);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
