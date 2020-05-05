@@ -32,6 +32,7 @@ import {
     map,
     max,
     min,
+    partition,
     pull,
     sortBy
 } from 'lodash';
@@ -725,10 +726,20 @@ export class GridModel {
         start(async () => {
             this.agApi?.showLoadingOverlay();
 
-            const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, colIds);
-            this.applyColumnStateChanges(colStateChanges);
+            const [autoSizable, nonAutoSizable] = partition(colIds, id => {
+                const col = this.getColumn(id);
+                return col && !col.elementRenderer;
+            });
 
-            console.debug('Columns autosized:', colStateChanges);
+            if (autoSizable.length) {
+                const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, autoSizable);
+                this.applyColumnStateChanges(colStateChanges);
+                console.debug('Columns autosized:', colStateChanges);
+            }
+
+            if (nonAutoSizable.length) {
+                this.agColumnApi?.autoSizeColumns(nonAutoSizable);
+            }
 
             // Short wait to allow column size changes to propagate before removing mask.
             await wait(100);
