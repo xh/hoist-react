@@ -265,14 +265,7 @@ export class GridModel {
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
-        this.experimental = {
-            externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
-            useHoistAutosize: false,
-            ...experimental
-        };
-        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
+        this.experimental = this.parseExperimental(experimental);
     }
 
     /**
@@ -726,19 +719,19 @@ export class GridModel {
         start(async () => {
             this.agApi?.showLoadingOverlay();
 
-            const [autoSizable, nonAutoSizable] = partition(colIds, id => {
+            const [hoistSizable, agSizable] = partition(colIds, id => {
                 const col = this.getColumn(id);
                 return col && !col.elementRenderer;
             });
 
-            if (autoSizable.length) {
-                const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, autoSizable);
+            if (!isEmpty(hoistSizable)) {
+                const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, hoistSizable);
                 this.applyColumnStateChanges(colStateChanges);
-                console.debug('Columns autosized:', colStateChanges);
+                console.debug('Columns autosized via gridAutosizeService', colStateChanges);
             }
 
-            if (nonAutoSizable.length) {
-                this.agColumnApi?.autoSizeColumns(nonAutoSizable);
+            if (!isEmpty(agSizable)) {
+                this.agColumnApi?.autoSizeColumns(agSizable);
             }
 
             // Short wait to allow column size changes to propagate before removing mask.
@@ -889,6 +882,20 @@ export class GridModel {
         }
         return ret;
     }
+
+    parseExperimental(experimental) {
+        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
+
+        return {
+            externalSort: false,
+            useTransactions: true,
+            useDeltaSort: false,
+            useHoistAutosize: false,
+            ...XH.getConf('xhGridExperimental', {}),
+            ...experimental
+        };
+    }
+
 
     createChooserModel() {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
