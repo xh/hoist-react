@@ -193,6 +193,9 @@
   position: absolute;
 }
 
+//-----------
+// Autosize
+//-----------
 .xh-grid-autosize-canvas {
   position: absolute;
   display: none;
@@ -226,5 +229,38 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-font-size-px);
     padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+  }
+}
+
+.xh-grid-autosize-header {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-header-font-size-px);
+  font-weight: var(--xh-grid-header-font-weight);
+  font-family: var(--xh-grid-header-font-family);
+  flex-direction: row;
+  visibility: hidden;
+  display: none;
+
+  svg {
+    margin-left: var(--xh-pad-half-px);
+  }
+
+  &--active {
+    display: inline-flex;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-header-font-size-px);
+    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-header-font-size-px);
+    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-header-font-size-px);
+    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
   }
 }

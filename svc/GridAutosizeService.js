@@ -26,6 +26,7 @@ import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} fro
 export class GridAutosizeService {
 
     _canvasContext;
+    _headerEl;
     _cellEl;
 
     /**
@@ -59,6 +60,7 @@ export class GridAutosizeService {
             const width = this.autoSizeColumn(gridModel, records, colId);
             if (isFinite(width)) ret.push({colId, width});
         }
+
         return ret;
     }
 
@@ -66,16 +68,41 @@ export class GridAutosizeService {
     // Implementation
     //------------------
     autoSizeColumn(gridModel, records, colId) {
-        try {
-            const {store} = gridModel,
-                column = gridModel.findColumn(gridModel.columns, colId);
+        const column = gridModel.findColumn(gridModel.columns, colId);
+        return max([
+            this.calcHeaderMaxWidth(gridModel, column),
+            this.calcDataMaxWidth(gridModel, records, column)
+        ]);
+    }
 
+    calcHeaderMaxWidth(gridModel, column) {
+        try {
+            const {bufferPx, minWidth, maxWidth} = column.autoSizeOptions;
+
+            this.setHeaderElActive(true);
+            this.setHeaderElSizingMode(gridModel.sizingMode);
+
+            let result = this.getHeaderWidth(gridModel, column.colId) + bufferPx;
+            result = max([result, minWidth]);
+            result = min([result, maxWidth]);
+            return result;
+        } catch (e) {
+            console.warn(`Error calculating max header width for column "${column.colId}".`, e);
+        } finally {
+            this.setHeaderElActive(false);
+        }
+    }
+
+    calcDataMaxWidth(gridModel, records, column) {
+        try {
             if (column.elementRenderer) return null;
 
-            this.setCellElActive(true);
-            this.setCellElSizingMode(gridModel.sizingMode);
+            const {store, sizingMode, treeMode} = gridModel;
 
-            if (gridModel.treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
+            this.setCellElActive(true);
+            this.setCellElSizingMode(sizingMode);
+
+            if (treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
                 // Here we group the records by tree depth and determine the max width at each depth.
                 const recordsByDepth = groupBy(records, record => record.ancestors.length),
@@ -88,7 +115,7 @@ export class GridAutosizeService {
                 return this.calcMaxWidth(gridModel, records, column);
             }
         } catch (e) {
-            console.warn(`Error calculating width for column "${colId}".`, e);
+            console.warn(`Error calculating max data width for column "${column.colId}".`, e);
         } finally {
             this.setCellElActive(false);
         }
@@ -130,30 +157,53 @@ export class GridAutosizeService {
     }
 
     //------------------
-    // Canvas-based width estimation
+    // Autosize header cell
     //------------------
-    getStringWidth(string) {
-        const canvasContext = this.getCanvasContext();
-        return canvasContext.measureText(string).width;
+    getHeaderWidth(gridModel, colId) {
+        const headerContainerEl = gridModel.agApi?.gridPanel.childComponents[0].eHeaderContainer,
+            colHeaderEl = headerContainerEl?.querySelectorAll(`[col-id*="${colId}"]`),
+            colHeaderContentEl = colHeaderEl.length === 1 ? colHeaderEl[0].getElementsByClassName('xh-grid-header')[0] : null;
+
+        if (!colHeaderContentEl) return null;
+
+        // Copy ag-grid header markup into temp header and size.
+        const headerEl = this.getHeaderEl();
+        headerEl.innerHTML = colHeaderContentEl.innerHTML;
+        return Math.ceil(headerEl.clientWidth);
     }
 
-    getCanvasContext() {
-        if (!this._canvasContext) {
-            // Create hidden canvas
-            const canvasEl = document.createElement('canvas');
-            canvasEl.classList.add('xh-grid-autosize-canvas');
-            document.body.appendChild(canvasEl);
-
-            // Create context which uses grid fonts
-            const canvasContext = canvasEl.getContext('2d');
-            canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
-            this._canvasContext = canvasContext;
+    setHeaderElActive(active) {
+        const headerEl = this.getHeaderEl();
+        if (active) {
+            headerEl.classList.add('xh-grid-autosize-header--active');
+        } else {
+            headerEl.classList.remove('xh-grid-autosize-header--active');
         }
-        return this._canvasContext;
+    }
+
+    setHeaderElSizingMode(sizingMode) {
+        const headerEl = this.getHeaderEl();
+        headerEl.classList.remove(
+            'xh-grid-autosize-header--large',
+            'xh-grid-autosize-header--standard',
+            'xh-grid-autosize-header--compact',
+            'xh-grid-autosize-header--tiny'
+        );
+        headerEl.classList.add(`xh-grid-autosize-header--${sizingMode}`);
+    }
+
+    getHeaderEl() {
+        if (!this._headerEl) {
+            const headerEl = document.createElement('div');
+            headerEl.classList.add('xh-grid-autosize-header');
+            document.body.appendChild(headerEl);
+            this._headerEl = headerEl;
+        }
+        return this._headerEl;
     }
 
     //------------------
-    // Autosize cell for width calculation
+    // Autosize cell
     //------------------
     getCellWidth(value, useRenderer) {
         const cellEl = this.getCellEl();
@@ -207,6 +257,29 @@ export class GridAutosizeService {
             indentation = parseInt(window.getComputedStyle(cellEl).getPropertyValue('left'));
         depth = parseInt(depth) + 1; // Add 1 to account for expand / collapse arrow.
         return indentation * depth;
+    }
+
+    //------------------
+    // Canvas-based width estimation
+    //------------------
+    getStringWidth(string) {
+        const canvasContext = this.getCanvasContext();
+        return canvasContext.measureText(string).width;
+    }
+
+    getCanvasContext() {
+        if (!this._canvasContext) {
+            // Create hidden canvas
+            const canvasEl = document.createElement('canvas');
+            canvasEl.classList.add('xh-grid-autosize-canvas');
+            document.body.appendChild(canvasEl);
+
+            // Create context which uses grid fonts
+            const canvasContext = canvasEl.getContext('2d');
+            canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
+            this._canvasContext = canvasContext;
+        }
+        return this._canvasContext;
     }
 
 }
