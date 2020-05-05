@@ -38,8 +38,22 @@ export class GridAutosizeService {
      */
     autoSizeColumns(gridModel, colIds) {
         const ret = [],
-            {summaryRecord, allRecords} = gridModel.store,
-            records = summaryRecord ? [...allRecords, summaryRecord] : allRecords;
+            {store} = gridModel;
+
+        // Get filtered set of records
+        let records = [];
+        if (gridModel.agApi?.isAnyFilterPresent()) {
+            gridModel.agApi.forEachNodeAfterFilter(node => {
+                const record = store.getById(node.data?.id);
+                if (record) records.push(record);
+            });
+        } else {
+            records = store.records;
+        }
+
+        if (store.summaryRecord) {
+            records.push(store.summaryRecord);
+        }
 
         for (const colId of colIds) {
             const width = this.autoSizeColumn(gridModel, records, colId);
