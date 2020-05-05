@@ -261,7 +261,7 @@ export class Column {
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.autoSizeOptions = {
-            enabled: withDefault(this.resizable && !this.elementRenderer, true),
+            enabled: withDefault(this.resizable, true),
             sampleCount: 10,
             buffer: 5,
             minWidth: this.minWidth,

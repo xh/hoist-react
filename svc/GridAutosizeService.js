@@ -6,12 +6,20 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {throwIf, stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, groupBy, forOwn, reduce, min, max} from 'lodash';
+import {stripTags} from '@xh/hoist/utils/js';
+import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} from 'lodash';
 
 /**
- * Calculates the column width required to display all values in a column. Attempts to account
- * for renderers and grid sizing modes.
+ * Calculates the column width required to display all values in a column.
+ *
+ * Unlike the native ag-Grid autosizing, this service will compute a size based on all
+ * data in the grid, including off-screen rows and columns, and collapsed rows.
+ *
+ * In order to do this efficiently, this service uses heuristics and that generally assumes each
+ * column consists of similarly formatted strings.  In particular, it cannot make the computation
+ * when a react based elementRenderer has been specified for a column. In this case, no width will
+ * be computed, and the column will be ignored by this service.
+ *
  * @see Column.autoSizeOptions for options to control this behaviour
  */
 @HoistService
@@ -25,18 +33,16 @@ export class GridAutosizeService {
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
      * Typically called via `GridModel.autoSizeColumns()`.
      *
-     * @param {GridModel} gridModel - GridModel to calculate autosizes for.
-     * @param {string[]} colIds - which columns to autosize.
+     * @param {GridModel} gridModel - GridModel to autosize.
+     * @param {String[]} colIds - array of columns in model to compute sizing for.
      */
-    autoSizeColumns({gridModel, colIds = []}) {
-        throwIf(!gridModel, 'GridModel required for autosize');
-        if (!colIds.length) return;
+    autoSizeColumns(gridModel, colIds) {
+        const ret = [],
+            {summaryRecord, allRecords} = gridModel.store,
+            records = summaryRecord ? [...allRecords, summaryRecord] : allRecords;
 
-        const ret = [];
-        for (let i = 0; i < colIds.length; i++) {
-            const colId = colIds[i],
-                width = this.autoSizeColumn({colId, gridModel});
-
+        for (const colId of colIds) {
+            const width = this.autoSizeColumn(gridModel, records, colId);
             if (isFinite(width)) ret.push({colId, width});
         }
         return ret;
@@ -45,36 +51,35 @@ export class GridAutosizeService {
     //------------------
     // Implementation
     //------------------
-    autoSizeColumn({colId, gridModel}) {
+    autoSizeColumn(gridModel, records, colId) {
         try {
             const {store} = gridModel,
-                records = [...store.records, store.summaryRecord],
                 column = gridModel.findColumn(gridModel.columns, colId);
 
-            if (!column.autoSizeOptions.enabled) return;
+            if (column.elementRenderer) {
+                return null;
+            }
 
-            if (gridModel.treeMode && store.allRootCount !== store.allCount && column.isTreeColumn) {
+            if (gridModel.treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
                 // Here we group the records by tree depth and determine the max width at each depth.
                 const recordsByDepth = groupBy(records, record => record.ancestors.length),
-                    ret = [];
+                    levelMaxes = map(recordsByDepth, (records, depth) => {
+                        return this.calcMaxWidth(gridModel, records, column, this.getIndentation(depth));
+                    });
 
-                forOwn(recordsByDepth, (records, depth) => {
-                    ret.push(this.calcMaxWidth(records, column, gridModel, this.getIndentation(depth)));
-                });
-
-                return max(ret);
+                return max(levelMaxes);
             } else {
-                return this.calcMaxWidth(records, column, gridModel);
+                return this.calcMaxWidth(gridModel, records, column);
             }
         } catch (e) {
-            console.debug(`Could not calculate width for column "${colId}".`, e);
+            console.warn(`Error calculating width for column "${colId}".`, e);
         } finally {
             this.setCellElActive(false);
         }
     }
 
-    calcMaxWidth(records, column, gridModel, indentation = 0) {
+    calcMaxWidth(gridModel, records, column, indentation = 0) {
         const {autoSizeOptions, field, getValueFn, renderer} = column,
             {sampleCount, buffer, minWidth, maxWidth} = autoSizeOptions,
             useRenderer = isFunction(renderer);

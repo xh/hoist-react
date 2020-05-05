@@ -177,8 +177,11 @@ export class GridModel {
      * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
      *      'deltaSort' feature designed to do incremental sorting.  Default false.
      * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      deltaRowDataMode to internally generate transactions on data updates.  With the default
-     *      (true) Hoist will generate the transaction on data update.
+     *      deltaRowDataMode to internally generate transactions on data updates.  When true,
+     *      Hoist will generate the transaction on data update. Default true.
+     * @param {boolean} [c.experimental.useHoistAutosize] - set to true to use Hoist's custom
+     *      autoSizeService to perform column sizing instead of the built-in ag-Grid support.
+     *      See AutosizeService for more details. Default false.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -265,6 +268,7 @@ export class GridModel {
             externalSort: false,
             useTransactions: true,
             useDeltaSort: false,
+            useHoistAutosize: false,
             ...experimental
         };
         apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
@@ -691,33 +695,46 @@ export class GridModel {
 
     /**
      * Autosize columns to fit their contents.
+     *
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
+     *
+     * This method will ignore hidden columns, columns with a flex value, and columns with
+     * autosizing disabled via the autoSizeOptions.enabled flag.
      */
     autoSizeColumns(colIds) {
-        if (!colIds) colIds = this.getLeafColumns().map(col => col.colId);
+        colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
 
         colIds = castArray(colIds).filter(id => {
             const col = this.getColumn(id);
-            return col && col.resizable && !col.hidden && !col.flex;
+            return col && col.autoSizeOptions.enabled && !col.hidden && !col.flex;
         });
-        if (colIds.length) {
-            start().then(async () => {
-                this.agApi.showLoadingOverlay();
 
-                const colStateChanges = XH.gridAutosizeService.autoSizeColumns({gridModel: this, colIds});
-                this.applyColumnStateChanges(colStateChanges);
-
-                console.debug('Columns autosized:', colStateChanges);
-
-                await wait(100);
-                this.agApi.hideOverlay();
-            });
+        if (!isEmpty(colIds)) {
+            if (this.experimental.useHoistAutosize) {
+                this.hoistAutoSize(colIds);
+            } else {
+                this.agColumnApi?.autoSizeColumns(colIds);
+            }
         }
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    hoistAutoSize(colIds) {
+        start(async () => {
+            this.agApi?.showLoadingOverlay();
+
+            const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, colIds);
+            this.applyColumnStateChanges(colStateChanges);
+
+            console.debug('Columns autosized:', colStateChanges);
+
+            await wait(100);
+            this.agApi?.hideOverlay();
+        });
+    }
+
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
