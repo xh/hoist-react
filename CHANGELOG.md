@@ -12,6 +12,9 @@ This feature is currently marked as 'experimental', and should be enabled via th
 experimental flag `useHoistAutoResize`.  In future versions of Hoist, we expect to make it the
 default behavior.
 
+### 🐞 Bug Fixes
+* Fixed a regression with `StoreFilterField` introduced in v33.0.1.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
 
 ## v33.0.2 - 2020-05-01
