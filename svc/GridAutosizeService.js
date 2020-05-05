@@ -52,7 +52,7 @@ export class GridAutosizeService {
             records = [...store.records];
         }
 
-        if (store.summaryRecord) {
+        if (gridModel.showSummary && store.summaryRecord) {
             records.push(store.summaryRecord);
         }
 
