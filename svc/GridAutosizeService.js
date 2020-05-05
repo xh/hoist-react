@@ -48,7 +48,7 @@ export class GridAutosizeService {
                 if (record) records.push(record);
             });
         } else {
-            records = store.records;
+            records = [...store.records];
         }
 
         if (store.summaryRecord) {
