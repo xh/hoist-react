@@ -56,9 +56,10 @@ export class GridAutosizeService {
             const {store} = gridModel,
                 column = gridModel.findColumn(gridModel.columns, colId);
 
-            if (column.elementRenderer) {
-                return null;
-            }
+            if (column.elementRenderer) return null;
+
+            this.setCellElActive(true);
+            this.setCellElSizingMode(gridModel.sizingMode);
 
             if (gridModel.treeMode && column.isTreeColumn && store.allRootCount !== store.allCount) {
                 // For tree columns, we need to account for the indentation at the different depths.
@@ -79,9 +80,9 @@ export class GridAutosizeService {
         }
     }
 
-    calcMaxWidth(gridModel, records, column, indentation = 0) {
+    calcMaxWidth(gridModel, records, column, indentationPx = 0) {
         const {autoSizeOptions, field, getValueFn, renderer} = column,
-            {sampleCount, buffer, minWidth, maxWidth} = autoSizeOptions,
+            {sampleCount, bufferPx, minWidth, maxWidth} = autoSizeOptions,
             useRenderer = isFunction(renderer);
 
         // 1) Get unique values
@@ -97,7 +98,7 @@ export class GridAutosizeService {
         // Strip html tags but include parentheses / units etc. for renderers that may return html,
         const sortedValues = sortBy(Array.from(values), value => {
             const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
-            return width + indentation;
+            return width + indentationPx;
         });
 
         // 3) Extract the sample set of longest values for rendering and sizing
@@ -105,7 +106,7 @@ export class GridAutosizeService {
 
         // 4) Render to a hidden cell to calculate the max displayed width
         let result = reduce(longestValues, (currMax, value) => {
-            const width = this.getCellWidth(value, useRenderer) + indentation + buffer;
+            const width = this.getCellWidth(value, useRenderer) + indentationPx + bufferPx;
             return Math.max(currMax, width);
         }, 0);
 
@@ -142,7 +143,6 @@ export class GridAutosizeService {
     //------------------
     getCellWidth(value, useRenderer) {
         const cellEl = this.getCellEl();
-        this.setCellElActive(true);
         if (useRenderer) {
             cellEl.innerHTML = value;
         } else if (cellEl.firstChild?.nodeType === 3) {
@@ -164,6 +164,17 @@ export class GridAutosizeService {
         }
     }
 
+    setCellElSizingMode(sizingMode) {
+        const cellEl = this.getCellEl();
+        cellEl.classList.remove(
+            'xh-grid-autosize-cell--large',
+            'xh-grid-autosize-cell--standard',
+            'xh-grid-autosize-cell--compact',
+            'xh-grid-autosize-cell--tiny'
+        );
+        cellEl.classList.add(`xh-grid-autosize-cell--${sizingMode}`);
+    }
+
     getCellEl() {
         if (!this._cellEl) {
             const cellEl = document.createElement('div');
@@ -179,7 +190,7 @@ export class GridAutosizeService {
     //-----------------
     getIndentation(depth) {
         const cellEl = this.getCellEl(),
-            indentation = parseInt(window.getComputedStyle(cellEl).getPropertyValue('top'));
+            indentation = parseInt(window.getComputedStyle(cellEl).getPropertyValue('left'));
         depth = parseInt(depth) + 1; // Add 1 to account for expand / collapse arrow.
         return indentation * depth;
     }

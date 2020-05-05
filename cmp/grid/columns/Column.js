@@ -263,7 +263,7 @@ export class Column {
         this.autoSizeOptions = {
             enabled: withDefault(this.resizable, true),
             sampleCount: 10,
-            buffer: 5,
+            bufferPx: 5,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
             ...autoSizeOptions
@@ -659,7 +659,7 @@ export function getAgHeaderClassFn(column) {
  * @typedef {Object} AutoSizeOptions - specifies how the column autosizes. @see GridAutosizeService
  * @property {boolean} enabled - allow autosizing this column.
  * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
- * @property {number} buffer - extra width in pixels to add to calculated max width.
+ * @property {number} bufferPx - extra width in pixels to add to calculated max width.
  * @property {number} minWidth - minimum width in pixels.
  * @property {number} maxWidth - minimum width in pixels.
  */

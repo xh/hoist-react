@@ -730,6 +730,7 @@ export class GridModel {
 
             console.debug('Columns autosized:', colStateChanges);
 
+            // Short wait to allow column size changes to propagate before removing mask.
             await wait(100);
             this.agApi?.hideOverlay();
         });

@@ -199,15 +199,32 @@
 }
 
 .xh-grid-autosize-cell {
-  top: var(--xh-grid-tree-indent-px);
   padding: 0 var(--xh-grid-cell-lr-pad-px);
-  font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
-  -webkit-font-smoothing: subpixel-antialiased;
+  font-family: var(--xh-grid-font-family);
   visibility: hidden;
   display: none;
 
+  // This property is not actually used in rendering, but is provided here
+  // for later interpretation by GridAutosizeService.getIndentation()
+  left: var(--xh-grid-tree-indent-px);
+
   &--active {
     display: inline-block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
   }
 }
