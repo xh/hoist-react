@@ -1,5 +1,19 @@
 # Changelog
 
+## v33.1.0 - 2020-05-05
+
+### 🎁 New Features
+** Added new feature for smart auto-resizing in `GridModel`  Unlike ag-Grid's native auto-resizing
+support, Hoist's auto-resizing will also take into account collapsed rows, off-screen cells
+that are not currently rendered in the DOM, and summary rows.  See the new `GridAutoResizeService`
+for more details.
+
+This feature is currently marked as 'experimental', and should be enabled via the `GridModel`
+experimental flag `useHoistAutoResize`.  In future versions of Hoist, we expect to make it the
+default behavior.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
+
 ## v33.0.2 - 2020-05-01
 
 ### 🎁 New Features

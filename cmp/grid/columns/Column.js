@@ -125,6 +125,7 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
+     * @param {AutoSizeOptions} [c.autoSizeOptions] - specifies how the column autosizes.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -175,6 +176,7 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
+        autoSizeOptions,
         agOptions,
         ...rest
     }, gridModel) {
@@ -257,6 +259,15 @@ export class Column {
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
+        this.autoSizeOptions = {
+            enabled: withDefault(this.resizable, true),
+            sampleCount: 10,
+            bufferPx: 5,
+            minWidth: this.minWidth,
+            maxWidth: this.maxWidth,
+            ...autoSizeOptions
+        };
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -642,4 +653,13 @@ export function getAgHeaderClassFn(column) {
  * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
+ */
+
+/**
+ * @typedef {Object} AutoSizeOptions - specifies how the column autosizes. @see GridAutosizeService
+ * @property {boolean} enabled - allow autosizing this column.
+ * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
+ * @property {number} bufferPx - extra width in pixels to add to calculated max width.
+ * @property {number} minWidth - minimum width in pixels.
+ * @property {number} maxWidth - minimum width in pixels.
  */
