@@ -8,7 +8,7 @@ import {isEmpty, isFinite} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol, GridModel, dateCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
@@ -56,7 +56,7 @@ export class ActivityGridModel {
 
             {name: 'userAgent'},
             {name: 'impersonating'},
-            {name: 'elapsed', aggregator: 'RANGE'},
+            {name: 'elapsed', aggregator: 'AVG'},
             {name: 'dateCreated', aggregator: 'RANGE'},
             {name: 'data'}
         ]
@@ -88,7 +88,7 @@ export class ActivityGridModel {
                 headerName: 'Elapsed (ms)',
                 width: 130,
                 align: 'right',
-                renderer: this.numberRangeRenderer
+                renderer: numberRenderer({precision: 0})
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120}
         ]
@@ -97,10 +97,9 @@ export class ActivityGridModel {
     @managed
     treeMapModel = new TreeMapModel({
         gridModel: this.gridModel,
-        colorMode: 'balanced',
-        labelField: 'username',
+        labelField: 'cubeLabel',
         valueField: 'msg',
-        heatField: 'category'
+        heatField: 'elapsed' // TODO: Useful but a little weird that 'slow' is 'greener'
     });
 
     constructor() {
@@ -191,20 +190,6 @@ export class ActivityGridModel {
         if (minStr === maxStr) return minStr;
         if (!max) return minStr; // TODO: If you have one you have the other? They maybe equal, but the only way you get null is if the whole collection is of nulls
         if (!min) return maxStr;
-        return `${minStr} – ${maxStr}`;
-    }
-
-    numberRangeRenderer(range) {
-        if (!range) return;
-        if (isFinite(range)) return fmtNumber(range, {precision: 0});
-
-        const {min, max} = range,
-            minStr = fmtNumber(min, {precision: 0}),
-            maxStr = fmtNumber(max, {precision: 0});
-
-        if (minStr === maxStr) return minStr;
-        if (max == null) return minStr;
-        if (min == null) return maxStr;
         return `${minStr} – ${maxStr}`;
     }
 

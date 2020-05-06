@@ -22,12 +22,7 @@ export const visitsChart = hoistCmp.factory({
             icon: Icon.users(),
             title: 'Unique Daily Visitors',
             item: chart(),
-            bbar: bbar(),
-            model: {
-                defaultSize: 500,
-                side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
-            }
+            bbar: bbar()
         });
     }
 });

@@ -71,6 +71,7 @@ export class AppModel {
                 path: '/activity',
                 children: [
                     {name: 'tracking', path: '/tracking'},
+                    {name: 'visits', path: '/visits'},
                     {name: 'clientErrors', path: '/clientErrors'},
                     {name: 'feedback', path: '/feedback'}
                 ]

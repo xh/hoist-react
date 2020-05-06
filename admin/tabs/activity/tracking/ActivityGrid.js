@@ -31,7 +31,7 @@ export const activityGrid = hoistCmp.factory({
                     panel({
                         model: {
                             side: 'right',
-                            defaultSize: 400,
+                            defaultSize: 500,
                             collapsed: false
                         },
                         item: treeMap()

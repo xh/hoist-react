@@ -10,6 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {clientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {feedbackPanel} from './feedback/FeedbackPanel';
 import {trackingPanel} from './tracking/TrackingPanel';
+import {visitsChart} from './visits/VisitsChart';
 
 export const activityTab = hoistCmp.factory(
     () => tabContainer({
@@ -18,6 +19,7 @@ export const activityTab = hoistCmp.factory(
             switcherPosition: 'left',
             tabs: [
                 {id: 'tracking', icon: Icon.analytics(), content: trackingPanel},
+                {id: 'visits', icon: Icon.chartBar(), content: visitsChart},
                 {id: 'clientErrors', icon: Icon.warning(), content: clientErrorPanel},
                 {id: 'feedback', icon: Icon.comment(), content: feedbackPanel}
             ]
