@@ -80,12 +80,9 @@ export class ColChooserModel {
     }
 
     restoreDefaults() {
-        const {stateModel} = this.gridModel;
-
-        stateModel.resetStateAsync().then(() => {
-            this.syncChooserData();
-            if (this.isPopoverOpen) this.commit();
-        });
+        this.gridModel.restoreDefaults();
+        this.syncChooserData();
+        if (this.isPopoverOpen) this.commit();
     }
 
     //------------------------

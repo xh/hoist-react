@@ -90,7 +90,6 @@ export class GridModel {
     /** @member {boolean} */
     useVirtualColumns;
 
-
     /** @member {AgGridModel} */
     @managed agGridModel;
 
@@ -125,6 +124,9 @@ export class GridModel {
         'colChooser',
         'autosizeColumns'
     ];
+
+    /** @private - initial state provided to ctor - powers restoreDefaults(). */
+    _defaultState;
 
     /**
      * @param {Object} c - GridModel configuration.
@@ -229,6 +231,8 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+        this._defaultState = {columns, sortBy, groupBy};
+
         this.treeMode = treeMode;
         this.showSummary = showSummary;
 
@@ -275,6 +279,19 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = this.parseExperimental(experimental);
+    }
+
+    /**
+     * Restore the column, sorting, and grouping configs as specified by the application at
+     * construction time. This is the state without any saved grid state or user changes applied.
+     * This method will clear the persistent grid state saved for this grid, if any.
+     */
+    restoreDefaults() {
+        const {columns, sortBy, groupBy} = this._defaultState;
+        this.setColumns(columns);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
+        this.stateModel?.clear();
     }
 
     /**
@@ -921,7 +938,6 @@ export class GridModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
     }
-
 }
 
 /**
