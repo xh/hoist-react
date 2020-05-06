@@ -90,10 +90,6 @@ export class GridModel {
     /** @member {boolean} */
     useVirtualColumns;
 
-    /** @member {Object} */
-    defaultState;
-
-
     /** @member {AgGridModel} */
     @managed agGridModel;
 
@@ -128,6 +124,13 @@ export class GridModel {
         'colChooser',
         'autosizeColumns'
     ];
+
+
+    //--------
+    // Private
+    //--------
+    _defaultState;
+
 
     /**
      * @param {Object} c - GridModel configuration.
@@ -232,7 +235,7 @@ export class GridModel {
         experimental,
         ...rest
     }) {
-        this.defaultState = this.saveInitialConfigs(columns, sortBy, groupBy);
+        this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
         this.showSummary = showSummary;
@@ -280,6 +283,21 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = this.parseExperimental(experimental);
+    }
+
+    /**
+     * Restore the column, sorting, and grouping configuration
+     * as prescribed by the application code.
+     *
+     * This is the state without any saved grid state, or user changes applied.
+     * This method will clear any grid state saved for this grid.
+     */
+    restoreDefaults() {
+        const {columns, sortBy, groupBy} = this._defaultState;
+        this.setColumns(columns);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
+        this.stateModel?.clear();
     }
 
     /**
@@ -926,22 +944,6 @@ export class GridModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
     }
-
-    saveInitialConfigs(columns, sortBy, groupBy) {
-        return {
-            columns: columns,
-            sortBy: sortBy,
-            groupBy: groupBy
-        };
-    }
-
-    restoreDefaults() {
-        const {columns, sortBy, groupBy} = this.defaultState;
-        this.setColumns(columns);
-        this.setSortBy(sortBy);
-        this.setGroupBy(groupBy);
-    }
-
 }
 
 /**

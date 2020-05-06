@@ -5,9 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {start} from '@xh/hoist/promise';
 import {debounced} from '@xh/hoist/utils/js';
-import {cloneDeep, find, isUndefined, omit} from 'lodash';
+import {cloneDeep, find, isUndefined, isEmpty, omit} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions
@@ -33,7 +32,6 @@ export class GridStateModel {
     gridId = null;
 
     state = {};
-    defaultState = null;
 
     /**
      * @param {Object} c - GridStateModel configuration.
@@ -50,6 +48,12 @@ export class GridStateModel {
         this.trackGrouping = trackGrouping;
     }
 
+    /**
+     * Attach this object to a GridModel, and have it observe and
+     * apply changes to tracked properties.
+     *
+     * @param {GridModel} gridModel
+     */
     init(gridModel) {
         this.gridModel = gridModel;
 
@@ -68,46 +72,40 @@ export class GridStateModel {
         this.initializeState();
     }
 
-    getStateKey() {
+    /**
+     * Clear all saved state on this grid.
+     */
+    clear() {
+        this.state = {};
+        this.saveStateChange();
+    }
+
+
+    //----------------------
+    // Implementation
+    //-----------------------
+
+    //------------
+    // Templates
+    //-------------
+    get stateKey() {
         return `gridState.v${GridStateModel.GRID_STATE_VERSION}.${this.gridId}`;
     }
 
-    readState(stateKey) {
-        return XH.localStorageService.get(stateKey, {});
+    readState() {
+        return XH.localStorageService.get(this.stateKey, {});
     }
 
-    saveState(stateKey, state) {
-        XH.localStorageService.set(stateKey, state);
+    writeState(state) {
+        XH.localStorageService.set(this.stateKey, state);
     }
 
-    resetState(stateKey) {
-        XH.localStorageService.remove(stateKey);
+    clearState() {
+        XH.localStorageService.clear(this.stateKey);
     }
 
-    resetStateAsync() {
-        return start(() => {
-            this.loadState(this.defaultState);
-            this.resetState(this.getStateKey());
-        });
-    }
-
-    //--------------------------
-    // Implementation
-    //--------------------------
     initializeState() {
-        const userState = this.readState(this.getStateKey());
-        this.defaultState = this.readStateFromGrid();
-
-        this.loadState(userState);
-    }
-
-    readStateFromGrid() {
-        const {gridModel} = this;
-        return {
-            columns: gridModel.columnState,
-            sortBy: gridModel.sortBy,
-            groupBy: gridModel.groupBy
-        };
+        this.loadState(this.readState());
     }
 
     loadState(state) {
@@ -207,6 +205,12 @@ export class GridStateModel {
 
     @debounced(500)
     saveStateChange() {
-        this.saveState(this.getStateKey(), this.state);
+        const {state} = this;
+
+        if (isEmpty(state)) {
+            this.clearState();
+        } else {
+            this.writeState(state);
+        }
     }
 }
