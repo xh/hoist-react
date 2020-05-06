@@ -25,8 +25,12 @@ export class ColChooserModel {
 
     @observable isOpen = false;
 
+    get pinnedColumn() {
+        return this.pinFirst ? this.columns.find(it => it.pinned) : null;
+    }
+
     get visibleColumns() {
-        return this.getVisible(this.columns);
+        return this.getVisible(this.columns).filter(it => !it.pinned);
     }
 
     get hiddenColumns() {
@@ -67,7 +71,6 @@ export class ColChooserModel {
     }
 
     updatePinnedColumn() {
-
         // Loop through and, if applicable, pin the first
         // non-excluded visible column encountered
         let shouldPinFirst = this.pinFirst;

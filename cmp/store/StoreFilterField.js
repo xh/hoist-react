@@ -39,24 +39,24 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory({
 
     render({gridModel, store, ...props}) {
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");
-
         if (!store) {
             gridModel = withDefault(gridModel, useContextModel(GridModel));
-            store = gridModel ? gridModel.store : null;
+            store = gridModel?.store ?? null;
         }
 
-        // Right now we freeze the initial props -- could be more dynamic.
-        const implModel = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
-        return XH.isMobile ? mobileStoreFilterFieldImpl({implModel, ...props}) : desktopStoreFilterFieldImpl({implModel, ...props});
+        const impl = useLocalModel(() => new StoreFilterFieldImplModel({gridModel, store, ...props}));
+        impl.updateFilterProps(props);
+        return XH.isMobile ?
+            mobileStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'}) :
+            desktopStoreFilterFieldImpl({...props, model: impl, bind: 'filterText'});
     }
 });
 
 StoreFilterField.propTypes = {
 
     /**
-     * Field on optional model to which this component should bind its value. Not required
-     * for filtering functionality (see `gridModel`, `onFilterChange`, and `store` props), but
-     * allows the value of this component to be controlled via an external model observable.
+     * Field on optional model to which this component should bind its value. Specify this
+     * field to control the state of this component.
      */
     bind: PT.string,
 

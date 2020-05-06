@@ -31,7 +31,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
         children,
         className,
         vertical,
-        enableOverflowMenu = !vertical,
+        enableOverflowMenu = false,
         collapseFrom = 'end',
         minVisibleItems,
         ...rest
@@ -71,7 +71,7 @@ Toolbar.propTypes = {
 
     /**
      * Place items that overflow in a menu. Only available for horizontal toolbars.
-     * Default to true.
+     * Default to false.
      */
     enableOverflowMenu: PT.bool,
 

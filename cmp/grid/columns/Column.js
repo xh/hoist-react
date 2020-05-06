@@ -74,11 +74,11 @@ export class Column {
      *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
      *      to avoid your column being squeezed down to the default 50px minimum or stretching so
      *      wide that it compromises the overall legibility of the grid.
-     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
-     *      determine an appropriate row height when the column is visible.
-     * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
-     *      will be applied by successive clicks on the column header. Values may be one of 'asc',
-     *      'desc', a SortSpec, or null.  Specify null to clear the sort on this column.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this
+     *      to determine an appropriate row height when the column is visible.
+     * @param {(string[]|Column~SortSpec[])} [c.sortingOrder] - the sorting options for this column
+     *      to be applied by successive clicks on the column header. Values may be one of 'asc',
+     *      'desc', a SortSpec, or null. Specify null to clear the sort on this column.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the sortingOrder.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
@@ -125,6 +125,7 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
+     * @param {AutosizeOptions} [c.autosizeOptions] - specifies how the column autosizes.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -175,6 +176,7 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
+        autosizeOptions,
         agOptions,
         ...rest
     }, gridModel) {
@@ -257,6 +259,16 @@ export class Column {
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
+
+        this.autosizeOptions = {
+            enabled: withDefault(this.resizable, true),
+            skipHeader: false,
+            sampleCount: 10,
+            bufferPx: 5,
+            minWidth: this.minWidth,
+            maxWidth: this.maxWidth,
+            ...autosizeOptions
+        };
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -385,6 +397,9 @@ export class Column {
                         this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                         this.cellClass
                 );
+            }
+            if (this.isTreeColumn) {
+                r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
                 r.push('xh-align-' + align);
@@ -639,7 +654,17 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
+ */
+
+/**
+ * @typedef {Object} AutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
+ * @property {boolean} enabled - allow autosizing this column.
+ * @property {boolean} skipHeader - true to ignore the header width when determining the max width.
+ * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
+ * @property {number} bufferPx - extra width in pixels to add to calculated max width.
+ * @property {number} minWidth - minimum width in pixels.
+ * @property {number} maxWidth - minimum width in pixels.
  */

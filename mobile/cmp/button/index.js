@@ -6,6 +6,7 @@
  */
 export * from './Button';
 export * from './ButtonGroup';
+export * from './ColAutosizeButton';
 export * from './ColChooserButton';
 export * from './FeedbackButton';
 export * from './ThemeToggleButton';

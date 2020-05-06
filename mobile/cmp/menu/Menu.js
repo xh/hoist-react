@@ -22,7 +22,7 @@ export const [Menu, menu] = hoistCmp.withFactory({
 
     render({model, className, width, align = 'left'}) {
         const {isOpen, xPos, yPos} = model,
-            style = {top: yPos, [align]: xPos};
+            style = {top: yPos, [align]: xPos, width};
 
         if (!isOpen) return null;
 
@@ -48,11 +48,13 @@ export const [Menu, menu] = hoistCmp.withFactory({
                 isDisplayed: true,
                 onClick: () => model.close()
             }),
-            vbox({
+            div({
                 className,
-                width,
                 style,
-                items
+                item: vbox({
+                    className: 'xh-menu__list',
+                    items
+                })
             })
         );
     }

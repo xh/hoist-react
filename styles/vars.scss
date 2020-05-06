@@ -113,7 +113,8 @@ body {
   --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
-  --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
+  --xh-grid-tree-indent: var(--grid-tree-indent, 1.2em);
+  --xh-grid-tree-icon-px: var(--grid-tree-icon-px, 10px);
 
   // Large Grid
   --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);

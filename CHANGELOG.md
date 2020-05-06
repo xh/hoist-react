@@ -1,11 +1,20 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - unreleased
+## v34.0.0-SNAPSHOT - under development
 
 ### 🎁 New Features
 
-* `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
-  match on columns with fields such as `address.city`.
+* Virtual column rendering has been disabled by default, as it offered a minimal performance benefit
+  for most grids while compromising autosizing. See new `GridModel.useVirtualColumns` config, which
+  can be set to `true` to re-enable this behavior if required.
+
+### 🐞 Bug Fixes
+
+* Fixed several issues with new grid auto-sizing feature.
+* Fixed issues with and generally improved expand/collapse column alignment in tree grids.
+  * 💥 Note that this improvement introduced a minor breaking change for apps that have customized
+    tree indentation via the removed `--grid-tree-indent-px` CSS var. Use `--grid-tree-indent`
+    instead. Note the new var is specified in em units to scale well across grid sizing modes.
 
 ### ⚙️ Technical
 
@@ -18,7 +27,71 @@
 * onsenui `~16.8` -> @xh/onsenui `~16.13`
 * react-onsenui `~16.8` -> @xh/react-onsenui `~16.13`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...develop)
+
+
+## v33.1.0 - 2020-05-05
+
+### 🎁 New Features
+
+* Added smart auto-resizing of columns in `GridModel` Unlike ag-Grid's native auto-resizing support,
+  Hoist's auto-resizing will also take into account collapsed rows, off-screen cells that are not
+  currently rendered in the DOM, and summary rows. See the new `GridAutosizeService` for details.
+  * This feature is currently marked as 'experimental' and must be enabled by passing a special
+    config to the `GridModel` constructor of the form `experimental: {useHoistAutosize: true}`. In
+    future versions of Hoist, we expect to make it the default behavior.
+* `GridModel.autoSizeColumns()` has been renamed `GridModel.autosizeColumns()`, with lowercase 's'.
+  Similarly, the `autoSizeColumns` context menu token has been renamed `autosizeColumns`.
+
+### 🐞 Bug Fixes
+
+* Fixed a regression with `StoreFilterField` introduced in v33.0.1.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
+
+
+## v33.0.2 - 2020-05-01
+
+### 🎁 New Features
+
+* Add Hoist Cube Aggregators: `AverageAggregator` and `AverageStrictAggregator`
+* `ColAutosizeButton` has been added to desktop and mobile
+
+### 🐞 Bug Fixes
+
+* Fixed mobile menus to constrain to the bottom of the viewport, scrolling if necessary.
+  [#1862](https://github.com/xh/hoist-react/issues/1862)
+* Tightened up mobile tree grid, fixed issues in mobile column chooser.
+* Fixed a bug with reloading hierarchical data in `Store`.
+  [#1871](https://github.com/xh/hoist-react/issues/1871)
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.1...33.0.2)
+
+
+## v33.0.1 - 2020-04-29
+
+### 🎁 New Features
+
+* `StoreFieldField` supports dot-separated field names in a bound `GridModel`, meaning it will now
+  match on columns with fields such as `address.city`.
+
+* `Toolbar.enableOverflowMenu` now defaults to `false`. This was determined safer and more
+  appropriate due to issues with the underlying Blueprint implementation, and the need to configure
+  it carefully.
+
+### 🐞 Bug Fixes
+
+* Fixed an important bug with state management in `StoreFilterField`. See
+  https://github.com/xh/hoist-react/issues/1854
+
+* Fixed the default sort order for grids. ABS DESC should be first when present.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.25 -> 3.26`
+* codemirror `5.52 -> 5.53`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...v33.0.1)
 
 ## v33.0.0 - 2020-04-22
 
@@ -58,7 +131,7 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.25 -> 3.25`
+* @blueprintjs/core `3.24 -> 3.25`
 * @blueprintjs/datetime `3.15 -> 3.16`
 * mobx-react `6.1 -> 6.2`
 
