@@ -87,6 +87,9 @@ export class GridModel {
     enableExport;
     /** @member {ExportOptions} */
     exportOptions;
+    /** @member {boolean} */
+    useVirtualColumns;
+
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -166,6 +169,11 @@ export class GridModel {
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {boolean}  [c.useVirtualColumns] - Governs if the grid should reuse a limited set of
+     *      DOM elements for columns visible in the scroll area (versus rendering all columns).
+     *      Consider this performance optimization for grids with a very large number of columns
+     *      obscured by horizontal scrolling.  Note that setting this value to true may
+     *      limit the ability of the grid to autosize offscreen columns effectively.  Default false.
      * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
      *      for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
@@ -209,7 +217,6 @@ export class GridModel {
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
-
         rowClassFn = null,
 
         groupRowHeight,
@@ -218,6 +225,7 @@ export class GridModel {
         groupSortFn,
 
         contextMenu,
+        useVirtualColumns = false,
         experimental,
         ...rest
     }) {
@@ -231,6 +239,7 @@ export class GridModel {
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.useVirtualColumns = useVirtualColumns;
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
