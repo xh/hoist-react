@@ -718,6 +718,8 @@ export class GridModel {
     hoistAutoSize(colIds) {
         start(async () => {
             this.agApi?.showLoadingOverlay();
+            // Wait to allow mask to render before starting potentially compute-intensive autosize.
+            await wait(100);
 
             const [hoistSizable, agSizable] = partition(colIds, id => {
                 const col = this.getColumn(id);
@@ -734,7 +736,7 @@ export class GridModel {
                 this.agColumnApi?.autoSizeColumns(agSizable);
             }
 
-            // Short wait to allow column size changes to propagate before removing mask.
+            // Wait to allow column size changes to propagate before removing mask.
             await wait(100);
             this.agApi?.hideOverlay();
         });
