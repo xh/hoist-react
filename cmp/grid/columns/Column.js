@@ -398,6 +398,9 @@ export class Column {
                         this.cellClass
                 );
             }
+            if (this.isTreeColumn) {
+                r.push('xh-tree-column');
+            }
             if (align === 'center' || align === 'right') {
                 r.push('xh-align-' + align);
             }
