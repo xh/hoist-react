@@ -31,7 +31,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
             return button({icon, disabled: true, ...props});
         }
 
-        onClick = onClick ?? (() => gridModel.autoSizeColumns());
+        onClick = onClick ?? (() => gridModel.autosizeColumns());
 
         return button({icon, onClick, ...props});
     }

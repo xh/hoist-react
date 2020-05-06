@@ -120,7 +120,7 @@ export class GridModel {
         'exportCsv',
         '-',
         'colChooser',
-        'autoSizeColumns'
+        'autosizeColumns'
     ];
 
     /**
@@ -693,29 +693,34 @@ export class GridModel {
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
-     * autosizing disabled via the autoSizeOptions.enabled flag.
+     * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autoSizeColumns(colIds) {
+    autosizeColumns(colIds) {
         colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
 
         colIds = castArray(colIds).filter(id => {
             const col = this.getColumn(id);
-            return col && col.autoSizeOptions.enabled && !col.hidden && !col.flex;
+            return col && col.autosizeOptions.enabled && !col.hidden && !col.flex;
         });
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                this.hoistAutoSize(colIds);
+                this.hoistAutosize(colIds);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
         }
     }
 
+    autoSizeColumns(colIds) {
+        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumns()` instead.');
+        this.autosizeColumns(colIds);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
-    hoistAutoSize(colIds) {
+    hoistAutosize(colIds) {
         start(async () => {
             this.agApi?.showLoadingOverlay();
             // Wait to allow mask to render before starting potentially compute-intensive autosize.
@@ -727,7 +732,7 @@ export class GridModel {
             });
 
             if (!isEmpty(hoistSizable)) {
-                const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, hoistSizable);
+                const colStateChanges = XH.gridAutosizeService.autosizeColumns(this, hoistSizable);
                 this.applyColumnStateChanges(colStateChanges);
                 console.debug('Columns autosized via GridAutosizeService', colStateChanges);
             }

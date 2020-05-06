@@ -36,6 +36,7 @@ export class StoreContextMenu {
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
      *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
+     *          `'autosizeColumns` - autosize columns to fit their contents.
      *
      * @param {GridModel} [c.gridModel] - GridModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
@@ -57,6 +58,11 @@ export class StoreContextMenu {
 
     parseToken(token) {
         const {gridModel} = this;
+
+        if (token === 'autoSizeColumns') {
+            console.warn('StoreContextMenu token `autoSizeColumns` has been deprecated. Use `autosizeColumns` instead.');
+            token = 'autosizeColumns';
+        }
 
         switch (token) {
             case 'copyCell':
@@ -120,11 +126,11 @@ export class StoreContextMenu {
                 ];
             case 'exportLocal':
                 return 'export';
-            case 'autoSizeColumns':
+            case 'autosizeColumns':
                 return new RecordAction({
                     text: 'Autosize Columns',
                     icon: Icon.arrowsLeftRight(),
-                    actionFn: () => gridModel.autoSizeColumns()
+                    actionFn: () => gridModel.autosizeColumns()
                 });
             default:
                 return token;

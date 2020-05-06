@@ -125,7 +125,7 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
-     * @param {AutoSizeOptions} [c.autoSizeOptions] - specifies how the column autosizes.
+     * @param {AutosizeOptions} [c.autosizeOptions] - specifies how the column autosizes.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -176,7 +176,7 @@ export class Column {
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
-        autoSizeOptions,
+        autosizeOptions,
         agOptions,
         ...rest
     }, gridModel) {
@@ -260,14 +260,14 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
-        this.autoSizeOptions = {
+        this.autosizeOptions = {
             enabled: withDefault(this.resizable, true),
             skipHeader: false,
             sampleCount: 10,
             bufferPx: 5,
             minWidth: this.minWidth,
             maxWidth: this.maxWidth,
-            ...autoSizeOptions
+            ...autosizeOptions
         };
 
         this.gridModel = gridModel;
@@ -657,7 +657,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} AutoSizeOptions - specifies how the column autosizes. @see GridAutosizeService
+ * @typedef {Object} AutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
  * @property {boolean} enabled - allow autosizing this column.
  * @property {boolean} skipHeader - true to ignore the header width when determining the max width.
  * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.

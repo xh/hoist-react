@@ -20,7 +20,7 @@ import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} fro
  * when a react based elementRenderer has been specified for a column. In this case, no width will
  * be computed, and the column will be ignored by this service.
  *
- * @see Column.autoSizeOptions for options to control this behaviour
+ * @see Column.autosizeOptions for options to control this behaviour
  */
 @HoistService
 export class GridAutosizeService {
@@ -32,12 +32,12 @@ export class GridAutosizeService {
     /**
      * Calculates the required column widths for a GridModel. Returns an array of the
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     * Typically called via `GridModel.autoSizeColumns()`.
+     * Typically called via `GridModel.autosizeColumns()`.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
      * @param {String[]} colIds - array of columns in model to compute sizing for.
      */
-    autoSizeColumns(gridModel, colIds) {
+    autosizeColumns(gridModel, colIds) {
         const ret = [],
             {store} = gridModel;
 
@@ -57,7 +57,7 @@ export class GridAutosizeService {
         }
 
         for (const colId of colIds) {
-            const width = this.autoSizeColumn(gridModel, records, colId);
+            const width = this.autosizeColumn(gridModel, records, colId);
             if (isFinite(width)) ret.push({colId, width});
         }
 
@@ -67,9 +67,9 @@ export class GridAutosizeService {
     //------------------
     // Implementation
     //------------------
-    autoSizeColumn(gridModel, records, colId) {
+    autosizeColumn(gridModel, records, colId) {
         const column = gridModel.findColumn(gridModel.columns, colId),
-            {minWidth, maxWidth} = column.autoSizeOptions;
+            {minWidth, maxWidth} = column.autosizeOptions;
 
         let result = max([
             this.calcHeaderMaxWidth(gridModel, column),
@@ -83,7 +83,7 @@ export class GridAutosizeService {
 
     calcHeaderMaxWidth(gridModel, column) {
         try {
-            const {bufferPx, skipHeader} = column.autoSizeOptions;
+            const {bufferPx, skipHeader} = column.autosizeOptions;
 
             if (skipHeader) return null;
 
@@ -127,8 +127,8 @@ export class GridAutosizeService {
     }
 
     calcMaxWidth(gridModel, records, column, indentationPx = 0) {
-        const {autoSizeOptions, field, getValueFn, renderer} = column,
-            {sampleCount, bufferPx} = autoSizeOptions,
+        const {autosizeOptions, field, getValueFn, renderer} = column,
+            {sampleCount, bufferPx} = autosizeOptions,
             useRenderer = isFunction(renderer);
 
         // 1) Get unique values
