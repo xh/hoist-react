@@ -200,7 +200,7 @@ class LocalModel {
     }
 
     autosize() {
-        this.gridModel?.autoSizeColumns(this.colId);
+        this.gridModel?.autosizeColumns(this.colId);
     }
 
     parseAvailableSorts() {

@@ -10,6 +10,8 @@
   * This feature is currently marked as 'experimental' and must be enabled by passing a special
     config to the `GridModel` constructor of the form `experimental: {useHoistAutosize: true}`. In
     future versions of Hoist, we expect to make it the default behavior.
+* `GridModel.autoSizeColumns()` has been renamed `GridModel.autosizeColumns()`, with lowercase 's'.
+  Similarly, the `autoSizeColumns` context menu token has been renamed `autosizeColumns`.
 
 ### 🐞 Bug Fixes
 
