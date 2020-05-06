@@ -7,6 +7,8 @@
 * Virtual column rendering has been disabled by default, as it offered a minimal performance benefit
   for most grids while compromising autosizing. See new `GridModel.useVirtualColumns` config, which
   can be set to `true` to re-enable this behavior if required.
+* All `GridModel`s can now be reset to their code-prescribed defaults via the column chooser reset
+button.  Previously, a `stateModel` property was required for this behavior.
 
 ### 🐞 Bug Fixes
 
