@@ -15,7 +15,8 @@ import {
     isArray,
     isEmpty,
     isEqual,
-    without
+    without,
+    isUndefined
 } from 'lodash';
 
 @HoistModel
@@ -32,8 +33,8 @@ export class StoreFilterFieldImplModel {
     includeFields;
     excludeFields;
 
-    filter = null;
-    bufferedApplyFilter= null;
+    filter;
+    bufferedApplyFilter;
 
     constructor({
         model,
@@ -118,10 +119,11 @@ export class StoreFilterFieldImplModel {
     }
 
     regenerateFilter() {
-        const {filterText, filterOptions} = this,
+        const {filter, filterText, filterOptions} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
-            searchTerm = escapeRegExp(filterText);
+            searchTerm = escapeRegExp(filterText),
+            initializing = isUndefined(filter);
 
         let fn = null;
         if (searchTerm && !isEmpty(activeFields)) {
@@ -133,12 +135,15 @@ export class StoreFilterFieldImplModel {
                 return regex.test(fieldVal);
             });
         }
-        this.filter = fn ? {...filterOptions, fn} : null;
 
-        if (this.onFilterChange) this.onFilterChange(this.filter);
+        const newFilter = fn ? {...filterOptions, fn} : null;
+        if (filter === newFilter) return;
 
-        // Only respect the buffer for non-null values.  Allows quick clearing
-        if (this.filter) {
+        this.filter = newFilter;
+        if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
+
+        // Only respect the buffer for non-null changes.  Allows immediate initialization and quick clearing
+        if (!initializing && newFilter) {
             this.bufferedApplyFilter();
         } else {
             this.applyFilter();

@@ -192,3 +192,75 @@
 .xh-grid-tooltip {
   position: absolute;
 }
+
+//-----------
+// Autosize
+//-----------
+.xh-grid-autosize-canvas {
+  position: absolute;
+  display: none;
+}
+
+.xh-grid-autosize-cell {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-font-size-px);
+  font-family: var(--xh-grid-font-family);
+  visibility: hidden;
+  display: none;
+
+  // This property is not actually used in rendering, but is provided here
+  // for later interpretation by GridAutosizeService.getIndentation()
+  left: var(--xh-grid-tree-indent-px);
+
+  &--active {
+    display: inline-block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+  }
+}
+
+.xh-grid-autosize-header {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-header-font-size-px);
+  font-weight: var(--xh-grid-header-font-weight);
+  font-family: var(--xh-grid-header-font-family);
+  flex-direction: row;
+  visibility: hidden;
+  display: none;
+
+  svg {
+    margin-left: var(--xh-pad-half-px);
+  }
+
+  &--active {
+    display: inline-flex;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-header-font-size-px);
+    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-header-font-size-px);
+    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-header-font-size-px);
+    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
+}
