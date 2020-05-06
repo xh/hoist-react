@@ -68,24 +68,29 @@ export class GridAutosizeService {
     // Implementation
     //------------------
     autoSizeColumn(gridModel, records, colId) {
-        const column = gridModel.findColumn(gridModel.columns, colId);
-        return max([
+        const column = gridModel.findColumn(gridModel.columns, colId),
+            {minWidth, maxWidth} = column.autoSizeOptions;
+
+        let result = max([
             this.calcHeaderMaxWidth(gridModel, column),
             this.calcDataMaxWidth(gridModel, records, column)
         ]);
+
+        result = max([result, minWidth]);
+        result = min([result, maxWidth]);
+        return result;
     }
 
     calcHeaderMaxWidth(gridModel, column) {
         try {
-            const {bufferPx, minWidth, maxWidth} = column.autoSizeOptions;
+            const {bufferPx, skipHeader} = column.autoSizeOptions;
+
+            if (skipHeader) return null;
 
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
 
-            let result = this.getHeaderWidth(gridModel, column.colId) + bufferPx;
-            result = max([result, minWidth]);
-            result = min([result, maxWidth]);
-            return result;
+            return this.getHeaderWidth(gridModel, column.colId) + bufferPx;
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -123,7 +128,7 @@ export class GridAutosizeService {
 
     calcMaxWidth(gridModel, records, column, indentationPx = 0) {
         const {autoSizeOptions, field, getValueFn, renderer} = column,
-            {sampleCount, bufferPx, minWidth, maxWidth} = autoSizeOptions,
+            {sampleCount, bufferPx} = autoSizeOptions,
             useRenderer = isFunction(renderer);
 
         // 1) Get unique values
@@ -146,14 +151,10 @@ export class GridAutosizeService {
         const longestValues = sortedValues.slice(Math.max(sortedValues.length - sampleCount, 0));
 
         // 4) Render to a hidden cell to calculate the max displayed width
-        let result = reduce(longestValues, (currMax, value) => {
+        return reduce(longestValues, (currMax, value) => {
             const width = this.getCellWidth(value, useRenderer) + indentationPx + bufferPx;
             return Math.max(currMax, width);
         }, 0);
-
-        result = max([result, minWidth]);
-        result = min([result, maxWidth]);
-        return result;
     }
 
     //------------------
