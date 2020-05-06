@@ -1,5 +1,24 @@
 # Changelog
 
+## v34.0.0-SNAPSHOT - under development
+
+### 🎁 New Features
+
+* Virtual column rendering has been disabled by default, as it offered a minimal performance benefit
+  for most grids while compromising autosizing. See new `GridModel.useVirtualColumns` config, which
+  can be set to `true` to re-enable this behavior if required.
+
+### 🐞 Bug Fixes
+
+* Fixed several issues with new grid auto-sizing feature.
+* Fixed issues with and generally improved expand/collapse column alignment in tree grids.
+  * 💥 Note that this improvement introduced a minor breaking change for apps that have customized
+    tree indentation via the removed `--grid-tree-indent-px` CSS var. Use `--grid-tree-indent`
+    instead. Note the new var is specified in em units to scale well across grid sizing modes.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...develop)
+
+
 ## v33.1.0 - 2020-05-05
 
 ### 🎁 New Features
