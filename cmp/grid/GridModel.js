@@ -181,8 +181,8 @@ export class GridModel {
      *      deltaRowDataMode to internally generate transactions on data updates.  When true,
      *      Hoist will generate the transaction on data update. Default true.
      * @param {boolean} [c.experimental.useHoistAutosize] - set to true to use Hoist's custom
-     *      autoSizeService to perform column sizing instead of the built-in ag-Grid support.
-     *      See AutosizeService for more details. Default false.
+     *      GridAutosizeService to perform column sizing instead of the built-in ag-Grid support.
+     *      See GridAutosizeService for more details. Default false.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -727,7 +727,7 @@ export class GridModel {
             if (!isEmpty(hoistSizable)) {
                 const colStateChanges = XH.gridAutosizeService.autoSizeColumns(this, hoistSizable);
                 this.applyColumnStateChanges(colStateChanges);
-                console.debug('Columns autosized via gridAutosizeService', colStateChanges);
+                console.debug('Columns autosized via GridAutosizeService', colStateChanges);
             }
 
             if (!isEmpty(agSizable)) {

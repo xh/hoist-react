@@ -6,7 +6,7 @@
 
 * Added smart auto-resizing of columns in `GridModel` Unlike ag-Grid's native auto-resizing support,
   Hoist's auto-resizing will also take into account collapsed rows, off-screen cells that are not
-  currently rendered in the DOM, and summary rows. See the new `GridAutoResizeService` for details.
+  currently rendered in the DOM, and summary rows. See the new `GridAutosizeService` for details.
   * This feature is currently marked as 'experimental' and must be enabled by passing a special
     config to the `GridModel` constructor of the form `experimental: {useHoistAutosize: true}`. In
     future versions of Hoist, we expect to make it the default behavior.
