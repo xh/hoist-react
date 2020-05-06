@@ -98,48 +98,48 @@
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
     .ag-row-group-indent-0 {
-      padding-left: calc(0 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(0 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-1 {
-      padding-left: calc(1 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(1 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-2 {
-      padding-left: calc(2 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(2 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-3 {
-      padding-left: calc(3 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(3 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-4 {
-      padding-left: calc(4 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(4 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-5 {
-      padding-left: calc(5 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(5 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-6 {
-      padding-left: calc(6 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(6 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-7 {
-      padding-left: calc(7 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(7 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-8 {
-      padding-left: calc(8 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(8 * var(--xh-grid-tree-indent));
     }
 
     .ag-row-group-indent-9 {
-      padding-left: calc(9 * var(--xh-grid-tree-indent-px));
+      padding-left: calc(9 * var(--xh-grid-tree-indent));
     }
   }
 
   .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-pad-double-px);
+    margin-left: var(--xh-grid-tree-indent);
   }
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
@@ -210,7 +210,7 @@
 
   // This property is not actually used in rendering, but is provided here
   // for later interpretation by GridAutosizeService.getIndentation()
-  left: var(--xh-grid-tree-indent-px);
+  left: var(--xh-grid-tree-indent);
 
   &--active {
     display: inline-block;
