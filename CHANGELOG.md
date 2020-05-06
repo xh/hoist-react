@@ -1,5 +1,15 @@
 # Changelog
 
+## v33.2.0 - 2020-05-06
+
+### 🎁 New Features
+* We have turned off the use of virtual columns in `GridModel` by default.  See new property
+`useVirtualColumns`, which may be set to `true` to re-enable this behavior.
+
+### 🐞 Bug Fixes
+* Fixed several issues with new grid auto-sizing feature.
+* Fixed an issue with alignment in tree grids.
+
 ## v33.1.0 - 2020-05-05
 
 ### 🎁 New Features
