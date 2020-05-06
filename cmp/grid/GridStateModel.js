@@ -56,20 +56,22 @@ export class GridStateModel {
      */
     init(gridModel) {
         this.gridModel = gridModel;
+        this.state = cloneDeep(this.readState());
 
         if (this.trackColumns) {
+            this.updateGridColumns();
             this.addReaction(this.columnReaction());
         }
 
-        if (this.trackSort) {
-            this.addReaction(this.sortReaction());
-        }
-
         if (this.trackGrouping) {
+            this.updateGridGroupBy();
             this.addReaction(this.groupReaction());
         }
 
-        this.initializeState();
+        if (this.trackSort) {
+            this.updateGridSort();
+            this.addReaction(this.sortReaction());
+        }
     }
 
     /**
@@ -79,7 +81,6 @@ export class GridStateModel {
         this.state = {};
         this.saveStateChange();
     }
-
 
     //----------------------
     // Implementation
@@ -104,16 +105,6 @@ export class GridStateModel {
         XH.localStorageService.clear(this.stateKey);
     }
 
-    initializeState() {
-        this.loadState(this.readState());
-    }
-
-    loadState(state) {
-        this.state = cloneDeep(state);
-        if (this.trackColumns) this.updateGridColumns();
-        if (this.trackGrouping) this.updateGridGroupBy();
-        if (this.trackSort) this.updateGridSort();
-    }
 
     //--------------------------
     // Columns
@@ -129,8 +120,8 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {gridModel, state, trackColumns} = this;
-        if (!trackColumns || !state.columns) return;
+        const {gridModel, state} = this;
+        if (!state.columns) return;
 
         const colState = this.cleanColumnState(state.columns);
         gridModel.applyColumnStateChanges(colState);
@@ -152,7 +143,7 @@ export class GridStateModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (this.trackSort && !isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
+        if (!isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -170,7 +161,7 @@ export class GridStateModel {
 
     updateGridGroupBy() {
         const {groupBy} = this.state;
-        if (this.trackGrouping && !isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
+        if (!isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
     }
 
     //--------------------------
