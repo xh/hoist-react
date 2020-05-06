@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {useEffect} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
@@ -35,13 +36,13 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(() => new LocalModel(model)),
+        const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
             ref = composeRefs(
                 useOnResize(impl.onResize),
                 useOnVisibleChange(impl.onVisibleChange)
             );
 
-        impl.setAspectRatio(aspectRatio);
+        useEffect(() => impl.setAspectRatio(aspectRatio), [aspectRatio]);
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -82,8 +83,9 @@ class LocalModel {
     model;
     prevSeriesConfig;
 
-    constructor(model) {
+    constructor(model, aspectRatio) {
         this.model = model;
+        this.aspectRatio = aspectRatio;
         this.addReaction({
             track: () => [
                 this.aspectRatio,
