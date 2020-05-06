@@ -125,12 +125,8 @@ export class GridModel {
         'autosizeColumns'
     ];
 
-
-    //--------
-    // Private
-    //--------
+    /** @private - initial state provided to ctor - powers restoreDefaults(). */
     _defaultState;
-
 
     /**
      * @param {Object} c - GridModel configuration.
@@ -286,11 +282,9 @@ export class GridModel {
     }
 
     /**
-     * Restore the column, sorting, and grouping configuration
-     * as prescribed by the application code.
-     *
-     * This is the state without any saved grid state, or user changes applied.
-     * This method will clear any grid state saved for this grid.
+     * Restore the column, sorting, and grouping configs as specified by the application at
+     * construction time. This is the state without any saved grid state or user changes applied.
+     * This method will clear the persistent grid state saved for this grid, if any.
      */
     restoreDefaults() {
         const {columns, sortBy, groupBy} = this._defaultState;

@@ -10,9 +10,9 @@ import {cloneDeep, find, isUndefined, isEmpty, omit} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions
- * and applying saved state to its parent GridModel upon that model's construction.
+ * and applying saved state when initialized by its parent `GridModel`.
  *
- * GridModels can enable persistent grid state via their stateModel config, typically
+ * GridModels can enable persistent grid state via their `stateModel` config, typically
  * provided as a simple string `gridId` to identify a given grid instance.
  *
  * It is not necessary to manually create instances of this class within an application.
@@ -28,9 +28,10 @@ export class GridStateModel {
      */
     static GRID_STATE_VERSION = 1;
 
-    gridModel = null;
-    gridId = null;
-
+    /** @member {GridModel} */
+    gridModel;
+    /** @member {string} */
+    gridId;
     state = {};
 
     /**
@@ -49,9 +50,7 @@ export class GridStateModel {
     }
 
     /**
-     * Attach this object to a GridModel, and have it observe and
-     * apply changes to tracked properties.
-     *
+     * Attach this object to a GridModel and have it observe / apply changes to tracked properties.
      * @param {GridModel} gridModel
      */
     init(gridModel) {
@@ -75,7 +74,8 @@ export class GridStateModel {
     }
 
     /**
-     * Clear all saved state on this grid.
+     * Clear all state saved for the linked GridModel.
+     * @see GridModel.restoreDefaults()
      */
     clear() {
         this.state = {};
@@ -83,12 +83,8 @@ export class GridStateModel {
     }
 
     //----------------------
-    // Implementation
-    //-----------------------
-
-    //------------
     // Templates
-    //-------------
+    //-----------------------
     get stateKey() {
         return `gridState.v${GridStateModel.GRID_STATE_VERSION}.${this.gridId}`;
     }
@@ -104,7 +100,6 @@ export class GridStateModel {
     clearState() {
         XH.localStorageService.clear(this.stateKey);
     }
-
 
     //--------------------------
     // Columns
