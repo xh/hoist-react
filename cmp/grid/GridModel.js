@@ -11,6 +11,7 @@ import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
+import {start, wait} from '@xh/hoist/promise';
 import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -31,6 +32,7 @@ import {
     map,
     max,
     min,
+    partition,
     pull,
     sortBy
 } from 'lodash';
@@ -85,8 +87,12 @@ export class GridModel {
     enableExport;
     /** @member {ExportOptions} */
     exportOptions;
+    /** @member {boolean} */
+    useVirtualColumns;
+
     /** @member {Object} */
-    defaultState
+    defaultState;
+
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -120,7 +126,7 @@ export class GridModel {
         'exportCsv',
         '-',
         'colChooser',
-        'autoSizeColumns'
+        'autosizeColumns'
     ];
 
     /**
@@ -166,6 +172,11 @@ export class GridModel {
      * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
      *      strings with which to create grid context menu items.  May also be specified as a
      *      function returning a StoreContextMenu.  Desktop only.
+     * @param {boolean}  [c.useVirtualColumns] - Governs if the grid should reuse a limited set of
+     *      DOM elements for columns visible in the scroll area (versus rendering all columns).
+     *      Consider this performance optimization for grids with a very large number of columns
+     *      obscured by horizontal scrolling.  Note that setting this value to true may
+     *      limit the ability of the grid to autosize offscreen columns effectively.  Default false.
      * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
      *      for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
@@ -178,8 +189,11 @@ export class GridModel {
      * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
      *      'deltaSort' feature designed to do incremental sorting.  Default false.
      * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      deltaRowDataMode to internally generate transactions on data updates.  With the default
-     *      (true) Hoist will generate the transaction on data update.
+     *      deltaRowDataMode to internally generate transactions on data updates.  When true,
+     *      Hoist will generate the transaction on data update. Default true.
+     * @param {boolean} [c.experimental.useHoistAutosize] - set to true to use Hoist's custom
+     *      GridAutosizeService to perform column sizing instead of the built-in ag-Grid support.
+     *      See GridAutosizeService for more details. Default false.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -206,7 +220,6 @@ export class GridModel {
         enableColChooser = false,
         enableExport = false,
         exportOptions = {},
-
         rowClassFn = null,
 
         groupRowHeight,
@@ -215,6 +228,7 @@ export class GridModel {
         groupSortFn,
 
         contextMenu,
+        useVirtualColumns = false,
         experimental,
         ...rest
     }) {
@@ -230,6 +244,7 @@ export class GridModel {
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.useVirtualColumns = useVirtualColumns;
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
@@ -264,13 +279,7 @@ export class GridModel {
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
-        this.experimental = {
-            externalSort: false,
-            useTransactions: true,
-            useDeltaSort: false,
-            ...experimental
-        };
-        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
+        this.experimental = this.parseExperimental(experimental);
     }
 
     /**
@@ -694,19 +703,64 @@ export class GridModel {
 
     /**
      * Autosize columns to fit their contents.
+     *
      * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
+     *
+     * This method will ignore hidden columns, columns with a flex value, and columns with
+     * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autoSizeColumns(colIds = this.getLeafColumns().map(col => col.colId)) {
+    autosizeColumns(colIds) {
+        colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
+
         colIds = castArray(colIds).filter(id => {
             const col = this.getColumn(id);
-            return col && !col.flex;
+            return col && col.autosizeOptions.enabled && !col.hidden && !col.flex;
         });
-        if (colIds.length) this.agColumnApi.autoSizeColumns(colIds);
+
+        if (!isEmpty(colIds)) {
+            if (this.experimental.useHoistAutosize) {
+                this.hoistAutosize(colIds);
+            } else {
+                this.agColumnApi?.autoSizeColumns(colIds);
+            }
+        }
+    }
+
+    autoSizeColumns(colIds) {
+        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumns()` instead.');
+        this.autosizeColumns(colIds);
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    hoistAutosize(colIds) {
+        start(async () => {
+            this.agApi?.showLoadingOverlay();
+            // Wait to allow mask to render before starting potentially compute-intensive autosize.
+            await wait(100);
+
+            const [hoistSizable, agSizable] = partition(colIds, id => {
+                const col = this.getColumn(id);
+                return col && !col.elementRenderer;
+            });
+
+            if (!isEmpty(hoistSizable)) {
+                const colStateChanges = XH.gridAutosizeService.autosizeColumns(this, hoistSizable);
+                this.applyColumnStateChanges(colStateChanges);
+                console.debug('Columns autosized via GridAutosizeService', colStateChanges);
+            }
+
+            if (!isEmpty(agSizable)) {
+                this.agColumnApi?.autoSizeColumns(agSizable);
+            }
+
+            // Wait to allow column size changes to propagate before removing mask.
+            await wait(100);
+            this.agApi?.hideOverlay();
+        });
+    }
+
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
@@ -849,6 +903,20 @@ export class GridModel {
         }
         return ret;
     }
+
+    parseExperimental(experimental) {
+        apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
+
+        return {
+            externalSort: false,
+            useTransactions: true,
+            useDeltaSort: false,
+            useHoistAutosize: false,
+            ...XH.getConf('xhGridExperimental', {}),
+            ...experimental
+        };
+    }
+
 
     createChooserModel() {
         const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;

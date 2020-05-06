@@ -196,6 +196,7 @@ class LocalModel {
             model: model.agGridModel,
             deltaSort: useDeltaSort && !model.treeMode,
             deltaRowDataMode: !useTransactions,
+            suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -243,7 +244,7 @@ class LocalModel {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
+            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
         if (props.hideHeaders) {
