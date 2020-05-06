@@ -11,11 +11,9 @@ import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-
-// TODO: Fix imports
-import {DimensionChooserModel} from '../../../../cmp/dimensionchooser';
-import {Cube} from '../../../../data';
-import {TreeMapModel} from '../../../../desktop/cmp/treemap';
+import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {Cube} from '@xh/hoist/data';
+import {TreeMapModel} from '@xh/hoist/desktop/cmp/treemap';
 
 @HoistModel
 @LoadSupport
@@ -129,8 +127,7 @@ export class ActivityGridModel {
 
     loadGrid() {
         const data = this.cube.executeQuery({
-            // dimensions: this.dimChooserModel.value,
-            dimensions: ['username', 'category', 'msg'],
+            dimensions: this.dimChooserModel.value,
             includeLeaves: true
         });
 

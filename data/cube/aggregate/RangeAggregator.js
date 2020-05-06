@@ -21,15 +21,18 @@ export class RangeAggregator extends Aggregator {
         return {min: minVal, max: maxVal};
     }
 
-    // replace(rows, currAgg, update) {
-    //     const {oldValue, newValue} = update;
-    //
-    //     if (newValue == null && (oldValue == currAgg.min || oldValue == currAgg.max)) {
-    //         return super.replace(rows, currAgg, update);
-    //     }
-    //
-    //     if (newValue < currAgg.min) currAgg.min = newValue;
-    //     if (newValue > currAgg.max) currAgg.max = newValue;
-    //     return currAgg;
-    // }
+    replace(rows, currAgg, update) {
+        const {oldValue, newValue} = update,
+            isAggRow = isObject(oldValue),
+            minToCheck = isAggRow ? newValue.min : newValue,
+            maxToCheck = isAggRow ? newValue.max : newValue;
+
+        if (newValue == null && (oldValue == currAgg.min || oldValue == currAgg.max)) {
+            return super.replace(rows, currAgg, update);
+        }
+
+        if (minToCheck < currAgg.min) currAgg.min = minToCheck;
+        if (maxToCheck > currAgg.max) currAgg.max = maxToCheck;
+        return currAgg;
+    }
 }

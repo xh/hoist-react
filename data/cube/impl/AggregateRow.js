@@ -19,7 +19,7 @@ export function createAggregateRow(view, id, children, dim, val, appliedDimensio
     return data;
 }
 
-export class AggregateMeta {
+class AggregateMeta {
 
     view = null;
     dim = null;         // Grouping Dim or null for summary row

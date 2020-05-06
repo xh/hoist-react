@@ -28,15 +28,14 @@ export const activityGrid = hoistCmp.factory({
             items: [
                 hframe(
                     grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
-                    treeMap()
-                    // panel({
-                    //     model: {
-                    //         side: 'right',
-                    //         defaultSize: 400,
-                    //         collapsed: false
-                    //     },
-                    //     item: treeMap()
-                    // })
+                    panel({
+                        model: {
+                            side: 'right',
+                            defaultSize: 400,
+                            collapsed: false
+                        },
+                        item: treeMap()
+                    })
                 ),
                 activityDetail()
             ]
