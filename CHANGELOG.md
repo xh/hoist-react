@@ -8,6 +8,11 @@
   for most grids while compromising autosizing. See new `GridModel.useVirtualColumns` config, which
   can be set to `true` to re-enable this behavior if required.
 
+* Add Hoist Cube Aggregators: `CountAggregator` and `RangeAggregator`
+
+* Enhance Hoist Admin's Activity Tracking tab. Data can now be grouped and aggregated on the fly
+  using the Hoist Cube. Add a heatmap linked to the activity grid.
+
 ### 🐞 Bug Fixes
 
 * Fixed several issues with new grid auto-sizing feature.
