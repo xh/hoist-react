@@ -94,7 +94,7 @@
 //------------------------
 // Trees and Grouping
 //------------------------
-.xh-grid--hierarchical:not(.xh-data-view) {
+.xh-grid--hierarchical:not(.xh-data-view) > .xh-ag-grid {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
     .ag-row-group-indent-0 {
@@ -138,12 +138,24 @@
     }
   }
 
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-pad-double-px);
-  }
-
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
+  }
+
+  .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: var(--xh-grid-tree-icon-px);
+  }
+
+  &--large .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: var(--xh-grid-large-tree-icon-px);
+  }
+
+  &--compact .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: var(--xh-grid-compact-tree-icon-px);
+  }
+
+  &--tiny .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: var(--xh-grid-tiny-tree-icon-px);
   }
 }
 

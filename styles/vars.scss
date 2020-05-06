@@ -114,6 +114,7 @@ body {
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
   --xh-grid-tree-indent-px: var(--grid-tree-indent-px, var(--xh-pad-double-px));
+  --xh-grid-tree-icon-px: var(--grid-tree-icon-px, 16px);
 
   // Large Grid
   --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);
@@ -126,6 +127,7 @@ body {
   --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
   --xh-grid-large-line-height: var(--grid-large-line-height, 30);
   --xh-grid-large-line-height-px: calc(var(--xh-grid-large-line-height) * 1px);
+  --xh-grid-large-tree-icon-px: var(--grid-large-tree-icon-px, 20px);
 
   // Compact Grid
   --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
@@ -138,6 +140,7 @@ body {
   --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
   --xh-grid-compact-line-height: var(--grid-compact-line-height, 22);
   --xh-grid-compact-line-height-px: calc(var(--xh-grid-compact-line-height) * 1px);
+  --xh-grid-compact-tree-icon-px: var(--grid-compact-tree-icon-px, 14px);
 
   // Tiny Grid
   --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
@@ -150,6 +153,7 @@ body {
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
   --xh-grid-tiny-line-height: var(--grid-tiny-line-height, 18);
   --xh-grid-tiny-line-height-px: calc(var(--xh-grid-tiny-line-height) * 1px);
+  --xh-grid-tiny-tree-icon-px: var(--grid-tiny-tree-icon-px, 12px);
 
   // Multifield renderer
   --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 12);

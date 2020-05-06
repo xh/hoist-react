@@ -84,7 +84,8 @@
     // Set a constant width, since the two icons are different sizes.
     // This caused rows to jump around when expansion was toggled.
     .ag-group-expanded {
-      margin: 0 var(--xh-pad-half-px) 0 0;
+      margin: 0;
+      width: var(--xh-grid-tree-icon-px);
 
       svg {
         width: var(--xh-pad-px);
@@ -92,7 +93,8 @@
     }
 
     .ag-group-contracted {
-      margin: 0 var(--xh-pad-half-px) 0 0;
+      margin: 0;
+      width: var(--xh-grid-tree-icon-px);
 
       svg {
         width: var(--xh-pad-px);
@@ -357,18 +359,37 @@
     align-items: center;
   }
 
-  // Reduce right margin to an appropriate value for the smaller sizing modes.
+  // Adjust tree icon widths for different sizing modes.
+  &--large .ag-row {
+    .ag-group-expanded,
+    .ag-group-contracted {
+      width: var(--xh-grid-large-tree-icon-px);
+
+      svg {
+        width: var(--xh-pad-px);
+      }
+    }
+  }
+
   &--compact .ag-row {
     .ag-group-expanded,
     .ag-group-contracted {
-      margin: 0 2px 0 0;
+      width: var(--xh-grid-compact-tree-icon-px);
+
+      svg {
+        width: var(--xh-pad-px);
+      }
     }
   }
 
   &--tiny .ag-row {
     .ag-group-expanded,
     .ag-group-contracted {
-      margin: 0 1px 0 0;
+      width: var(--xh-grid-tiny-tree-icon-px);
+
+      svg {
+        width: var(--xh-pad-px);
+      }
     }
   }
 }
