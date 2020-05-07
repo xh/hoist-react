@@ -718,13 +718,13 @@ export class GridModel {
      *
      * @param {Object} opts - autosize options
      * @param {string|string[]} [opts.colIds] - which columns to autosize; defaults to all leaf columns.
-     * @param {boolean} [opts.showOverlay] - controls whether an overlay is shown during the autosize
+     * @param {boolean} [opts.showMask] - controls whether a mask is shown during the autosize
      *      process. Defaults to true.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autosizeColumns({colIds, showOverlay = true} = {}) {
+    autosizeColumns({colIds, showMask = true} = {}) {
         colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
 
         colIds = castArray(colIds).filter(id => {
@@ -735,7 +735,7 @@ export class GridModel {
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                this.hoistAutosize(colIds, showOverlay);
+                this.hoistAutosize(colIds, showMask);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
@@ -750,9 +750,9 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    hoistAutosize(colIds, showOverlay) {
+    hoistAutosize(colIds, showMask) {
         start(async () => {
-            if (showOverlay) {
+            if (showMask) {
                 this.agApi?.showLoadingOverlay();
                 // Wait to allow mask to render before starting potentially compute-intensive autosize.
                 await wait(100);
@@ -773,7 +773,7 @@ export class GridModel {
                 this.agColumnApi?.autoSizeColumns(agSizable);
             }
 
-            if (showOverlay) {
+            if (showMask) {
                 // Wait to allow column size changes to propagate before removing mask.
                 await wait(100);
                 this.agApi?.hideOverlay();
