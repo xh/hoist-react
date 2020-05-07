@@ -9,7 +9,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {clientErrorPanel} from './clienterrors/ClientErrorPanel';
 import {feedbackPanel} from './feedback/FeedbackPanel';
-import {trackingPanel} from './tracking/TrackingPanel';
+import {activityGrid} from './tracking/ActivityGrid';
 import {visitsChart} from './visits/VisitsChart';
 
 export const activityTab = hoistCmp.factory(
@@ -18,7 +18,7 @@ export const activityTab = hoistCmp.factory(
             route: 'default.activity',
             switcherPosition: 'left',
             tabs: [
-                {id: 'tracking', icon: Icon.analytics(), content: trackingPanel},
+                {id: 'tracking', icon: Icon.analytics(), content: activityGrid},
                 {id: 'visits', icon: Icon.chartBar(), content: visitsChart},
                 {id: 'clientErrors', icon: Icon.warning(), content: clientErrorPanel},
                 {id: 'feedback', icon: Icon.comment(), content: feedbackPanel}
