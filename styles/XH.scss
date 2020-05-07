@@ -54,6 +54,12 @@ body.xh-app {
   :focus:not(.bp3-input) {
     outline: var(--xh-focus-outline);
     outline-offset: var(--xh-focus-outline-offset-px);
+
+  }
+
+  .bp3-control input:focus ~ .bp3-control-indicator {
+    outline: var(--xh-focus-outline);
+    outline-offset: var(--xh-focus-outline-offset-px);
   }
 
   .xh-title-tip {
