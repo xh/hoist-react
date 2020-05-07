@@ -161,9 +161,16 @@ export class GridAutosizeService {
     // Autosize header cell
     //------------------
     getHeaderWidth(gridModel, colId) {
-        const headerContainerEl = gridModel.agApi?.gridPanel.childComponents[0].eHeaderContainer,
-            colHeaderEl = headerContainerEl?.querySelectorAll(`[col-id*="${colId}"]`),
-            colHeaderContentEl = colHeaderEl.length === 1 ? colHeaderEl[0].getElementsByClassName('xh-grid-header')[0] : null;
+        // Extract rendered header cell content
+        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi?.gridPanel.childComponents[0];
+
+        let colHeaderContentEl = null;
+        [eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader].forEach(headerContainer => {
+            const colHeaderEl = headerContainer?.querySelectorAll(`[col-id*="${colId}"]`);
+            if (colHeaderEl.length === 1) {
+                colHeaderContentEl = colHeaderEl[0].getElementsByClassName('xh-grid-header')[0];
+            }
+        });
 
         if (!colHeaderContentEl) return null;
 
