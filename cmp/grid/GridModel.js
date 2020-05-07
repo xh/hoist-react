@@ -241,7 +241,7 @@ export class GridModel {
 
         contextMenu,
         useVirtualColumns = false,
-        autosizeOptions = {showMask: true},
+        autosizeOptions = {},
         experimental,
         ...rest
     }) {
@@ -258,7 +258,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
-        this.autosizeOptions = autosizeOptions;
+        this.autosizeOptions = defaults(autosizeOptions, {showMask: true});
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
