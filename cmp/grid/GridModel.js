@@ -716,12 +716,15 @@ export class GridModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
+     * @param {Object} opts - autosize options
+     * @param {string|string[]} [opts.colIds] - which columns to autosize; defaults to all leaf columns.
+     * @param {boolean} [opts.showOverlay] - controls whether an overlay is shown during the autosize
+     *      process. Defaults to true.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autosizeColumns(colIds) {
+    autosizeColumns({colIds, showOverlay = true} = {}) {
         colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
 
         colIds = castArray(colIds).filter(id => {
@@ -732,7 +735,7 @@ export class GridModel {
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                this.hoistAutosize(colIds);
+                this.hoistAutosize(colIds, showOverlay);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
@@ -747,11 +750,13 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    hoistAutosize(colIds) {
+    hoistAutosize(colIds, showOverlay) {
         start(async () => {
-            this.agApi?.showLoadingOverlay();
-            // Wait to allow mask to render before starting potentially compute-intensive autosize.
-            await wait(100);
+            if (showOverlay) {
+                this.agApi?.showLoadingOverlay();
+                // Wait to allow mask to render before starting potentially compute-intensive autosize.
+                await wait(100);
+            }
 
             const [hoistSizable, agSizable] = partition(colIds, id => {
                 const col = this.getColumn(id);
@@ -768,9 +773,11 @@ export class GridModel {
                 this.agColumnApi?.autoSizeColumns(agSizable);
             }
 
-            // Wait to allow column size changes to propagate before removing mask.
-            await wait(100);
-            this.agApi?.hideOverlay();
+            if (showOverlay) {
+                // Wait to allow column size changes to propagate before removing mask.
+                await wait(100);
+                this.agApi?.hideOverlay();
+            }
         });
     }
 
