@@ -19,6 +19,17 @@
     tree indentation via the removed `--grid-tree-indent-px` CSS var. Use `--grid-tree-indent`
     instead. Note the new var is specified in em units to scale well across grid sizing modes.
 
+### ⚙️ Technical
+
+* Note that the included version of Onsen has been replaced with a fork that includes updates for
+  react 16.13. Apps should not need to make any changes.
+
+### 📚 Libraries
+
+* react `~16.8 -> ~16.13`
+* onsenui `~16.8` -> @xh/onsenui `~16.13`
+* react-onsenui `~16.8` -> @xh/react-onsenui `~16.13`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...develop)
 
 
