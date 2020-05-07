@@ -725,8 +725,9 @@ export class GridModel {
         colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
 
         colIds = castArray(colIds).filter(id => {
+            if (!this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
-            return col && col.autosizeOptions.enabled && !col.hidden && !col.flex;
+            return col && col.autosizeOptions.enabled && !col.flex;
         });
 
         if (!isEmpty(colIds)) {
