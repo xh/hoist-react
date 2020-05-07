@@ -32,7 +32,7 @@ export class GridAutosizeService {
     /**
      * Calculates the required column widths for a GridModel. Returns an array of the
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     * Typically called via `GridModel.autosizeColumns()`.
+     * Typically called via `GridModel.autosizeColumnsAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
      * @param {String[]} colIds - array of columns in model to compute sizing for.

@@ -12,7 +12,16 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
 import {start, wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    apiRemoved,
+    debounced,
+    deepFreeze,
+    ensureUnique,
+    errorIf,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -24,6 +33,7 @@ import {
     findLast,
     isArray,
     isEmpty,
+    isFunction,
     isNil,
     isPlainObject,
     isString,
@@ -89,6 +99,8 @@ export class GridModel {
     exportOptions;
     /** @member {boolean} */
     useVirtualColumns;
+    /** @member {GridAutosizeOptions} */
+    autosizeOptions;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -176,6 +188,7 @@ export class GridModel {
      *      Consider this performance optimization for grids with a very large number of columns
      *      obscured by horizontal scrolling.  Note that setting this value to true may
      *      limit the ability of the grid to autosize offscreen columns effectively.  Default false.
+     * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
      * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
      *      for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
@@ -228,6 +241,7 @@ export class GridModel {
 
         contextMenu,
         useVirtualColumns = false,
+        autosizeOptions = {showMask: true},
         experimental,
         ...rest
     }) {
@@ -244,6 +258,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
+        this.autosizeOptions = autosizeOptions;
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
@@ -716,17 +731,16 @@ export class GridModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param {Object} opts - autosize options
-     * @param {string|string[]} [opts.colIds] - which columns to autosize; defaults to all leaf columns.
-     * @param {boolean} [opts.showMask] - controls whether a mask is shown during the autosize
-     *      process. Defaults to true.
+     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for this autosize.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autosizeColumns({colIds, showMask = true} = {}) {
-        colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
+    async autosizeColumnsAsync(options = {}) {
+        options = {...this.autosizeOptions, ...options};
 
+        const {columns} = options;
+        let colIds = isFunction(columns) ? columns() : columns ?? this.getLeafColumns().map(col => col.colId);
         colIds = castArray(colIds).filter(id => {
             if (!this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
@@ -735,7 +749,7 @@ export class GridModel {
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                this.hoistAutosize(colIds, showMask);
+                await this.hoistAutosize(colIds, options);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
@@ -743,15 +757,15 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumns()` instead.');
-        this.autosizeColumns({colIds});
+        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumnsAsync()` instead.');
+        this.autosizeColumnsAsync({columns: colIds});
     }
 
     //-----------------------
     // Implementation
     //-----------------------
-    hoistAutosize(colIds, showMask) {
-        start(async () => {
+    async hoistAutosize(colIds, {showMask}) {
+        await start(async () => {
             if (showMask) {
                 this.agApi?.showLoadingOverlay();
                 // Wait to allow mask to render before starting potentially compute-intensive autosize.
@@ -945,7 +959,7 @@ export class GridModel {
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
-    }
+    };
 }
 
 /**
@@ -979,4 +993,16 @@ export class GridModel {
  * @callback RowClassFn - closure to generate CSS class names for a row.
  * @param {Object} data - the inner data object from the Record associated with the rendered row.
  * @returns {(String|String[])} - CSS class(es) to apply to the row level.
+ */
+
+/**
+ * @typedef {Object} GridAutosizeOptions
+ * @property {GetColumnsFn|string|string[]} columns - columns ids to autosize, or a function
+ * @property {boolean} showMask
+ */
+
+/**
+ * @callback GetColumnsFn
+ * @param {Object} c
+ * @param {GridModel} c.gridModel - the grid model requesting the columns
  */
