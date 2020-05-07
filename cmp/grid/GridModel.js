@@ -736,20 +736,27 @@ export class GridModel {
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    async autosizeColumnsAsync(options = {}) {
+    async autosizeAsync(options = {}) {
         options = {...this.autosizeOptions, ...options};
 
         const {columns} = options;
-        let colIds = isFunction(columns) ? columns() : columns ?? this.getLeafColumns().map(col => col.colId);
+        let colIds, includeColFn = () => true;
+        if (isFunction(columns)) {
+            includeColFn = columns;
+            colIds = this.getLeafColumns().map(col => col.colId);
+        } else {
+            colIds = columns ?? this.getLeafColumns().map(col => col.colId);
+        }
+
         colIds = castArray(colIds).filter(id => {
             if (!this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
-            return col && col.autosizeOptions.enabled && !col.flex;
+            return col && col.autosizeOptions.enabled && !col.flex && includeColFn(col);
         });
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                await this.hoistAutosize(colIds, options);
+                await this.internalAutosizeAsync(colIds, options);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
@@ -757,14 +764,14 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumnsAsync()` instead.');
-        this.autosizeColumnsAsync({columns: colIds});
+        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeAsync()` instead.');
+        this.autosizeAsync({columns: colIds});
     }
 
     //-----------------------
     // Implementation
     //-----------------------
-    async hoistAutosize(colIds, {showMask}) {
+    async internalAutosizeAsync(colIds, {showMask}) {
         await start(async () => {
             if (showMask) {
                 this.agApi?.showLoadingOverlay();
@@ -997,12 +1004,7 @@ export class GridModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
- * @property {GetColumnsFn|string|string[]} columns - columns ids to autosize, or a function
- * @property {boolean} showMask
- */
-
-/**
- * @callback GetColumnsFn
- * @param {Object} c
- * @param {GridModel} c.gridModel - the grid model requesting the columns
+ * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for testing if
+ *      the given column should be autosized
+ * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize
  */

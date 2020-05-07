@@ -32,7 +32,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
             return button({icon, disabled: true, ...props});
         }
 
-        onClick = onClick ?? (() => gridModel.autosizeColumnsAsync(autosizeOptions));
+        onClick = onClick ?? (() => gridModel.autosizeAsync(autosizeOptions));
 
         return button({icon, onClick, ...props});
     }
@@ -43,6 +43,6 @@ ColAutosizeButton.propTypes = {
     /** GridModel of the grid for which this button should autosize columns. */
     gridModel: PT.instanceOf(GridModel),
 
-    /** Options for the grid autosize. {@see GridModel#autosizeColumnsAsync()} */
+    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
     autosizeOptions: PT.object
 };
