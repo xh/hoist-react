@@ -42,7 +42,7 @@ export const [Chart, chart] = hoistCmp.withFactory({
                 useOnVisibleChange(impl.onVisibleChange)
             );
 
-        useEffect(() => impl.setAspectRatio(aspectRatio), [aspectRatio]);
+        useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
