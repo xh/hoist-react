@@ -196,11 +196,12 @@ class LocalModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
+
         return availableSorts[idx];
     }
 
     autosize() {
-        this.gridModel?.autosizeColumns(this.colId);
+        this.gridModel?.autosizeColumns({colIds: this.colId});
     }
 
     parseAvailableSorts() {

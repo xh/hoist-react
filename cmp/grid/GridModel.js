@@ -744,7 +744,7 @@ export class GridModel {
 
     autoSizeColumns(colIds) {
         console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumns()` instead.');
-        this.autosizeColumns(colIds);
+        this.autosizeColumns({colIds});
     }
 
     //-----------------------
