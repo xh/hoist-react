@@ -1,6 +1,6 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - under development
+## v33.2.0 - 2020-05-07
 
 ### 🎁 New Features
 
@@ -30,7 +30,7 @@
 * onsenui `~16.8` -> @xh/onsenui `~16.13`
 * react-onsenui `~16.8` -> @xh/react-onsenui `~16.13`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...33.2.0)
 
 
 ## v33.1.0 - 2020-05-05
