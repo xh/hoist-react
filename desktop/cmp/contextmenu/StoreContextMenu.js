@@ -130,7 +130,7 @@ export class StoreContextMenu {
                 return new RecordAction({
                     text: 'Autosize Columns',
                     icon: Icon.arrowsLeftRight(),
-                    actionFn: () => gridModel.autosizeColumns()
+                    actionFn: () => gridModel.autosizeAsync()
                 });
             default:
                 return token;
