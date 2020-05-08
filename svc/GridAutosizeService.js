@@ -39,12 +39,12 @@ export class GridAutosizeService {
      */
     autosizeColumns(gridModel, colIds) {
         const ret = [],
-            {store} = gridModel;
+            {store, agApi} = gridModel;
 
         // Get filtered set of records
         let records = [];
-        if (gridModel.agApi?.isAnyFilterPresent()) {
-            gridModel.agApi.forEachNodeAfterFilter(node => {
+        if (agApi?.isAnyFilterPresent()) {
+            agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);
                 if (record) records.push(record);
             });
@@ -55,6 +55,10 @@ export class GridAutosizeService {
         if (gridModel.showSummary && store.summaryRecord) {
             records.push(store.summaryRecord);
         }
+
+        warnIf(!agApi,
+            `Grid not rendered or agGrid API not available.  Autosizing will not be able to size headers.`
+        );
 
         for (const colId of colIds) {
             const width = this.autosizeColumn(gridModel, records, colId);
@@ -82,17 +86,15 @@ export class GridAutosizeService {
     }
 
     calcHeaderMaxWidth(gridModel, column) {
+        const {bufferPx, skipHeader} = column.autosizeOptions;
+
+        if (skipHeader) return null;
+        if (!gridModel.agApi) return null;  // TODO: Would a default min be better than nothing?
+
         try {
-            const {bufferPx, skipHeader} = column.autosizeOptions;
-
-            if (skipHeader) return null;
-
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-
-            const ret = this.getHeaderWidth(gridModel, column.colId, bufferPx);
-            warnIf(ret === null, 'Unable to compute header width');
-            return ret;
+            return this.getHeaderWidth(gridModel, column.colId, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -163,7 +165,6 @@ export class GridAutosizeService {
     // Autosize header cell
     //------------------
     getHeaderWidth(gridModel, colId, bufferPx) {
-        if (!gridModel.agApi) return null;
 
         // Extract rendered header cell content
         const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi.gridPanel.childComponents[0] ?? {};
