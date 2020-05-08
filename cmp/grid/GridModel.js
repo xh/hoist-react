@@ -724,8 +724,17 @@ export class GridModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
+    buildColumn(config) {
+        // return group
+        if (config.children) return new ColumnGroup(config, this);
+
+        // .. or leaf. When merging with defaults, *any* tooltip setting on column itself wins.
+        let {colDefaults} = this;
+        if (config.tooltip || config.tooltipElement) {
+            colDefaults = {...colDefaults, tooltip: null, tooltipElement: null};
+        }
+
+        return new Column(defaultsDeep({}, config, colDefaults), this);
     }
 
     /**

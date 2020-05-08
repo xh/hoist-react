@@ -367,12 +367,10 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, gridModel, agParams}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                 ({value}) => value;
-        }
-
-        if (this.tooltipElement) {
+        } else if (this.tooltipElement) {
+            ret.tooltipValueGetter = ({value}) => value;
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {return ['xh-grid-tooltip']}
                 render() {
