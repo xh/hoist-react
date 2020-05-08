@@ -728,13 +728,22 @@ export class GridModel {
         // return group
         if (config.children) return new ColumnGroup(config, this);
 
-        // .. or leaf. When merging with defaults, *any* tooltip setting on column itself wins.
-        let {colDefaults} = this;
-        if (config.tooltip || config.tooltipElement) {
-            colDefaults = {...colDefaults, tooltip: null, tooltipElement: null};
+        // Merge leaf config with defaults.
+        // Ensure *any* tooltip or renderer setting on column itself always wins.
+        if (this.colDefaults) {
+            let colDefaults = {...this.colDefaults};
+            if (config.tooltip || config.tooltipElement) {
+                colDefaults.tooltip = null;
+                colDefaults.tooltipElement = null;
+            }
+            if (config.renderer || config.elementRenderer) {
+                colDefaults.renderer = null;
+                colDefaults.elementRender = null;
+            }
+            config = defaultsDeep({}, config, colDefaults);
         }
 
-        return new Column(defaultsDeep({}, config, colDefaults), this);
+        return new Column(config, this);
     }
 
     /**
