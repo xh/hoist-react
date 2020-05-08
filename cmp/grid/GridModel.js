@@ -724,8 +724,26 @@ export class GridModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
+    buildColumn(config) {
+        // return group
+        if (config.children) return new ColumnGroup(config, this);
+
+        // Merge leaf config with defaults.
+        // Ensure *any* tooltip or renderer setting on column itself always wins.
+        if (this.colDefaults) {
+            let colDefaults = {...this.colDefaults};
+            if (config.tooltip || config.tooltipElement) {
+                colDefaults.tooltip = null;
+                colDefaults.tooltipElement = null;
+            }
+            if (config.renderer || config.elementRenderer) {
+                colDefaults.renderer = null;
+                colDefaults.elementRender = null;
+            }
+            config = defaultsDeep({}, config, colDefaults);
+        }
+
+        return new Column(config, this);
     }
 
     /**
