@@ -6,8 +6,8 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} from 'lodash';
+import {stripTags, warnIf} from '@xh/hoist/utils/js';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -90,7 +90,9 @@ export class GridAutosizeService {
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
 
-            return this.getHeaderWidth(gridModel, column.colId) + bufferPx;
+            const ret = this.getHeaderWidth(gridModel, column.colId, bufferPx);
+            warnIf(ret === null, 'Unable to compute header width');
+            return ret;
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -160,9 +162,11 @@ export class GridAutosizeService {
     //------------------
     // Autosize header cell
     //------------------
-    getHeaderWidth(gridModel, colId) {
+    getHeaderWidth(gridModel, colId, bufferPx) {
+        if (!gridModel.agApi) return null;
+
         // Extract rendered header cell content
-        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi?.gridPanel.childComponents[0];
+        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi.gridPanel.childComponents[0] ?? {};
 
         let colHeaderContentEl = null;
         [eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader].forEach(headerContainer => {
@@ -177,7 +181,7 @@ export class GridAutosizeService {
         // Copy ag-grid header markup into temp header and size.
         const headerEl = this.getHeaderEl();
         headerEl.innerHTML = colHeaderContentEl.innerHTML;
-        return Math.ceil(headerEl.clientWidth);
+        return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
     setHeaderElActive(active) {
