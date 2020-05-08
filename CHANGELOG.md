@@ -6,7 +6,8 @@
 
 ### ⚙️ Technical
 * Additional updates to experimental autosize feature: standardization of naming, better masking
-control, new options on GridModel.
+control, and API fixes.  Added new property `autosizeOptions` on `GridModel` and  main entry point
+is now named `GridModel.autosizeAsync()`.
 
 ### 🐞 Bug Fixes
 * Fixed an issue where dragging a column would cause it to be sorted unintentionally.
