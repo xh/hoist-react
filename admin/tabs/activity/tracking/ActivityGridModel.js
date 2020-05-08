@@ -94,14 +94,6 @@ export class ActivityGridModel {
         ]
     });
 
-    @managed
-    treeMapModel = new TreeMapModel({
-        gridModel: this.gridModel,
-        labelField: 'cubeLabel',
-        valueField: 'msg',
-        heatField: 'elapsed' // TODO: Useful but a little weird that 'slow' is 'greener'
-    });
-
     constructor() {
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
