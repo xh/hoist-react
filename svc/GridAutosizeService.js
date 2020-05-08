@@ -6,8 +6,8 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} from 'lodash';
+import {stripTags, warnIf} from '@xh/hoist/utils/js';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -39,12 +39,12 @@ export class GridAutosizeService {
      */
     autosizeColumns(gridModel, colIds) {
         const ret = [],
-            {store} = gridModel;
+            {store, agApi} = gridModel;
 
         // Get filtered set of records
         let records = [];
-        if (gridModel.agApi?.isAnyFilterPresent()) {
-            gridModel.agApi.forEachNodeAfterFilter(node => {
+        if (agApi?.isAnyFilterPresent()) {
+            agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);
                 if (record) records.push(record);
             });
@@ -55,6 +55,10 @@ export class GridAutosizeService {
         if (gridModel.showSummary && store.summaryRecord) {
             records.push(store.summaryRecord);
         }
+
+        warnIf(!agApi,
+            `Grid not rendered or agGrid API not available.  Autosizing will not be able to size headers.`
+        );
 
         for (const colId of colIds) {
             const width = this.autosizeColumn(gridModel, records, colId);
@@ -82,15 +86,15 @@ export class GridAutosizeService {
     }
 
     calcHeaderMaxWidth(gridModel, column) {
+        const {bufferPx, skipHeader} = column.autosizeOptions;
+
+        if (skipHeader) return null;
+        if (!gridModel.agApi) return null;  // TODO: Would a default min be better than nothing?
+
         try {
-            const {bufferPx, skipHeader} = column.autosizeOptions;
-
-            if (skipHeader) return null;
-
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-
-            return this.getHeaderWidth(gridModel, column.colId) + bufferPx;
+            return this.getHeaderWidth(gridModel, column.colId, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -160,9 +164,10 @@ export class GridAutosizeService {
     //------------------
     // Autosize header cell
     //------------------
-    getHeaderWidth(gridModel, colId) {
+    getHeaderWidth(gridModel, colId, bufferPx) {
+
         // Extract rendered header cell content
-        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi?.gridPanel.childComponents[0];
+        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi.gridPanel.childComponents[0] ?? {};
 
         let colHeaderContentEl = null;
         [eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader].forEach(headerContainer => {
@@ -177,7 +182,7 @@ export class GridAutosizeService {
         // Copy ag-grid header markup into temp header and size.
         const headerEl = this.getHeaderEl();
         headerEl.innerHTML = colHeaderContentEl.innerHTML;
-        return Math.ceil(headerEl.clientWidth);
+        return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
     setHeaderElActive(active) {
