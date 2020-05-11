@@ -1,12 +1,30 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - under development
+## v33.3.0 - 2020-05-08
+
+### ⚙️ Technical
+
+* Additional updates to experimental autosize feature: standardization of naming, better masking
+  control, and API fixes. Added new property `autosizeOptions` on `GridModel` and main entry point
+  is now named `GridModel.autosizeAsync()`.
+
+### 🐞 Bug Fixes
+
+* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
+
+
+## v33.2.0 - 2020-05-07
 
 ### 🎁 New Features
 
 * Virtual column rendering has been disabled by default, as it offered a minimal performance benefit
   for most grids while compromising autosizing. See new `GridModel.useVirtualColumns` config, which
   can be set to `true` to re-enable this behavior if required.
+* Any `GridModel` can now be reset to its code-prescribed defaults via the column chooser reset
+  button. Previously, resetting to defaults was only possible for grids that persisted their state
+  with a `GridModel.stateModel` config.
 
 * Add Hoist Cube Aggregators: `CountAggregator` and `RangeAggregator`
 
@@ -21,7 +39,18 @@
     tree indentation via the removed `--grid-tree-indent-px` CSS var. Use `--grid-tree-indent`
     instead. Note the new var is specified in em units to scale well across grid sizing modes.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...develop)
+### ⚙️ Technical
+
+* Note that the included version of Onsen has been replaced with a fork that includes updates for
+  react 16.13. Apps should not need to make any changes.
+
+### 📚 Libraries
+
+* react `~16.8 -> ~16.13`
+* onsenui `~16.8` -> @xh/onsenui `~16.13`
+* react-onsenui `~16.8` -> @xh/react-onsenui `~16.13`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...33.2.0)
 
 
 ## v33.1.0 - 2020-05-05

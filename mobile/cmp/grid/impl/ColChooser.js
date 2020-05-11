@@ -98,7 +98,6 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                 button({
                     text: 'Reset',
                     modifier: 'quiet',
-                    omit: !gridModel.stateModel,
                     onClick: () => model.restoreDefaults()
                 }),
                 filler(),

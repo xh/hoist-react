@@ -125,7 +125,7 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
-     * @param {AutosizeOptions} [c.autosizeOptions] - specifies how the column autosizes.
+     * @param {ColumnAutosizeOptions} [c.autosizeOptions] - specifies how the column autosizes.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -263,6 +263,7 @@ export class Column {
         this.autosizeOptions = {
             enabled: withDefault(this.resizable, true),
             skipHeader: false,
+            includeHeaderSortIcon: true,
             sampleCount: 10,
             bufferPx: 5,
             minWidth: this.minWidth,
@@ -367,12 +368,10 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, gridModel, agParams}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                 ({value}) => value;
-        }
-
-        if (this.tooltipElement) {
+        } else if (this.tooltipElement) {
+            ret.tooltipValueGetter = ({value}) => value;
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {return ['xh-grid-tooltip']}
                 render() {
@@ -660,9 +659,11 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} AutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
+ * @typedef {Object} ColumnAutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
  * @property {boolean} enabled - allow autosizing this column.
  * @property {boolean} skipHeader - true to ignore the header width when determining the max width.
+ * @property {boolean} includeHeaderSortIcon - true to always include the width of the sort icon when
+ *      calculating the header width.
  * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
  * @property {number} bufferPx - extra width in pixels to add to calculated max width.
  * @property {number} minWidth - minimum width in pixels.

@@ -54,9 +54,8 @@ export class ColChooserModel {
     }
 
     restoreDefaults() {
-        this.gridModel.stateModel.resetStateAsync().then(() => {
-            this.syncChooserData();
-        });
+        this.gridModel.restoreDefaults();
+        this.syncChooserData();
     }
 
     @action

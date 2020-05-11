@@ -57,6 +57,11 @@
       color: var(--xh-grid-header-icon-color);
     }
 
+    .xh-grid-header-sort-icon,
+    .xh-grid-header-menu-icon {
+      width: 1.5em;
+    }
+
     &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
       opacity: 0.5;
     }
@@ -241,12 +246,22 @@
   visibility: hidden;
   display: none;
 
-  svg {
-    margin-left: var(--xh-pad-half-px);
+  .xh-grid-header-sort-icon,
+  .xh-grid-header-menu-icon {
+    width: 1.5em;
+    display: none;
   }
 
   &--active {
     display: inline-flex;
+  }
+
+  &--sort .xh-grid-header-sort-icon {
+    display: block;
+  }
+
+  &--menu .xh-grid-header-menu-icon {
+    display: block;
   }
 
   &--large {

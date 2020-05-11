@@ -12,7 +12,16 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
 import {start, wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, deepFreeze, ensureUnique, errorIf, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    apiRemoved,
+    debounced,
+    deepFreeze,
+    ensureUnique,
+    errorIf,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -24,6 +33,7 @@ import {
     findLast,
     isArray,
     isEmpty,
+    isFunction,
     isNil,
     isPlainObject,
     isString,
@@ -89,7 +99,8 @@ export class GridModel {
     exportOptions;
     /** @member {boolean} */
     useVirtualColumns;
-
+    /** @member {GridAutosizeOptions} */
+    autosizeOptions;
 
     /** @member {AgGridModel} */
     @managed agGridModel;
@@ -125,6 +136,9 @@ export class GridModel {
         'colChooser',
         'autosizeColumns'
     ];
+
+    /** @private - initial state provided to ctor - powers restoreDefaults(). */
+    _defaultState;
 
     /**
      * @param {Object} c - GridModel configuration.
@@ -174,6 +188,7 @@ export class GridModel {
      *      Consider this performance optimization for grids with a very large number of columns
      *      obscured by horizontal scrolling.  Note that setting this value to true may
      *      limit the ability of the grid to autosize offscreen columns effectively.  Default false.
+     * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
      * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
      *      for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
@@ -226,9 +241,12 @@ export class GridModel {
 
         contextMenu,
         useVirtualColumns = false,
+        autosizeOptions = {},
         experimental,
         ...rest
     }) {
+        this._defaultState = {columns, sortBy, groupBy};
+
         this.treeMode = treeMode;
         this.showSummary = showSummary;
 
@@ -240,6 +258,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
+        this.autosizeOptions = defaults(autosizeOptions, {showMask: true});
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
@@ -275,6 +294,19 @@ export class GridModel {
         this.selModel = this.parseSelModel(selModel);
         this.stateModel = this.parseStateModel(stateModel);
         this.experimental = this.parseExperimental(experimental);
+    }
+
+    /**
+     * Restore the column, sorting, and grouping configs as specified by the application at
+     * construction time. This is the state without any saved grid state or user changes applied.
+     * This method will clear the persistent grid state saved for this grid, if any.
+     */
+    restoreDefaults() {
+        const {columns, sortBy, groupBy} = this._defaultState;
+        this.setColumns(columns);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
+        this.stateModel?.clear();
     }
 
     /**
@@ -692,29 +724,57 @@ export class GridModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(c) {
-        return c.children ? new ColumnGroup(c, this) : new Column(defaultsDeep({}, c, this.colDefaults), this);
+    buildColumn(config) {
+        // return group
+        if (config.children) return new ColumnGroup(config, this);
+
+        // Merge leaf config with defaults.
+        // Ensure *any* tooltip or renderer setting on column itself always wins.
+        if (this.colDefaults) {
+            let colDefaults = {...this.colDefaults};
+            if (config.tooltip || config.tooltipElement) {
+                colDefaults.tooltip = null;
+                colDefaults.tooltipElement = null;
+            }
+            if (config.renderer || config.elementRenderer) {
+                colDefaults.renderer = null;
+                colDefaults.elementRender = null;
+            }
+            config = defaultsDeep({}, config, colDefaults);
+        }
+
+        return new Column(config, this);
     }
 
     /**
      * Autosize columns to fit their contents.
      *
-     * @param {string|string[]} [colIds] - which columns to autosize; defaults to all leaf columns.
+     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for this autosize.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
      * autosizing disabled via the autosizeOptions.enabled flag.
      */
-    autosizeColumns(colIds) {
-        colIds = colIds ?? this.getLeafColumns().map(col => col.colId);
+    async autosizeAsync(options = {}) {
+        options = {...this.autosizeOptions, ...options};
+
+        const {columns} = options;
+        let colIds, includeColFn = () => true;
+        if (isFunction(columns)) {
+            includeColFn = columns;
+            colIds = this.getLeafColumns().map(col => col.colId);
+        } else {
+            colIds = columns ?? this.getLeafColumns().map(col => col.colId);
+        }
 
         colIds = castArray(colIds).filter(id => {
+            if (!this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
-            return col && col.autosizeOptions.enabled && !col.hidden && !col.flex;
+            return col && col.autosizeOptions.enabled && !col.flex && includeColFn(col);
         });
 
         if (!isEmpty(colIds)) {
             if (this.experimental.useHoistAutosize) {
-                this.hoistAutosize(colIds);
+                await this.internalAutosizeAsync(colIds, options);
             } else {
                 this.agColumnApi?.autoSizeColumns(colIds);
             }
@@ -722,18 +782,20 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeColumns()` instead.');
-        this.autosizeColumns(colIds);
+        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeAsync()` instead.');
+        this.autosizeAsync({columns: colIds});
     }
 
     //-----------------------
     // Implementation
     //-----------------------
-    hoistAutosize(colIds) {
-        start(async () => {
-            this.agApi?.showLoadingOverlay();
-            // Wait to allow mask to render before starting potentially compute-intensive autosize.
-            await wait(100);
+    async internalAutosizeAsync(colIds, {showMask}) {
+        await start(async () => {
+            if (showMask) {
+                this.agApi?.showLoadingOverlay();
+                // Wait to allow mask to render before starting potentially compute-intensive autosize.
+                await wait(100);
+            }
 
             const [hoistSizable, agSizable] = partition(colIds, id => {
                 const col = this.getColumn(id);
@@ -750,9 +812,11 @@ export class GridModel {
                 this.agColumnApi?.autoSizeColumns(agSizable);
             }
 
-            // Wait to allow column size changes to propagate before removing mask.
-            await wait(100);
-            this.agApi?.hideOverlay();
+            if (showMask) {
+                // Wait to allow column size changes to propagate before removing mask.
+                await wait(100);
+                this.agApi?.hideOverlay();
+            }
         });
     }
 
@@ -920,8 +984,7 @@ export class GridModel {
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
-    }
-
+    };
 }
 
 /**
@@ -955,4 +1018,11 @@ export class GridModel {
  * @callback RowClassFn - closure to generate CSS class names for a row.
  * @param {Object} data - the inner data object from the Record associated with the rendered row.
  * @returns {(String|String[])} - CSS class(es) to apply to the row level.
+ */
+
+/**
+ * @typedef {Object} GridAutosizeOptions
+ * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for testing if
+ *      the given column should be autosized
+ * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize
  */

@@ -7,7 +7,7 @@
 
 import {HoistService} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isFinite, sortBy, groupBy, map, reduce, min, max} from 'lodash';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -32,19 +32,19 @@ export class GridAutosizeService {
     /**
      * Calculates the required column widths for a GridModel. Returns an array of the
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     * Typically called via `GridModel.autosizeColumns()`.
+     * Typically called via `GridModel.autosizeAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
      * @param {String[]} colIds - array of columns in model to compute sizing for.
      */
     autosizeColumns(gridModel, colIds) {
         const ret = [],
-            {store} = gridModel;
+            {store, agApi} = gridModel;
 
         // Get filtered set of records
         let records = [];
-        if (gridModel.agApi?.isAnyFilterPresent()) {
-            gridModel.agApi.forEachNodeAfterFilter(node => {
+        if (agApi?.isAnyFilterPresent()) {
+            agApi.forEachNodeAfterFilter(node => {
                 const record = store.getById(node.data?.id);
                 if (record) records.push(record);
             });
@@ -82,15 +82,14 @@ export class GridAutosizeService {
     }
 
     calcHeaderMaxWidth(gridModel, column) {
+        const {skipHeader, includeHeaderSortIcon, bufferPx} = column.autosizeOptions;
+
+        if (skipHeader) return null;
+
         try {
-            const {bufferPx, skipHeader} = column.autosizeOptions;
-
-            if (skipHeader) return null;
-
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-
-            return this.getHeaderWidth(gridModel, column.colId) + bufferPx;
+            return this.getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -160,17 +159,17 @@ export class GridAutosizeService {
     //------------------
     // Autosize header cell
     //------------------
-    getHeaderWidth(gridModel, colId) {
-        const headerContainerEl = gridModel.agApi?.gridPanel.childComponents[0].eHeaderContainer,
-            colHeaderEl = headerContainerEl?.querySelectorAll(`[col-id*="${colId}"]`),
-            colHeaderContentEl = colHeaderEl.length === 1 ? colHeaderEl[0].getElementsByClassName('xh-grid-header')[0] : null;
+    getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx) {
+        const {colId, headerName, agOptions} = column,
+            headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
+            showSort = includeHeaderSortIcon || gridModel.sortBy.find(sorter => sorter.colId === colId),
+            showMenu = agOptions?.suppressMenu === false;
 
-        if (!colHeaderContentEl) return null;
-
-        // Copy ag-grid header markup into temp header and size.
+        // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
-        headerEl.innerHTML = colHeaderContentEl.innerHTML;
-        return Math.ceil(headerEl.clientWidth);
+        this.setHeaderElSortAndMenu(showSort, showMenu);
+        headerEl.firstChild.innerHTML = headerHtml;
+        return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
     setHeaderElActive(active) {
@@ -193,10 +192,30 @@ export class GridAutosizeService {
         headerEl.classList.add(`xh-grid-autosize-header--${sizingMode}`);
     }
 
+    setHeaderElSortAndMenu(sort, menu) {
+        const headerEl = this.getHeaderEl();
+        headerEl.classList.remove(
+            'xh-grid-autosize-header--sort',
+            'xh-grid-autosize-header--menu'
+        );
+        if (sort) headerEl.classList.add('xh-grid-autosize-header--sort');
+        if (menu) headerEl.classList.add('xh-grid-autosize-header--menu');
+    }
+
     getHeaderEl() {
         if (!this._headerEl) {
             const headerEl = document.createElement('div');
             headerEl.classList.add('xh-grid-autosize-header');
+            headerEl.appendChild(document.createElement('span'));
+
+            const sortIcon = document.createElement('div');
+            sortIcon.classList.add('xh-grid-header-sort-icon');
+            headerEl.appendChild(sortIcon);
+
+            const menuIcon = document.createElement('div');
+            menuIcon.classList.add('xh-grid-header-menu-icon');
+            headerEl.appendChild(menuIcon);
+
             document.body.appendChild(headerEl);
             this._headerEl = headerEl;
         }
