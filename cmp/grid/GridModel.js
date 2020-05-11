@@ -258,7 +258,7 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
-        this.autosizeOptions = defaults(autosizeOptions, {showMask: true});
+        this.autosizeOptions = defaults(autosizeOptions, {showMask: true, fillMode: 'all'});
 
         errorIf(rest.contextMenuFn,
             "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
@@ -789,7 +789,7 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    async internalAutosizeAsync(colIds, {showMask}) {
+    async internalAutosizeAsync(colIds, {showMask, fillMode}) {
         await start(async () => {
             if (showMask) {
                 this.agApi?.showLoadingOverlay();
@@ -810,6 +810,15 @@ export class GridModel {
 
             if (!isEmpty(agSizable)) {
                 this.agColumnApi?.autoSizeColumns(agSizable);
+                // Wait to allow ag-grid autosize to propagate before potentially filling width.
+                await wait(100);
+            }
+
+            const flexColumns = this.getVisibleLeafColumns().filter(it => it.flex);
+            if (!flexColumns.length && fillMode !== 'disabled') {
+                const colStateChanges = XH.gridAutosizeService.fillColumns(this, colIds, fillMode);
+                this.applyColumnStateChanges(colStateChanges);
+                console.debug('Column widths filled via GridAutosizeService', colStateChanges);
             }
 
             if (showMask) {
@@ -1025,4 +1034,6 @@ export class GridModel {
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for testing if
  *      the given column should be autosized
  * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize
+ * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
+ *      Valid options are ['all', 'left', 'right', 'disabled'].
  */

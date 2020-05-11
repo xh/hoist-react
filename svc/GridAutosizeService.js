@@ -6,8 +6,8 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {stripTags} from '@xh/hoist/utils/js';
-import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
+import {stripTags, throwIf} from '@xh/hoist/utils/js';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sum, compact, sortBy, keys} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -38,8 +38,8 @@ export class GridAutosizeService {
      * @param {String[]} colIds - array of columns in model to compute sizing for.
      */
     autosizeColumns(gridModel, colIds) {
-        const ret = [],
-            {store, agApi} = gridModel;
+        const {store, agApi} = gridModel,
+            ret = [];
 
         // Get filtered set of records
         let records = [];
@@ -62,6 +62,44 @@ export class GridAutosizeService {
         }
 
         return ret;
+    }
+
+    /**
+     * Increase the size of columns to fill any remaining space. Returns an array of the
+     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
+     * Typically called via `GridModel.autosizeAsync()`.
+     *
+     * @param {GridModel} gridModel - GridModel to autosize.
+     * @param {String[]} colIds - array of columns in model to compute sizing for.
+     * @param {String} fillMode - how to fill the remaining space.
+     */
+    fillColumns(gridModel, colIds, fillMode) {
+        throwIf(!['all', 'left', 'right', 'disabled'].includes(fillMode), `Unsupported value "${fillMode}" for fillMode.`);
+        if (fillMode === 'disabled') return [];
+
+        // 1) Get available width of rendered grid
+        const {agApi} = gridModel,
+            available = agApi?.gridPanel?.eBodyHorizontalScrollViewport?.clientWidth;
+
+        if (!agApi || !isFinite(available)) {
+            console.warn('Grid not rendered - unable to fill columns.');
+            return [];
+        }
+
+        // 2) Get remaining space to be filled
+        const fillState = this.getFillState(gridModel, colIds),
+            remaining = available - fillState.total;
+        if (remaining <= 0) return [];
+
+        // 3) Distribute remaining space according to fill mode
+        switch (fillMode) {
+            case 'all':
+                return this.fillEvenly(fillState.columns, remaining);
+            case 'left':
+                return this.fillSequentially(fillState.columns, remaining);
+            case 'right':
+                return this.fillSequentially(fillState.columns.reverse(), remaining);
+        }
     }
 
     //------------------
@@ -300,6 +338,76 @@ export class GridAutosizeService {
             this._canvasContext = canvasContext;
         }
         return this._canvasContext;
+    }
+
+    //------------------
+    // Column width filling
+    //------------------
+
+    // Divide the remaining space evenly amongst columns, while respecting their maxWidths.
+    fillEvenly(columns, remaining) {
+        const ret = {};
+
+        while (remaining > 0) {
+            const extraWidthEach = Math.floor(remaining / columns.length);
+            if (extraWidthEach < 1) break;
+
+            let widthAdded;
+            columns.forEach(col => {
+                const {colId, maxWidth, width} = col;
+                if (!ret[colId]) ret[colId] = width;
+
+                const extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - ret[colId], extraWidthEach) : extraWidthEach;
+                if (extraWidth <= 0) return;
+
+                remaining -= extraWidth;
+                ret[colId] += extraWidth;
+                widthAdded = true;
+            });
+
+            // If we couldn't add any width this iteration (e.g. all columns are at their max widths),
+            // we must break to prevent an infinite loop.
+            if (!widthAdded) break;
+        }
+
+        return keys(ret).map(colId => {
+            return {colId, width: ret[colId]};
+        });
+    }
+
+    // Divide the remaining space across columns in order, while respecting their maxWidths.
+    fillSequentially(columns, remaining) {
+        const ret = [];
+        columns.forEach(col => {
+            if (remaining <= 0) return;
+
+            const {colId, maxWidth, width} = col,
+                extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - width, remaining) : remaining;
+            if (extraWidth <= 0) return;
+
+            remaining -= extraWidth;
+            ret.push({colId, width: width + extraWidth});
+        });
+        return ret;
+    }
+
+    getFillState(gridModel, colIds) {
+        const columns = compact(colIds.map(colId => this.getColumnFillState(gridModel, colId))),
+            total = sum(gridModel.columnState.filter(it => !it.hidden).map(it => it.width));
+
+        return {total, columns};
+    }
+
+    getColumnFillState(gridModel, colId) {
+        const column = gridModel.getColumn(colId),
+            colState = gridModel.getStateForColumn(colId);
+
+        if (!column || !colState || colState.hidden) return null;
+
+        const {width} = colState,
+            {maxWidth} = column.autosizeOptions;
+
+        return {colId, width, maxWidth};
     }
 
 }
