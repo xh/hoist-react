@@ -5,15 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {start} from '@xh/hoist/promise';
 import {debounced} from '@xh/hoist/utils/js';
-import {cloneDeep, find, isUndefined, omit} from 'lodash';
+import {cloneDeep, find, isUndefined, isEmpty, omit} from 'lodash';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions
- * and applying saved state to its parent GridModel upon that model's construction.
+ * and applying saved state when initialized by its parent `GridModel`.
  *
- * GridModels can enable persistent grid state via their stateModel config, typically
+ * GridModels can enable persistent grid state via their `stateModel` config, typically
  * provided as a simple string `gridId` to identify a given grid instance.
  *
  * It is not necessary to manually create instances of this class within an application.
@@ -29,11 +28,11 @@ export class GridStateModel {
      */
     static GRID_STATE_VERSION = 1;
 
-    gridModel = null;
-    gridId = null;
-
+    /** @member {GridModel} */
+    gridModel;
+    /** @member {string} */
+    gridId;
     state = {};
-    defaultState = null;
 
     /**
      * @param {Object} c - GridStateModel configuration.
@@ -50,71 +49,56 @@ export class GridStateModel {
         this.trackGrouping = trackGrouping;
     }
 
+    /**
+     * Attach this object to a GridModel and have it observe / apply changes to tracked properties.
+     * @param {GridModel} gridModel
+     */
     init(gridModel) {
         this.gridModel = gridModel;
+        this.state = cloneDeep(this.readState());
 
         if (this.trackColumns) {
+            this.updateGridColumns();
             this.addReaction(this.columnReaction());
         }
 
-        if (this.trackSort) {
-            this.addReaction(this.sortReaction());
-        }
-
         if (this.trackGrouping) {
+            this.updateGridGroupBy();
             this.addReaction(this.groupReaction());
         }
 
-        this.initializeState();
+        if (this.trackSort) {
+            this.updateGridSort();
+            this.addReaction(this.sortReaction());
+        }
     }
 
-    getStateKey() {
+    /**
+     * Clear all state saved for the linked GridModel.
+     * @see GridModel.restoreDefaults()
+     */
+    clear() {
+        this.state = {};
+        this.saveStateChange();
+    }
+
+    //----------------------
+    // Templates
+    //-----------------------
+    get stateKey() {
         return `gridState.v${GridStateModel.GRID_STATE_VERSION}.${this.gridId}`;
     }
 
-    readState(stateKey) {
-        return XH.localStorageService.get(stateKey, {});
+    readState() {
+        return XH.localStorageService.get(this.stateKey, {});
     }
 
-    saveState(stateKey, state) {
-        XH.localStorageService.set(stateKey, state);
+    writeState(state) {
+        XH.localStorageService.set(this.stateKey, state);
     }
 
-    resetState(stateKey) {
-        XH.localStorageService.remove(stateKey);
-    }
-
-    resetStateAsync() {
-        return start(() => {
-            this.loadState(this.defaultState);
-            this.resetState(this.getStateKey());
-        });
-    }
-
-    //--------------------------
-    // Implementation
-    //--------------------------
-    initializeState() {
-        const userState = this.readState(this.getStateKey());
-        this.defaultState = this.readStateFromGrid();
-
-        this.loadState(userState);
-    }
-
-    readStateFromGrid() {
-        const {gridModel} = this;
-        return {
-            columns: gridModel.columnState,
-            sortBy: gridModel.sortBy,
-            groupBy: gridModel.groupBy
-        };
-    }
-
-    loadState(state) {
-        this.state = cloneDeep(state);
-        if (this.trackColumns) this.updateGridColumns();
-        if (this.trackGrouping) this.updateGridGroupBy();
-        if (this.trackSort) this.updateGridSort();
+    clearState() {
+        XH.localStorageService.clear(this.stateKey);
     }
 
     //--------------------------
@@ -131,8 +115,8 @@ export class GridStateModel {
     }
 
     updateGridColumns() {
-        const {gridModel, state, trackColumns} = this;
-        if (!trackColumns || !state.columns) return;
+        const {gridModel, state} = this;
+        if (!state.columns) return;
 
         const colState = this.cleanColumnState(state.columns);
         gridModel.applyColumnStateChanges(colState);
@@ -154,7 +138,7 @@ export class GridStateModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (this.trackSort && !isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
+        if (!isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -172,7 +156,7 @@ export class GridStateModel {
 
     updateGridGroupBy() {
         const {groupBy} = this.state;
-        if (this.trackGrouping && !isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
+        if (!isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
     }
 
     //--------------------------
@@ -207,6 +191,12 @@ export class GridStateModel {
 
     @debounced(500)
     saveStateChange() {
-        this.saveState(this.getStateKey(), this.state);
+        const {state} = this;
+
+        if (isEmpty(state)) {
+            this.clearState();
+        } else {
+            this.writeState(state);
+        }
     }
 }

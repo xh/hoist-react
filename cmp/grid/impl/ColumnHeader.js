@@ -10,6 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
+import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
@@ -70,11 +71,16 @@ export const columnHeader = hoistCmp.factory({
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
+        const {isMobile} = XH;
         return div({
             className: classNames(props.className, extraClasses),
-            onClick: impl.onClick,
-            onDoubleClick: impl.onDoubleClick,
-            onTouchEnd: impl.onTouchEnd,
+
+            onClick:        !isMobile ? impl.onClick : null,
+            onDoubleClick:  !isMobile ? impl.onDoubleClick : null,
+            onMouseDown:    !isMobile ? impl.onMouseDown : null,
+            onTouchStart:   isMobile  ? impl.onTouchStart : null,
+            onTouchEnd:     isMobile  ? impl.onTouchEnd : null,
+
             items: [
                 span(headerName),
                 sortIcon(),
@@ -97,7 +103,9 @@ class LocalModel {
     availableSorts;
 
     _doubleClick = false;
-    _lastTouch = Date.now();
+    _lastTouch = null;
+    _lastTouchStart = null;
+    _lastMouseDown = null;
 
     constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
         this.gridModel = gridModel;
@@ -129,30 +137,38 @@ class LocalModel {
     }
 
     // Desktop click handling
+    onMouseDown = (e) => {
+        this._lastMouseDown = Date.now();
+    };
+
     onClick = (e) => {
-        if (XH.isMobile) return;
+        if (olderThan(this._lastMouseDown, 500)) return;  // avoid spurious reaction to drag end.
         this._doubleClick = false;
         this.updateSort(e.shiftKey);
     };
 
     onDoubleClick = () => {
-        if (XH.isMobile) return;
         this._doubleClick = true;
         this.autosize();
     };
 
     // Mobile touch handling
+    onTouchStart = (e) => {
+        this._lastTouchStart = Date.now();
+    };
+
     onTouchEnd = () => {
-        if (!XH.isMobile) return;
-        const time = Date.now();
-        if (time - this._lastTouch < 300) {
+        if (olderThan(this._lastTouchStart, 500)) return;  // avoid spurious reaction to drag end.
+
+        if (!olderThan(this._lastTouch, 300)) {
             this._doubleClick = true;
             this.autosize();
         } else {
             this._doubleClick = false;
             this.updateSort();
         }
-        this._lastTouch = time;
+
+        this._lastTouch = Date.now();
     };
 
     onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
@@ -196,11 +212,12 @@ class LocalModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
+
         return availableSorts[idx];
     }
 
     autosize() {
-        this.gridModel?.autoSizeColumns(this.colId);
+        this.gridModel?.autosizeAsync({columns: this.colId, showMask: false});
     }
 
     parseAvailableSorts() {

@@ -47,7 +47,6 @@ export const colChooser = hoistCmp.factory({
                     button({
                         text: 'Reset',
                         icon: Icon.undo({className: 'xh-red'}),
-                        omit: !gridModel.stateModel,
                         onClick: () => model.restoreDefaults()
                     }),
                     toolbarSep({

@@ -8,6 +8,7 @@ export * from './AutoRefreshService';
 export * from './ConfigService';
 export * from './EnvironmentService';
 export * from './FetchService';
+export * from './GridAutosizeService';
 export * from './GridExportService';
 export * from './IdentityService';
 export * from './IdleService';
