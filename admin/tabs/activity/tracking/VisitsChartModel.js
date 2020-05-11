@@ -47,7 +47,8 @@ export class VisitsChartModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: comparer.structural,
+            fireImmediately: true // TODO: why do we need this all of sudden?
         });
     }
 

@@ -13,7 +13,6 @@ import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
-import {TreeMapModel} from '@xh/hoist/desktop/cmp/treemap';
 
 @HoistModel
 @LoadSupport
@@ -29,35 +28,36 @@ export class ActivityGridModel {
 
     @observable.ref detailRecord = null;
 
+    // TODO: Create pref
     @managed dimChooserModel = new DimensionChooserModel({
         enableClear: true,
         dimensions: [
-            {label: 'Severity', value: 'severity'},
-            {label: 'Day', value: 'day'},
+            {label: 'Date', value: 'cubeDay'},
             {label: 'User', value: 'username'},
             {label: 'Message', value: 'msg'},
             {label: 'Category', value: 'category'},
             {label: 'Device', value: 'device'},
-            {label: 'Browser', value: 'browser'}
+            {label: 'Browser', value: 'browser'},
+            {label: 'User Agent', value: 'userAgent'}
         ],
-        initialValue: ['day', 'username', 'msg']
+        initialValue: ['cubeDay', 'username', 'msg']
     });
 
     cube = new Cube({
         fields: [
-            {name: 'severity', isDimension: true, aggregator: 'COUNT'},
-            {name: 'day', isDimension: true, aggregator: 'UNIQUE'},
+            {name: 'cubeDay', isDimension: true},
             {name: 'username', isDimension: true, aggregator: 'UNIQUE'},
-            {name: 'msg', isDimension: true, aggregator: 'COUNT'},
-            {name: 'category', isDimension: true, aggregator: 'COUNT'},
-            {name: 'device', isDimension: true, aggregator: 'COUNT'},
-            {name: 'browser', isDimension: true, aggregator: 'COUNT'},
+            {name: 'msg', isDimension: true, aggregator: 'UNIQUE'},
+            {name: 'category', isDimension: true, aggregator: 'UNIQUE'},
+            {name: 'device', isDimension: true, aggregator: 'UNIQUE'},
+            {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
+            {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
 
 
-            {name: 'userAgent'},
-            {name: 'impersonating'},
+            {name: 'day', aggregator: 'RANGE'},
             {name: 'elapsed', aggregator: 'AVG'},
-            {name: 'dateCreated', aggregator: 'RANGE'},
+            {name: 'impersonating'},
+            {name: 'dateCreated'},
             {name: 'data'}
         ]
     })
@@ -72,16 +72,13 @@ export class ActivityGridModel {
         emptyText: 'No activity reported...',
         sortBy: 'dateCreated|desc',
         columns: [
-            {field: 'cubeLabel', width: 160, isTreeColumn: true},
-            {field: 'severity', width: 100},
-            {field: 'dateCreated', ...dateTimeCol, renderer: this.dateRangeRenderer},
+            {field: 'cubeLabel', headerName: 'Track', width: 160, isTreeColumn: true},
             {field: 'username', ...usernameCol},
-            {field: 'day', ...dateCol},
+            {field: 'day', width: 200, align: 'right', renderer: this.dateRangeRenderer},
             {field: 'category', width: 100},
             {field: 'device', width: 100},
             {field: 'browser', width: 100},
             {field: 'userAgent', width: 100, hidden: true},
-            {field: 'data', width: 70},
             {field: 'impersonating', width: 140},
             {
                 field: 'elapsed',
@@ -90,7 +87,9 @@ export class ActivityGridModel {
                 align: 'right',
                 renderer: numberRenderer({precision: 0})
             },
-            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120}
+            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
+            {field: 'data', width: 70},
+            {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
     });
 
@@ -107,7 +106,11 @@ export class ActivityGridModel {
                 loadSpec
             });
 
-            data.forEach(it => it.day = fmtDate(it.dateCreated));
+            data.forEach(it => {
+                it.id = `id: ${it.id}`;
+                it.cubeDay = fmtDate(it.dateCreated); // We need a pre-formatted string to use as a dimension/cubeLabel
+                it.day = it.dateCreated; // Separate field for range aggregator
+            });
             await this.cube.loadDataAsync(data);
             this.loadGrid();
         } catch (e) {
@@ -189,7 +192,8 @@ export class ActivityGridModel {
         return {
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: comparer.structural,
+            fireImmediately: true
         };
     }
 

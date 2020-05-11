@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {uses, hoistCmp} from '@xh/hoist/core';
 import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {VisitsChartModel} from './VisitsChartModel';
 
 export const visitsChart = hoistCmp.factory({
-    model: creates(VisitsChartModel),
+    model: uses(VisitsChartModel),
 
     render() {
         return panel({

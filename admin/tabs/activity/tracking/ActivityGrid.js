@@ -6,7 +6,7 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {uses, hoistCmp} from '@xh/hoist/core';
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -18,7 +18,7 @@ import {activityDetail} from './ActivityDetail';
 import {ActivityGridModel} from './ActivityGridModel';
 
 export const activityGrid = hoistCmp.factory({
-    model: creates(ActivityGridModel),
+    model: uses(ActivityGridModel),
 
     render({model}) {
         return panel({
