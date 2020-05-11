@@ -6,7 +6,7 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {stripTags, warnIf} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
@@ -56,10 +56,6 @@ export class GridAutosizeService {
             records.push(store.summaryRecord);
         }
 
-        warnIf(!agApi,
-            `Grid not rendered or agGrid API not available.  Autosizing will not be able to size headers.`
-        );
-
         for (const colId of colIds) {
             const width = this.autosizeColumn(gridModel, records, colId);
             if (isFinite(width)) ret.push({colId, width});
@@ -86,15 +82,14 @@ export class GridAutosizeService {
     }
 
     calcHeaderMaxWidth(gridModel, column) {
-        const {bufferPx, skipHeader} = column.autosizeOptions;
+        const {skipHeader, includeHeaderSortIcon, bufferPx} = column.autosizeOptions;
 
         if (skipHeader) return null;
-        if (!gridModel.agApi) return null;  // TODO: Would a default min be better than nothing?
 
         try {
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-            return this.getHeaderWidth(gridModel, column.colId, bufferPx);
+            return this.getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -164,24 +159,16 @@ export class GridAutosizeService {
     //------------------
     // Autosize header cell
     //------------------
-    getHeaderWidth(gridModel, colId, bufferPx) {
+    getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx) {
+        const {colId, headerName, agOptions} = column,
+            headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
+            showSort = includeHeaderSortIcon || gridModel.sortBy.find(sorter => sorter.colId === colId),
+            showMenu = agOptions?.suppressMenu === false;
 
-        // Extract rendered header cell content
-        const {eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader} = gridModel.agApi.gridPanel.childComponents[0] ?? {};
-
-        let colHeaderContentEl = null;
-        [eHeaderContainer, ePinnedLeftHeader, ePinnedRightHeader].forEach(headerContainer => {
-            const colHeaderEl = headerContainer?.querySelectorAll(`[col-id*="${colId}"]`);
-            if (colHeaderEl.length === 1) {
-                colHeaderContentEl = colHeaderEl[0].getElementsByClassName('xh-grid-header')[0];
-            }
-        });
-
-        if (!colHeaderContentEl) return null;
-
-        // Copy ag-grid header markup into temp header and size.
+        // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
-        headerEl.innerHTML = colHeaderContentEl.innerHTML;
+        this.setHeaderElSortAndMenu(showSort, showMenu);
+        headerEl.firstChild.innerHTML = headerHtml;
         return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
@@ -205,10 +192,30 @@ export class GridAutosizeService {
         headerEl.classList.add(`xh-grid-autosize-header--${sizingMode}`);
     }
 
+    setHeaderElSortAndMenu(sort, menu) {
+        const headerEl = this.getHeaderEl();
+        headerEl.classList.remove(
+            'xh-grid-autosize-header--sort',
+            'xh-grid-autosize-header--menu'
+        );
+        if (sort) headerEl.classList.add('xh-grid-autosize-header--sort');
+        if (menu) headerEl.classList.add('xh-grid-autosize-header--menu');
+    }
+
     getHeaderEl() {
         if (!this._headerEl) {
             const headerEl = document.createElement('div');
             headerEl.classList.add('xh-grid-autosize-header');
+            headerEl.appendChild(document.createElement('span'));
+
+            const sortIcon = document.createElement('div');
+            sortIcon.classList.add('xh-grid-header-sort-icon');
+            headerEl.appendChild(sortIcon);
+
+            const menuIcon = document.createElement('div');
+            menuIcon.classList.add('xh-grid-header-menu-icon');
+            headerEl.appendChild(menuIcon);
+
             document.body.appendChild(headerEl);
             this._headerEl = headerEl;
         }
