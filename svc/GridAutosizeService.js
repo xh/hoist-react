@@ -6,7 +6,7 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
-import {stripTags, warnIf} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash';
 
 /**
@@ -55,10 +55,6 @@ export class GridAutosizeService {
         if (gridModel.showSummary && store.summaryRecord) {
             records.push(store.summaryRecord);
         }
-
-        warnIf(!agApi,
-            `Grid not rendered or agGrid API not available.  Autosizing will not be able to size headers.`
-        );
 
         for (const colId of colIds) {
             const width = this.autosizeColumn(gridModel, records, colId);
