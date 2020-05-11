@@ -263,6 +263,7 @@ export class Column {
         this.autosizeOptions = {
             enabled: withDefault(this.resizable, true),
             skipHeader: false,
+            includeHeaderSortIcon: true,
             sampleCount: 10,
             bufferPx: 5,
             minWidth: this.minWidth,
@@ -661,6 +662,8 @@ export function getAgHeaderClassFn(column) {
  * @typedef {Object} ColumnAutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
  * @property {boolean} enabled - allow autosizing this column.
  * @property {boolean} skipHeader - true to ignore the header width when determining the max width.
+ * @property {boolean} includeHeaderSortIcon - true to always include the width of the sort icon when
+ *      calculating the header width.
  * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
  * @property {number} bufferPx - extra width in pixels to add to calculated max width.
  * @property {number} minWidth - minimum width in pixels.
