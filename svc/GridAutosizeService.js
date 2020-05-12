@@ -6,8 +6,22 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
+import {action} from '@xh/hoist/mobx';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sum, compact, sortBy} from 'lodash';
+import {
+    groupBy,
+    isFinite,
+    isFunction,
+    isNil,
+    map,
+    max,
+    min,
+    reduce,
+    sum,
+    compact,
+    sortBy,
+    isEmpty
+} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -30,14 +44,45 @@ export class GridAutosizeService {
     _cellEl;
 
     /**
-     * Calculates the required column widths for a GridModel. Returns an array of the
-     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
-     * Typically called via `GridModel.autosizeAsync()`.
+     * Calculate and apply autosized column widths.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
      * @param {String[]} colIds - array of columns in model to compute sizing for.
+     * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
-    autosizeColumns(gridModel, colIds) {
+    @action
+    autosizeColumns(gridModel, colIds, options) {
+        // 1) Remove any columns with element renderers
+        colIds = colIds.filter(id => {
+            const col = gridModel.getColumn(id);
+            return col && !col.elementRenderer;
+        });
+        if (isEmpty(colIds)) return;
+
+        // 2) Ensure order of passed colIds matches the current GridModel.columnState.
+        // This is to prevent inadvertently changing the column order when applying column state changes
+        colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
+
+        // 3) Shrink columns down to their required widths.
+        const requiredWidths = this.calcRequiredWidths(gridModel, colIds, options);
+        gridModel.applyColumnStateChanges(requiredWidths);
+        console.debug('Column widths autosized via GridAutosizeService', requiredWidths);
+
+        // 4) Grow columns to fill any remaining space, if enabled.
+        const fillWidths = this.calcFillWidths(gridModel, colIds, options);
+        gridModel.applyColumnStateChanges(fillWidths);
+        console.debug('Column widths filled via GridAutosizeService', fillWidths);
+    }
+
+    /**
+     * Calculates the required column widths for a GridModel. Returns an array of the
+     * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
+     *
+     * @param {GridModel} gridModel - GridModel to autosize.
+     * @param {String[]} colIds - array of columns in model to compute sizing for.
+     * @param {GridAutosizeOptions} options - options to use for this autosize.
+     */
+    calcRequiredWidths(gridModel, colIds, options) {
         const {store, agApi} = gridModel,
             ret = [];
 
@@ -57,7 +102,7 @@ export class GridAutosizeService {
         }
 
         for (const colId of colIds) {
-            const width = this.autosizeColumn(gridModel, records, colId);
+            const width = this.autosizeColumn(gridModel, records, colId, options);
             if (isFinite(width)) ret.push({colId, width});
         }
 
@@ -65,17 +110,22 @@ export class GridAutosizeService {
     }
 
     /**
-     * Increase the size of columns to fill any remaining space. Returns an array of the
+     * Calculate the increased size of columns to fill any remaining space. Returns an array of the
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
      * Typically called via `GridModel.autosizeAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
      * @param {String[]} colIds - array of columns in model to compute sizing for.
-     * @param {String} fillMode - how to fill the remaining space.
+     * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
-    fillColumns(gridModel, colIds, fillMode) {
-        throwIf(!['all', 'left', 'right', 'disabled'].includes(fillMode), `Unsupported value "${fillMode}" for fillMode.`);
-        if (fillMode === 'disabled') return [];
+    calcFillWidths(gridModel, colIds, options) {
+        const {fillMode} = options;
+        if (!fillMode || fillMode === 'none' || gridModel.getVisibleLeafColumns().some(it => it.flex)) return [];
+        throwIf(!['all', 'left', 'right'].includes(fillMode), `Unsupported value "${fillMode}" for fillMode.`);
+
+        // 1) Exclude pinned columns
+        colIds = colIds.filter(id => !gridModel.getColumnPinned(id));
+        if (isEmpty(colIds)) return [];
 
         // 1) Get available width of rendered grid
         const {agApi} = gridModel,
@@ -105,29 +155,30 @@ export class GridAutosizeService {
     //------------------
     // Implementation
     //------------------
-    autosizeColumn(gridModel, records, colId) {
+    autosizeColumn(gridModel, records, colId, options) {
         const column = gridModel.findColumn(gridModel.columns, colId),
-            {minWidth, maxWidth} = column.autosizeOptions;
+            {autosizeMinWidth, autosizeMaxWidth} = column;
 
         let result = max([
-            this.calcHeaderMaxWidth(gridModel, column),
-            this.calcDataMaxWidth(gridModel, records, column)
+            this.calcHeaderMaxWidth(gridModel, column, options),
+            this.calcDataMaxWidth(gridModel, records, column, options)
         ]);
 
-        result = max([result, minWidth]);
-        result = min([result, maxWidth]);
+        result = max([result, autosizeMinWidth]);
+        result = min([result, autosizeMaxWidth]);
         return result;
     }
 
-    calcHeaderMaxWidth(gridModel, column) {
-        const {skipHeader, includeHeaderSortIcon, bufferPx} = column.autosizeOptions;
+    calcHeaderMaxWidth(gridModel, column, options) {
+        const {autosizeIncludeHeader, autosizeIncludeHeaderIcons} = column,
+            {bufferPx} = options;
 
-        if (skipHeader) return null;
+        if (!autosizeIncludeHeader) return null;
 
         try {
             this.setHeaderElActive(true);
             this.setHeaderElSizingMode(gridModel.sizingMode);
-            return this.getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx);
+            return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
         } catch (e) {
             console.warn(`Error calculating max header width for column "${column.colId}".`, e);
         } finally {
@@ -135,7 +186,7 @@ export class GridAutosizeService {
         }
     }
 
-    calcDataMaxWidth(gridModel, records, column) {
+    calcDataMaxWidth(gridModel, records, column, options) {
         try {
             if (column.elementRenderer) return null;
 
@@ -149,12 +200,12 @@ export class GridAutosizeService {
                 // Here we group the records by tree depth and determine the max width at each depth.
                 const recordsByDepth = groupBy(records, record => record.ancestors.length),
                     levelMaxes = map(recordsByDepth, (records, depth) => {
-                        return this.calcMaxWidth(gridModel, records, column, this.getIndentation(depth));
+                        return this.calcMaxWidth(gridModel, records, column, options, this.getIndentation(depth));
                     });
 
                 return max(levelMaxes);
             } else {
-                return this.calcMaxWidth(gridModel, records, column);
+                return this.calcMaxWidth(gridModel, records, column, options);
             }
         } catch (e) {
             console.warn(`Error calculating max data width for column "${column.colId}".`, e);
@@ -163,9 +214,9 @@ export class GridAutosizeService {
         }
     }
 
-    calcMaxWidth(gridModel, records, column, indentationPx = 0) {
-        const {autosizeOptions, field, getValueFn, renderer} = column,
-            {sampleCount, bufferPx} = autosizeOptions,
+    calcMaxWidth(gridModel, records, column, options, indentationPx = 0) {
+        const {field, getValueFn, renderer} = column,
+            {bufferPx, sampleCount} = options,
             useRenderer = isFunction(renderer);
 
         // 1) Get unique values
@@ -200,7 +251,7 @@ export class GridAutosizeService {
     getHeaderWidth(gridModel, column, includeHeaderSortIcon, bufferPx) {
         const {colId, headerName, agOptions} = column,
             headerHtml = isFunction(headerName) ? headerName({column, gridModel}) : headerName,
-            showSort = includeHeaderSortIcon || gridModel.sortBy.find(sorter => sorter.colId === colId),
+            showSort = column.sortable && (includeHeaderSortIcon || gridModel.sortBy.find(sorter => sorter.colId === colId)),
             showMenu = agOptions?.suppressMenu === false;
 
         // Render to a hidden header cell to calculate the max displayed width
@@ -344,58 +395,66 @@ export class GridAutosizeService {
     // Column width filling
     //------------------
 
-    // Divide the remaining space evenly amongst columns, while respecting their maxWidths.
+    /**
+     * Divide the remaining space evenly amongst columns, while respecting their maxWidths.
+     */
     fillEvenly(columns, remaining) {
         const ret = {};
 
         while (remaining > 0) {
-            const extraWidthEach = Math.floor(remaining / columns.length);
-            if (extraWidthEach < 1) break;
+            const targetColumns = columns.filter(col => !isFinite(col.maxWidth) || col.width < col.maxWidth);
+            if (isEmpty(targetColumns)) break;
 
-            let widthAdded;
-            columns.forEach(col => {
-                const {colId, maxWidth, width} = col;
-                if (!ret[colId]) ret[colId] = width;
+            const targetAdd = Math.floor(remaining / targetColumns.length);
+            if (targetAdd === 0) break;
 
-                const extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - ret[colId], extraWidthEach) : extraWidthEach;
-                if (extraWidth <= 0) return;
+            targetColumns.forEach(col => {
+                const {colId, width, maxWidth} = col,
+                    currWidth = ret[colId] ?? width,
+                    extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - currWidth, targetAdd) : targetAdd;
 
-                remaining -= extraWidth;
-                ret[colId] += extraWidth;
-                widthAdded = true;
+                if (extraWidth > 0) {
+                    remaining -= extraWidth;
+                    ret[colId] = currWidth + extraWidth;
+                }
             });
-
-            // If we couldn't add any width this iteration (e.g. all columns are at their max widths),
-            // we must break to prevent an infinite loop.
-            if (!widthAdded) break;
         }
 
-        return map(ret, (width, colId) => ({colId, width}));
+        return map(ret, (width, colId) => {
+            return {width, colId};
+        });
     }
 
-    // Divide the remaining space across columns in order, while respecting their maxWidths.
+    /**
+     * Divide the remaining space across columns in order, while respecting their maxWidths.
+     */
     fillSequentially(columns, remaining) {
         const ret = [];
-        columns.forEach(col => {
-            if (remaining <= 0) return;
-
+        for (const col of columns) {
             const {colId, maxWidth, width} = col,
                 extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - width, remaining) : remaining;
-            if (extraWidth <= 0) return;
 
-            remaining -= extraWidth;
-            ret.push({colId, width: width + extraWidth});
-        });
+            if (extraWidth > 0) {
+                remaining -= extraWidth;
+                ret.push({colId, width: width + extraWidth});
+            }
+
+            if (remaining <= 0) break;
+        }
         return ret;
     }
 
     getFillState(gridModel, colIds) {
-        const columns = compact(colIds.map(colId => this.getColumnFillState(gridModel, colId))),
-            total = sum(gridModel.columnState.filter(it => !it.hidden).map(it => it.width));
+        const total = this.getTotalColumnWidth(gridModel),
+            columns = compact(colIds.map(colId => this.getColumnFillState(gridModel, colId)));
 
         return {total, columns};
     }
 
+    /**
+     * Returns an array of column state representations,
+     * suitable for use by the column fill algorithms.
+     */
     getColumnFillState(gridModel, colId) {
         const column = gridModel.getColumn(colId),
             colState = gridModel.getStateForColumn(colId);
@@ -403,9 +462,18 @@ export class GridAutosizeService {
         if (!column || !colState || colState.hidden) return null;
 
         const {width} = colState,
-            {maxWidth} = column.autosizeOptions;
+            maxWidth = column.autosizeMaxWidth;
 
         return {colId, width, maxWidth};
+    }
+
+    /**
+     * Returns the total combined width of visible columns.
+     * Note that this intentionally excludes pinned columns.
+     */
+    getTotalColumnWidth(gridModel) {
+        const widths = gridModel.columnState.filter(it => !it.hidden && !it.pinned).map(it => it.width);
+        return sum(widths);
     }
 
 }
