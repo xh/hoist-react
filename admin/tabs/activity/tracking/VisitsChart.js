@@ -6,17 +6,16 @@
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {uses, hoistCmp} from '@xh/hoist/core';
-import {refreshButton} from '@xh/hoist/desktop/cmp/button';
-import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {VisitsChartModel} from './VisitsChartModel';
+import {select, switchInput} from '../../../../desktop/cmp/input'; //TODO: fix imports
+import {ActivityModel} from './ActivityModel';
 
 export const visitsChart = hoistCmp.factory({
-    model: uses(VisitsChartModel),
+    model: uses(ActivityModel),
 
-    render() {
+    render({model}) {
         return panel({
             mask: 'onLoad',
             icon: Icon.users(),
@@ -34,22 +33,9 @@ export const visitsChart = hoistCmp.factory({
 
 const bbar = hoistCmp.factory(
     () => toolbar(
-        dateInput({bind: 'startDate', ...dateProps}),
-        Icon.angleRight(),
-        dateInput({bind: 'endDate', ...dateProps}),
-        toolbarSep(),
-        textInput({
-            bind: 'username',
-            placeholder: 'Username',
-            enableClear: true,
-            width: 150
-        }),
-        refreshButton()
+        select({
+            bind: 'chartType',
+            options: [{label: 'Bar Chart', value: 'column'}, {label: 'Timeseries', value: 'line'}]
+        })
     )
 );
-
-const dateProps = {
-    popoverPosition: 'top-left',
-    valueType: 'localDate',
-    width: 120
-};

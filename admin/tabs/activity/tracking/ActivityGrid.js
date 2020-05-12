@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
-import {uses, hoistCmp} from '@xh/hoist/core';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -15,20 +15,24 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {activityDetail} from './ActivityDetail';
-import {ActivityGridModel} from './ActivityGridModel';
+import {ActivityModel} from './ActivityModel';
+import {visitsChart} from './VisitsChart';
 
 export const activityGrid = hoistCmp.factory({
-    model: uses(ActivityGridModel),
+    model: creates(ActivityModel),
 
     render({model}) {
-        return panel({
-            mask: 'onLoad',
-            tbar: tbar(),
-            items: [
-                grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
-                activityDetail()
-            ]
-        });
+        return vframe(
+            panel({
+                mask: 'onLoad',
+                tbar: tbar(),
+                items: [
+                    grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
+                    activityDetail()
+                ]
+            }),
+            visitsChart({omit: model.dimChooserModel.value[0] != 'cubeDay'})
+        );
     }
 });
 

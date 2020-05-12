@@ -4,19 +4,21 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFinite} from 'lodash';
+import {isEmpty, isFinite, cloneDeep, reverse} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {dateTimeCol, GridModel, dateCol} from '@xh/hoist/cmp/grid';
+import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
+import {ChartModel} from '@xh/hoist/cmp/chart';
+import {capitalizeWords} from '../../../../format';
 
 @HoistModel
 @LoadSupport
-export class ActivityGridModel {
+export class ActivityModel {
 
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
@@ -25,6 +27,8 @@ export class ActivityGridModel {
     @bindable category = '';
     @bindable device = '';
     @bindable browser = '';
+
+    @bindable chartType = 'column';
 
     @observable.ref detailRecord = null;
 
@@ -55,10 +59,11 @@ export class ActivityGridModel {
 
 
             {name: 'day', aggregator: 'RANGE'},
-            {name: 'elapsed', aggregator: 'AVG'},
+            {name: 'elapsed', aggregator: 'AVG'}, // Aggregator shows the averages of the children (an ave of averages) which is not the same as the average of all the leaves. Can this be right?
             {name: 'impersonating'},
             {name: 'dateCreated'},
-            {name: 'data'}
+            {name: 'data'},
+            {name: 'count', aggregator: 'COUNT'}
         ]
     })
 
@@ -89,13 +94,48 @@ export class ActivityGridModel {
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
             {field: 'data', width: 70},
+            {field: 'count', width: 70},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
+    });
+
+    @managed
+    chartModel = new ChartModel({
+        highchartsConfig: {
+            chart: {type: 'column'},
+            plotOptions: {
+                column: {animation: false}
+            },
+            legend: {enabled: false},
+            title: {text: null},
+            xAxis: {
+                type: 'datetime',
+                units: [['day', [1]], ['week', [2]], ['month', [1]]],
+                labels: {
+                    formatter: function() {return fmtDate(this.value, 'D MMM')}
+                }
+            },
+            yAxis: [
+                {
+                    title: {
+                        text: 'Unique Users' // TODO will need to change with dim changes
+                    },
+                    allowDecimals: false
+                },
+                {
+                    title: {
+                        text: 'Average Elapsed (ms)'
+                    },
+                    opposite: true
+                }
+            ]
+        }
     });
 
     constructor() {
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
+        this.addReaction(this.chartTypeReaction());
     }
 
     async doLoadAsync(loadSpec) {
@@ -110,22 +150,46 @@ export class ActivityGridModel {
                 it.id = `id: ${it.id}`;
                 it.cubeDay = fmtDate(it.dateCreated); // We need a pre-formatted string to use as a dimension/cubeLabel
                 it.day = it.dateCreated; // Separate field for range aggregator
+                it.count = 1; // Separate field for range aggregator
             });
             await this.cube.loadDataAsync(data);
-            this.loadGrid();
+            this.loadGridAndChart();
         } catch (e) {
             this.gridModel.loadData([]);
             XH.handleException(e);
         }
     }
 
-    loadGrid() {
-        const data = this.cube.executeQuery({
-            dimensions: this.dimChooserModel.value,
-            includeLeaves: true
-        });
+    loadGridAndChart() {
+        const dimensions = this.dimChooserModel.value,
+            data = this.cube.executeQuery({
+                dimensions,
+                includeLeaves: true
+            });
 
         this.gridModel.loadData(data);
+        if (dimensions[0] === 'cubeDay') {
+            const {chartModel} = this,
+                highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+            highchartsConfig.yAxis[0].title.text = `Unique ${capitalizeWords(dimensions[1] || 'Log')}s`; // TODO be smarter about this plurlization (i think we can inflector examples somewhere) or make a label map (might be better cause we don't want 'usernames')
+            highchartsConfig.chart.type = this.chartType
+
+            this.chartModel.setHighchartsConfig(highchartsConfig);
+            this.chartModel.setSeries(this.getSeriesData(data));
+        }
+    }
+
+    getSeriesData(cubeData) {
+        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
+        const counts = [],
+            elapsed = [];
+
+        cubeData.forEach((it) => {
+            counts.push([LocalDate.from(it.cubeLabel).timestamp, it.children.length]);
+            elapsed.push([LocalDate.from(it.cubeLabel).timestamp, it.elapsed]);
+        });
+        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
+        return [{data: reverse(counts), yAxis: 0}, {data: reverse(elapsed), yAxis: 1}];
     }
 
     adjustDates(dir, toToday = false) {
@@ -200,7 +264,14 @@ export class ActivityGridModel {
     dimensionsReaction() {
         return {
             track: () => this.dimChooserModel.value,
-            run: () => this.loadGrid()
+            run: () => this.loadGridAndChart()
+        };
+    }
+
+    chartTypeReaction() {
+        return {
+            track: () => this.chartType,
+            run: () => this.loadGridAndChart()
         };
     }
 }
