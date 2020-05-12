@@ -814,8 +814,8 @@ export class GridModel {
                 await wait(100);
             }
 
-            const flexColumns = this.getVisibleLeafColumns().filter(it => it.flex);
-            if (!flexColumns.length && fillMode !== 'disabled') {
+            const hasFlexColumn = this.getVisibleLeafColumns().some(it => it.flex);
+            if (!hasFlexColumn && fillMode !== 'disabled') {
                 const colStateChanges = XH.gridAutosizeService.fillColumns(this, colIds, fillMode);
                 this.applyColumnStateChanges(colStateChanges);
                 console.debug('Column widths filled via GridAutosizeService', colStateChanges);

@@ -7,7 +7,7 @@
 
 import {HoistService} from '@xh/hoist/core';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sum, compact, sortBy, keys} from 'lodash';
+import {groupBy, isFinite, isFunction, isNil, map, max, min, reduce, sum, compact, sortBy} from 'lodash';
 
 /**
  * Calculates the column width required to display all values in a column.
@@ -370,9 +370,7 @@ export class GridAutosizeService {
             if (!widthAdded) break;
         }
 
-        return keys(ret).map(colId => {
-            return {colId, width: ret[colId]};
-        });
+        return map(ret, (width, colId) => ({colId, width}));
     }
 
     // Divide the remaining space across columns in order, while respecting their maxWidths.
