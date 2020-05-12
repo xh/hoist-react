@@ -17,7 +17,6 @@ import {
     debounced,
     deepFreeze,
     ensureUnique,
-    errorIf,
     throwIf,
     warnIf,
     withDefault
@@ -264,11 +263,11 @@ export class GridModel {
             fillMode: XH.isMobile ? 'left' : 'none'
         });
 
-        errorIf(rest.contextMenuFn,
-            "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
-        );
-        errorIf(exportOptions.includeHiddenCols,
-            "GridModel 'exportOptions.includeHiddenCols' has been removed.  Replace with {columns: 'ALL'}."
+        apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
+        apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
+        throwIf(
+            autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
+            `Unsupported value for fillMode.`
         );
 
         this.enableColumnPinning = enableColumnPinning;
@@ -763,17 +762,18 @@ export class GridModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for this autosize.
+     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for
+     *      this action.
      *
-     * This method will ignore hidden columns, columns with a flex value, and columns with autosizable = false.
+     * This method will ignore hidden columns, columns with a flex value, and columns with
+     * autosizable = false.
      */
     async autosizeAsync(options = {}) {
         options = {...this.autosizeOptions, ...options};
 
         const {columns} = options;
 
-        // We only want to fill when we operating on the full set
-        if (columns) options.fillMode = 'none';
+        if (columns) options.fillMode = 'none';  // Fill makes sense only for the entire set.
 
         let colIds, includeColFn = () => true;
         if (isFunction(columns)) {
@@ -791,17 +791,19 @@ export class GridModel {
 
         if (isEmpty(colIds)) return;
 
-        if (this.experimental.useHoistAutosize) {
-            if (options.showMask) {
-                this.agApi?.showLoadingOverlay();
-                await wait(100); // Wait to allow mask to render before starting potentially compute-intensive autosize.
+        const {agApi, experimental} = this;
+        if (experimental.useHoistAutosize) {
+            const showMask = options.showMask && agApi;
+            if (showMask) {
+                agApi.showLoadingOverlay();
+                await wait(100);
             }
 
-            XH.gridAutosizeService.autosizeColumns(this, colIds, options);
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
 
-            if (options.showMask) {
-                await wait(100); // Wait to allow column size changes to propagate before removing mask.
-                this.agApi?.hideOverlay();
+            if (showMask) {
+                await wait(100);
+                agApi.hideOverlay();
             }
         } else {
             this.agColumnApi?.autoSizeColumns(colIds);
