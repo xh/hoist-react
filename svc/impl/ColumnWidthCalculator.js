@@ -248,22 +248,24 @@ export class ColumnWidthCalculator {
     //------------------
     getStringWidth(string) {
         const canvasContext = this.getCanvasContext();
-        return canvasContext ? canvasContext.measureText(string).width : string.length;
+        return canvasContext.measureText(string).width;
     }
 
     getCanvasContext() {
-        if (isNil(this._canvasContext)) {
-            const canvasEl = document.getElementById('xh-grid-autosize-canvas');
-            if (canvasEl && !!canvasEl.getContext && !!canvasEl.getContext('2d') && !!canvasEl.getContext('2d').measureText) {
-                // Create context which uses grid fonts
-                const canvasContext = canvasEl.getContext('2d');
-                canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
-                this._canvasContext = canvasContext;
-            } else {
-                // 2D canvas context is not supported.
-                this._canvasContext = false;
-                console.warn('Canvas context is not supported.');
-            }
+        if (!this._canvasContext) {
+            // Create hidden canvas
+            const canvasEl = document.createElement('canvas');
+            canvasEl.classList.add('xh-grid-autosize-canvas');
+            document.body.appendChild(canvasEl);
+
+            // Create context which uses grid fonts
+            const canvasContext = canvasEl.getContext('2d'),
+                cellEl = this.getCellEl(),
+                fontSize = window.getComputedStyle(cellEl).getPropertyValue('font-size'),
+                fontFamily = window.getComputedStyle(cellEl).getPropertyValue('font-family');
+
+            canvasContext.font = `${fontSize} ${fontFamily}`;
+            this._canvasContext = canvasContext;
         }
         return this._canvasContext;
     }
