@@ -33,7 +33,8 @@ export class ActivityModel {
     @observable.ref detailRecord = null;
 
     // TODO: Create pref
-    @managed dimChooserModel = new DimensionChooserModel({
+    @managed
+    dimChooserModel = new DimensionChooserModel({
         enableClear: true,
         dimensions: [
             {label: 'Date', value: 'cubeDay'},
@@ -47,6 +48,7 @@ export class ActivityModel {
         initialValue: ['cubeDay', 'username', 'msg']
     });
 
+    @managed
     cube = new Cube({
         fields: [
             {name: 'cubeDay', isDimension: true},
@@ -57,13 +59,12 @@ export class ActivityModel {
             {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
 
-
             {name: 'day', aggregator: 'RANGE'},
-            {name: 'elapsed', aggregator: 'AVG'}, // Aggregator shows the averages of the children (an ave of averages) which is not the same as the average of all the leaves. Can this be right?
+            {name: 'elapsed', aggregator: 'AVG'}, // TODO: Aggregator shows the averages of the children (an ave of averages) which is not the same as the average of all the leaves. Can this be right?
             {name: 'impersonating'},
             {name: 'dateCreated'},
             {name: 'data'},
-            {name: 'count', aggregator: 'COUNT'}
+            {name: 'count', aggregator: 'COUNT'} // TODO: Is this the correct count now? Seems like we want child count not leaf count. ie. Two Users on given day
         ]
     })
 
@@ -148,9 +149,9 @@ export class ActivityModel {
 
             data.forEach(it => {
                 it.id = `id: ${it.id}`;
-                it.cubeDay = fmtDate(it.dateCreated); // We need a pre-formatted string to use as a dimension/cubeLabel
+                it.cubeDay = fmtDate(it.dateCreated); // Need a pre-formatted string to use as a dimension/cubeLabel
                 it.day = it.dateCreated; // Separate field for range aggregator
-                it.count = 1; // Separate field for range aggregator
+                it.count = 1;
             });
             await this.cube.loadDataAsync(data);
             this.loadGridAndChart();
