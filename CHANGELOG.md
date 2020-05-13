@@ -8,6 +8,10 @@
  `autosizeMinWidth`, and `autosizeMaxWidth`. Adds new feature `fillMode` option for
   allocating extra-space during autosizing.
 
+### 🐞 Bug Fixes
+
+* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
 
@@ -21,7 +25,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
+* `Column.hideable` will now be respected by ag-grid column drag and drop
+  [#1900](https://github.com/xh/hoist-react/issues/1900)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
 
