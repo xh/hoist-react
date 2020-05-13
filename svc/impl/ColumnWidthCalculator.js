@@ -106,7 +106,7 @@ export class ColumnWidthCalculator {
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
         // Strip html tags but include parentheses / units etc. for renderers that may return html,
         const sortedValues = sortBy(Array.from(values), value => {
-            const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
+            const width = isNil(value) ? 0 : stripTags(value.toString()).length;
             return width + indentationPx;
         });
 
