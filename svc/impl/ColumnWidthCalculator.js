@@ -106,7 +106,7 @@ export class ColumnWidthCalculator {
         // 2) Use a canvas to estimate and sort by the pixel width of the string value.
         // Strip html tags but include parentheses / units etc. for renderers that may return html,
         const sortedValues = sortBy(Array.from(values), value => {
-            const width = isNil(value) ? 0 : stripTags(value.toString()).length;
+            const width = isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString()));
             return width + indentationPx;
         });
 
@@ -248,20 +248,26 @@ export class ColumnWidthCalculator {
     //------------------
     getStringWidth(string) {
         const canvasContext = this.getCanvasContext();
-        return canvasContext.measureText(string).width;
+        return canvasContext ? canvasContext.measureText(string).width : string.length;
     }
 
     getCanvasContext() {
-        if (!this._canvasContext) {
-            // Create hidden canvas
+        if (isNil(this._canvasContext)) {
             const canvasEl = document.createElement('canvas');
-            canvasEl.classList.add('xh-grid-autosize-canvas');
-            document.body.appendChild(canvasEl);
+            if (!!canvasEl.getContext && !!canvasEl.getContext('2d')) {
+                // Create hidden canvas element and 2D context
+                canvasEl.classList.add('xh-grid-autosize-canvas');
+                document.body.appendChild(canvasEl);
 
-            // Create context which uses grid fonts
-            const canvasContext = canvasEl.getContext('2d');
-            canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
-            this._canvasContext = canvasContext;
+                // Create context which uses grid fonts
+                const canvasContext = canvasEl.getContext('2d');
+                canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
+                this._canvasContext = canvasContext;
+            } else {
+                // 2D canvas context is not supported.
+                this._canvasContext = false;
+                console.warn('Canvas context is not supported.');
+            }
         }
         return this._canvasContext;
     }
