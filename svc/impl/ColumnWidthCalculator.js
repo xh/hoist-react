@@ -253,12 +253,8 @@ export class ColumnWidthCalculator {
 
     getCanvasContext() {
         if (isNil(this._canvasContext)) {
-            const canvasEl = document.createElement('canvas');
-            if (!!canvasEl.getContext && !!canvasEl.getContext('2d')) {
-                // Create hidden canvas element and 2D context
-                canvasEl.classList.add('xh-grid-autosize-canvas');
-                document.body.appendChild(canvasEl);
-
+            const canvasEl = document.getElementById('xh-grid-autosize-canvas');
+            if (canvasEl && !!canvasEl.getContext && !!canvasEl.getContext('2d') && !!canvasEl.getContext('2d').measureText) {
                 // Create context which uses grid fonts
                 const canvasContext = canvasEl.getContext('2d');
                 canvasContext.font = 'var(--xh-grid-font-size-px) var(--xh-grid-font-family)';
