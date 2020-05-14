@@ -6,12 +6,10 @@
  */
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
-import {gatherLeaves} from '@xh/hoist/utils/js';
 
 export class AverageAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-        rows = gatherLeaves(rows);
         let total = null,
             count = 0;
 

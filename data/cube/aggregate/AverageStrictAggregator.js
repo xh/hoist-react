@@ -6,21 +6,25 @@
  */
 
 import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
-import {gatherLeaves} from '@xh/hoist/utils/js';
 
 export class AverageStrictAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-        rows = gatherLeaves(rows);
-        let total = null;
+        let strict = true,
+            total = null,
+            count = 0;
 
         this.forEachLeaf(rows, row => {
             const val = row.data[fieldName];
-            if (val == null) return null;
+            if (val == null) {
+                strict = false;
+                return;
+            }
             total += val;
+            count++;
         });
 
-        return total / rows.length;
+        return strict ? total / count : null;
     }
 
     replace(rows, currAgg, update) {
