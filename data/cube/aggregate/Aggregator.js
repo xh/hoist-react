@@ -39,12 +39,12 @@ export class Aggregator {
      * @returns {Array}
      */
     forEachLeaf(rows, fn) {
-        rows.forEach(row => {
+        for (const row of rows) {
             if (row.isLeaf) {
                 fn(row);
             } else {
                 this.forEachLeaf(row.children, fn);
             }
-        });
+        }
     }
 }
