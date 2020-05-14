@@ -14,11 +14,11 @@ export class AverageStrictAggregator extends Aggregator {
         rows = gatherLeaves(rows);
         let total = null;
 
-        for (const row of rows) {
+        this.forEachLeaf(rows, row => {
             const val = row.data[fieldName];
             if (val == null) return null;
             total += val;
-        }
+        });
 
         return total / rows.length;
     }

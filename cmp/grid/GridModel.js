@@ -11,13 +11,12 @@ import {Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
-import {start, wait} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {
     apiRemoved,
     debounced,
     deepFreeze,
     ensureUnique,
-    errorIf,
     throwIf,
     warnIf,
     withDefault
@@ -42,7 +41,6 @@ import {
     map,
     max,
     min,
-    partition,
     pull,
     sortBy
 } from 'lodash';
@@ -258,13 +256,18 @@ export class GridModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
-        this.autosizeOptions = defaults(autosizeOptions, {showMask: true});
+        this.autosizeOptions = defaults(autosizeOptions, {
+            showMask: true,
+            sampleCount: 10,
+            bufferPx: 5,
+            fillMode: XH.isMobile ? 'left' : 'none'
+        });
 
-        errorIf(rest.contextMenuFn,
-            "GridModel param 'contextMenuFn' has been removed.  Use contextMenu instead"
-        );
-        errorIf(exportOptions.includeHiddenCols,
-            "GridModel 'exportOptions.includeHiddenCols' has been removed.  Replace with {columns: 'ALL'}."
+        apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
+        apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
+        throwIf(
+            autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
+            `Unsupported value for fillMode.`
         );
 
         this.enableColumnPinning = enableColumnPinning;
@@ -604,6 +607,8 @@ export class GridModel {
      */
     @action
     applyColumnStateChanges(colStateChanges) {
+        if (isEmpty(colStateChanges)) return;
+
         let columnState = cloneDeep(this.columnState);
 
         throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
@@ -656,6 +661,14 @@ export class GridModel {
      */
     getLeafColumns() {
         return this.gatherLeaves(this.columns);
+    }
+
+    /**
+     * Return all leaf-level column ids - i.e. excluding column groups.
+     * @returns {String[]}
+     */
+    getLeafColumnIds() {
+        return this.getLeafColumns().map(col => col.colId);
     }
 
     /**
@@ -749,35 +762,51 @@ export class GridModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for this autosize.
+     * @param {GridAutosizeOptions} options - overrides of default autosize options to use for
+     *      this action.
      *
      * This method will ignore hidden columns, columns with a flex value, and columns with
-     * autosizing disabled via the autosizeOptions.enabled flag.
+     * autosizable = false.
      */
     async autosizeAsync(options = {}) {
         options = {...this.autosizeOptions, ...options};
 
         const {columns} = options;
+
+        if (columns) options.fillMode = 'none';  // Fill makes sense only for the entire set.
+
         let colIds, includeColFn = () => true;
         if (isFunction(columns)) {
             includeColFn = columns;
-            colIds = this.getLeafColumns().map(col => col.colId);
+            colIds = this.getLeafColumnIds();
         } else {
-            colIds = columns ?? this.getLeafColumns().map(col => col.colId);
+            colIds = columns ?? this.getLeafColumnIds();
         }
 
         colIds = castArray(colIds).filter(id => {
             if (!this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
-            return col && col.autosizeOptions.enabled && !col.flex && includeColFn(col);
+            return col && col.autosizable && !col.flex && includeColFn(col);
         });
 
-        if (!isEmpty(colIds)) {
-            if (this.experimental.useHoistAutosize) {
-                await this.internalAutosizeAsync(colIds, options);
-            } else {
-                this.agColumnApi?.autoSizeColumns(colIds);
+        if (isEmpty(colIds)) return;
+
+        const {agApi, experimental} = this;
+        if (experimental.useHoistAutosize) {
+            const showMask = options.showMask && agApi;
+            if (showMask) {
+                agApi.showLoadingOverlay();
+                await wait(100);
             }
+
+            await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
+
+            if (showMask) {
+                await wait(100);
+                agApi.hideOverlay();
+            }
+        } else {
+            this.agColumnApi?.autoSizeColumns(colIds);
         }
     }
 
@@ -789,37 +818,6 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    async internalAutosizeAsync(colIds, {showMask}) {
-        await start(async () => {
-            if (showMask) {
-                this.agApi?.showLoadingOverlay();
-                // Wait to allow mask to render before starting potentially compute-intensive autosize.
-                await wait(100);
-            }
-
-            const [hoistSizable, agSizable] = partition(colIds, id => {
-                const col = this.getColumn(id);
-                return col && !col.elementRenderer;
-            });
-
-            if (!isEmpty(hoistSizable)) {
-                const colStateChanges = XH.gridAutosizeService.autosizeColumns(this, hoistSizable);
-                this.applyColumnStateChanges(colStateChanges);
-                console.debug('Columns autosized via GridAutosizeService', colStateChanges);
-            }
-
-            if (!isEmpty(agSizable)) {
-                this.agColumnApi?.autoSizeColumns(agSizable);
-            }
-
-            if (showMask) {
-                // Wait to allow column size changes to propagate before removing mask.
-                await wait(100);
-                this.agApi?.hideOverlay();
-            }
-        });
-    }
-
     // TODO: Can we use our util here?
     // IE Would it be correct to say if the col has a children key its a group and if not its a leaf? Is there any other kind of column?
     // Or are the groupId and colId the one true way to know?
@@ -1028,4 +1026,6 @@ export class GridModel {
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for testing if
  *      the given column should be autosized
  * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize
+ * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
+ *      Valid options are ['all', 'left', 'right', 'none'].
  */

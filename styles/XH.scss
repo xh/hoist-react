@@ -85,6 +85,10 @@ body.xh-app {
   .xh-transparent { color: transparent; }
   .xh-yellow { color: var(--xh-yellow); }
   .xh-yellow-light { color: var(--xh-yellow-light); }
+  .xh-intent-primary { color: var(--xh-intent-primary); }
+  .xh-intent-danger { color: var(--xh-intent-danger); }
+  .xh-intent-success { color: var(--xh-intent-success); }
+  .xh-intent-warning { color: var(--xh-intent-warning); }
 
   // File Icons
   .xh-file-icon-excel { color: #0e7b41; }

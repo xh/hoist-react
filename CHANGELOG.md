@@ -1,5 +1,16 @@
 # Changelog
 
+## v34.0.0-SNAPSHOT - Unreleased
+
+### ⚙️ Technical
+* Additional updates to experimental autosize feature:  Options are now directly on the
+ column as follows: `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`,
+ `autosizeMinWidth`, and `autosizeMaxWidth`. Adds new feature `fillMode` option for
+  allocating extra-space during autosizing.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
+
+
 ## v33.3.0 - 2020-05-08
 
 ### ⚙️ Technical
@@ -69,6 +80,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed a regression with `StoreFilterField` introduced in v33.0.1.
+* Average aggregators now correctly takes an average of all leaves vs. an average of averages
+  in the case of nodes more than one level deep.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
 

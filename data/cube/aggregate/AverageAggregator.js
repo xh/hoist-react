@@ -15,13 +15,13 @@ export class AverageAggregator extends Aggregator {
         let total = null,
             count = 0;
 
-        for (const row of rows) {
-            const val = row.data[fieldName];
+        this.forEachLeaf(rows, leaf => {
+            const val = leaf.data[fieldName];
             if (val != null) {
                 total += val;
                 count++;
             }
-        }
+        });
 
         return total != null ? total / count : null;
     }

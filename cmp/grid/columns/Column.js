@@ -111,6 +111,12 @@ export class Column {
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React component.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {boolean} [c.autosizable] - allow autosizing this column.
+     * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when autosizing.
+     * @param {boolean} [c.autosizeIncludeHeaderIcons] - true to always include the width of the sort
+     *      icon when calculating the header width.
+     * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
+     * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -125,7 +131,6 @@ export class Column {
      *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
      *      `getValueFn` will expect the field to be an object and render a nested property.
      *      False to support field names that contain dots *without* triggering this behavior.
-     * @param {ColumnAutosizeOptions} [c.autosizeOptions] - specifies how the column autosizes.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -170,13 +175,17 @@ export class Column {
         exportFormat,
         exportWidth,
         excludeFromExport,
+        autosizable,
+        autosizeIncludeHeader,
+        autosizeIncludeHeaderIcons,
+        autosizeMinWidth,
+        autosizeMaxWidth,
         tooltip,
         tooltipElement,
         editable,
         setValueFn,
         getValueFn,
         enableDotSeparatedFieldPath,
-        autosizeOptions,
         agOptions,
         ...rest
     }, gridModel) {
@@ -253,23 +262,18 @@ export class Column {
         this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
+        this.autosizable = withDefault(autosizable, this.resizable, true);
+        this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
+        this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
+        this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
+        this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
+
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
 
         this.editable = editable;
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
-
-        this.autosizeOptions = {
-            enabled: withDefault(this.resizable, true),
-            skipHeader: false,
-            includeHeaderSortIcon: true,
-            sampleCount: 10,
-            bufferPx: 5,
-            minWidth: this.minWidth,
-            maxWidth: this.maxWidth,
-            ...autosizeOptions
-        };
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -656,16 +660,4 @@ export function getAgHeaderClassFn(column) {
  * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
- */
-
-/**
- * @typedef {Object} ColumnAutosizeOptions - specifies how the column autosizes. @see GridAutosizeService
- * @property {boolean} enabled - allow autosizing this column.
- * @property {boolean} skipHeader - true to ignore the header width when determining the max width.
- * @property {boolean} includeHeaderSortIcon - true to always include the width of the sort icon when
- *      calculating the header width.
- * @property {number} sampleCount - how many of the largest cells to sample to determine the max width.
- * @property {number} bufferPx - extra width in pixels to add to calculated max width.
- * @property {number} minWidth - minimum width in pixels.
- * @property {number} maxWidth - minimum width in pixels.
  */
