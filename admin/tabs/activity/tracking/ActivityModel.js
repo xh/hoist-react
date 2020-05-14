@@ -29,8 +29,18 @@ export class ActivityModel {
     @bindable browser = '';
 
     @bindable chartType = 'column';
+    @bindable chartAllLogs = false;
 
     @observable.ref detailRecord = null;
+
+    _chartLabelMap = {
+        username: 'Users',
+        msg: 'Messages',
+        category: 'Categories',
+        device: 'Devices',
+        browser: 'Browsers',
+        userAgent: 'Agents'
+    };
 
     // TODO: Create pref
     @managed
@@ -107,7 +117,6 @@ export class ActivityModel {
             plotOptions: {
                 column: {animation: false}
             },
-            legend: {enabled: false},
             title: {text: null},
             xAxis: {
                 type: 'datetime',
@@ -133,10 +142,18 @@ export class ActivityModel {
         }
     });
 
+    get chartLabel() {
+        const dailyDimension = this.dimChooserModel.value[1],
+            label = this._chartLabelMap[dailyDimension];
+
+        return this.chartAllLogs || !label ? 'Logs' : label;
+    }
+
     constructor() {
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
         this.addReaction(this.chartTypeReaction());
+        this.addReaction(this.chartLogsReaction());
     }
 
     async doLoadAsync(loadSpec) {
@@ -162,22 +179,31 @@ export class ActivityModel {
     }
 
     loadGridAndChart() {
+        const data = this.queryCube();
+
+        this.gridModel.loadData(data);
+        if (this.dimChooserModel.value[0] === 'cubeDay') this.loadChart(data);
+    }
+
+    loadChart(data) {
+        const chartData = data ?? this.queryCube(),
+            {chartModel} = this,
+            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+
+        highchartsConfig.yAxis[0].title.text = `Unique ${this.chartLabel}`;
+
+        this.chartModel.setHighchartsConfig(highchartsConfig);
+        this.chartModel.setSeries(this.getSeriesData(chartData));
+    }
+
+    queryCube() {
         const dimensions = this.dimChooserModel.value,
             data = this.cube.executeQuery({
                 dimensions,
                 includeLeaves: true
             });
 
-        this.gridModel.loadData(data);
-        if (dimensions[0] === 'cubeDay') {
-            const {chartModel} = this,
-                highchartsConfig = cloneDeep(chartModel.highchartsConfig);
-            highchartsConfig.yAxis[0].title.text = `Unique ${capitalizeWords(dimensions[1] || 'Log')}s`; // TODO be smarter about this plurlization (i think we can inflector examples somewhere) or make a label map (might be better cause we don't want 'usernames')
-            highchartsConfig.chart.type = this.chartType
-
-            this.chartModel.setHighchartsConfig(highchartsConfig);
-            this.chartModel.setSeries(this.getSeriesData(data));
-        }
+        return data;
     }
 
     getSeriesData(cubeData) {
@@ -186,11 +212,21 @@ export class ActivityModel {
             elapsed = [];
 
         cubeData.forEach((it) => {
-            counts.push([LocalDate.from(it.cubeLabel).timestamp, it.children.length]);
+            const count = this.chartAllLogs ? it.count : it.children.length; // TODO: This may need to change if the count column really should count children rather than leaves
+            counts.push([LocalDate.from(it.cubeLabel).timestamp, count]);
             elapsed.push([LocalDate.from(it.cubeLabel).timestamp, it.elapsed]);
         });
         // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
         return [{data: reverse(counts), yAxis: 0}, {data: reverse(elapsed), yAxis: 1}];
+    }
+
+    toggleChartType() {
+        const {chartModel} = this,
+            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+
+        highchartsConfig.chart.type = this.chartType;
+
+        this.chartModel.setHighchartsConfig(highchartsConfig);
     }
 
     adjustDates(dir, toToday = false) {
@@ -272,7 +308,14 @@ export class ActivityModel {
     chartTypeReaction() {
         return {
             track: () => this.chartType,
-            run: () => this.loadGridAndChart()
+            run: () => this.toggleChartType()
+        };
+    }
+
+    chartLogsReaction() {
+        return {
+            track: () => this.chartAllLogs,
+            run: () => this.loadChart()
         };
     }
 }

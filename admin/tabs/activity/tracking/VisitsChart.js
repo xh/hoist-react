@@ -7,7 +7,7 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {uses, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {select, switchInput} from '../../../../desktop/cmp/input'; //TODO: fix imports
 import {ActivityModel} from './ActivityModel';
@@ -18,8 +18,8 @@ export const visitsChart = hoistCmp.factory({
     render({model}) {
         return panel({
             mask: 'onLoad',
-            icon: Icon.users(),
-            title: 'Unique Daily Visitors',
+            icon: Icon.chartLine(),
+            title: `Unique Daily ${model.chartLabel}`,
             item: chart(),
             bbar: bbar(),
             model: {
@@ -36,6 +36,11 @@ const bbar = hoistCmp.factory(
         select({
             bind: 'chartType',
             options: [{label: 'Bar Chart', value: 'column'}, {label: 'Timeseries', value: 'line'}]
+        }),
+        toolbarSep(),
+        switchInput({
+            label: 'All Logs',
+            bind: 'chartAllLogs'
         })
     )
 );
