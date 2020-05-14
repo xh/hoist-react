@@ -37,7 +37,7 @@ export function useContextMenu(child, contextMenu) {
             contextMenu = contextMenuEl({menuItems: contextMenu});
         }
 
-        if (!isValidElement(contextMenu)) {
+        if (contextMenu && !isValidElement(contextMenu)) {
             console.error("Incorrect specification of 'contextMenu' arg in useContextMenu()");
             contextMenu = null;
         }
