@@ -42,6 +42,8 @@ export class DimensionChooserModel {
     maxHistoryLength = null;
     maxDepth = null;
     preference = null;
+    trackHistory = null;
+    trackValue = null;
     dimensions = null;
     dimensionVals = null;
     enableClear = false;
@@ -65,6 +67,8 @@ export class DimensionChooserModel {
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
      * @param {string} [c.preference] - preference key used to persist the user's last value
      *      and most recently selected groupings for easy re-selection.
+     * @param {boolean} [c.trackHistory] - flag to use preference key to save chooser history.
+     * @param {boolean} [c.trackValue] - flag to use preference key to save chooser value.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
@@ -74,6 +78,8 @@ export class DimensionChooserModel {
         dimensions,
         initialValue,
         preference,
+        trackHistory = true,
+        trackValue = true,
         maxHistoryLength = 5,
         maxDepth = 4,
         enableClear = false
@@ -82,6 +88,8 @@ export class DimensionChooserModel {
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
         this.preference = preference;
+        this.trackHistory = trackHistory;
+        this.trackValue = trackValue;
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
@@ -113,6 +121,8 @@ export class DimensionChooserModel {
     }
 
     showMenu() {
+        if (this.trackHistory) this.history = this.loadHistory();
+
         if (isEmpty(this.history)) {
             this.showEditor();
         } else {
@@ -175,7 +185,7 @@ export class DimensionChooserModel {
     //-------------------------
     loadHistory() {
         const pref = this.getPref(),
-            history = pref && pref.history ? pref.history : [];
+            history = pref && pref.history && this.trackHistory ? pref.history : [];
 
         return isEmpty(history) ? [] : history.filter(v => this.validateValue(v));
     }
@@ -209,7 +219,7 @@ export class DimensionChooserModel {
         const {history, dimensionVals, enableClear} = this,
             pref = this.getPref();
 
-        if (pref && pref.value) return pref.value;
+        if (pref && pref.value && this.trackValue) return pref.value;
         if (!isEmpty(history)) return history[0];
         if (this.validateValue(initialValue)) return initialValue;
         return enableClear || isEmpty(dimensionVals) ? [] : [dimensionVals[0]];
@@ -257,7 +267,9 @@ export class DimensionChooserModel {
         const {preference, value, history} = this;
         if (!preference || !XH.prefService.hasKey(preference)) return;
 
-        const data = {value};
+        const data = {};
+        if (this.trackValue) data.value = value;
+        if (this.trackValue) data.value = value;
         if (history.length) data.history = history;
 
         if (!isEmpty(data)) XH.setPref(preference, data);
