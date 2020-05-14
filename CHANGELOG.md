@@ -11,6 +11,8 @@
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
 
+* Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
 
