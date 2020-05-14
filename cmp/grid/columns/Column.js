@@ -307,7 +307,7 @@ export class Column {
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
                 pinned: this.pinned,
-                lockVisible: !gridModel.colChooserModel || XH.isMobile,
+                lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobile,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
