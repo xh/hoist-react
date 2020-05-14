@@ -818,9 +818,6 @@ export class GridModel {
     //-----------------------
     // Implementation
     //-----------------------
-    // TODO: Can we use our util here?
-    // IE Would it be correct to say if the col has a children key its a group and if not its a leaf? Is there any other kind of column?
-    // Or are the groupId and colId the one true way to know?
     gatherLeaves(columns, leaves = []) {
         columns.forEach(col => {
             if (col.groupId) this.gatherLeaves(col.children, leaves);
