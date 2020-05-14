@@ -10,21 +10,22 @@ import {Aggregator} from '@xh/hoist/data/cube/aggregate/Aggregator';
 export class AverageStrictAggregator extends Aggregator {
 
     aggregate(rows, fieldName) {
-        let strict = true,
-            total = null,
-            count = 0;
+        let total = null,
+            count = 0,
+            containsNull = false;
 
         this.forEachLeaf(rows, row => {
             const val = row.data[fieldName];
             if (val == null) {
-                strict = false;
-                return;
+                containsNull = true;
+                return false;
             }
             total += val;
-            count++;
+            count ++;
         });
 
-        return strict ? total / count : null;
+
+        return containsNull ? null : total / count;
     }
 
     replace(rows, currAgg, update) {
