@@ -202,3 +202,25 @@ export function filterConsecutive(predicate) {
         return !prevMatch;
     };
 }
+
+/**
+ * Returns an array made up of all the leaves of a collection of objects where the object's children
+ * are specified as an array indexed by a 'children' key (e.g. grid columns or rows)
+ *
+ * @param {Array} arr - the array to test.
+ * @param {string} leaves - the property that must hold a unique value for each item.
+ *
+ * @returns {Array}
+ */
+
+export function gatherLeaves(arr, leaves = []) {
+    arr.forEach(node => {
+        if (node.children) {
+            gatherLeaves(node.children, leaves);
+        } else {
+            leaves.push(node);
+        }
+    });
+
+    return leaves;
+}
