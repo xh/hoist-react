@@ -9,8 +9,7 @@
   allocating extra-space during autosizing.
 
 ### 🐞 Bug Fixes
-
-* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
+* Fix to Average Aggregators when used with hierarchical data.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
@@ -27,6 +26,8 @@
 
 * `Column.hideable` will now be respected by ag-grid column drag and drop
   [#1900](https://github.com/xh/hoist-react/issues/1900)
+
+* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
 
@@ -80,8 +81,6 @@
 ### 🐞 Bug Fixes
 
 * Fixed a regression with `StoreFilterField` introduced in v33.0.1.
-* Average aggregators now correctly takes an average of all leaves vs. an average of averages
-  in the case of nodes more than one level deep.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
 
