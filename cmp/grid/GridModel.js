@@ -260,7 +260,7 @@ export class GridModel {
             showMask: true,
             sampleCount: 10,
             bufferPx: 5,
-            fillMode: XH.isMobile ? 'left' : 'none'
+            fillMode: 'none'
         });
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
@@ -382,7 +382,7 @@ export class GridModel {
 
         const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
 
-        if (indices.length == 1) {
+        if (indices.length === 1) {
             agApi.ensureIndexVisible(indices[0]);
         } else if (indices.length > 1) {
             agApi.ensureIndexVisible(max(indices));
