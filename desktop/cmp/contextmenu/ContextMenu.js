@@ -11,6 +11,7 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
+import {isEmpty} from 'lodash';
 
 /**
  * ContextMenu
@@ -26,7 +27,8 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
     memo: false, model: false, observer: false,
 
     render({menuItems}) {
-        return menu(parseMenuItems(menuItems));
+        menuItems = parseMenuItems(menuItems);
+        return isEmpty(menuItems) ? null : menu(menuItems);
     }
 });
 
