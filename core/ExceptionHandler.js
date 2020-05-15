@@ -149,7 +149,7 @@ export class ExceptionHandler {
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
         ret.requireReload = ret.requireReload ?? false;
 
-        ret.title = ret.title || (ret.showAsError ? 'Error' : 'Message');
+        ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';
 
         if (this.sessionMismatch(e)) {
