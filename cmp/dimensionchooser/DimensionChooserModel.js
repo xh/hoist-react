@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
@@ -42,8 +42,7 @@ export class DimensionChooserModel {
     maxHistoryLength = null;
     maxDepth = null;
     preference = null;
-    trackHistory = null;
-    trackValue = null;
+    historyPreference = null;
     dimensions = null;
     dimensionVals = null;
     enableClear = false;
@@ -65,10 +64,12 @@ export class DimensionChooserModel {
      *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
      *      dimension does not support any further sub-groupings.
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
-     * @param {string} [c.preference] - preference key used to persist the user's last value
-     *      and most recently selected groupings for easy re-selection.
-     * @param {boolean} [c.trackHistory] - flag to use preference key to save chooser history.
-     * @param {boolean} [c.trackValue] - flag to use preference key to save chooser value.
+     * @param {string} [c.preference] - preference key used to persist the user's last value. User's
+     *      most recently selected groupings will be persisted here for backward compatibility.
+     *      However, grouping history should be explicitly tracked using historyPreference.
+     * @param {string} [c.historyPreference] - preference key used to persist the user's most
+     *      recently selected groupings for easy re-selection. Will default to 'preference'. Set to
+     *      null to track value only.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
@@ -78,8 +79,7 @@ export class DimensionChooserModel {
         dimensions,
         initialValue,
         preference,
-        trackHistory = true,
-        trackValue = true,
+        historyPreference,
         maxHistoryLength = 5,
         maxDepth = 4,
         enableClear = false
@@ -88,8 +88,7 @@ export class DimensionChooserModel {
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
         this.preference = preference;
-        this.trackHistory = trackHistory;
-        this.trackValue = trackValue;
+        this.historyPreference = withDefault(historyPreference, preference);
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
@@ -121,7 +120,7 @@ export class DimensionChooserModel {
     }
 
     showMenu() {
-        if (this.trackHistory) this.history = this.loadHistory();
+        if (this.historyPreference) this.history = this.loadHistory();
 
         if (isEmpty(this.history)) {
             this.showEditor();
@@ -184,8 +183,8 @@ export class DimensionChooserModel {
     // Implementation
     //-------------------------
     loadHistory() {
-        const pref = this.getPref(),
-            history = pref && pref.history && this.trackHistory ? pref.history : [];
+        const pref = this.getHistoryPref(),
+            history = pref && pref.history ? pref.history : [];
 
         return isEmpty(history) ? [] : history.filter(v => this.validateValue(v));
     }
@@ -207,7 +206,7 @@ export class DimensionChooserModel {
         history.unshift(value);
         if (history.length > this.maxHistoryLength) history.pop();
 
-        this.setPref();
+        this.setHistoryPref();
     }
 
     //-------------------------
@@ -215,12 +214,11 @@ export class DimensionChooserModel {
     //-------------------------
     getInitialValue(initialValue) {
         // Set control's initial value with priorities
-        // preference -> history -> initialValue -> 1st item or []
-        const {history, dimensionVals, enableClear} = this,
+        // preference -> initialValue -> 1st item or []
+        const {dimensionVals, enableClear} = this,
             pref = this.getPref();
 
-        if (pref && pref.value && this.trackValue) return pref.value;
-        if (!isEmpty(history)) return history[0];
+        if (pref && pref.value) return pref.value;
         if (this.validateValue(initialValue)) return initialValue;
         return enableClear || isEmpty(dimensionVals) ? [] : [dimensionVals[0]];
     }
@@ -249,8 +247,6 @@ export class DimensionChooserModel {
     // Preference handling
     //-------------------------
     getPref() {
-        warnIf(this.historyPreference, 'Dimension Chooser "historyPreference" has been deprecated and will be ignored. Use "preference" instead.');
-
         const {preference} = this;
         if (!preference) return null;
 
@@ -258,21 +254,43 @@ export class DimensionChooserModel {
 
         // The following migration code allows us to use previously existing history preferences
         const ret = cloneDeep(XH.getPref(preference)),
-            isHistoryPref = isArray(ret) && every(ret, it => isArray(it));
+            isDeprecatedHistoryPref = isArray(ret) && every(ret, it => isArray(it));
 
-        return isHistoryPref ? {value: null, history: ret} : ret;
+        return isDeprecatedHistoryPref ? {value: null, history: ret} : ret;
+    }
+
+    getHistoryPref() {
+        const {historyPreference} = this;
+        if (!historyPreference) return null;
+
+        throwIf(!XH.prefService.hasKey(historyPreference), `Dimension Chooser configured with missing historyPreference or preference key: '${historyPreference}'`);
+
+        return cloneDeep(XH.getPref(historyPreference));
     }
 
     setPref() {
         const {preference, value, history} = this;
         if (!preference || !XH.prefService.hasKey(preference)) return;
 
-        const data = {};
-        if (this.trackValue) data.value = value;
-        if (this.trackValue) data.value = value;
+        const data = {value};
         if (history.length) data.history = history;
 
         if (!isEmpty(data)) XH.setPref(preference, data);
+    }
+
+    setHistoryPref() {
+        const {historyPreference, preference, history} = this;
+        if (!historyPreference || !XH.prefService.hasKey(historyPreference)) return;
+
+        if (historyPreference === preference) {
+            this.setPref();
+            return;
+        }
+
+        const data = history.length ? {history} : {};
+        if (!isEmpty(data)) {
+            XH.setPref(historyPreference, data);
+        }
     }
 
 }
