@@ -103,7 +103,7 @@ export class DimensionChooserModel {
         }
         this.value = value;
         this.addToHistory(value);
-        this.setPref();
+        this.setValuePref();
     }
 
     showHistory() {
