@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
