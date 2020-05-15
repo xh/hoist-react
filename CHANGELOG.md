@@ -4,10 +4,7 @@
 
 ### 🎁 New Features
 
-* `DimensionChooserModel` now takes a `historyPreference` property used to persist a user's most
-   recently selected groupings independent of value. The value can continue to be saved using
-   `preference`. The `preference` property will also persist history for backward compatibility.
-   To track value only `historyPreference` can be set to null.
+* `DimensionChooser` now has the ability to persist its value and history seperately.
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
@@ -15,10 +12,7 @@
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
 ### ⚙️ Technical
-* Additional updates to experimental autosize feature:  Options are now directly on the
-  column as follows: `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`,
- `autosizeMinWidth`, and `autosizeMaxWidth`. Adds new feature `fillMode` option for
-  allocating extra-space during autosizing.
+* Additional updates to experimental autosize feature.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
