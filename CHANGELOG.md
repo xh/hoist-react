@@ -2,16 +2,17 @@
 
 ## v34.0.0-SNAPSHOT - Unreleased
 
-### ⚙️ Technical
-* Additional updates to experimental autosize feature:  Options are now directly on the
- column as follows: `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`,
- `autosizeMinWidth`, and `autosizeMaxWidth`. Adds new feature `fillMode` option for
-  allocating extra-space during autosizing.
+### 🎁 New Features
+
+* `DimensionChooser` now has the ability to persist its value and history seperately.
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
 
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
+
+### ⚙️ Technical
+* Additional updates to experimental autosize feature.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
