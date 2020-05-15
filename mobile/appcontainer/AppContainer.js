@@ -14,11 +14,11 @@ import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {IdleDialog} from './IdleDialog';
+import {idleDialog} from './IdleDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -107,18 +107,16 @@ const appContainerView = hoistCmp.factory({
             feedbackDialog(),
             optionsDialog(),
             aboutDialog(),
-            idleDialog()
+            idleDialogHost()
         );
     }
 });
 
-const idleDialog = hoistCmp.factory({
+const idleDialogHost = hoistCmp.factory({
     displayName: 'IdleDialog',
     render() {
-        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
-
-        return XH.appState === AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
+        if (XH.appState !== AppState.SUSPENDED) return null;
+        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });
