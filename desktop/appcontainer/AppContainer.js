@@ -144,7 +144,7 @@ const idleDialog = hoistCmp.factory({
     render() {
         const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
 
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
+        return XH.appState === AppState.SUSPENDED && dialogClass ?
             elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
             null;
     }
