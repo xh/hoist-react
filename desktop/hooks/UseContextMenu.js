@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {contextMenu as contextMenuEl} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
-import {isArray, isFunction, isUndefined} from 'lodash';
+import {isArray, isFunction, isUndefined, isEmpty} from 'lodash';
 import {cloneElement, isValidElement} from 'react';
 
 /**
@@ -26,22 +26,23 @@ export function useContextMenu(child, contextMenu) {
 
     const onContextMenu = (e) => {
 
-        // Skip if already consumed, otherwise consume (Adapted from Blueprint 'ContextMenuTarget')
+        // 0) Skip if already consumed, otherwise consume (Adapted from Blueprint 'ContextMenuTarget')
         if (e.defaultPrevented) return;
         e.preventDefault();
 
+        // 1) Pre-process to an element (potentially via item list) or null
         if (isFunction(contextMenu)) {
             contextMenu = contextMenu(e);
         }
         if (isArray(contextMenu)) {
-            contextMenu = contextMenuEl({menuItems: contextMenu});
+            contextMenu = !isEmpty(contextMenu) ? contextMenuEl({menuItems: contextMenu}) : null;
         }
-
         if (contextMenu && !isValidElement(contextMenu)) {
             console.error("Incorrect specification of 'contextMenu' arg in useContextMenu()");
             contextMenu = null;
         }
 
+        // 2) Render via blueprint!
         if (contextMenu) {
             ContextMenu.show(contextMenu, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
         }
