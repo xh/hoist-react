@@ -9,8 +9,9 @@
   allocating extra-space during autosizing.
 
 ### 🐞 Bug Fixes
+* Fix to Average Aggregators when used with hierarchical data.
 
-* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
+* Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
@@ -27,6 +28,8 @@
 
 * `Column.hideable` will now be respected by ag-grid column drag and drop
   [#1900](https://github.com/xh/hoist-react/issues/1900)
+
+* Fixed an issue where dragging a column would cause it to be sorted unintentionally.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
 
