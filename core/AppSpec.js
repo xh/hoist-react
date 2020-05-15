@@ -73,8 +73,6 @@ export class AppSpec {
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
 
-        throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
-
         this.clientAppCode = clientAppCode;
         this.clientAppName = clientAppName;
 
