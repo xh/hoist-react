@@ -64,12 +64,10 @@ export class DimensionChooserModel {
      *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
      *      dimension does not support any further sub-groupings.
      * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
-     * @param {string} [c.preference] - preference key used to persist the user's last value. User's
-     *      most recently selected groupings will be persisted here for backward compatibility.
-     *      However, grouping history should be explicitly tracked using historyPreference.
+     * @param {string} [c.preference] - preference key used to persist the user's last value.
      * @param {string} [c.historyPreference] - preference key used to persist the user's most
      *      recently selected groupings for easy re-selection. Will default to 'preference'. Set to
-     *      null to track value only.
+     *      null to not track history.
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
@@ -79,7 +77,7 @@ export class DimensionChooserModel {
         dimensions,
         initialValue,
         preference,
-        historyPreference,
+        historyPreference = preference,
         maxHistoryLength = 5,
         maxDepth = 4,
         enableClear = false
@@ -88,7 +86,13 @@ export class DimensionChooserModel {
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
         this.preference = preference;
-        this.historyPreference = withDefault(historyPreference, preference);
+        this.historyPreference = historyPreference;
+
+        throwIf(
+            (preference && !XH.prefService.hasKey(preference)) ||
+            (historyPreference && !XH.prefService.hasKey(historyPreference)),
+            `Dimension Chooser configured with missing preference key(s)`
+        );
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
@@ -250,22 +254,14 @@ export class DimensionChooserModel {
         const {preference} = this;
         if (!preference) return null;
 
-        throwIf(!XH.prefService.hasKey(preference), `Dimension Chooser configured with missing preference key: '${preference}'`);
-
-        // The following migration code allows us to use previously existing history preferences
-        const ret = cloneDeep(XH.getPref(preference)),
-            isDeprecatedHistoryPref = isArray(ret) && every(ret, it => isArray(it));
-
-        return isDeprecatedHistoryPref ? {value: null, history: ret} : ret;
+        this.readPref(preference);
     }
 
     getHistoryPref() {
         const {historyPreference} = this;
         if (!historyPreference) return null;
 
-        throwIf(!XH.prefService.hasKey(historyPreference), `Dimension Chooser configured with missing historyPreference or preference key: '${historyPreference}'`);
-
-        return cloneDeep(XH.getPref(historyPreference));
+        this.readPref(historyPreference);
     }
 
     setPref() {
@@ -293,4 +289,11 @@ export class DimensionChooserModel {
         }
     }
 
+    readPref(preferenceName) {
+        // The following migration code allows us to use previously existing values that only contained history
+        const ret = cloneDeep(XH.getPref(preferenceName)),
+            isDeprecatedHistoryPref = isArray(ret) && every(ret, it => isArray(it));
+
+        return isDeprecatedHistoryPref ? {value: null, history: ret} : ret;
+    }
 }
