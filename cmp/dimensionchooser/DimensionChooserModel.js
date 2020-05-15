@@ -88,12 +88,6 @@ export class DimensionChooserModel {
         this.preference = preference;
         this.historyPreference = historyPreference;
 
-        throwIf(
-            (preference && !XH.prefService.hasKey(preference)) ||
-            (historyPreference && !XH.prefService.hasKey(historyPreference)),
-            `Dimension Chooser configured with missing preference key(s)`
-        );
-
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
 
@@ -188,9 +182,9 @@ export class DimensionChooserModel {
     //-------------------------
     loadHistory() {
         const pref = this.getHistoryPref(),
-            history = pref && pref.history ? pref.history : [];
+            history = pref?.history ?? [];
 
-        return isEmpty(history) ? [] : history.filter(v => this.validateValue(v));
+        return history.filter(v => this.validateValue(v));
     }
 
     validateValue(value) {
@@ -220,9 +214,9 @@ export class DimensionChooserModel {
         // Set control's initial value with priorities
         // preference -> initialValue -> 1st item or []
         const {dimensionVals, enableClear} = this,
-            pref = this.getPref();
+            pref = this.getValuePref();
 
-        if (pref && pref.value) return pref.value;
+        if (pref?.value) return pref.value;
         if (this.validateValue(initialValue)) return initialValue;
         return enableClear || isEmpty(dimensionVals) ? [] : [dimensionVals[0]];
     }
@@ -250,46 +244,37 @@ export class DimensionChooserModel {
     //-------------------------
     // Preference handling
     //-------------------------
-    getPref() {
-        const {preference} = this;
-        if (!preference) return null;
-
-        this.readPref(preference);
+    getValuePref() {
+        return this.readPref(this.preference);
     }
 
     getHistoryPref() {
-        const {historyPreference} = this;
-        if (!historyPreference) return null;
-
-        this.readPref(historyPreference);
+        return this.readPref(this.historyPreference);
     }
 
-    setPref() {
-        const {preference, value, history} = this;
-        if (!preference || !XH.prefService.hasKey(preference)) return;
+    setValuePref() {
+        const {preference, value} = this;
+        if (!preference) return;
 
-        const data = {value};
-        if (history.length) data.history = history;
+        const update = this.getValuePref();
+        update.value = value;
 
-        if (!isEmpty(data)) XH.setPref(preference, data);
+        XH.setPref(preference, update);
     }
 
     setHistoryPref() {
-        const {historyPreference, preference, history} = this;
-        if (!historyPreference || !XH.prefService.hasKey(historyPreference)) return;
+        const {historyPreference, history} = this;
+        if (!historyPreference) return;
 
-        if (historyPreference === preference) {
-            this.setPref();
-            return;
-        }
+        const update = this.getHistoryPref();
+        update.history = history;
 
-        const data = history.length ? {history} : {};
-        if (!isEmpty(data)) {
-            XH.setPref(historyPreference, data);
-        }
+        XH.setPref(historyPreference, update);
     }
 
     readPref(preferenceName) {
+        if (!preferenceName) return null;
+
         // The following migration code allows us to use previously existing values that only contained history
         const ret = cloneDeep(XH.getPref(preferenceName)),
             isDeprecatedHistoryPref = isArray(ret) && every(ret, it => isArray(it));
