@@ -74,9 +74,9 @@ export class GridModel {
     /** @member {boolean} */
     treeMode;
     /** @member {GridStateModel} */
-    stateModel;
+    @managed stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel;
+    @managed colChooserModel;
     /** @member {function} */
     rowClassFn;
     /** @member {(Array|function)} */
@@ -149,7 +149,10 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
-     * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
+     * @param {(Object|string)} [c.stateModel] - Specification for a GridStateModel.  If an object,
+     *      will be assumed to be a config for a GridStateModel. If a string is provided, a default
+     *      model will be created using a local state provider.  If no value is provided, a default
+     *      model will be created using a transient state provider.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -309,7 +312,7 @@ export class GridModel {
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-        this.stateModel?.clear();
+        this.stateModel.clear();
     }
 
     /**
@@ -908,7 +911,8 @@ export class GridModel {
         }
 
         throw XH.exception(
-            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
+            'GridModel.store value must be either an instance of a Store or a config for one.'
+        );
     }
 
     calcFieldNamesFromColumns() {
@@ -947,18 +951,18 @@ export class GridModel {
         return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    parseStateModel(stateModel) {
-        let ret = null;
-        if (isPlainObject(stateModel)) {
-            ret = new GridStateModel(stateModel);
-        } else if (isString(stateModel)) {
-            ret = new GridStateModel({gridId: stateModel});
+    parseStateModel(val) {
+        if (isPlainObject(val)) {
+            val = {gridModel: this, ...val};
+        } else if (isString(val)) {
+            val = {gridModel: this, provider: {type: 'localStorage', key: val}};
+        } else if (isNil(val)) {
+            val = {gridModel: this, provider: {type: 'transient'}};
+        } else {
+            throw XH.exception(`Could not generate GridStateModel from specification: ${val}`);
         }
-        if (ret) {
-            ret.init(this);
-            this.markManaged(ret);
-        }
-        return ret;
+
+        return new GridStateModel(val);
     }
 
     parseExperimental(experimental) {
@@ -976,8 +980,7 @@ export class GridModel {
 
 
     createChooserModel() {
-        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
-        return this.markManaged(new Model(this));
+        return XH.isMobile ? new MobileColChooserModel(this) : DesktopColChooserModel(this);
     }
 
     defaultGroupSortFn = (a, b) => {

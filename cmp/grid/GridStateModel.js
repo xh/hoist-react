@@ -4,18 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {debounced} from '@xh/hoist/utils/js';
 import {cloneDeep, find, isUndefined, isEmpty, omit} from 'lodash';
+import {StateProvider} from '../../stateprovider';
 
 /**
  * Model for serializing/de-serializing saved grid state across user browsing sessions
  * and applying saved state when initialized by its parent `GridModel`.
  *
- * GridModels can enable persistent grid state via their `stateModel` config, typically
- * provided as a simple string `gridId` to identify a given grid instance.
+ * Applications can enable persistent grid state via providing a configuration for this
+ * object to the GridModel's `stateModel` config.  Applications should not create
+ * instances of this class directly.
  *
- * It is not necessary to manually create instances of this class within an application.
  * @private
  */
 @HoistModel
@@ -23,39 +24,44 @@ export class GridStateModel {
 
     /**
      * Version of grid state definitions currently supported by this model.
-     * Increment *only* when we need to abandon all existing grid state that might be saved on
-     * user workstations to ensure compatibility with a new serialization or approach.
+     * Increment *only* when we need to abandon all existing grid state to ensure compatibility
+     * with a new serialization or approach.
      */
-    static GRID_STATE_VERSION = 1;
+    VERSION = 1;
 
     /** @member {GridModel} */
     gridModel;
-    /** @member {string} */
-    gridId;
+    /** @member {StateProvider} */
+    provider;
+
     state = {};
 
     /**
      * @param {Object} c - GridStateModel configuration.
-     * @param {string} c.gridId - unique identifier for a Grid instance.
+     * @param {GridModel} c.gridModel - owning GridModel whose state is being managed by this object.
+     * @param {(StateProvider|Object)} c.provider - provider for storing and loading state.
+     *     May be provided as a StateProvider, or a config object for one. See StateProvider.create.
      * @param {boolean} [c.trackColumns] - true to save state of columns,
      *      including visibility, ordering and pixel widths.
      * @param {boolean} [c.trackSort] - true to save sorting.
      * @param {boolean} [c.trackGrouping] - true to save column grouping.
      */
-    constructor({gridId, trackColumns = true, trackSort = true, trackGrouping = true}) {
-        this.gridId = gridId;
+    constructor({
+        gridModel,
+        provider,
+        trackColumns = true,
+        trackSort = true,
+        trackGrouping = true
+    }) {
+        this.gridModel = gridModel;
+        this.provider = provider instanceof StateProvider ? provider : StateProvider.create(provider);
         this.trackColumns = trackColumns;
         this.trackSort = trackSort;
         this.trackGrouping = trackGrouping;
-    }
 
-    /**
-     * Attach this object to a GridModel and have it observe / apply changes to tracked properties.
-     * @param {GridModel} gridModel
-     */
-    init(gridModel) {
-        this.gridModel = gridModel;
-        this.state = cloneDeep(this.readState());
+        const state = this.provider.readState();
+
+        this.state = state?.version === this.VERSION ? cloneDeep(state) : {};
 
         if (this.trackColumns) {
             this.updateGridColumns();
@@ -85,21 +91,7 @@ export class GridStateModel {
     //----------------------
     // Templates
     //-----------------------
-    get stateKey() {
-        return `gridState.v${GridStateModel.GRID_STATE_VERSION}.${this.gridId}`;
-    }
 
-    readState() {
-        return XH.localStorageService.get(this.stateKey, {});
-    }
-
-    writeState(state) {
-        XH.localStorageService.set(this.stateKey, state);
-    }
-
-    clearState() {
-        XH.localStorageService.clear(this.stateKey);
-    }
 
     //--------------------------
     // Columns
@@ -191,12 +183,13 @@ export class GridStateModel {
 
     @debounced(500)
     saveStateChange() {
-        const {state} = this;
+        const {state, provider} = this;
 
         if (isEmpty(state)) {
-            this.clearState();
+            provider.clearState();
         } else {
-            this.writeState(state);
+            state.version = this.VERSION;
+            provider.writeState(state);
         }
     }
 }
