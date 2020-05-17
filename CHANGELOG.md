@@ -4,6 +4,10 @@
 
 ### 🎁 New Features
 
+* Added new `StateProvider` API to support flexibly saving Component State to different locations
+such as preferences, LocalStorage, and Dashboards.  This has been enabled on `GridStateModel` via
+the new `provider` option.
+
 * `DimensionChooser` now has the ability to persist its value and history seperately.
 
 ### 🐞 Bug Fixes
