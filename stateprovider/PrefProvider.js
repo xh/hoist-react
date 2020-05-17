@@ -6,30 +6,25 @@
  */
 
 import {StateProvider} from './StateProvider';
+import {XH} from '@xh/hoist/core';
 
 /**
- * StateProvider that will store state in memory only.
- *
- * This state will last for the lifetime of this object only. It is
- * useful for components that wish to provide default "session only"
- * state as needed.
+ * State Provider that uses the Hoist preference system for underlying storage.
  */
-export class TransientStateProvider extends StateProvider {
-
-    value = null;
+export class PrefProvider extends StateProvider {
 
     //----------------
     // Implementation
     //----------------
     readDataImpl() {
-        return this.value;
+        return XH.getPref(this.key);
     }
 
     writeDataImpl(data) {
-        this.value = data;
+        XH.setPref(this.key, data);
     }
 
     clearDataImpl() {
-        this.value = null;
+        XH.prefService.unset(this.key);
     }
 }

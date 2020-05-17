@@ -5,7 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {LocalStateProvider, PrefStateProvider, DashViewStateProvider, TransientStateProvider} from './';
+import {XH} from '@xh/hoist/core';
+import {LocalStorageProvider, PrefProvider, DashViewProvider, TransientProvider} from './';
 
 /**
  *
@@ -35,19 +36,20 @@ export class StateProvider {
      * @return {StateProvider}
      */
     static create(conf = {}) {
+        if (!conf.type) return new TransientProvider(conf);
         switch (conf.type) {
             case 'pref':
-                return new PrefStateProvider(conf);
-            case 'localState':
-                return new LocalStateProvider(conf);
+                return new PrefProvider(conf);
+            case 'localStorage':
+                return new LocalStorageProvider(conf);
             case `dashView`:
-                return new DashViewStateProvider(conf);
+                return new DashViewProvider(conf);
             case `transient`:
+                return new TransientProvider(conf);
             default:
-                return new TransientStateProvider(conf);
+                throw XH.exception(`Unknown StateProvider type: ${conf.type}`);
         }
     }
-
 
     /**
      * @param {Object} config
@@ -56,7 +58,7 @@ export class StateProvider {
      * state should be stored in the main object referenced by key.  For use
      * only when key refers to a JSON object.
      */
-    constructor({key = null, subKey = null}) {
+    constructor({key = null, subKey = null} = {}) {
         this.key = key;
         this.subKey = subKey;
     }

@@ -980,7 +980,7 @@ export class GridModel {
 
 
     createChooserModel() {
-        return XH.isMobile ? new MobileColChooserModel(this) : DesktopColChooserModel(this);
+        return XH.isMobile ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
     }
 
     defaultGroupSortFn = (a, b) => {

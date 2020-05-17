@@ -56,11 +56,10 @@ export class GridStateModel {
         this.gridModel = gridModel;
         this.provider = provider instanceof StateProvider ? provider : StateProvider.create(provider);
         this.trackColumns = trackColumns;
-        this.trackSort = trackSort;
         this.trackGrouping = trackGrouping;
+        this.trackSort = trackSort;
 
         const state = this.provider.readState();
-
         this.state = state?.version === this.VERSION ? cloneDeep(state) : {};
 
         if (this.trackColumns) {

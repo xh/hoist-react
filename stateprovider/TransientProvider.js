@@ -5,26 +5,31 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {StateProvider} from './StateProvider';
 
 /**
- * StateProvider that stores state within the Browsers LocalStorage.
+ * StateProvider that will store state in memory only.
+ *
+ * This state will last for the lifetime of this object only. It is
+ * useful for components that wish to provide default "session only"
+ * state as needed.
  */
-export class LocalStateProvider extends StateProvider {
+export class TransientProvider extends StateProvider {
+
+    value = null;
 
     //----------------
     // Implementation
     //----------------
     readDataImpl() {
-        return XH.localStorageService.get(this.key, null);
+        return this.value;
     }
 
     writeDataImpl(data) {
-        XH.localStorageService.set(this.key, data);
+        this.value = data;
     }
 
     clearDataImpl() {
-        XH.localStorageService.remove(this.key);
+        this.value = null;
     }
 }

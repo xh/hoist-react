@@ -5,26 +5,26 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {StateProvider} from './StateProvider';
 import {XH} from '@xh/hoist/core';
+import {StateProvider} from './StateProvider';
 
 /**
- * State Provider that uses the Hoist preference system for underlying storage.
+ * StateProvider that stores state within the Browsers LocalStorage.
  */
-export class PrefStateProvider extends StateProvider {
+export class LocalStorageProvider extends StateProvider {
 
     //----------------
     // Implementation
     //----------------
     readDataImpl() {
-        return XH.getPref(this.key);
+        return XH.localStorageService.get(this.key, null);
     }
 
     writeDataImpl(data) {
-        XH.setPref(this.key, data);
+        XH.localStorageService.set(this.key, data);
     }
 
     clearDataImpl() {
-        XH.prefService.unset(this.key);
+        XH.localStorageService.remove(this.key);
     }
 }

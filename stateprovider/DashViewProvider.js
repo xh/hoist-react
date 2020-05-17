@@ -10,7 +10,7 @@ import {StateProvider} from './StateProvider';
 /**
  * StateProvider that stores state within a DashView
  */
-export class DashViewStateProvider extends StateProvider {
+export class DashViewProvider extends StateProvider {
 
     dashViewModel;
 
@@ -23,7 +23,8 @@ export class DashViewStateProvider extends StateProvider {
     // Implementation
     //----------------
     readDataImpl() {
-        return this.dashViewModel.viewState[this.key] ?? null;
+        const {viewState} = this.dashViewModel;
+        return viewState ? viewState[this.key] ?? null : null;
     }
 
     writeDataImpl(data) {
