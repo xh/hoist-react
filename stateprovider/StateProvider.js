@@ -7,6 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {LocalStorageProvider, PrefProvider, DashViewProvider, TransientProvider} from './';
+import {cloneDeep} from 'lodash';
 
 /**
  *
@@ -87,7 +88,7 @@ export class StateProvider {
             {subKey} = this;
 
         if (subKey) {
-            newState = this.readDataImpl() ?? {};
+            newState = cloneDeep(this.readDataImpl()) ?? {};
             newState[subKey] = state;
         }
         return this.writeDataImpl(newState);
@@ -97,13 +98,14 @@ export class StateProvider {
      * Clear any state saved by this object.
      */
     clearState() {
-        const val = this.readDataImpl(),
+        let val = this.readDataImpl(),
             {subKey} = this;
 
         if (!val) return;
         if (!subKey) {
             this.clearDataImpl();
         } else {
+            val = cloneDeep(val);
             delete val[subKey];
             this.writeDataImpl(val);
         }
