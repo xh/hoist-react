@@ -60,6 +60,13 @@ const bbar = hoistCmp.factory(
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
         }),
+        button({
+            omit: !XH.identityService.isImpersonating,
+            icon: Icon.impersonate(),
+            text: 'End Impersonation',
+            minimal: false,
+            onClick: () => XH.identityService.endImpersonateAsync()
+        }),
         dismissButton()
     )
 );
