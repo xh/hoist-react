@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * `DimensionChooser` now has the ability to persist its value and history seperately.
+* Mobile `select` now supports `enableFilter` and `enableCreate` props.
+* Mobile `impersonationBar` now allows ad hoc values not included in the provided options.
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
