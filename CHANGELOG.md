@@ -19,7 +19,7 @@ and `GridAutosizeService` for more details.
 
 
 ### ⚙️ Breaking Changes
-* `emptyFlexColumn` has been removed from the Hoist API and should simply be removed from all
+* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all
 client applications. Improvements to agGrid's default rendering of empty space have made it
 obsolete.
 

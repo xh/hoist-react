@@ -1012,7 +1012,7 @@ export class GridModel {
  * @property {boolean} [useHoistSizing] - true to use Hoist's enhanced sizing support.  When true,
  *      Hoist will determine the minimal size for a column by examining all row, header, and
  *      summary data.  Set to false to fallback to ag-Grid's native sizing support.  Default true.
- * @property {bufferPx} [number] -  additional pixels to add to the size of each column beyond its
+ * @property {number} [bufferPx] -  additional pixels to add to the size of each column beyond its
  *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
  * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize.
  *      default is true.
