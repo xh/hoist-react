@@ -29,7 +29,6 @@ import {
     defaultsDeep,
     difference,
     find,
-    findLast,
     isArray,
     isEmpty,
     isFunction,
@@ -37,7 +36,6 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    last,
     map,
     max,
     min,
@@ -201,9 +199,6 @@ export class GridModel {
      * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
      *      deltaRowDataMode to internally generate transactions on data updates.  When true,
      *      Hoist will generate the transaction on data update. Default true.
-     * @param {boolean} [c.experimental.useHoistAutosize] - set to true to use Hoist's custom
-     *      GridAutosizeService to perform column sizing instead of the built-in ag-Grid support.
-     *      See GridAutosizeService for more details. Default false.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
     constructor({
@@ -257,6 +252,7 @@ export class GridModel {
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.autosizeOptions = defaults(autosizeOptions, {
+            useHoistSizing: true,
             showMask: true,
             sampleCount: 10,
             bufferPx: 5,
@@ -635,12 +631,6 @@ export class GridModel {
             // 2.b) Install implied group sort orders and sort
             columnState.forEach(it => this.markGroupSortOrder(it));
             columnState = this.sortColumns(columnState);
-
-            // 2.c) Force any emptyFlexCol that is last to stay last (avoid user dragging)!
-            const emptyFlex = findLast(columnState, {colId: 'emptyFlex'});
-            if (emptyFlex && last(this.columns).colId === 'emptyFlex' && last(columnState) !== emptyFlex) {
-                pull(columnState, emptyFlex).push(emptyFlex);
-            }
         }
 
         this.columnState = columnState;
@@ -791,8 +781,8 @@ export class GridModel {
 
         if (isEmpty(colIds)) return;
 
-        const {agApi, experimental} = this;
-        if (experimental.useHoistAutosize) {
+        const {agApi} = this;
+        if (options.useHoistSizing) {
             const showMask = options.showMask && agApi;
             if (showMask) {
                 agApi.showLoadingOverlay();
@@ -968,7 +958,6 @@ export class GridModel {
             externalSort: false,
             useTransactions: true,
             useDeltaSort: false,
-            useHoistAutosize: false,
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
@@ -1020,9 +1009,19 @@ export class GridModel {
 
 /**
  * @typedef {Object} GridAutosizeOptions
+ * @property {boolean} [useHoistSizing] - true to use Hoist's enhanced sizing support.  When true,
+ *      Hoist will determine the minimal size for a column by examining all row, header, and
+ *      summary data.  Set to false to fallback to ag-Grid's native sizing support.  Default true.
+ * @property {bufferPx} [number] -  additional pixels to add to the size of each column beyond its
+ *      absolute minimum.  May be used to adjust the spacing in the grid.  Default is 5.
+ * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize.
+ *      default is true.
+ * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
+ *      Valid options are ['all', 'left', 'right', 'none']. Default is 'none'.  This option is an
+ *      advanced option.
+ * @property {string} [sampleCount] - the number of rows to actually measure using DOM after
+ *      heuristics to determine longest rows have been applied.  Defaults to 10.  May be increased,
+ *      if longer rows are being missed.  This option is an advanced option.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for testing if
  *      the given column should be autosized
- * @property {boolean} [showMask] - whether a mask should be shown over the grid during the autosize
- * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
- *      Valid options are ['all', 'left', 'right', 'none'].
  */
