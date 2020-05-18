@@ -17,7 +17,7 @@ import {message} from './Message';
  * This display can be overridden by applications - {@see AppSpec.idleDialogClass}. *
  * @private
  */
-export const IdleDialog = hoistCmp({
+export const idleDialog = hoistCmp.factory({
     displayName: 'IdleDialog',
 
     render({onReactivate}) {

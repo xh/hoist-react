@@ -14,10 +14,11 @@ import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {idleDialog} from './IdleDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -54,7 +55,7 @@ export const AppContainer = hoistCmp({
 
         return fragment(
             errorBoundary({
-                item: appContainerView(),
+                item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
             exceptionDialog()
@@ -66,45 +67,56 @@ export const AppContainer = hoistCmp({
 //-------------------
 // Implementation
 //-------------------
+function viewForState() {
+    const S = AppState;
+    switch (XH.appState) {
+        case S.PRE_AUTH:
+        case S.INITIALIZING:
+            return viewport(mask({isDisplayed: true, spinner: true}));
+        case S.LOGIN_REQUIRED:
+            return loginPanel();
+        case S.ACCESS_DENIED:
+            return lockoutPanel();
+        case S.RUNNING:
+        case S.SUSPENDED:
+            return appContainerView();
+        case S.LOAD_FAILED:
+        default:
+            return null;
+    }
+}
+
 const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
-    model: uses(AppContainerModel),
 
     render({model}) {
         if (model.caughtException) return null;
+        return viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                }),
+                versionBar()
+            ),
+            mask({model: model.appLoadModel, spinner: true}),
+            messageSource(),
+            toastSource(),
+            feedbackDialog(),
+            optionsDialog(),
+            aboutDialog(),
+            idleDialogHost()
+        );
+    }
+});
 
-        const S = AppState;
-        switch (XH.appState) {
-            case S.PRE_AUTH:
-            case S.INITIALIZING:
-                return viewport(mask({isDisplayed: true, spinner: true}));
-            case S.LOGIN_REQUIRED:
-                return loginPanel();
-            case S.ACCESS_DENIED:
-                return lockoutPanel();
-            case S.LOAD_FAILED:
-                return null;
-            case S.RUNNING:
-            case S.SUSPENDED:
-                return viewport(
-                    vframe(
-                        impersonationBar(),
-                        updateBar(),
-                        refreshContextView({
-                            model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                        }),
-                        versionBar()
-                    ),
-                    mask({model: model.appLoadModel, spinner: true}),
-                    messageSource(),
-                    toastSource(),
-                    feedbackDialog(),
-                    optionsDialog(),
-                    aboutDialog()
-                );
-            default:
-                return null;
-        }
+const idleDialogHost = hoistCmp.factory({
+    displayName: 'IdleDialog',
+    render() {
+        if (XH.appState !== AppState.SUSPENDED) return null;
+        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

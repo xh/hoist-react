@@ -17,11 +17,11 @@ import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilter
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {IdleDialog} from './IdleDialog';
+import {idleDialog} from './IdleDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -109,7 +109,7 @@ const appContainerView = hoistCmp.factory({
                 optionsDialog(),
                 feedbackDialog(),
                 aboutDialog(),
-                idleDialog()
+                idleDialogHost()
             ),
             globalHotKeys(model)
         );
@@ -139,13 +139,11 @@ function globalHotKeys(model) {
     return ret;
 }
 
-const idleDialog = hoistCmp.factory({
+const idleDialogHost = hoistCmp.factory({
     displayName: 'IdleDialog',
     render() {
-        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
-
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
+        if (XH.appState !== AppState.SUSPENDED) return null;
+        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });
