@@ -38,14 +38,14 @@ export class Select extends HoistInput {
         createMessageFn: PT.func,
 
         /** True to accept and commit input values not present in options or returned by a query.
-         *  Should be used with caution, as mobile keyboard can overlap with options list.
+         *  Should be used with caution, as mobile keyboard can cause undesirable results.
          * */
         enableCreate: PT.bool,
 
         /**
          * True to enable type-to-search keyboard input. Defaults to false to disable keyboard input,
          * showing the dropdown menu on click. Should be used with caution, as mobile keyboard can
-         * overlap with options list.
+         * cause undesirable results.
          */
         enableFilter: PT.bool,
 
