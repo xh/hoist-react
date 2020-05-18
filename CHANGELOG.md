@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * `DimensionChooser` now has the ability to persist its value and history seperately.
+* Mobile `select` now supports `enableFilter` and `enableCreate`. 
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
