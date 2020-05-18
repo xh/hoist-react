@@ -37,7 +37,8 @@ export class Select extends HoistInput {
          */
         createMessageFn: PT.func,
 
-        /** True to accept and commit input values not present in options or returned by a query.
+        /**
+         *  True to accept and commit input values not present in options or returned by a query.
          *  Should be used with caution, as mobile keyboard can cause undesirable results.
          * */
         enableCreate: PT.bool,
