@@ -53,19 +53,18 @@ export const exceptionDialog = hoistCmp.factory({
 //--------------------------------
 const bbar = hoistCmp.factory(
     ({model}) => toolbar(
+        button({
+            omit: !XH.identityService.isImpersonating,
+            icon: Icon.impersonate(),
+            text: 'End Impersonation',
+            onClick: () => XH.identityService.endImpersonateAsync()
+        }),
         filler(),
         button({
             icon: Icon.search(),
             text: 'Show/Report Details',
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
-        }),
-        button({
-            omit: !XH.identityService.isImpersonating,
-            icon: Icon.impersonate(),
-            text: 'End Impersonation',
-            minimal: false,
-            onClick: () => XH.identityService.endImpersonateAsync()
         }),
         dismissButton()
     )

@@ -44,14 +44,13 @@ export const exceptionDialog = hoistCmp.factory({
                         onClick: () => model.openDetails(),
                         omit: !options.showAsError
                     }),
-                    filler(),
                     button({
                         omit: !identityService.isImpersonating,
                         icon: Icon.impersonate(),
                         text: 'End Impersonation',
-                        minimal: false,
                         onClick: () => identityService.endImpersonateAsync()
                     }),
+                    filler(),
                     dismissButton()
                 ]
             }),
