@@ -1032,8 +1032,8 @@ export class GridModel {
  *      Default is true.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized.  Typically used when calling
- *      autosizeAsync() manually.  To generally exclude a column for autosizing, see the Autosizable
- *      option on Columns.
+ *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the autosizable
+ *      option on columns.
  * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
  *      Valid options are ['all', 'left', 'right', 'none']. Default is 'none'. NOTE: This option is an
  *      advanced option that should be used with care -- setting it will mean that all available
