@@ -8,15 +8,23 @@
 such as preferences, LocalStorage, and Dashboards.  This has been enabled on `GridStateModel` via
 the new `provider` option.
 
+* Hoist's enhanced autosizing is now enabled on all grids by default.  See `GridModel`
+and `GridAutosizeService` for more details.
+
 * `DimensionChooser` now has the ability to persist its value and history seperately.
+* Mobile `select` now supports `enableFilter` and `enableCreate`.
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
 
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
-### ⚙️ Technical
-* Additional updates to experimental autosize feature.
+
+### ⚙️ Breaking Changes
+* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all
+client applications. Improvements to agGrid's default rendering of empty space have made it
+obsolete.
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
