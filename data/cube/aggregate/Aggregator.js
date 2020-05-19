@@ -36,15 +36,18 @@ export class Aggregator {
      * @param {Array} rows - array of child rows
      * @param {function} fn - the function to call on each leaf.
      *
-     * @returns {Array}
+     * @returns {boolean}
      */
     forEachLeaf(rows, fn) {
         for (const row of rows) {
             if (row.isLeaf) {
-                fn(row);
+                const res = fn(row);
+                if (res === false) return false;
             } else {
-                this.forEachLeaf(row.children, fn);
+                const res = this.forEachLeaf(row.children, fn);
+                if (res === false) return false;
             }
         }
+        return true;
     }
 }

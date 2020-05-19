@@ -121,7 +121,7 @@ export class GridAutosizeService {
 
         // 1) Get available width of rendered grid
         const {agApi} = gridModel,
-            available = agApi?.gridPanel?.eBodyHorizontalScrollViewport?.clientWidth;
+            available = agApi?.gridPanel?.eBodyViewport?.clientWidth;
 
         if (!agApi || !isFinite(available)) {
             console.warn('Grid not rendered - unable to fill columns.');
@@ -212,9 +212,8 @@ export class GridAutosizeService {
     }
 
     // Returns the total combined width of visible columns.
-    // Note that this intentionally excludes pinned columns.
     getTotalColumnWidth(gridModel) {
-        const widths = gridModel.columnState.filter(it => !it.hidden && !it.pinned).map(it => it.width);
+        const widths = gridModel.columnState.filter(it => !it.hidden).map(it => it.width);
         return sum(widths);
     }
 }

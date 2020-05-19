@@ -193,8 +193,8 @@ export class ColumnWidthCalculator {
         const cellEl = this.getCellEl();
         if (useRenderer) {
             cellEl.innerHTML = value;
-        } else if (cellEl.firstChild?.nodeType === 3) {
-            // If we're not rendering html and the cell's first child is already a TextNode,
+        } else if (cellEl.childNodes.length === 1 && cellEl.firstChild?.nodeType === 3) {
+            // If we're not rendering html and the cell's first and only child is already a TextNode,
             // we can update it's data to avoid creating a new TextNode.
             cellEl.firstChild.data = value;
         } else {

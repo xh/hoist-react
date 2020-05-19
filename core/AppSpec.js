@@ -40,9 +40,9 @@ export class AppSpec {
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
      *      establish a connection and initiate a heartbeat..
      * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
-     * @param {Class} [c.idleDialogClass] - Component class used to indicate App has been suspended.
-     *      The component will receive a single prop -- onReactivate -- a callback called when user
-     *      has acknowledged the suspension and wishes to reload the app and continue working.
+     * @param {Class} [c.idleDialogClass] - Component or element factory used to indicate App has
+     *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
+     *      called when user has acknowledged the suspension and wishes to reload the app and continue working.
      * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
@@ -72,8 +72,6 @@ export class AppSpec {
             !isString(checkAccess) && !isFunction(checkAccess),
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
-
-        throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
 
         this.clientAppCode = clientAppCode;
         this.clientAppName = clientAppName;

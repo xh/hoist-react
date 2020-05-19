@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {contextMenu as contextMenuEl} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
-import {isArray, isFunction} from 'lodash';
+import {isArray, isFunction, isUndefined, isEmpty} from 'lodash';
 import {cloneElement, isValidElement} from 'react';
 
 /**
@@ -17,29 +17,35 @@ import {cloneElement, isValidElement} from 'react';
  *      that takes react context menu event as a prop (e.g. boxes, panel, div, etc).
  * @param {(Array|function|element)} [contextMenu] -  Array of ContextMenuItems, configs to create them,
  *      Elements, or '-' (divider).  Or a function that receives the triggering event and returns such an array.
+ *      If null, or the number of items is empty, no menu will be rendered, and the event will be consumed.
  *      A ContextMenu element may also be provided.
  */
 export function useContextMenu(child, contextMenu) {
 
-    if (!child || !contextMenu) return child;
+    if (!child || isUndefined(contextMenu)) return child;
 
     const onContextMenu = (e) => {
+
+        // 0) Skip if already consumed, otherwise consume (Adapted from Blueprint 'ContextMenuTarget')
+        if (e.defaultPrevented) return;
+        e.preventDefault();
+
+        // 1) Pre-process to an element (potentially via item list) or null
         if (isFunction(contextMenu)) {
             contextMenu = contextMenu(e);
         }
         if (isArray(contextMenu)) {
-            contextMenu = contextMenuEl({menuItems: contextMenu});
+            contextMenu = !isEmpty(contextMenu) ? contextMenuEl({menuItems: contextMenu}) : null;
         }
-
-        if (!isValidElement(contextMenu)) {
+        if (contextMenu && !isValidElement(contextMenu)) {
             console.error("Incorrect specification of 'contextMenu' arg in useContextMenu()");
-            return;
+            contextMenu = null;
         }
 
-        // Adapted from Blueprint 'ContextMenuTarget'
-        if (e.defaultPrevented) return;
-        e.preventDefault();
-        ContextMenu.show(contextMenu, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
+        // 2) Render via blueprint!
+        if (contextMenu) {
+            ContextMenu.show(contextMenu, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
+        }
     };
 
     return cloneElement(child, {onContextMenu});

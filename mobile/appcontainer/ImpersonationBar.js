@@ -39,6 +39,8 @@ export const impersonationBar = hoistCmp.factory({
                     value: username,
                     options: options,
                     commitOnChange: true,
+                    enableCreate: true,
+                    createMessageFn: (q) => `Impersonate ${q}`,
                     onCommit: (target) => identityService.impersonateAsync(target)
                 }),
                 button({
