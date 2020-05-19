@@ -187,6 +187,10 @@ export function findIn(collection, fn) {
  * A function to be passed to `array.filter()` that excludes consecutive items that match the
  * provided predicate.  Matches that would ultimately appear at the start or end of the
  * filtered array are also removed.
+ *
+ * Useful for removing separators that have become extraneous when the items they were separating
+ * have been removed.
+ *
  * @returns {Function}
  */
 export function filterConsecutive(predicate) {
