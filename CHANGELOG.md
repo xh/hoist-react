@@ -14,9 +14,6 @@ and `GridAutosizeService` for more details.
 
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
-### ⚙️ Technical
-* Additional updates to experimental autosize feature.
-
 
 ### ⚙️ Breaking Changes
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all
