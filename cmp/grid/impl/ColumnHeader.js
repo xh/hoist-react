@@ -217,7 +217,10 @@ class LocalModel {
     }
 
     autosize() {
-        this.gridModel?.autosizeAsync({columns: this.colId, showMask: false});
+        const {gridModel} = this;
+        if (gridModel?.autosizeEnabled) {
+            gridModel.autosizeAsync({columns: this.colId, showMask: false});
+        }
     }
 
     parseAvailableSorts() {

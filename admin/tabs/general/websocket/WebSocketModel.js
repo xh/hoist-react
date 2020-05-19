@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {required} from '@xh/hoist/cmp/form';
-import {compactDateCol, emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -61,8 +61,7 @@ export class WebSocketModel {
             {field: 'sentMessageCount', headerName: 'Sent', ...numberCol, width: 90},
             {field: 'lastSentTime', headerName: 'Last Sent', ...compactDateCol, width: 140},
             {field: 'receivedMessageCount', headerName: 'Received', ...numberCol, width: 90},
-            {field: 'lastReceivedTime', headerName: 'Last Received', ...compactDateCol, width: 140},
-            {...emptyFlexCol}
+            {field: 'lastReceivedTime', headerName: 'Last Received', ...compactDateCol, width: 140}
         ]
     })
 
