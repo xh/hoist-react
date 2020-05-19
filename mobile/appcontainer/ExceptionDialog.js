@@ -45,7 +45,7 @@ export const exceptionDialog = hoistCmp.factory({
                         omit: !options.showAsError
                     }),
                     button({
-                        omit: !identityService.isImpersonating,
+                        omit: !identityService?.isImpersonating,
                         text: 'End Impers',
                         minimal: true,
                         onClick: () => identityService.endImpersonateAsync()
