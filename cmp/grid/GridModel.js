@@ -136,6 +136,12 @@ export class GridModel {
     /** @private - initial state provided to ctor - powers restoreDefaults(). */
     _defaultState;
 
+    /**
+     * Is autosizing enabled on this grid?
+     *
+     * To disable autosizing, set autosizeOptions.mode to GridAutosizeMode.DISABLED.
+     * @returns {boolean}
+     */
     get autosizeEnabled() {
         return this.autosizeOptions.mode !== GridAutosizeMode.DISABLED;
     }
