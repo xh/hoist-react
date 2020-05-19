@@ -18,7 +18,8 @@ import {
     UniqueAggregator,
     AverageAggregator,
     AverageStrictAggregator,
-    CountAggregator,
+    ChildCountAggregator,
+    LeafCountAggregator,
     RangeAggregator
 } from '@xh/hoist/data';
 
@@ -42,7 +43,8 @@ export class CubeField extends Field {
 
     static averageAggregator = new AverageAggregator();
     static averageStrictAggregator = new AverageStrictAggregator();
-    static countAggregator = new CountAggregator();
+    static childCountAggregator = new ChildCountAggregator();
+    static leafCountAggregator = new LeafCountAggregator();
     static maxAggregator = new MaxAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
@@ -96,7 +98,9 @@ export class CubeField extends Field {
             switch (val) {
                 case 'AVG':             return CubeField.averageAggregator;
                 case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
-                case 'COUNT':           return CubeField.countAggregator;
+                case 'COUNT':           return CubeField.childCountAggregator; // TODO: Thought here is this is the more standard idea of "COUNT"
+                case 'CHILD_COUNT':     return CubeField.childCountAggregator;
+                case 'LEAF_COUNT':      return CubeField.leafCountAggregator;
                 case 'MAX':             return CubeField.maxAggregator;
                 case 'MIN':             return CubeField.minAggregator;
                 case 'NULL':            return CubeField.nullAggregator;

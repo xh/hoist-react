@@ -14,7 +14,6 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {capitalizeWords} from '../../../../format';
 
 @HoistModel
 @LoadSupport
@@ -70,11 +69,11 @@ export class ActivityModel {
             {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
 
             {name: 'day', aggregator: 'RANGE'},
-            {name: 'elapsed', aggregator: 'AVG'}, // TODO: Aggregator shows the averages of the children (an ave of averages) which is not the same as the average of all the leaves. Can this be right?
+            {name: 'elapsed', aggregator: 'AVG'},
             {name: 'impersonating'},
             {name: 'dateCreated'},
             {name: 'data'},
-            {name: 'count', aggregator: 'COUNT'} // TODO: Is this the correct count now? Seems like we want child count not leaf count. ie. Two Users on given day
+            {name: 'count', aggregator: 'CHILD_COUNT'}
         ]
     })
 
@@ -105,7 +104,7 @@ export class ActivityModel {
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
             {field: 'data', width: 70},
-            {field: 'count', width: 70},
+            {field: 'count', width: 70, align: 'right', renderer: numberRenderer()},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
     });

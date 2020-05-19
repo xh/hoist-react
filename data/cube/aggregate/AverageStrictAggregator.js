@@ -14,7 +14,7 @@ export class AverageStrictAggregator extends Aggregator {
             count = 0,
             containsNull = false;
 
-        for (const row of rows) {
+        this.forEachLeaf(rows, row => {
             const val = row.data[fieldName];
             if (val == null) {
                 containsNull = true;
@@ -23,7 +23,6 @@ export class AverageStrictAggregator extends Aggregator {
             total += val;
             count ++;
         });
-
 
         return containsNull ? null : total / count;
     }
