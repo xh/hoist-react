@@ -8,15 +8,16 @@
 import {HoistService} from '@xh/hoist/core';
 import {isFinite, map, sum, compact, sortBy, isEmpty} from 'lodash';
 import {runInAction} from '@xh/hoist/mobx';
-import {ColumnWidthCalculator} from './impl/ColumnWidthCalculator';
+import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
 
 /**
- * Calculates the column width required to display all values in a column.
+ * Sets appropriate column widths for a grid based on its contents.  Generally
+ * seeks to make columns at least as wide as all of their contents, including headers.
  *
  * Unlike the native ag-Grid autosizing, this service will compute a size based on all
  * data in the grid, including off-screen rows and columns, and collapsed rows.
  *
- * In order to do this efficiently, this service uses heuristics and that generally assumes each
+ * In order to do this efficiently, this service uses heuristics and generally assumes each
  * column consists of similarly formatted strings.  In particular, it cannot make the computation
  * when a react based elementRenderer has been specified for a column. In this case, no width will
  * be computed, and the column will be ignored by this service.

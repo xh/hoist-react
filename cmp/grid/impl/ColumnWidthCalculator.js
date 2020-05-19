@@ -18,6 +18,8 @@ import {groupBy, isFunction, isNil, map, max, min, reduce, sortBy} from 'lodash'
  */
 export class ColumnWidthCalculator {
 
+    SAMPLE_COUNT = 10;
+
     _canvasContext;
     _headerEl;
     _cellEl;
@@ -91,7 +93,7 @@ export class ColumnWidthCalculator {
 
     calcLevelWidth(gridModel, records, column, options, indentationPx = 0) {
         const {field, getValueFn, renderer} = column,
-            {bufferPx, sampleCount} = options,
+            {bufferPx} = options,
             useRenderer = isFunction(renderer);
 
         // 1) Get unique values
@@ -111,7 +113,7 @@ export class ColumnWidthCalculator {
         });
 
         // 3) Extract the sample set of longest values for rendering and sizing
-        const longestValues = sortedValues.slice(Math.max(sortedValues.length - sampleCount, 0));
+        const longestValues = sortedValues.slice(Math.max(sortedValues.length - this.SAMPLE_COUNT, 0));
 
         // 4) Render to a hidden cell to calculate the max displayed width
         return reduce(longestValues, (currMax, value) => {
