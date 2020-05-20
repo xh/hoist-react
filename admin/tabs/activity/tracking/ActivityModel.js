@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFinite, cloneDeep, reverse} from 'lodash';
+import {isEmpty, isFinite, cloneDeep, reverse, find} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
@@ -14,6 +14,9 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
 import {ChartModel} from '@xh/hoist/cmp/chart';
+import {chart} from '@xh/hoist/cmp/chart';
+import {Icon} from '@xh/hoist/icon';
+import {TabContainerModel} from '../../../../cmp/tab';
 
 @HoistModel
 @LoadSupport
@@ -27,18 +30,18 @@ export class ActivityModel {
     @bindable device = '';
     @bindable browser = '';
 
-    @bindable chartType = 'column';
     @bindable chartAllLogs = false;
 
     @observable.ref detailRecord = null;
 
-    _chartLabelMap = {
+    axisLabelMap = {
         username: 'Users',
         msg: 'Messages',
         category: 'Categories',
         device: 'Devices',
         browser: 'Browsers',
-        userAgent: 'Agents'
+        userAgent: 'Agents',
+        cubeDay: 'Days'
     };
 
     // TODO: Create pref
@@ -73,7 +76,8 @@ export class ActivityModel {
             {name: 'impersonating'},
             {name: 'dateCreated'},
             {name: 'data'},
-            {name: 'count', aggregator: 'CHILD_COUNT'}
+            {name: 'count', aggregator: 'CHILD_COUNT'},
+            {name: 'logCount', aggregator: 'LEAF_COUNT'}
         ]
     })
 
@@ -110,11 +114,19 @@ export class ActivityModel {
     });
 
     @managed
-    chartModel = new ChartModel({
+    tabContainerModel = new TabContainerModel({
+        tabs: [
+            {id: 'Histogram', icon: Icon.chartBar(), content: () => chart({model: this.categoryChartModel})},
+            {id: 'Timeseries', icon: Icon.chartLine(), content: () => chart({model: this.timeSeriesChartModel})}
+        ]
+    })
+
+    @managed
+    timeSeriesChartModel = new ChartModel({
         highchartsConfig: {
-            chart: {type: 'column'},
+            chart: {type: 'line'},
             plotOptions: {
-                column: {animation: false}
+                line: {animation: false}
             },
             title: {text: null},
             xAxis: {
@@ -127,7 +139,7 @@ export class ActivityModel {
             yAxis: [
                 {
                     title: {
-                        text: 'Unique Users' // TODO will need to change with dim changes
+                        text: 'Count'
                     },
                     allowDecimals: false
                 },
@@ -141,9 +153,47 @@ export class ActivityModel {
         }
     });
 
-    get chartLabel() {
-        const dailyDimension = this.dimChooserModel.value[1],
-            label = this._chartLabelMap[dailyDimension];
+    @managed
+    categoryChartModel = new ChartModel({
+        highchartsConfig: {
+            chart: {type: 'column'},
+            plotOptions: {
+                column: {animation: false}
+            },
+            title: {text: null},
+            xAxis: {
+                type: 'category',
+                title: {
+                    text: 'Category'
+                }
+            },
+            yAxis: [
+                {
+                    title: {
+                        text: 'Count'
+                    },
+                    allowDecimals: false
+                },
+                {
+                    title: {
+                        text: 'Average Elapsed (ms)'
+                    },
+                    opposite: true
+                }
+            ]
+        }
+    });
+
+    get xAxisLabel() {
+        const dim = this.dimChooserModel.value[0],
+            label = this.axisLabelMap[dim];
+
+        return this.chartAllLogs || !label ? 'Logs' : label;
+    }
+
+    get yAxisLabel() {
+        const dim = this.dimChooserModel.value[1],
+            label = this.axisLabelMap[dim];
 
         return this.chartAllLogs || !label ? 'Logs' : label;
     }
@@ -151,8 +201,8 @@ export class ActivityModel {
     constructor() {
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
-        this.addReaction(this.chartTypeReaction());
         this.addReaction(this.chartLogsReaction());
+        this.addReaction(this.activeChartReaction());
     }
 
     async doLoadAsync(loadSpec) {
@@ -181,18 +231,63 @@ export class ActivityModel {
         const data = this.queryCube();
 
         this.gridModel.loadData(data);
-        if (this.dimChooserModel.value[0] === 'cubeDay') this.loadChart(data);
+        this.loadChart();
     }
 
-    loadChart(data) {
-        const chartData = data ?? this.queryCube(),
-            {chartModel} = this,
+    loadChart() {
+        // Why is this firing twice on load?
+        this.tabContainerModel.activeTabId == 'Timeseries' ? this.loadTimeseriesChart() : this.loadCategoryChart();
+    }
+
+    loadTimeseriesChart() {
+        const chartData = this.queryCube(),
+            chartModel = this.timeSeriesChartModel,
             highchartsConfig = cloneDeep(chartModel.highchartsConfig);
 
-        highchartsConfig.yAxis[0].title.text = `Unique ${this.chartLabel}`;
+        highchartsConfig.yAxis[0].title.text = `Unique ${this.yAxisLabel}`;
 
-        this.chartModel.setHighchartsConfig(highchartsConfig);
-        this.chartModel.setSeries(this.getSeriesData(chartData));
+        chartModel.setHighchartsConfig(highchartsConfig);
+        chartModel.setSeries(this.getTimeseriesData(chartData));
+    }
+
+    getTimeseriesData(cubeData) {
+        const counts = [],
+            elapsed = [];
+
+        cubeData.forEach((it) => {
+            const count = this.chartAllLogs ? it.logCount : it.count;
+            counts.push([LocalDate.from(it.cubeLabel).timestamp, count]);
+            elapsed.push([LocalDate.from(it.cubeLabel).timestamp, it.elapsed]);
+        });
+
+        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
+        return [{name: this.yAxisLabel, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
+    }
+
+    loadCategoryChart() {
+        const chartData = this.queryCube(),
+            chartModel = this.categoryChartModel,
+            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
+
+        highchartsConfig.yAxis[0].title.text = `Unique ${this.yAxisLabel}`;
+        highchartsConfig.xAxis.title.text = this.xAxisLabel;
+
+        chartModel.setHighchartsConfig(highchartsConfig);
+        chartModel.setSeries(this.getCategoryData(chartData));
+    }
+
+    getCategoryData(cubeData) {
+        const counts = [],
+            elapsed = [];
+
+        cubeData.forEach((it) => {
+            const count = this.chartAllLogs ? it.logCount : it.count;
+            counts.push([it[this.dimChooserModel.value[0]], count]);
+            elapsed.push([it[this.dimChooserModel.value[0]], it.elapsed]);
+        });
+
+        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
+        return [{name: `${this.yAxisLabel}`, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
     }
 
     queryCube() {
@@ -203,29 +298,6 @@ export class ActivityModel {
             });
 
         return data;
-    }
-
-    getSeriesData(cubeData) {
-        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
-        const counts = [],
-            elapsed = [];
-
-        cubeData.forEach((it) => {
-            const count = this.chartAllLogs ? it.count : it.children.length; // TODO: This may need to change if the count column really should count children rather than leaves
-            counts.push([LocalDate.from(it.cubeLabel).timestamp, count]);
-            elapsed.push([LocalDate.from(it.cubeLabel).timestamp, it.elapsed]);
-        });
-        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
-        return [{data: reverse(counts), yAxis: 0}, {data: reverse(elapsed), yAxis: 1}];
-    }
-
-    toggleChartType() {
-        const {chartModel} = this,
-            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
-
-        highchartsConfig.chart.type = this.chartType;
-
-        this.chartModel.setHighchartsConfig(highchartsConfig);
     }
 
     adjustDates(dir, toToday = false) {
@@ -257,6 +329,14 @@ export class ActivityModel {
     @action
     closeDetail() {
         this.detailRecord = null;
+    }
+
+    ensureProperTimeseriesChartState(enable) {
+        if (!enable) {
+            this.tabContainerModel.setActiveTabId('Histogram');
+        }
+
+        this.tabContainerModel.tabs[1].setDisabled(!enable);
     }
 
     //----------------
@@ -300,20 +380,23 @@ export class ActivityModel {
     dimensionsReaction() {
         return {
             track: () => this.dimChooserModel.value,
-            run: () => this.loadGridAndChart()
-        };
-    }
-
-    chartTypeReaction() {
-        return {
-            track: () => this.chartType,
-            run: () => this.toggleChartType()
+            run: (v) => {
+                this.ensureProperTimeseriesChartState(v[0] == 'cubeDay');
+                this.loadGridAndChart();
+            }
         };
     }
 
     chartLogsReaction() {
         return {
             track: () => this.chartAllLogs,
+            run: () => this.loadChart()
+        };
+    }
+
+    activeChartReaction() {
+        return {
+            track: () => this.tabContainerModel.activeTabId,
             run: () => this.loadChart()
         };
     }

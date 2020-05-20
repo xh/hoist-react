@@ -14,25 +14,23 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {activityDetail} from './ActivityDetail';
 import {ActivityModel} from './ActivityModel';
-import {visitsChart} from './VisitsChart';
+import {activityDetail} from './ActivityDetail';
+import {activityCharts} from './ActivityCharts';
 
-export const activityGrid = hoistCmp.factory({
+export const activityPanel = hoistCmp.factory({
     model: creates(ActivityModel),
 
     render({model}) {
-        return vframe(
-            panel({
-                mask: 'onLoad',
-                tbar: tbar(),
-                items: [
-                    grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
-                    activityDetail()
-                ]
-            }),
-            visitsChart({omit: model.dimChooserModel.value[0] != 'cubeDay'})
-        );
+        return panel({
+            mask: 'onLoad',
+            tbar: tbar(),
+            items: [
+                grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
+                activityCharts(),
+                activityDetail()
+            ]
+        });
     }
 });
 

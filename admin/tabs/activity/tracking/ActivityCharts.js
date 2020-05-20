@@ -4,23 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {chart} from '@xh/hoist/cmp/chart';
+
 import {uses, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
-import {select, switchInput} from '../../../../desktop/cmp/input'; //TODO: fix imports
+import {tabContainer} from '@xh/hoist/cmp/tab';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {switchInput} from '../../../../desktop/cmp/input';
 import {ActivityModel} from './ActivityModel';
 
-export const visitsChart = hoistCmp.factory({
+export const activityCharts = hoistCmp.factory({
     model: uses(ActivityModel),
-
-    render({model}) {
+    render() {
         return panel({
-            mask: 'onLoad',
-            icon: Icon.chartLine(),
-            title: `Unique Daily ${model.chartLabel}`,
-            item: chart(),
+            item: tabContainer(),
             bbar: bbar(),
             model: {
                 defaultSize: 500,
@@ -33,11 +29,6 @@ export const visitsChart = hoistCmp.factory({
 
 const bbar = hoistCmp.factory(
     () => toolbar(
-        select({
-            bind: 'chartType',
-            options: [{label: 'Bar Chart', value: 'column'}, {label: 'Timeseries', value: 'line'}]
-        }),
-        toolbarSep(),
         switchInput({
             label: 'All Logs',
             bind: 'chartAllLogs'
