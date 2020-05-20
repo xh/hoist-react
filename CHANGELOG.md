@@ -4,23 +4,20 @@
 
 ### 🎁 New Features
 
-* Hoist's enhanced autosizing is now enabled on all grids by default.  See `GridModel`
-and `GridAutosizeService` for more details.
+* Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
+  `GridAutosizeService` for more details.
+* `DimensionChooser` now has the ability to persist its value and history separately.
+* Mobile `select` now supports `enableFilter` and `enableCreate`.
 
-* `DimensionChooser` now has the ability to persist its value and history seperately.
-* Mobile `select` now supports `enableFilter` and `enableCreate`. 
+### 💥 Breaking Changes
+
+* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
+  applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
 
 ### 🐞 Bug Fixes
+
 * Fix to Average Aggregators when used with hierarchical data.
-
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
-
-
-### ⚙️ Breaking Changes
-* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all
-client applications. Improvements to agGrid's default rendering of empty space have made it
-obsolete.
-
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
@@ -37,7 +34,6 @@ obsolete.
 
 * `Column.hideable` will now be respected by ag-grid column drag and drop
   [#1900](https://github.com/xh/hoist-react/issues/1900)
-
 * Fixed an issue where dragging a column would cause it to be sorted unintentionally.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
