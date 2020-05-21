@@ -9,6 +9,9 @@
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
+* Add Hoist Cube Aggregators: `LeafCountAggregator`, `ChildCount` and `RangeAggregator`
+* Enhance Hoist Admin's Activity Tracking tab.
+
 
 ### 💥 Breaking Changes
 
@@ -58,11 +61,6 @@
   button. Previously, resetting to defaults was only possible for grids that persisted their state
   with a `GridModel.stateModel` config.
 
-* Add Hoist Cube Aggregators: `CountAggregator` and `RangeAggregator`
-
-* Enhance Hoist Admin's Activity Tracking tab. Data can now be grouped and aggregated on the fly
-  using the Hoist Cube. Add a heatmap linked to the activity grid.
-
 ### 🐞 Bug Fixes
 
 * Fixed several issues with new grid auto-sizing feature.
@@ -101,8 +99,6 @@
 ### 🐞 Bug Fixes
 
 * Fixed a regression with `StoreFilterField` introduced in v33.0.1.
-* Average aggregators now correctly takes an average of all leaves vs. an average of averages
-  in the case of nodes more than one level deep.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.2...33.1.0)
 
