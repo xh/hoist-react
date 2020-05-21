@@ -26,6 +26,8 @@ import {
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
+import parser from 'ua-parser-js';
+
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
@@ -122,6 +124,8 @@ class XHClass {
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     get isMobile()              {return this.appSpec.isMobile}
+    get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
+    get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
     get clientAppCode()         {return this.appSpec.clientAppCode}
     get clientAppName()         {return this.appSpec.clientAppName}
 
@@ -670,6 +674,11 @@ class XHClass {
                 }
             }
         });
+    }
+
+    get uaParser() {
+        if (!this._uaParser) this._uaParser = new parser();
+        return this._uaParser;
     }
 }
 export const XH = window.XH = new XHClass();
