@@ -11,6 +11,7 @@
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
 * Add Hoist Cube Aggregators: `LeafCountAggregator`, `ChildCount` and `RangeAggregator`
 * Enhance Hoist Admin's Activity Tracking tab.
+* Enhance Hoist Admin's Client Error tab.
 
 
 ### 💥 Breaking Changes
