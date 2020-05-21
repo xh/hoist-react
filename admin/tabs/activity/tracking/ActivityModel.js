@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFinite, cloneDeep, reverse, find} from 'lodash';
+import {isEmpty, isFinite} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
@@ -13,10 +13,7 @@ import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
-import {ChartModel} from '@xh/hoist/cmp/chart';
-import {chart} from '@xh/hoist/cmp/chart';
-import {Icon} from '@xh/hoist/icon';
-import {TabContainerModel} from '../../../../cmp/tab';
+import {ChartsModel} from './charts/ChartsModel';
 
 @HoistModel
 @LoadSupport
@@ -30,19 +27,7 @@ export class ActivityModel {
     @bindable device = '';
     @bindable browser = '';
 
-    @bindable chartAllLogs = false;
-
     @observable.ref detailRecord = null;
-
-    axisLabelMap = {
-        username: 'Users',
-        msg: 'Messages',
-        category: 'Categories',
-        device: 'Devices',
-        browser: 'Browsers',
-        userAgent: 'Agents',
-        cubeDay: 'Days'
-    };
 
     // TODO: Create pref
     @managed
@@ -101,108 +86,23 @@ export class ActivityModel {
             {field: 'impersonating', width: 140},
             {
                 field: 'elapsed',
-                headerName: 'Elapsed (ms)',
+                headerName: 'Avg Elapsed (ms)',
                 width: 130,
                 align: 'right',
-                renderer: numberRenderer({precision: 0})
+                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
             {field: 'data', width: 70},
-            {field: 'count', width: 70, align: 'right', renderer: numberRenderer()},
+            {field: 'count', width: 70, align: 'right', renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
     });
 
-    @managed
-    tabContainerModel = new TabContainerModel({
-        tabs: [
-            {id: 'Histogram', icon: Icon.chartBar(), content: () => chart({model: this.categoryChartModel})},
-            {id: 'Timeseries', icon: Icon.chartLine(), content: () => chart({model: this.timeSeriesChartModel})}
-        ]
-    })
-
-    @managed
-    timeSeriesChartModel = new ChartModel({
-        highchartsConfig: {
-            chart: {type: 'line'},
-            plotOptions: {
-                line: {animation: false}
-            },
-            title: {text: null},
-            xAxis: {
-                type: 'datetime',
-                units: [['day', [1]], ['week', [2]], ['month', [1]]],
-                labels: {
-                    formatter: function() {return fmtDate(this.value, 'D MMM')}
-                }
-            },
-            yAxis: [
-                {
-                    title: {
-                        text: 'Count'
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Average Elapsed (ms)'
-                    },
-                    opposite: true
-                }
-            ]
-        }
-    });
-
-    @managed
-    categoryChartModel = new ChartModel({
-        highchartsConfig: {
-            chart: {type: 'column'},
-            plotOptions: {
-                column: {animation: false}
-            },
-            title: {text: null},
-            xAxis: {
-                type: 'category',
-                title: {
-                    text: 'Category'
-                }
-            },
-            yAxis: [
-                {
-                    title: {
-                        text: 'Count'
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Average Elapsed (ms)'
-                    },
-                    opposite: true
-                }
-            ]
-        }
-    });
-
-    get xAxisLabel() {
-        const dim = this.dimChooserModel.value[0],
-            label = this.axisLabelMap[dim];
-
-        return this.chartAllLogs || !label ? 'Logs' : label;
-    }
-
-    get yAxisLabel() {
-        const dim = this.dimChooserModel.value[1],
-            label = this.axisLabelMap[dim];
-
-        return this.chartAllLogs || !label ? 'Logs' : label;
-    }
+    @managed chartsModel = new ChartsModel();
 
     constructor() {
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
-        this.addReaction(this.chartLogsReaction());
-        this.addReaction(this.activeChartReaction());
     }
 
     async doLoadAsync(loadSpec) {
@@ -223,81 +123,22 @@ export class ActivityModel {
             this.loadGridAndChart();
         } catch (e) {
             this.gridModel.loadData([]);
+            this.chartsModel.setDimensions(this.dimChooserModel.value);
+            this.chartsModel.setData([]);
             XH.handleException(e);
         }
     }
 
     loadGridAndChart() {
-        const data = this.queryCube();
-
-        this.gridModel.loadData(data);
-        this.loadChart();
-    }
-
-    loadChart() {
-        // Why is this firing twice on load?
-        this.tabContainerModel.activeTabId == 'Timeseries' ? this.loadTimeseriesChart() : this.loadCategoryChart();
-    }
-
-    loadTimeseriesChart() {
-        const chartData = this.queryCube(),
-            chartModel = this.timeSeriesChartModel,
-            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
-
-        highchartsConfig.yAxis[0].title.text = `Unique ${this.yAxisLabel}`;
-
-        chartModel.setHighchartsConfig(highchartsConfig);
-        chartModel.setSeries(this.getTimeseriesData(chartData));
-    }
-
-    getTimeseriesData(cubeData) {
-        const counts = [],
-            elapsed = [];
-
-        cubeData.forEach((it) => {
-            const count = this.chartAllLogs ? it.logCount : it.count;
-            counts.push([LocalDate.from(it.cubeLabel).timestamp, count]);
-            elapsed.push([LocalDate.from(it.cubeLabel).timestamp, it.elapsed]);
-        });
-
-        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
-        return [{name: this.yAxisLabel, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
-    }
-
-    loadCategoryChart() {
-        const chartData = this.queryCube(),
-            chartModel = this.categoryChartModel,
-            highchartsConfig = cloneDeep(chartModel.highchartsConfig);
-
-        highchartsConfig.yAxis[0].title.text = `Unique ${this.yAxisLabel}`;
-        highchartsConfig.xAxis.title.text = this.xAxisLabel;
-
-        chartModel.setHighchartsConfig(highchartsConfig);
-        chartModel.setSeries(this.getCategoryData(chartData));
-    }
-
-    getCategoryData(cubeData) {
-        const counts = [],
-            elapsed = [];
-
-        cubeData.forEach((it) => {
-            const count = this.chartAllLogs ? it.logCount : it.count;
-            counts.push([it[this.dimChooserModel.value[0]], count]);
-            elapsed.push([it[this.dimChooserModel.value[0]], it.elapsed]);
-        });
-
-        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
-        return [{name: `${this.yAxisLabel}`, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
-    }
-
-    queryCube() {
         const dimensions = this.dimChooserModel.value,
             data = this.cube.executeQuery({
                 dimensions,
                 includeLeaves: true
             });
 
-        return data;
+        this.gridModel.loadData(data);
+        this.chartsModel.setDimensions(dimensions);
+        this.chartsModel.setData(data);
     }
 
     adjustDates(dir, toToday = false) {
@@ -332,11 +173,7 @@ export class ActivityModel {
     }
 
     ensureProperTimeseriesChartState(enable) {
-        if (!enable) {
-            this.tabContainerModel.setActiveTabId('Histogram');
-        }
-
-        this.tabContainerModel.tabs[1].setDisabled(!enable);
+        this.chartsModel.setEnableTimeseries(enable);
     }
 
     //----------------
@@ -384,20 +221,6 @@ export class ActivityModel {
                 this.ensureProperTimeseriesChartState(v[0] == 'cubeDay');
                 this.loadGridAndChart();
             }
-        };
-    }
-
-    chartLogsReaction() {
-        return {
-            track: () => this.chartAllLogs,
-            run: () => this.loadChart()
-        };
-    }
-
-    activeChartReaction() {
-        return {
-            track: () => this.tabContainerModel.activeTabId,
-            run: () => this.loadChart()
         };
     }
 }

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityModel} from './ActivityModel';
 import {activityDetail} from './ActivityDetail';
-import {activityCharts} from './ActivityCharts';
+import {chartsPanel} from './charts/ChartsPanel';
 
 export const activityPanel = hoistCmp.factory({
     model: creates(ActivityModel),
@@ -27,7 +27,7 @@ export const activityPanel = hoistCmp.factory({
             tbar: tbar(),
             items: [
                 grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
-                activityCharts(),
+                chartsPanel(),
                 activityDetail()
             ]
         });
