@@ -24,7 +24,7 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
 
@@ -479,12 +479,17 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobile} = this;
+            {appSpec, isMobile, isPhone, isTablet} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // add xh css classes to to power Hoist CSS selectors.
-        document.body.classList.add('xh-app', (isMobile ? 'xh-mobile' : 'xh-desktop'));
+        // Add xh css classes to to power Hoist CSS selectors.
+        document.body.classList.add(...compact([
+            'xh-app',
+            (isMobile ? 'xh-mobile' : 'xh-desktop'),
+            (isPhone ? 'xh-phone' : null),
+            (isTablet ? 'xh-tablet' : null)
+        ]));
 
         try {
             await this.installServicesAsync(FetchService);
