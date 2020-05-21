@@ -200,8 +200,6 @@ export class ActivityModel {
             maxStr = fmtDate(max);
 
         if (minStr === maxStr) return minStr;
-        if (!max) return minStr; // TODO: If you have one you have the other? They maybe equal, but the only way you get null is if the whole collection is of nulls
-        if (!min) return maxStr;
         return `${minStr} – ${maxStr}`;
     }
 

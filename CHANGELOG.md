@@ -13,7 +13,6 @@
 * Enhance Hoist Admin's Activity Tracking tab.
 * Enhance Hoist Admin's Client Error tab.
 
-
 ### 💥 Breaking Changes
 
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client

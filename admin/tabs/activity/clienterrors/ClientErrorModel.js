@@ -12,7 +12,7 @@ import {boolCheckCol, dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFinite} from 'lodash';
-import {Cube} from '../../../../data';// TODO: fix imports
+import {Cube} from '@xh/hoist/data';
 
 @HoistModel
 @LoadSupport
@@ -181,8 +181,6 @@ export class ClientErrorModel {
             maxStr = fmtDate(max);
 
         if (minStr === maxStr) return minStr;
-        if (!max) return minStr; // TODO: If you have one you have the other? They maybe equal, but the only way you get null is if the whole collection is of nulls
-        if (!min) return maxStr;
         return `${minStr} – ${maxStr}`;
     }
 
