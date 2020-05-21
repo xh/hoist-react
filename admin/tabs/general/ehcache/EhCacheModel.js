@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {trimEnd} from 'lodash';
@@ -34,8 +34,7 @@ export class EhCacheModel {
             {field: 'name', width: 360},
             {field: 'heapSize', ...numberCol, headerName: 'Heap Size (MB)', width: 130},
             {field: 'entries', ...numberCol, width: 120},
-            {field: 'status', width: 120},
-            {...emptyFlexCol}
+            {field: 'status', width: 120}
         ]
     });
 

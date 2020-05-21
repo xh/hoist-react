@@ -27,8 +27,8 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
     }) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        if (!gridModel) {
-            console.error("No GridModel available to ColAutosizeButton. Provide via a 'gridModel' prop, or context.");
+        if (!gridModel?.autosizeEnabled) {
+            console.error("No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context.");
             return button({icon, disabled: true, ...props});
         }
 

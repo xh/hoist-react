@@ -25,6 +25,11 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
 
         onClick = onClick ?? (() => gridModel.autosizeAsync(autosizeOptions));
 
+        errorIf(
+            !gridModel?.autosizeEnabled,
+            'AutosizeButton must be bound to GridModel with autosize enabled.  See autosizeOptions.mode'
+        );
+
         return button({
             icon: withDefault(icon, Icon.arrowsLeftRight()),
             title: withDefault(title, 'Autosize Columns'),
