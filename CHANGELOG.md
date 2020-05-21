@@ -8,8 +8,8 @@
   `GridAutosizeService` for more details.
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
-* Added `XH.isPhone` and `XH.isTablet` to aid device specific handling. Also added corresponding
-  `xh-phone` and `xh-tablet` CSS classes to `body` to enable device specific styling.
+* Added `XH.isPhoneDevice` and `XH.isTabletDevice` to aid device specific handling. Also added
+  corresponding `xh-phone` and `xh-tablet` CSS classes to `body` to enable device specific styling.
 
 ### 💥 Breaking Changes
 

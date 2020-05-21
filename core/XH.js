@@ -124,8 +124,8 @@ class XHClass {
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
     get isMobile()              {return this.appSpec.isMobile}
-    get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
-    get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
+    get isPhoneDevice()         {return this.uaParser.getDevice().type === 'mobile'}
+    get isTabletDevice()        {return this.uaParser.getDevice().type === 'tablet'}
     get clientAppCode()         {return this.appSpec.clientAppCode}
     get clientAppName()         {return this.appSpec.clientAppName}
 
@@ -479,7 +479,7 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobile, isPhone, isTablet} = this;
+            {appSpec, isMobile, isPhoneDevice, isTabletDevice} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
@@ -487,8 +487,8 @@ class XHClass {
         document.body.classList.add(...compact([
             'xh-app',
             (isMobile ? 'xh-mobile' : 'xh-desktop'),
-            (isPhone ? 'xh-phone' : null),
-            (isTablet ? 'xh-tablet' : null)
+            (isPhoneDevice ? 'xh-phone' : null),
+            (isTabletDevice ? 'xh-tablet' : null)
         ]));
 
         try {
