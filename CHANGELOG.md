@@ -8,6 +8,7 @@
   `GridAutosizeService` for more details.
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
+* `DashContainerModel` now supports `layoutLocked` and `contentLocked` modes.
 
 ### 💥 Breaking Changes
 

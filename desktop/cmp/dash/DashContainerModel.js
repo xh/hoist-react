@@ -74,7 +74,10 @@ export class DashContainerModel {
     @observable.ref goldenLayout;
     /** @member {DashViewModel[]} */
     @managed @observable.ref viewModels = [];
-
+    /** @member {boolean} */
+    @observable layoutLocked;
+    /** @member {boolean} */
+    @observable contentLocked;
 
     //------------------------
     // Immutable public properties
@@ -106,6 +109,8 @@ export class DashContainerModel {
      *      per-view via `DashViewSpec.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
+     * @param {boolean} [layoutLocked] - prevent re-arranging views by dragging and dropping.
+     * @param {boolean} [contentLocked] - prevent adding / removing / renaming views.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
      * @param {string} [emptyText] - text to display when the container is empty
@@ -117,6 +122,8 @@ export class DashContainerModel {
         initialState = [],
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
+        layoutLocked = false,
+        contentLocked = false,
         goldenLayoutSettings,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View'
@@ -130,13 +137,15 @@ export class DashContainerModel {
         this.state = initialState;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
+        this.layoutLocked = layoutLocked;
+        this.contentLocked = contentLocked;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
-            track: () => this.containerRef.current,
+            track: () => [this.containerRef.current, this.layoutLocked],
             run: () => this.loadStateAsync(this.state)
         });
 
@@ -317,6 +326,8 @@ export class DashContainerModel {
     }
 
     showContextMenu(e, {stack, viewModel, index}) {
+        if (this.contentLocked) return;
+
         const offset = {left: e.clientX, top: e.clientY},
             menu = dashContainerContextMenu({
                 stack,
@@ -424,6 +435,8 @@ export class DashContainerModel {
     }
 
     showTitleForm($tabEl) {
+        if (this.contentLocked) return;
+
         const $titleEl = $tabEl.find('.lm_title').first(),
             $inputEl = $tabEl.find('.title-form input').first(),
             currentTitle = $titleEl.text();
@@ -449,6 +462,10 @@ export class DashContainerModel {
                     showPopoutIcon: false,
                     showMaximiseIcon: false,
                     showCloseIcon: false,
+
+                    // Respect layoutLocked
+                    reorderEnabled: !this.layoutLocked,
+
                     ...this.goldenLayoutSettings
                 },
                 dimensions: {
