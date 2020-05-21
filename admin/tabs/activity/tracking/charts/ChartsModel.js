@@ -5,15 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {cloneDeep, reverse} from 'lodash';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {chart} from '@xh/hoist/cmp/chart';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-
-import {TabContainerModel} from '../../../../../cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 
 @HoistModel
 export class ChartsModel {
@@ -49,13 +48,19 @@ export class ChartsModel {
             yAxis: [
                 {
                     title: {
-                        text: 'Count'
+                        text: 'Count',
+                        style: {
+                            color: this.colors.featuredSeries
+                        }
                     },
                     allowDecimals: false
                 },
                 {
                     title: {
-                        text: 'Avg Elapsed (ms)'
+                        text: 'Avg Elapsed (ms)',
+                        style: {
+                            color: this.colors.elapsedSeries
+                        }
                     },
                     opposite: true
                 }
@@ -80,15 +85,22 @@ export class ChartsModel {
             yAxis: [
                 {
                     title: {
-                        text: 'Count'
+                        text: 'Count',
+                        style: {
+                            color: this.colors.featuredSeries
+                        }
                     },
                     allowDecimals: false
                 },
                 {
                     title: {
-                        text: 'Avg Elapsed (ms)'
+                        text: 'Avg Elapsed (ms)',
+                        style: {
+                            color: this.colors.elapsedSeries
+                        }
                     },
-                    opposite: true // TODO: Add color to axes to associate with series.
+                    opposite: true,
+                    color: this.colors.elapsedSeries
                 }
             ]
         }
@@ -118,9 +130,14 @@ export class ChartsModel {
         return this.chartAllLogs || !label ? 'Logs' : label;
     }
 
+    get colors() {
+        return XH.darkTheme ? {featuredSeries: '#2b908f', elapsedSeries: '#90ee7e'} : {featuredSeries: '#7cb5ec', elapsedSeries: '#434348'};
+    }
+
     constructor() {
         this.addReaction(this.enableTimeseriesReaction());
         this.addReaction(this.loadChartReaction());
+        this.addReaction(this.themeReaction());
     }
 
     loadChart() {
@@ -185,6 +202,26 @@ export class ChartsModel {
         return {
             track: () => this.enableTimeseries,
             run: (enable) => this.ensureProperTimeseriesChartState(enable)
+        };
+    }
+
+    themeReaction() {
+        return {
+            track: () => XH.darkTheme,
+            run: () => {
+                const {colors, categoryChartModel, timeSeriesChartModel} = this,
+                    {featuredSeries, elapsedSeries} = colors,
+                    catHchartConf = cloneDeep(categoryChartModel.highchartsConfig),
+                    timeHchartConf = cloneDeep(timeSeriesChartModel.highchartsConfig);
+
+                catHchartConf.yAxis[0].title.style.color = featuredSeries;
+                catHchartConf.yAxis[1].title.style.color = elapsedSeries;
+                timeHchartConf.yAxis[0].title.style.color = featuredSeries;
+                timeHchartConf.yAxis[1].title.style.color = elapsedSeries;
+
+                categoryChartModel.setHighchartsConfig(catHchartConf);
+                timeSeriesChartModel.setHighchartsConfig(timeHchartConf);
+            }
         };
     }
 

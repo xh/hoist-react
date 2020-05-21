@@ -14,6 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+
 import {ActivityModel} from './ActivityModel';
 import {activityDetail} from './ActivityDetail';
 import {chartsPanel} from './charts/ChartsPanel';
