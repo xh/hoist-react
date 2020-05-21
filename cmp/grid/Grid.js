@@ -59,7 +59,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     render({model, className, ...props}) {
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
-            platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
+            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
@@ -252,7 +252,7 @@ class LocalModel {
         }
 
         // Platform specific defaults
-        if (XH.isMobile) {
+        if (XH.isMobileApp) {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
@@ -291,7 +291,7 @@ class LocalModel {
     getContextMenuItems = (params) => {
         const {model} = this,
             {store, selModel, contextMenu} = model;
-        if (!contextMenu || XH.isMobile) return null;
+        if (!contextMenu || XH.isMobileApp) return null;
 
         let menu = null;
         if (isFunction(contextMenu)) {
