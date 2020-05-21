@@ -8,7 +8,7 @@ import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
@@ -75,9 +75,11 @@ export class DashContainerModel {
     /** @member {DashViewModel[]} */
     @managed @observable.ref viewModels = [];
     /** @member {boolean} */
-    @observable layoutLocked;
+    @bindable layoutLocked;
     /** @member {boolean} */
-    @observable contentLocked;
+    @bindable contentLocked;
+    /** @member {boolean} */
+    @bindable renameLocked;
 
     //------------------------
     // Immutable public properties
@@ -110,7 +112,8 @@ export class DashContainerModel {
      * @param {RefreshMode} [refreshMode] - strategy for refreshing DashViews. Can be set
      *      per-view via `DashViewSpec.refreshMode`. See enum for description of supported modes.
      * @param {boolean} [layoutLocked] - prevent re-arranging views by dragging and dropping.
-     * @param {boolean} [contentLocked] - prevent adding / removing / renaming views.
+     * @param {boolean} [contentLocked] - prevent adding and removing views.
+     * @param {boolean} [renameLocked] - prevent renaming views.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
      * @param {string} [emptyText] - text to display when the container is empty
@@ -124,6 +127,7 @@ export class DashContainerModel {
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         layoutLocked = false,
         contentLocked = false,
+        renameLocked = false,
         goldenLayoutSettings,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View'
@@ -139,6 +143,7 @@ export class DashContainerModel {
         this.refreshMode = refreshMode;
         this.layoutLocked = layoutLocked;
         this.contentLocked = contentLocked;
+        this.renameLocked = renameLocked;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
@@ -435,7 +440,7 @@ export class DashContainerModel {
     }
 
     showTitleForm($tabEl) {
-        if (this.contentLocked) return;
+        if (this.renameLocked) return;
 
         const $titleEl = $tabEl.find('.lm_title').first(),
             $inputEl = $tabEl.find('.title-form input').first(),
