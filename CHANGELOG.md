@@ -22,6 +22,13 @@
 * Fix to Average Aggregators when used with hierarchical data.
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
+### 📚 Libraries
+
+* @blueprintjs/core `3.26 -> 3.28`
+* @blueprintjs/datetime `3.16 -> 3.18`
+* codemirror `5.53 -> 5.54`
+* react-transition-group `4.3 -> 4.4`
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
 
