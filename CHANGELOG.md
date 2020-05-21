@@ -10,7 +10,7 @@
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
 * Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
-  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device s
+  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
   specific styling.
 
 ### 💥 Breaking Changes
