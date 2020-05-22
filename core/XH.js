@@ -23,7 +23,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
 import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
 import parser from 'ua-parser-js';
@@ -671,10 +671,12 @@ class XHClass {
                         XH.track({
                             category: 'App',
                             msg: `Loaded ${this.clientAppName}`,
-                            elapsed: now - loadStarted - loginElapsed
+                            elapsed: now - loadStarted - loginElapsed,
+                            data: getClientDeviceInfo()
                         });
                         disposer();
                         break;
+
                     case AppState.LOGIN_REQUIRED:
                         loginStarted = now;
                         break;
@@ -690,8 +692,8 @@ class XHClass {
         return this._uaParser;
     }
 }
-export const XH = window.XH = new XHClass();
 
+export const XH = window.XH = new XHClass();
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.
