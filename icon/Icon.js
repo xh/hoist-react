@@ -216,6 +216,7 @@ export const Icon = {
     rocket(p)           {return Icon.icon({...p,  iconName: 'rocket'})},
     save(p)             {return Icon.icon({...p,  iconName: 'save'})},
     search(p)           {return Icon.icon({...p,  iconName: 'search'})},
+    server(p)           {return Icon.icon({...p,  iconName: 'server'})},
     settings(p)         {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
     shield(p)           {return Icon.icon({...p,  iconName: 'shield-alt'})},
     shieldCheck(p)      {return Icon.icon({...p,  iconName: 'shield-check'})},
