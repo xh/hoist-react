@@ -321,6 +321,8 @@ class LocalModel {
         const items = [];
 
         recordActions.forEach(action => {
+            if (isNil(action)) return;
+
             if (action === '-') {
                 items.push('separator');
                 return;
