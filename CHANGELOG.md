@@ -9,6 +9,7 @@
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
+* New method `get()` on `Record` provides an alternative option for checked data access.
 
 ### 💥 Breaking Changes
 
