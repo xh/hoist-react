@@ -61,7 +61,7 @@ export class ActivityModel {
             {name: 'dateCreated'},
             {name: 'data'},
             {name: 'count', aggregator: 'CHILD_COUNT'},
-            {name: 'logCount', aggregator: 'LEAF_COUNT'}
+            {name: 'logCount', aggregator: 'LEAF_COUNT'} // TODO: Add to client errors as well
         ]
     })
 

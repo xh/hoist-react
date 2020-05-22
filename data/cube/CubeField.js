@@ -98,7 +98,6 @@ export class CubeField extends Field {
             switch (val) {
                 case 'AVG':             return CubeField.averageAggregator;
                 case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
-                case 'COUNT':           return CubeField.childCountAggregator; // TODO: Thought here is this is the more standard idea of "COUNT"
                 case 'CHILD_COUNT':     return CubeField.childCountAggregator;
                 case 'LEAF_COUNT':      return CubeField.leafCountAggregator;
                 case 'MAX':             return CubeField.maxAggregator;

@@ -57,8 +57,7 @@ export class ClientErrorModel {
             {name: 'day', aggregator: 'RANGE'},
             {name: 'dateCreated'},
             {name: 'error'},
-            {name: 'count', aggregator: 'COUNT'}
-
+            {name: 'count', aggregator: 'CHILD_COUNT'}
         ]
     })
 
