@@ -932,7 +932,7 @@ export class GridModel {
     }
 
     parseSelModel(selModel) {
-        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
+        selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
 
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
@@ -981,7 +981,7 @@ export class GridModel {
 
 
     createChooserModel() {
-        const Model = XH.isMobile ? MobileColChooserModel : DesktopColChooserModel;
+        const Model = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
         return this.markManaged(new Model(this));
     }
 

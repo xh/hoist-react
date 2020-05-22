@@ -38,7 +38,7 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory({
             "'switcherPosition' is no longer present on TabContainer.  Please specify on TabContainerModel instead."
         );
 
-        return XH.isMobile ? mobileTabContainerImpl(props) : desktopTabContainerImpl(props);
+        return XH.isMobileApp ? mobileTabContainerImpl(props) : desktopTabContainerImpl(props);
     }
 });
 TabContainer.propTypes = {
