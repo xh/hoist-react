@@ -71,15 +71,15 @@ export const columnHeader = hoistCmp.factory({
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
-        const {isMobile} = XH;
+        const {isMobileApp} = XH;
         return div({
             className: classNames(props.className, extraClasses),
 
-            onClick:        !isMobile ? impl.onClick : null,
-            onDoubleClick:  !isMobile ? impl.onDoubleClick : null,
-            onMouseDown:    !isMobile ? impl.onMouseDown : null,
-            onTouchStart:   isMobile  ? impl.onTouchStart : null,
-            onTouchEnd:     isMobile  ? impl.onTouchEnd : null,
+            onClick:        !isMobileApp ? impl.onClick : null,
+            onDoubleClick:  !isMobileApp ? impl.onDoubleClick : null,
+            onMouseDown:    !isMobileApp ? impl.onMouseDown : null,
+            onTouchStart:   isMobileApp  ? impl.onTouchStart : null,
+            onTouchEnd:     isMobileApp  ? impl.onTouchEnd : null,
 
             items: [
                 span(headerName),
@@ -217,7 +217,10 @@ class LocalModel {
     }
 
     autosize() {
-        this.gridModel?.autosizeAsync({columns: this.colId, showMask: false});
+        const {gridModel} = this;
+        if (gridModel?.autosizeEnabled) {
+            gridModel.autosizeAsync({columns: this.colId, showMask: false});
+        }
     }
 
     parseAvailableSorts() {
