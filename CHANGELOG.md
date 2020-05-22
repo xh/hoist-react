@@ -9,6 +9,10 @@
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
+* New method `get()` on `Record` provides an alternative option for checked data access.
+* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
+  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
+  specific styling.
 * Add Hoist Cube Aggregators: `LeafCountAggregator`, `ChildCount` and `RangeAggregator`
 * Enhance Hoist Admin's Activity Tracking tab.
 * Enhance Hoist Admin's Client Error tab.
@@ -17,6 +21,11 @@
 
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
+
+* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
+
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
+For this purpose, use `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 

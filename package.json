@@ -68,7 +68,8 @@
     "resize-observer-polyfill": "~1.5.1",
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
-    "store2": "~2.11.2"
+    "store2": "~2.11.2",
+    "ua-parser-js": "~0.7.21"
   },
   "peerDependencies": {
     "react": "~16.13.1",
