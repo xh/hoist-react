@@ -25,7 +25,6 @@ export class ClientErrorModel {
 
     @observable.ref detailRecord = null;
 
-    // TODO: Create pref
     @managed
     dimChooserModel = new DimensionChooserModel({
         enableClear: true,
