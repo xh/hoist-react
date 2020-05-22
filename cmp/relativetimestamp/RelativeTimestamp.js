@@ -109,7 +109,7 @@ export function getRelativeTimestamp(timestamp, options = {}) {
     options = {
         timestamp,
         allowFuture: false,
-        short: XH.isMobile,
+        short: XH.isMobileApp,
         futureSuffix: relTo ? `after ${relFmt}` : 'from now',
         pastSuffix: relTo ? `before ${relFmt}` : 'ago',
         equalString: relTo ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}` : 'just now',

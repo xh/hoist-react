@@ -137,7 +137,7 @@ export class Select extends HoistInput {
                 noOptionsMessage: this.noOptionsMessageFn,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
-                menuShouldBlockScroll: XH.isMobile,
+                menuShouldBlockScroll: XH.isMobileApp,
 
                 // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.

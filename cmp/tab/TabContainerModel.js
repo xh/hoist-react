@@ -61,7 +61,7 @@ export class TabContainerModel {
         tabs,
         defaultTabId = null,
         route = null,
-        switcherPosition = XH.isMobile ? 'bottom' : 'top',
+        switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
@@ -81,7 +81,7 @@ export class TabContainerModel {
         this.track = track;
 
         if (route) {
-            if (XH.isMobile) {
+            if (XH.isMobileApp) {
                 console.warn('Tab container routing is not supported for mobile applications.');
                 return;
             }

@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
@@ -58,6 +59,9 @@ export class StoreContextMenu {
 
     parseToken(token) {
         const {gridModel} = this;
+
+        // Export tokens are currently only supported on desktop devices.
+        if (!XH.isDesktop && token.startsWith('export')) return;
 
         if (token === 'autoSizeColumns') {
             console.warn('StoreContextMenu token `autoSizeColumns` has been deprecated. Use `autosizeColumns` instead.');
