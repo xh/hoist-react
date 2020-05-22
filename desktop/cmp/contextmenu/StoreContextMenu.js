@@ -100,7 +100,7 @@ export class StoreContextMenu {
             case 'exportExcel':
                 return new RecordAction({
                     text: 'Export to Excel',
-                    icon: Icon.download(),
+                    icon: Icon.fileExcel(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
@@ -108,7 +108,7 @@ export class StoreContextMenu {
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
-                    icon: Icon.download(),
+                    icon: Icon.file(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})
