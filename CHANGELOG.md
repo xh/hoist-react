@@ -5,7 +5,7 @@
 ### 🎁 New Features
 
 * `DimensionChooser` now has the ability to persist its value and history seperately.
-* Mobile `select` now supports `enableFilter` and `enableCreate`. 
+* Mobile `select` now supports `enableFilter` and `enableCreate`.
 
 ### 🐞 Bug Fixes
 * Fix to Average Aggregators when used with hierarchical data.
@@ -14,6 +14,10 @@
 
 ### ⚙️ Technical
 * Additional updates to experimental autosize feature.
+
+### 📚 Libraries
+
+* Highcharts `8.0.4 -> 8.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
