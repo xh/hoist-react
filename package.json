@@ -48,7 +48,7 @@
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.1.0",
     "golden-layout": "~1.5.9",
-    "highcharts": "~8.0.4",
+    "highcharts": "~8.1.0",
     "http-status-codes": "~1.4.0",
     "lodash": "~4.17.15",
     "lodash-inflection": "~1.5.0",
