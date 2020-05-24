@@ -936,7 +936,7 @@ export class GridModel {
     }
 
     parseSelModel(selModel) {
-        selModel = withDefault(selModel, XH.isMobile ? 'disabled' : 'single');
+        selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
 
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
@@ -985,7 +985,7 @@ export class GridModel {
 
 
     createChooserModel() {
-        return XH.isMobile ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
+        return XH.isMobileApp ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
     }
 
     defaultGroupSortFn = (a, b) => {

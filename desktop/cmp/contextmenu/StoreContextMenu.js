@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import copy from 'clipboard-copy';
@@ -59,6 +60,9 @@ export class StoreContextMenu {
     parseToken(token) {
         const {gridModel} = this;
 
+        // Export tokens are currently only supported on desktop devices.
+        if (!XH.isDesktop && token.startsWith('export')) return;
+
         if (token === 'autoSizeColumns') {
             console.warn('StoreContextMenu token `autoSizeColumns` has been deprecated. Use `autosizeColumns` instead.');
             token = 'autosizeColumns';
@@ -96,7 +100,7 @@ export class StoreContextMenu {
             case 'exportExcel':
                 return new RecordAction({
                     text: 'Export to Excel',
-                    icon: Icon.download(),
+                    icon: Icon.fileExcel(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'excelTable'})
@@ -104,7 +108,7 @@ export class StoreContextMenu {
             case 'exportCsv':
                 return new RecordAction({
                     text: 'Export to CSV',
-                    icon: Icon.download(),
+                    icon: Icon.file(),
                     hidden: !gridModel || !gridModel.enableExport,
                     disabled: !gridModel || !gridModel.store.count,
                     actionFn: () => gridModel.exportAsync({type: 'csv'})

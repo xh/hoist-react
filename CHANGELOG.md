@@ -4,27 +4,42 @@
 
 ### 🎁 New Features
 
-* Added new `StateProvider` API to support flexibly saving Component State to different locations
-such as preferences, LocalStorage, and Dashboards.  This has been enabled on `GridStateModel` via
-the new `provider` option.
-
-* Hoist's enhanced autosizing is now enabled on all grids by default.  See `GridModel`
-and `GridAutosizeService` for more details.
-
-* `DimensionChooser` now has the ability to persist its value and history seperately.
+* Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
+  `GridAutosizeService` for more details.
+* `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
+* `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
+* New method `get()` on `Record` provides an alternative option for checked data access.
+* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
+  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
+  specific styling.
+* Added new `PersistenceProvider` API to support flexibly saving Component State to different
+locations such as preferences, LocalStorage, and Dashboards.  This has been enabled on
+`GridStateModel` via the new `persistWith` option.
+
+### 💥 Breaking Changes
+
+* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
+  applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
+
+* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
+
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
+For this purpose, use `xh-standard` instead.
+
 
 ### 🐞 Bug Fixes
-* Fix to Average Aggregators when used with hierarchical data.
 
+* Fix to Average Aggregators when used with hierarchical data.
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
+### 📚 Libraries
 
-### ⚙️ Breaking Changes
-* `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all
-client applications. Improvements to agGrid's default rendering of empty space have made it
-obsolete.
-
+* @blueprintjs/core `3.26 -> 3.28`
+* @blueprintjs/datetime `3.16 -> 3.18`
+* codemirror `5.53 -> 5.54`
+* react-transition-group `4.3 -> 4.4`
+* Highcharts `8.0.4 -> 8.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
 
@@ -41,7 +56,6 @@ obsolete.
 
 * `Column.hideable` will now be respected by ag-grid column drag and drop
   [#1900](https://github.com/xh/hoist-react/issues/1900)
-
 * Fixed an issue where dragging a column would cause it to be sorted unintentionally.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.2.0...v33.3.0)
