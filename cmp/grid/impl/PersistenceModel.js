@@ -4,93 +4,77 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
-import {debounced} from '@xh/hoist/utils/js';
-import {cloneDeep, find, isUndefined, isEmpty, omit} from 'lodash';
-import {StateProvider} from '../../stateprovider';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {observable, action} from '@xh/hoist/mobx';
+import {cloneDeep, find, isUndefined, omit} from 'lodash';
+import {Persistor} from '@xh/hoist/persistence/impl/Persistor';
+import {PersistenceProvider} from '@xh/hoist/persistence';
 
 /**
- * Model for serializing/de-serializing saved grid state across user browsing sessions
- * and applying saved state when initialized by its parent `GridModel`.
- *
- * Applications can enable persistent grid state via providing a configuration for this
- * object to the GridModel's `stateModel` config.  Applications should not create
- * instances of this class directly.
+ * Model to manage persisting state from  GridModel.
  *
  * @private
  */
 @HoistModel
-export class GridStateModel {
+export class PersistenceModel {
 
-    /**
-     * Version of grid state definitions currently supported by this model.
-     * Increment *only* when we need to abandon all existing grid state to ensure compatibility
-     * with a new serialization or approach.
-     */
+    // Version of state definitions currently supported by this model.  Increment to abandon state.
     VERSION = 1;
-
-    /** @member {GridModel} */
     gridModel;
-    /** @member {StateProvider} */
-    provider;
 
+    @managed
+    persistor;
+
+    @observable.ref
     state = {};
 
-    /**
-     * @param {Object} c - GridStateModel configuration.
-     * @param {GridModel} c.gridModel - owning GridModel whose state is being managed by this object.
-     * @param {(StateProvider|Object)} c.provider - provider for storing and loading state.
-     *     May be provided as a StateProvider, or a config object for one. See StateProvider.create.
-     * @param {boolean} [c.trackColumns] - true to save state of columns,
-     *      including visibility, ordering and pixel widths.
-     * @param {boolean} [c.trackSort] - true to save sorting.
-     * @param {boolean} [c.trackGrouping] - true to save column grouping.
-     */
-    constructor({
+    @action
+    hydrateState(state) {
+        this.state = state?.version === this.VERSION ? cloneDeep(state) : {version: this.VERSION};
+    }
+
+    constructor(
         gridModel,
-        provider,
-        trackColumns = true,
-        trackSort = true,
-        trackGrouping = true
-    }) {
+        persistWith,
+        {
+            path = 'gridModel',
+            persistColumns = true,
+            persistGrouping = true,
+            persistSort = true
+        } = {}
+    ) {
         this.gridModel = gridModel;
-        this.provider = provider instanceof StateProvider ? provider : StateProvider.create(provider);
-        this.trackColumns = trackColumns;
-        this.trackGrouping = trackGrouping;
-        this.trackSort = trackSort;
+        this.state = {version: this.VERSION};
 
-        const state = this.provider.readState();
-        this.state = state?.version === this.VERSION ? cloneDeep(state) : {};
+        this.provider = persistWith.isPersistenceProvider ? persistWith : PersistenceProvider.create(persistWith);
 
-        if (this.trackColumns) {
+        this.persistor = new Persistor({
+            pvd: this.provider,
+            pvdPath: path,
+            obj: this,
+            objPath: 'state'
+        });
+
+        if (persistColumns) {
             this.updateGridColumns();
             this.addReaction(this.columnReaction());
         }
 
-        if (this.trackGrouping) {
+        if (persistGrouping) {
             this.updateGridGroupBy();
             this.addReaction(this.groupReaction());
         }
 
-        if (this.trackSort) {
+        if (persistSort) {
             this.updateGridSort();
             this.addReaction(this.sortReaction());
         }
     }
 
-    /**
-     * Clear all state saved for the linked GridModel.
-     * @see GridModel.restoreDefaults()
-     */
+    @action
     clear() {
-        this.state = {};
-        this.saveStateChange();
+        this.state = {version: this.VERSION};
     }
-
-    //----------------------
-    // Templates
-    //-----------------------
-
 
     //--------------------------
     // Columns
@@ -99,8 +83,7 @@ export class GridStateModel {
         return {
             track: () => this.gridModel.columnState,
             run: (columnState) => {
-                this.state.columns = this.cleanColumnState(columnState);
-                this.saveStateChange();
+                this.writeState({columns: this.cleanColumnState(columnState)});
             }
         };
     }
@@ -121,8 +104,7 @@ export class GridStateModel {
         return {
             track: () => gridModel.sortBy,
             run: () => {
-                this.state.sortBy = gridModel.sortBy.map(it => it.toString());
-                this.saveStateChange();
+                this.writeState({sortBy: gridModel.sortBy.map(it => it.toString())});
             }
         };
     }
@@ -139,8 +121,7 @@ export class GridStateModel {
         return {
             track: () => this.gridModel.groupBy,
             run: (groupBy) => {
-                this.state.groupBy = groupBy;
-                this.saveStateChange();
+                this.writeState({groupBy});
             }
         };
     }
@@ -180,15 +161,8 @@ export class GridStateModel {
         return ret;
     }
 
-    @debounced(500)
-    saveStateChange() {
-        const {state, provider} = this;
-
-        if (isEmpty(state)) {
-            provider.clearState();
-        } else {
-            state.version = this.VERSION;
-            provider.writeState(state);
-        }
+    @action
+    writeState(updates) {
+        this.state = {...this.state, ...updates};
     }
 }

@@ -15,7 +15,7 @@ export class EhCacheModel {
 
     @managed
     gridModel = new GridModel({
-        stateModel: 'xhEhCacheGrid',
+        persistWith: 'xhEhCacheGrid',
         enableColChooser: true,
         enableExport: true,
         store: new UrlStore({

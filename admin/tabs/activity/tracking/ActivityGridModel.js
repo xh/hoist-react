@@ -27,7 +27,7 @@ export class ActivityGridModel {
 
     @managed
     gridModel = new GridModel({
-        stateModel: 'xhActivityGrid',
+        persistWith: 'xhActivityGrid',
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},

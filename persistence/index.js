@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './StateProvider';
-export * from './LocalStorageProvider';
-export * from './PrefProvider';
-export * from './DashViewProvider';
-export * from './TransientProvider';
+export * from './provider/PersistenceProvider';
+export * from './provider/LocalStorageProvider';
+export * from './provider/PrefProvider';
+export * from './provider/DashViewProvider';

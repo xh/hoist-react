@@ -15,7 +15,7 @@ export const feedbackPanel = hoistCmp.factory(
 );
 
 const modelSpec = {
-    stateModel: 'xhFeedbackGrid',
+    persistWith: 'xhFeedbackGrid',
     enableColChooser: true,
     enableExport: true,
     emptyText: 'No feedback reported...',

@@ -16,6 +16,9 @@
 * Added new `PersistenceProvider` API to support flexibly saving Component State to different
 locations such as preferences, LocalStorage, and Dashboards.  This has been enabled on
 `GridStateModel` via the new `persistWith` option.
+* Added new `Persistence` API to support flexibly saving Component State to different locations
+such as preferences, LocalStorage, and Dashboards.  This has been enabled on `GridModel` via the new
+`persistWith` property.
 
 ### 💥 Breaking Changes
 
@@ -255,7 +258,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 ### 🐞 Bug Fixes
 
 * Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
-* `GridStateModel` no longer saves/restores the width of non-resizable columns.
+* `PersistenceModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 * Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
   hooks would not be called. [#1808](https://github.com/xh/hoist-react/issues/1808)
@@ -2225,7 +2228,7 @@ intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid impl
   practice will be to insert an `emptyFlexCol` configuration as the last column in a grid - this
   will avoid messy-looking gaps in the layout while not requiring a data-driven column be flexed.
 * User customizations to column widths are now saved if the GridModel has been configured with a
-  `stateModel` key or model instance - see `GridStateModel`.
+  `stateModel` key or model instance - see `PersistenceModel`.
 * Columns accept a `renderer` config to format text or HTML-based output. This is a callback that is
   provided the value, the row-level record, and a metadata object with the column's `colId`. An
   `elementRenderer` config is also available for cells that should render a Component.
@@ -2543,7 +2546,7 @@ and ag-Grid upgrade, and more. 🚀
 * **Initial version of grid state** now available, supporting easy persistence of user grid column
   selections and sorting. The `GridModel` constructor now takes a `stateModel` argument, which in
   its simplest form is a string `xhStateId` used to persist grid state to local storage. See the
-  [`GridStateModel` class](https://github.com/xh/hoist-react/blob/develop/cmp/grid/GridStateModel.js)
+  [`PersistenceModel` class](https://github.com/xh/hoist-react/blob/develop/cmp/grid/GridStateModel.js)
   for implementation details. #331
 * The **Message API** has been improved and simplified, with new `XH.confirm()` and `XH.alert()`
   methods providing an easy way to show pop-up alerts without needing to manually construct or

@@ -5,26 +5,35 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {StateProvider} from './StateProvider';
+import {throwIf} from '../../utils/js';
+import {PersistenceProvider} from './PersistenceProvider';
 import {XH} from '@xh/hoist/core';
 
 /**
  * State Provider that uses the Hoist preference system for underlying storage.
  */
-export class PrefProvider extends StateProvider {
+export class PrefProvider extends PersistenceProvider {
+
+    key;
+
+    constructor({key}) {
+        throwIf(!key, `Persistence Provider requires a 'key'.`);
+        super();
+        this.key = key;
+    }
 
     //----------------
     // Implementation
     //----------------
-    readDataImpl() {
-        return XH.getPref(this.key);
+    readRaw() {
+        return XH.prefService.get(this.key);
     }
 
-    writeDataImpl(data) {
-        XH.setPref(this.key, data);
+    writeRaw(data) {
+        XH.prefService.set(this.key, data);
     }
 
-    clearDataImpl() {
+    clearRaw() {
         XH.prefService.unset(this.key);
     }
 }
