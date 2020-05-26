@@ -1,6 +1,6 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - Unreleased
+## v34.0.0 - 2020-05-26
 
 ### 🎁 New Features
 
@@ -37,7 +37,7 @@ For this purpose, use `xh-standard` instead.
 * react-transition-group `4.3 -> 4.4`
 * Highcharts `8.0.4 -> 8.1.0`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 
 
 ## v33.3.0 - 2020-05-08
