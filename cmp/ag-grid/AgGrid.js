@@ -39,7 +39,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     render({model, key, className, onGridReady, ...props}) {
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
-            {darkTheme, isMobileApp} = XH;
+            {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
@@ -57,7 +57,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
-                !isMobileApp && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
+                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
             item: agGridReact({
@@ -100,7 +100,7 @@ class LocalModel {
 
     constructor(model, agGridProps) {
         this.model = model;
-        this.rowKeyNavSupport = !XH.isMobileApp ? new RowKeyNavSupport(model) :  null;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) :  null;
 
         // Only update header height if was not explicitly provided to the component
         if (isNil(agGridProps.headerHeight)) {
