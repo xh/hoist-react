@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@ag-grid-community/react": "~23.0.3",
-    "@ag-grid-enterprise/all-modules": "~23.0.2",
+    "@ag-grid-community/react": "~23.1.1",
+    "@ag-grid-enterprise/all-modules": "~23.1.1",
     "@blueprintjs/core": "~3.28.0",
     "@blueprintjs/datetime": "~3.18.0",
     "@fortawesome/fontawesome-pro": "~5.13.0",

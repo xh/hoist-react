@@ -31,6 +31,8 @@ For this purpose, use `xh-standard` instead.
 
 ### 📚 Libraries
 
+* @ag-grid-community/react `23.0.3` > `23.1.1`
+* @ag-grid-enterprise/all-modules `23.0.2` > `23.1.1`
 * @blueprintjs/core `3.26 -> 3.28`
 * @blueprintjs/datetime `3.16 -> 3.18`
 * codemirror `5.53 -> 5.54`
