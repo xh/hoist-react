@@ -646,7 +646,7 @@ export class Store {
      *      False if the record is either not in the Store at all, or not filtered out.
      */
     recordIsFiltered(recOrId) {
-        const id = recOrId.isRecord ? recOrId.id : recOrId,
+        const id = recOrId.isRecord ? recOrId.id : recOrId;
         return !this.getById(id, true) && this.getById(id, false); 
     }
 
