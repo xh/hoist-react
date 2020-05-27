@@ -6,10 +6,10 @@
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel, useLocalModel} from '@xh/hoist/core';
-import {PanelModel} from '../../PanelModel';
+
 import './Dragger.scss';
 import {DraggerModel} from './DraggerModel';
-
+import {PanelModel} from '../../PanelModel';
 
 export const dragger = hoistCmp.factory({
     displayName: 'Dragger',
@@ -21,10 +21,17 @@ export const dragger = hoistCmp.factory({
 
         return div({
             className: `xh-resizable-dragger ${panelModel.side}`,
+            draggable: true,
+
+            // Mouse events
             onDrag: dragModel.onDrag,
             onDragStart: dragModel.onDragStart,
             onDragEnd: dragModel.onDragEnd,
-            draggable: true
+
+            // Touch events
+            onTouchMove: dragModel.onDrag,
+            onTouchStart: dragModel.onDragStart,
+            onTouchEnd: dragModel.onDragEnd
         });
     }
 });
