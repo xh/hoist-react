@@ -6,7 +6,7 @@
   "homepage": "https://xh.io",
   "bugs": "https://github.com/xh/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "scripts": {
     "lint": "yarn lint:js",
     "lint:all": "yarn lint:js && yarn lint:styles",
