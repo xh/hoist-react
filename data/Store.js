@@ -515,9 +515,12 @@ export class Store {
     }
 
     /**
-     * Set filter to be applied.
-     * @param {(StoreFilter|Object|function)} filter - StoreFilter to be applied to records, or
-     *      config or function to be used to create one.
+     * Apply a filter to this store. Records passing the filter will be exposed via its primary
+     * `records` collection and provided to consumers such as Grids. Records excluded by a filter
+     * remain available via the `allRecords` collection and methods such as `getById()`.
+     *
+     * @param {(StoreFilter|StoreFilterFunction|Object)} filter - StoreFilter to be applied to
+     *      Records, or a function or config to create one.
      */
     setFilter(filter) {
         if (isFunction(filter)) {
@@ -528,7 +531,28 @@ export class Store {
 
         this._filter = filter;
 
+        // If clearing filter, null out any local xhFilterText value, which may be used by a linked
+        // StoreFilterField to maintain its text value. (Note that SFFs can be bound to an
+        // app-specific model, so this does not guarantee they will be appropriately reset.)
+        if (!filter) this.setXhFilterText(null);
+
         this.rebuildFiltered();
+    }
+
+    /** Convenience method to remove any filter applied to this store. */
+    clearFilter() {
+        this.setFilter(null);
+    }
+
+    /**
+     *
+     * @param {(Record|string|number)} recOrId
+     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
+     *      False if the record is either not in the Store at all, or not filtered out.
+     */
+    recordIsFiltered(recOrId) {
+        const id = recOrId.isRecord ? recOrId.id : recOrId;
+        return !this.getById(id, true) && !!this.getById(id, false);
     }
 
     /**
@@ -637,17 +661,6 @@ export class Store {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
-    }
-
-    /**
-     *
-     * @param {(Record|string|number)} recOrId
-     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
-     *      False if the record is either not in the Store at all, or not filtered out.
-     */
-    recordIsFiltered(recOrId) {
-        const id = recOrId.isRecord ? recOrId.id : recOrId;
-        return !this.getById(id, true) && !!this.getById(id, false); 
     }
 
     /** Destroy this store, cleaning up any resources used. */
