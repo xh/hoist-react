@@ -647,7 +647,7 @@ export class Store {
      */
     recordIsFiltered(recOrId) {
         const id = recOrId.isRecord ? recOrId.id : recOrId;
-        return !this.getById(id, true) && this.getById(id, false); 
+        return !this.getById(id, true) && !!this.getById(id, false); 
     }
 
     /** Destroy this store, cleaning up any resources used. */
