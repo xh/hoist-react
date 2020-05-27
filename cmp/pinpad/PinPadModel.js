@@ -4,10 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import FastClick from '@onsenui/fastclick';
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
 @HoistModel
@@ -21,8 +19,6 @@ export class PinPadModel {
     @bindable subHeaderText;
     /** @member {string} */
     @bindable errorText;
-
-    ref = createObservableRef();
 
     @observable _enteredDigits;
     _deleteWasLast = false;
@@ -44,14 +40,6 @@ export class PinPadModel {
 
         this._pinLength = pinLength;
         this._enteredDigits = [];
-
-        // Todo: Use this on desktop?
-        this.addReaction({
-            track: () => this.ref.current,
-            run: (current) => {
-                if (current) FastClick.attach(current);
-            }
-        });
     }
 
     //-------------------

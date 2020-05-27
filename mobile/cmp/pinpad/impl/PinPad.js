@@ -4,33 +4,40 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {isNumber} from 'lodash';
+import FastClick from '@onsenui/fastclick';
 
 import './PinPad.scss';
+import {PinPadModel} from '@xh/hoist/cmp/pinpad';
 
 /**
  * Mobile Implementation of PinPad.
  *
  * @private
  */
-export function pinPadImpl({model}) {
-    return frame({
-        ref: model.ref,
-        item: vframe({
-            className: 'xh-pinpad__frame',
-            items: [
-                header(),
-                display(),
-                errorDisplay(),
-                keypad()
-            ]
-        })
-    });
-}
+export const pinPadImpl = hoistCmp.factory({
+    model: uses(PinPadModel),
+    render() {
+        const impl = useLocalModel(LocalModel);
+        return frame({
+            ref: impl.ref,
+            item: vframe({
+                className: 'xh-pinpad__frame',
+                items: [
+                    header(),
+                    display(),
+                    errorDisplay(),
+                    keypad()
+                ]
+            })
+        });
+    }
+});
 
 const header = hoistCmp.factory(
     ({model}) => div({
@@ -104,3 +111,16 @@ const keypadRow = hoistCmp.factory(
         )
     })
 );
+
+@HoistModel
+class LocalModel {
+    ref = createObservableRef();
+    constructor() {
+        this.addReaction({
+            track: () => this.ref.current,
+            run: (current) => {
+                if (current) FastClick.attach(current);
+            }
+        });
+    }
+}
