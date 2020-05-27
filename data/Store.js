@@ -533,13 +533,11 @@ export class Store {
 
     /**
      * Set whether the root should be loaded as summary data in loadData().
-     *
-     * @param {boolean}
+     * @param {boolean} loadRootAsSummary
      */
-    setLoadRootAsSummary(val) {
-        this._loadRootAsSummary = val;
+    setLoadRootAsSummary(loadRootAsSummary) {
+        this._loadRootAsSummary = loadRootAsSummary;
     }
-
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {
@@ -580,14 +578,16 @@ export class Store {
      * Get a record by ID, or null if no matching record found.
      *
      * @param {(string|number)} id
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - false (default) to return a Record with the given
+     *      ID even if an active filter is excluding it from the primary `records` collection.
+     *      True to restrict matches to this Store's post-filter Record collection only.
      * @return {Record}
      */
-    getById(id, fromFiltered = false) {
+    getById(id, respectFilter = false) {
         if (isNil(id)) return null;
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._current;
+        const rs = respectFilter ? this._filtered : this._current;
         return rs.getById(id);
     }
 
@@ -598,11 +598,11 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getChildrenById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -614,11 +614,11 @@ export class Store {
      * likely be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getDescendantsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
@@ -630,13 +630,26 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getAncestorsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
+    }
+
+    /**
+     *
+     * @param {(Record|string|number)} recOrId
+     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
+     *      False if the record is either not in the Store at all, or not filtered out.
+     */
+    recordIsFiltered(recOrId) {
+        const id = recOrId.isRecord ? recOrId.id : recOrId,
+            inStore = !!this.getById(id, false),
+            inFiltered = !!this.getById(id, true);
+        return inStore && !inFiltered;
     }
 
     /** Destroy this store, cleaning up any resources used. */
