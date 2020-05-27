@@ -2,7 +2,7 @@
 
 ## v35.0.0-SNAPSHOT - unreleased
 
-###  ⚖️ Licensing Change
+### ⚖️ Licensing Change
 
 As of this release, Hoist is [now licensed](LICENSE.md) under the popular and permissive
 [Apache 2.0 open source license](https://www.apache.org/licenses/LICENSE-2.0). Previously, Hoist was
@@ -25,18 +25,20 @@ wide variety of enterprise software projects. For any questions regarding this c
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
-* New method `Record.get()` provides an alternative option for checked data access.
+* New method `Record.get()` provides an alternative option accessing data by field name as a string.
 * Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop` to aid device specific handling. Also added
   corresponding `.xh-phone`, `.xh-tablet`, and `.xh-desktop` CSS classes to `body` to enable device
   specific styling.
+* The CSS classes `xh-standard` and `xh-mobile` are now available for differentiating styling
+  between the main "desktop" API for the site and the "mobile" API.
 
 ### 💥 Breaking Changes
 
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
 * `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
-* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app - CSS
-  selectors should look for `xh-standard` instead.
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app. For
+  this purpose, use `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 
