@@ -13,12 +13,17 @@ transparency and ease-of-use, and to clarify and emphasize the suitability of Ho
 wide variety of enterprise software projects. For any questions regarding this change, please
 [contact us](https://xh.io/contact/).
 
+### 🎁 New Features
+
+* `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+
 ### 💥 Breaking Changes
 
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
+
 
 ## v34.0.0 - 2020-05-26
 
