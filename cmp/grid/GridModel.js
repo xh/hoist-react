@@ -386,11 +386,20 @@ export class GridModel {
 
         if (!agApi) return;
 
-        const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
+        const indices = [];
+        records.forEach(record => {
+            const rowNode = agApi.getRowNode(record.id);
+            if (rowNode) indices.push(rowNode.rowIndex);
+        });
 
-        if (indices.length === 1) {
+        const indexCount = indices.length;
+        if (indexCount != records.length) {
+            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+        }
+
+        if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0]);
-        } else if (indices.length > 1) {
+        } else if (indexCount > 1) {
             agApi.ensureIndexVisible(max(indices));
             agApi.ensureIndexVisible(min(indices));
         }
