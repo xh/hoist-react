@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
 import FastClick from '@onsenui/fastclick';
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
@@ -22,7 +28,6 @@ export class PinPadModel {
     _deleteWasLast = false;
     _pinLength;
 
-
     /**
      * @param {Object} [c] - configuration object.
      * @param {number} [c.pinLength] - The length of the PIN to get from the user, default 4.
@@ -40,6 +45,7 @@ export class PinPadModel {
         this._pinLength = pinLength;
         this._enteredDigits = [];
 
+        // Todo: Use this on desktop?
         this.addReaction({
             track: () => this.ref.current,
             run: (current) => {

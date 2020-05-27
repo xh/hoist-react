@@ -4,6 +4,10 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 
+### 💥 Breaking Changes
+
+* `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for
+  use with both the desktop and mobile toolkits.
 
 ## v34.0.0 - 2020-05-26
 

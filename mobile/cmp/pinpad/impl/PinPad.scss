@@ -1,4 +1,4 @@
-.xh-auth-pinpad {
+.xh-pinpad {
   width: 100%;
   height: 100%;
 
@@ -79,7 +79,7 @@
 }
 
 @media (orientation: landscape) {
-  .xh-auth-pinpad {
+  .xh-pinpad {
     background: var(--xh-bg-alt);
 
     &__frame {

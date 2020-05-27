@@ -1,36 +1,40 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+import {hoistCmp} from '@xh/hoist/core';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {isNumber} from 'lodash';
+
 import './PinPad.scss';
-import {PinPadModel} from './PinPadModel';
 
 /**
- * A prompt used to get a PIN from the user. Uses a custom key pad and digit display.
+ * Desktop Implementation of PinPad.
+ *
+ * @private
  */
-export const pinPad = hoistCmp.factory({
-    model: uses(PinPadModel),
-    render({model}) {
-        return frame({
-            ref: model.ref,
-            className: 'xh-auth-pinpad',
-            item: vframe({
-                className: 'xh-auth-pinpad__frame',
-                items: [
-                    header(),
-                    display(),
-                    errorDisplay(),
-                    keypad()
-                ]
-            })
-        });
-    }
-});
+export function pinPadImpl({model}) {
+    return frame({
+        ref: model.ref,
+        item: vframe({
+            className: 'xh-pinpad__frame',
+            items: [
+                header(),
+                display(),
+                errorDisplay(),
+                keypad()
+            ]
+        })
+    });
+}
 
 const header = hoistCmp.factory(
     ({model}) => div({
-        className: 'xh-auth-pinpad__header',
+        className: 'xh-pinpad__header',
         items: [
             h1(model.headerText),
             p(model.subHeaderText)
@@ -40,7 +44,7 @@ const header = hoistCmp.factory(
 
 const display = hoistCmp.factory(
     ({model}) => hbox({
-        className: 'xh-auth-pinpad__display',
+        className: 'xh-pinpad__display',
         items: model.displayedDigits.map(
             (num, index) => digit({num, index})
         )
@@ -50,7 +54,7 @@ const display = hoistCmp.factory(
 const digit = hoistCmp.factory(
     ({num, index, model}) => {
         const isActive = index === model.activeIndex;
-        let className = 'xh-auth-pinpad__display__digit';
+        let className = 'xh-pinpad__display__digit';
         if (model.disabled) className += ' disabled';
         if (isActive) className += ' active';
         return span({
@@ -62,14 +66,14 @@ const digit = hoistCmp.factory(
 
 const errorDisplay = hoistCmp.factory(
     ({model}) => div({
-        className: 'xh-auth-pinpad__error',
+        className: 'xh-pinpad__error',
         item: p(model.errorText)
     })
 );
 
 const keypad = hoistCmp.factory(
     ({model}) => vbox({
-        className: 'xh-auth-pinpad__keyboard',
+        className: 'xh-pinpad__keyboard',
         items: [
             keypadRow({keys: [1, 2, 3]}),
             keypadRow({keys: [4, 5, 6]}),
@@ -85,10 +89,10 @@ const keypad = hoistCmp.factory(
 
 const keypadRow = hoistCmp.factory(
     ({keys, model}) => hbox({
-        className: 'xh-auth-pinpad__keyboard__row',
+        className: 'xh-pinpad__keyboard__row',
         items: keys.map(
             key => button({
-                className: 'xh-auth-pinpad__keyboard__key',
+                className: 'xh-pinpad__keyboard__key',
                 disabled: model.disabled,
                 ...(isNumber(key) ?
                     {
