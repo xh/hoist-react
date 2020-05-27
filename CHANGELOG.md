@@ -18,6 +18,8 @@
 * Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
   corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
   specific styling.
+* The css classes `xh-standard` and `xh-mobile` are now available for differentiating styling
+between the main "desktop" API for the site and the "mobile" API.
 
 ### 💥 Breaking Changes
 
@@ -25,9 +27,6 @@
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
 
 * `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
-
-* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
-For this purpose, use `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 
