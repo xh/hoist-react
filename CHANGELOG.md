@@ -2,6 +2,17 @@
 
 ## v35.0.0-SNAPSHOT - unreleased
 
+###  ⚖️ Licensing Change
+
+As of this release, Hoist is [now licensed](LICENSE.md) under the popular and permissive
+[Apache 2.0 open source license](https://www.apache.org/licenses/LICENSE-2.0). Previously, Hoist was
+"source available" via our public GitHub repository but still covered by a proprietary license.
+
+We are making this change to align Hoist's licensing with our ongoing commitment to openness,
+transparency and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a
+wide variety of enterprise software projects. For any questions regarding this change, please
+[contact us](https://xh.io/contact/).
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 
 
@@ -14,20 +25,18 @@
 * `DimensionChooser` now has the ability to persist its value and history separately.
 * Mobile `select` now supports `enableFilter` and `enableCreate`.
 * `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
-* New method `get()` on `Record` provides an alternative option for checked data access.
-* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
-  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
+* New method `Record.get()` provides an alternative option for checked data access.
+* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop` to aid device specific handling. Also added
+  corresponding `.xh-phone`, `.xh-tablet`, and `.xh-desktop` CSS classes to `body` to enable device
   specific styling.
 
 ### 💥 Breaking Changes
 
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
-
 * `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
-
-* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
-For this purpose, use `xh-standard` instead.
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app - CSS
+  selectors should look for `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 
