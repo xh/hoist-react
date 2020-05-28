@@ -8,7 +8,6 @@ import {HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clamp, throttle} from 'lodash';
 
-
 @HoistModel
 export class DraggerModel {
 
@@ -36,7 +35,8 @@ export class DraggerModel {
             'Resizable panel has no sibling panel against which to resize.'
         );
 
-        this.resizeState = {startX: e.clientX, startY: e.clientY};
+        const {clientX, clientY} = this.parseEventPositions(e);
+        this.resizeState = {startX: clientX, startY: clientY};
         this.startSize = panelModel.size;
         this.panelParent = panel.parentElement;
         panelModel.setIsResizing(true);
@@ -52,16 +52,17 @@ export class DraggerModel {
         this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
 
         e.stopPropagation();
-    }
+    };
 
     onDrag = (e) => {
         if (!this.resizeState) return;
-        if (!e.buttons || e.buttons.length == 0) {
+
+        if (!this.isValidMouseEvent(e) && !this.isValidTouchEvent(e)) {
             this.onDragEnd();
             return;
         }
 
-        const {screenX, screenY, clientX, clientY} = e;
+        const {screenX, screenY, clientX, clientY} = this.parseEventPositions(e);
         // Skip degenerate final drag event from dropping over non-target
         if (screenX === 0 && screenY === 0 && clientX === 0 && clientY === 0) {
             return;
@@ -82,7 +83,7 @@ export class DraggerModel {
         } else {
             this.moveDragBar();
         }
-    }
+    };
 
     onDragEnd = () => {
         const {panelModel} = this;
@@ -102,7 +103,7 @@ export class DraggerModel {
         this.panelEl = null;
         this.panelParent = null;
         this.dragBar = null;
-    }
+    };
 
     updateSize(throttle) {
         const {minSize} = this.panelModel,
@@ -174,5 +175,18 @@ export class DraggerModel {
         return panelModel.vertical ?
             sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0):
             sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
+    }
+
+    parseEventPositions(e) {
+        const {screenX, screenY, clientX, clientY} = this.isValidTouchEvent(e) ? e.touches[0] : e;
+        return {screenX, screenY, clientX, clientY};
+    }
+
+    isValidMouseEvent(e) {
+        return e.buttons && e.buttons !== 0;
+    }
+
+    isValidTouchEvent(e) {
+        return e.touches && e.touches.length > 0;
     }
 }

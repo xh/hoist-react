@@ -1,12 +1,12 @@
 {
   "name": "@xh/hoist",
-  "version": "34.0.0-SNAPSHOT",
+  "version": "35.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
   "bugs": "https://github.com/xh/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "scripts": {
     "lint": "yarn lint:js",
     "lint:all": "yarn lint:js && yarn lint:styles",

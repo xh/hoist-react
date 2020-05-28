@@ -71,15 +71,15 @@ export const columnHeader = hoistCmp.factory({
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
-        const {isMobileApp} = XH;
+        const {isDesktop} = XH;
         return div({
             className: classNames(props.className, extraClasses),
 
-            onClick:        !isMobileApp ? impl.onClick : null,
-            onDoubleClick:  !isMobileApp ? impl.onDoubleClick : null,
-            onMouseDown:    !isMobileApp ? impl.onMouseDown : null,
-            onTouchStart:   isMobileApp  ? impl.onTouchStart : null,
-            onTouchEnd:     isMobileApp  ? impl.onTouchEnd : null,
+            onClick:        isDesktop  ? impl.onClick : null,
+            onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
+            onMouseDown:    isDesktop  ? impl.onMouseDown : null,
+            onTouchStart:   !isDesktop ? impl.onTouchStart : null,
+            onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
                 span(headerName),
