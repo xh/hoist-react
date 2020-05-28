@@ -120,7 +120,7 @@ export class ActivityModel {
 
             data.forEach(it => {
                 it.id = `entry: ${it.id}`;
-                it.day = LocalDate.from(it.dateCreated); // Separate field for range aggregator
+                it.day = LocalDate.from(it.dateCreated);
             });
             await this.cube.loadDataAsync(data);
             this.loadGridAndChart();
