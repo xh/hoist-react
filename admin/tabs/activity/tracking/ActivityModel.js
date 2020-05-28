@@ -94,11 +94,11 @@ export class ActivityModel {
                 headerName: 'Avg Elapsed (ms)',
                 width: 130,
                 align: 'right',
-                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
+                renderer: numberRenderer({precision: 0})
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
             {field: 'data', width: 70},
-            {field: 'count', width: 70, align: 'right', renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})},
+            {field: 'count', width: 70, align: 'right'},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
     });
