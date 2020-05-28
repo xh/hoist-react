@@ -43,12 +43,6 @@ wide variety of enterprise software projects. For any questions regarding this c
 * The mobile `Select` component supports the `enableFilter` and `enableCreate` props.
 * `DashContainerModel` supports new `layoutLocked`, `contentLocked` and `renameLocked` modes.
 * `DimensionChooser` now has the ability to persist its value and history separately.
-* Mobile `select` now supports `enableFilter` and `enableCreate`.
-* `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
-* New method `get()` on `Record` provides an alternative option for checked data access.
-* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
-  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
-  specific styling.
 * Enhance Hoist Admin's Activity Tracking tab.
 * Enhance Hoist Admin's Client Error tab.
 
