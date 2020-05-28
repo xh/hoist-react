@@ -13,6 +13,7 @@ import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
+import {persist} from '@xh/hoist/persistence';
 
 /**
  * @private
@@ -22,7 +23,10 @@ import {LogDisplayModel} from './LogDisplayModel';
 export class LogViewerModel {
 
     // Form State/Display options
-    @bindable tail = true;
+    @persist
+    @bindable
+    tail;
+
     @bindable startLine = null;
     @bindable maxLines = 1000;
     @bindable pattern = '';
@@ -54,6 +58,8 @@ export class LogViewerModel {
     });
 
     constructor() {
+        this.setTail(false);
+
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());

@@ -8,3 +8,4 @@ export * from './provider/PersistenceProvider';
 export * from './provider/LocalStorageProvider';
 export * from './provider/PrefProvider';
 export * from './provider/DashViewProvider';
+export * from './Persist';
