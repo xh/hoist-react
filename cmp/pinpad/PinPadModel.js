@@ -7,8 +7,12 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import FastClick from '@onsenui/fastclick';
 import {times} from 'lodash';
+
+// We import Onsen's FastClick fork to improve performance on touch devices (i.e. tablet).
+// Note that this is *only* FastClick, and does not include Onsen components, and thus is
+// safe to use with the desktop kit.
+import FastClick from '@onsenui/fastclick';
 
 @HoistModel
 export class PinPadModel {
