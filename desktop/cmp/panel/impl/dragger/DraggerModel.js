@@ -83,6 +83,8 @@ export class DraggerModel {
         } else {
             this.moveDragBar();
         }
+
+        e.stopPropagation();
     };
 
     onDragEnd = () => {
