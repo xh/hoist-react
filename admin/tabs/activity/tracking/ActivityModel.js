@@ -13,6 +13,7 @@ import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
+import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
 @HoistModel
@@ -33,7 +34,7 @@ export class ActivityModel {
     dimChooserModel = new DimensionChooserModel({
         enableClear: true,
         dimensions: [
-            {label: 'Date', value: 'cubeDay'},
+            {label: 'Date', value: 'day'},
             {label: 'User', value: 'username'},
             {label: 'Message', value: 'msg'},
             {label: 'Category', value: 'category'},
@@ -41,13 +42,13 @@ export class ActivityModel {
             {label: 'Browser', value: 'browser'},
             {label: 'User Agent', value: 'userAgent'}
         ],
-        initialValue: ['cubeDay', 'username', 'msg']
+        initialValue: ['day', 'username', 'msg']
     });
 
     @managed
     cube = new Cube({
         fields: [
-            {name: 'cubeDay', isDimension: true},
+            {name: 'day', isDimension: true, aggregator: new RangeAggregator()},
             {name: 'username', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'msg', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'category', isDimension: true, aggregator: 'UNIQUE'},
@@ -55,13 +56,12 @@ export class ActivityModel {
             {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
 
-            {name: 'day', aggregator: 'RANGE'},
             {name: 'elapsed', aggregator: 'AVG'},
             {name: 'impersonating'},
             {name: 'dateCreated'},
             {name: 'data'},
-            {name: 'count', aggregator: 'CHILD_COUNT'},
-            {name: 'logCount', aggregator: 'LEAF_COUNT'} // TODO: Add to client errors as well
+            {name: 'count', aggregator: new ChildCountAggregator()},
+            {name: 'entryCount', aggregator: new LeafCountAggregator()} // Used for charting, not displayed in grid,
         ]
     })
 
@@ -75,7 +75,13 @@ export class ActivityModel {
         emptyText: 'No activity reported...',
         sortBy: 'dateCreated|desc',
         columns: [
-            {field: 'cubeLabel', headerName: 'Track', width: 160, isTreeColumn: true},
+            {
+                field: 'cubeLabel',
+                headerName: 'Track',
+                width: 160,
+                isTreeColumn: true,
+                renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
+            },
             {field: 'username', ...usernameCol},
             {field: 'day', width: 200, align: 'right', renderer: this.dateRangeRenderer},
             {field: 'category', width: 100},
@@ -113,10 +119,8 @@ export class ActivityModel {
             });
 
             data.forEach(it => {
-                it.id = `id: ${it.id}`;
-                it.cubeDay = fmtDate(it.dateCreated); // Need a pre-formatted string to use as a dimension/cubeLabel
-                it.day = it.dateCreated; // Separate field for range aggregator
-                it.count = 1;
+                it.id = `entry: ${it.id}`;
+                it.day = LocalDate.from(it.dateCreated); // Separate field for range aggregator
             });
             await this.cube.loadDataAsync(data);
             this.loadGridAndChart();
@@ -215,7 +219,7 @@ export class ActivityModel {
         return {
             track: () => this.dimChooserModel.value,
             run: (v) => {
-                this.ensureProperTimeseriesChartState(v[0] == 'cubeDay');
+                this.ensureProperTimeseriesChartState(v[0] == 'day');
                 this.loadGridAndChart();
             }
         };

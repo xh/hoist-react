@@ -11,8 +11,8 @@ import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {boolCheckCol, dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isFinite} from 'lodash';
 import {Cube} from '@xh/hoist/data';
+import {ChildCountAggregator, RangeAggregator} from '../aggregators';
 
 @HoistModel
 @LoadSupport
@@ -29,7 +29,7 @@ export class ClientErrorModel {
     dimChooserModel = new DimensionChooserModel({
         enableClear: true,
         dimensions: [
-            {label: 'Date', value: 'cubeDay'},
+            {label: 'Date', value: 'day'},
             {label: 'User', value: 'username'},
             {label: 'Alerted', value: 'userAlerted'},
             {label: 'Browser', value: 'browser'},
@@ -38,13 +38,13 @@ export class ClientErrorModel {
             {label: 'App Version', value: 'appVersion'},
             {label: 'Message', value: 'msg'}
         ],
-        initialValue: ['cubeDay', 'username', 'device']
+        initialValue: ['day', 'username', 'device']
     });
 
     @managed
     cube = new Cube({
         fields: [
-            {name: 'cubeDay', isDimension: true},
+            {name: 'day', isDimension: true, aggregator: new RangeAggregator()},
             {name: 'username', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'userAlerted', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
@@ -54,10 +54,9 @@ export class ClientErrorModel {
             {name: 'appEnvironment', isDimension: true, aggregator: 'UNIQUE'},
             {name: 'msg', isDimension: true, aggregator: 'UNIQUE'},
 
-            {name: 'day', aggregator: 'RANGE'},
             {name: 'dateCreated'},
             {name: 'error'},
-            {name: 'count', aggregator: 'CHILD_COUNT'}
+            {name: 'count', aggregator: new ChildCountAggregator()}
         ]
     })
 
@@ -71,7 +70,13 @@ export class ClientErrorModel {
         emptyText: 'No errors reported...',
         sortBy: 'dateCreated|desc',
         columns: [
-            {field: 'cubeLabel', headerName: 'Error', width: 160, isTreeColumn: true},
+            {
+                field: 'cubeLabel',
+                headerName: 'Error',
+                width: 160,
+                isTreeColumn: true,
+                renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
+            },
             {field: 'day', width: 200, align: 'right', renderer: this.dateRangeRenderer},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
@@ -104,15 +109,13 @@ export class ClientErrorModel {
             });
 
             data.forEach(it => {
-                it.id = `id: ${it.id}`;
-                it.cubeDay = fmtDate(it.dateCreated); // Need a pre-formatted string to use as a dimension/cubeLabel
-                it.day = it.dateCreated; // Separate field for range aggregator
-                it.count = 1;
+                it.id = `Entry: ${it.id}`;
+                it.day = LocalDate.from(it.dateCreated);
             });
             await this.cube.loadDataAsync(data);
             this.loadGrid();
         } catch (e) {
-            this.gridModel.loadData([]);
+            this.gridModel.clear();
             XH.handleException(e);
         }
     }
@@ -172,11 +175,11 @@ export class ClientErrorModel {
 
     dateRangeRenderer(range) {
         if (!range) return;
-        if (isFinite(range)) return fmtDate(range);
+        if (LocalDate.isLocalDate(range)) return fmtDate(range.date);
 
         const {min, max} = range,
-            minStr = fmtDate(min),
-            maxStr = fmtDate(max);
+            minStr = fmtDate(min.date),
+            maxStr = fmtDate(max.date);
 
         if (minStr === maxStr) return minStr;
         return `${minStr} – ${maxStr}`;

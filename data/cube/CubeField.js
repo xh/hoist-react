@@ -17,10 +17,7 @@ import {
     SumStrictAggregator,
     UniqueAggregator,
     AverageAggregator,
-    AverageStrictAggregator,
-    ChildCountAggregator,
-    LeafCountAggregator,
-    RangeAggregator
+    AverageStrictAggregator
 } from '@xh/hoist/data';
 
 /**
@@ -43,12 +40,9 @@ export class CubeField extends Field {
 
     static averageAggregator = new AverageAggregator();
     static averageStrictAggregator = new AverageStrictAggregator();
-    static childCountAggregator = new ChildCountAggregator();
-    static leafCountAggregator = new LeafCountAggregator();
     static maxAggregator = new MaxAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
-    static rangeAggregator = new RangeAggregator();
     static singleAggregator = new SingleAggregator();
     static sumAggregator = new SumAggregator();
     static sumStrictAggregator = new SumStrictAggregator();
@@ -98,12 +92,9 @@ export class CubeField extends Field {
             switch (val) {
                 case 'AVG':             return CubeField.averageAggregator;
                 case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
-                case 'CHILD_COUNT':     return CubeField.childCountAggregator;
-                case 'LEAF_COUNT':      return CubeField.leafCountAggregator;
                 case 'MAX':             return CubeField.maxAggregator;
                 case 'MIN':             return CubeField.minAggregator;
                 case 'NULL':            return CubeField.nullAggregator;
-                case 'RANGE':           return CubeField.rangeAggregator;
                 case 'SINGLE':          return CubeField.singleAggregator;
                 case 'SUM':             return CubeField.sumAggregator;
                 case 'SUM_STRICT':      return CubeField.sumStrictAggregator;

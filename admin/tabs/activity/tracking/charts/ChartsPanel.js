@@ -31,8 +31,8 @@ export const chartsPanel = hoistCmp.factory({
 const bbar = hoistCmp.factory(
     () => toolbar(
         switchInput({
-            label: 'All Logs',
-            bind: 'chartAllLogs'
+            label: 'All Entries',
+            bind: 'chartAllEntries'
         })
     )
 );

@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, reverse} from 'lodash';
+import {cloneDeep, sortBy} from 'lodash';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/cmp/chart';
@@ -19,7 +19,7 @@ export class ChartsModel {
 
     @bindable.ref data;
     @bindable.ref dimensions;
-    @bindable chartAllLogs = false;
+    @bindable chartAllEntries = false;
     @bindable enableTimeseries = true;
 
     @managed
@@ -33,7 +33,10 @@ export class ChartsModel {
     @managed
     timeSeriesChartModel = new ChartModel({
         highchartsConfig: {
-            chart: {type: 'line'},
+            chart: {
+                type: 'line',
+                animation: false
+            },
             plotOptions: {
                 line: {animation: false}
             },
@@ -71,7 +74,10 @@ export class ChartsModel {
     @managed
     categoryChartModel = new ChartModel({
         highchartsConfig: {
-            chart: {type: 'column'},
+            chart: {
+                type: 'column',
+                animation: false
+            },
             plotOptions: {
                 column: {animation: false}
             },
@@ -113,21 +119,22 @@ export class ChartsModel {
         device: 'Devices',
         browser: 'Browsers',
         userAgent: 'Agents',
-        cubeDay: 'Days'
+        day: 'Days'
     };
 
     get xAxisLabel() {
         const dim = this.dimensions[0],
             label = this.axisLabelMap[dim];
 
-        return this.chartAllLogs || !label ? 'Logs' : label;
+
+        return label || 'Entries';
     }
 
     get yAxisLabel() {
         const dim = this.dimensions[1],
             label = this.axisLabelMap[dim];
 
-        return this.chartAllLogs || !label ? 'Logs' : label;
+        return this.chartAllEntries || !label ? 'Entries' : label;
     }
 
     get colors() {
@@ -153,34 +160,42 @@ export class ChartsModel {
         chartModel.setSeries(series);
     }
 
-    getTimeseriesData() {
+    getCategoryData() {
         const {data} = this,
+            xAxisDim = this.dimensions[0],
+            chartData = sortBy(data, (it => xAxisDim == 'day' ? LocalDate.from(it.cubeLabel).timestamp : it.cubeLabel)),
             counts = [],
             elapsed = [];
 
-        data.forEach((it) => {
-            const count = this.chartAllLogs ? it.logCount : it.count;
+        chartData.forEach((it) => {
+            const count = this.chartAllEntries ? it.entryCount : it.count,
+                xAxisCat = xAxisDim == 'day' ? fmtDate(it.cubeLabel) : it.cubeLabel;
+            counts.push([xAxisCat, count]);
+            elapsed.push([xAxisCat, Math.round(it.elapsed)]);
+        });
+
+        return [
+            {name: `${this.yAxisLabel}`, data: counts, yAxis: 0},
+            {name: 'Elapsed', data: elapsed, yAxis: 1}
+        ];
+    }
+
+    getTimeseriesData() {
+        const {data} = this,
+            chartData = sortBy(data, (it => it.cubeLabel)),
+            counts = [],
+            elapsed = [];
+
+        chartData.forEach((it) => {
+            const count = this.chartAllEntries ? it.entryCount : it.count;
             counts.push([LocalDate.from(it.cubeLabel).timestamp, count]);
             elapsed.push([LocalDate.from(it.cubeLabel).timestamp, Math.round(it.elapsed)]);
         });
 
-        return [{name: this.yAxisLabel, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
-    }
-
-    getCategoryData() {
-        const {data} = this,
-            counts = [],
-            elapsed = [],
-            yAxisDim = this.dimensions[0];
-
-        data.forEach((it) => {
-            const count = this.chartAllLogs ? it.logCount : it.count;
-            counts.push([it[yAxisDim], count]);
-            elapsed.push([it[yAxisDim], Math.round(it.elapsed)]);
-        });
-
-        // The cube will provide the data from latest to earliest, this causes rendering issues with the bar chart
-        return [{name: `${this.yAxisLabel}`, data: reverse(counts), yAxis: 0}, {name: 'Elapsed', data: reverse(elapsed), yAxis: 1}];
+        return [
+            {name: this.yAxisLabel, data: counts, yAxis: 0},
+            {name: 'Elapsed', data: elapsed, yAxis: 1}
+        ];
     }
 
     ensureProperTimeseriesChartState(enable) {
@@ -193,7 +208,7 @@ export class ChartsModel {
 
     loadChartReaction() {
         return {
-            track: () => [this.chartAllLogs, this.data, this.tabContainerModel.activeTabId],
+            track: () => [this.chartAllEntries, this.data, this.tabContainerModel.activeTabId],
             run: () => this.loadChart()
         };
     }
@@ -211,16 +226,16 @@ export class ChartsModel {
             run: () => {
                 const {colors, categoryChartModel, timeSeriesChartModel} = this,
                     {featuredSeries, elapsedSeries} = colors,
-                    catHchartConf = cloneDeep(categoryChartModel.highchartsConfig),
-                    timeHchartConf = cloneDeep(timeSeriesChartModel.highchartsConfig);
+                    catChartConf = cloneDeep(categoryChartModel.highchartsConfig),
+                    timeChartConf = cloneDeep(timeSeriesChartModel.highchartsConfig);
 
-                catHchartConf.yAxis[0].title.style.color = featuredSeries;
-                catHchartConf.yAxis[1].title.style.color = elapsedSeries;
-                timeHchartConf.yAxis[0].title.style.color = featuredSeries;
-                timeHchartConf.yAxis[1].title.style.color = elapsedSeries;
+                catChartConf.yAxis[0].title.style.color = featuredSeries;
+                catChartConf.yAxis[1].title.style.color = elapsedSeries;
+                timeChartConf.yAxis[0].title.style.color = featuredSeries;
+                timeChartConf.yAxis[1].title.style.color = elapsedSeries;
 
-                categoryChartModel.setHighchartsConfig(catHchartConf);
-                timeSeriesChartModel.setHighchartsConfig(timeHchartConf);
+                categoryChartModel.setHighchartsConfig(catChartConf);
+                timeSeriesChartModel.setHighchartsConfig(timeChartConf);
             }
         };
     }
