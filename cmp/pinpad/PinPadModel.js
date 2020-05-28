@@ -1,8 +1,18 @@
-import FastClick from '@onsenui/fastclick';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
+
+// We import Onsen's FastClick fork to improve performance on touch devices (i.e. tablet).
+// Note that this is *only* FastClick, and does not include Onsen components, and thus is
+// safe to use with the desktop kit.
+import FastClick from '@onsenui/fastclick';
 
 @HoistModel
 export class PinPadModel {
@@ -21,7 +31,6 @@ export class PinPadModel {
     @observable _enteredDigits;
     _deleteWasLast = false;
     _pinLength;
-
 
     /**
      * @param {Object} [c] - configuration object.

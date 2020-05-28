@@ -54,8 +54,8 @@ export class TrackService {
             if (options.elapsed !== undefined)  params.elapsed = options.elapsed;
             if (options.severity)               params.severity = options.severity;
 
-            const consoleMsg =
-                ['[Track]', params.category, params.msg, params.elapsed]
+            const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
+                consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
                     .filter(it => it != null)
                     .join(' | ');
 

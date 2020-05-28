@@ -1,18 +1,22 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - Unreleased
+## v35.0.0-SNAPSHOT - unreleased
+
+### ⚖️ Licensing Change
+
+As of this release, Hoist is [now licensed](LICENSE.md) under the popular and permissive
+[Apache 2.0 open source license](https://www.apache.org/licenses/LICENSE-2.0). Previously, Hoist was
+"source available" via our public GitHub repository but still covered by a proprietary license.
+
+We are making this change to align Hoist's licensing with our ongoing commitment to openness,
+transparency and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a
+wide variety of enterprise software projects. For any questions regarding this change, please
+[contact us](https://xh.io/contact/).
 
 ### 🎁 New Features
 
-* Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
-  `GridAutosizeService` for more details.
-* `DimensionChooser` now has the ability to persist its value and history separately.
-* Mobile `select` now supports `enableFilter` and `enableCreate`.
-* `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
-* New method `get()` on `Record` provides an alternative option for checked data access.
-* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
-  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
-  specific styling.
+* `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+
 * Added new `PersistenceProvider` API to support flexibly saving Component State to different
 locations such as preferences, LocalStorage, and Dashboards.  This has been enabled on
 `GridStateModel` via the new `persistWith` option.
@@ -22,14 +26,40 @@ such as preferences, LocalStorage, and Dashboards.  This has been enabled on `Gr
 
 ### 💥 Breaking Changes
 
+* `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
+  with both standard and mobile toolkits.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
+
+
+## v34.0.0 - 2020-05-26
+
+### 🎁 New Features
+
+* Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
+  `GridAutosizeService` for more details.
+* New flags `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop` available for device-specific switching.
+  Corresponding `.xh-phone`, `.xh-tablet`, and `.xh-desktop` CSS classes are added to the document
+  `body`. These flags and classes are set based on the detected device, as per its user-agent.
+  * One of the two higher-level CSS classes `.xh-standard` or `.xh-mobile` will also be applied
+    based on an app's use of the primary (desktop-centric) components vs mobile components - as
+    declared by its `AppSpec.isMobileApp` - regardless of the detected device.
+  * These changes provide more natural support for use cases such as apps that are built with
+    standard components yet target/support tablet users.
+* New method `Record.get()` provides an alternative API for checked data access.
+* The mobile `Select` component supports the `enableFilter` and `enableCreate` props.
+* `DashContainerModel` supports new `layoutLocked`, `contentLocked` and `renameLocked` modes.
+* `DimensionChooser` now has the ability to persist its value and history separately.
+
+### 💥 Breaking Changes
+
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
-
-* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
-
-* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
-For this purpose, use `xh-standard` instead.
-
+* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`. All apps will need to
+  update their (required) use of this flag in the app specifications within their
+  `/client-app/src/apps` directory.
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app. For
+  this purpose, use `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 
@@ -44,7 +74,7 @@ For this purpose, use `xh-standard` instead.
 * react-transition-group `4.3 -> 4.4`
 * Highcharts `8.0.4 -> 8.1.0`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 
 
 ## v33.3.0 - 2020-05-08
@@ -258,7 +288,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 ### 🐞 Bug Fixes
 
 * Checkboxes in grid rows in Tiny sizing mode have been styled to fit correctly within the row.
-* `PersistenceModel` no longer saves/restores the width of non-resizable columns.
+* `GridStateModel` no longer saves/restores the width of non-resizable columns.
   [#1718](https://github.com/xh/hoist-react/issues/1718)
 * Fixed an issue with the hooks useOnResize and useOnVisibleChange. In certain conditions these
   hooks would not be called. [#1808](https://github.com/xh/hoist-react/issues/1808)
@@ -2228,7 +2258,7 @@ intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid impl
   practice will be to insert an `emptyFlexCol` configuration as the last column in a grid - this
   will avoid messy-looking gaps in the layout while not requiring a data-driven column be flexed.
 * User customizations to column widths are now saved if the GridModel has been configured with a
-  `stateModel` key or model instance - see `PersistenceModel`.
+  `stateModel` key or model instance - see `GridStateModel`.
 * Columns accept a `renderer` config to format text or HTML-based output. This is a callback that is
   provided the value, the row-level record, and a metadata object with the column's `colId`. An
   `elementRenderer` config is also available for cells that should render a Component.
@@ -2546,7 +2576,7 @@ and ag-Grid upgrade, and more. 🚀
 * **Initial version of grid state** now available, supporting easy persistence of user grid column
   selections and sorting. The `GridModel` constructor now takes a `stateModel` argument, which in
   its simplest form is a string `xhStateId` used to persist grid state to local storage. See the
-  [`PersistenceModel` class](https://github.com/xh/hoist-react/blob/develop/cmp/grid/GridStateModel.js)
+  [`GridStateModel` class](https://github.com/xh/hoist-react/blob/develop/cmp/grid/GridStateModel.js)
   for implementation details. #331
 * The **Message API** has been improved and simplified, with new `XH.confirm()` and `XH.alert()`
   methods providing an easy way to show pop-up alerts without needing to manually construct or

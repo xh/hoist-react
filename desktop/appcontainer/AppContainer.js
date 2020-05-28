@@ -15,6 +15,7 @@ import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
+import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
@@ -35,6 +36,7 @@ installDesktopImpls({
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel,
     StoreContextMenu
