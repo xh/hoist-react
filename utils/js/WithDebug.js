@@ -86,10 +86,10 @@ function writeLog(msg, source) {
 
 function logCompletion(start, msg, source) {
     const elapsed = Date.now() - start;
-    writeLog(`${msg} | completed | ${elapsed}`, source);
+    writeLog(`${msg} | completed | ${elapsed}ms`, source);
 }
 
 function logException(start, msg, source, e)  {
     const elapsed = Date.now() - start;
-    writeLog(`${msg} | failed - ${e.message || e.name || 'Unknown error'} | ${elapsed}`, source);
+    writeLog(`${msg} | failed - ${e.message || e.name || 'Unknown error'} | ${elapsed}ms`, source);
 }

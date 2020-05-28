@@ -85,7 +85,9 @@ export function LoadSupport(C) {
 
                         if (C.isRefreshContextModel) return;
 
-                        const msg = `[${C.name}] | ${exception ? 'failed' : 'completed'} | ${getLoadTypeFromSpec(loadSpec)} | ${this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime()}`;
+                        const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
+                            msg = `[${C.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
+
                         if (exception) {
                             if (exception.isRoutine) {
                                 console.debug(msg, exception);
