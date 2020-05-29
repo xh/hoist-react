@@ -119,6 +119,13 @@ export class CodeInput extends HoistInput {
                 }
             }
         });
+
+        this.addReaction({
+            track: () => this.props.disabled,
+            run: (disable) => {
+                this.editor.setOption('readOnly', disable);
+            }
+        });
     }
 
     editor = null;
