@@ -4,12 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
 
 @HoistModel
 export class DraggerModel {
+
+    ref = createObservableRef();
 
     panelModel;
     resizeState = null;
@@ -23,6 +26,21 @@ export class DraggerModel {
     constructor(panelModel) {
         this.panelModel = panelModel;
         this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
+
+        // We use a ref to allow us to add listeners directly to the element. This allows
+        // us to mark events as non-passive, which in turn allows us to preventDefault()
+        this.addReaction({
+            track: () => this.ref.current,
+            run: (current) => {
+                if (current) this.addListeners(current);
+            }
+        });
+    }
+
+    addListeners(el) {
+        el.addEventListener(XH.isDesktop ? 'dragstart' : 'touchstart', e => this.onDragStart(e));
+        el.addEventListener(XH.isDesktop ? 'drag' : 'touchmove', e => this.onDrag(e), {passive: false});
+        el.addEventListener(XH.isDesktop ? 'dragend' : 'touchend', () => this.onDragEnd());
     }
 
     onDragStart = (e) => {
@@ -84,6 +102,7 @@ export class DraggerModel {
             this.moveDragBar();
         }
 
+        e.preventDefault();
         e.stopPropagation();
     };
 
