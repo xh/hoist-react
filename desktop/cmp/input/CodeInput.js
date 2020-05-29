@@ -43,6 +43,7 @@ import './CodeInput.scss';
 export class CodeInput extends HoistInput {
 
     @bindable fullScreen = false;
+    editor
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -195,7 +196,7 @@ export class CodeInput extends HoistInput {
     //------------------
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
-            this.editor = this.createCodeEditor(textAreaComp);
+            this.editor = this.createCodeEditor(textAreaComp); // Called by React
         }
     };
 
@@ -215,6 +216,8 @@ export class CodeInput extends HoistInput {
             editor.setSize(width, height);
         }
 
+        const val = this.tryPrettyPrint(editor.getValue());
+        editor.setValue(val);
         return editor;
     }
 
