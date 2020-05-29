@@ -223,8 +223,6 @@ export class CodeInput extends HoistInput {
             editor.setSize(width, height);
         }
 
-        const val = this.tryPrettyPrint(editor.getValue());
-        editor.setValue(val);
         return editor;
     }
 
