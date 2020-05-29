@@ -229,7 +229,7 @@ export class CodeInput extends HoistInput {
     }
 
     createDefaults() {
-        const {disabled, mode, linter, autoFocus} = this.props;
+        const {disabled, mode, linter, autoFocus} = this.props;  // TODO: None of these will get reset on prop change
         let gutters = [
             'CodeMirror-linenumbers',
             'CodeMirror-foldgutter'
