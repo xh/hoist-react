@@ -4,20 +4,23 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
+import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {button, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {activityDetail} from './ActivityDetail';
-import {ActivityGridModel} from './ActivityGridModel';
 
-export const activityGrid = hoistCmp.factory({
-    model: creates(ActivityGridModel),
+import {ActivityModel} from './ActivityModel';
+import {activityDetail} from './ActivityDetail';
+import {chartsPanel} from './charts/ChartsPanel';
+
+export const activityPanel = hoistCmp.factory({
+    model: creates(ActivityModel),
 
     render({model}) {
         return panel({
@@ -25,6 +28,7 @@ export const activityGrid = hoistCmp.factory({
             tbar: tbar(),
             items: [
                 grid({onRowDoubleClicked: (e) => model.openDetail(e.data)}),
+                chartsPanel(),
                 activityDetail()
             ]
         });
@@ -34,6 +38,7 @@ export const activityGrid = hoistCmp.factory({
 const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
+            dimensionChooser(),
             button({
                 icon: Icon.angleLeft(),
                 onClick: () => model.adjustDates('subtract')
@@ -58,7 +63,6 @@ const tbar = hoistCmp.factory(
             textInput({bind: 'browser', placeholder: 'Browser', ...textProps}),
             refreshButton(),
             filler(),
-            gridCountLabel({unit: 'log'}),
             exportButton()
         );
     }

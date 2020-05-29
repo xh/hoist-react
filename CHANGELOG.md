@@ -43,6 +43,8 @@ wide variety of enterprise software projects. For any questions regarding this c
 * The mobile `Select` component supports the `enableFilter` and `enableCreate` props.
 * `DashContainerModel` supports new `layoutLocked`, `contentLocked` and `renameLocked` modes.
 * `DimensionChooser` now has the ability to persist its value and history separately.
+* Enhance Hoist Admin's Activity Tracking tab.
+* Enhance Hoist Admin's Client Error tab.
 
 ### 💥 Breaking Changes
 
