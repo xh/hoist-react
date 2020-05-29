@@ -238,7 +238,7 @@ export class CodeInput extends HoistInput {
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
-            readOnly: disabled ? 'nocursor' : false,
+            readOnly: disabled,
             gutters,
             lint: linter ? {getAnnotations: linter} : false,
             autofocus: autoFocus
