@@ -196,7 +196,7 @@ export class CodeInput extends HoistInput {
     //------------------
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
-            this.editor = this.createCodeEditor(textAreaComp); // Called by React
+            this.editor = this.createCodeEditor(textAreaComp);
         }
     };
 
