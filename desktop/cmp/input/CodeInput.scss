@@ -46,9 +46,9 @@
 
   &__action-buttons {
     position: absolute !important;
-    top: 0;
+    bottom: 6px;
     right: 6px;
-    z-index: 3; // render above code-mirror content to enable click
+    z-index: 3; // render on top of code-mirror content to enable click
 
     .xh-button {
       padding: 0;
