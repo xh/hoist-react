@@ -20,18 +20,9 @@ export const dragger = hoistCmp.factory({
             dragModel = useLocalModel(() => new DraggerModel(panelModel));
 
         return div({
+            ref: dragModel.ref,
             className: `xh-resizable-dragger ${panelModel.side}`,
-            draggable: true,
-
-            // Mouse events
-            onDrag: dragModel.onDrag,
-            onDragStart: dragModel.onDragStart,
-            onDragEnd: dragModel.onDragEnd,
-
-            // Touch events
-            onTouchMove: dragModel.onDrag,
-            onTouchStart: dragModel.onDragStart,
-            onTouchEnd: dragModel.onDragEnd
+            draggable: true
         });
     }
 });
