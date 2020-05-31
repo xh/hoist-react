@@ -4,12 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
 
 @HoistModel
 export class DraggerModel {
+
+    ref = createObservableRef();
 
     panelModel;
     resizeState = null;
@@ -23,6 +26,27 @@ export class DraggerModel {
     constructor(panelModel) {
         this.panelModel = panelModel;
         this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
+
+        // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
+        // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
+        this.addReaction({
+            track: () => this.ref.current,
+            run: (current) => {
+                if (current) this.addListeners(current);
+            }
+        });
+    }
+
+    addListeners(el) {
+        if (XH.isDesktop) {
+            el.addEventListener('dragstart', this.onDragStart);
+            el.addEventListener('drag', this.onDrag);
+            el.addEventListener('dragend', this.onDragEnd);
+        } else {
+            el.addEventListener('touchstart', this.onDragStart);
+            el.addEventListener('touchmove', this.onDrag, {passive: false});
+            el.addEventListener('touchend', this.onDragEnd);
+        }
     }
 
     onDragStart = (e) => {
@@ -34,6 +58,8 @@ export class DraggerModel {
             !panel.nextElementSibling && !panel.previousElementSibling,
             'Resizable panel has no sibling panel against which to resize.'
         );
+
+        e.stopPropagation();
 
         const {clientX, clientY} = this.parseEventPositions(e);
         this.resizeState = {startX: clientX, startY: clientY};
@@ -50,12 +76,13 @@ export class DraggerModel {
         // We will use whichever is smaller - the calculated available size, or the configured max size
         const calcMaxSize = this.startSize + this.getSiblingAvailSize();
         this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
-
-        e.stopPropagation();
     };
 
     onDrag = (e) => {
         if (!this.resizeState) return;
+
+        e.preventDefault();
+        e.stopPropagation();
 
         if (!this.isValidMouseEvent(e) && !this.isValidTouchEvent(e)) {
             this.onDragEnd();
@@ -83,8 +110,6 @@ export class DraggerModel {
         } else {
             this.moveDragBar();
         }
-
-        e.stopPropagation();
     };
 
     onDragEnd = () => {
