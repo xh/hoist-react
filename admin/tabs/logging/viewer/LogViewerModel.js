@@ -22,14 +22,13 @@ import {persist} from '@xh/hoist/persistence';
 @LoadSupport
 export class LogViewerModel {
 
-    // Form State/Display options
-    @persist
-    @bindable
-    tail;
+    persistWith = {localStorageKey: 'logViewer'};
 
-    @bindable startLine = null;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
+    // Form State/Display options
+    @bindable @persist tail = false;
+    @bindable @persist startLine = null;
+    @bindable @persist maxLines = 1000;
+    @bindable @persist pattern = '';
 
     // Overall State
     @observable file = null;
@@ -45,6 +44,7 @@ export class LogViewerModel {
     @managed
     filesGridModel = new GridModel({
         enableExport: true,
+        persistWith: this.persistWith,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
             idSpec: 'filename',
@@ -58,8 +58,6 @@ export class LogViewerModel {
     });
 
     constructor() {
-        this.setTail(false);
-
         this.addReaction(this.syncSelectionReaction());
         this.addReaction(this.toggleTailReaction());
         this.addReaction(this.reloadReaction());
