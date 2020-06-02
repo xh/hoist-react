@@ -173,8 +173,13 @@ export class PersistenceModel {
 
     legacyState(provider) {
         if (this.VERSION === 1 && provider instanceof LocalStorageProvider) {
-            const data = XH.localStorageService.get('gridState.v1.' + provider.key);
-            return data;
+            const legacyKey = 'gridState.v1.' + provider.key,
+                data = XH.localStorageService.get(legacyKey);
+            if (data) {
+                provider.write(this.path, {...data, version: this.VERSION});
+                XH.localStorageService.remove(legacyKey);
+                return data;
+            }
         }
         return null;
     }
