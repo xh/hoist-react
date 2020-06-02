@@ -15,16 +15,24 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 🎁 New Features
 
+* Added a new Persistence API (`@hoist/cmp/persistence`) to support flexibly saving Component State
+ to different locations such as preferences, LocalStorage, and Dashboards.  The primary entry point
+ for this API is a new `@persist` annotation which can be added to any primitive observable property
+ to make it automatically synchronize with a `PersistenceProvider`.  This API can also be used to
+ persist state in `GridStateModel`, and `PanelModel` via the new `persistWith` option.
+
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
 
-* Added new `PersistenceProvider` API to support flexibly saving Component State to different
-locations such as preferences, LocalStorage, and Dashboards.  This has been enabled on
-`GridStateModel` via the new `persistWith` option.
-* Added new `Persistence` API to support flexibly saving Component State to different locations
-such as preferences, LocalStorage, and Dashboards.  This has been enabled on `GridModel` via the new
-`persistWith` property.
-
 ### 💥 Breaking Changes
+
+* The option `PanelModel.prefName` has been removed in favor of `persistWith`.  Existing user
+state will be transferred to the new format, assuming a `PersistenceProvider` of type 'pref'
+referring to the same preference is used.
+
+* The option `GridModel.stateModel` has been removed in favor of `persistWith`.  Existing user
+state will be transferred to the new format, assuming a `PersistenceProvider` of type
+'localStorage' referring to the same key is used.  Options to customize what is persisted may be
+set via the new `GridModel.persistOptions`.
 
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
