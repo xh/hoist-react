@@ -14,8 +14,9 @@ import {
 } from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {PersistenceProvider, PrefProvider} from '@xh/hoist/persistence';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -76,7 +77,8 @@ export class PanelModel {
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [config.refreshMode] - How should collapsed content be refreshed?
      *      Ignored if collapsible is false.
-     * @param {?string} [config.prefName] - preference name to store sizing and collapsed state.
+     * @param {PersistenceProvider} [c.persistWith] - PersistenceProvider or a config to create one.
+     * @param {PanelModePersistOptions} [c.persistOptions] - options governing persistence.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
@@ -94,10 +96,12 @@ export class PanelModel {
         side,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        prefName = null,
+        persistWith = null,
+        persistOptions = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
-        showHeaderCollapseButton = true
+        showHeaderCollapseButton = true,
+        ...rest
     }) {
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
@@ -106,6 +110,8 @@ export class PanelModel {
             collapsible = false;
             resizable = false;
         }
+
+        apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
         if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
             console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
@@ -130,19 +136,26 @@ export class PanelModel {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
 
-        if (prefName && !XH.prefService.hasKey(prefName)) {
-            console.warn(`Unknown preference for storing state of Panel '${prefName}'`);
-            prefName = null;
-        }
-        this.prefName = prefName;
+        // 1) Read state from and attach to provider -- fail gently
+        if (persistWith) {
+            try {
+                const provider = PersistenceProvider.getOrCreate(persistWith),
+                    path = this.persistOptions?.path ?? 'panelModel';
 
-        // Set observable state
-        const initial = prefName ? XH.getPref(prefName) : {};
-        this.setSize(withDefault(initial.size, defaultSize));
-        this.setCollapsed(withDefault(initial.collapsed, defaultCollapsed));
+                const state = provider.read(path) ?? this.legacyState(provider, path);
+                this.setSize(state?.size ?? defaultSize);
+                this.setCollapsed(state?.collapsed ?? defaultCollapsed);
 
-        if (prefName) {
-            this.addReaction(this.prefReaction());
+                this.addReaction({
+                    track: () => [this.collapsed, this.size],
+                    run: ([collapsed, size]) => provider.write(path, {collapsed, size}),
+                    debounce: 500
+                });
+            } catch (e) {
+                console.error(e);
+                this.setSize(defaultSize);
+                this.setCollapsed(defaultCollapsed);
+            }
         }
     }
 
@@ -199,12 +212,17 @@ export class PanelModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    prefReaction() {
-        return {
-            track: () => [this.collapsed, this.size],
-            run: ([collapsed, size]) => XH.setPref(this.prefName, {collapsed, size}),
-            debounce: 500 // prefs are already batched, keep tight.
-        };
+    legacyState(provider, path) {
+        if (provider instanceof PrefProvider) {
+            const data = XH.getPref(provider.key);
+            if (data && !isNil(data.collapsed) && !isNil(data.size)) {
+                provider.write(path, data);
+                provider.clear('collapsed');
+                provider.clear('size');
+                return data;
+            }
+        }
+        return null;
     }
 
     dispatchResize() {
@@ -212,3 +230,9 @@ export class PanelModel {
         start(() => window.dispatchEvent(new Event('resize')));
     }
 }
+
+
+/**
+ * @typedef {Object} PanelModelPersistOptions
+ * @property {string} [path] - path or key in src where state should be stored (default 'panel')
+ */

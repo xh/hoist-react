@@ -22,7 +22,7 @@ export const chartsPanel = hoistCmp.factory({
             model: {
                 defaultSize: 500,
                 side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
+                persistWith: {prefKey: 'xhAdminActivityChartSize'}
             }
         });
     }

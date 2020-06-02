@@ -43,7 +43,7 @@ import {
     pull,
     sortBy
 } from 'lodash';
-import {PersistenceModel} from './impl/PersistenceModel';
+import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
 /**
@@ -160,7 +160,7 @@ export class GridModel {
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
      * @param {PersistenceProvider} [c.persistWith] - PersistenceProvider or a config to create one.
-     * @param {GridPersistenceOptions} [c.persistOptions] - options governing persistence.
+     * @param {GridModelPersistOptions} [c.persistOptions] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -985,7 +985,7 @@ export class GridModel {
 
     parsePersistenceModel(persistWith, persistOptions) {
         warnIf(persistOptions && !persistWith, "Must specify 'persistWith' if you wish to persist this grid.");
-        return persistWith ? new PersistenceModel(this, persistWith, persistOptions) : null;
+        return persistWith ? new GridPersistenceModel(this, persistWith, persistOptions) : null;
     }
 
     parseExperimental(experimental) {
@@ -1093,7 +1093,7 @@ const xhEmptyFlexCol =  {
 
 
 /**
- * @typedef {Object} GridPersistenceOptions
+ * @typedef {Object} GridModelPersistOptions
  * @property {string} [path] - path or key in src where state should be stored (default 'gridModel')
  * @property {boolean} [persistColumns] - true to include column information (default true)
  * @property {boolean} [persistGrouping] - true to include grouping information (default true)

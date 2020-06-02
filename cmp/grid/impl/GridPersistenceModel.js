@@ -15,7 +15,7 @@ import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persistence';
  * @private
  */
 @HoistModel
-export class PersistenceModel {
+export class GridPersistenceModel {
 
     VERSION = 1;  // Increment to abandon state.
     gridModel;
@@ -47,7 +47,8 @@ export class PersistenceModel {
             );
             this.addReaction({
                 track: () => this.state,
-                run: (state) => provider.write(path, state)
+                run: (state) => provider.write(path, state),
+                debounce: 500
             });
         } catch (e) {
             console.error(e);
