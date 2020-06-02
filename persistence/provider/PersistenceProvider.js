@@ -7,10 +7,10 @@
 
 import {XH, ReactiveSupport} from '@xh/hoist/core';
 import {LocalStorageProvider, PrefProvider, DashViewProvider} from '../index';
-import {cloneDeep, get, set, unset, isString} from 'lodash';
+import {cloneDeep, get, set, unset} from 'lodash';
 
 /**
- * Object that can be used by a component to store/restore state for from a
+ * Object that can be used by a component to store/restore state from a
  * given persistent location.  This is an abstract class.
  *
  * This object is designed to be called very rapidly, and should immediately incorporate any
@@ -25,27 +25,38 @@ export class PersistenceProvider {
     /**
      * Construct an instance of this class.
      *
-     * @param {Object|string} spec - if specified as a string, the string will be assumed to
-     *      be the key for a provider of type 'localStorage'.
-     * @property {string} spec.type - one of 'pref'|'localStorage'|'dashView'
+     * @param {Object} spec
+     * @property {string} [spec.type] - one of 'pref'|'localStorage'|'dashView'.
+     *      If not provided, this method will autodetect the type based on the
+     *      presence of a 'prefKey' argument (type = 'pref') or 'localStorageKey'
+     *      argument (type = 'localStorage').
      * @property {*} spec.rest - Additional provider specific arguments. See Provider
-     *      constructor for more details.
+     *      constructors for more details.
      * @return {PersistenceProvider}
      */
-    static create(spec) {
-        if (isString(spec)) {
-            spec = {type: 'localStorage', key: spec};
-        }
-        switch (spec.type) {
+    static create({type, ...rest}) {
+        if (!type && rest.prefKey) type = 'pref';
+        if (!type && rest.localStorageKey) type = 'localStorage';
+
+        switch (type) {
             case 'pref':
-                return new PrefProvider(spec);
+                return new PrefProvider(rest);
             case 'localStorage':
-                return new LocalStorageProvider(spec);
+                return new LocalStorageProvider(rest);
             case `dashView`:
-                return new DashViewProvider(spec);
+                return new DashViewProvider(rest);
             default:
-                throw XH.exception(`Unknown Persistence Provider for type: ${spec.type}`);
+                throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
         }
+    }
+    /**
+     * Return an instance of this class, creating if needed
+     *
+     * @param {Object} spec - PersistenceProvider, or configuration for one.
+     * @return {PersistenceProvider}
+     */
+    static getOrCreate(spec) {
+        return spec.isPersistenceProvider ? spec : this.create(spec);
     }
 
     /**

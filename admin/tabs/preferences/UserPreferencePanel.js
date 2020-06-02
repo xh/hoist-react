@@ -15,7 +15,7 @@ export const userPreferencePanel = hoistCmp.factory(
 );
 
 const modelSpec = {
-    persistWith: 'xhUserPreferenceGrid',
+    persistWith: {localStorageKey: 'xhUserPreferenceGrid'},
     enableColChooser: true,
     enableExport: true,
     store: {

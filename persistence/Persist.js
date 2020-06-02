@@ -53,13 +53,15 @@ export function persistWith(providerSpec) {
 function createInitializer(target, property, descriptor, providerSpec) {
     const codeValue = descriptor.initializer;
     return function() {
-        let provider, providerData;
+        let providerState;
 
         // Read from and attach to Provider.
         // Fail gently -- initialization exceptions causes stack overflows for MobX.
         try {
-            provider = providerSpec ? getProvider(providerSpec) : getDefaultProvider(this);
-            providerData = cloneDeep(provider.read(property));
+            const provider = providerSpec ?
+                PersistenceProvider.getOrCreate(providerSpec) :
+                getDefaultProvider(this);
+            providerState = cloneDeep(provider.read(property));
             this.addReaction({
                 track: () => this[property],
                 run: (data) => provider.write(property, data)
@@ -69,7 +71,7 @@ function createInitializer(target, property, descriptor, providerSpec) {
         }
 
         // 2) Return data from provider data *or* code, if provider not yet set or failed
-        return !isUndefined(providerData) ? providerData : codeValue?.call(this);
+        return !isUndefined(providerState) ? providerState : codeValue?.call(this);
     };
 }
 
@@ -77,13 +79,9 @@ function getDefaultProvider(obj) {
     if (!obj._xhPersistWith) {
         let {persistWith} = obj;
         throwIf(!persistWith, "No Persistence Provider defined for object.  Set 'persistWith'.");
-        obj._xhPersistWith = getProvider(persistWith);
+        obj._xhPersistWith = PersistenceProvider.getOrCreate(persistWith);
     }
     return obj._xhPersistWith;
 }
 
-
-function getProvider(spec) {
-    return spec.isPersistenceProvider ? spec : PersistenceProvider.create(spec);
-}
 

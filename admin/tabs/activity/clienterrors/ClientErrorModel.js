@@ -63,7 +63,7 @@ export class ClientErrorModel {
     @managed
     gridModel = new GridModel({
         treeMode: true,
-        persistWith: 'xhClientErrorGrid',
+        persistWith: {localStorageKey: 'xhClientErrorGrid'},
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},

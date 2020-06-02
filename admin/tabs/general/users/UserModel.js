@@ -19,7 +19,7 @@ export class UserModel {
 
     @managed
     gridModel = new GridModel({
-        persistWith: 'xhUserGrid',
+        persistWith: {localStorageKey: 'xhUserGrid'},
         enableColChooser: true,
         enableExport: true,
         store: {idSpec: 'username'},

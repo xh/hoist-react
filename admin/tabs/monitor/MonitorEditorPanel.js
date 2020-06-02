@@ -14,7 +14,7 @@ export const monitorEditorPanel = hoistCmp.factory(
 );
 
 const modelSpec = {
-    persistWith: 'xhMonitorEditorGrid',
+    persistWith: {localStorageKey: 'xhMonitorEditorGrid'},
     enableColChooser: true,
     enableExport: true,
     store: {

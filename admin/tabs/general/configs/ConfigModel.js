@@ -24,7 +24,7 @@ export class ConfigModel {
 
     @managed
     gridModel = new RestGridModel({
-        persistWith: 'xhConfigGrid',
+        persistWith: {localStorageKey: 'xhConfigGrid'},
         enableColChooser: true,
         enableExport: true,
         store: new RestStore({

@@ -15,7 +15,7 @@ export const feedbackPanel = hoistCmp.factory(
 );
 
 const modelSpec = {
-    persistWith: 'xhFeedbackGrid',
+    persistWith: {localStorageKey: 'xhFeedbackGrid'},
     enableColChooser: true,
     enableExport: true,
     emptyText: 'No feedback reported...',

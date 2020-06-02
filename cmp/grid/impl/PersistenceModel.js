@@ -4,34 +4,25 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {cloneDeep, find, isUndefined, omit} from 'lodash';
-import {Persistor} from '@xh/hoist/persistence/impl/Persistor';
-import {PersistenceProvider} from '@xh/hoist/persistence';
+import {find, isUndefined, omit} from 'lodash';
+import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persistence';
 
 /**
- * Model to manage persisting state from  GridModel.
+ * Model to manage persisting state from GridModel.
  *
  * @private
  */
 @HoistModel
 export class PersistenceModel {
 
-    // Version of state definitions currently supported by this model.  Increment to abandon state.
-    VERSION = 1;
+    VERSION = 1;  // Increment to abandon state.
     gridModel;
-
-    @managed
-    persistor;
+    path;
 
     @observable.ref
-    state = {};
-
-    @action
-    hydrateState(state) {
-        this.state = state?.version === this.VERSION ? cloneDeep(state) : {version: this.VERSION};
-    }
+    state;
 
     constructor(
         gridModel,
@@ -44,17 +35,26 @@ export class PersistenceModel {
         } = {}
     ) {
         this.gridModel = gridModel;
-        this.state = {version: this.VERSION};
+        this.path = path;
 
-        this.provider = persistWith.isPersistenceProvider ? persistWith : PersistenceProvider.create(persistWith);
+        // 1) Read state from and attach to provider -- fail gently
+        try {
+            const provider = PersistenceProvider.getOrCreate(persistWith);
+            this.state = (
+                this.loadState(provider) ??
+                this.legacyState(provider) ??
+                {version: this.VERSION}
+            );
+            this.addReaction({
+                track: () => this.state,
+                run: (state) => provider.write(path, state)
+            });
+        } catch (e) {
+            console.error(e);
+            this.state = {version: this.VERSION};
+        }
 
-        this.persistor = new Persistor({
-            pvd: this.provider,
-            pvdPath: path,
-            obj: this,
-            objPath: 'state'
-        });
-
+        // 2) Bind self to grid, and populate grid.
         if (persistColumns) {
             this.updateGridColumns();
             this.addReaction(this.columnReaction());
@@ -164,5 +164,18 @@ export class PersistenceModel {
     @action
     writeState(updates) {
         this.state = {...this.state, ...updates};
+    }
+
+    loadState(provider) {
+        const ret = provider.read(this.path);
+        return ret?.version === this.VERSION ? ret : null;
+    }
+
+    legacyState(provider) {
+        if (this.VERSION === 1 && provider instanceof LocalStorageProvider) {
+            const data = XH.localStorageService.get('gridState.v1.' + provider.key);
+            return data;
+        }
+        return null;
     }
 }
