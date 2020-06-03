@@ -16,7 +16,7 @@ import idleImage from './IdlePanelImage.png';
 
 /**
  * Default panel to display when the app has suspended itself due to inactivity.
- * This display can be overridden by applications - {@see AppSpec.idlePanelClass}. *
+ * This display can be overridden by applications - {@see AppSpec.idlePanel}. *
  * @private
  */
 export const idlePanel = hoistCmp.factory({

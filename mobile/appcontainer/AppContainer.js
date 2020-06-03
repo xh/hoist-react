@@ -117,7 +117,7 @@ const appContainerView = hoistCmp.factory({
 const idlePanelHost = hoistCmp.factory({
     displayName: 'IdlePanel',
     render() {
-        const content = XH.appSpec.idlePanelClass ?? idlePanel;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
         return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

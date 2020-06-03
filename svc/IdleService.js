@@ -6,8 +6,7 @@
  */
 import {AppState, HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES} from '@xh/hoist/utils/datetime';
-import {isNil} from 'lodash';
+import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -37,7 +36,7 @@ export class IdleService {
     //------------------------
     startMonitoring() {
         const timeoutConfigs = XH.getConf('xhIdleTimeouts', {}),
-            timeout = !isNil(timeoutConfigs[XH.clientAppCode]) ? timeoutConfigs[XH.clientAppCode] * MINUTES : -1,
+            timeout = (timeoutConfigs[XH.clientAppCode] ?? -1) * MINUTES,
             configEnabled = timeout > 0,
             userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
@@ -56,8 +55,7 @@ export class IdleService {
 
     checkInactivityTimeout() {
         if (XH.appState === AppState.SUSPENDED) return;
-        const inactiveTime = Date.now() - XH.lastActivityMs;
-        if (inactiveTime > this.timeout) this.suspendApp();
+        if (olderThan(XH.lastActivityMs, this.timeout)) this.suspendApp();
     }
 
     suspendApp() {
