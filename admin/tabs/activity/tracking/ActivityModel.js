@@ -20,7 +20,7 @@ import {ChartsModel} from './charts/ChartsModel';
 @LoadSupport
 export class ActivityModel {
 
-    @bindable.ref startDate = LocalDate.today().subtract(7);
+    @bindable.ref startDate = LocalDate.today().subtract(1, 'months');
     @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
     @bindable username = '';
     @bindable msg = '';
@@ -42,7 +42,7 @@ export class ActivityModel {
             {label: 'Browser', value: 'browser'},
             {label: 'User Agent', value: 'userAgent'}
         ],
-        initialValue: ['day', 'username', 'msg']
+        initialValue: ['day', 'username', 'category', 'msg']
     });
 
     @managed
@@ -78,7 +78,7 @@ export class ActivityModel {
             {
                 field: 'cubeLabel',
                 headerName: 'Track',
-                width: 160,
+                width: 240,
                 isTreeColumn: true,
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },
@@ -91,13 +91,13 @@ export class ActivityModel {
             {field: 'impersonating', width: 140},
             {
                 field: 'elapsed',
-                headerName: 'Avg Elapsed (ms)',
+                headerName: 'Elapsed (ms)',
                 width: 130,
                 align: 'right',
                 renderer: numberRenderer({precision: 0})
             },
-            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120},
-            {field: 'data', width: 70},
+            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
+            {field: 'data', width: 70, autosizeMaxWidth: 400, hidden: true},
             {field: 'count', width: 70, align: 'right'},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]

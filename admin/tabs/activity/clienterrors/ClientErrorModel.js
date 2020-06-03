@@ -73,7 +73,7 @@ export class ClientErrorModel {
             {
                 field: 'cubeLabel',
                 headerName: 'Error',
-                width: 160,
+                width: 240,
                 isTreeColumn: true,
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },
@@ -86,7 +86,7 @@ export class ClientErrorModel {
             {field: 'appVersion', width: 130},
             {field: 'appEnvironment', headerName: 'Environment', width: 130},
             {field: 'msg', width: 130, hidden: true},
-            {field: 'error', flex: true, minWidth: 150, renderer: (e) => fmtSpan(e)},
+            {field: 'error', flex: true, minWidth: 150, autosizeMaxWidth: 400, renderer: (e) => fmtSpan(e)},
             {field: 'count', width: 70},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
