@@ -15,6 +15,7 @@ export class DashViewProvider extends PersistenceProvider {
 
     dashViewModel;
 
+    /** @param {DashViewModel} dashViewModel */
     constructor({dashViewModel}) {
         throwIf(!dashViewModel, `Persistence Provider requires a 'dashViewModel'.`);
         super();

@@ -20,8 +20,7 @@ import {PersistenceProvider, PrefProvider} from '@xh/hoist/persistence';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse functionality, including the option to persist such state into a Hoist
- * preference.
+ * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
 @HoistModel
 export class PanelModel {
@@ -63,26 +62,26 @@ export class PanelModel {
     }
 
     /**
-     * @param {Object} config
-     * @param {boolean} [config.resizable] - Can panel be resized?
-     * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
-     * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} config.defaultSize - Default size (in px) of the panel.
-     * @param {number} [config.minSize] - Minimum size (in px) to which the panel can be resized.
-     * @param {?number} [config.maxSize] - Maximum size (in px) to which the panel can be resized.
-     * @param {boolean} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} config.side - Side towards which the panel collapses or shrinks. This relates
+     * @param {Object} c - PanelModel configuration
+     * @param {boolean} [c.resizable] - Can panel be resized?
+     * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
+     * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
+     * @param {number} c.defaultSize - Default size (in px) of the panel.
+     * @param {number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
+     * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
+     * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
+     * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {RenderMode} [config.renderMode] - How should collapsed content be rendered?
+     * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
      *      Ignored if collapsible is false.
-     * @param {RefreshMode} [config.refreshMode] - How should collapsed content be refreshed?
+     * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
      *      Ignored if collapsible is false.
      * @param {PersistenceProvider} [c.persistWith] - PersistenceProvider or a config to create one.
-     * @param {PanelModePersistOptions} [c.persistOptions] - options governing persistence.
-     * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
-     * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
+     * @param {PanelModelPersistOptions} [c.persistOptions] - options governing persistence.
+     * @param {boolean} [c.showSplitter] - Should a splitter be rendered at the panel edge?
+     * @param {boolean} [c.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
-     * @param {boolean} [config.showHeaderCollapseButton] - Should a collapse button be added to the
+     * @param {boolean} [c.showHeaderCollapseButton] - Should a collapse button be added to the
      *      end of the panel header? Only applicable if the panel is collapsible.
      */
     constructor({
@@ -96,8 +95,8 @@ export class PanelModel {
         side,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        persistWith = null,
-        persistOptions = null,
+        persistWith,
+        persistOptions,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
@@ -234,5 +233,5 @@ export class PanelModel {
 
 /**
  * @typedef {Object} PanelModelPersistOptions
- * @property {string} [path] - path or key in src where state should be stored (default 'panel')
+ * @property {string} [path] - path or key in src where state should be stored (default 'panelModel')
  */

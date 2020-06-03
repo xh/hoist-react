@@ -11,7 +11,6 @@ import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persistence';
 
 /**
  * Model to manage persisting state from GridModel.
- *
  * @private
  */
 @HoistModel
@@ -84,7 +83,7 @@ export class GridPersistenceModel {
         return {
             track: () => this.gridModel.columnState,
             run: (columnState) => {
-                this.writeState({columns: this.cleanColumnState(columnState)});
+                this.patchState({columns: this.cleanColumnState(columnState)});
             }
         };
     }
@@ -104,8 +103,8 @@ export class GridPersistenceModel {
         const {gridModel} = this;
         return {
             track: () => gridModel.sortBy,
-            run: () => {
-                this.writeState({sortBy: gridModel.sortBy.map(it => it.toString())});
+            run: (sortBy) => {
+                this.patchState({sortBy: sortBy.map(it => it.toString())});
             }
         };
     }
@@ -122,7 +121,7 @@ export class GridPersistenceModel {
         return {
             track: () => this.gridModel.groupBy,
             run: (groupBy) => {
-                this.writeState({groupBy});
+                this.patchState({groupBy});
             }
         };
     }
@@ -163,7 +162,7 @@ export class GridPersistenceModel {
     }
 
     @action
-    writeState(updates) {
+    patchState(updates) {
         this.state = {...this.state, ...updates};
     }
 

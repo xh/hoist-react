@@ -11,15 +11,16 @@ import {throwIf} from '@xh/hoist/utils/js';
 
 
 /**
- * Decorator to make a class property persistent.
+ * Decorator to make a class property persistent, syncing its value via a configured
+ * `PersistenceProvider` to maintain and restore mutable values across browser sessions.
  *
- * This decorator may be used on an @observable or @bindable class property which is a primitive.
- * It will cause the observable to initialize from the classes default PersistenceProvider and will
- * subsequently write back any changes to the property to that Provider.  If the Provider has not
- * yet been populated with a value, or an error occurs, the code provided value will be used instead.
+ * This decorator may be used on any @observable or @bindable class property which is a primitive.
+ * It will initialize the observable's value from the class's default `PersistenceProvider` and will
+ * subsequently write back any changes to the property to that Provider. If the Provider has not
+ * yet been populated with a value, or an error occurs, it will use the value set in-code instead.
  *
  * This decorator should always be applied "before" the mobx decorators, i.e. closest to definition,
- * second in file line order.
+ * second in file line order: `@bindable @persist fooBarFlag = true`
  *
  * See also @persistWith, a higher-order version of this decorator that allows for a
  * configurable provider.
@@ -30,14 +31,10 @@ export function persist(target, property, descriptor) {
 }
 
 /**
- * Decorator to make a class property persistent.
+ * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
+ * Call this variant as a function to pass a specific PersistenceProvider as an argument.
  *
  * @param {PersistenceProvider} providerSpec
- *
- * Higher-order version of @persist, that is called as a function that accepts a specific
- * PersistenceProvider as an argument.
- *
- * See also @persist.
  */
 export function persistWith(providerSpec) {
     return function(target, property, descriptor) {
@@ -47,9 +44,9 @@ export function persistWith(providerSpec) {
 }
 
 
-//---------------
+//------------------------
 // Implementation
-//---------------
+//------------------------
 function createInitializer(target, property, descriptor, providerSpec) {
     const codeValue = descriptor.initializer;
     return function() {
@@ -78,7 +75,7 @@ function createInitializer(target, property, descriptor, providerSpec) {
 function getDefaultProvider(obj) {
     if (!obj._xhPersistWith) {
         let {persistWith} = obj;
-        throwIf(!persistWith, "No Persistence Provider defined for object.  Set 'persistWith'.");
+        throwIf(!persistWith, "No Persistence Provider defined for object - declare via a 'persistWith' field on this class.");
         obj._xhPersistWith = PersistenceProvider.getOrCreate(persistWith);
     }
     return obj._xhPersistWith;
