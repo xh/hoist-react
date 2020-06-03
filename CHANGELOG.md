@@ -19,6 +19,12 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 💥 Breaking Changes
 
+* The `xhIdleTimeoutMins` int config has been deprecated in favour of the new `xhIdleTimeouts` json
+  config, which requires a map of `clientAppCodes` to timeouts in minutes.
+* `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanelClass`, and now expects a full-screen
+  component.
+* `AppSpec.idleDetectionEnabled` has been removed. Idle detection will not be enabled until a value
+  for the `clientAppCode` has been added to the new `xhIdleTimeouts` config.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 

@@ -39,8 +39,7 @@ export class AppSpec {
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
      *      establish a connection and initiate a heartbeat..
-     * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
-     * @param {Class} [c.idleDialogClass] - Component or element factory used to indicate App has
+     * @param {Class} [c.idlePanelClass] - Component or element factory used to indicate App has
      *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
      *      called when user has acknowledged the suspension and wishes to reload the app and continue working.
      * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
@@ -57,8 +56,7 @@ export class AppSpec {
         checkAccess,
         trackAppLoad = true,
         webSocketsEnabled = false,
-        idleDetectionEnabled = false,
-        idleDialogClass = null,
+        idlePanelClass = null,
         loginMessage = null,
         lockoutMessage = null
     }) {
@@ -88,8 +86,7 @@ export class AppSpec {
         this.trackAppLoad = trackAppLoad;
 
         this.webSocketsEnabled = webSocketsEnabled;
-        this.idleDetectionEnabled = idleDetectionEnabled;
-        this.idleDialogClass = idleDialogClass;
+        this.idlePanelClass = idlePanelClass;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
         Object.freeze(this);

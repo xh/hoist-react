@@ -5,13 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-.xh-idle-dialog {
+.xh-idle-panel {
   position: absolute !important;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 99999 !important; // always show above other content, e.g. menus
   background: var(--xh-bg-alt);
 
   &.xh-panel .xh-panel-header {

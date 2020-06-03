@@ -147,6 +147,9 @@ class XHClass {
     /** State of app - see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
 
+    /** Milliseconds since last detected user activity */
+    lastActivityMs = Date.now();
+
     /**
      * Is Application running?
      * Observable shortcut for appState == AppState.RUNNING.
@@ -495,6 +498,8 @@ class XHClass {
             (isTablet ? 'xh-tablet' : null)
         ]));
 
+        this.createActivityListeners();
+
         try {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
@@ -684,6 +689,14 @@ class XHClass {
                         if (loginStarted) loginElapsed = now - loginStarted;
                 }
             }
+        });
+    }
+
+    createActivityListeners() {
+        ['keydown', 'mousemove', 'mousedown', 'scroll'].forEach(name => {
+            window.addEventListener(name, () => {
+                this.lastActivityMs = Date.now();
+            });
         });
     }
 
