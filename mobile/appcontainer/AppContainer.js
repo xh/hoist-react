@@ -19,7 +19,7 @@ import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idleDialog} from './IdleDialog';
+import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -80,8 +80,9 @@ function viewForState() {
         case S.ACCESS_DENIED:
             return lockoutPanel();
         case S.RUNNING:
-        case S.SUSPENDED:
             return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -108,17 +109,15 @@ const appContainerView = hoistCmp.factory({
             toastSource(),
             feedbackDialog(),
             optionsDialog(),
-            aboutDialog(),
-            idleDialogHost()
+            aboutDialog()
         );
     }
 });
 
-const idleDialogHost = hoistCmp.factory({
-    displayName: 'IdleDialog',
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
     render() {
-        if (XH.appState !== AppState.SUSPENDED) return null;
-        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
         return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

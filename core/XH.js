@@ -46,6 +46,7 @@ import {RouterModel} from './RouterModel';
 class XHClass {
 
     _initCalled = false;
+    _lastActivityMs = Date.now();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -146,6 +147,9 @@ class XHClass {
 
     /** State of app - see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
+
+    /** Milliseconds since last detected user activity */
+    get lastActivityMs() {return this._lastActivityMs}
 
     /**
      * Is Application running?
@@ -495,6 +499,8 @@ class XHClass {
             (isTablet ? 'xh-tablet' : null)
         ]));
 
+        this.createActivityListeners();
+
         try {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
@@ -684,6 +690,14 @@ class XHClass {
                         if (loginStarted) loginElapsed = now - loginStarted;
                 }
             }
+        });
+    }
+
+    createActivityListeners() {
+        ['keydown', 'mousemove', 'mousedown', 'scroll'].forEach(name => {
+            window.addEventListener(name, () => {
+                this._lastActivityMs = Date.now();
+            });
         });
     }
 

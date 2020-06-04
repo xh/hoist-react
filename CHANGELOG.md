@@ -19,6 +19,10 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 💥 Breaking Changes
 
+* `AppSpec.idleDetectionEnabled` has been removed. App-specific Idle detection is now enabled via
+ the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
+* `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanel`. If specified, it should be a
+full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 
