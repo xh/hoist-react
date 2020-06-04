@@ -15,7 +15,7 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the `xhIdleTimeouts` soft-config and the `xh.disableIdleDetection`
+ * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
  * user preference to determine if and when it should suspend the app.
  */
 @HoistService
@@ -35,13 +35,14 @@ export class IdleService {
     // Implementation
     //------------------------
     startMonitoring() {
-        const timeoutConfigs = XH.getConf('xhIdleTimeouts', {}),
-            timeout = (timeoutConfigs[XH.clientAppCode] ?? -1) * MINUTES,
-            configEnabled = timeout > 0,
+        const idleConfig = XH.getConf('xhIdleConfig', {}),
+            {appTimeouts = {}, timeout} = idleConfig,
+            configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
+            configEnabled = configTimeout > 0,
             userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
         if (configEnabled && userEnabled) {
-            this.timeout = timeout;
+            this.timeout = configTimeout;
             this.createTimer();
         }
     }

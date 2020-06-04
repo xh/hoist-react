@@ -7,6 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
+import {apiRemoved} from '../utils/js';
 
 /**
  * Object used to hold the specification for a client-side Hoist application.
@@ -39,9 +40,10 @@ export class AppSpec {
      *      app has loaded and fully initialized, including elapsed time of asset loading and init.
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
      *      establish a connection and initiate a heartbeat..
-     * @param {Class} [c.idlePanel] - Component or element factory used to indicate App has been suspended.
-     *      The component will receive a single prop -- onReactivate -- a callback called when the
-     *      user has acknowledged the suspension and wishes to reload the app and continue working.
+     * @param {(Class|function)} [c.idlePanel] - Optional custom Component to display when App has
+     *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
+     *      called when the user has acknowledged the suspension and wishes to reload the app and
+     *      continue working.  Specify as a React Component or an element factory.
      * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
@@ -58,7 +60,8 @@ export class AppSpec {
         webSocketsEnabled = false,
         idlePanel = null,
         loginMessage = null,
-        lockoutMessage = null
+        lockoutMessage = null,
+        ...rest
     }) {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
@@ -68,6 +71,7 @@ export class AppSpec {
             `Please import and provide containerClass from "@xh/hoist/${isMobileApp ? 'mobile' : 'desktop'}/AppContainer".`
         );
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
+        apiRemoved(rest.idleDetectionEnabled, 'idleDetectionEnabled', 'Set "xhIdleConfig" in configuration instead.');
 
         throwIf(
             !isString(checkAccess) && !isFunction(checkAccess),
