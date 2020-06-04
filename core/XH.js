@@ -694,7 +694,7 @@ class XHClass {
     }
 
     createActivityListeners() {
-        ['keydown', 'mousemove', 'mousedown', 'scroll'].forEach(name => {
+        ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
             window.addEventListener(name, () => {
                 this._lastActivityMs = Date.now();
             });
