@@ -9,10 +9,11 @@ import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
+import {FormModel} from '../../../../cmp/form';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -20,15 +21,20 @@ import {ChartsModel} from './charts/ChartsModel';
 @LoadSupport
 export class ActivityModel {
 
-    @bindable.ref startDate = LocalDate.today().subtract(1, 'months');
-    @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
-    @bindable username = '';
-    @bindable msg = '';
-    @bindable category = '';
-    @bindable device = '';
-    @bindable browser = '';
-
     @observable.ref detailRecord = null;
+
+    @managed
+    formModel = new FormModel({
+        fields: [
+            {name: 'startDate', initialValue: LocalDate.today().subtract(1, 'months')},
+            {name: 'endDate', initialValue: LocalDate.today().add(1)},
+            {name: 'username', initialValue: ''},
+            {name: 'msg', initialValue: ''},
+            {name: 'category', initialValue: ''},
+            {name: 'device', initialValue: ''},
+            {name: 'browser', initialValue: ''}
+        ]
+    });
 
     @managed
     dimChooserModel = new DimensionChooserModel({
@@ -88,15 +94,15 @@ export class ActivityModel {
             {field: 'device', width: 100},
             {field: 'browser', width: 100},
             {field: 'userAgent', width: 100, hidden: true},
-            {field: 'impersonating', width: 140},
+            {field: 'impersonating', width: 140, hidden: true},
             {
                 field: 'elapsed',
                 headerName: 'Elapsed (ms)',
                 width: 130,
                 align: 'right',
-                renderer: numberRenderer({precision: 0})
+                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
             },
-            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
+            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
             {field: 'data', width: 70, autosizeMaxWidth: 400, hidden: true},
             {field: 'count', width: 70, align: 'right'},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
@@ -114,7 +120,7 @@ export class ActivityModel {
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: this.getParams(),
+                params: this.formModel.getData(),
                 loadSpec
             });
 
@@ -145,9 +151,10 @@ export class ActivityModel {
     }
 
     adjustDates(dir, toToday = false) {
-        const today = LocalDate.today(),
-            start = this.startDate,
-            end = this.endDate,
+        const {startDate, endDate} = this.formModel.fields,
+            today = LocalDate.today(),
+            start = startDate.value,
+            end = endDate.value,
             diff = end.diff(start),
             incr = diff + 1;
 
@@ -159,15 +166,19 @@ export class ActivityModel {
             newEnd = today;
         }
 
-        this.setStartDate(newStart);
-        this.setEndDate(newEnd);
-        this.loadAsync();
+        startDate.setValue(newStart);
+        endDate.setValue(newEnd);
     }
 
     @action
-    openDetail(rec) {
-        const isLeaf = isEmpty(rec.children);
-        if (isLeaf) this.detailRecord = rec;
+    expandRowOrOpenDetail(agParams) {
+        const rec = agParams.data,
+            isLeaf = isEmpty(rec.children);
+        if (isLeaf) {
+            this.detailRecord = agParams.data; // Could go away for a detail panel however, might be useful case a large "data" column or such might be better viewed here.
+        } else {
+            agParams.node.setExpanded(true);
+        }
     }
 
     @action
@@ -182,18 +193,6 @@ export class ActivityModel {
     //----------------
     // Implementation
     //----------------
-    getParams() {
-        return {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            username: this.username,
-            msg: this.msg,
-            category: this.category,
-            device: this.device,
-            browser: this.browser
-        };
-    }
-
     dateRangeRenderer(range) {
         if (!range) return;
         if (isFinite(range)) return fmtDate(range);
@@ -208,10 +207,13 @@ export class ActivityModel {
 
     paramsReaction() {
         return {
-            track: () => this.getParams(),
+            track: () => {
+                const {startDate, endDate, username, msg, category, device, browser} = this.formModel.values;
+                return [startDate, endDate, username, msg, category, device, browser];
+            },
             run: () => this.loadAsync(),
-            equals: comparer.structural,
-            fireImmediately: true
+            fireImmediately: true,
+            delay: 1
         };
     }
 
