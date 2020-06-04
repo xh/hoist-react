@@ -16,7 +16,7 @@ import {wait} from '@xh/hoist/promise';
  * allowing ongoing rendering of UI updates (e.g. load masks) and generally keeping the browser
  * event loop running.
  *
- * @param {iterable} collection - items to iterate over
+ * @param {Iterable} collection - items to iterate over
  * @param {Function} fn - called with each item.
  * @param {Object} [opts] - additional options.
  * @param {number} [opts.waitAfter] - interval in ms after which the loop should pause and wait.

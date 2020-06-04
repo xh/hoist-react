@@ -54,11 +54,11 @@ const detail = hoistCmp.factory(
                 }),
                 jsonInput({
                     omit: !data.data,
-                    value: data.data,
-                    disabled: true,
-                    height: 100,
+                    value: JSON.stringify(JSON.parse(data.data), null, 2),
+                    height: 'fit-content',
+                    maxHeight: 500,
                     width: '100%',
-                    editorProps: {lineWrapping: true}
+                    editorProps: {lineWrapping: true, readOnly: true}
                 })
             ],
             bbar: toolbar(

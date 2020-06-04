@@ -5,6 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 export * from './Icon';
+export * from './XHLogo';
+
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {
     faAddressCard as faAddressCardLight,
@@ -140,6 +142,7 @@ import {
     faRocket as faRocketLight,
     faSave as faSaveLight,
     faSearch as faSearchLight,
+    faServer as faServerLight,
     faShieldAlt as faShieldAltLight,
     faShieldCheck as faShieldCheckLight,
     faSignIn as faSignInLight,
@@ -314,6 +317,7 @@ import {
     faRocket,
     faSave,
     faSearch,
+    faServer,
     faShieldAlt,
     faShieldCheck,
     faSignIn,
@@ -488,6 +492,7 @@ import {
     faRocket as faRocketSolid,
     faSave as faSaveSolid,
     faSearch as faSearchSolid,
+    faServer as faServerSolid,
     faShieldAlt as faShieldAltSolid,
     faShieldCheck as faShieldCheckSolid,
     faSignIn as faSignInSolid,
@@ -665,6 +670,7 @@ library.add(
     faRocket, faRocketLight, faRocketSolid,
     faSave, faSaveLight, faSaveSolid,
     faSearch, faSearchLight, faSearchSolid,
+    faServer, faServerLight, faServerSolid,
     faShieldAlt, faShieldAltLight, faShieldAltSolid,
     faShieldCheck, faShieldCheckLight, faShieldCheckSolid,
     faSignIn, faSignInLight, faSignInSolid,

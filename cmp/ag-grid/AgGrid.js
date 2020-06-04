@@ -39,7 +39,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     render({model, key, className, onGridReady, ...props}) {
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
-            {darkTheme, isMobile} = XH;
+            {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
@@ -57,7 +57,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
-                !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
+                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
             item: agGridReact({
@@ -83,14 +83,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
  */
 AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
 AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
+AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
 /**
  * Header heights (in pixels)
  */
 AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
 AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
-AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobile ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
 @HoistModel
 class LocalModel {
@@ -100,7 +100,7 @@ class LocalModel {
 
     constructor(model, agGridProps) {
         this.model = model;
-        this.rowKeyNavSupport = !XH.isMobile ? new RowKeyNavSupport(model) :  null;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) :  null;
 
         // Only update header height if was not explicitly provided to the component
         if (isNil(agGridProps.headerHeight)) {

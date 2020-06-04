@@ -95,6 +95,15 @@ export class FetchService {
     }
 
     /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async patchJson(opts) {
+        return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
+    }
+
+    /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
      * @param {FetchOptions} opts
      * @returns {Promise} the decoded JSON object, or null if the response had no content.

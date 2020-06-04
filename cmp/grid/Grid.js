@@ -59,7 +59,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     render({model, className, ...props}) {
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
-            platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
+            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
@@ -196,6 +196,7 @@ class LocalModel {
             model: model.agGridModel,
             deltaSort: useDeltaSort && !model.treeMode,
             deltaRowDataMode: !useTransactions,
+            suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -243,7 +244,7 @@ class LocalModel {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3 // allow cells to get a little tighter when autosizing
+            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
         if (props.hideHeaders) {
@@ -251,7 +252,7 @@ class LocalModel {
         }
 
         // Platform specific defaults
-        if (XH.isMobile) {
+        if (XH.isMobileApp) {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
@@ -290,7 +291,7 @@ class LocalModel {
     getContextMenuItems = (params) => {
         const {model} = this,
             {store, selModel, contextMenu} = model;
-        if (!contextMenu || XH.isMobile) return null;
+        if (!contextMenu || XH.isMobileApp) return null;
 
         let menu = null;
         if (isFunction(contextMenu)) {
@@ -320,6 +321,8 @@ class LocalModel {
         const items = [];
 
         recordActions.forEach(action => {
+            if (isNil(action)) return;
+
             if (action === '-') {
                 items.push('separator');
                 return;

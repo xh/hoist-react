@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {emptyFlexCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 
@@ -47,8 +46,7 @@ const modelSpec = {
         {field: 'name', width: 400},
         {field: 'defaultLevel', headerName: 'Initial', width: 110},
         {field: 'level', headerName: 'Override', width: 110},
-        {field: 'effectiveLevel', headerName: 'Effective', width: 110},
-        {...emptyFlexCol}
+        {field: 'effectiveLevel', headerName: 'Effective', width: 110}
     ],
     editors: [
         {field: 'name'},

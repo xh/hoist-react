@@ -49,9 +49,9 @@ export class TabContainerModel {
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
      *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
-     * @param {string} [c.switcherPosition] - Position of the switcher docked within this component (or 'none').
-     *      Valid values are 'top', 'bottom', 'left', 'right', 'none'.
-     * @param {boolean} [c.track] - True to enable activity tracking of tab views. The default value is set to 'false.'
+     * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
+     *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
+     * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
      * @param {RenderMode} [c.renderMode] - strategy for rendering child tabs. Can be set
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
@@ -61,7 +61,7 @@ export class TabContainerModel {
         tabs,
         defaultTabId = null,
         route = null,
-        switcherPosition = XH.isMobile ? 'bottom' : 'top',
+        switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY
@@ -81,7 +81,7 @@ export class TabContainerModel {
         this.track = track;
 
         if (route) {
-            if (XH.isMobile) {
+            if (XH.isMobileApp) {
                 console.warn('Tab container routing is not supported for mobile applications.');
                 return;
             }
@@ -110,9 +110,21 @@ export class TabContainerModel {
         }
     }
 
-    /** @type TabModel */
+    /** @return {TabModel} */
     get activeTab() {
         return find(this.tabs, {id: this.activeTabId});
+    }
+
+    /** @return {?TabModel} - the tab immediately before the active tab in the model's tab list. */
+    get prevTab() {
+        const activeTabIdx = this.tabs.indexOf(this.activeTab);
+        return activeTabIdx > 0 ? this.tabs[activeTabIdx - 1] : null;
+    }
+
+    /** @return {?TabModel} - the tab immediately after the active tab in the model's tab list. */
+    get nextTab() {
+        const activeTabIdx = this.tabs.indexOf(this.activeTab);
+        return activeTabIdx < this.tabs.length - 1 ? this.tabs[activeTabIdx + 1] : null;
     }
 
     /**
@@ -136,6 +148,18 @@ export class TabContainerModel {
         } else {
             this.setActiveTabId(id);
         }
+    }
+
+    /** Navigate to the tab immediately before the currently active tab, if any. */
+    activatePrevTab() {
+        const {prevTab} = this;
+        if (prevTab) this.activateTab(prevTab.id);
+    }
+
+    /** Navigate to the tab immediately after the currently active tab, if any. */
+    activateNextTab() {
+        const {nextTab} = this;
+        if (nextTab) this.activateTab(nextTab.id);
     }
 
     //-------------------------

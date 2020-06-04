@@ -19,8 +19,6 @@ import {debounce} from 'lodash';
  * This service consults the AppSpec `idleDetectionEnabled` property, the `xhIdleTimeoutMins`
  * soft-config, and the `xh.disableIdleDetection` user preference to determine if and when it
  * should suspend the app.
- *
- * Not currently supported / enabled for mobile clients.
  */
 @HoistService
 export class IdleService {
@@ -63,7 +61,7 @@ export class IdleService {
     }
 
     suspendApp() {
-        if (XH.appState != AppState.SUSPENDED) {
+        if (XH.appState !== AppState.SUSPENDED) {
             XH.setAppState(AppState.SUSPENDED);
             this.destroyAppListeners();
             XH.webSocketService.shutdown();

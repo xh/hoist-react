@@ -54,6 +54,7 @@
 .xh-treemap-tooltip {
   color: var(--xh-text-color);
   border: var(--xh-border-solid);
+  overflow: hidden;
   white-space: nowrap;
 
   &__label {

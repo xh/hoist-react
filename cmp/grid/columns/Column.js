@@ -40,8 +40,8 @@ export class Column {
      * support absolute value sorting.  See Column.absSort.
      */
     static DEFAULT_SORTING_ORDER = [
-        {sort: 'asc', abs: false},
         {sort: 'desc', abs: true},
+        {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
 
@@ -74,11 +74,11 @@ export class Column {
      *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
      *      to avoid your column being squeezed down to the default 50px minimum or stretching so
      *      wide that it compromises the overall legibility of the grid.
-     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this to
-     *      determine an appropriate row height when the column is visible.
-     * @param {(string | Column~SortSpec)[]} [c.sortingOrder] - the sorting options for this column that
-     *      will be applied by successive clicks on the column header. Values may be one of 'asc',
-     *      'desc', a SortSpec, or null.  Specify null to clear the sort on this column.
+     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this
+     *      to determine an appropriate row height when the column is visible.
+     * @param {(string[]|Column~SortSpec[])} [c.sortingOrder] - the sorting options for this column
+     *      to be applied by successive clicks on the column header. Values may be one of 'asc',
+     *      'desc', a SortSpec, or null. Specify null to clear the sort on this column.
      * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
      *      false (default) absolute value sorts will be ignored when cycling through the sortingOrder.
      * @param {Column~comparatorFn} [c.comparator] - function for comparing column values for sorting
@@ -111,6 +111,12 @@ export class Column {
      *      tool tip function, which is based on AG Grid tooltip callback.
      * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React component.
      * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
+     * @param {boolean} [c.autosizable] - allow autosizing this column.
+     * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when autosizing.
+     * @param {boolean} [c.autosizeIncludeHeaderIcons] - true to always include the width of the sort
+     *      icon when calculating the header width.
+     * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
+     * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
      * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
      *      just the value of the field associated with this column.  Set to true to ensure that
      *      the cells for this column are updated any time the record is changed.  Setting to true
@@ -169,6 +175,11 @@ export class Column {
         exportFormat,
         exportWidth,
         excludeFromExport,
+        autosizable,
+        autosizeIncludeHeader,
+        autosizeIncludeHeaderIcons,
+        autosizeMinWidth,
+        autosizeMaxWidth,
         tooltip,
         tooltipElement,
         editable,
@@ -251,6 +262,12 @@ export class Column {
         this.exportWidth = exportWidth || null;
         this.excludeFromExport = withDefault(excludeFromExport, !field);
 
+        this.autosizable = withDefault(autosizable, this.resizable, true);
+        this.autosizeIncludeHeader = withDefault(autosizeIncludeHeader, true);
+        this.autosizeIncludeHeaderIcons = withDefault(autosizeIncludeHeaderIcons, true);
+        this.autosizeMinWidth = withDefault(autosizeMinWidth, this.minWidth);
+        this.autosizeMaxWidth = withDefault(autosizeMaxWidth, this.maxWidth);
+
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
 
@@ -288,9 +305,9 @@ export class Column {
                 resizable: this.resizable,
                 sortable: this.sortable,
                 suppressMovable: !this.movable,
-                lockPinned: !gridModel.enableColumnPinning || XH.isMobile,
+                lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
-                lockVisible: !gridModel.colChooserModel || XH.isMobile,
+                lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
                 headerComponentParams: {gridModel, xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
@@ -355,12 +372,10 @@ export class Column {
 
         if (this.tooltip) {
             ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value,
-                    {record: agParams.data, column: this, gridModel, agParams}) :
+                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                 ({value}) => value;
-        }
-
-        if (this.tooltipElement) {
+        } else if (this.tooltipElement) {
+            ret.tooltipValueGetter = ({value}) => value;
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {return ['xh-grid-tooltip']}
                 render() {
@@ -385,6 +400,9 @@ export class Column {
                         this.cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
                         this.cellClass
                 );
+            }
+            if (this.isTreeColumn) {
+                r.push('xh-tree-column');
             }
             if (align === 'center' || align === 'right') {
                 r.push('xh-align-' + align);
@@ -473,7 +491,6 @@ export class Column {
         const {fieldPath} = this;
         if (!record || isNil(fieldPath)) return '';
 
-        if (fieldPath === 'id') return record.id;
         if (isArray(fieldPath)) return get(record.data, fieldPath);
         return record.data[fieldPath];
     };
@@ -640,7 +657,7 @@ export function getAgHeaderClassFn(column) {
  */
 
 /**
- * @typedef {Object} SortSpec - specifies how to perform sorting in a given column
+ * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
  * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
  * @param {boolean} [abs] - true to sort by absolute value
  */

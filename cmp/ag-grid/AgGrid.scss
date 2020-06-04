@@ -54,7 +54,7 @@
     font-family: var(--xh-grid-header-font-family);
 
     .ag-header-row {
-      font-size: var(--xh-grid-header-font-size);
+      font-size: var(--xh-grid-header-font-size-px);
       font-weight: var(--xh-grid-header-font-weight);
       color: var(--xh-grid-header-text-color);
     }
@@ -83,19 +83,13 @@
 
     // Set a constant width, since the two icons are different sizes.
     // This caused rows to jump around when expansion was toggled.
-    .ag-group-expanded {
-      margin: 0 var(--xh-pad-half-px) 0 0;
-
-      svg {
-        width: var(--xh-pad-px);
-      }
-    }
-
+    .ag-group-expanded,
     .ag-group-contracted {
-      margin: 0 var(--xh-pad-half-px) 0 0;
+      margin: 0;
+      width: var(--xh-grid-tree-indent);
 
       svg {
-        width: var(--xh-pad-px);
+        width: var(--xh-grid-tree-icon-px) !important;
       }
     }
   }
@@ -171,6 +165,11 @@
       margin-top: unset;
       top: unset;
     }
+
+    // Adjust left padding for tree columns.
+    &.xh-tree-column {
+      padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+    }
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
@@ -229,7 +228,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-large-font-size-px);
+      font-size: var(--xh-grid-large-header-font-size-px);
     }
 
     .ag-cell {
@@ -255,7 +254,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-compact-font-size-px);
+      font-size: var(--xh-grid-compact-header-font-size-px);
     }
 
     .ag-cell {
@@ -281,7 +280,7 @@
     }
 
     .ag-header .ag-header-row {
-      font-size: var(--xh-grid-tiny-font-size-px);
+      font-size: var(--xh-grid-tiny-header-font-size-px);
     }
 
     .ag-cell {
@@ -334,6 +333,17 @@
   .ag-bl-overlay {
     display: none;
   }
+
+  // Adds padding to select all checkbox option in column set filter
+  .ag-set-filter-select-all {
+    padding: var(--xh-pad-half-px) 0;
+  }
+
+  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+  // appear over bp dialogs with z-index of 20.
+  &.ag-popup-child {
+    z-index: 30;
+  }
 }
 
 //------------------------
@@ -344,21 +354,6 @@
   // Vertically center tree grid affordances
   .ag-row .ag-cell-wrapper.ag-row-group {
     align-items: center;
-  }
-
-  // Reduce right margin to an appropriate value for the smaller sizing modes.
-  &--compact .ag-row {
-    .ag-group-expanded,
-    .ag-group-contracted {
-      margin: 0 2px 0 0;
-    }
-  }
-
-  &--tiny .ag-row {
-    .ag-group-expanded,
-    .ag-group-contracted {
-      margin: 0 1px 0 0;
-    }
   }
 }
 
@@ -386,7 +381,6 @@
 //------------------------
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
-  z-index: 9999 !important; // always show context menus above other content, e.g. dialog
   font-family: var(--xh-font-family);
   background-color: var(--xh-bg-alt);
 
@@ -402,14 +396,5 @@
     text-align: center;
     padding-left: 8px;
     padding-right: 8px;
-  }
-}
-
-.ag-theme-balham,
-.ag-theme-balham-dark {
-  &.ag-popup {
-    .ag-tooltip {
-      z-index: 99999 !important; // always show tooltips above other content, e.g. context menus
-    }
   }
 }

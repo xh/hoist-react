@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {action, observable} from '@xh/hoist/mobx';
+import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
@@ -20,7 +20,7 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {warnIf, withDefault} from '../utils/js';
+import {warnIf} from '../utils/js';
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
@@ -52,6 +52,9 @@ export class Store {
     @observable.ref _filtered;
     _filter = null;
     _loadRootAsSummary = false;
+
+    /** @private -- used internally by any StoreFilterField that is bound to this store. */
+    @bindable xhFilterText = null;
 
     /**
      * @param {Object} c - Store configuration.
@@ -129,7 +132,7 @@ export class Store {
             rawData = rawData[0].children ?? [];
         }
 
-        const records = this.createRecords(rawData);
+        const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
         this.rebuildFiltered();
 
@@ -193,7 +196,13 @@ export class Store {
         // 1) Pre-process updates and adds into Records
         let updateRecs, addRecs;
         if (update) {
-            updateRecs = update.map(it => this.createRecord(it));
+            updateRecs = update.map(it => {
+                const recId = this.idSpec(it),
+                    rec = this.getOrThrow(recId),
+                    parent = rec.parent,
+                    isSummary = recId === this.summaryRecord?.id;
+                return this.createRecord(it, parent, isSummary);
+            });
         }
         if (add) {
             addRecs = new Map();
@@ -215,7 +224,7 @@ export class Store {
         }
 
         if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord({...summaryRecord.raw, ...rawSummaryData}, null, true);
+            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
         }
 
         if (summaryUpdateRec) {
@@ -506,9 +515,12 @@ export class Store {
     }
 
     /**
-     * Set filter to be applied.
-     * @param {(StoreFilter|Object|function)} filter - StoreFilter to be applied to records, or
-     *      config or function to be used to create one.
+     * Apply a filter to this store. Records passing the filter will be exposed via its primary
+     * `records` collection and provided to consumers such as Grids. Records excluded by a filter
+     * remain available via the `allRecords` collection and methods such as `getById()`.
+     *
+     * @param {(StoreFilter|StoreFilterFunction|Object)} filter - StoreFilter to be applied to
+     *      Records, or a function or config to create one.
      */
     setFilter(filter) {
         if (isFunction(filter)) {
@@ -519,18 +531,37 @@ export class Store {
 
         this._filter = filter;
 
+        // If clearing filter, null out any local xhFilterText value, which may be used by a linked
+        // StoreFilterField to maintain its text value. (Note that SFFs can be bound to an
+        // app-specific model, so this does not guarantee they will be appropriately reset.)
+        if (!filter) this.setXhFilterText(null);
+
         this.rebuildFiltered();
+    }
+
+    /** Convenience method to remove any filter applied to this store. */
+    clearFilter() {
+        this.setFilter(null);
+    }
+
+    /**
+     *
+     * @param {(Record|string|number)} recOrId
+     * @return {boolean} - true if the Record is in the store, but currently excluded by a filter.
+     *      False if the record is either not in the Store at all, or not filtered out.
+     */
+    recordIsFiltered(recOrId) {
+        const id = recOrId.isRecord ? recOrId.id : recOrId;
+        return !this.getById(id, true) && !!this.getById(id, false);
     }
 
     /**
      * Set whether the root should be loaded as summary data in loadData().
-     *
-     * @param {boolean}
+     * @param {boolean} loadRootAsSummary
      */
-    setLoadRootAsSummary(val) {
-        this._loadRootAsSummary = val;
+    setLoadRootAsSummary(loadRootAsSummary) {
+        this._loadRootAsSummary = loadRootAsSummary;
     }
-
 
     /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
     get filter() {
@@ -571,14 +602,16 @@ export class Store {
      * Get a record by ID, or null if no matching record found.
      *
      * @param {(string|number)} id
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - false (default) to return a Record with the given
+     *      ID even if an active filter is excluding it from the primary `records` collection.
+     *      True to restrict matches to this Store's post-filter Record collection only.
      * @return {Record}
      */
-    getById(id, fromFiltered = false) {
+    getById(id, respectFilter = false) {
         if (isNil(id)) return null;
         if (id === this.summaryRecord?.id) return this.summaryRecord;
 
-        const rs = fromFiltered ? this._filtered : this._current;
+        const rs = respectFilter ? this._filtered : this._current;
         return rs.getById(id);
     }
 
@@ -589,11 +622,11 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getChildrenById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getChildrenById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
         return ret ? ret : [];
     }
@@ -605,11 +638,11 @@ export class Store {
      * likely be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getDescendantsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getDescendantsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
         return ret ? ret : [];
     }
@@ -621,11 +654,11 @@ export class Store {
      * be more convenient for most app-level callers.
      *
      * @param {(string|number)} id - id of record to be queried.
-     * @param {boolean} [fromFiltered] - true to skip records excluded by any active filter.
+     * @param {boolean} [respectFilter] - true to skip records excluded by any active filter.
      * @return {Record[]}
      */
-    getAncestorsById(id, fromFiltered = false) {
-        const rs = fromFiltered ? this._filtered : this._current,
+    getAncestorsById(id, respectFilter = false) {
+        const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
         return ret ? ret : [];
     }
@@ -694,15 +727,7 @@ export class Store {
         }
 
         // Note idSpec run against raw data here.
-        const id = this.idSpec(raw),
-            rec = this.getById(id);
-
-        if (rec) {
-            // We are creating a record for an update. Lookup our parent record and determine if
-            // this is the the summary record based on the current state (if not provided).
-            parent = withDefault(parent, rec.parent);
-            isSummary = withDefault(isSummary, rec.id === this.summaryRecord?.id);
-        }
+        const id = this.idSpec(raw);
 
         data = this.parseFieldValues(data);
         return new Record({id, data, raw, parent, store: this, isSummary});

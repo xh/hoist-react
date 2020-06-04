@@ -25,12 +25,12 @@ export class AppSpec {
      *      As with `clientAppCode` above, this will default to the global `appName` specified by
      *      the project's Webpack config, but can be set here to a more specific value (e.g.
      *      'MyApp Mobile').
+     * @param {boolean} c.isMobileApp - true if the app should use the Hoist mobile toolkit.
      * @param {Class} c.modelClass - root Model class for App, decorated with `@HoistAppModel`.
      * @param {Class} c.componentClass - root Component class for App, decorated with `@HoistComponent`.
      * @param {Class} c.containerClass - Container component to be used to host this application.
-     *      This class is platform specific, and should be typically either
-     *      `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
-     * @param {boolean} c.isMobile - true if the app is designed to be run on mobile devices.
+     *      This class determines the platform used by Hoist. The value should be imported from
+     *      either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      * @param {boolean} c.isSSO - true if SSO auth is enabled, as opposed to a login prompt.
      * @param {(string|CheckAccessCb)} c.checkAccess - If a string, will be interpreted as the role
      *      required for basic UI access. Otherwise, function to determine if the passed user should
@@ -40,9 +40,9 @@ export class AppSpec {
      * @param {boolean} [c.webSocketsEnabled] - true to enable Hoist websocket connectivity,
      *      establish a connection and initiate a heartbeat..
      * @param {boolean} [c.idleDetectionEnabled] - true to enable auto-suspension by `IdleService`.
-     * @param {Class} [c.idleDialogClass] - Component class used to indicate App has been suspended.
-     *      The component will receive a single prop -- onReactivate -- a callback called when user
-     *      has acknowledged the suspension and wishes to reload the app and continue working.
+     * @param {Class} [c.idleDialogClass] - Component or element factory used to indicate App has
+     *      been suspended.  The component will receive a single prop -- onReactivate -- a callback
+     *      called when user has acknowledged the suspension and wishes to reload the app and continue working.
      * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
      */
@@ -52,7 +52,7 @@ export class AppSpec {
         modelClass,
         componentClass,
         containerClass,
-        isMobile,
+        isMobileApp,
         isSSO,
         checkAccess,
         trackAppLoad = true,
@@ -64,8 +64,11 @@ export class AppSpec {
     }) {
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
-        throwIf(!containerClass, 'A Hoist App must define a containerClass');
-        throwIf(isNil(isMobile), 'A Hoist App must define isMobile');
+        throwIf(isNil(isMobileApp), 'A Hoist App must define isMobileApp');
+        throwIf(
+            !containerClass,
+            `Please import and provide containerClass from "@xh/hoist/${isMobileApp ? 'mobile' : 'desktop'}/AppContainer".`
+        );
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
 
         throwIf(
@@ -73,15 +76,13 @@ export class AppSpec {
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
 
-        throwIf(isMobile && idleDetectionEnabled, 'Idle Detection not yet implemented on Mobile.');
-
         this.clientAppCode = clientAppCode;
         this.clientAppName = clientAppName;
 
         this.modelClass = modelClass;
         this.componentClass = componentClass;
         this.containerClass = containerClass;
-        this.isMobile = isMobile;
+        this.isMobileApp = isMobileApp;
         this.isSSO = isSSO;
         this.checkAccess = checkAccess;
         this.trackAppLoad = trackAppLoad;

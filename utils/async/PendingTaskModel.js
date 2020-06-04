@@ -52,7 +52,7 @@ export class PendingTaskModel {
 
     /**
      * Link this model to a promise.
-     * Not typically called directly by applications - call Promise.link() instead.
+     * Not typically called directly by applications - call Promise.linkTo() instead.
      *
      * @param {Promise} promise
      * @param {?string} [message]

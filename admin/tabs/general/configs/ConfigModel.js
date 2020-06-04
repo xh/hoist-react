@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
+import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
@@ -75,7 +75,7 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps!'
+            del: 'Are you sure you want to delete? Deleting configs can break running apps.'
         },
         toolbarActions: [
             addAction,
@@ -96,12 +96,14 @@ export class ConfigModel {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
+            {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
             {field: 'name', width: 200},
             {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
             {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
-            {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
-            {field: 'note', minWidth: 60, flex: true, tooltip: true}
+            {field: 'note', minWidth: 60, flex: true, tooltip: true},
+            {field: 'lastUpdatedBy', width: 160, hidden: true},
+            {field: 'lastUpdated', ...dateTimeCol, hidden: true}
         ],
         editors: [
             {field: 'name'},

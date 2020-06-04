@@ -14,6 +14,7 @@ import {
     ConfigService,
     EnvironmentService,
     FetchService,
+    GridAutosizeService,
     GridExportService,
     IdentityService,
     IdleService,
@@ -22,9 +23,11 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {throwIf, withShortDebug} from '@xh/hoist/utils/js';
-import {camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {getClientDeviceInfo, throwIf, withShortDebug} from '@xh/hoist/utils/js';
+import {compact, camelCase, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import ReactDOM from 'react-dom';
+import parser from 'ua-parser-js';
+
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import '../styles/XH.scss';
 import {ExceptionHandler} from './ExceptionHandler';
@@ -78,6 +81,8 @@ class XHClass {
     environmentService;
     /** @member {FetchService} */
     fetchService;
+    /** @member {GridAutosizeService} */
+    gridAutosizeService;
     /** @member {GridExportService} */
     gridExportService;
     /** @member {IdentityService} */
@@ -118,9 +123,14 @@ class XHClass {
     getUser()                   {return this.identityService ? this.identityService.getUser() : null}
     getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
 
-    get isMobile()              {return this.appSpec.isMobile}
+    get isMobileApp()           {return this.appSpec.isMobileApp}
     get clientAppCode()         {return this.appSpec.clientAppCode}
     get clientAppName()         {return this.appSpec.clientAppName}
+
+    get isPhone()               {return this.uaParser.getDevice().type === 'mobile'}
+    get isTablet()              {return this.uaParser.getDevice().type === 'tablet'}
+    get isDesktop()             {return this.uaParser.getDevice().type === undefined}
+
 
     //---------------------------
     // Models
@@ -472,12 +482,18 @@ class XHClass {
         this._initCalled = true;
 
         const S = AppState,
-            {appSpec, isMobile} = this;
+            {appSpec, isMobileApp, isPhone, isTablet, isDesktop} = this;
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // add xh css classes to to power Hoist CSS selectors.
-        document.body.classList.add('xh-app', (isMobile ? 'xh-mobile' : 'xh-desktop'));
+        // Add xh css classes to to power Hoist CSS selectors.
+        document.body.classList.add(...compact([
+            'xh-app',
+            (isMobileApp ? 'xh-mobile' : 'xh-standard'),
+            (isDesktop ? 'xh-desktop' : null),
+            (isPhone ? 'xh-phone' : null),
+            (isTablet ? 'xh-tablet' : null)
+        ]));
 
         try {
             await this.installServicesAsync(FetchService);
@@ -550,7 +566,7 @@ class XHClass {
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(PrefService, ConfigService);
             await this.installServicesAsync(
-                AutoRefreshService, IdleService, GridExportService, WebSocketService
+                AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
 
@@ -655,10 +671,12 @@ class XHClass {
                         XH.track({
                             category: 'App',
                             msg: `Loaded ${this.clientAppName}`,
-                            elapsed: now - loadStarted - loginElapsed
+                            elapsed: now - loadStarted - loginElapsed,
+                            data: getClientDeviceInfo()
                         });
                         disposer();
                         break;
+
                     case AppState.LOGIN_REQUIRED:
                         loginStarted = now;
                         break;
@@ -668,9 +686,14 @@ class XHClass {
             }
         });
     }
-}
-export const XH = window.XH = new XHClass();
 
+    get uaParser() {
+        if (!this._uaParser) this._uaParser = new parser();
+        return this._uaParser;
+    }
+}
+
+export const XH = window.XH = new XHClass();
 
 /**
  * @typedef {Object} MessageConfig - configuration object for a modal alert, confirm, or prompt.

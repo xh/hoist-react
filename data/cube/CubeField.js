@@ -15,7 +15,9 @@ import {
     SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
-    UniqueAggregator
+    UniqueAggregator,
+    AverageAggregator,
+    AverageStrictAggregator
 } from '@xh/hoist/data';
 
 /**
@@ -36,13 +38,15 @@ export class CubeField extends Field {
     /** @member {string} */
     parentDimension;
 
+    static averageAggregator = new AverageAggregator();
+    static averageStrictAggregator = new AverageStrictAggregator();
     static maxAggregator = new MaxAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
+    static singleAggregator = new SingleAggregator();
     static sumAggregator = new SumAggregator();
     static sumStrictAggregator = new SumStrictAggregator();
     static uniqueAggregator = new UniqueAggregator();
-    static singleAggregator = new SingleAggregator();
 
     /**
      * @param {Object} c - Field configuration.  See Field class for core parameters.
@@ -86,13 +90,15 @@ export class CubeField extends Field {
     parseAggregator(val) {
         if (isString(val)) {
             switch (val) {
-                case 'MAX':         return CubeField.maxAggregator;
-                case 'MIN':         return CubeField.minAggregator;
-                case 'NULL':        return CubeField.nullAggregator;
-                case 'SUM':         return CubeField.sumAggregator;
-                case 'SUM_STRICT':  return CubeField.sumStrictAggregator;
-                case 'UNIQUE':      return CubeField.uniqueAggregator;
-                case 'SINGLE':      return CubeField.singleAggregator;
+                case 'AVG':             return CubeField.averageAggregator;
+                case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
+                case 'MAX':             return CubeField.maxAggregator;
+                case 'MIN':             return CubeField.minAggregator;
+                case 'NULL':            return CubeField.nullAggregator;
+                case 'SINGLE':          return CubeField.singleAggregator;
+                case 'SUM':             return CubeField.sumAggregator;
+                case 'SUM_STRICT':      return CubeField.sumStrictAggregator;
+                case 'UNIQUE':          return CubeField.uniqueAggregator;
             }
         }
         if (val instanceof Aggregator) return val;

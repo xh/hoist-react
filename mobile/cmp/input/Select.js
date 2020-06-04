@@ -8,7 +8,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {reactSelect} from '@xh/hoist/kit/react-select';
+import {reactSelect, reactCreatableSelect} from '@xh/hoist/kit/react-select';
 import {action, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {assign, isEmpty, isPlainObject} from 'lodash';
@@ -18,9 +18,8 @@ import './Select.scss';
 /**
  * A managed wrapper around the React-Select dropdown component.
  *
- * This is simplified version of the desktop Select Input. Type-to-search has been excluded, due to concerns
- * about showing the on-device keyboard. Consequently, asynchronous queries, multiple selection and user-created
- * ad-hoc entries are not yet supported.
+ * This is simplified version of the desktop Select Input.
+ * Asynchronous queries and multiple selection are not supported.
  *
  * Supports custom dropdown option renderers.
  *
@@ -32,6 +31,24 @@ export class Select extends HoistInput {
 
     static propTypes = {
         ...HoistInput.propTypes,
+        /**
+         * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
+         * Passed current query input.
+         */
+        createMessageFn: PT.func,
+
+        /**
+         *  True to accept and commit input values not present in options or returned by a query.
+         *  Should be used with caution, as mobile keyboard can cause undesirable results.
+         * */
+        enableCreate: PT.bool,
+
+        /**
+         * True to enable type-to-search keyboard input. Defaults to false to disable keyboard input,
+         * showing the dropdown menu on click. Should be used with caution, as mobile keyboard can
+         * cause undesirable results.
+         */
+        enableFilter: PT.bool,
 
         /** True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select. */
         hideDropdownIndicator: PT.bool,
@@ -88,9 +105,11 @@ export class Select extends HoistInput {
     baseClassName = 'xh-select';
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
-    // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @observable.ref internalOptions = [];
     @action setInternalOptions(options) {this.internalOptions = options}
+
+    get creatableMode() {return !!this.props.enableCreate}
+    get filterMode() {return !!this.props.enableFilter}
 
     constructor(props, context) {
         super(props, context);
@@ -112,13 +131,13 @@ export class Select extends HoistInput {
                 value: this.renderValue,
 
                 formatOptionLabel: this.formatOptionLabel,
-                isSearchable: false,
+                isSearchable: this.filterMode || this.creatableMode,
                 isDisabled: props.disabled,
                 menuPlacement: withDefault(props.menuPlacement, 'auto'),
                 noOptionsMessage: this.noOptionsMessageFn,
                 placeholder: withDefault(props.placeholder, 'Select...'),
                 tabIndex: props.tabIndex,
-                menuShouldBlockScroll: XH.isMobile,
+                menuShouldBlockScroll: XH.isMobileApp,
 
                 // A shared div is created lazily here as needed, appended to the body, and assigned
                 // a high z-index to ensure options menus render over dialogs or other modals.
@@ -143,8 +162,14 @@ export class Select extends HoistInput {
 
         assign(rsProps, props.rsOptions);
 
+        if (this.creatableMode) {
+            rsProps.formatCreateLabel = this.createMessageFn;
+        }
+
+        const factory = this.creatableMode ? reactCreatableSelect : reactSelect;
+
         return box({
-            item: reactSelect(rsProps),
+            item: factory(rsProps),
             className: this.getClassName(),
             ...layoutProps,
             width: withDefault(width, null)
@@ -223,7 +248,6 @@ export class Select extends HoistInput {
     //----------------------
     // Option Rendering
     //----------------------
-
     formatOptionLabel = (opt, params) => {
         // Always display the standard label string in the value container (context == 'value').
         // If we need to expose customization here, we could consider a dedicated prop.
@@ -291,6 +315,10 @@ export class Select extends HoistInput {
         return portal;
     }
 
+    createMessageFn = (q) => {
+        const {createMessageFn} = this.props;
+        return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
+    };
 }
 
 export const select = elemFactory(Select);
