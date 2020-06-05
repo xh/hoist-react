@@ -8,17 +8,17 @@
 import {cloneDeep, isUndefined} from 'lodash';
 import {PersistenceProvider} from './provider/PersistenceProvider';
 
-
 /**
- * Decorator to make a class property persistent.
+ * Decorator to make a class property persistent, syncing its value via a configured
+ * `PersistenceProvider` to maintain and restore mutable values across browser sessions.
  *
- * This decorator may be used on an @observable or @bindable class property which is a primitive.
- * It will cause the observable to initialize from the classes default PersistenceProvider and will
- * subsequently write back any changes to the property to that Provider.  If the Provider has not
- * yet been populated with a value, or an error occurs, the code provided value will be used instead.
+ * This decorator may be used on any @observable or @bindable class property which is a primitive.
+ * It will initialize the observable's value from the class's default `PersistenceProvider` and will
+ * subsequently write back any changes to the property to that Provider. If the Provider has not
+ * yet been populated with a value, or an error occurs, it will use the value set in-code instead.
  *
  * This decorator should always be applied "before" the mobx decorators, i.e. closest to definition,
- * second in file line order.
+ * second in file line order: `@bindable @persist fooBarFlag = true`
  *
  * This decorator depends upon setting a 'persistWith' property on the target object with
  * default PersistOptions.  See also @persistWith, a higher-order version of this decorator that
@@ -32,13 +32,10 @@ export function persist(target, property, descriptor) {
 /**
  * Decorator to make a class property persistent.
  *
+ * This is a higher-order version of `@persist`.
+ * Call this variant as a function to provide custom PersistOptions.
+ *
  * @param {PersistOptions} options
- *
- * Higher-order version of @persist.  This functions accepts custom
- * persistOptions as an argument -- these will applied to any options provided on the
- * class itself.
- *
- * See also @persist.
  */
 export function persistWith(options) {
     return function(target, property, descriptor) {
@@ -48,9 +45,9 @@ export function persistWith(options) {
 }
 
 
-//---------------
+//--------------------
 // Implementation
-//---------------
+//--------------------
 function createInitializer(target, property, descriptor, options) {
     const codeValue = descriptor.initializer;
     return function() {
@@ -68,8 +65,7 @@ function createInitializer(target, property, descriptor, options) {
             });
         } catch (e) {
             console.error(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify 'persistWith' on this object or annotation.`,
-                e
+                `Failed to configure Persistence for '${property}'.  Be sure to fully specify 'persistWith' on this object or annotation.`
             );
         }
 

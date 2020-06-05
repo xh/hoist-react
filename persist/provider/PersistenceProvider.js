@@ -19,11 +19,15 @@ import {
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * Object that can be used by a component to store/restore state from a given persistent location.
- * This is an abstract class.
+ * Abstract superclass for adaptor objects used by models and components to (re)store state to and
+ * from a persistent location, typically a Hoist preference or key within browser local storage.
  *
  * Note that multiple instances of this object may be writing into the same location.
  * Implementations should take care to incorporate any writes immediately into the readable state.
+ *
+ * @see PrefProvider - stores state in a predefined Hoist application Preference.
+ * @see LocalStorageProvider - stores state in browser local storage under a configured key.
+ * @see DashViewProvider - stores state with other Dashboard-specific state via a `DashViewModel`.
  */
 export class PersistenceProvider {
 
@@ -85,7 +89,7 @@ export class PersistenceProvider {
 
     /**
      * Save data at a path
-     * @param {*} data  - data to be written to the path. Must be serializable to json.
+     * @param {*} data  - data to be written to the path, must be serializable to JSON.
      */
     write(data) {
         this.writeInternal(data);
