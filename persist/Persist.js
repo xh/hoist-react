@@ -25,8 +25,7 @@ import {PersistenceProvider} from './provider/PersistenceProvider';
  * allows for setting property-specific options.
  */
 export function persist(target, property, descriptor) {
-    const initializer = createInitializer(target, property, descriptor, null);
-    return {...descriptor, initializer};
+    return createDescriptor(target, property, descriptor, null);
 }
 
 /**
@@ -39,8 +38,7 @@ export function persist(target, property, descriptor) {
  */
 export function persistWith(options) {
     return function(target, property, descriptor) {
-        const initializer = createInitializer(target, property, descriptor, options);
-        return {...descriptor, initializer};
+        return createDescriptor(target, property, descriptor, options);
     };
 }
 
@@ -48,16 +46,28 @@ export function persistWith(options) {
 //--------------------
 // Implementation
 //--------------------
-function createInitializer(target, property, descriptor, options) {
+function createDescriptor(target, property, descriptor, options) {
+    if (descriptor.get || descriptor.set) {
+        console.error(
+            `Error defining ${property} : @persist or @persistWith should be defined closest ` +
+            `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`
+        );
+        return descriptor;
+    }
     const codeValue = descriptor.initializer;
-    return function() {
+    const initializer = function() {
         let providerState;
 
         // Read from and attach to Provider.
         // Fail gently -- initialization exceptions causes stack overflows for MobX.
         try {
-            const persistWith = {path: property, ...options, ...this.persistWith},
-                provider = this.markManaged(PersistenceProvider.create(persistWith));
+            const persistWith = {
+                path: property,
+                ...options,
+                ...this.persistWith,
+                ...this.constructor.persistWith
+            };
+            const provider = this.markManaged(PersistenceProvider.create(persistWith));
             providerState = cloneDeep(provider.read());
             this.addReaction({
                 track: () => this[property],
@@ -65,13 +75,15 @@ function createInitializer(target, property, descriptor, options) {
             });
         } catch (e) {
             console.error(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify 'persistWith' on this object or annotation.`
+                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
+                `'persistWith' on this object or annotation.`
             );
         }
 
         // 2) Return data from provider data *or* code, if provider not yet set or failed
         return !isUndefined(providerState) ? providerState : codeValue?.call(this);
     };
+    return {...descriptor, initializer};
 }
 
 
