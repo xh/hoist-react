@@ -37,6 +37,10 @@ wide variety of enterprise software projects. For any questions regarding this c
   referring to the same key is used (e.g. `persistWith: {localStorageKey: 'my-grid-state-id'}`.
 * Use the new `GridModel.persistOptions` config for finer control over what grid state is persisted
   (replacement for stateModel configs to disable persistence of column state/sorting/grouping).
+* `AppSpec.idleDetectionEnabled` has been removed. App-specific Idle detection is now enabled via
+ the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
+* `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanel`. If specified, it should be a
+full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 

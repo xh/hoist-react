@@ -212,6 +212,7 @@
   font-family: var(--xh-grid-font-family);
   visibility: hidden;
   display: none;
+  white-space: nowrap;
 
   // This property is not actually used in rendering, but is provided here
   // for later interpretation by GridAutosizeService.getIndentation()
@@ -245,6 +246,7 @@
   flex-direction: row;
   visibility: hidden;
   display: none;
+  white-space: nowrap;
 
   .xh-grid-header-sort-icon,
   .xh-grid-header-menu-icon {
