@@ -9,7 +9,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ColChooserModel} from './ColChooserModel';
@@ -49,6 +49,7 @@ export const colChooser = hoistCmp.factory({
                         icon: Icon.undo({className: 'xh-red'}),
                         onClick: () => model.restoreDefaults()
                     }),
+                    toolbarSep(),
                     button({
                         text: isPopoverOpen ? 'Close' : 'Cancel',
                         onClick: () => model.close()

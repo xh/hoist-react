@@ -243,12 +243,8 @@ export class PrefService {
 
     validateBeforeSet(key, value) {
         const pref = this._data[key];
-
-
         throwIf(!pref, `Cannot set preference ${key}: not found`);
-
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
-
         throwIf(
             !this.valueIsOfType(value, pref.type),
             `Cannot set preference ${key}: must be of type ${pref.type}`

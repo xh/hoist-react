@@ -135,8 +135,8 @@ export class GridModel {
     /** @private - initial state provided to ctor - powers restoreDefaults(). */
     _defaultState;
 
-    @managed
-    persistenceModel;
+    /** @member {GridPersistenceModel} */
+    @managed persistenceModel;
 
     /**
      * Is autosizing enabled on this grid?
