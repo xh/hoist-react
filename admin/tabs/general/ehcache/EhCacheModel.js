@@ -13,9 +13,11 @@ import {trimEnd} from 'lodash';
 @LoadSupport
 export class EhCacheModel {
 
+    static persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+
     @managed
     gridModel = new GridModel({
-        persistWith: {localStorageKey: 'xhEhCacheGrid'},
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         store: new UrlStore({

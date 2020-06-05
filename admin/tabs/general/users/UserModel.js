@@ -14,12 +14,14 @@ import {keyBy, keys} from 'lodash';
 @LoadSupport
 export class UserModel {
 
+    static persistWith = {localStorageKey: 'xhAdminUserState'};
+
     @bindable activeOnly = true;
     @bindable withRolesOnly = false;
 
     @managed
     gridModel = new GridModel({
-        persistWith: {localStorageKey: 'xhUserGrid'},
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         store: {idSpec: 'username'},

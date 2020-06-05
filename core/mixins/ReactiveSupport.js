@@ -135,6 +135,16 @@ export function ReactiveSupport(C) {
                 this[setter].call(this, value);
             },
 
+            /**
+             * Delegate to static persistWith on this class.
+             */
+            persistWith: {
+                get() {
+                    return this.constructor.persistWith;
+                }
+            },
+
+
             //------------------------
             // Implementation
             //------------------------

@@ -22,13 +22,13 @@ import {persist} from '@xh/hoist/persist';
 @LoadSupport
 export class LogViewerModel {
 
-    persistWith = {localStorageKey: 'logViewer'};
+    static persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     // Form State/Display options
     @bindable @persist tail = false;
-    @bindable @persist startLine = null;
-    @bindable @persist maxLines = 1000;
-    @bindable @persist pattern = '';
+    @bindable startLine = null;
+    @bindable maxLines = 1000;
+    @bindable pattern = '';
 
     // Overall State
     @observable file = null;

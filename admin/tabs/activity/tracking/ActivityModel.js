@@ -20,6 +20,8 @@ import {ChartsModel} from './charts/ChartsModel';
 @LoadSupport
 export class ActivityModel {
 
+    static persistWith = {localStorageKey: 'xhAdminActivityState'};
+
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
     @bindable username = '';
@@ -63,12 +65,12 @@ export class ActivityModel {
             {name: 'count', aggregator: new ChildCountAggregator()},
             {name: 'entryCount', aggregator: new LeafCountAggregator()} // Used for charting, not displayed in grid,
         ]
-    })
+    });
 
     @managed
     gridModel = new GridModel({
         treeMode: true,
-        persistWith: {localStorageKey: 'xhActivityGrid'},
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},

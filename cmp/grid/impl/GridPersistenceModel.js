@@ -41,7 +41,7 @@ export class GridPersistenceModel {
     ) {
         this.gridModel = gridModel;
 
-        persistWith = {path: 'gridModel', ...persistWith};
+        persistWith = {path: 'grid', ...persistWith};
 
         // 1) Read state from and attach to provider -- fail gently
         try {

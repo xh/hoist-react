@@ -137,7 +137,7 @@ export class PanelModel {
         // 1) Read state from and attach to provider -- fail gently
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'panelModel', ...persistWith});
+                this.provider = PersistenceProvider.create({path: 'panel', ...persistWith});
                 const state = this.provider.read() ?? this.legacyState();
 
                 this.setSize(state?.size ?? defaultSize);

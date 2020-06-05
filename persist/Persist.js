@@ -21,7 +21,7 @@ import {PersistenceProvider} from './provider/PersistenceProvider';
  * second in file line order: `@bindable @persist fooBarFlag = true`
  *
  * This decorator depends upon setting a 'persistWith' property on the target object with
- * default PersistOptions.  See also @persistWith, a higher-order version of this decorator that
+ * default PersistOptions.  See also @persist.with, a higher-order version of this decorator that
  * allows for setting property-specific options.
  */
 export function persist(target, property, descriptor) {
@@ -36,12 +36,11 @@ export function persist(target, property, descriptor) {
  *
  * @param {PersistOptions} options
  */
-export function persistWith(options) {
+persist.with = function(options) {
     return function(target, property, descriptor) {
         return createDescriptor(target, property, descriptor, options);
     };
-}
-
+};
 
 //--------------------
 // Implementation
@@ -64,7 +63,6 @@ function createDescriptor(target, property, descriptor, options) {
             const persistWith = {
                 path: property,
                 ...options,
-                ...this.persistWith,
                 ...this.constructor.persistWith
             };
             const provider = this.markManaged(PersistenceProvider.create(persistWith));
@@ -76,7 +74,7 @@ function createDescriptor(target, property, descriptor, options) {
         } catch (e) {
             console.error(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                `'persistWith' on this object or annotation.`
+                `'static persistWith' on this object or annotation.`
             );
         }
 
