@@ -159,8 +159,7 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
-     * @param {PersistenceProvider} [c.persistWith] - PersistenceProvider or a config to create one.
-     * @param {GridModelPersistOptions} [c.persistOptions] - options governing persistence.
+     * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -226,7 +225,6 @@ export class GridModel {
         groupBy = null,
 
         persistWith,
-        persistOptions,
 
         sizingMode = 'standard',
         showHover = false,
@@ -275,7 +273,7 @@ export class GridModel {
         });
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
-        apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' and 'persistOptions' arguments instead.");
+        apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
 
         throwIf(
@@ -308,7 +306,7 @@ export class GridModel {
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
-        this.persistenceModel = this.parsePersistenceModel(persistWith, persistOptions);
+        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
     }
 
@@ -983,11 +981,6 @@ export class GridModel {
         return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    parsePersistenceModel(persistWith, persistOptions) {
-        warnIf(persistOptions && !persistWith, "Must specify 'persistWith' if you wish to persist this grid.");
-        return persistWith ? new GridPersistenceModel(this, persistWith, persistOptions) : null;
-    }
-
     parseExperimental(experimental) {
         apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
 
@@ -1094,7 +1087,7 @@ const xhEmptyFlexCol =  {
 
 /**
  * @typedef {Object} GridModelPersistOptions
- * @property {string} [path] - path or key in src where state should be stored (default 'gridModel')
+ * @extends PersistOptions
  * @property {boolean} [persistColumns] - true to include column information (default true)
  * @property {boolean} [persistGrouping] - true to include grouping information (default true)
  * @property {boolean} [persistSort] - true to include sorting information (default true)

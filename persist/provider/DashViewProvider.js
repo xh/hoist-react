@@ -15,9 +15,9 @@ export class DashViewProvider extends PersistenceProvider {
 
     dashViewModel;
 
-    constructor({dashViewModel}) {
+    constructor({dashViewModel, ...rest}) {
         throwIf(!dashViewModel, `Persistence Provider requires a 'dashViewModel'.`);
-        super();
+        super(rest);
         this.dashViewModel = dashViewModel;
     }
 

@@ -16,9 +16,9 @@ export class LocalStorageProvider extends PersistenceProvider {
 
     key;
 
-    constructor({localStorageKey: key}) {
+    constructor({localStorageKey: key, ...rest}) {
         throwIf(!key, `Persistence Provider requires a 'localStorageKey'.`);
-        super();
+        super(rest);
         this.key = key;
     }
 

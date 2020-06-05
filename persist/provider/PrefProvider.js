@@ -16,9 +16,9 @@ export class PrefProvider extends PersistenceProvider {
 
     key;
 
-    constructor({prefKey: key}) {
+    constructor({prefKey: key, ...rest}) {
         throwIf(!key, `Persistence Provider requires a 'prefKey'.`);
-        super();
+        super(rest);
         this.key = key;
     }
 

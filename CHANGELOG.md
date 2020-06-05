@@ -15,7 +15,7 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 🎁 New Features
 
-* Added a new Persistence API (`@hoist/cmp/persistence`) to support flexibly saving Component State
+* Added a new Persistence API (`@hoist/cmp/persist`) to support flexibly saving Component State
  to different locations such as preferences, LocalStorage, and Dashboards.  The primary entry point
  for this API is a new `@persist` annotation which can be added to any primitive observable property
  to make it automatically synchronize with a `PersistenceProvider`.  This API can also be used to

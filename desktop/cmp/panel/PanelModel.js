@@ -16,7 +16,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {PersistenceProvider, PrefProvider} from '@xh/hoist/persistence';
+import {PersistenceProvider, PrefProvider} from '@xh/hoist/persist';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -45,6 +45,7 @@ export class PanelModel {
     showHeaderCollapseButton;
 
     @managed refreshContextModel;
+    @managed provider;
 
     //---------------------
     // Observable State
@@ -77,8 +78,7 @@ export class PanelModel {
      *      Ignored if collapsible is false.
      * @param {RefreshMode} [config.refreshMode] - How should collapsed content be refreshed?
      *      Ignored if collapsible is false.
-     * @param {PersistenceProvider} [c.persistWith] - PersistenceProvider or a config to create one.
-     * @param {PanelModePersistOptions} [c.persistOptions] - options governing persistence.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.
      * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
      * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
@@ -97,7 +97,6 @@ export class PanelModel {
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
         persistWith = null,
-        persistOptions = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
@@ -139,17 +138,15 @@ export class PanelModel {
         // 1) Read state from and attach to provider -- fail gently
         if (persistWith) {
             try {
-                const provider = PersistenceProvider.getOrCreate(persistWith),
-                    path = this.persistOptions?.path ?? 'panelModel';
+                this.provider = PersistenceProvider.create({path: 'panelModel', ...persistWith});
+                const state = this.provider.read() ?? this.legacyState();
 
-                const state = provider.read(path) ?? this.legacyState(provider, path);
                 this.setSize(state?.size ?? defaultSize);
                 this.setCollapsed(state?.collapsed ?? defaultCollapsed);
 
                 this.addReaction({
                     track: () => [this.collapsed, this.size],
-                    run: ([collapsed, size]) => provider.write(path, {collapsed, size}),
-                    debounce: 500
+                    run: ([collapsed, size]) => this.provider.write({collapsed, size})
                 });
             } catch (e) {
                 console.error(e);
@@ -212,11 +209,12 @@ export class PanelModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    legacyState(provider, path) {
+    legacyState() {
+        const {provider} = this;
         if (provider instanceof PrefProvider) {
             const data = XH.getPref(provider.key);
             if (data && !isNil(data.collapsed) && !isNil(data.size)) {
-                provider.write(path, data);
+                provider.write(data);
                 provider.clear('collapsed');
                 provider.clear('size');
                 return data;
@@ -230,9 +228,3 @@ export class PanelModel {
         start(() => window.dispatchEvent(new Event('resize')));
     }
 }
-
-
-/**
- * @typedef {Object} PanelModelPersistOptions
- * @property {string} [path] - path or key in src where state should be stored (default 'panel')
- */

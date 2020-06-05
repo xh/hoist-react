@@ -13,7 +13,7 @@ import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
-import {persist} from '@xh/hoist/persistence';
+import {persist} from '@xh/hoist/persist';
 
 /**
  * @private

@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {find, isUndefined, omit} from 'lodash';
-import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persistence';
+import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persist';
 
 /**
  * Model to manage persisting state from GridModel.
@@ -19,36 +19,38 @@ export class GridPersistenceModel {
 
     VERSION = 1;  // Increment to abandon state.
     gridModel;
-    path;
 
     @observable.ref
     state;
 
+    @managed
+    provider;
+
+    /**
+     *
+     * @param {GridModel} gridModel
+     * @param {GridModelPersistOptions} persistWith
+     */
     constructor(
         gridModel,
-        persistWith,
         {
-            path = 'gridModel',
             persistColumns = true,
             persistGrouping = true,
-            persistSort = true
-        } = {}
+            persistSort = true,
+            ...persistWith
+        }
     ) {
         this.gridModel = gridModel;
-        this.path = path;
+
+        persistWith = {path: 'gridModel', ...persistWith};
 
         // 1) Read state from and attach to provider -- fail gently
         try {
-            const provider = PersistenceProvider.getOrCreate(persistWith);
-            this.state = (
-                this.loadState(provider) ??
-                this.legacyState(provider) ??
-                {version: this.VERSION}
-            );
+            this.provider = PersistenceProvider.create(persistWith);
+            this.state = this.loadState() ?? this.legacyState() ?? {version: this.VERSION};
             this.addReaction({
                 track: () => this.state,
-                run: (state) => provider.write(path, state),
-                debounce: 500
+                run: (state) => this.provider.write(state)
             });
         } catch (e) {
             console.error(e);
@@ -167,17 +169,18 @@ export class GridPersistenceModel {
         this.state = {...this.state, ...updates};
     }
 
-    loadState(provider) {
-        const ret = provider.read(this.path);
+    loadState() {
+        const ret = this.provider.read();
         return ret?.version === this.VERSION ? ret : null;
     }
 
-    legacyState(provider) {
-        if (this.VERSION === 1 && provider instanceof LocalStorageProvider) {
+    legacyState() {
+        const {provider, VERSION} = this;
+        if (VERSION === 1 && provider instanceof LocalStorageProvider) {
             const legacyKey = 'gridState.v1.' + provider.key,
                 data = XH.localStorageService.get(legacyKey);
             if (data) {
-                provider.write(this.path, {...data, version: this.VERSION});
+                provider.write({...data, version: VERSION});
                 XH.localStorageService.remove(legacyKey);
                 return data;
             }
