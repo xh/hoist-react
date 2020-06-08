@@ -225,7 +225,7 @@ export class ChartsModel {
 
     ensureProperTimeseriesChartState(enable) {
         if (!enable) {
-            this.setChartType('Histogram');
+            this.setChartType('category');
         }
     }
 
