@@ -77,7 +77,7 @@ export class ClientErrorModel {
                 isTreeColumn: true,
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },
-            {field: 'day', width: 200, align: 'right', renderer: this.dateRangeRenderer},
+            {field: 'day', width: 200, align: 'right', headerName: 'Day / Range', renderer: this.dateRangeRenderer},
             {field: 'username', ...usernameCol},
             {field: 'userAlerted', ...boolCheckCol, headerName: 'Alerted', width: 90},
             {field: 'browser', width: 100},

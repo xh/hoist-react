@@ -18,9 +18,9 @@ import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
 import {ActivityModel} from './ActivityModel';
-import {activityDetail} from './ActivityDetail';
-import {chartsPanel} from './charts/ChartsPanel';
-import './ActivityPanel.scss'
+import {activityDetailDialog} from './detail/ActivityDetailDialog';
+import {activityDetailPanel} from './detail/ActivityDetailPanel';
+import './ActivityPanel.scss';
 
 export const activityPanel = hoistCmp.factory({
     model: creates(ActivityModel),
@@ -28,12 +28,12 @@ export const activityPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             mask: 'onLoad',
-            className: 'activity-panel',
+            className: 'xh-admin-activity-panel',
             tbar: tbar(),
             items: [
                 grid({onRowDoubleClicked: (e) => model.expandRowOrOpenDetail(e)}),
-                chartsPanel(),
-                activityDetail()
+                activityDetailPanel(),
+                activityDetailDialog()
             ]
         });
     }

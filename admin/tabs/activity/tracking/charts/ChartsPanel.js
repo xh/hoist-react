@@ -7,32 +7,69 @@
 import {isEmpty} from 'lodash';
 import {uses, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {tabContainer} from '@xh/hoist/cmp/tab';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
+import {chart} from '@xh/hoist/cmp/chart';
+import {checkbox} from '../../../../../desktop/cmp/input';
+
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: uses(ChartsModel),
     render({model}) {
-        if (isEmpty(model.dimensions)) return null;
+        const {chartType, dimensions} = model,
+            isTimeSeries = chartType == 'timeseries';
+
+        if (isEmpty(dimensions)) return null;
         return panel({
-            item: tabContainer(),
-            bbar: bbar(),
-            model: {
-                defaultSize: 500,
-                side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
-            }
+            items: [
+                chart({
+                    model: model.categoryChartModel,
+                    omit: isTimeSeries
+                }),
+                chart({
+                    model: model.timeseriesChartModel,
+                    omit: !isTimeSeries
+                })
+            ],
+            bbar: bbar()
         });
     }
 });
 
 const bbar = hoistCmp.factory(
-    () => toolbar(
-        switchInput({
-            label: 'All Entries',
-            bind: 'chartAllEntries'
+    ({model}) => toolbar(
+        buttonGroupInput({
+            bind: 'chartType',
+            items: [
+                button({
+                    icon: Icon.chartBar(),
+                    value: 'category'
+                }),
+                button({
+                    icon: Icon.chartLine(),
+                    value: 'timeseries',
+                    disabled: !model.enableTimeseries
+                })
+            ]
+        }),
+        toolbarSeparator(),
+        checkbox({
+            className: 'feature-series-checkbox',
+            label: model.yAxisLabel,
+            bind: 'showFeatureSeries'
+        }),
+        checkbox({
+            className: 'entries-series-checkbox',
+            label: 'Entries',
+            bind: 'showEntriesSeries'
+        }),
+        checkbox({
+            className: 'elapsed-series-checkbox',
+            label: 'Elapsed',
+            bind: 'showElapsedSeries'
         })
     )
 );

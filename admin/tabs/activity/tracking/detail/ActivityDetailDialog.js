@@ -13,7 +13,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDateTime} from '@xh/hoist/format';
 import {dialog} from '@xh/hoist/kit/blueprint';
 
-export const activityDetail = hoistCmp.factory(
+export const activityDetailDialog = hoistCmp.factory(
     ({model}) => {
         const rec = model.detailRecord;
 
@@ -39,7 +39,7 @@ const detail = hoistCmp.factory(
         return panel({
             items: [
                 table({
-                    className: 'xh-admin-activity-detail',
+                    className: 'xh-admin-activity-detail--dialog',
                     items: [
                         tbody(
                             tr(th('User:'), td(user)),

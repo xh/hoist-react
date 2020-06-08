@@ -89,7 +89,7 @@ export class ActivityModel {
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },
             {field: 'username', ...usernameCol},
-            {field: 'day', width: 200, align: 'right', renderer: this.dateRangeRenderer},
+            {field: 'day', width: 200, align: 'right', headerName: 'Day / Range', renderer: this.dateRangeRenderer},
             {field: 'category', width: 100},
             {field: 'device', width: 100},
             {field: 'browser', width: 100},
