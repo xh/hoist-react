@@ -80,7 +80,7 @@ export class ChartsModel {
         highchartsConfig: {
             chart: {
                 type: 'line',
-                animation: false,
+                animation: false
             },
             legend: {
                 enabled: false
