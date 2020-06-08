@@ -34,6 +34,7 @@ export class ActivityModel {
 
     @managed
     dimChooserModel = new DimensionChooserModel({
+        persistWith: this.persistWith,
         enableClear: true,
         dimensions: [
             {label: 'Date', value: 'day'},

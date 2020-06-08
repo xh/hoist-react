@@ -134,24 +134,29 @@ export class PanelModel {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
 
-        // 1) Read state from and attach to provider -- fail gently
+        // Read state from provider -- fail gently
+        let state = null;
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'panel', ...persistWith});
-                const state = this.provider.read() ?? this.legacyState();
-
-                this.setSize(state?.size ?? defaultSize);
-                this.setCollapsed(state?.collapsed ?? defaultCollapsed);
-
-                this.addReaction({
-                    track: () => [this.collapsed, this.size],
-                    run: ([collapsed, size]) => this.provider.write({collapsed, size})
-                });
+                state = this.provider.read() ?? this.legacyState();
             } catch (e) {
                 console.error(e);
-                this.setSize(defaultSize);
-                this.setCollapsed(defaultCollapsed);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
             }
+        }
+
+        // Initialize state.
+        this.setSize(state?.size ?? defaultSize);
+        this.setCollapsed(state?.collapsed ?? defaultCollapsed);
+
+        // Attach to provider last
+        if (this.provider) {
+            this.addReaction({
+                track: () => [this.collapsed, this.size],
+                run: ([collapsed, size]) => this.provider.write({collapsed, size})
+            });
         }
     }
 
@@ -211,12 +216,16 @@ export class PanelModel {
     legacyState() {
         const {provider} = this;
         if (provider instanceof PrefProvider) {
-            const data = XH.getPref(provider.key);
-            if (data && !isNil(data.collapsed) && !isNil(data.size)) {
-                provider.write(data);
-                provider.clear('collapsed');
-                provider.clear('size');
-                return data;
+            try {
+                const data = XH.getPref(provider.key);
+                if (data && !isNil(data.collapsed) && !isNil(data.size)) {
+                    provider.write(data);
+                    provider.clear('collapsed');
+                    provider.clear('size');
+                    return data;
+                }
+            } catch (e) {
+                console.error('Failed reading legacy state');
             }
         }
         return null;
