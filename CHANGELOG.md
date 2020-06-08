@@ -25,6 +25,7 @@ wide variety of enterprise software projects. For any questions regarding this c
 full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
+* Grid dependencies updated to properly reflect application-level licensing requirements.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 

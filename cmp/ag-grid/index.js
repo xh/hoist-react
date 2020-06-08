@@ -6,13 +6,15 @@
  */
 import {AgGridReact} from '@ag-grid-community/react';
 import '@ag-grid-enterprise/all-modules';
-import {AllModules, LicenseManager, ModuleRegistry} from '@ag-grid-enterprise/all-modules';
-import '@ag-grid-enterprise/all-modules/dist/styles/ag-grid.css';
-import '@ag-grid-enterprise/all-modules/dist/styles/ag-theme-balham-dark.css';
-import '@ag-grid-enterprise/all-modules/dist/styles/ag-theme-balham.css';
+import {AllCommunityModules, ModuleRegistry} from '@ag-grid-community/all-modules';
+import '@ag-grid-community/all-modules/dist/styles/ag-grid.css';
+import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham-dark.css';
+import '@ag-grid-community/all-modules/dist/styles/ag-theme-balham.css';
 import {elemFactory} from '@xh/hoist/core';
 
-ModuleRegistry.registerModules(AllModules);
+
+// TODO - app-level plan for module/license registration
+ModuleRegistry.registerModules(AllCommunityModules);
 
 // Set via webpack.DefinePlugin at build time - see @xh/hoist-dev-utils/configureWebpack
 LicenseManager.setLicenseKey(xhAgGridLicenseKey);
