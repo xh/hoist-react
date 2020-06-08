@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {PersistenceProvider} from '@xh/hoist/persist';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
@@ -65,11 +66,15 @@ import {dashView} from './impl/DashView';
 @HoistModel
 export class DashContainerModel {
 
-    //------------------------
-    // Observable API
-    //------------------------
+    //---------------------------
+    // Observable Persisted State
+    //---------------------------
     /** @member {Object[]} */
     @observable.ref state;
+
+    //-----------------------------
+    // Observable Transient State
+    //------------------------------
     /** @member {GoldenLayout} */
     @observable.ref goldenLayout;
     /** @member {DashViewModel[]} */
@@ -116,6 +121,7 @@ export class DashContainerModel {
      * @param {boolean} [renameLocked] - prevent renaming views.
      * @param {Object} [goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
      *      @see http://golden-layout.com/docs/Config.html
+     * @param {PersistOptions} [c.persistWith] - options governing persistence
      * @param {string} [emptyText] - text to display when the container is empty
      * @param {string} [addViewButtonText] - text to display on the add view button
      */
@@ -129,6 +135,7 @@ export class DashContainerModel {
         contentLocked = false,
         renameLocked = false,
         goldenLayoutSettings,
+        persistWith = null,
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View'
     }) {
@@ -138,7 +145,7 @@ export class DashContainerModel {
             return new DashViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
         });
 
-        this.state = initialState;
+        this.restoreState = {initialState, layoutLocked, contentLocked, renameLocked};
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.layoutLocked = layoutLocked;
@@ -147,6 +154,21 @@ export class DashContainerModel {
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
+
+        // Read state from provider -- fail gently
+        let persistState = null;
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
+                persistState = this.provider.read();
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
+        }
+
+        this.state = persistState?.state ?? initialState;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
@@ -158,6 +180,22 @@ export class DashContainerModel {
             track: () => this.viewState,
             run: () => this.updateState()
         });
+    }
+
+    /**
+     * Restore the initial state as specified by the application at construction time. This is the
+     * state without any persisted state or user changes applied.
+     *
+     * This method will clear the persistent state saved for this component, if any.
+     */
+    @action
+    async restoreDefaultsAsync() {
+        const {restoreState} = this;
+        this.layoutLocked = restoreState.layoutLocked;
+        this.contentLocked = restoreState.contentLocked;
+        this.renameLocked = restoreState.renameLocked;
+        await this.loadStateAsync(restoreState.initialState);
+        this.provider?.clear();
     }
 
     /**
@@ -244,6 +282,7 @@ export class DashContainerModel {
     publishState() {
         const {goldenLayout} = this;
         this.state = convertGLToState(goldenLayout, this);
+        this.provider?.write({state: this.state});
     }
 
     onItemDestroyed(item) {
