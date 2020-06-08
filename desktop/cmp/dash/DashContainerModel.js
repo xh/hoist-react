@@ -265,7 +265,7 @@ export class DashContainerModel {
     //------------------------
     updateState() {
         const {goldenLayout, containerRef} = this;
-        if (!goldenLayout.isInitialised || !containerRef.current) return;
+        if (!goldenLayout?.isInitialised || !containerRef.current) return;
 
         // If the layout becomes completely empty, ensure we have our minimal empty layout
         if (!goldenLayout.root.contentItems.length) {
