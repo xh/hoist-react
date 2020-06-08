@@ -5,6 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+body {
+  --panel-bg: var(--xh-bg);
+}
+
 .xh-admin-app-frame {
   .bp3-tabs.bp3-vertical > .bp3-tab-list {
     min-width: 130px;
