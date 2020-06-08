@@ -13,7 +13,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {Cube} from '@xh/hoist/data';
-import {FormModel} from '../../../../cmp/form';
+import {FormModel} from '@xh/hoist/cmp/form';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -175,7 +175,7 @@ export class ActivityModel {
         const rec = agParams.data,
             isLeaf = isEmpty(rec.children);
         if (isLeaf) {
-            this.detailRecord = agParams.data; // Could go away for a detail panel however, might be useful case a large "data" column or such might be better viewed here.
+            this.detailRecord = agParams.data;
         } else {
             agParams.node.setExpanded(true);
         }

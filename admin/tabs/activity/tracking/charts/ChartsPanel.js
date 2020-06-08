@@ -12,7 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {chart} from '@xh/hoist/cmp/chart';
-import {checkbox} from '../../../../../desktop/cmp/input';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
 
 import {ChartsModel} from './ChartsModel';
 
