@@ -23,7 +23,8 @@ wide variety of enterprise software projects. For any questions regarding this c
     synchronize with a `PersistenceProvider`.
   * This is designed to replace any app-specific code previously added to synchronize fields and
     their values to prefs via ad-hoc initializers and reactions.
-  * This same API is now used to handle state persistence for `GridStateModel` and `PanelModel`,
+  * This same API is now used to handle state persistence for `GridStateModel`, `PanelModel`,
+    `DimensionChooserModel`, and `DashContainerModel`.
     configurable via the new `persistWith` option on those classes.
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
 
@@ -35,12 +36,14 @@ wide variety of enterprise software projects. For any questions regarding this c
 * The option `GridModel.stateModel` has been removed in favor of `persistWith`. Existing user state
   will be transferred to the new format, assuming a `PersistenceProvider` of type 'localStorage'
   referring to the same key is used (e.g. `persistWith: {localStorageKey: 'my-grid-state-id'}`.
+* The options `DimensionChooserModel.preference` and `DimensionChooserModel.historyPreference`
+  have been removed in favor of `persistWith`.
 * Use the new `GridModel.persistOptions` config for finer control over what grid state is persisted
   (replacement for stateModel configs to disable persistence of column state/sorting/grouping).
 * `AppSpec.idleDetectionEnabled` has been removed. App-specific Idle detection is now enabled via
- the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
+   the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
 * `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanel`. If specified, it should be a
-full-screen component.
+   full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 

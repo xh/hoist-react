@@ -16,11 +16,13 @@ import {Cube} from '@xh/hoist/data';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
+export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
+
 @HoistModel
 @LoadSupport
 export class ActivityModel {
 
-    static persistWith = {localStorageKey: 'xhAdminActivityState'};
+    persistWith = PERSIST_ACTIVITY;
 
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400

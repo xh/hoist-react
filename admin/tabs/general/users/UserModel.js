@@ -14,7 +14,7 @@ import {keyBy, keys} from 'lodash';
 @LoadSupport
 export class UserModel {
 
-    static persistWith = {localStorageKey: 'xhAdminUserState'};
+    persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
     @bindable withRolesOnly = false;

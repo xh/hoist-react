@@ -18,7 +18,7 @@ import {ChildCountAggregator, RangeAggregator} from '../aggregators';
 @LoadSupport
 export class ClientErrorModel {
 
-    static persistWith = {localStorageKey: 'xhAdminClientErrorState'};
+    persistWith = {localStorageKey: 'xhAdminClientErrorState'};
 
     @bindable.ref endDate = LocalDate.today();
     @bindable.ref startDate = LocalDate.today().subtract(7);

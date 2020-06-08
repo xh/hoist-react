@@ -13,7 +13,7 @@ import {trimEnd} from 'lodash';
 @LoadSupport
 export class EhCacheModel {
 
-    static persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+    persistWith = {localStorageKey: 'xhAdminEhCacheState'};
 
     @managed
     gridModel = new GridModel({

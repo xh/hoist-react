@@ -60,11 +60,7 @@ function createDescriptor(target, property, descriptor, options) {
         // Read from and attach to Provider.
         // Fail gently -- initialization exceptions causes stack overflows for MobX.
         try {
-            const persistWith = {
-                path: property,
-                ...options,
-                ...this.constructor.persistWith
-            };
+            const persistWith = {path: property, ...options, ...this.persistWith};
             const provider = this.markManaged(PersistenceProvider.create(persistWith));
             providerState = cloneDeep(provider.read());
             this.addReaction({
@@ -74,7 +70,7 @@ function createDescriptor(target, property, descriptor, options) {
         } catch (e) {
             console.error(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                `'static persistWith' on this object or annotation.`
+                `'persistWith' on this object or annotation.`
             );
         }
 

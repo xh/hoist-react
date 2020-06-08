@@ -23,7 +23,7 @@ import {ConfigDifferModel} from './differ/ConfigDifferModel';
 @LoadSupport
 export class ConfigModel {
 
-    static persistWith = {localStorageKey: 'xhAdminConfigState'};
+    persistWith = {localStorageKey: 'xhAdminConfigState'};
 
     @managed
     gridModel = new RestGridModel({
