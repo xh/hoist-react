@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {version as agGridVersion} from '@ag-grid-community/all-modules/package.json';
+import {agGridVersion} from '@xh/hoist/dynamics/agGrid';
 import {version as blueprintCoreVersion} from '@blueprintjs/core/package.json';
 import {HoistService, XH} from '@xh/hoist/core';
 import {version as hoistReactVersion} from '@xh/hoist/package.json';

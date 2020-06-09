@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {Utils as agUtils} from '@ag-grid-community/all-modules';
+import {AgGridUtils} from '@xh/hoist/dynamics/agGrid';
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
@@ -478,7 +478,7 @@ export class Column {
     //--------------------
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
-        return sortCfg ? sortCfg.comparator(v1, v2) : agUtils.defaultComparator(v1, v2);
+        return sortCfg ? sortCfg.comparator(v1, v2) : AgGridUtils.defaultComparator(v1, v2);
     };
 
     defaultSetValueFn = ({value, record, store, field}) => {

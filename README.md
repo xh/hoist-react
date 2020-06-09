@@ -77,10 +77,10 @@ libraries, client application(s) using Hoist React must acquire and register app
 
 **Ag-Grid** is released by its developer under a dual licensing model, with the community edition
 available under a permissive MIT license and the Enterprise edition requiring a [paid license from
-ag-Grid](https://www.ag-grid.com/license-pricing.php). Hoist React declares a dependency on the
-community edition only, but we encourage our clients to appropriately license the enterprise edition
-and declare it as an application dependency to unlock additional (often essential) functionality
-such as row grouping and tree grids.
+ag-Grid](https://www.ag-grid.com/license-pricing.php). Hoist React requires client applications to
+provide their own licensed version of ag-Grid at runtime.  A free community version is all that is
+required, however many applications will want to license the enterprise version of ag-Grid in order
+to make use of the important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
