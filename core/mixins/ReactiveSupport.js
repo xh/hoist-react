@@ -132,7 +132,7 @@ export function ReactiveSupport(C) {
                     `Required function '${setter}()' not found on bound model. ` +
                     `Implement a setter, or use the @bindable annotation.`
                 );
-                this[setter](value);
+                this[setter].call(this, value);
             },
 
             //------------------------

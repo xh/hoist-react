@@ -18,6 +18,8 @@ import {ChildCountAggregator, RangeAggregator} from '../aggregators';
 @LoadSupport
 export class ClientErrorModel {
 
+    persistWith = {localStorageKey: 'xhAdminClientErrorState'};
+
     @bindable.ref endDate = LocalDate.today();
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable username = '';
@@ -27,6 +29,7 @@ export class ClientErrorModel {
 
     @managed
     dimChooserModel = new DimensionChooserModel({
+        persistWith: this.persistWith,
         enableClear: true,
         dimensions: [
             {label: 'Date', value: 'day'},
@@ -63,7 +66,7 @@ export class ClientErrorModel {
     @managed
     gridModel = new GridModel({
         treeMode: true,
-        stateModel: 'xhClientErrorGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Client Errors ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},

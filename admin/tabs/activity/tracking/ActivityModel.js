@@ -17,9 +17,13 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
+export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
+
 @HoistModel
 @LoadSupport
 export class ActivityModel {
+
+    persistWith = PERSIST_ACTIVITY;
 
     @observable.ref detailRecord = null;
 
@@ -38,6 +42,7 @@ export class ActivityModel {
 
     @managed
     dimChooserModel = new DimensionChooserModel({
+        persistWith: this.persistWith,
         enableClear: true,
         dimensions: [
             {label: 'Date', value: 'day'},
@@ -69,12 +74,12 @@ export class ActivityModel {
             {name: 'count', aggregator: new ChildCountAggregator()},
             {name: 'entryCount', aggregator: new LeafCountAggregator()} // Used for charting, not displayed in grid,
         ]
-    })
+    });
 
     @managed
     gridModel = new GridModel({
         treeMode: true,
-        stateModel: 'xhActivityGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
@@ -213,7 +218,7 @@ export class ActivityModel {
             },
             run: () => this.loadAsync(),
             fireImmediately: true,
-            delay: 1
+            debounce: 10
         };
     }
 

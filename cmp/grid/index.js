@@ -18,4 +18,3 @@ export * from './renderers/MultiFieldRenderer';
 export * from './GridAutosizeMode';
 export * from './Grid';
 export * from './GridModel';
-export * from './GridStateModel';
