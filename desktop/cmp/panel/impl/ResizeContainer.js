@@ -18,11 +18,21 @@ export const resizeContainer = hoistCmp.factory({
     className: 'xh-resizable',
 
     render({className, children}, ref) {
-        const panelModel = useContextModel(PanelModel);
-        let {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
+        const panelModel = useContextModel(PanelModel),
+            {size, sizedInPercents, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
-            items = [collapsed ? box(child) : box({item: child, [dim]: size})];
+            dragBarWidth = '8px';
+
+        let panelSize = undefined,
+            boxSize = size;
+
+        if (sizedInPercents) {
+            panelSize = size !== '0%' ? size : dragBarWidth;
+            boxSize = `calc(100% - ${dragBarWidth})`;
+        }
+
+        let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
 
         if (showSplitter) {
             const splitterCmp = splitter();
@@ -40,6 +50,7 @@ export const resizeContainer = hoistCmp.factory({
             ref,
             className,
             flex: 'none',
+            [dim]: panelSize,
             [maxDim]: '100%',
             items
         });

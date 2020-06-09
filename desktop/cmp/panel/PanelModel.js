@@ -15,7 +15,7 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {PersistenceProvider, PrefProvider} from '@xh/hoist/persist';
 
 /**
@@ -52,7 +52,7 @@ export class PanelModel {
     /** Is the Panel rendering in a collapsed state? */
     @observable collapsed = false;
 
-    /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
+    /** Size in pixels or percents along sizing dimension.  Used when object is *not* collapsed. */
     @observable size = null;
 
     /** Is this panel currently resizing? */
@@ -67,9 +67,9 @@ export class PanelModel {
      * @param {boolean} [c.resizable] - Can panel be resized?
      * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} c.defaultSize - Default size (in px) of the panel.
-     * @param {number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
-     * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
+     * @param {(number|string)} config.defaultSize - Default size (in px or %) of the panel. Percent example: '50%' (must be a string).  Pixels example: 300  (must be a number - no unit necessary for pixels).
+     * @param {(number|string)} [config.minSize] - Minimum size (in px or %) to which the panel can be resized.
+     * @param {?(number|string)} [config.maxSize] - Maximum size (in px or %) to which the panel can be resized.
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
@@ -111,7 +111,17 @@ export class PanelModel {
 
         apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
-        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
+        this.sizedInPercents = this.isPercent(defaultSize);
+
+        if (this.sizedInPercents &&
+            ((!isNil(maxSize) && !this.isPercent(maxSize)) || (minSize !== 0 && !this.isPercent(minSize)))
+        ) {
+            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all '%' or all in 'px' ('px' is the default unit if just a number is specified).");
+            maxSize = null;
+            minSize = null;
+        }
+
+        if (!isNil(maxSize) && (parseFloat(maxSize) < parseFloat(minSize) || parseFloat(maxSize) < parseFloat(defaultSize))) {
             console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
             maxSize = null;
         }
@@ -120,7 +130,7 @@ export class PanelModel {
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
-        this.minSize = Math.min(minSize, defaultSize);
+        this.minSize = this.findMinSize(minSize, defaultSize);
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -148,7 +158,10 @@ export class PanelModel {
         }
 
         // Initialize state.
-        this.setSize(state?.size ?? defaultSize);
+        let size = state?.size;
+        // gracefully recover from switching defaultSize from percents to px or vice versa.
+        if (this.defaultSize && (this.sizedInPercents && !this.isPercent(size)) || (!this.sizedInPercents && this.isPercent(size))) size = defaultSize;
+        this.setSize(size ?? defaultSize);
         this.setCollapsed(state?.collapsed ?? defaultCollapsed);
 
         // Attach to provider last
@@ -229,6 +242,20 @@ export class PanelModel {
             }
         }
         return null;
+    }
+
+    isPercent(val) {
+        return isString(val) && val.endsWith('%');
+    }
+
+    findMinSize(minSize, defaultSize) {
+        if (minSize === 0) return 0;
+
+        if (!this.sizedInPercents) {
+            return Math.min(minSize, defaultSize);
+        }
+
+        return Math.min(parseFloat(minSize), parseFloat(defaultSize)) + '%';
     }
 
     dispatchResize() {
