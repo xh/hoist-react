@@ -90,6 +90,7 @@ export class ActivityModel {
                 field: 'cubeLabel',
                 headerName: 'Track',
                 width: 240,
+                autosizeMaxWidth: 400,
                 isTreeColumn: true,
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },

@@ -8,6 +8,7 @@ import {isEmpty} from 'lodash';
 import {uses, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {hframe} from '@xh/hoist/cmp/layout';
+import {PERSIST_ACTIVITY} from '../ActivityModel';
 
 import {chartsPanel} from '../charts/ChartsPanel';
 import {activityDetailTable} from '../detail/ActivityDetailTable';
@@ -25,7 +26,7 @@ export const activityDetailPanel = hoistCmp.factory({
             model: {
                 defaultSize: 380,
                 side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
+                persistWith: {...PERSIST_ACTIVITY, path: 'detailPanel'}
             }
         });
     }
