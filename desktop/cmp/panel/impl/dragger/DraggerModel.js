@@ -76,7 +76,7 @@ export class DraggerModel {
 
         // We will use whichever is smaller - the calculated available size, or the configured max size
         const calcMaxSize = this.startSize + this.getSiblingAvailSize();
-        this.maxSize = maxSize ? Math.min(this.toPx(maxSize), calcMaxSize) : calcMaxSize;
+        this.maxSize = maxSize ? Math.min(this.forcePx(maxSize), calcMaxSize) : calcMaxSize;
     };
 
     onDrag = (e) => {
@@ -138,7 +138,7 @@ export class DraggerModel {
             {startSize} = this;
 
         if (startSize !== null) {
-            let size = clamp(startSize + this.diff, this.toPx(minSize), this.maxSize);
+            let size = clamp(startSize + this.diff, this.forcePx(minSize), this.maxSize);
             size = sizedInPercents ? this.toPct(size) : size;
             if (throttle) {
                 this.throttledSetSize(size);
@@ -163,7 +163,7 @@ export class DraggerModel {
     moveDragBar() {
         const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
             {side} = panelModel,
-            minSize = this.toPx(panelModel.minSize);
+            minSize = this.forcePx(panelModel.minSize);
 
         if (!dragBar) return;
 
@@ -220,7 +220,7 @@ export class DraggerModel {
         return e.touches && e.touches.length > 0;
     }
 
-    toPx(val) {
+    forcePx(val) {
         const PM = this.panelModel;
         if (!PM.isPercent(val)) return val;
         return parseFloat(val) * this.panelParent[PM.vertical ? 'offsetHeight' : 'offsetWidth'] / 100;

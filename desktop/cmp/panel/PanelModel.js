@@ -68,7 +68,7 @@ export class PanelModel {
      * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
      * @param {(number|string)} config.defaultSize - Default size (in px or %) of the panel. Percent example: '50%' (must be a string).  Pixels example: 300  (must be a number - no unit necessary for pixels).
-     * @param {(number|string)} [config.minSize] - Minimum size (in px or %) to which the panel can be resized.
+     * @param {?(number|string)} [config.minSize] - Minimum size (in px or %) to which the panel can be resized.
      * @param {?(number|string)} [config.maxSize] - Maximum size (in px or %) to which the panel can be resized.
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
@@ -116,7 +116,7 @@ export class PanelModel {
         if (this.sizedInPercents &&
             ((!isNil(maxSize) && !this.isPercent(maxSize)) || (minSize !== 0 && !this.isPercent(minSize)))
         ) {
-            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all '%' or all in 'px' ('px' is the default unit if just a number is specified).");
+            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all in '%' or all in 'px' ('px' is the default unit when just a number is specified).");
             maxSize = null;
             minSize = null;
         }
