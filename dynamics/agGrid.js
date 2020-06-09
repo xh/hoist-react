@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import compareVersions from 'compare-versions';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -19,10 +20,21 @@ export let AgGridReact = null;
 export let AgGridUtils = null;
 export let agGridVersion = null;
 
+const MIN_VERSION = '23.0.2';
+const MAX_VERSION = '23.*.*';
+
 /**
  * Expose application versions of ag-Grid to Hoist.
  */
 export function installAgGridImpls(ComponentReactWrapper, Utils, version) {
+    if (compareVersions(version, MIN_VERSION) < 0 || compareVersions(version, MAX_VERSION) > 0) {
+        console.error(
+            `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +
+            `${MAX_VERSION}. ag-Grid will be unavailable.`
+        );
+        return;
+    }
+
     AgGridReact = ComponentReactWrapper;
     AgGridUtils = Utils;
     agGridVersion = version;

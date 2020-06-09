@@ -2,49 +2,6 @@
 # yarn lockfile v1
 
 
-"@ag-grid-community/all-modules@~23.0.2":
-  version "23.0.2"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/all-modules/-/all-modules-23.0.2.tgz#3b224149c83a5495f8cf21f7f383d3e1b7098e86"
-  integrity sha512-JkzYoJ1+1oog0anO2FgrTHSYlpRceI2zRupXVCNKKWm7KFUyjM4bQAAKnq3iM8YYZEFrBSJYL+byT+k0CEUZcw==
-  dependencies:
-    "@ag-grid-community/client-side-row-model" "~23.0.0"
-    "@ag-grid-community/core" "~23.0.0"
-    "@ag-grid-community/csv-export" "~23.0.0"
-    "@ag-grid-community/infinite-row-model" "~23.0.0"
-
-"@ag-grid-community/client-side-row-model@~23.0.0":
-  version "23.0.2"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-23.0.2.tgz#52eee1e4d50fa9cd7a0c3ab8787ef34ad27f13f2"
-  integrity sha512-1JLd3QTW3DsWn3oHdVJF1dDx7e8yI+KuEU8ii4zTHx33gDSaHGHlUqEY8E9oj4YzGcCFU/sscwxD3ZMQOVLFWA==
-  dependencies:
-    "@ag-grid-community/core" "~23.0.0"
-
-"@ag-grid-community/core@~23.0.0":
-  version "23.0.2"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-23.0.2.tgz#b751a344222e75ea37f2545af21efd9b6579b53d"
-  integrity sha512-jCzthokscek+g3LGuARdZ4f7k3/wRgQX3mmzHBz8hCt96FULVErWEHe09jJIm9CT2iFPXucm5p0QP8iNYbO3vQ==
-
-"@ag-grid-community/csv-export@~23.0.0":
-  version "23.0.2"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/csv-export/-/csv-export-23.0.2.tgz#6d83be4406adae83d00a349b323eaea99b4d5ae5"
-  integrity sha512-pZoRhc5i/6+lt9BYNUc9x0hiJnCptgr1MZNkyYQfIswNbUBwJZT1eZyZyOIJFLyOlCPMvmHl2hUF6jsI6o722Q==
-  dependencies:
-    "@ag-grid-community/core" "~23.0.0"
-
-"@ag-grid-community/infinite-row-model@~23.0.0":
-  version "23.0.2"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/infinite-row-model/-/infinite-row-model-23.0.2.tgz#a7e6fd743122f145c3a27af43945a46a810eecec"
-  integrity sha512-yFBjE4RQYsjwBy1PVqrBZu3ojKUueEXyfSQ5UZZ38COIgPAOZE2ZFVS96dMU8CXVjJumHts62OIwUgExyyollw==
-  dependencies:
-    "@ag-grid-community/core" "~23.0.0"
-
-"@ag-grid-community/react@~23.0.3":
-  version "23.0.3"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-23.0.3.tgz#db04d3236f8fe157d1f5aa8ea0ce1c2819ddb521"
-  integrity sha512-U4W9a6ZomtOjhDF8cH4l61tV0sdUsXRbFj+6HfaIa6vVI+b06eKWX+pCdXHSSgBQx9ZjR+NVKqq4FkEE6aUAgQ==
-  dependencies:
-    prop-types "^15.6.2"
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.1", "@babel/code-frame@^7.8.3":
   version "7.10.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.1.tgz#d5481c5095daa1c57e16e54c6f9198443afb49ff"
@@ -3223,7 +3180,7 @@ commondir@^1.0.1:
   resolved "https://registry.yarnpkg.com/commondir/-/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
   integrity sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
 
-compare-versions@^3.6.0:
+compare-versions@^3.6.0, compare-versions@~3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-3.6.0.tgz#1a5689913685e5a87637b8d3ffca75514ec41d62"
   integrity sha512-W6Af2Iw1z4CB7q4uU4hv646dW9GQuBM+YpC0UvUCWSD8w90SJjp+ujJuXaEMtAXBtSqGfMPuFOVn4/+FlaqfBA==
