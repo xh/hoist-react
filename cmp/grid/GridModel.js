@@ -43,7 +43,7 @@ import {
     pull,
     sortBy
 } from 'lodash';
-import {GridStateModel} from './GridStateModel';
+import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
 /**
@@ -72,10 +72,8 @@ export class GridModel {
     selModel;
     /** @member {boolean} */
     treeMode;
-    /** @member {GridStateModel} */
-    stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel;
+    @managed colChooserModel;
     /** @member {function} */
     rowClassFn;
     /** @member {(Array|function)} */
@@ -137,6 +135,9 @@ export class GridModel {
     /** @private - initial state provided to ctor - powers restoreDefaults(). */
     _defaultState;
 
+    /** @member {GridPersistenceModel} */
+    @managed persistenceModel;
+
     /**
      * Is autosizing enabled on this grid?
      *
@@ -158,7 +159,7 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
-     * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
+     * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -219,10 +220,11 @@ export class GridModel {
         treeMode = false,
         showSummary = false,
         selModel,
-        stateModel = null,
         emptyText = null,
         sortBy = [],
         groupBy = null,
+
+        persistWith,
 
         sizingMode = 'standard',
         showHover = false,
@@ -249,6 +251,7 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -270,7 +273,9 @@ export class GridModel {
         });
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
+        apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
+
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
@@ -301,7 +306,7 @@ export class GridModel {
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
-        this.stateModel = this.parseStateModel(stateModel);
+        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
     }
 
@@ -315,7 +320,7 @@ export class GridModel {
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-        this.stateModel?.clear();
+        this.persistenceModel.clear();
     }
 
     /**
@@ -936,7 +941,8 @@ export class GridModel {
         }
 
         throw XH.exception(
-            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
+            'GridModel.store value must be either an instance of a Store or a config for one.'
+        );
     }
 
     calcFieldNamesFromColumns() {
@@ -975,20 +981,6 @@ export class GridModel {
         return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    parseStateModel(stateModel) {
-        let ret = null;
-        if (isPlainObject(stateModel)) {
-            ret = new GridStateModel(stateModel);
-        } else if (isString(stateModel)) {
-            ret = new GridStateModel({gridId: stateModel});
-        }
-        if (ret) {
-            ret.init(this);
-            this.markManaged(ret);
-        }
-        return ret;
-    }
-
     parseExperimental(experimental) {
         apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
 
@@ -1003,8 +995,7 @@ export class GridModel {
 
 
     createChooserModel() {
-        const Model = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
-        return this.markManaged(new Model(this));
+        return XH.isMobileApp ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
     }
 
     defaultGroupSortFn = (a, b) => {
@@ -1094,3 +1085,10 @@ const xhEmptyFlexCol =  {
  */
 
 
+/**
+ * @typedef {Object} GridModelPersistOptions
+ * @extends PersistOptions
+ * @property {boolean} [persistColumns] - true to include column information (default true)
+ * @property {boolean} [persistGrouping] - true to include grouping information (default true)
+ * @property {boolean} [persistSort] - true to include sorting information (default true)
+ */

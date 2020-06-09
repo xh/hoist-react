@@ -4,14 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
     difference,
-    every,
     isArray,
     isEmpty,
     isEqual,
@@ -21,6 +20,7 @@ import {
     sortBy,
     without
 } from 'lodash';
+import {PersistenceProvider} from '../../persist';
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
@@ -36,19 +36,18 @@ import {
 @HoistModel
 export class DimensionChooserModel {
 
-    @observable.ref value = null;
+    @observable.ref value;
+    @observable.ref history;
 
     // Immutable properties
     maxHistoryLength = null;
     maxDepth = null;
-    preference = null;
-    historyPreference = null;
     dimensions = null;
     dimensionVals = null;
     enableClear = false;
+    @managed provider = null;
 
     // Internal state
-    history = [];
     @observable.ref pendingValue = [];
 
     //-------------------------
@@ -63,11 +62,10 @@ export class DimensionChooserModel {
      * @param {string[]|Object[]} c.dimensions - dimensions available for selection. The object
      *      form supports value, label, and leaf keys, where `leaf: true` indicates that the
      *      dimension does not support any further sub-groupings.
-     * @param {string[]} [c.initialValue] - initial dimensions if history empty / not configured.
-     * @param {string} [c.preference] - preference key used to persist the user's last value.
-     * @param {string} [c.historyPreference] - preference key used to persist the user's most
-     *      recently selected groupings for easy re-selection. Will default to 'preference'. Set to
-     *      null to not track history.
+     * @param {string[]} [c.initialValue] - initial value -- will default to first value in history,
+     *      if not provided.
+     * @param {string[][]} [c.initialHistory] - initial history
+     * @param {DimensionChooserPersistOptions} [c.persistWith] - options governing persistence
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      * @param {number} [c.maxDepth] - maximum number of dimensions allowed in a single grouping.
@@ -75,24 +73,54 @@ export class DimensionChooserModel {
      */
     constructor({
         dimensions,
-        initialValue,
-        preference,
-        historyPreference = preference,
+        initialValue = [],
+        initialHistory = [],
+        persistWith = null,
         maxHistoryLength = 5,
         maxDepth = 4,
-        enableClear = false
+        enableClear = false,
+        ...rest
     }) {
         this.maxHistoryLength = maxHistoryLength;
         this.maxDepth = maxDepth;
         this.enableClear = enableClear;
-        this.preference = preference;
-        this.historyPreference = historyPreference;
-
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionVals = keys(this.dimensions);
 
-        this.history = this.loadHistory();
-        this.value = this.pendingValue = this.getInitialValue(initialValue);
+        throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
+        apiRemoved(rest.preference, 'preference', 'Use persistWith instead');
+        apiRemoved(rest.historyPreference, 'historyPreference', 'Use persistWith instead');
+
+        const persistHistory = this.persistHistory = persistWith ? (persistWith.persistHistory ?? true) : false;
+        const persistValue = this.persistValue = persistWith ? (persistWith.persistValue ?? true) : false;
+
+        // Read state from provider -- fail gently
+        let state = null;
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'dimChooser', ...persistWith});
+                state = cloneDeep(this.provider.read());
+                if (persistHistory && state?.history) initialHistory = state.history;
+                if (persistValue && state?.value) initialValue = state.value;
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
+        }
+
+        // Initialize state to validated/clean versions of what was computed or provided above.
+        this.history = initialHistory.filter(v => this.validateValue(v));
+        this.value = this.validateValue(initialValue) ? initialValue : [this.dimensionVals[0]];
+        this.pendingValue = this.value;
+
+        // Attach to provider last
+        if (this.provider) {
+            this.addReaction({
+                track: () => this.persistState,
+                run: (state) => this.provider.write(state)
+            });
+        }
     }
 
     @action
@@ -103,7 +131,6 @@ export class DimensionChooserModel {
         }
         this.value = value;
         this.addToHistory(value);
-        this.setValuePref();
     }
 
     showHistory() {
@@ -118,8 +145,6 @@ export class DimensionChooserModel {
     }
 
     showMenu() {
-        if (this.historyPreference) this.history = this.loadHistory();
-
         if (isEmpty(this.history)) {
             this.showEditor();
         } else {
@@ -180,13 +205,6 @@ export class DimensionChooserModel {
     //-------------------------
     // Implementation
     //-------------------------
-    loadHistory() {
-        const pref = this.getHistoryPref(),
-            history = pref?.history ?? [];
-
-        return history.filter(v => this.validateValue(v));
-    }
-
     validateValue(value) {
         return (
             isArray(value) &&
@@ -199,28 +217,14 @@ export class DimensionChooserModel {
 
     addToHistory(value) {
         const {history} = this;
-
         pullAllWith(history, [value], isEqual); // Remove duplicates
         history.unshift(value);
         if (history.length > this.maxHistoryLength) history.pop();
-
-        this.setHistoryPref();
     }
 
     //-------------------------
     // Value handling
     //-------------------------
-    getInitialValue(initialValue) {
-        // Set control's initial value with priorities
-        // preference -> initialValue -> 1st item or []
-        const {dimensionVals, enableClear} = this,
-            pref = this.getValuePref();
-
-        if (pref?.value) return pref.value;
-        if (this.validateValue(initialValue)) return initialValue;
-        return enableClear || isEmpty(dimensionVals) ? [] : [dimensionVals[0]];
-    }
-
     normalizeDimensions(dims) {
         dims = dims || [];
         const ret = {};
@@ -242,43 +246,19 @@ export class DimensionChooserModel {
     }
 
     //-------------------------
-    // Preference handling
+    // Persistence handling
     //-------------------------
-    getValuePref() {
-        return this.readPref(this.preference);
-    }
-
-    getHistoryPref() {
-        return this.readPref(this.historyPreference);
-    }
-
-    setValuePref() {
-        const {preference, value} = this;
-        if (!preference) return;
-
-        const update = this.getValuePref();
-        update.value = value;
-
-        XH.setPref(preference, update);
-    }
-
-    setHistoryPref() {
-        const {historyPreference, history} = this;
-        if (!historyPreference) return;
-
-        const update = this.getHistoryPref();
-        update.history = history;
-
-        XH.setPref(historyPreference, update);
-    }
-
-    readPref(preferenceName) {
-        if (!preferenceName) return null;
-
-        // The following migration code allows us to use previously existing values that only contained history
-        const ret = cloneDeep(XH.getPref(preferenceName)),
-            isDeprecatedHistoryPref = isArray(ret) && every(ret, it => isArray(it));
-
-        return isDeprecatedHistoryPref ? {value: null, history: ret} : ret;
+    get persistState() {
+        const ret = {};
+        if (this.persistValue) ret.value = this.value;
+        if (this.persistHistory) ret.history = this.history;
+        return ret;
     }
 }
+
+/**
+ * @typedef {Object} DimensionChooserPersistOptions
+ * @extends PersistOptions
+ * @property {boolean} [persistValue] - true to include value (default true)
+ * @property {boolean} [persistHistory] - true to include history (default true)
+*/

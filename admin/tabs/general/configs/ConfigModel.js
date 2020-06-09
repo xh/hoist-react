@@ -18,13 +18,16 @@ import {
 import {truncate} from 'lodash';
 import {ConfigDifferModel} from './differ/ConfigDifferModel';
 
+
 @HoistModel
 @LoadSupport
 export class ConfigModel {
 
+    persistWith = {localStorageKey: 'xhAdminConfigState'};
+
     @managed
     gridModel = new RestGridModel({
-        stateModel: 'xhConfigGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         store: new RestStore({
