@@ -11,6 +11,7 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {ChartsModel} from './ChartsModel';
+import {PERSIST_ACTIVITY} from '../ActivityModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: uses(ChartsModel),
@@ -22,7 +23,10 @@ export const chartsPanel = hoistCmp.factory({
             model: {
                 defaultSize: 500,
                 side: 'bottom',
-                prefName: 'xhAdminActivityChartSize'
+                persistWith: {
+                    ...PERSIST_ACTIVITY,
+                    path: 'chartsPanel'
+                }
             }
         });
     }

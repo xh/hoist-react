@@ -102,6 +102,16 @@ export class PrefService {
     }
 
     /**
+     * Restore a preference to its default value.
+     * @param key
+     */
+    unset(key) {
+        // TODO: round-trip this to the server as a proper unset?
+        this.set(key, this._data[key]?.defaultValue);
+    }
+
+
+    /**
      * Set a preference value for the current user, and immediately trigger a sync to the server.
      *
      * Useful when important to verify that the preference has been fully round-tripped - e.g.
@@ -233,12 +243,8 @@ export class PrefService {
 
     validateBeforeSet(key, value) {
         const pref = this._data[key];
-
-
         throwIf(!pref, `Cannot set preference ${key}: not found`);
-
         throwIf(value === undefined, `Cannot set preference ${key}: value not defined`);
-
         throwIf(
             !this.valueIsOfType(value, pref.type),
             `Cannot set preference ${key}: must be of type ${pref.type}`
