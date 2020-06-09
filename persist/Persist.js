@@ -7,6 +7,7 @@
 
 import {cloneDeep, isUndefined} from 'lodash';
 import {PersistenceProvider} from './provider/PersistenceProvider';
+import {start} from '@xh/hoist/promise';
 
 /**
  * Decorator to make a class property persistent, syncing its value via a configured
@@ -63,9 +64,11 @@ function createDescriptor(target, property, descriptor, options) {
             const persistWith = {path: property, ...options, ...this.persistWith};
             const provider = this.markManaged(PersistenceProvider.create(persistWith));
             providerState = cloneDeep(provider.read());
-            this.addReaction({
-                track: () => this[property],
-                run: (data) => provider.write(data)
+            start(() => {
+                this.addReaction({
+                    track: () => this[property],
+                    run: (data) => provider.write(data)
+                });
             });
         } catch (e) {
             console.error(
