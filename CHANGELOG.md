@@ -27,6 +27,8 @@ wide variety of enterprise software projects. For any questions regarding this c
     `DimensionChooserModel`, and `DashContainerModel`.
     configurable via the new `persistWith` option on those classes.
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+* `Panel`component on Desktop now supports `defaultSize`, `minSize`, and `maxSize` to be set in percents, ex: '25%'.
+  Previously these size properties could only be specified in pixels.
 
 ### 💥 Breaking Changes
 
