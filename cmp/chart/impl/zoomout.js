@@ -10,6 +10,7 @@
  * Gesture can be used in place of the default "reset zoom" button.
  */
 export function installZoomoutGesture(Highcharts) {
+    if (!Highcharts) return;
     Highcharts.wrap(Highcharts.Chart.prototype, 'init', function(proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
