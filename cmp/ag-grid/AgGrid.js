@@ -40,8 +40,11 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     render({model, key, className, onGridReady, ...props}) {
 
         if (!AgGridReact) {
-            console.error('ag-Grid has not been imported in to this application.');
-            return null;
+            console.error(
+                'ag-Grid has not been imported in to this application. Please import and ' +
+                'register modules in Bootstrap.js.  See Toolbox for an example.'
+            );
+            return 'ag-Grid not available';
         }
 
         const [layoutProps, agGridProps] = splitLayoutProps(props),

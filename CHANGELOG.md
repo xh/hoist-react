@@ -48,8 +48,7 @@ wide variety of enterprise software projects. For any questions regarding this c
   with both standard and mobile toolkits.
 * Grid dependencies updated to properly reflect application-level licensing requirements.
   Applications must now import and provide their licensed version of ag-Grid to Hoist.  See
-  file `agGrid.js` in Toolbox for an example.
-
+  file `Bootstrap.js` in Toolbox for an example.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 
