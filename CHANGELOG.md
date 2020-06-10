@@ -27,6 +27,7 @@ wide variety of enterprise software projects. For any questions regarding this c
     `DimensionChooserModel`, and `DashContainerModel`.
     configurable via the new `persistWith` option on those classes.
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+* Hoist now supports sorting on agGrid group columns.
 
 ### 💥 Breaking Changes
 

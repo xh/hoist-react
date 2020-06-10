@@ -14,6 +14,7 @@ import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
 import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
+import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
 /**
  * A custom ag-Grid header component.
@@ -107,8 +108,8 @@ class LocalModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
-        this.gridModel = gridModel;
+    constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+        this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
@@ -224,11 +225,11 @@ class LocalModel {
     }
 
     parseAvailableSorts() {
-        const {absSort, sortingOrder, colId} = this.xhColumn;
-        const ret = sortingOrder.map(spec => {
-            if (isString(spec) || spec === null) spec = {sort: spec};
-            return new GridSorter({...spec, colId});
-        });
+        const {absSort = false, sortingOrder = Column.DEFAULT_SORTING_ORDER, colId = this.colId} = this.xhColumn ?? {},
+            ret = sortingOrder.map(spec => {
+                if (isString(spec) || spec === null) spec = {sort: spec};
+                return new GridSorter({...spec, colId});
+            });
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }
