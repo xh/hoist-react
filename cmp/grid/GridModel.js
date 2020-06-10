@@ -516,7 +516,7 @@ export class GridModel {
             return GridSorter.parse(it);
         });
 
-        const invalidSorters = sorters.filter(it => it.colId !== 'ag-Grid-AutoColumn' && !this.findColumn(this.columns, it.colId));
+        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid-AutoColumn') && !this.findColumn(this.columns, it.colId));
         if (invalidSorters.length) {
             console.warn('GridSorter colId not found in grid columns', invalidSorters);
             return;

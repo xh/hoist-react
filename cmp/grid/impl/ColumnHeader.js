@@ -108,9 +108,8 @@ class LocalModel {
     _lastTouchStart = null;
     _lastMouseDown = null;
 
-    constructor({gridModel, gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
-        // when the column is an 'ag-Grid-AutoColumn' the gridModel is found on gridLoalModel.model
-        this.gridModel = gridModel || gridLocalModel.model;
+    constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+        this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
@@ -226,15 +225,11 @@ class LocalModel {
     }
 
     parseAvailableSorts() {
-        const {absSort, sortingOrder, colId} = this.xhColumn ?
-            this.xhColumn :
-            // when the column is an 'ag-Grid-AutoColumn' it has no xhColumn class, so fallback to default sortingOrder without absSort
-            {absSort: false, sortingOrder: Column.DEFAULT_SORTING_ORDER, colId: this.colId};
-
-        const ret = sortingOrder.map(spec => {
-            if (isString(spec) || spec === null) spec = {sort: spec};
-            return new GridSorter({...spec, colId});
-        });
+        const {absSort = false, sortingOrder = Column.DEFAULT_SORTING_ORDER, colId = this.colId} = this.xhColumn ?? {},
+            ret = sortingOrder.map(spec => {
+                if (isString(spec) || spec === null) spec = {sort: spec};
+                return new GridSorter({...spec, colId});
+            });
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }
