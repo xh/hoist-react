@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AgGridUtils} from '@xh/hoist/dynamics/agGrid';
+import {AgGridUtils} from '@xh/hoist/kit/ag-grid';
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {

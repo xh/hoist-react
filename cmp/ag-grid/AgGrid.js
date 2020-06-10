@@ -12,7 +12,7 @@ import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {AgGridModel} from './AgGridModel';
-import {AgGridReact} from '@xh/hoist/dynamics/agGrid';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited

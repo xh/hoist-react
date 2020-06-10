@@ -77,10 +77,10 @@ libraries, client application(s) using Hoist React must acquire and register app
 
 **Ag-Grid** is released by its developer under a dual licensing model, with the community edition
 available under a permissive MIT license and the Enterprise edition requiring a [paid license from
-ag-Grid](https://www.ag-grid.com/license-pricing.php). Hoist React requires client applications to
-provide their own licensed version of ag-Grid at runtime.  A free community version is all that is
-required, however many applications will want to license the enterprise version of ag-Grid in order
-to make use of the important extra functionality it provides, including row grouping and tree grids.
+ag-Grid](https://www.ag-grid.com/license-pricing.php). Applications wishing to use grids in Hoist
+React will need to provide a licensed version of ag-Grid.  A free community version is
+available, however many applications will want to license the enterprise version in order to make
+use of the important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
@@ -89,8 +89,8 @@ accessed via a unique URL. XH can configure appropriate access via npm configura
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Highcharts does not
-require the registration or maintenance of any in-code licence keys.
+support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
+charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
 
