@@ -40,9 +40,12 @@ export const [Chart, chart] = hoistCmp.withFactory({
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
-                'register in Bootstrap.js.  See Toolbox for an example.'
+                'register in Bootstrap.js. See the XH Toolbox app for an example.'
             );
-            return 'Highcharts not available';
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'Highcharts library not available.'
+            });
         }
 
         const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
