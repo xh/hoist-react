@@ -11,12 +11,13 @@ import {
     cloneDeep,
     compact,
     difference,
+    differenceWith,
+    take,
     isArray,
     isEmpty,
     isEqual,
     isString,
     keys,
-    pullAllWith,
     sortBy,
     without
 } from 'lodash';
@@ -215,11 +216,12 @@ export class DimensionChooserModel {
         );
     }
 
+    @action
     addToHistory(value) {
-        const {history} = this;
-        pullAllWith(history, [value], isEqual); // Remove duplicates
-        history.unshift(value);
-        if (history.length > this.maxHistoryLength) history.pop();
+        // Remove, add to front, and truncate
+        let {history, maxHistoryLength} = this;
+        history = differenceWith(history, [value], isEqual);
+        this.history = take([value, ...history], maxHistoryLength);
     }
 
     //-------------------------
