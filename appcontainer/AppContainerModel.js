@@ -75,7 +75,7 @@ export class AppContainerModel {
         let updateVersion = version;
 
         // Display build tag for snaps only - not of much interest across actual version updates.
-        if (updateVersion.includes('SNAPSHOT') && build) {
+        if (updateVersion.includes('SNAPSHOT') && build && build != 'UNKNOWN') {
             updateVersion += ` (b${build})`;
         }
 

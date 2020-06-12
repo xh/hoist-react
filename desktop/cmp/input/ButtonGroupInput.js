@@ -28,13 +28,30 @@ export class ButtonGroupInput extends HoistInput {
         ...ButtonGroup.propTypes,
 
         /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
-        enableClear: PT.bool
+        enableClear: PT.bool,
+
+        /** True to create minimal-style buttons. */
+        minimal: PT.bool
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {children, minimal, disabled, enableClear, ...rest} = this.getNonLayoutProps();
+        const {
+            children,
+            //  HoistInput Props
+            disabled,
+            model,
+            onChange,
+            onCommit,
+            tabIndex,
+            value,
+            // ButtonGroupInput Props
+            enableClear,
+            minimal,
+            // ...and ButtonGroup gets all the rest
+            ...buttonGroupProps
+        } = this.getNonLayoutProps();
 
         const buttons = castArray(children).map(button => {
             if (!button) return null;
@@ -64,7 +81,7 @@ export class ButtonGroupInput extends HoistInput {
 
         return buttonGroup({
             items: buttons,
-            ...rest,
+            ...buttonGroupProps,
             ...this.getLayoutProps(),
             className: this.getClassName()
         });

@@ -338,10 +338,13 @@
   .ag-set-filter-select-all {
     padding: var(--xh-pad-half-px) 0;
   }
+}
 
-  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
-  // appear over bp dialogs with z-index of 20.
-  &.ag-popup-child {
+// Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+// appear over bp dialogs with z-index of 20.
+.ag-theme-balham.ag-popup,
+.ag-theme-balham-dark.ag-popup {
+  .ag-popup-child {
     z-index: 30;
   }
 }

@@ -36,6 +36,18 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
+
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'Highcharts library not available.'
+            });
+        }
+
         const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
             ref = composeRefs(
                 useOnResize(impl.onResize),

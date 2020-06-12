@@ -26,9 +26,10 @@ wide variety of enterprise software projects. For any questions regarding this c
   * This same API is now used to handle state persistence for `GridStateModel`, `PanelModel`,
     `DimensionChooserModel`, and `DashContainerModel`.
     configurable via the new `persistWith` option on those classes.
-* `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
-* `Panel`component on Desktop now supports `defaultSize`, `minSize`, and `maxSize` to be set in percents, ex: '25%'.
-  Previously these size properties could only be specified in pixels.
+  * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+  * `Panel`component on Desktop now supports `defaultSize`, `minSize`, and `maxSize` to be set in percents, ex: '25%'.
+    Previously these size properties could only be specified in pixels.
+  * Hoist now supports sorting on agGrid group columns.
 
 ### 💥 Breaking Changes
 
@@ -48,6 +49,9 @@ wide variety of enterprise software projects. For any questions regarding this c
    full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
+* Third-party dependencies updated to properly reflect application-level licensing requirements.
+  Applications must now import and provide their licensed version of ag-Grid, and Highcharts to
+  Hoist.  See file `Bootstrap.js` in Toolbox for an example.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 

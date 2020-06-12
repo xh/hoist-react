@@ -19,7 +19,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import debouncePromise from 'debounce-promise';
-import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge} from 'lodash';
+import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {createFilter} from 'react-select';
@@ -372,7 +372,7 @@ export class Select extends HoistInput {
                 const ret = this.findOption(value, false, option.options);
                 if (ret) return ret;
             } else {
-                if (option.value === value) return option;
+                if (isEqual(option.value, value)) return option;
             }
         }
 
