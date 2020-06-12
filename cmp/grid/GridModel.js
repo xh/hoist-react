@@ -516,7 +516,8 @@ export class GridModel {
             return GridSorter.parse(it);
         });
 
-        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid-AutoColumn') && !this.findColumn(this.columns, it.colId));
+        // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
+        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));
         if (invalidSorters.length) {
             console.warn('GridSorter colId not found in grid columns', invalidSorters);
             return;

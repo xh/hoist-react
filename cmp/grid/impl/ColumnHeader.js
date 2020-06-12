@@ -225,11 +225,16 @@ class LocalModel {
     }
 
     parseAvailableSorts() {
-        const {absSort = false, sortingOrder = Column.DEFAULT_SORTING_ORDER, colId = this.colId} = this.xhColumn ?? {},
-            ret = sortingOrder.map(spec => {
-                if (isString(spec) || spec === null) spec = {sort: spec};
-                return new GridSorter({...spec, colId});
-            });
+        const {
+            absSort = false,
+            sortingOrder = Column.DEFAULT_SORTING_ORDER,
+            colId = this.colId
+        } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
+
+        const ret = sortingOrder.map(spec => {
+            if (isString(spec) || spec === null) spec = {sort: spec};
+            return new GridSorter({...spec, colId});
+        });
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }
