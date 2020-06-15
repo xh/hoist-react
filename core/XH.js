@@ -46,6 +46,7 @@ import {RouterModel} from './RouterModel';
 class XHClass {
 
     _initCalled = false;
+    _lastActivityMs = Date.now();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -146,6 +147,9 @@ class XHClass {
 
     /** State of app - see AppState for valid values. */
     @observable appState = AppState.PRE_AUTH;
+
+    /** Milliseconds since last detected user activity */
+    get lastActivityMs() {return this._lastActivityMs}
 
     /**
      * Is Application running?
@@ -383,16 +387,31 @@ class XHClass {
     // Exception Support
     //--------------------------
     /**
-     * Handle an exception.
+     * Handle an exception. This method is an alias for {@see ExceptionHandler.handleException}.
      *
-     * This method may be called by applications in order to provide logging, reporting,
-     * and display of exceptions.  It it typically called directly in catch() blocks.
-     *
-     * This method is an alias for ExceptionHandler.handleException(). See that method for more
-     * information about available options.
+     * This method may be called by applications in order to provide logging, reporting, and
+     * display of exceptions. It it typically called directly in catch() blocks.
      *
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
-     * and provides a more convenient interface for Promise-based code.
+     * and provides a more convenient interface for catching exceptions in Promise chains.
+     *
+     * @param {(Error|Object|string)} exception - Error or thrown object - if not an Error, an
+     *      Exception will be created via Exception.create().
+     * @param {Object} [options] - controls on how the exception should be shown and/or logged.
+     * @param {string} [options.message] - text (ideally user-friendly) describing the error.
+     * @param {string} [options.title] - title for an alert dialog, if shown.
+     * @param {boolean} [options.showAsError] - configure modal alert and logging to indicate that
+     *      this is an unexpected error. Default true for most exceptions, false for those marked
+     *      as `isRoutine`.
+     * @param {boolean} [options.logOnServer] - send the exception to the server to be stored for
+     *      review in the Hoist Admin Console. Default true when `showAsError` is true, excepting
+     *      'isAutoRefresh' fetch exceptions.
+     * @param {boolean} [options.showAlert] - display an alert dialog to the user. Default true,
+     *      excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
+     * @param {boolean} [options.requireReload] - force user to fully refresh the app in order to
+     *      dismiss - default false, excepting session-related exceptions.
+     * @param {Array} [options.hideParams] - A list of parameters that should be hidden from
+     *      the exception log and alert.
      */
     handleException(exception, options) {
         return this.exceptionHandler.handleException(exception, options);
@@ -494,6 +513,8 @@ class XHClass {
             (isPhone ? 'xh-phone' : null),
             (isTablet ? 'xh-tablet' : null)
         ]));
+
+        this.createActivityListeners();
 
         try {
             await this.installServicesAsync(FetchService);
@@ -684,6 +705,14 @@ class XHClass {
                         if (loginStarted) loginElapsed = now - loginStarted;
                 }
             }
+        });
+    }
+
+    createActivityListeners() {
+        ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
+            window.addEventListener(name, () => {
+                this._lastActivityMs = Date.now();
+            });
         });
     }
 

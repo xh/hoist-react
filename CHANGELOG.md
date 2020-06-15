@@ -1,28 +1,100 @@
 # Changelog
 
-## v34.0.0-SNAPSHOT - Unreleased
+## v35.0.0-SNAPSHOT - unreleased
+
+### ⚖️ Licensing Change
+
+As of this release, Hoist is [now licensed](LICENSE.md) under the popular and permissive
+[Apache 2.0 open source license](https://www.apache.org/licenses/LICENSE-2.0). Previously, Hoist was
+"source available" via our public GitHub repository but still covered by a proprietary license.
+
+We are making this change to align Hoist's licensing with our ongoing commitment to openness,
+transparency and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a
+wide variety of enterprise software projects. For any questions regarding this change, please
+[contact us](https://xh.io/contact/).
+
+### 🎁 New Features
+
+* Added a new Persistence API (`@xh/hoist/persist`) to provide a more flexible yet consistent approach to
+  saving state for Components, Models, and Services to different persistent locations such as Hoist
+  Preferences, browser local storage, and Hoist Dashboard views.
+  * The primary entry point for this API is a new `@persist` annotation, which can be added to any
+    primitive observable property on a Model, Component, or Service to make it automatically
+    synchronize with a `PersistenceProvider`.
+  * This is designed to replace any app-specific code previously added to synchronize fields and
+    their values to Preferences via ad-hoc initializers and reactions.
+  * This same API is now used to handle state persistence for `GridStateModel`, `PanelModel`,
+    `DimensionChooserModel`, and `DashContainerModel` - configurable via the new `persistWith`
+    option on those classes.
+* `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+* Hoist now supports sorting on agGrid group columns.
+* Hoist config `xhEnableMonitoring` can be used to enable/disable the Admin monitor tab and
+  its associated server-side jobs
+
+### 💥 Breaking Changes
+
+* The option `PanelModel.prefName` has been removed in favor of `persistWith`. Existing user state
+  will be transferred to the new format, assuming a `PersistenceProvider` of type 'pref' referring
+  to the same preference is used (e.g. `persistWith: {prefName: 'my-panel-model-prefName'}`.
+* The option `GridModel.stateModel` has been removed in favor of `persistWith`. Existing user state
+  will be transferred to the new format, assuming a `PersistenceProvider` of type 'localStorage'
+  referring to the same key is used (e.g. `persistWith: {localStorageKey: 'my-grid-state-id'}`.
+  * Use the new `GridModel.persistOptions` config for finer control over what grid state is persisted
+    (replacement for stateModel configs to disable persistence of column state/sorting/grouping).
+* The options `DimensionChooserModel.preference` and `DimensionChooserModel.historyPreference` have
+  been removed in favor of `persistWith`.
+* `AppSpec.idleDetectionEnabled` has been removed. App-specific Idle detection is now enabled via
+  the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
+* `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanel`. If specified, it should be a
+  full-screen component.
+* `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
+  with both standard and mobile toolkits.
+* Third-party dependencies updated to properly reflect application-level licensing requirements.
+  Applications must now import and provide their licensed version of ag-Grid, and Highcharts to
+  Hoist. See file `Bootstrap.js` in Toolbox for an example.
+
+### 📚 Libraries
+
+Note that certain licensed third-party dependencies have been removed as direct dependencies of this
+project, as per note in Breaking Changes above.
+
+* @xh/hoist-dev-utils `4.x -> 5.x` - apps should also update to the latest 5.x release of dev-utils.
+  Although license and dependency changes triggered a new major version of this dev dependency, no
+  application-level changes should be required.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
+
+
+## v34.0.0 - 2020-05-26
 
 ### 🎁 New Features
 
 * Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
   `GridAutosizeService` for more details.
+* New flags `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop` available for device-specific switching.
+  Corresponding `.xh-phone`, `.xh-tablet`, and `.xh-desktop` CSS classes are added to the document
+  `body`. These flags and classes are set based on the detected device, as per its user-agent.
+  * One of the two higher-level CSS classes `.xh-standard` or `.xh-mobile` will also be applied
+    based on an app's use of the primary (desktop-centric) components vs mobile components - as
+    declared by its `AppSpec.isMobileApp` - regardless of the detected device.
+  * These changes provide more natural support for use cases such as apps that are built with
+    standard components yet target/support tablet users.
+* New method `Record.get()` provides an alternative API for checked data access.
+* The mobile `Select` component supports the `enableFilter` and `enableCreate` props.
+* `DashContainerModel` supports new `layoutLocked`, `contentLocked` and `renameLocked` modes.
 * `DimensionChooser` now has the ability to persist its value and history separately.
-* Mobile `select` now supports `enableFilter` and `enableCreate`.
-* `DashContainerModel` now supports `layoutLocked`, `contentLocked` and `renameLocked` modes.
-* New method `get()` on `Record` provides an alternative option for checked data access.
-* Added `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop`, to aid device specific handling. Also added
-  corresponding `xh-phone`, `xh-tablet`, and `xh-desktop` CSS classes to `body` to enable device
-  specific styling.
+* Enhance Hoist Admin's Activity Tracking tab.
+* Enhance Hoist Admin's Client Error tab.
 
 ### 💥 Breaking Changes
 
 * `emptyFlexCol` has been removed from the Hoist API and should simply be removed from all client
   applications. Improvements to agGrid's default rendering of empty space have made it obsolete.
-
-* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`.
-
-* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app.
-For this purpose, use `xh-standard` instead.
+* `isMobile` property on `XH` and `AppSpec` has been renamed to `isMobileApp`. All apps will need to
+  update their (required) use of this flag in the app specifications within their
+  `/client-app/src/apps` directory.
+* The `xh-desktop` class should no longer be used to indicate a non-mobile toolkit based app. For
+  this purpose, use `xh-standard` instead.
 
 ### 🐞 Bug Fixes
 
@@ -39,7 +111,7 @@ For this purpose, use `xh-standard` instead.
 * react-transition-group `4.3 -> 4.4`
 * Highcharts `8.0.4 -> 8.1.0`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 
 
 ## v33.3.0 - 2020-05-08

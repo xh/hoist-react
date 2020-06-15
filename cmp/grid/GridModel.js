@@ -36,13 +36,14 @@ import {
     isPlainObject,
     isString,
     isUndefined,
+    last,
     map,
     max,
     min,
     pull,
     sortBy
 } from 'lodash';
-import {GridStateModel} from './GridStateModel';
+import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 
 /**
@@ -71,10 +72,8 @@ export class GridModel {
     selModel;
     /** @member {boolean} */
     treeMode;
-    /** @member {GridStateModel} */
-    stateModel;
     /** @member {ColChooserModel} */
-    colChooserModel;
+    @managed colChooserModel;
     /** @member {function} */
     rowClassFn;
     /** @member {(Array|function)} */
@@ -136,6 +135,9 @@ export class GridModel {
     /** @private - initial state provided to ctor - powers restoreDefaults(). */
     _defaultState;
 
+    /** @member {GridPersistenceModel} */
+    @managed persistenceModel;
+
     /**
      * Is autosizing enabled on this grid?
      *
@@ -157,7 +159,7 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
-     * @param {(Object|string)} [c.stateModel] - config or string `gridId` for a GridStateModel.
+     * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
@@ -218,10 +220,11 @@ export class GridModel {
         treeMode = false,
         showSummary = false,
         selModel,
-        stateModel = null,
         emptyText = null,
         sortBy = [],
         groupBy = null,
+
+        persistWith,
 
         sizingMode = 'standard',
         showHover = false,
@@ -248,6 +251,7 @@ export class GridModel {
         experimental,
         ...rest
     }) {
+
         this._defaultState = {columns, sortBy, groupBy};
 
         this.treeMode = treeMode;
@@ -269,7 +273,9 @@ export class GridModel {
         });
 
         apiRemoved(rest.contextMenuFn, 'contextMenuFn', 'Use contextMenu instead');
+        apiRemoved(rest.stateModel, 'stateModel', "Use 'persistWith' instead.");
         apiRemoved(exportOptions.includeHiddenCols, 'includeHiddenCols', "Replace with {columns: 'ALL'}.");
+
         throwIf(
             autosizeOptions.fillMode && !['all', 'left', 'right', 'none'].includes(autosizeOptions.fillMode),
             `Unsupported value for fillMode.`
@@ -300,7 +306,7 @@ export class GridModel {
 
         this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
         this.selModel = this.parseSelModel(selModel);
-        this.stateModel = this.parseStateModel(stateModel);
+        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
     }
 
@@ -314,7 +320,7 @@ export class GridModel {
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-        this.stateModel?.clear();
+        this.persistenceModel.clear();
     }
 
     /**
@@ -385,11 +391,20 @@ export class GridModel {
 
         if (!agApi) return;
 
-        const indices = records.map(record => agApi.getRowNode(record.id).rowIndex);
+        const indices = [];
+        records.forEach(record => {
+            const rowNode = agApi.getRowNode(record.id);
+            if (rowNode) indices.push(rowNode.rowIndex);
+        });
 
-        if (indices.length === 1) {
+        const indexCount = indices.length;
+        if (indexCount != records.length) {
+            console.warn('Grid row nodes not found for all selected records - grid data reaction/rendering likely in progress.');
+        }
+
+        if (indexCount === 1) {
             agApi.ensureIndexVisible(indices[0]);
-        } else if (indices.length > 1) {
+        } else if (indexCount > 1) {
             agApi.ensureIndexVisible(max(indices));
             agApi.ensureIndexVisible(min(indices));
         }
@@ -501,7 +516,8 @@ export class GridModel {
             return GridSorter.parse(it);
         });
 
-        const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
+        // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
+        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));
         if (invalidSorters.length) {
             console.warn('GridSorter colId not found in grid columns', invalidSorters);
             return;
@@ -547,6 +563,12 @@ export class GridModel {
         const columns = colConfigs.map(c => this.buildColumn(c));
 
         this.validateColumns(columns);
+
+        const leaves = this.gatherLeaves(columns);
+        if (leaves.some(c => c.flex && c.maxWidth) && !find(leaves, {colId: 'xhEmptyFlex'})) {
+            console.debug('Adding empty flex column to workaround AG-4243');
+            columns.push(this.buildColumn(xhEmptyFlexCol));
+        }
 
         this.columns = columns;
         this.columnState = this.getLeafColumns()
@@ -640,6 +662,12 @@ export class GridModel {
             // 2.b) Install implied group sort orders and sort
             columnState.forEach(it => this.markGroupSortOrder(it));
             columnState = this.sortColumns(columnState);
+
+            // 2.c) Force AG-4243 workaround column to stay last (avoid user dragging)!
+            const emptyFlex = find(columnState, {colId: 'xhEmptyFlex'});
+            if (emptyFlex && last(columnState) !== emptyFlex) {
+                pull(columnState, emptyFlex).push(emptyFlex);
+            }
         }
 
         this.columnState = columnState;
@@ -914,7 +942,8 @@ export class GridModel {
         }
 
         throw XH.exception(
-            'The GridModel.store config must be either a concrete instance of Store or a config to create one.');
+            'GridModel.store value must be either an instance of a Store or a config for one.'
+        );
     }
 
     calcFieldNamesFromColumns() {
@@ -953,20 +982,6 @@ export class GridModel {
         return this.markManaged(new StoreSelectionModel({mode, store: this.store}));
     }
 
-    parseStateModel(stateModel) {
-        let ret = null;
-        if (isPlainObject(stateModel)) {
-            ret = new GridStateModel(stateModel);
-        } else if (isString(stateModel)) {
-            ret = new GridStateModel({gridId: stateModel});
-        }
-        if (ret) {
-            ret.init(this);
-            this.markManaged(ret);
-        }
-        return ret;
-    }
-
     parseExperimental(experimental) {
         apiRemoved(experimental?.suppressUpdateExpandStateOnDataLoad, 'suppressUpdateExpandStateOnDataLoad');
 
@@ -981,14 +996,42 @@ export class GridModel {
 
 
     createChooserModel() {
-        const Model = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
-        return this.markManaged(new Model(this));
+        return XH.isMobileApp ? new MobileColChooserModel(this) : new DesktopColChooserModel(this);
     }
 
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : (a > b ? 1 : 0);
     };
 }
+
+//--------------------------------------------------------------------
+// Hidden flex column designed to workaround the following ag issue:
+//
+//   AG-4243: [Column Flex] When using column flex and maxWidth, last column
+//   header text isn't shown (See also hr ticket #1928)
+//
+// This column is inserted whenever there is a flex column with maxWidth.
+// Special handling ensures it is maintained as the last column.
+//-------------------------------------------------------------------------
+const xhEmptyFlexCol =  {
+    colId: 'xhEmptyFlex',
+    headerName: null,
+    // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.
+    // This config's goal is only to soak up *extra* width - e.g. when there are no other flex cols,
+    // or when any other flex cols are constrained to a configured maxWidth.
+    flex: 0.001,
+    minWidth: 0,
+    movable: false,
+    resizable: false,
+    sortable: false,
+    excludeFromChooser: true,
+    excludeFromExport: true,
+    agOptions: {
+        filter: false,
+        suppressMenu: true
+    }
+};
+
 
 /**
  * @typedef {Object} ColumnState
@@ -1043,3 +1086,10 @@ export class GridModel {
  */
 
 
+/**
+ * @typedef {Object} GridModelPersistOptions
+ * @extends PersistOptions
+ * @property {boolean} [persistColumns] - true to include column information (default true)
+ * @property {boolean} [persistGrouping] - true to include grouping information (default true)
+ * @property {boolean} [persistSort] - true to include sorting information (default true)
+ */

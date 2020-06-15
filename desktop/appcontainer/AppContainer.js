@@ -15,13 +15,14 @@ import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
+import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idleDialog} from './IdleDialog';
+import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -35,6 +36,7 @@ installDesktopImpls({
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel,
     StoreContextMenu
@@ -80,8 +82,9 @@ function viewForState() {
         case S.ACCESS_DENIED:
             return lockoutPanel();
         case S.RUNNING:
-        case S.SUSPENDED:
             return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -108,8 +111,7 @@ const appContainerView = hoistCmp.factory({
                 toastSource(),
                 optionsDialog(),
                 feedbackDialog(),
-                aboutDialog(),
-                idleDialogHost()
+                aboutDialog()
             ),
             globalHotKeys(model)
         );
@@ -139,11 +141,10 @@ function globalHotKeys(model) {
     return ret;
 }
 
-const idleDialogHost = hoistCmp.factory({
-    displayName: 'IdleDialog',
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
     render() {
-        if (XH.appState !== AppState.SUSPENDED) return null;
-        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
         return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

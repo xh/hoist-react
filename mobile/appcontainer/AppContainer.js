@@ -14,11 +14,12 @@ import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
+import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idleDialog} from './IdleDialog';
+import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -31,6 +32,7 @@ import {versionBar} from './VersionBar';
 installMobileImpls({
     tabContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel
 });
@@ -78,8 +80,9 @@ function viewForState() {
         case S.ACCESS_DENIED:
             return lockoutPanel();
         case S.RUNNING:
-        case S.SUSPENDED:
             return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -106,17 +109,15 @@ const appContainerView = hoistCmp.factory({
             toastSource(),
             feedbackDialog(),
             optionsDialog(),
-            aboutDialog(),
-            idleDialogHost()
+            aboutDialog()
         );
     }
 });
 
-const idleDialogHost = hoistCmp.factory({
-    displayName: 'IdleDialog',
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
     render() {
-        if (XH.appState !== AppState.SUSPENDED) return null;
-        const content = XH.appSpec.idleDialogClass ?? idleDialog;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
         return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

@@ -24,7 +24,6 @@ export class AverageStrictAggregator extends Aggregator {
             count ++;
         });
 
-
         return containsNull ? null : total / count;
     }
 

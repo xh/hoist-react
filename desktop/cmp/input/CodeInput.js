@@ -43,6 +43,7 @@ import './CodeInput.scss';
 export class CodeInput extends HoistInput {
 
     @bindable fullScreen = false;
+    editor
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -116,6 +117,13 @@ export class CodeInput extends HoistInput {
                     // CodeMirror will throw on null value.
                     editor.setValue(value == null ? '' : value);
                 }
+            }
+        });
+
+        this.addReaction({
+            track: () => this.props.disabled,
+            run: (disable) => {
+                this.editor.setOption('readOnly', disable);
             }
         });
     }
@@ -238,7 +246,7 @@ export class CodeInput extends HoistInput {
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
-            readOnly: disabled ? 'nocursor' : false,
+            readOnly: disabled,
             gutters,
             lint: linter ? {getAnnotations: linter} : false,
             autofocus: autoFocus
