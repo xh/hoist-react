@@ -28,6 +28,8 @@ wide variety of enterprise software projects. For any questions regarding this c
     option on those classes.
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
 * Hoist now supports sorting on agGrid group columns.
+* Hoist config `xhEnableMonitoring` can be used to enable/disable the Admin monitor tab its
+  associated server-side jobs
 
 ### 💥 Breaking Changes
 
