@@ -18,7 +18,7 @@ export let AgGridReact = null;
 export let AgGridUtils = null;
 export let agGridVersion = null;
 
-const MIN_VERSION = '23.0.2';
+const MIN_VERSION = '23.1.1';
 const MAX_VERSION = '23.*.*';
 
 /**

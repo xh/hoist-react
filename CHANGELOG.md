@@ -102,14 +102,14 @@ project, as per note in Breaking Changes above.
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
 ### 📚 Libraries
-
-* @ag-grid-community/react `23.0.3` > `23.1.1`
-* @ag-grid-enterprise/all-modules `23.0.2` > `23.1.1`
 * @blueprintjs/core `3.26 -> 3.28`
 * @blueprintjs/datetime `3.16 -> 3.18`
 * codemirror `5.53 -> 5.54`
 * react-transition-group `4.3 -> 4.4`
-* Highcharts `8.0.4 -> 8.1.0`
+
+### 📚 Optional Libraries
+* ag-Grid `23.0.2` > `23.1.1`  (See Toolbox app for example on this upgrade)
+* Highcharts `8.0.4 -> 8.1.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 
