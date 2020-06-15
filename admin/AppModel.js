@@ -98,7 +98,7 @@ export class AppModel {
             {id: 'general', icon: Icon.info(), content: generalTab},
             {id: 'activity', icon: Icon.analytics(), content: activityTab},
             {id: 'logging', icon: Icon.fileText(), content: loggingTab},
-            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab, omit: !XH.getConf('xhEnableMonitoring', false)},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab, omit: !XH.getConf('xhEnableMonitoring', true)},
             {id: 'preferences', icon: Icon.bookmark(), content: preferencesTab}
         ];
     }
