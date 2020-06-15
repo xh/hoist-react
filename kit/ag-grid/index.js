@@ -17,7 +17,7 @@ import compareVersions from 'compare-versions';
 export let AgGridReact = null;
 export let agGridVersion = null;
 
-const MIN_VERSION = '23.1.1';
+const MIN_VERSION = '23.2.0';
 const MAX_VERSION = '23.*.*';
 
 /**
