@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AgGridUtils} from '@xh/hoist/kit/ag-grid';
 import {XH} from '@xh/hoist/core';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
@@ -22,6 +21,7 @@ import {
 } from 'lodash';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
+import {GridSorter} from '../impl/GridSorter';
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -478,7 +478,7 @@ export class Column {
     //--------------------
     defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
-        return sortCfg ? sortCfg.comparator(v1, v2) : AgGridUtils.defaultComparator(v1, v2);
+        return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
     defaultSetValueFn = ({value, record, store, field}) => {
