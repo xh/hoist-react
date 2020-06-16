@@ -67,7 +67,7 @@ export class PanelModel {
      * @param {boolean} [c.resizable] - Can panel be resized?
      * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {(number|string)} config.defaultSize - Default size (in px or %) of the panel. Percent example: '50%' (must be a string).  Pixels example: 300  (must be a number - no unit necessary for pixels).
+     * @param {(number|string)} config.defaultSize - Default size (in px or %) of the panel.  eg: 300 or '50%'
      * @param {?(number|string)} [config.minSize] - Minimum size (in px or %) to which the panel can be resized.
      * @param {?(number|string)} [config.maxSize] - Maximum size (in px or %) to which the panel can be resized.
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
@@ -160,7 +160,7 @@ export class PanelModel {
         // Initialize state.
         let size = state?.size;
         // gracefully recover from switching defaultSize from percents to px or vice versa.
-        if (this.defaultSize && (this.sizedInPercents && !this.isPercent(size)) || (!this.sizedInPercents && this.isPercent(size))) size = defaultSize;
+        if (this.sizedInPercents !== this.isPercent(size)) size = undefined;
         this.setSize(size ?? defaultSize);
         this.setCollapsed(state?.collapsed ?? defaultCollapsed);
 

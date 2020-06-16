@@ -24,14 +24,7 @@ export const resizeContainer = hoistCmp.factory({
             child = Children.only(children),
             dragBarWidth = '8px';
 
-        let panelSize = undefined,
-            boxSize = size;
-
-        if (sizedInPercents) {
-            panelSize = size !== '0%' ? size : dragBarWidth;
-            boxSize = `calc(100% - ${dragBarWidth})`;
-        }
-
+        const boxSize = sizedInPercents ? `calc(100% - ${dragBarWidth})` : size;
         let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
 
         if (showSplitter) {
@@ -44,13 +37,14 @@ export const resizeContainer = hoistCmp.factory({
         }
 
         const cmp = vertical ? vbox : hbox,
-            maxDim = vertical ? 'maxHeight' : 'maxWidth';
+            maxDim = vertical ? 'maxHeight' : 'maxWidth',
+            cmpSize = sizedInPercents ? (size === '0%' ? dragBarWidth : size) : undefined;
 
         return cmp({
             ref,
             className,
             flex: 'none',
-            [dim]: panelSize,
+            [dim]: cmpSize,
             [maxDim]: '100%',
             items
         });
