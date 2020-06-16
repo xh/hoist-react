@@ -15,21 +15,21 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 🎁 New Features
 
-* Added a new Persistence API (`@xh/hoist/persist`) to support flexibly saving state for
-  Components, Models, and Services to different persistent locations such as Hoist Preferences,
-  browser local storage, and Hoist Dashboard views.
+* Added a new Persistence API (`@xh/hoist/persist`) to provide a more flexible yet consistent approach to
+  saving state for Components, Models, and Services to different persistent locations such as Hoist
+  Preferences, browser local storage, and Hoist Dashboard views.
   * The primary entry point for this API is a new `@persist` annotation, which can be added to any
     primitive observable property on a Model, Component, or Service to make it automatically
     synchronize with a `PersistenceProvider`.
   * This is designed to replace any app-specific code previously added to synchronize fields and
-    their values to prefs via ad-hoc initializers and reactions.
+    their values to Preferences via ad-hoc initializers and reactions.
   * This same API is now used to handle state persistence for `GridStateModel`, `PanelModel`,
-    `DimensionChooserModel`, and `DashContainerModel`.
-    configurable via the new `persistWith` option on those classes.
-  * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
-  * `Panel`component on Desktop now supports `defaultSize`, `minSize`, and `maxSize` to be set in percents, ex: '25%'.
-    Previously these size properties could only be specified in pixels.
-  * Hoist now supports sorting on agGrid group columns.
+    `DimensionChooserModel`, and `DashContainerModel` - configurable via the new `persistWith`
+    option on those classes.
+* `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
+* Hoist now supports sorting on agGrid group columns.
+* Hoist config `xhEnableMonitoring` can be used to enable/disable the Admin monitor tab and
+  its associated server-side jobs
 
 ### 💥 Breaking Changes
 
@@ -39,19 +39,32 @@ wide variety of enterprise software projects. For any questions regarding this c
 * The option `GridModel.stateModel` has been removed in favor of `persistWith`. Existing user state
   will be transferred to the new format, assuming a `PersistenceProvider` of type 'localStorage'
   referring to the same key is used (e.g. `persistWith: {localStorageKey: 'my-grid-state-id'}`.
-* The options `DimensionChooserModel.preference` and `DimensionChooserModel.historyPreference`
-  have been removed in favor of `persistWith`.
-* Use the new `GridModel.persistOptions` config for finer control over what grid state is persisted
-  (replacement for stateModel configs to disable persistence of column state/sorting/grouping).
+  * Use the new `GridModel.persistOptions` config for finer control over what grid state is persisted
+    (replacement for stateModel configs to disable persistence of column state/sorting/grouping).
+* The options `DimensionChooserModel.preference` and `DimensionChooserModel.historyPreference` have
+  been removed in favor of `persistWith`.
 * `AppSpec.idleDetectionEnabled` has been removed. App-specific Idle detection is now enabled via
-   the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
+  the new `xhIdleConfig` config. The old `xhIdleTimeoutMins` has also been deprecated.
 * `AppSpec.idleDialogClass` has been renamed `AppSpec.idlePanel`. If specified, it should be a
-   full-screen component.
+  full-screen component.
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 * Third-party dependencies updated to properly reflect application-level licensing requirements.
   Applications must now import and provide their licensed version of ag-Grid, and Highcharts to
-  Hoist.  See file `Bootstrap.js` in Toolbox for an example.
+  Hoist. See file `Bootstrap.js` in Toolbox for an example.
+
+### 📚 Libraries
+
+Note that certain licensed third-party dependencies have been removed as direct dependencies of this
+project, as per note in Breaking Changes above.
+
+* @xh/hoist-dev-utils `4.x -> 5.x` - apps should also update to the latest 5.x release of dev-utils.
+  Although license and dependency changes triggered a new major version of this dev dependency, no
+  application-level changes should be required.
+
+### 📚 Optional Libraries
+* ag-Grid `23.0.2` > `23.2.0`  (See Toolbox app for example on this upgrade)
+* Highcharts `8.0.4 -> 8.1.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
 
@@ -93,12 +106,10 @@ wide variety of enterprise software projects. For any questions regarding this c
 * Fixes to Context Menu handling on `Panel` to allow better handling of `[]` and `null`.
 
 ### 📚 Libraries
-
 * @blueprintjs/core `3.26 -> 3.28`
 * @blueprintjs/datetime `3.16 -> 3.18`
 * codemirror `5.53 -> 5.54`
 * react-transition-group `4.3 -> 4.4`
-* Highcharts `8.0.4 -> 8.1.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 

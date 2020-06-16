@@ -15,17 +15,16 @@ import compareVersions from 'compare-versions';
  * will be expected to have the enterprise version of ag-Grid.
  */
 export let AgGridReact = null;
-export let AgGridUtils = null;
 export let agGridVersion = null;
 
-const MIN_VERSION = '23.0.2';
+const MIN_VERSION = '23.2.0';
 const MAX_VERSION = '23.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
  * Typically called in the Bootstrap.js. of the application.
  */
-export function installAgGrid(ComponentReactWrapper, Utils, version) {
+export function installAgGrid(ComponentReactWrapper, version) {
     if (compareVersions(version, MIN_VERSION) < 0 || compareVersions(version, MAX_VERSION) > 0) {
         console.error(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +
@@ -35,6 +34,5 @@ export function installAgGrid(ComponentReactWrapper, Utils, version) {
     }
 
     AgGridReact = ComponentReactWrapper;
-    AgGridUtils = Utils;
     agGridVersion = version;
 }

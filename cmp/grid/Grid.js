@@ -195,7 +195,7 @@ class LocalModel {
         let ret = {
             model: model.agGridModel,
             deltaSort: useDeltaSort && !model.treeMode,
-            deltaRowDataMode: !useTransactions,
+            immutableData: !useTransactions,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
@@ -240,7 +240,7 @@ class LocalModel {
             groupUseEntireRow: true,
             groupRowInnerRenderer: model.groupRowRenderer,
             groupRowRendererFramework: model.groupRowElementRenderer,
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
+            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using immutableData
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
@@ -391,7 +391,7 @@ class LocalModel {
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
-                            api.updateRowData(transaction);
+                            api.applyTransaction(transaction);
                         }
                     } else {
                         api.setRowData(newRs.list);
