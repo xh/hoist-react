@@ -227,6 +227,10 @@ export class DraggerModel {
     }
 
     toPct(val) {
-        return val / this.panelParent[this.panelModel.vertical ? 'offsetHeight' : 'offsetWidth'] * 100 + '%';
+        const dragBarWidth = '8', // in px
+            parentSize = this.panelParent[this.panelModel.vertical ? 'offsetHeight' : 'offsetWidth'],
+            minPct = dragBarWidth / parentSize * 100,
+            ret = Math.max(minPct, val / parentSize * 100);
+        return ret + '%';
     }
 }

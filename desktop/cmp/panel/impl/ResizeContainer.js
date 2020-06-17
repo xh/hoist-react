@@ -38,7 +38,7 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth',
-            cmpSize = sizedInPercents ? (size === '0%' ? dragBarWidth : size) : undefined;
+            cmpSize = sizedInPercents ? size : undefined;
 
         return cmp({
             ref,
