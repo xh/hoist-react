@@ -111,14 +111,14 @@ export class PanelModel {
 
         apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
-        this.sizedInPercents = this.isPercent(defaultSize);
+        this.sizedInPercents = this.isPercent(defaultSize) || this.isPercent(maxSize) || this.isPercent(minSize);
 
         if (this.sizedInPercents &&
-            ((!isNil(maxSize) && !this.isPercent(maxSize)) || (minSize !== 0 && !this.isPercent(minSize)))
+            ((!isNil(maxSize) && !this.isPercent(maxSize)) || (minSize !== 0 && !this.isPercent(minSize)) || (!isNil(defaultSize) && !this.isPercent(defaultSize)))
         ) {
-            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all in '%' or all in 'px' ('px' is the default unit when just a number is specified).");
-            maxSize = null;
-            minSize = null;
+            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all in '%' or all in 'px' ('px' is the default unit when just a number is specified).\nPanel sizing disabled.");
+            collapsible = false;
+            resizable = false;
         }
 
         if (!isNil(maxSize) && (parseFloat(maxSize) < parseFloat(minSize) || parseFloat(maxSize) < parseFloat(defaultSize))) {
