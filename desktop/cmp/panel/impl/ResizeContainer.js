@@ -7,6 +7,7 @@
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Children} from 'react';
+import {isString} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
@@ -19,10 +20,12 @@ export const resizeContainer = hoistCmp.factory({
 
     render({className, children}, ref) {
         const panelModel = useContextModel(PanelModel),
-            {size, maxSize, minSize, isPercent, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
+            {size, maxSize, minSize, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
-            dragBarWidth = '8px';
+            dragBarWidth = '8px',
+            isPercent = (val) => isString(val) && val.endsWith('%');
+
 
         const boxSize = isPercent(size) ? `calc(100% - ${dragBarWidth})` : size;
         let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];

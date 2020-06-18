@@ -15,7 +15,7 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
-import {isNil, isString} from 'lodash';
+import {isNil} from 'lodash';
 import {PersistenceProvider, PrefProvider} from '@xh/hoist/persist';
 
 /**
@@ -115,7 +115,7 @@ export class PanelModel {
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
-        this.minSize = this.findMinSize(minSize, defaultSize);
+        this.minSize = minSize,
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -224,16 +224,6 @@ export class PanelModel {
             }
         }
         return null;
-    }
-
-    isPercent(val) {
-        return isString(val) && val.endsWith('%');
-    }
-
-    findMinSize(minSize, defaultSize) {
-        if (minSize === 0) return minSize;
-        if (this.isPercent(defaultSize)) return minSize;
-        return Math.min(minSize, defaultSize);
     }
 
     dispatchResize() {
