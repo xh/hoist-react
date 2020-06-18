@@ -53,7 +53,7 @@ export class DraggerModel {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this,
-            {resizeWhileDragging, sizedInPercents, maxSize, vertical} = panelModel;
+            {resizeWhileDragging, maxSize, vertical} = panelModel;
 
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
@@ -64,7 +64,7 @@ export class DraggerModel {
 
         const {clientX, clientY} = this.parseEventPositions(e);
         this.resizeState = {startX: clientX, startY: clientY};
-        this.startSize = sizedInPercents ? panel[vertical ? 'offsetHeight' : 'offsetWidth'] : panelModel.size;
+        this.startSize = panel[vertical ? 'offsetHeight' : 'offsetWidth'];
         this.panelParent = panel.parentElement;
         panelModel.setIsResizing(true);
 
@@ -76,7 +76,7 @@ export class DraggerModel {
 
         // We will use whichever is smaller - the calculated available size, or the configured max size
         const calcMaxSize = this.startSize + this.getSiblingAvailSize();
-        this.maxSize = maxSize ? Math.min(this.forcePx(maxSize), calcMaxSize) : calcMaxSize;
+        this.maxSize = maxSize ? Math.min(maxSize, calcMaxSize) : calcMaxSize;
     };
 
     onDrag = (e) => {
@@ -134,12 +134,11 @@ export class DraggerModel {
     };
 
     updateSize(throttle) {
-        const {minSize, sizedInPercents} = this.panelModel,
+        const {minSize} = this.panelModel,
             {startSize} = this;
 
         if (startSize !== null) {
-            let size = clamp(startSize + this.diff, this.forcePx(minSize), this.maxSize);
-            size = sizedInPercents ? this.toPct(size) : size;
+            const size = clamp(startSize + this.diff, minSize, this.maxSize);
             if (throttle) {
                 this.throttledSetSize(size);
             } else {
@@ -162,8 +161,7 @@ export class DraggerModel {
 
     moveDragBar() {
         const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
-            {side} = panelModel,
-            minSize = this.forcePx(panelModel.minSize);
+            {side, minSize} = panelModel;
 
         if (!dragBar) return;
 
@@ -218,19 +216,5 @@ export class DraggerModel {
 
     isValidTouchEvent(e) {
         return e.touches && e.touches.length > 0;
-    }
-
-    forcePx(val) {
-        const PM = this.panelModel;
-        if (!PM.isPercent(val)) return val;
-        return parseFloat(val) * this.panelParent[PM.vertical ? 'offsetHeight' : 'offsetWidth'] / 100;
-    }
-
-    toPct(val) {
-        const dragBarWidth = '8', // in px
-            parentSize = this.panelParent[this.panelModel.vertical ? 'offsetHeight' : 'offsetWidth'],
-            minPct = dragBarWidth / parentSize * 100,
-            ret = Math.max(minPct, val / parentSize * 100);
-        return ret + '%';
     }
 }

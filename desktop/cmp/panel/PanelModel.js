@@ -68,8 +68,8 @@ export class PanelModel {
      * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
      * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
      * @param {(number|string)} config.defaultSize - Default size (in px or %) of the panel.  eg: 300 or '50%'
-     * @param {?(number|string)} [config.minSize] - Minimum size (in px or %) to which the panel can be resized.
-     * @param {?(number|string)} [config.maxSize] - Maximum size (in px or %) to which the panel can be resized.
+     * @param {?number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
+     * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
      * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
      * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
@@ -111,21 +111,6 @@ export class PanelModel {
 
         apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
 
-        this.sizedInPercents = this.isPercent(defaultSize) || this.isPercent(maxSize) || this.isPercent(minSize);
-
-        if (this.sizedInPercents &&
-            ((!isNil(maxSize) && !this.isPercent(maxSize)) || (minSize !== 0 && !this.isPercent(minSize)) || (!isNil(defaultSize) && !this.isPercent(defaultSize)))
-        ) {
-            console.error("Must specify 'defaultSize', 'maxSize', and 'minSize' in same units: all in '%' or all in 'px' ('px' is the default unit when just a number is specified).\nPanel sizing disabled.");
-            collapsible = false;
-            resizable = false;
-        }
-
-        if (!isNil(maxSize) && (parseFloat(maxSize) < parseFloat(minSize) || parseFloat(maxSize) < parseFloat(defaultSize))) {
-            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
-            maxSize = null;
-        }
-
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
@@ -158,10 +143,7 @@ export class PanelModel {
         }
 
         // Initialize state.
-        let size = state?.size;
-        // gracefully recover from switching defaultSize from percents to px or vice versa.
-        if (this.sizedInPercents !== this.isPercent(size)) size = undefined;
-        this.setSize(size ?? defaultSize);
+        this.setSize(state?.size ?? defaultSize);
         this.setCollapsed(state?.collapsed ?? defaultCollapsed);
 
         // Attach to provider last
@@ -249,13 +231,9 @@ export class PanelModel {
     }
 
     findMinSize(minSize, defaultSize) {
-        if (minSize === 0) return 0;
-
-        if (!this.sizedInPercents) {
-            return Math.min(minSize, defaultSize);
-        }
-
-        return Math.min(parseFloat(minSize), parseFloat(defaultSize)) + '%';
+        if (minSize === 0) return minSize;
+        if (this.isPercent(defaultSize)) return minSize;
+        return Math.min(minSize, defaultSize);
     }
 
     dispatchResize() {
