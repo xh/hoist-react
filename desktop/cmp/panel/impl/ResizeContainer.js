@@ -42,7 +42,7 @@ export const resizeContainer = hoistCmp.factory({
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth',
             minDim = vertical ? 'minHeight' : 'minWidth',
-            cmpSize = isPercent(size) ? size : undefined;
+            cmpSize = !collapsed && isPercent(size) ? size : undefined;
 
         return cmp({
             ref,
@@ -50,7 +50,7 @@ export const resizeContainer = hoistCmp.factory({
             flex: 'none',
             [dim]: cmpSize,
             [maxDim]: maxSize ?? '100%',
-            [minDim]: minSize,
+            [minDim]: collapsed ? 0 : minSize,
             items
         });
     }
