@@ -15,12 +15,13 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 ### 🎁 New Features
 
-* Added a new Persistence API (`@xh/hoist/persist`) to provide a more flexible yet consistent approach to
+* Added a new Persistence API to provide a more flexible yet consistent approach to
   saving state for Components, Models, and Services to different persistent locations such as Hoist
   Preferences, browser local storage, and Hoist Dashboard views.
-  * The primary entry point for this API is a new `@persist` annotation, which can be added to any
-    primitive observable property on a Model, Component, or Service to make it automatically
-    synchronize with a `PersistenceProvider`.
+  * The primary entry points for this API are the new `@PersistSupport` and `@persist` annotations.
+    `@persist` can be added to any observable property on a `@PersistSupport` to make it automatically
+    synchronize with a `PersistenceProvider`.  Both `HoistModel` and `HoistService` are decorated
+    with `@PersistSupport`.
   * This is designed to replace any app-specific code previously added to synchronize fields and
     their values to Preferences via ad-hoc initializers and reactions.
   * This same API is now used to handle state persistence for `GridStateModel`, `PanelModel`,

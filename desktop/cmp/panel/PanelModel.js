@@ -8,6 +8,8 @@ import {
     HoistModel,
     managed,
     ManagedRefreshContextModel,
+    PersistenceProvider,
+    PrefProvider,
     RefreshMode,
     RenderMode,
     XH
@@ -16,7 +18,6 @@ import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
 import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {PersistenceProvider, PrefProvider} from '@xh/hoist/persist';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and

@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ManagedSupport, ReactiveSupport, XhIdSupport} from '@xh/hoist/core';
+import {ManagedSupport, ReactiveSupport, XhIdSupport, PersistSupport} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 import {isFunction, isString} from 'lodash';
 
@@ -27,7 +27,7 @@ import {isFunction, isString} from 'lodash';
 export function HoistModel(C) {
     return applyMixin(C, {
         name: 'HoistModel',
-        includes: [ManagedSupport, ReactiveSupport, XhIdSupport],
+        includes: [ManagedSupport, ReactiveSupport, PersistSupport, XhIdSupport],
 
         provides: {
             matchesSelector(selector) {
