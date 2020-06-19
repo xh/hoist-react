@@ -4,8 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {PersistenceProvider} from '@xh/hoist/persist';
+import {HoistModel, managed, RefreshMode, RenderMode, XH, PersistenceProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';

@@ -6,8 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {throwIf} from '../../utils/js';
 import {PersistenceProvider} from './PersistenceProvider';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * PersistenceProvider that stores state within the Browser's LocalStorage.

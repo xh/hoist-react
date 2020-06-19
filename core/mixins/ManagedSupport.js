@@ -28,7 +28,7 @@ export function ManagedSupport(C) {
              * @returns object passed.
              */
             markManaged(obj) {
-                this._xhManagedInstances = this._xhManagedInstances || [];
+                this._xhManagedInstances = this._xhManagedInstances ?? [];
                 this._xhManagedInstances.push(obj);
                 return obj;
             }
@@ -52,7 +52,7 @@ export function ManagedSupport(C) {
  * via {@see ManagedSupport} when the referencing object is destroyed.
  */
 export function managed(target, property, descriptor) {
-    target._xhManagedProperties = target._xhManagedProperties || [];
+    target._xhManagedProperties = target._xhManagedProperties ?? [];
     target._xhManagedProperties.push(property);
     return descriptor;
 }
