@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed} from '@xh/hoist/core';
+import {HoistModel, XH, managed, PersistenceProvider, LocalStorageProvider} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
 import {find, isUndefined, omit} from 'lodash';
-import {PersistenceProvider, LocalStorageProvider} from '@xh/hoist/persist';
+
 
 /**
  * Model to manage persisting state from GridModel.

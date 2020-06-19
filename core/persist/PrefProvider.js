@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '../../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {PersistenceProvider} from './PersistenceProvider';
 import {XH} from '@xh/hoist/core';
 

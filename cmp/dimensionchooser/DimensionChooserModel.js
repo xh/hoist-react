@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {
@@ -21,7 +21,7 @@ import {
     sortBy,
     without
 } from 'lodash';
-import {PersistenceProvider} from '../../persist';
+
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
