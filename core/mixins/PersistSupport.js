@@ -38,13 +38,13 @@ export function PersistSupport(C) {
              * directly on the property declaration itself.  Use this method in the general case,
              * when you need to control the timing,
              */
-            markPersistent(property, options = {}) {
+            markPersist(property, options = {}) {
                 const providers = this._xhPersistenceProviders = this._xhPersistenceProviders ?? {};
 
                 // Read from and attach to Provider.
                 // Fail gently -- initialization exceptions causes stack overflows for MobX.
                 try {
-                    const persistWith = {path: property, ...options, ...this.persistWith};
+                    const persistWith = {path: property, ...this.persistWith, ...options};
                     const provider = providers[property] = PersistenceProvider.create(persistWith);
                     const providerState = provider.read();
                     if (!isUndefined(providerState)) {
@@ -74,9 +74,9 @@ export function PersistSupport(C) {
 /**
  * Decorator to make a class property persistent.
  *
- * This decorator is provided as a convenient way to invoke markPersistent().  See that
- * method for more details. See also @persist.with, a higher-order version of this decorator
- * that allows for setting property-specific options.
+ * This decorator delegates to markPersist().  See that method for more details.
+ * See also @persist.with, a higher-order version of this decorator that allows
+ * for setting property-specific options.
  *
  * This decorator should always be applied "after" the mobx decorator, i.e. first in file line
  * order: `@persist @bindable fooBarFlag = true`.
@@ -114,7 +114,7 @@ function createDescriptor(target, property, descriptor, options) {
 
     const get = function() {
         const providers = this._xhPersistenceProviders;
-        if (!providers || !providers[property]) this.markPersistent(property, options);
+        if (!providers || !providers[property]) this.markPersist(property, options);
         return observableGet.call(this);
     };
 
