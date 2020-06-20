@@ -24,8 +24,8 @@ export class LogViewerModel {
     persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     // Form State/Display options
-    @persist
     @bindable
+    @persist
     tail = false;
 
     @bindable startLine = null;

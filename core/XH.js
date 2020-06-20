@@ -469,7 +469,7 @@ class XHClass {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                if (it && it.destroy) {
+                if (it?.destroy) {
                     it.destroy();
                 }
             });
