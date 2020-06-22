@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {useContextModel} from '@xh/hoist/core/index';
+import {useContextModel} from '@xh/hoist/core';
 import {useEffect} from 'react';
 
 /**

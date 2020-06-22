@@ -4,23 +4,24 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf, apiRemoved} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,
     difference,
+    differenceWith,
+    take,
     isArray,
     isEmpty,
     isEqual,
     isString,
     keys,
-    pullAllWith,
     sortBy,
     without
 } from 'lodash';
-import {PersistenceProvider} from '../../persist';
+
 
 /**
  * This model is responsible for managing the state of a DimensionChooser component,
@@ -215,11 +216,12 @@ export class DimensionChooserModel {
         );
     }
 
+    @action
     addToHistory(value) {
-        const {history} = this;
-        pullAllWith(history, [value], isEqual); // Remove duplicates
-        history.unshift(value);
-        if (history.length > this.maxHistoryLength) history.pop();
+        // Remove, add to front, and truncate
+        let {history, maxHistoryLength} = this;
+        history = differenceWith(history, [value], isEqual);
+        this.history = take([value, ...history], maxHistoryLength);
     }
 
     //-------------------------

@@ -19,12 +19,12 @@ export const App = hoistCmp({
     displayName: 'App',
     model: uses(AppModel),
 
-    render() {
+    render({model}) {
         return panel({
             tbar: tbar(),
             contextMenu: [CM.reloadApp(), CM.about(), CM.logout()],
             className: 'xh-admin-app-frame',
-            item: tabContainer()
+            item: tabContainer({model: model.tabModel})
         });
     }
 });

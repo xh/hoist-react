@@ -209,7 +209,7 @@ export class GridModel {
      * @param {boolean} [c.experimental.useDeltaSort] - Set to true to use ag-Grid's experimental
      *      'deltaSort' feature designed to do incremental sorting.  Default false.
      * @param {boolean} [c.experimental.useTransaction] - set to false to use ag-Grid's
-     *      deltaRowDataMode to internally generate transactions on data updates.  When true,
+     *      immutableData to internally generate transactions on data updates.  When true,
      *      Hoist will generate the transaction on data update. Default true.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
@@ -516,7 +516,8 @@ export class GridModel {
             return GridSorter.parse(it);
         });
 
-        const invalidSorters = sorters.filter(it => !this.findColumn(this.columns, it.colId));
+        // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
+        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));
         if (invalidSorters.length) {
             console.warn('GridSorter colId not found in grid columns', invalidSorters);
             return;

@@ -4,14 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {div, frame} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
 import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import {AgGridModel, agGridReact} from './index';
+import {AgGridModel} from './AgGridModel';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -37,6 +38,18 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     model: uses(AgGridModel),
 
     render({model, key, className, onGridReady, ...props}) {
+
+        if (!AgGridReact) {
+            console.error(
+                'ag-Grid has not been imported in to this application. Please import and ' +
+                'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'ag-Grid library not available.'
+            });
+        }
+
         const [layoutProps, agGridProps] = splitLayoutProps(props),
             {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
             {darkTheme, isDesktop} = XH;
@@ -60,7 +73,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
                 isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
-            item: agGridReact({
+            item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,

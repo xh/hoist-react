@@ -6,7 +6,7 @@
  */
 
 import {PersistenceProvider} from './PersistenceProvider';
-import {throwIf} from '../../utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * PersistenceProvider that stores state within a DashView.
