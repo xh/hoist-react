@@ -7,11 +7,12 @@
 import {div, h2, hbox, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {fmtDateTime, fmtNumber} from '@xh/hoist/format';
+import {fmtDateTime} from '@xh/hoist/format';
 import {Icon, xhLogo} from '@xh/hoist/icon';
 import React from 'react';
 import './AboutPanel.scss';
-import {MINUTES, HOURS} from '@xh/hoist/utils/datetime';
+import {MINUTES} from '@xh/hoist/utils/datetime';
+import {fmtTimezone} from '@xh/hoist/utils/impl';
 
 export const aboutPanel = hoistCmp.factory(
     () => div({
@@ -46,9 +47,9 @@ function renderTables() {
                 row('Environment', get('appEnvironment')),
                 row('Database', get('databaseConnectionString')),
                 row('DB User / Create Mode', `${get('databaseUser')} / ${get('databaseCreateMode')}`),
-                row('App Timezone', renderTimezone(get('appTimezone'), get('appTimezoneOffset'))),
-                row('Server Timezone', renderTimezone(get('serverTimezone'), get('serverTimezoneOffset'))),
-                row('Client Timezone',  renderTimezone('unknown', (new Date()).getTimezoneOffset()*MINUTES*-1)),
+                row('App Timezone', fmtTimezone(get('appTimezone'), get('appTimezoneOffset'))),
+                row('Server Timezone', fmtTimezone(get('serverTimezone'), get('serverTimezoneOffset'))),
+                row('Client Timezone',  fmtTimezone('Unknown', (new Date()).getTimezoneOffset()*MINUTES*-1)),
                 startupTime ? row('Server Uptime', relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})) : null
             )
         }),
@@ -74,11 +75,6 @@ function renderTables() {
     ];
 }
 
-function renderTimezone(name, offset) {
-    return `${name} (${fmtNumber(offset/HOURS, {withPlusSign: true})})`;
-}
-
-
 function renderBlurb() {
     return hbox({
         className: 'xh-admin-about-panel__blurb',
@@ -94,3 +90,5 @@ function renderBlurb() {
         ]
     });
 }
+
+
