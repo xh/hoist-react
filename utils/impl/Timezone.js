@@ -14,6 +14,8 @@ import {fmtNumber} from '@xh/hoist/format';
  * Pending additional support for client-side Timezone API
  */
 export function fmtTimezone(name, offset) {
+    if (!name) return '';
+
     return name != 'GMT' ?
         `${name} (GMT${fmtNumber(offset/HOURS, {withPlusSign: true})})` :
         `${name}`;
