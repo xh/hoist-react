@@ -2,6 +2,16 @@
   .xh-toolbar .xh-form-field {
     margin: 0 0 0 var(--xh-tbar-item-pad-px);
   }
+
+  &__json {
+    background-color: var(--xh-bg-alt);
+    font-family: var(--xh-font-family-mono);
+    white-space: pre;
+    border: var(--xh-border-solid);
+    padding: var(--xh-pad-half-px);
+    overflow: scroll;
+    font-size: var(--xh-font-size-small-px);
+  }
 }
 
 .xh-admin-activity-detail {

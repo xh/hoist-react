@@ -4,6 +4,8 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
+import {wait} from '@xh/hoist/promise';
 import {isEmpty, isFinite} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
@@ -53,7 +55,7 @@ export class ActivityModel {
             {label: 'Browser', value: 'browser'},
             {label: 'User Agent', value: 'userAgent'}
         ],
-        initialValue: ['day', 'username', 'category', 'msg']
+        initialValue: ['day', 'category', 'username']
     });
 
     @managed
@@ -82,23 +84,23 @@ export class ActivityModel {
         persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
-        exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},
+        exportOptions: {filename: `${XH.appCode}-activity-summary`},
         emptyText: 'No activity reported...',
-        sortBy: 'dateCreated|desc',
+        sortBy: 'cubeLabel',
         columns: [
             {
                 field: 'cubeLabel',
                 headerName: 'Track',
-                width: 240,
-                autosizeMaxWidth: 400,
+                flex: 1,
+                minWidth: 100,
                 isTreeColumn: true,
                 renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
             },
-            {field: 'username', ...usernameCol},
             {field: 'day', width: 200, align: 'right', headerName: 'Day / Range', renderer: this.dateRangeRenderer},
-            {field: 'category', width: 100},
-            {field: 'device', width: 100},
-            {field: 'browser', width: 100},
+            {field: 'username', ...usernameCol, hidden: true},
+            {field: 'category', width: 100, hidden: true},
+            {field: 'device', width: 100, hidden: true},
+            {field: 'browser', width: 100, hidden: true},
             {field: 'userAgent', width: 100, hidden: true},
             {field: 'impersonating', width: 140, hidden: true},
             {
@@ -106,20 +108,23 @@ export class ActivityModel {
                 headerName: 'Elapsed (ms)',
                 width: 130,
                 align: 'right',
-                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
+                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}}),
+                hidden: true
             },
-            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
-            {field: 'data', width: 70, autosizeMaxWidth: 400, hidden: true},
-            {field: 'count', width: 70, align: 'right'},
-            {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+            {field: 'count', width: 70, align: 'right'}
         ]
     });
+
+    @managed activityDetailModel;
 
     @managed chartsModel = new ChartsModel();
 
     constructor() {
+        this.activityDetailModel = new ActivityDetailModel({parentModel: this});
+
         this.addReaction(this.paramsReaction());
         this.addReaction(this.dimensionsReaction());
+        window.AM = this;
     }
 
     async doLoadAsync(loadSpec) {
@@ -130,30 +135,44 @@ export class ActivityModel {
                 loadSpec
             });
 
-            data.forEach(it => {
-                it.id = `entry: ${it.id}`;
-                it.day = LocalDate.from(it.dateCreated);
-            });
+            data.forEach(it => it.day = LocalDate.from(it.dateCreated));
             await this.cube.loadDataAsync(data);
-            this.loadGridAndChart();
+            this.loadGridAndChartAsync();
         } catch (e) {
-            this.gridModel.loadData([]);
+            this.gridModel.clear();
             this.chartsModel.setDimensions(this.dimChooserModel.value);
             this.chartsModel.setData([]);
             XH.handleException(e);
         }
     }
 
-    loadGridAndChart() {
-        const dimensions = this.dimChooserModel.value,
-            data = this.cube.executeQuery({
-                dimensions,
-                includeLeaves: true
-            });
+    async loadGridAndChartAsync() {
+        const {dimChooserModel, cube, gridModel, chartsModel} = this,
+            dimensions = dimChooserModel.value,
+            data = cube.executeQuery({dimensions, includeLeaves: true});
 
-        this.gridModel.loadData(data);
-        this.chartsModel.setDimensions(dimensions);
-        this.chartsModel.setData(data);
+        data.forEach(node => this.separateLeafRows(node));
+        gridModel.loadData(data);
+
+        await wait(1);
+        if (!gridModel.hasSelection) gridModel.selectFirst();
+
+        chartsModel.setDimensions(dimensions);
+        chartsModel.setData(data);
+    }
+
+    // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
+    // carry the leaves with the record, but deliberately not show them in the summary tree grid.
+    separateLeafRows(node) {
+        if (!node.children) return;
+
+        const childrenAreLeaves = !node.children[0].children;
+        if (childrenAreLeaves) {
+            node.leafRows = node.children;
+            delete node.children;
+        } else {
+            node.children.forEach((child) => this.separateLeafRows(child));
+        }
     }
 
     adjustDates(dir, toToday = false) {
@@ -228,7 +247,7 @@ export class ActivityModel {
             track: () => this.dimChooserModel.value,
             run: (v) => {
                 this.ensureProperTimeseriesChartState(v[0] == 'day');
-                this.loadGridAndChart();
+                this.loadGridAndChartAsync();
             }
         };
     }

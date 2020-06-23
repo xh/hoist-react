@@ -28,6 +28,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
 
     render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+        const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
             icon: withDefault(icon, Icon.gridPanel()),
@@ -40,7 +41,11 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             return cloneElement(displayButton, {disabled: true});
         }
 
-        const {colChooserModel} = gridModel;
+        if (!colChooserModel) {
+            console.error('No ColChooserModel available on bound GridModel - ensure enableColChooser config is set to true.');
+            return cloneElement(displayButton, {disabled: true});
+        }
+
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),

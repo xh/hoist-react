@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {grid} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp} from '@xh/hoist/core';
-import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
-import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {form} from '@xh/hoist/cmp/form';
+import {grid} from '@xh/hoist/cmp/grid';
+import {filler, hframe} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -18,9 +18,9 @@ import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
 import {ActivityModel} from './ActivityModel';
-import {activityDetailDialog} from './detail/ActivityDetailDialog';
-import {activityDetailPanel} from './detail/ActivityDetailPanel';
 import './ActivityPanel.scss';
+import {chartsPanel} from './charts/ChartsPanel';
+import {activityDetailView} from './detail/ActivityDetailView';
 
 export const activityPanel = hoistCmp.factory({
     model: creates(ActivityModel),
@@ -30,11 +30,32 @@ export const activityPanel = hoistCmp.factory({
             mask: 'onLoad',
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
-            items: [
-                grid({onRowDoubleClicked: (e) => model.expandRowOrOpenDetail(e)}),
-                activityDetailPanel(),
-                activityDetailDialog()
-            ]
+            item: hframe(
+                panel({
+                    title: 'Grouped Results',
+                    icon: Icon.users(),
+                    model: {
+                        side: 'left',
+                        defaultSize: 550
+                    },
+                    tbar: [
+                        dimensionChooser(),
+                        filler(),
+                        colChooserButton(),
+                        exportButton()
+                    ],
+                    items: [
+                        grid({
+                            flex: 1,
+                            onRowDoubleClicked: (e) => model.expandRowOrOpenDetail(e)
+                        }),
+                        chartsPanel()
+                    ]
+                }),
+                activityDetailView({
+                    flex: 1
+                })
+            )
         });
     }
 });
@@ -43,7 +64,6 @@ const tbar = hoistCmp.factory(
     ({model}) => {
         return toolbar(
             form(
-                dimensionChooser(),
                 button({
                     icon: Icon.angleLeft(),
                     onClick: () => model.adjustDates('subtract')

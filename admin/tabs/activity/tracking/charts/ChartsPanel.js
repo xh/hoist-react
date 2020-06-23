@@ -18,7 +18,7 @@ import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: uses(ChartsModel),
-    render({model}) {
+    render({model, ...props}) {
         const {chartType, dimensions} = model,
             isTimeSeries = chartType == 'timeseries';
 
@@ -34,7 +34,12 @@ export const chartsPanel = hoistCmp.factory({
                     omit: !isTimeSeries
                 })
             ],
-            bbar: bbar()
+            bbar: bbar(),
+            model: {
+                side: 'bottom',
+                defaultSize: 300
+            },
+            ...props
         });
     }
 });
