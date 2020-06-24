@@ -7,10 +7,8 @@
 import {HOURS} from '@xh/hoist/utils/datetime';
 import {fmtNumber} from '@xh/hoist/format';
 
-
 /**
  * @private
- *
  * Pending additional support for client-side Time zone API
  */
 export function fmtTimeZone(name, offset) {
