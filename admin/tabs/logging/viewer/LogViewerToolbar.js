@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {label, filler, strong} from '@xh/hoist/cmp/layout';
+import {label, filler, strong, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -12,7 +12,10 @@ import {fmtTimeZone} from '@xh/hoist/utils/impl';
 
 export const logViewerToolbar = hoistCmp.factory(
     ({model}) => {
-        const envSvc = XH.environmentService;
+        const envSvc = XH.environmentService,
+            zone = envSvc.get('serverTimeZone'),
+            offset = envSvc.get('serverTimeZoneOffset');
+
         return toolbar(
             label('Start line:'),
             numberInput({
@@ -42,8 +45,10 @@ export const logViewerToolbar = hoistCmp.factory(
                 label: 'Tail mode'
             }),
             filler(),
-            'Server Timezone: ',
-            strong(fmtTimeZone(envSvc.get('serverTimeZone'), envSvc.get('serverTimeZoneOffset')))
+            span({
+                style: {whitespace: 'nowrap'},
+                items: ['Server time zone: ', strong(fmtTimeZone(zone, offset))]
+            })
         );
     }
 );
