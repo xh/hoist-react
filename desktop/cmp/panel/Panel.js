@@ -71,9 +71,12 @@ export const [Panel, panel] = hoistCmp.withFactory({
         } = nonLayoutProps;
 
         // 1) Pre-process layout
-        // Block unwanted use of padding props, which will separate the panel's header
-        // and bottom toolbar from its edges in a confusing way.
-        layoutProps = omitBy(layoutProps, (v, k) => k.startsWith('padding'));
+        // Extract content styling props, to pass them on to the content element of the panel,
+        // and remove them from the panel's wrapper element so that they
+        // do not have bad effects on the panel's header and bottom toolbar.
+        const contentStyleFilter = (k) => k.startsWith('padding')|| k.startsWith('overflow') || ['alignItems', 'alignContent', 'justifyContent'].includes(k),
+            contentStyleProps = omitBy(layoutProps, (v, k) => !contentStyleFilter(k));
+        layoutProps = omitBy(layoutProps, (v, k) => contentStyleFilter(k));
 
         // Give Panels a default flexing behavior if no dimensions / flex specified.
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
@@ -106,7 +109,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
                 style: {display: collapsed ? 'none' : 'flex'},
                 items: [
                     parseToolbar(tbar),
-                    ...(castArray(children)),
+                    vframe({style: { ...contentStyleProps}, items: castArray(children)}),
                     parseToolbar(bbar)
                 ]
             });
