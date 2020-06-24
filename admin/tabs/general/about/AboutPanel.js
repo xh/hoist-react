@@ -12,7 +12,7 @@ import {Icon, xhLogo} from '@xh/hoist/icon';
 import React from 'react';
 import './AboutPanel.scss';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {fmtTimezone} from '@xh/hoist/utils/impl';
+import {fmtTimeZone} from '@xh/hoist/utils/impl';
 
 export const aboutPanel = hoistCmp.factory(
     () => div({
@@ -40,6 +40,9 @@ function renderTables() {
         hrVersion += ` (${fmtDateTime(snapDate)})`;
     }
 
+    // Pending bringing in moment timezone, use these limited apis
+    const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
+        localTimeZoneOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES;
     return [
         table({
             item: tbody(
@@ -47,9 +50,9 @@ function renderTables() {
                 row('Environment', get('appEnvironment')),
                 row('Database', get('databaseConnectionString')),
                 row('DB User / Create Mode', `${get('databaseUser')} / ${get('databaseCreateMode')}`),
-                row('App Timezone', fmtTimezone(get('appTimezone'), get('appTimezoneOffset'))),
-                row('Server Timezone', fmtTimezone(get('serverTimezone'), get('serverTimezoneOffset'))),
-                row('Client Timezone',  fmtTimezone('Unknown', (new Date()).getTimezoneOffset()*MINUTES*-1)),
+                row('App Time Zone', fmtTimeZone(get('appTimeZone'), get('appTimeZoneOffset'))),
+                row('Server Time Zone', fmtTimeZone(get('serverTimeZone'), get('serverTimeZoneOffset'))),
+                row('Client Time Zone',  fmtTimeZone(localTimeZone, localTimeZoneOffset)),
                 startupTime ? row('Server Uptime', relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})) : null
             )
         }),

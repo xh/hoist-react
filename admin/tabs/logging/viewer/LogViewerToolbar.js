@@ -4,11 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {label, filler, b} from '@xh/hoist/cmp/layout';
+import {label, filler, strong} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtTimezone} from '@xh/hoist/utils/impl';
+import {fmtTimeZone} from '@xh/hoist/utils/impl';
 
 export const logViewerToolbar = hoistCmp.factory(
     ({model}) => {
@@ -43,7 +43,7 @@ export const logViewerToolbar = hoistCmp.factory(
             }),
             filler(),
             'Server Timezone: ',
-            b(fmtTimezone(envSvc.get('serverTimezone'), envSvc.get('serverTimezoneOffset')))
+            strong(fmtTimeZone(envSvc.get('serverTimeZone'), envSvc.get('serverTimeZoneOffset')))
         );
     }
 );

@@ -11,9 +11,9 @@ import {fmtNumber} from '@xh/hoist/format';
 /**
  * @private
  *
- * Pending additional support for client-side Timezone API
+ * Pending additional support for client-side Time zone API
  */
-export function fmtTimezone(name, offset) {
+export function fmtTimeZone(name, offset) {
     if (!name) return '';
 
     return name != 'GMT' ?
