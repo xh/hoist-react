@@ -4,15 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {div, h2, hbox, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {div, h2, hbox, span, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon, xhLogo} from '@xh/hoist/icon';
-import React from 'react';
-import './AboutPanel.scss';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
+import React from 'react';
+import './AboutPanel.scss';
 
 export const aboutPanel = hoistCmp.factory(
     () => div({
@@ -29,7 +29,8 @@ function renderTables() {
     const get = (str) => XH.environmentService.get(str),
         startupTime = get('startupTime'),
         row = (label, data) => {
-            return data != null ? tr(th(label), td(data)) : null;
+            data = data || span({item: 'Not available', className: 'xh-text-color-muted'});
+            return tr(th(label), td(data));
         };
 
     // Snapshot versions are tagged with a timestamp - show that in local time here

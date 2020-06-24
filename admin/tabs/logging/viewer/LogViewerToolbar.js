@@ -47,7 +47,8 @@ export const logViewerToolbar = hoistCmp.factory(
             filler(),
             span({
                 style: {whitespace: 'nowrap'},
-                items: ['Server time zone: ', strong(fmtTimeZone(zone, offset))]
+                items: ['Server time zone: ', strong(fmtTimeZone(zone, offset))],
+                omit: !zone  // zone env support requires hoist-core 7.1+
             })
         );
     }
