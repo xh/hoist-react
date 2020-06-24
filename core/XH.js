@@ -118,11 +118,12 @@ class XHClass {
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
-    getEnv(key)                 {return this.environmentService.get(key)}
-    track(opts)                 {return this.trackService.track(opts)}
 
-    getUser()                   {return this.identityService ? this.identityService.getUser() : null}
-    getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
+    // Make these robust, so they don't fail if called early in initialization sequence
+    track(opts)                 {return this.trackService?.track(opts)}
+    getEnv(key)                 {return this.environmentService?.get(key) ?? null}
+    getUser()                   {return this.identityService?.getUser() ?? null}
+    getUsername()               {return this.identityService?.getUsername() ?? null}
 
     get isMobileApp()           {return this.appSpec.isMobileApp}
     get clientAppCode()         {return this.appSpec.clientAppCode}
@@ -520,10 +521,9 @@ class XHClass {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
 
-            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
-            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
+            // pre-flight allows clean recognition when we have no server.
             try {
-                await this.installServicesAsync(EnvironmentService);
+                await XH.fetch({url: 'ping'});
             } catch (e) {
                 const pingURL = XH.isDevelopmentMode ?
                     `${XH.baseUrl}ping` :
@@ -531,12 +531,12 @@ class XHClass {
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
-                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
-                    detail: e.message
+                    detail: e.message,
+                    message: 'Client cannot reach UI server.  Please check UI server at the ' +
+                        `following location: ${pingURL}`
                 });
             }
 
-            this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
             // Instantiate appModel, await optional pre-auth init.
@@ -585,11 +585,13 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(EnvironmentService, PrefService, ConfigService);
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
+
+            this.setDocTitle();
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
