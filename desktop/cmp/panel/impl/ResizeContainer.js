@@ -24,10 +24,9 @@ export const resizeContainer = hoistCmp.factory({
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
             dragBarWidth = '8px',
-            isPercent = (val) => isString(val) && val.endsWith('%');
+            sizeIsPct = isString(size) && size.endsWith('%');
 
-
-        const boxSize = isPercent(size) ? `calc(100% - ${dragBarWidth})` : size;
+        const boxSize = sizeIsPct ? `calc(100% - ${dragBarWidth})` : size;
         let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
 
         if (showSplitter) {
@@ -41,7 +40,7 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth',
-            cmpSize = !collapsed && isPercent(size) ? size : undefined;
+            cmpSize = !collapsed && sizeIsPct ? size : undefined;
 
         return cmp({
             ref,
