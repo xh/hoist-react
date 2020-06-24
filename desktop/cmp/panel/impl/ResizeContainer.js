@@ -20,7 +20,7 @@ export const resizeContainer = hoistCmp.factory({
 
     render({className, children}, ref) {
         const panelModel = useContextModel(PanelModel),
-            {size, maxSize, minSize, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
+            {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
             dragBarWidth = '8px',
@@ -41,7 +41,6 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth',
-            minDim = vertical ? 'minHeight' : 'minWidth',
             cmpSize = !collapsed && isPercent(size) ? size : undefined;
 
         return cmp({
@@ -49,8 +48,7 @@ export const resizeContainer = hoistCmp.factory({
             className,
             flex: 'none',
             [dim]: cmpSize,
-            [maxDim]: maxSize ?? '100%',
-            [minDim]: collapsed ? 0 : minSize,
+            [maxDim]: '100%',
             items
         });
     }
