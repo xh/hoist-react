@@ -31,7 +31,7 @@ wide variety of enterprise software projects. For any questions regarding this c
 * Hoist now supports sorting on agGrid group columns.
 * Hoist config `xhEnableMonitoring` can be used to enable/disable the Admin monitor tab and
   its associated server-side jobs
-* `PanelModel`s now supports a `size` property specified in percentage as well as pixels
+* `PanelModel` now supports a `size` property specified in percentage as well as pixels
   (e.g. `size: '20%'` as well as `size: 200`).
 
 ### 💥 Breaking Changes
