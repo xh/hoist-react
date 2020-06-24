@@ -35,6 +35,7 @@ export const option = elemFactory('option');
 export const p = elemFactory('p');
 export const pre = elemFactory('pre');
 export const span = elemFactory('span');
+export const strong = elemFactory('strong');
 export const table = elemFactory('table');
 export const tbody = elemFactory('tbody');
 export const td = elemFactory('td');
