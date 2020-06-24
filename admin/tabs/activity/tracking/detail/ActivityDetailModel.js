@@ -3,6 +3,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 @HoistModel
@@ -19,8 +20,9 @@ export class ActivityDetailModel {
         exportOptions: {filename: `${XH.appCode}-activity-detail`},
         emptyText: 'Select a group on the left to see detailed tracking logs.',
         columns: [
+            {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
             {field: 'username', ...usernameCol},
-            {field: 'category', width: 100},
+            {field: 'category', width: 120},
             {field: 'device', width: 100},
             {field: 'browser', width: 100},
             {field: 'userAgent', width: 100, hidden: true},
@@ -28,12 +30,12 @@ export class ActivityDetailModel {
             {
                 field: 'elapsed',
                 headerName: 'Elapsed (ms)',
-                width: 130,
+                width: 120,
                 align: 'right',
                 renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
-            {field: 'data', width: 70, autosizeMaxWidth: 400, hidden: true},
+            {field: 'data', width: 250, autosizeMaxWidth: 400, hidden: true},
             {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
         ]
     });
@@ -42,6 +44,8 @@ export class ActivityDetailModel {
         readonly: true,
         fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
     });
+
+    @bindable formattedData;
 
     constructor({parentModel}) {
         this.parentModel = parentModel;
@@ -58,7 +62,21 @@ export class ActivityDetailModel {
     }
 
     showEntryDetail(detailRec) {
-        this.detailFormModel.init(detailRec?.data ?? {});
+        const recData = detailRec?.data ?? {},
+            trackData = recData.data;
+
+        this.detailFormModel.init(recData);
+
+        let formattedTrackData = null;
+        if (trackData) {
+            try {
+                formattedTrackData = JSON.stringify(JSON.parse(trackData), null, 2);
+            } catch (ignored) {
+                formattedTrackData = trackData;
+            }
+        }
+
+        this.setFormattedData(formattedTrackData);
     }
 
     async showActivityEntriesAsync(aggRec) {

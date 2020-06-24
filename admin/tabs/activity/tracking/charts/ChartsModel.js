@@ -14,6 +14,9 @@ import {fmtDate} from '@xh/hoist/format';
 @HoistModel
 export class ChartsModel {
 
+    /** @member {ActivityModel} */
+    parentModel;
+
     @bindable.ref data;
     @bindable.ref dimensions;
     @bindable.ref chartType = 'category';
@@ -157,7 +160,8 @@ export class ChartsModel {
         return {featuredSeries: '#7cb5ec', entriesSeries: '#90ed7d', elapsedSeries: '#434348'};
     }
 
-    constructor() {
+    constructor({parentModel}) {
+        this.parentModel = parentModel;
         this.addReaction(this.enableTimeseriesReaction());
         this.addReaction(this.loadChartReaction());
         this.addReaction(this.themeReaction());

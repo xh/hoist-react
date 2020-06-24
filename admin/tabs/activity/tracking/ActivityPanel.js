@@ -31,30 +31,8 @@ export const activityPanel = hoistCmp.factory({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
             item: hframe(
-                panel({
-                    title: 'Grouped Results',
-                    icon: Icon.users(),
-                    model: {
-                        side: 'left',
-                        defaultSize: 550
-                    },
-                    tbar: [
-                        dimensionChooser(),
-                        filler(),
-                        colChooserButton(),
-                        exportButton()
-                    ],
-                    items: [
-                        grid({
-                            flex: 1,
-                            onRowDoubleClicked: (e) => model.expandRowOrOpenDetail(e)
-                        }),
-                        chartsPanel()
-                    ]
-                }),
-                activityDetailView({
-                    flex: 1
-                })
+                aggregateView(),
+                activityDetailView({flex: 1})
             )
         });
     }
@@ -122,6 +100,33 @@ const tbar = hoistCmp.factory(
                 exportButton()
             )
         );
+    }
+);
+
+const aggregateView = hoistCmp.factory(
+    ({model}) => {
+        return panel({
+            title: 'Aggregate Activity Report',
+            icon: Icon.users(),
+            model: {
+                side: 'left',
+                defaultSize: 550
+            },
+            tbar: [
+                dimensionChooser(),
+                filler(),
+                colChooserButton(),
+                exportButton()
+            ],
+            items: [
+                grid({
+                    flex: 1,
+                    agOptions: {groupDefaultExpanded: 1},
+                    onRowDoubleClicked: (e) => model.toggleRowExpandCollapse(e)
+                }),
+                chartsPanel()
+            ]
+        });
     }
 );
 
