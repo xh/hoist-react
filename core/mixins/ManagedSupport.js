@@ -36,11 +36,8 @@ export function ManagedSupport(C) {
 
         chains: {
             destroy() {
-                const props = this._xhManagedProperties;
-                if (props) props.forEach(p => XH.safeDestroy(this[p]));
-
-                const instances = this._xhManagedInstances;
-                if (instances) instances.forEach(o => XH.safeDestroy(o));
+                XH.safeDestroy(this._xhManagedProperties);
+                XH.safeDestroy(this._xhManagedInstances);
             }
         }
     });

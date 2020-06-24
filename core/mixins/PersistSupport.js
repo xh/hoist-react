@@ -4,12 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider} from '@xh/hoist/core';
+import {PersistenceProvider} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 
-import {cloneDeep, isUndefined, values} from 'lodash';
+import {cloneDeep, isUndefined} from 'lodash';
 import {runInAction} from '@xh/hoist/mobx';
-
+import {start} from '@xh/hoist/promise';
 /**
  * Mixin to support Persistent properties on an object
  */
@@ -39,14 +39,11 @@ export function PersistSupport(C) {
              * when you need to control the timing,
              */
             markPersist(property, options = {}) {
-                const providers = this._xhPersistenceProviders = this._xhPersistenceProviders ?? {};
-
-                // Read from and attach to Provider.
-                // Fail gently -- initialization exceptions causes stack overflows for MobX.
+                // Read from and attach to Provider, failing gently
                 try {
-                    const persistWith = {path: property, ...this.persistWith, ...options};
-                    const provider = providers[property] = PersistenceProvider.create(persistWith);
-                    const providerState = provider.read();
+                    const persistWith = {path: property, ...this.persistWith, ...options},
+                        provider = this.markManaged(PersistenceProvider.create(persistWith)),
+                        providerState = provider.read();
                     if (!isUndefined(providerState)) {
                         runInAction(() => this[property] = cloneDeep(providerState));
                     }
@@ -57,15 +54,9 @@ export function PersistSupport(C) {
                 } catch (e) {
                     console.error(
                         `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                        `'persistWith' on this object, method call, or annotation.`
+                        `'persistWith' on this object or in the method call.`
                     );
                 }
-            }
-        },
-
-        chains: {
-            destroy() {
-                XH.safeDestroy(values(this._xhPersistenceProviders));
             }
         }
     });
@@ -74,12 +65,14 @@ export function PersistSupport(C) {
 /**
  * Decorator to make a class property persistent.
  *
- * This decorator delegates to markPersist().  See that method for more details.
- * See also @persist.with, a higher-order version of this decorator that allows
- * for setting property-specific options.
+ * This decorator provides the same functionality as markPersist().  See that method
+ * for more details.
  *
- * This decorator should always be applied "after" the mobx decorator, i.e. first in file line
- * order: `@persist @bindable fooBarFlag = true`.
+ * This decorator should always be applied "before" the mobx decorator, i.e. second in file line
+ * order: `@bindable @persist fooBarFlag = true`.
+ *
+ * See also @persist.with, a higher-order version of this decorator that allows for setting
+ * property-specific persistence options.
  */
 export function persist(target, property, descriptor) {
     return createDescriptor(target, property, descriptor, null);
@@ -88,7 +81,7 @@ export function persist(target, property, descriptor) {
 /**
  * Decorator to make a class property persistent.
  *
- * This is a higher-order version of `@persist`.  Call this variant as a function to
+ * This is a higher-order version of `@persist`.  Use this variant as a function to
  * provide custom PersistOptions.
  *
  * @param {PersistOptions} options
@@ -103,22 +96,40 @@ persist.with = function(options) {
 // Implementation
 //--------------------
 function createDescriptor(target, property, descriptor, options) {
-    const observableGet = descriptor.get;
-    if (!observableGet) {
+    if (descriptor.get || descriptor.set) {
         console.error(
-            `Error defining ${property} : @persist must be applied "after" the mobx decorator, ` +
-             `i.e. first in file line order: '@persist @bindable ${property}'`
+            `Error defining ${property} : @persist or @persistWith should be defined closest ` +
+            `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`
         );
         return descriptor;
     }
+    const codeValue = descriptor.initializer;
+    const initializer = function() {
+        let providerState;
 
-    const get = function() {
-        const providers = this._xhPersistenceProviders;
-        if (!providers || !providers[property]) this.markPersist(property, options);
-        return observableGet.call(this);
+        // Read from and attach to Provider.
+        // Fail gently -- initialization exceptions causes stack overflows for MobX.
+        try {
+            const persistWith = {path: property, ...this.persistWith, ...options},
+                provider = this.markManaged(PersistenceProvider.create(persistWith));
+            providerState = cloneDeep(provider.read());
+            start(() => {
+                this.addReaction({
+                    track: () => this[property],
+                    run: (data) => provider.write(data)
+                });
+            });
+        } catch (e) {
+            console.error(
+                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
+                `'persistWith' on this object or annotation.`
+            );
+        }
+
+        // 2) Return data from provider data *or* code, if provider not yet set or failed
+        return !isUndefined(providerState) ? providerState : codeValue?.call(this);
     };
-
-    return {...descriptor, get};
+    return {...descriptor, initializer};
 }
 
 

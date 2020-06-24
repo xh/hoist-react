@@ -320,7 +320,10 @@ export class GridModel {
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-        this.persistenceModel.clear();
+
+        if (this.persistenceModel) {
+            this.persistenceModel.clear();
+        }
     }
 
     /**

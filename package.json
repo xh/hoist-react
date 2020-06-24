@@ -28,12 +28,12 @@
   "dependencies": {
     "@blueprintjs/core": "~3.28.0",
     "@blueprintjs/datetime": "~3.18.0",
-    "@fortawesome/fontawesome-pro": "~5.13.0",
-    "@fortawesome/fontawesome-svg-core": "~1.2.28",
-    "@fortawesome/pro-light-svg-icons": "~5.13.0",
-    "@fortawesome/pro-regular-svg-icons": "~5.13.0",
-    "@fortawesome/pro-solid-svg-icons": "~5.13.0",
-    "@fortawesome/react-fontawesome": "~0.1.10",
+    "@fortawesome/fontawesome-pro": "~5.13.1",
+    "@fortawesome/fontawesome-svg-core": "~1.2.29",
+    "@fortawesome/pro-light-svg-icons": "~5.13.1",
+    "@fortawesome/pro-regular-svg-icons": "~5.13.1",
+    "@fortawesome/pro-solid-svg-icons": "~5.13.1",
+    "@fortawesome/react-fontawesome": "~0.1.11",
     "@seznam/compose-react-refs": "~1.0.4",
     "@xh/onsenui": "~0.1.2",
     "@xh/react-onsenui": "~0.1.2",
@@ -77,12 +77,12 @@
   "devDependencies": {
     "@xh/hoist-dev-utils": "^5.0.0",
     "husky": "~4.2.5",
-    "lint-staged": "~10.2.9",
+    "lint-staged": "~10.2.11",
     "react": "~16.13.1",
     "react-dom": "~16.13.1",
     "react-dom-factories": "~1.0.2",
-    "stylelint": "~13.6.0",
+    "stylelint": "~13.6.1",
     "stylelint-config-standard": "~20.0.0",
-    "stylelint-scss": "~3.17.1"
+    "stylelint-scss": "~3.18.0"
   }
 }
