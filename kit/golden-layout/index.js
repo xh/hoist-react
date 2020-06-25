@@ -69,12 +69,12 @@ class DragListenerPatched extends DragListener {
                 idx = Array.from(parent.children).indexOf(this._touchTarget),
                 clone = this._touchTarget.cloneNode(true);
 
+            // Add clone of target to parent
+            parent.insertBefore(clone, idx < parent.children.length - 1 ? parent.childNodes[idx + 1] : null);
+
             // Move target to body, and hide
             document.body.appendChild(this._touchTarget);
             this._touchTarget.style.display = 'none';
-
-            // Replace target with a clone
-            parent.insertBefore(clone, idx < parent.children.length - 1 ? parent.childNodes[idx + 1] : null);
         }
         // PATCH ENDS
 
@@ -95,6 +95,7 @@ class DragListenerPatched extends DragListener {
         // PATCH BEGINS
         if (this._touchTarget) {
             document.body.removeChild(this._touchTarget);
+            this._touchTarget = null;
         }
         // PATCH ENDS
 
