@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
-import {div, filler, form, viewport, vspacer} from '@xh/hoist/cmp/layout';
+import {div, filler, form, viewport} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -40,9 +40,9 @@ export const loginPanel = hoistCmp.factory({
                 icon: Icon.login(),
                 className: 'xh-login',
                 width: 300,
+                padding: 10,
                 mask: loadModel,
                 items: [
-                    vspacer(10),
                     form(
                         textInput({
                             bind: 'username',

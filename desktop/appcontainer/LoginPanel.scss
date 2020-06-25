@@ -10,13 +10,12 @@
   border-radius: var(--xh-border-radius-px);
 
   .bp3-input-group {
-    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
+    margin-bottom: var(--xh-pad-px);
   }
 
   &__warning,
   &__message {
     text-align: center;
-    margin: 0 var(--xh-pad-px) var(--xh-pad-px) var(--xh-pad-px);
     padding: var(--xh-pad-px);
     border-radius: var(--xh-border-radius-px);
   }
