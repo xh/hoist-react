@@ -40,6 +40,7 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth',
+            minDim = vertical ? 'minHeight' : 'minWidth',
             cmpSize = !collapsed && sizeIsPct ? size : undefined;
 
         return cmp({
@@ -48,6 +49,7 @@ export const resizeContainer = hoistCmp.factory({
             flex: 'none',
             [dim]: cmpSize,
             [maxDim]: '100%',
+            [minDim]: dragBarWidth,
             items
         });
     }
