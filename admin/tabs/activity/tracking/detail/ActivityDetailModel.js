@@ -1,58 +1,83 @@
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon/Icon';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 @HoistModel
 export class ActivityDetailModel {
 
-    /** @member {ActivityModel} */
+    /** @member {ActivityTrackingModel} */
     parentModel;
-
     /** @member {GridModel} */
-    gridModel = new GridModel({
-        sortBy: 'dateCreated|desc',
-        enableColChooser: true,
-        enableExport: true,
-        exportOptions: {filename: `${XH.appCode}-activity-detail`},
-        emptyText: 'Select a group on the left to see detailed tracking logs.',
-        columns: [
-            {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
-            {field: 'username', ...usernameCol},
-            {field: 'category', width: 120},
-            {field: 'device', width: 100},
-            {field: 'browser', width: 100},
-            {field: 'userAgent', width: 100, hidden: true},
-            {field: 'impersonating', width: 140, hidden: true},
-            {
-                field: 'elapsed',
-                headerName: 'Elapsed',
-                width: 120,
-                align: 'right',
-                renderer: numberRenderer({
-                    label: 'ms',
-                    nullDisplay: '-',
-                    formatConfig: {thousandSeparated: false, mantissa: 0}
-                })
-            },
-            {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
-            {field: 'data', width: 250, autosizeMaxWidth: 400, hidden: true},
-            {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
-        ]
-    });
-
-    detailFormModel = new FormModel({
-        readonly: true,
-        fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
-    });
+    @managed gridModel;
+    /** @member {FormModel} */
+    @managed formModel;
 
     @bindable formattedData;
 
     constructor({parentModel}) {
         this.parentModel = parentModel;
+
+        this.gridModel = new GridModel({
+            sortBy: 'dateCreated|desc',
+            enableColChooser: true,
+            enableExport: true,
+            exportOptions: {
+                columns: 'ALL',
+                filename: `${XH.appCode}-activity-detail`
+            },
+            emptyText: 'Select a group on the left to see detailed tracking logs.',
+            columns: [
+                {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
+                {
+                    field: 'impersonatingFlag',
+                    headerName: Icon.impersonate(),
+                    headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
+                    excludeFromExport: true,
+                    resizable: false,
+                    align: 'center',
+                    width: 50,
+                    renderer: (v, {record}) => {
+                        const {impersonating} = record.data;
+                        return impersonating ?
+                            Icon.impersonate({
+                                asHtml: true,
+                                className: 'xh-text-color-accent',
+                                title: `Impersonating ${impersonating}`
+                            }) : '';
+                    }
+                },
+                {field: 'username', ...usernameCol},
+                {field: 'category', width: 120},
+                {field: 'device', width: 100},
+                {field: 'browser', width: 100},
+                {field: 'userAgent', width: 100, hidden: true},
+                {field: 'impersonating', width: 140, hidden: true},
+                {
+                    field: 'elapsed',
+                    headerName: 'Elapsed',
+                    width: 120,
+                    align: 'right',
+                    renderer: numberRenderer({
+                        label: 'ms',
+                        nullDisplay: '-',
+                        formatConfig: {thousandSeparated: false, mantissa: 0}
+                    })
+                },
+                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
+                {field: 'data', width: 250, autosizeMaxWidth: 400, hidden: true},
+                {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+            ]
+        });
+
+        this.formModel = new FormModel({
+            readonly: true,
+            fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
+        });
 
         this.addReaction({
             track: () => this.parentModel.gridModel.selectedRecord,
@@ -63,24 +88,6 @@ export class ActivityDetailModel {
             track: () => this.gridModel.selectedRecord,
             run: (detailRec) => this.showEntryDetail(detailRec)
         });
-    }
-
-    showEntryDetail(detailRec) {
-        const recData = detailRec?.data ?? {},
-            trackData = recData.data;
-
-        this.detailFormModel.init(recData);
-
-        let formattedTrackData = null;
-        if (trackData) {
-            try {
-                formattedTrackData = JSON.stringify(JSON.parse(trackData), null, 2);
-            } catch (ignored) {
-                formattedTrackData = trackData;
-            }
-        }
-
-        this.setFormattedData(formattedTrackData);
     }
 
     async showActivityEntriesAsync(aggRec) {
@@ -95,6 +102,7 @@ export class ActivityDetailModel {
         }
     }
 
+    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
     getAllLeafRows(aggRec, ret = []) {
         if (!aggRec) return [];
 
@@ -107,6 +115,26 @@ export class ActivityDetailModel {
         }
 
         return ret;
+    }
+
+    // Extract data from a (detail) grid record and flush it into our form for display.
+    // Also parse/format any additional data (as JSON) if provided.
+    showEntryDetail(detailRec) {
+        const recData = detailRec?.data ?? {},
+            trackData = recData.data;
+
+        this.formModel.init(recData);
+
+        let formattedTrackData = null;
+        if (trackData) {
+            try {
+                formattedTrackData = JSON.stringify(JSON.parse(trackData), null, 2);
+            } catch (ignored) {
+                formattedTrackData = trackData;
+            }
+        }
+
+        this.setFormattedData(formattedTrackData);
     }
 
 }

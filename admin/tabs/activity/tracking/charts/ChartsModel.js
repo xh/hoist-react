@@ -15,9 +15,6 @@ import moment from 'moment';
 @HoistModel
 export class ChartsModel {
 
-    /** @member {ActivityModel} */
-    parentModel;
-
     @observable.ref data = [];
     @observable.ref dimensions = [];
 
@@ -83,9 +80,7 @@ export class ChartsModel {
         this.data = data;
     }
 
-    constructor({parentModel}) {
-        this.parentModel = parentModel;
-
+    constructor() {
         this.addReaction({
             track: () => [this.data, this.metric],
             run: () => this.loadChart()
@@ -110,7 +105,7 @@ export class ChartsModel {
                 const {cubeLabel} = aggRow;
                 switch (primaryDim) {
                     case 'day': return LocalDate.from(cubeLabel).timestamp;
-                    case 'month': return new moment(cubeLabel, 'MMM YYYY').valueOf();
+                    case 'month': return moment(cubeLabel, 'MMM YYYY').valueOf();
                     default: return cubeLabel;
                 }
             }),
@@ -118,8 +113,6 @@ export class ChartsModel {
                 const xVal = showAsTimeseries ? LocalDate.from(aggRow.cubeLabel).timestamp : aggRow.cubeLabel;
                 return [xVal, Math.round(aggRow[metric])];
             });
-
-        console.log(metric);
 
         return [{name: metricLabel, data: chartData}];
     }

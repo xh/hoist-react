@@ -11,8 +11,8 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
+import './ActivityDetail.scss';
 import {ActivityDetailModel} from './ActivityDetailModel';
-import './ActivityDetailView.scss';
 
 export const activityDetailView = hoistCmp.factory({
     model: uses(ActivityDetailModel),
@@ -46,13 +46,13 @@ const bbar = hoistCmp.factory(
 
 const detailRecForm = hoistCmp.factory(
     ({model}) => {
-        const {formattedData, gridModel} = model;
+        const {formattedData, gridModel, formModel} = model;
         if (!gridModel.selectedRecord) return null;
 
         return panel({
             model: {
                 side: 'bottom',
-                defaultSize: 450
+                defaultSize: 370
             },
             item: form({
                 fieldDefaults: {inline: true},
@@ -61,11 +61,29 @@ const detailRecForm = hoistCmp.factory(
                         className: 'xh-admin-activity-detail__form',
                         items: [
                             h3(Icon.info(), 'Activity'),
-                            formField({field: 'category', item: textInput(), readonlyRenderer: valOrNa}),
-                            formField({field: 'msg', item: textArea(), readonlyRenderer: valOrNa}),
+                            formField({
+                                field: 'username',
+                                item: textInput(),
+                                readonlyRenderer: (username) => {
+                                    if (!username) return naSpan();
+                                    const {impersonating} = formModel.values,
+                                        impSpan = impersonating ? span({className: 'xh-text-color-accent', item: ` (impersonating ${impersonating})`}) : null;
+                                    return span(username, impSpan);
+                                }
+                            }),
+                            formField({
+                                field: 'category',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'msg',
+                                item: textArea(),
+                                readonlyRenderer: valOrNa
+                            }),
                             formField({
                                 field: 'dateCreated',
-                                item: textArea(),
+                                item: textInput(),
                                 readonlyRenderer: dateTimeRenderer({})
                             }),
                             formField({
@@ -78,14 +96,27 @@ const detailRecForm = hoistCmp.factory(
                                     formatConfig: {thousandSeparated: false, mantissa: 0}
                                 })
                             }),
-                            formField({field: 'id', item: textInput(), readonlyRenderer: valOrNa}),
-                            h3(Icon.user(), 'User'),
-                            formField({field: 'username', item: textInput(), readonlyRenderer: valOrNa}),
-                            formField({field: 'impersonating', item: textInput(), readonlyRenderer: valOrNa}),
+                            formField({
+                                field: 'id',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
                             h3(Icon.desktop(), 'Device / Browser'),
-                            formField({field: 'device', item: textInput(), readonlyRenderer: valOrNa}),
-                            formField({field: 'browser', item: textInput(), readonlyRenderer: valOrNa}),
-                            formField({field: 'userAgent', item: textInput(), readonlyRenderer: valOrNa})
+                            formField({
+                                field: 'device',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'browser',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'userAgent',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            })
                         ]
                     }),
                     panel({
@@ -114,4 +145,5 @@ const detailRecForm = hoistCmp.factory(
     }
 );
 
-const valOrNa = v => v != null ? v : span({item: 'N/A', className: 'xh-text-color-muted'});
+const valOrNa = v => v != null ? v : naSpan();
+const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});

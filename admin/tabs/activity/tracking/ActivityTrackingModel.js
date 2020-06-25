@@ -12,9 +12,11 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
+import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isFinite, isPlainObject} from 'lodash';
+import {isEmpty, isFinite} from 'lodash';
+import moment from 'moment';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -22,7 +24,7 @@ export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
 @HoistModel
 @LoadSupport
-export class ActivityModel {
+export class ActivityTrackingModel {
 
     persistWith = PERSIST_ACTIVITY;
 
@@ -40,19 +42,25 @@ export class ActivityModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
+    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
+    @bindable.ref lookups = {};
+
     get dimensions() {return this.dimChooserModel.value}
+
+    _monthFormat = 'MMM YYYY';
+    _defaultDims = ['day', 'username'];
 
     constructor() {
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDate', initialValue: LocalDate.today().subtract(3, 'months')},
-                // TODO - see https://github.com/xh/hoist-react/issues/400 for why we add a day below.
+                {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
+                // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
                 {name: 'endDate', initialValue: LocalDate.today().add(1)},
-                {name: 'username', initialValue: ''},
-                {name: 'msg', initialValue: ''},
-                {name: 'category', initialValue: ''},
-                {name: 'device', initialValue: ''},
-                {name: 'browser', initialValue: ''}
+                {name: 'category'},
+                {name: 'username'},
+                {name: 'device'},
+                {name: 'browser'},
+                {name: 'msg'}
             ]
         });
 
@@ -77,7 +85,6 @@ export class ActivityModel {
 
         this.dimChooserModel = new DimensionChooserModel({
             persistWith: this.persistWith,
-            enableClear: true,
             dimensions: [
                 {label: 'Date', value: 'day'},
                 {label: 'Month', value: 'month'},
@@ -88,17 +95,21 @@ export class ActivityModel {
                 {label: 'Browser', value: 'browser'},
                 {label: 'User Agent', value: 'userAgent'}
             ],
-            initialValue: ['day', 'category', 'username']
+            initialValue: this._defaultDims
         });
 
         this.gridModel = new GridModel({
             treeMode: true,
-            persistWith: this.persistWith,
+            persistWith: {
+                ...this.persistWith,
+                path: 'aggGridModel',
+                persistSort: false
+            },
             enableColChooser: true,
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
-            sortBy: ['day|desc', 'cubeLabel'],
+            sortBy: ['cubeLabel'],
             columns: [
                 {
                     field: 'cubeLabel',
@@ -106,7 +117,8 @@ export class ActivityModel {
                     flex: 1,
                     minWidth: 100,
                     isTreeColumn: true,
-                    renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
+                    renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v,
+                    comparator: this.cubeLabelComparator.bind(this)
                 },
                 {field: 'username', ...usernameCol, hidden: true},
                 {field: 'category', width: 100, hidden: true},
@@ -122,7 +134,6 @@ export class ActivityModel {
                     renderer: numberRenderer({label: 'ms', nullDisplay: '-', formatConfig: {thousandSeparated: false, mantissa: 0}}),
                     hidden: true
                 },
-                {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'},
                 {
                     field: 'day',
                     width: 200,
@@ -130,8 +141,10 @@ export class ActivityModel {
                     headerName: 'Date Range',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
-                    comparator: this.dateRangeComparator
-                }
+                    comparator: this.dateRangeComparator.bind(this),
+                    hidden: true
+                },
+                {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'}
             ]
         });
 
@@ -148,7 +161,7 @@ export class ActivityModel {
             },
             run: () => this.loadAsync(),
             fireImmediately: true,
-            debounce: 10
+            debounce: 100
         });
 
         this.addReaction({
@@ -161,6 +174,8 @@ export class ActivityModel {
     async doLoadAsync(loadSpec) {
         const {cube, formModel} = this;
         try {
+            await this.loadLookupsAsync(loadSpec);
+
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
                 params: formModel.getData(),
@@ -169,13 +184,34 @@ export class ActivityModel {
 
             data.forEach(it => {
                 it.day = LocalDate.from(it.dateCreated);
-                it.month = it.day.format('MMM YYYY');
+                it.month = it.day.format(this._monthFormat);
             });
 
             await cube.loadDataAsync(data);
         } catch (e) {
             await cube.clearAsync();
             XH.handleException(e);
+        }
+    }
+
+    // Load lookups for query selects to which we wish to provide the set of available values.
+    // Will also default the category field to the special "App" value (used within Hoist init() to
+    // track application visits / load times).
+    async loadLookupsAsync(loadSpec) {
+        const {formModel} = this,
+            categoryField = formModel.fields.category,
+            isFirstLookupLoad = isEmpty(this.lookups);
+
+        const lookups = await XH.fetchJson({
+            url: 'trackLogAdmin/lookups',
+            loadSpec
+        });
+
+        this.setLookups(lookups);
+
+        const {categories} = this.lookups;
+        if (isFirstLookupLoad && categories.includes('App') && !categoryField.value) {
+            categoryField.setValue('App');
         }
     }
 
@@ -205,6 +241,17 @@ export class ActivityModel {
         } else {
             node.children.forEach((child) => this.separateLeafRows(child));
         }
+    }
+
+    @action
+    resetQuery() {
+        const {formModel, dimChooserModel, lookups, _defaultDims} = this;
+        formModel.reset();
+        if (lookups?.categories?.includes('App')) {
+            formModel.fields.category.setValue('App');
+        }
+
+        dimChooserModel.setValue(_defaultDims);
     }
 
     adjustDates(dir, toToday = false) {
@@ -245,12 +292,33 @@ export class ActivityModel {
     }
 
     dateRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
-        if (!isPlainObject(rangeA)) console.log(rangeA);
-        if (!isPlainObject(rangeB)) console.log(rangeB);
         const maxA = rangeA?.max,
             maxB = rangeB?.max;
 
         return defaultComparator(maxA, maxB);
+    }
+
+    cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
+        const rawA = recordA?.raw,
+            rawB = recordB?.raw,
+            sortValA = this.getComparableValForDim(rawA, rawA?.cubeDimension),
+            sortValB = this.getComparableValForDim(rawB, rawB?.cubeDimension);
+
+        return defaultComparator(sortValA, sortValB);
+    }
+
+    getComparableValForDim(raw, dim) {
+        const rawVal = raw ? raw[dim] : null;
+        if (rawVal == null) return null;
+
+        switch (dim) {
+            // Days are min/max ranges of LocalDates - sort by max date, desc.
+            case 'day': return rawVal.max.timestamp * -1;
+            // Months are formatted "June 2020" strings - sort desc.
+            case 'month': return moment(rawVal, this._monthFormat).valueOf() * -1;
+            // Everything else can sort with its natural value.
+            default: return rawVal;
+        }
     }
 
 }

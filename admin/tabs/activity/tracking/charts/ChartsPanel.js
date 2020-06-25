@@ -27,7 +27,7 @@ export const chartsPanel = hoistCmp.factory({
             bbar: [metricSwitcher()],
             model: {
                 side: 'bottom',
-                defaultSize: 300
+                defaultSize: 370
             },
             ...props
         });

@@ -1,6 +1,11 @@
 .xh-admin-activity-panel {
   .xh-toolbar .xh-form-field {
     margin: 0 0 0 var(--xh-tbar-item-pad-px);
+
+    .xh-form-field-label {
+      min-width: 0 !important;
+      margin-right: 6px;
+    }
   }
   .xh-units-label {
     font-size: var(--xh-font-size-small-px);
