@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, sortBy} from 'lodash';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
 import {ChartModel} from '@xh/hoist/cmp/chart';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {capitalizeWords, fmtDate} from '@xh/hoist/format';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {fmtDate} from '@xh/hoist/format';
+import {cloneDeep, sortBy} from 'lodash';
+import moment from 'moment';
 
 @HoistModel
 export class ChartsModel {
@@ -17,258 +18,126 @@ export class ChartsModel {
     /** @member {ActivityModel} */
     parentModel;
 
-    @bindable.ref data;
-    @bindable.ref dimensions;
-    @bindable.ref chartType = 'category';
+    @observable.ref data = [];
+    @observable.ref dimensions = [];
 
-    @bindable showFeatureSeries = true;
-    @bindable showEntriesSeries = false;
-    @bindable showElapsedSeries = true;
-    @bindable enableTimeseries = true;
+    /** @member {string} - metric to chart on Y axis - one of:
+     *      + entryCount - count of total track log entries within the primary dim group.
+     *      + count - count of unique secondary dim values within the primary dim group.
+     *      + elapsed - avg elapsed time in ms for the primary dim group.
+     */
+    @bindable metric = 'entryCount'
 
-    @managed
-    categoryChartModel = new ChartModel({
+    @managed categoryChartModel = new ChartModel({
         highchartsConfig: {
-            chart: {
-                type: 'column',
-                animation: false
-            },
-            legend: {
-                enabled: false
-            },
-            plotOptions: {
-                column: {animation: false}
-            },
+            chart: {type: 'column', animation: false},
+            plotOptions: {column: {animation: false}},
+            legend: {enabled: false},
             title: {text: null},
-            xAxis: {
-                type: 'category',
-                title: {
-                    text: 'Category'
-                }
-            },
-            yAxis: [
-                {
-                    title: {
-                        text: 'Count',
-                        style: {
-                            color: this.colors.featuredSeries
-                        }
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Entries',
-                        style: {
-                            color: this.colors.entriesSeries
-                        }
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Avg Elapsed (ms)',
-                        style: {
-                            color: XH.darkTheme ? '#FFF' : this.colors.elapsedSeries
-                        }
-                    },
-                    opposite: true
-                }
-            ]
+            xAxis: {type: 'category', title: {}},
+            yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
 
-    @managed
-    timeseriesChartModel = new ChartModel({
+    @managed timeseriesChartModel = new ChartModel({
         highchartsConfig: {
-            chart: {
-                type: 'line',
-                animation: false
-            },
-            legend: {
-                enabled: false
-            },
-            plotOptions: {
-                line: {animation: false}
-            },
+            chart: {type: 'line', animation: false},
+            plotOptions: {line: {animation: false}},
+            legend: {enabled: false},
             title: {text: null},
             xAxis: {
                 type: 'datetime',
+                title: {},
                 units: [['day', [1]], ['week', [2]], ['month', [1]]],
                 labels: {
                     formatter: function() {return fmtDate(this.value, 'D MMM')}
                 }
             },
-            yAxis: [
-                {
-                    title: {
-                        text: 'Count',
-                        style: {
-                            color: this.colors.featuredSeries
-                        }
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Entries',
-                        style: {
-                            color: this.colors.entriesSeries
-                        }
-                    },
-                    allowDecimals: false
-                },
-                {
-                    title: {
-                        text: 'Avg Elapsed (ms)',
-                        style: {
-                            color: XH.darkTheme ? '#FFF' : this.colors.elapsedSeries
-                        }
-                    },
-                    opposite: true
-                }
-            ]
+            yAxis: [{title: {text: null}, allowDecimals: false}]
         }
     });
 
-    axisLabelMap = {
-        username: 'Users',
-        msg: 'Messages',
-        category: 'Categories',
-        device: 'Devices',
-        browser: 'Browsers',
-        userAgent: 'Agents',
-        day: 'Days'
-    };
-
-    get xAxisLabel() {
-        const dim = this.dimensions[0],
-            label = this.axisLabelMap[dim];
-        if (label == 'Days') return '';
-
-        return label || 'Entries';
+    get showAsTimeseries() {
+        return this.dimensions[0] == 'day';
     }
 
-    get yAxisLabel() {
-        const dim = this.dimensions[1],
-            label = this.axisLabelMap[dim];
-
-        return label || 'Entries';
+    /** @returns {ChartModel} */
+    get chartModel() {
+        return this.showAsTimeseries ? this.timeseriesChartModel : this.categoryChartModel;
     }
 
-    get colors() {
-        return {featuredSeries: '#7cb5ec', entriesSeries: '#90ed7d', elapsedSeries: '#434348'};
+    /** @returns {string} */
+    get primaryDim() {
+        return this.dimensions[0];
+    }
+
+    /** @returns {string} */
+    get secondaryDim() {
+        const {dimensions} = this;
+        return (dimensions.length >= 2) ? dimensions[1] : null;
+    }
+
+    @action
+    setDataAndDims({data, dimensions}) {
+        this.dimensions = dimensions;
+        this.data = data;
     }
 
     constructor({parentModel}) {
         this.parentModel = parentModel;
-        this.addReaction(this.enableTimeseriesReaction());
-        this.addReaction(this.loadChartReaction());
-        this.addReaction(this.themeReaction());
+
+        this.addReaction({
+            track: () => [this.data, this.metric],
+            run: () => this.loadChart()
+        });
     }
 
     loadChart() {
-        const isTimeseries = this.chartType == 'timeseries',
-            series = isTimeseries ? this.getTimeseriesData() : this.getCategoryData(),
-            chartModel = isTimeseries ? this.timeseriesChartModel : this.categoryChartModel,
+        const {showAsTimeseries, chartModel, primaryDim} = this,
+            series = this.getSeriesData(),
             highchartsConfig = cloneDeep(chartModel.highchartsConfig);
 
-        highchartsConfig.yAxis[0].title.text = `Unique ${this.yAxisLabel}`;
-        highchartsConfig.yAxis[0].visible = this.showFeatureSeries;
-        highchartsConfig.yAxis[1].visible = this.showEntriesSeries;
-        highchartsConfig.yAxis[2].visible = this.showElapsedSeries;
-        if (!isTimeseries) highchartsConfig.xAxis.title.text = this.xAxisLabel;
+        if (!showAsTimeseries) highchartsConfig.xAxis.title.text = this.getUnitsForDim(primaryDim);
 
         chartModel.setHighchartsConfig(highchartsConfig);
         chartModel.setSeries(series);
     }
 
-    getCategoryData() {
-        const {data, colors} = this,
-            {featuredSeries, entriesSeries, elapsedSeries} = colors,
-            xAxisDim = this.dimensions[0],
-            chartData = sortBy(data, (it => xAxisDim == 'day' ? LocalDate.from(it.cubeLabel).timestamp : it.cubeLabel)),
-            dimCounts = [],
-            entryCounts = [],
-            elapsed = [];
+    getSeriesData() {
+        const {data, metric, primaryDim, showAsTimeseries} = this,
+            metricLabel = this.getLabelForMetric(metric),
+            sortedData = sortBy(data, aggRow => {
+                const {cubeLabel} = aggRow;
+                switch (primaryDim) {
+                    case 'day': return LocalDate.from(cubeLabel).timestamp;
+                    case 'month': return new moment(cubeLabel, 'MMM YYYY').valueOf();
+                    default: return cubeLabel;
+                }
+            }),
+            chartData = sortedData.map(aggRow => {
+                const xVal = showAsTimeseries ? LocalDate.from(aggRow.cubeLabel).timestamp : aggRow.cubeLabel;
+                return [xVal, Math.round(aggRow[metric])];
+            });
 
-        chartData.forEach((it) => {
-            const xAxisCat = xAxisDim == 'day' ? fmtDate(it.cubeLabel) : it.cubeLabel;
-            dimCounts.push([xAxisCat, it.count]);
-            entryCounts.push([xAxisCat, it.entryCount]);
-            elapsed.push([xAxisCat, Math.round(it.elapsed)]);
-        });
+        console.log(metric);
 
-        return [
-            {name: this.yAxisLabel, color: featuredSeries, visible: this.showFeatureSeries, data: dimCounts, yAxis: 0},
-            {name: `Entries`, color: entriesSeries, visible: this.showEntriesSeries, data: entryCounts, yAxis: 1},
-            {name: 'Elapsed', color: elapsedSeries, visible: this.showElapsedSeries, data: elapsed, yAxis: 2}
-        ];
+        return [{name: metricLabel, data: chartData}];
     }
 
-    getTimeseriesData() {
-        const {data, colors} = this,
-            {featuredSeries, entriesSeries, elapsedSeries} = colors,
-            chartData = sortBy(data, (it => it.cubeLabel)),
-            dimCounts = [],
-            entryCounts = [],
-            elapsed = [];
-
-        chartData.forEach((it) => {
-            dimCounts.push([LocalDate.from(it.cubeLabel).timestamp, it.count]);
-            entryCounts.push([LocalDate.from(it.cubeLabel).timestamp, it.entryCount]);
-            elapsed.push([LocalDate.from(it.cubeLabel).timestamp, Math.round(it.elapsed)]);
-        });
-
-        return [
-            {name: this.yAxisLabel, color: featuredSeries, visible: this.showFeatureSeries, data: dimCounts, yAxis: 0},
-            {name: `Entries`, color: entriesSeries, visible: this.showEntriesSeries, data: entryCounts, yAxis: 1},
-            {name: 'Elapsed', color: elapsedSeries, visible: this.showElapsedSeries, data: elapsed, yAxis: 2}
-        ];
-    }
-
-    ensureProperTimeseriesChartState(enable) {
-        if (!enable) {
-            this.setChartType('category');
+    getLabelForMetric(metric) {
+        switch (metric) {
+            case 'count': return `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
+            case 'entryCount': return 'Total Entry Count';
+            case 'elapsed': return 'Elapsed Time (ms)';
+            default: return '???';
         }
     }
 
-    loadChartReaction() {
+    getUnitsForDim(dim) {
         return {
-            track: () => [
-                this.data,
-                this.chartType,
-                this.showFeatureSeries,
-                this.showEntriesSeries,
-                this.showElapsedSeries
-            ],
-            run: () => this.loadChart()
-        };
-    }
-
-    enableTimeseriesReaction() {
-        return {
-            track: () => this.enableTimeseries,
-            run: (enable) => this.ensureProperTimeseriesChartState(enable)
-        };
-    }
-
-    themeReaction() {
-        return {
-            track: () => XH.darkTheme,
-            run: (dark) => {
-                const {colors, categoryChartModel, timeseriesChartModel} = this,
-                    {elapsedSeries} = colors,
-                    catChartConf = cloneDeep(categoryChartModel.highchartsConfig),
-                    timeChartConf = cloneDeep(timeseriesChartModel.highchartsConfig);
-
-                catChartConf.yAxis[2].title.style.color = dark ? '#FFF' : elapsedSeries;
-                timeChartConf.yAxis[2].title.style.color = dark ? '#FFF' : elapsedSeries;
-
-                categoryChartModel.setHighchartsConfig(catChartConf);
-                timeseriesChartModel.setHighchartsConfig(timeChartConf);
-            }
-        };
+            username: 'User',
+            msg: 'Message'
+        }[dim] ?? capitalizeWords(dim);
     }
 
 }

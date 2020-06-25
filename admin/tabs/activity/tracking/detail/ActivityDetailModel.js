@@ -29,10 +29,14 @@ export class ActivityDetailModel {
             {field: 'impersonating', width: 140, hidden: true},
             {
                 field: 'elapsed',
-                headerName: 'Elapsed (ms)',
+                headerName: 'Elapsed',
                 width: 120,
                 align: 'right',
-                renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}})
+                renderer: numberRenderer({
+                    label: 'ms',
+                    nullDisplay: '-',
+                    formatConfig: {thousandSeparated: false, mantissa: 0}
+                })
             },
             {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
             {field: 'data', width: 250, autosizeMaxWidth: 400, hidden: true},

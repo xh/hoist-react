@@ -4,13 +4,13 @@
     overflow-y: auto;
     .xh-form-field {
       margin: 0;
-      padding: 0 var(--xh-pad-px);
+      padding: 2px var(--xh-pad-px);
 
       &.xh-form-field-readonly .xh-form-field-readonly-display {
         padding: var(--xh-pad-half-px);
       }
 
-      &:nth-child(even) {
+      &:nth-child(odd) {
         background-color: var(--xh-grid-bg-odd);
       }
     }
@@ -33,6 +33,28 @@
 
     &--empty {
       color: var(--xh-text-color-muted);
+    }
+  }
+
+  h3 {
+    color: var(--xh-text-color-headings);
+    background-color: var(--xh-blue-gray-light);
+    margin: 0 !important;
+    font-size: var(--xh-font-size-px);
+    padding: var(--xh-pad-half-px) !important;
+    font-weight: 500;
+    border-bottom: var(--xh-border-solid);
+
+    &:not(:first-child) {
+      border-top: var(--xh-border-solid);
+    }
+
+    .xh-dark & {
+      background-color: var(--xh-blue-gray-dark);
+    }
+
+    .xh-icon {
+      margin-right: 0.5em;
     }
   }
 }

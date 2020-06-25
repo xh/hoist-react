@@ -4,37 +4,27 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isEmpty} from 'lodash';
-import {uses, hoistCmp} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
+import {chart} from '@xh/hoist/cmp/chart';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
-import {Icon} from '@xh/hoist/icon';
-import {chart} from '@xh/hoist/cmp/chart';
-import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: uses(ChartsModel),
     render({model, ...props}) {
-        const {chartType, dimensions} = model,
-            isTimeSeries = chartType == 'timeseries';
+        const {chartModel} = model;
 
-        if (isEmpty(dimensions)) return null;
         return panel({
             items: [
                 chart({
-                    model: model.categoryChartModel,
-                    omit: isTimeSeries
-                }),
-                chart({
-                    model: model.timeseriesChartModel,
-                    omit: !isTimeSeries
+                    model: chartModel,
+                    key: chartModel.xhId
                 })
             ],
-            bbar: bbar(),
+            bbar: [metricSwitcher()],
             model: {
                 side: 'bottom',
                 defaultSize: 300
@@ -44,37 +34,32 @@ export const chartsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory(
-    ({model}) => toolbar(
-        buttonGroupInput({
-            bind: 'chartType',
+const metricSwitcher = hoistCmp.factory(
+    ({model}) => {
+        return buttonGroupInput({
+            bind: 'metric',
+            flex: 1,
             items: [
                 button({
-                    icon: Icon.chartBar(),
-                    value: 'category'
+                    text: model.getLabelForMetric('entryCount'),
+                    outlined: true,
+                    flex: 1,
+                    value: 'entryCount'
                 }),
                 button({
-                    icon: Icon.chartLine(),
-                    value: 'timeseries',
-                    disabled: !model.enableTimeseries
+                    text: model.getLabelForMetric('count'),
+                    value: 'count',
+                    outlined: true,
+                    flex: 1,
+                    omit: !model.secondaryDim
+                }),
+                button({
+                    text: model.getLabelForMetric('elapsed'),
+                    outlined: true,
+                    flex: 1,
+                    value: 'elapsed'
                 })
             ]
-        }),
-        toolbarSeparator(),
-        checkbox({
-            className: 'feature-series-checkbox',
-            label: model.yAxisLabel,
-            bind: 'showFeatureSeries'
-        }),
-        checkbox({
-            className: 'entries-series-checkbox',
-            label: 'Entries',
-            bind: 'showEntriesSeries'
-        }),
-        checkbox({
-            className: 'elapsed-series-checkbox',
-            label: 'Elapsed',
-            bind: 'showElapsedSeries'
-        })
-    )
+        });
+    }
 );

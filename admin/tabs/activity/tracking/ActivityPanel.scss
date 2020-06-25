@@ -2,37 +2,7 @@
   .xh-toolbar .xh-form-field {
     margin: 0 0 0 var(--xh-tbar-item-pad-px);
   }
-}
-
-.xh-toolbar {
-  .feature-series-checkbox {
-    color: #70A4D4;
-    margin-right: var(--xh-pad-px) !important;
-  }
-
-  .entries-series-checkbox {
-    color: #63C96A;
-    margin-right: var(--xh-pad-px) !important;
-  }
-
-  .elapsed-series-checkbox {
-    color: #434348;
-    margin-right: var(--xh-pad-px) !important;
-  }
-}
-
-.xh-dark {
-  .xh-toolbar {
-    .feature-series-checkbox {
-      color: #7cb5ec;
-    }
-
-    .entries-series-checkbox {
-      color: #90ed7d;
-    }
-
-    .elapsed-series-checkbox {
-      color: #FFF;
-    }
+  .xh-units-label {
+    font-size: var(--xh-font-size-small-px);
   }
 }

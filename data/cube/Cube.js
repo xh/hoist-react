@@ -24,9 +24,10 @@ export class Cube {
 
     static RECORD_ID_DELIMITER = '>>';
 
-    @managed
-    store = null;
-    lockFn = null;
+    /** @member {Store} */
+    @managed store;
+    /** @member {function} */
+    lockFn;
 
     _info = null;
     _connectedViews = new Set();
@@ -179,6 +180,11 @@ export class Cube {
                 (v) => v.noteCubeUpdated(changeLog)
             );
         }
+    }
+
+    /** Clear any/all data and info from this Cube. */
+    async clearAsync() {
+        await this.loadDataAsync([]);
     }
 
     /**

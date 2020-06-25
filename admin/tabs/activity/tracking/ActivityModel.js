@@ -12,10 +12,9 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-import {action} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isFinite} from 'lodash';
+import {isFinite, isPlainObject} from 'lodash';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -27,17 +26,26 @@ export class ActivityModel {
 
     persistWith = PERSIST_ACTIVITY;
 
+    /** @member {FormModel} */
     @managed formModel;
+    /** @member {DimensionChooserModel} */
     @managed dimChooserModel;
+    /** @member {Cube} */
     @managed cube;
+    /** @member {GridModel} */
     @managed gridModel;
+
+    /** @member {ActivityDetailModel} */
     @managed activityDetailModel;
+    /** @member {ChartsModel} */
     @managed chartsModel;
+
+    get dimensions() {return this.dimChooserModel.value}
 
     constructor() {
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDate', initialValue: LocalDate.today().subtract(1, 'months')},
+                {name: 'startDate', initialValue: LocalDate.today().subtract(3, 'months')},
                 // TODO - see https://github.com/xh/hoist-react/issues/400 for why we add a day below.
                 {name: 'endDate', initialValue: LocalDate.today().add(1)},
                 {name: 'username', initialValue: ''},
@@ -67,7 +75,6 @@ export class ActivityModel {
             ]
         });
 
-
         this.dimChooserModel = new DimensionChooserModel({
             persistWith: this.persistWith,
             enableClear: true,
@@ -91,7 +98,7 @@ export class ActivityModel {
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-activity-summary`},
             emptyText: 'No activity reported...',
-            sortBy: 'cubeLabel',
+            sortBy: ['day|desc', 'cubeLabel'],
             columns: [
                 {
                     field: 'cubeLabel',
@@ -101,15 +108,6 @@ export class ActivityModel {
                     isTreeColumn: true,
                     renderer: (v, params) => params.record.raw.cubeDimension === 'day' ? fmtDate(v) : v
                 },
-                {
-                    field: 'day',
-                    width: 200,
-                    align: 'right',
-                    headerName: 'Date Range',
-                    renderer: this.dateRangeRenderer,
-                    exportValue: this.dateRangeRenderer
-                    // TODO - comparator
-                },
                 {field: 'username', ...usernameCol, hidden: true},
                 {field: 'category', width: 100, hidden: true},
                 {field: 'device', width: 100, hidden: true},
@@ -118,18 +116,26 @@ export class ActivityModel {
                 {field: 'impersonating', width: 140, hidden: true},
                 {
                     field: 'elapsed',
-                    headerName: 'Elapsed (ms)',
+                    headerName: 'Elapsed (avg)',
                     width: 130,
                     align: 'right',
-                    renderer: numberRenderer({formatConfig: {thousandSeparated: false, mantissa: 0}}),
+                    renderer: numberRenderer({label: 'ms', nullDisplay: '-', formatConfig: {thousandSeparated: false, mantissa: 0}}),
                     hidden: true
                 },
-                {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'}
+                {field: 'entryCount', headerName: 'Entries', width: 70, align: 'right'},
+                {
+                    field: 'day',
+                    width: 200,
+                    align: 'right',
+                    headerName: 'Date Range',
+                    renderer: this.dateRangeRenderer,
+                    exportValue: this.dateRangeRenderer,
+                    comparator: this.dateRangeComparator
+                }
             ]
         });
 
         this.activityDetailModel = new ActivityDetailModel({parentModel: this});
-
         this.chartsModel = new ChartsModel({parentModel: this});
 
         this.addReaction({
@@ -146,19 +152,18 @@ export class ActivityModel {
         });
 
         this.addReaction({
-            track: () => this.dimChooserModel.value,
-            run: (v) => {
-                this.ensureProperTimeseriesChartState(v[0] == 'day');
-                this.loadGridAndChartAsync();
-            }
+            track: () => [this.cube.records, this.dimensions],
+            run: () => this.loadGridAndChartAsync(),
+            debounce: 100
         });
     }
 
     async doLoadAsync(loadSpec) {
+        const {cube, formModel} = this;
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: this.formModel.getData(),
+                params: formModel.getData(),
                 loadSpec
             });
 
@@ -167,19 +172,15 @@ export class ActivityModel {
                 it.month = it.day.format('MMM YYYY');
             });
 
-            await this.cube.loadDataAsync(data);
-            await this.loadGridAndChartAsync();
+            await cube.loadDataAsync(data);
         } catch (e) {
-            this.gridModel.clear();
-            this.chartsModel.setDimensions(this.dimChooserModel.value);
-            this.chartsModel.setData([]);
+            await cube.clearAsync();
             XH.handleException(e);
         }
     }
 
     async loadGridAndChartAsync() {
-        const {dimChooserModel, cube, gridModel, chartsModel} = this,
-            dimensions = dimChooserModel.value,
+        const {cube, gridModel, chartsModel, dimensions} = this,
             data = cube.executeQuery({dimensions, includeLeaves: true});
 
         data.forEach(node => this.separateLeafRows(node));
@@ -188,12 +189,12 @@ export class ActivityModel {
         await wait(1);
         if (!gridModel.hasSelection) gridModel.selectFirst();
 
-        chartsModel.setDimensions(dimensions);
-        chartsModel.setData(data);
+        chartsModel.setDataAndDims({data, dimensions});
     }
 
     // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
-    // carry the leaves with the record, but deliberately not show them in the summary tree grid.
+    // carry the leaves with the record, but deliberately not show them in the tree grid. We only
+    // want the tree grid to show aggregate records.
     separateLeafRows(node) {
         if (!node.children) return;
 
@@ -227,24 +228,10 @@ export class ActivityModel {
     }
 
     toggleRowExpandCollapse(agParams) {
-        const rec = agParams.data;
-        if (rec?.children) {
-            agParams.node.setExpanded(!agParams.node.expanded);
-        }
+        const {data, node} = agParams;
+        if (data?.children && node) node.setExpanded(!node.expanded);
     }
 
-    @action
-    closeDetail() {
-        this.detailRecord = null;
-    }
-
-    ensureProperTimeseriesChartState(enable) {
-        this.chartsModel.setEnableTimeseries(enable);
-    }
-
-    //----------------
-    // Implementation
-    //----------------
     dateRangeRenderer(range) {
         if (!range) return;
         if (isFinite(range)) return fmtDate(range);
@@ -255,6 +242,15 @@ export class ActivityModel {
 
         if (minStr === maxStr) return minStr;
         return `${minStr} → ${maxStr}`;
+    }
+
+    dateRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
+        if (!isPlainObject(rangeA)) console.log(rangeA);
+        if (!isPlainObject(rangeB)) console.log(rangeB);
+        const maxA = rangeA?.max,
+            maxB = rangeB?.max;
+
+        return defaultComparator(maxA, maxB);
     }
 
 }
