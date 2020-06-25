@@ -23,7 +23,7 @@ export const resizeContainer = hoistCmp.factory({
             {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
-            dragBarWidth = showSplitter ? '8px' : 0,
+            dragBarWidth = showSplitter ? '8px' : '0px',
             sizeIsPct = isString(size) && size.endsWith('%');
 
         const boxSize = sizeIsPct ? `calc(100% - ${dragBarWidth})` : size;
