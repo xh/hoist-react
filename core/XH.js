@@ -450,14 +450,12 @@ class XHClass {
     }
 
     /**
-     * Resets user customizations.
-     * Clears all user preferences and local grid state, then reloads the app.
+     * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
-        return XH.prefService.clearAllAsync().then(() => {
-            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
-            XH.reloadApp();
-        });
+        await this.prefService.clearAllAsync();
+        this.localStorageService.clear();
+        this.reloadApp();
     }
 
     /**
