@@ -116,7 +116,7 @@ class DragListenerPatched extends DragListener {
 GoldenLayout['__lm'].utils.DragListener = DragListenerPatched;
 
 // Overwrite jquery's 'touchmove' handler wiring, to ensure 'touchmove' handlers are non-passive.
-// This is required to suppress and error thrown by trying to preventDefault() a passive event.
+// This is required to suppress an error thrown by trying to preventDefault() a passive event.
 jquery.event.special.touchmove = {
     setup: function(_, ns, handle) {
         this.addEventListener('touchmove', handle, {passive: false});
