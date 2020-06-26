@@ -16,14 +16,3 @@
     border-top: var(--xh-border-solid);
   }
 }
-
-.xh-admin-activity-detail--dialog,
-.xh-admin-error-detail {
-  padding: var(--xh-pad-half-px);
-  border-bottom: var(--xh-border-solid);
-
-  th {
-    text-align: left;
-    vertical-align: top;
-  }
-}
