@@ -16,9 +16,13 @@ import {Cube} from '@xh/hoist/data';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
+export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
+
 @HoistModel
 @LoadSupport
 export class ActivityModel {
+
+    persistWith = PERSIST_ACTIVITY;
 
     @bindable.ref startDate = LocalDate.today().subtract(7);
     @bindable.ref endDate = LocalDate.today().add(1);  // https://github.com/xh/hoist-react/issues/400
@@ -32,6 +36,7 @@ export class ActivityModel {
 
     @managed
     dimChooserModel = new DimensionChooserModel({
+        persistWith: this.persistWith,
         enableClear: true,
         dimensions: [
             {label: 'Date', value: 'day'},
@@ -63,12 +68,12 @@ export class ActivityModel {
             {name: 'count', aggregator: new ChildCountAggregator()},
             {name: 'entryCount', aggregator: new LeafCountAggregator()} // Used for charting, not displayed in grid,
         ]
-    })
+    });
 
     @managed
     gridModel = new GridModel({
         treeMode: true,
-        stateModel: 'xhActivityGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         exportOptions: {filename: () => `Activity ${fmtDate(this.startDate)} to ${fmtDate(this.endDate)}`},

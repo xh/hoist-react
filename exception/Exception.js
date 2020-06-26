@@ -17,7 +17,8 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     * Create and get back a Javascript Error object
+     * Create and get back a Javascript Error object.
+     * @see XH.exception - an alias for this factory off of XH.
      * @param {(Object|string)} cfg - Properties to add to the Error object.
      *      If a string, will become the 'message' value.
      * @returns {Error}

@@ -40,6 +40,15 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}) {
+
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js.  See Toolbox for an example.'
+            );
+            return 'Highcharts not available';
+        }
+
         const impl = useLocalModel(() => new LocalModel(model)),
             ref = composeRefs(
                 useOnResize(impl.onResizeAsync, {debounce: 100}),

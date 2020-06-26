@@ -32,7 +32,7 @@ export const colChooser = hoistCmp.factory({
     className: 'xh-col-chooser',
 
     render({model, className, width, height}) {
-        const {gridModel, isPopoverOpen} = model;
+        const {isPopoverOpen} = model;
 
         return panel({
             className,
@@ -49,9 +49,7 @@ export const colChooser = hoistCmp.factory({
                         icon: Icon.undo({className: 'xh-red'}),
                         onClick: () => model.restoreDefaults()
                     }),
-                    toolbarSep({
-                        omit: !gridModel.stateModel
-                    }),
+                    toolbarSep(),
                     button({
                         text: isPopoverOpen ? 'Close' : 'Cancel',
                         onClick: () => model.close()

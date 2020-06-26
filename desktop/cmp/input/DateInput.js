@@ -96,7 +96,10 @@ export class DateInput extends HoistInput {
         /** Text to display when control is empty. */
         placeholder: PT.string,
 
-        /** Position for calendar popover, as per Blueprint docs. */
+        /**
+         * Position for calendar popover, as per Blueprint docs.
+         * @see https://blueprintjs.com/docs/#datetime/dateinput
+         */
         popoverPosition: PT.oneOf([
             'top-left', 'top', 'top-right',
             'right-top', 'right', 'right-bottom',
@@ -125,7 +128,10 @@ export class DateInput extends HoistInput {
         /** Alignment of entry text within control, default 'left'. */
         textAlign: PT.oneOf(['left', 'right']),
 
-        /** Props passed to the TimePicker, as per Blueprint docs. */
+        /**
+         * Props passed to the TimePicker, as per Blueprint docs.
+         * @see https://blueprintjs.com/docs/#datetime/dateinput
+         */
         timePickerProps: PT.object,
 
         /**
@@ -134,7 +140,11 @@ export class DateInput extends HoistInput {
          */
         timePrecision: PT.oneOf(['second', 'minute']),
 
-        /** Type of value to publish. Defaults to 'date'. */
+        /**
+         * Type of value to publish. Defaults to 'date'. The use of 'localDate' is often a good
+         * choice for use cases where there is no time component.
+         * @see LocalDate - the class that will be published when localDate mode.
+         */
         valueType: PT.oneOf(['date', 'localDate'])
     };
 

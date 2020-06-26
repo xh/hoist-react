@@ -10,8 +10,10 @@ export * from './enums/RenderMode';
 
 export * from './elem';
 
+
 export * from './mixins/LayoutSupport';
 export * from './mixins/ReactiveSupport';
+export * from './mixins/PersistSupport';
 export * from './mixins/XhIdSupport';
 export * from './mixins/ManagedSupport';
 export * from './mixins/LoadSupport';
@@ -34,5 +36,11 @@ export * from './refresh/RefreshContextModel';
 export * from './refresh/RefreshContextView';
 export * from './refresh/RootRefreshContextModel';
 export * from './refresh/ManagedRefreshContextModel';
+
+export * from './persist/PersistenceProvider';
+export * from './persist/LocalStorageProvider';
+export * from './persist/DashViewProvider';
+export * from './persist/PrefProvider';
+
 
 export * from './XH';
