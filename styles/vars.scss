@@ -254,6 +254,7 @@ body {
   // Scrollbars (customized for webkit)
   --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('blue-grey', '100')});
   --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '300')});
+  --xh-scrollbar-size-px: var(--scrollbar-size-px, 10px);
 
   // Tabs
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
