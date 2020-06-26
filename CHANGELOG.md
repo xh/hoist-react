@@ -30,7 +30,11 @@ wide variety of enterprise software projects. For any questions regarding this c
 * `Store` gets new `clearFilter()` and `recordIsFiltered()` helper functions.
 * Hoist now supports sorting on agGrid group columns.
 * Hoist config `xhEnableMonitoring` can be used to enable/disable the Admin monitor tab and
-  its associated server-side jobs
+  its associated server-side jobs.
+* `FetchService` now installs a default timeout of 30 seconds for all requests.  This can be disabled
+by setting timeout to `null`.  Fetch Timeout Exceptions have also been improved to include the same
+information as other standard exceptions thrown by this service.
+
 
 ### 💥 Breaking Changes
 

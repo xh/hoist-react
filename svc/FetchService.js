@@ -255,7 +255,8 @@ export class FetchService {
  * @property {Object} [headers] - headers to send with this request. A Content-Type header will
  *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
- *      exception.  May be specified as an object to customise the exception. See Promise.timeout().
+ *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
+ *      May also be specified as an object to customise the exception. See Promise.timeout().
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.
