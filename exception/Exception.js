@@ -94,11 +94,11 @@ export class Exception {
      * Create an Error for when a fetch is timed out
      * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Error} e - Error object for raw timeout
+     * @param {String} [message] - optional custom message
      * @returns {Error}
      */
-    static fetchTimeout(fetchOptions, e) {
-        const {url, timeout} = fetchOptions,
-            message = timeout.message ?? `Failure calling '${url}' - timed out after ${e.interval}ms.`;
+    static fetchTimeout(fetchOptions, e, message) {
+        message = message ?? `Failure calling '${fetchOptions.url}' - timed out after ${e.interval}ms.`;
 
         return this.createInternal({
             name: 'Fetch Timeout',

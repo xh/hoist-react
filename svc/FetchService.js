@@ -7,10 +7,11 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -115,10 +116,11 @@ export class FetchService {
     // Implementation
     //-----------------------
     async withTimeoutAsync(promise, opts) {
+        const timeout = withDefault(opts.timeout, 30 * SECONDS);
         return promise
-            .timeout(opts.timeout)
+            .timeout(timeout)
             .catchWhen('Timeout Exception', e => {
-                throw Exception.fetchTimeout(opts, e);
+                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
             });
     }
 
