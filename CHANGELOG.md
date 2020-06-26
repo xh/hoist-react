@@ -36,7 +36,7 @@ wide variety of enterprise software projects. For any questions regarding this c
 
 * The option `PanelModel.prefName` has been removed in favor of `persistWith`. Existing user state
   will be transferred to the new format, assuming a `PersistenceProvider` of type 'pref' referring
-  to the same preference is used (e.g. `persistWith: {prefName: 'my-panel-model-prefName'}`.
+  to the same preference is used (e.g. `persistWith: {prefKey: 'my-panel-model-prefName'}`.
 * The option `GridModel.stateModel` has been removed in favor of `persistWith`. Existing user state
   will be transferred to the new format, assuming a `PersistenceProvider` of type 'localStorage'
   referring to the same key is used (e.g. `persistWith: {localStorageKey: 'my-grid-state-id'}`.
