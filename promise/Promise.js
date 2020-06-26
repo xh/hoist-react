@@ -6,7 +6,7 @@
  */
 import {XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {Exception} from '@xh/hoist/exception';
 import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
 
 /**
@@ -178,13 +178,16 @@ const enhancePromise = (promisePrototype) => {
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            config.message = config.message || `Operation timed out after ${config.interval}ms.`;
+            const interval = config.interval,
+                message = config.message ?? `Operation timed out after ${interval}ms.`;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
 
-            const deadline = wait(config.interval).then(() => {
-                throwIf(!completed, config.message);
+            const deadline = wait(interval).then(() => {
+                if (!completed) {
+                    throw Exception.create({name: 'Timeout Exception', message, interval});
+                }
             });
 
             return Promise.race([deadline, promise]);
