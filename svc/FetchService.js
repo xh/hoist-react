@@ -7,10 +7,11 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
-import {isDate, isFunction, isNil, isNumber, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -48,7 +49,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        return this.fetchInternalAsync(opts).timeout(this.parseTimeout(opts));
+        return this.withTimeoutAsync(this.fetchInternalAsync(opts), opts);
     }
 
     /**
@@ -57,13 +58,12 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        return this.fetchInternalAsync({
-            ...opts,
-            headers: {'Accept': 'application/json', ...opts.headers}
-        }).then(
-            r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()
-        ).timeout(
-            this.parseTimeout(opts)
+        return this.withTimeoutAsync(
+            this.fetchInternalAsync({
+                ...opts,
+                headers: {'Accept': 'application/json', ...opts.headers}
+            }).then(r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()),
+            opts
         );
     }
 
@@ -115,6 +115,15 @@ export class FetchService {
     //-----------------------
     // Implementation
     //-----------------------
+    async withTimeoutAsync(promise, opts) {
+        const timeout = withDefault(opts.timeout, 30 * SECONDS);
+        return promise
+            .timeout(timeout)
+            .catchWhen('Timeout Exception', e => {
+                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
+            });
+    }
+
     async fetchInternalAsync(opts) {
         const {defaultHeaders, abortControllers} = this;
         let {url, method, headers, body, params, autoAbortKey} = opts;
@@ -225,15 +234,6 @@ export class FetchService {
         }
     }
 
-    parseTimeout(opts) {
-        const {timeout, url} = opts;
-        if (!timeout) return null;
-
-        return isNumber(timeout) ?
-            {interval: timeout, message: `Failure calling ${url} - timed out after ${timeout}ms.`} :
-            timeout;
-    }
-
     qsFilterFn = (prefix, value) => {
         if (isDate(value))      return value.getTime();
         if (isLocalDate(value)) return value.isoString;
@@ -255,7 +255,8 @@ export class FetchService {
  * @property {Object} [headers] - headers to send with this request. A Content-Type header will
  *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
  * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
- *      exception.  May be specified as an object to customise the exception. See Promise.timeout().
+ *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
+ *      May also be specified as an object to customise the exception. See Promise.timeout().
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.
