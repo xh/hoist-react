@@ -16,7 +16,6 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import './ActivityTracking.scss';
 import {ActivityTrackingModel, PERSIST_ACTIVITY} from './ActivityTrackingModel';
 import {chartsPanel} from './charts/ChartsPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
@@ -122,9 +121,10 @@ const aggregateView = hoistCmp.factory(
         return panel({
             title: 'Aggregate Activity Report',
             icon: Icon.users(),
+            compactHeader: true,
             model: {
                 side: 'left',
-                defaultSize: 550,
+                defaultSize: 400,
                 persistWith: {...PERSIST_ACTIVITY, path: 'aggReportPanel'}
             },
             tbar: [

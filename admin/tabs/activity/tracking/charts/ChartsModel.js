@@ -8,12 +8,16 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {action, bindable, observable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {cloneDeep, sortBy} from 'lodash';
 import moment from 'moment';
 
 @HoistModel
 export class ChartsModel {
+
+    /** @member {ActivityTrackingModel} */
+    parentModel;
 
     @observable.ref data = [];
     @observable.ref dimensions = [];
@@ -54,6 +58,18 @@ export class ChartsModel {
         }
     });
 
+    @observable showDialog = false;
+
+    @action
+    async toggleDialog() {
+        this.showDialog = !this.showDialog;
+
+        // Hack to get primary, non-dialog chart to re-render once dialog is dismissed.
+        // Sharing chart models between chart component instances appears to be risky...
+        await wait(1);
+        this.chartModel.setHighchartsConfig({...this.chartModel.highchartsConfig});
+    }
+
     get showAsTimeseries() {
         return this.dimensions[0] == 'day';
     }
@@ -80,7 +96,9 @@ export class ChartsModel {
         this.data = data;
     }
 
-    constructor() {
+    constructor({parentModel}) {
+        this.parentModel = parentModel;
+
         this.addReaction({
             track: () => [this.data, this.metric],
             run: () => this.loadChart()
@@ -121,7 +139,7 @@ export class ChartsModel {
         switch (metric) {
             case 'count': return `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
             case 'entryCount': return 'Total Entry Count';
-            case 'elapsed': return 'Elapsed Time (ms)';
+            case 'elapsed': return 'Elapsed ms';
             default: return '???';
         }
     }

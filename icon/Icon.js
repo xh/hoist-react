@@ -123,7 +123,8 @@ export const Icon = {
     cloudUpload(p)      {return Icon.icon({...p,  iconName: 'cloud-upload'})},
     code(p)             {return Icon.icon({...p,  iconName: 'code'})},
     collapse(p)         {return Icon.icon({...p,  iconName: 'compress-alt'})},
-    comment(p)          {return Icon.icon({...p,  iconName: 'comment-dots'})},
+    // Sorry FontAwesome, but I swear your chat bubble is backwards....  - ATM
+    comment(p)          {return Icon.icon({...p,  iconName: 'comment-dots', className: classNames(p?.className, 'fa-flip-horizontal')})},
     contact(p)          {return Icon.icon({...p,  iconName: 'address-card'})},
     copy(p)             {return Icon.icon({...p,  iconName: 'copy'})},
     cross(p)            {return Icon.icon({...p,  iconName: 'times'})},
@@ -190,6 +191,7 @@ export const Icon = {
     lock(p)             {return Icon.icon({...p,  iconName: 'lock'})},
     login(p)            {return Icon.icon({...p,  iconName: 'sign-in'})},
     logout(p)           {return Icon.icon({...p,  iconName: 'sign-out'})},
+    magic(p)            {return Icon.icon({...p,  iconName: 'magic'})},
     mail(p)             {return Icon.icon({...p,  iconName: 'envelope'})},
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},

@@ -4,59 +4,115 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {div, filler, h3, hframe, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {form} from '@xh/hoist/cmp/form';
+import {div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {jsonInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {fmtDateTime} from '@xh/hoist/format';
+import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
 export const clientErrorDetail = hoistCmp.factory(
     ({model}) => {
-        const {selectedRecord, formattedErrorJson} = model;
+        const {selectedRecord, formattedErrorJson, formModel} = model,
+            userMsg = formModel.values.msg;
+
         if (!selectedRecord) return null;
 
-        const {data} = selectedRecord;
         return panel({
-            className: 'xh-admin-client-errors__detail',
+            className: 'xh-admin-activity-detail',
             model: {
                 side: 'bottom',
-                defaultSize: 300
+                defaultSize: 370
             },
-            item: hframe(
-                table(
-                    tbody(
-                        tr(th('User:'), td(data.username)),
-                        tr(th('Message:'), td(data.msg || 'None provided')),
-                        tr(th('User Alerted:'), td(`${data.userAlerted}`)),
-                        tr(th('Device/Browser:'), td(`${data.device}/${data.browser}`)),
-                        tr(th('Agent:'), td(data.userAgent)),
-                        tr(th('App Version:'), td(data.appVersion)),
-                        tr(th('Environment:'), td(data.appEnvironment)),
-                        tr(th('Date:'), td(fmtDateTime(data.dateCreated)))
-                    )
-                ),
-                panel({
-                    flex: 1,
-                    className: 'xh-border-left',
-                    items: [
-                        h3(Icon.json(), 'Additional Data'),
-                        div({
-                            className: `xh-admin-activity-detail__json ${formattedErrorJson ? '' : 'xh-admin-activity-detail__json--empty'}`,
-                            item: formattedErrorJson ?? 'No additional details available.'
-                        })
-                    ],
-                    bbar: [
-                        filler(),
-                        clipboardButton({
-                            getCopyText: () => formattedErrorJson,
-                            successMessage: 'Error data copied to clipboard.',
-                            disabled: !formattedErrorJson,
-                            outlined: true
-                        })
-                    ]
-                })
-            )
+            item: form({
+                fieldDefaults: {inline: true},
+                item: hframe(
+                    div({
+                        className: 'xh-admin-activity-detail__form',
+                        style: {width: '400px'},
+                        items: [
+                            h3(Icon.info(), 'Error Info'),
+                            formField({
+                                field: 'username',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'dateCreated',
+                                item: textInput(),
+                                readonlyRenderer: dateTimeRenderer({})
+                            }),
+                            formField({
+                                field: 'appVersion',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'userAlerted',
+                                label: 'User Alerted?',
+                                item: switchInput()
+                            }),
+                            formField({
+                                field: 'id',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            h3(Icon.desktop(), 'Device / Browser'),
+                            formField({
+                                field: 'device',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'browser',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            }),
+                            formField({
+                                field: 'userAgent',
+                                item: textInput(),
+                                readonlyRenderer: valOrNa
+                            })
+                        ]
+                    }),
+                    vbox({
+                        flex: 1,
+                        className: 'xh-border-left',
+                        items: [
+                            panel({
+                                height: 100,
+                                className: 'xh-border-bottom',
+                                items: [
+                                    h3(Icon.comment(), 'User Message'),
+                                    div({
+                                        className: `xh-admin-activity-detail__message`,
+                                        item: userMsg
+                                    })
+                                ],
+                                omit: !userMsg
+                            }),
+                            panel({
+                                flex: 1,
+                                items: [
+                                    h3(Icon.json(), 'Additional Data'),
+                                    jsonInput({
+                                        readonly: true,
+                                        width: '100%',
+                                        height: '100%',
+                                        showCopyButton: true,
+                                        value: formattedErrorJson ?? '{}'
+                                    })
+                                ]
+                            })
+                        ]
+                    })
+                )
+            })
         });
     }
 );
+
+const valOrNa = v => v != null ? v : naSpan();
+const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});

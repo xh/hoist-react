@@ -4,7 +4,7 @@ import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {bindable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 
 @HoistModel
@@ -17,7 +17,7 @@ export class ActivityDetailModel {
     /** @member {FormModel} */
     @managed formModel;
 
-    @bindable formattedData;
+    @observable formattedData;
 
     constructor({parentModel}) {
         this.parentModel = parentModel;
@@ -32,7 +32,6 @@ export class ActivityDetailModel {
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [
-                {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
                 {
                     field: 'impersonatingFlag',
                     headerName: Icon.impersonate(),
@@ -51,12 +50,15 @@ export class ActivityDetailModel {
                             }) : '';
                     }
                 },
+                {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
                 {field: 'username', ...usernameCol},
+                {field: 'impersonating', width: 140, hidden: true},
                 {field: 'category', width: 120},
+                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
+                {field: 'data', flex: true, minWidth: 120, autosizeMaxWidth: 400, hidden: true},
                 {field: 'device', width: 100},
                 {field: 'browser', width: 100},
                 {field: 'userAgent', width: 100, hidden: true},
-                {field: 'impersonating', width: 140, hidden: true},
                 {
                     field: 'elapsed',
                     headerName: 'Elapsed',
@@ -68,8 +70,6 @@ export class ActivityDetailModel {
                         formatConfig: {thousandSeparated: false, mantissa: 0}
                     })
                 },
-                {field: 'msg', headerName: 'Message', flex: true, minWidth: 120, autosizeMaxWidth: 400},
-                {field: 'data', width: 250, autosizeMaxWidth: 400, hidden: true},
                 {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
             ]
         });
@@ -119,22 +119,21 @@ export class ActivityDetailModel {
 
     // Extract data from a (detail) grid record and flush it into our form for display.
     // Also parse/format any additional data (as JSON) if provided.
+    @action
     showEntryDetail(detailRec) {
         const recData = detailRec?.data ?? {},
             trackData = recData.data;
 
         this.formModel.init(recData);
 
-        let formattedTrackData = null;
-        if (trackData) {
+        let formattedTrackData = trackData;
+        if (formattedTrackData) {
             try {
                 formattedTrackData = JSON.stringify(JSON.parse(trackData), null, 2);
-            } catch (ignored) {
-                formattedTrackData = trackData;
-            }
+            } catch (ignored) {}
         }
 
-        this.setFormattedData(formattedTrackData);
+        this.formattedData = formattedTrackData;
     }
 
 }

@@ -4,14 +4,12 @@ import {div, filler, h3, hframe, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
-import './ActivityDetail.scss';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
 export const activityDetailView = hoistCmp.factory({
@@ -20,8 +18,9 @@ export const activityDetailView = hoistCmp.factory({
     render({model, ...props}) {
         return panel({
             title: 'Track Log Entries',
-            className: 'xh-admin-activity-detail',
             icon: Icon.list(),
+            className: 'xh-admin-activity-detail',
+            compactHeader: true,
             items: [
                 grid({flex: 1}),
                 detailRecForm()
@@ -59,6 +58,7 @@ const detailRecForm = hoistCmp.factory(
                 item: hframe(
                     div({
                         className: 'xh-admin-activity-detail__form',
+                        style: {flex: 1},
                         items: [
                             h3(Icon.info(), 'Activity'),
                             formField({
@@ -124,18 +124,12 @@ const detailRecForm = hoistCmp.factory(
                         className: 'xh-border-left',
                         items: [
                             h3(Icon.json(), 'Additional Data'),
-                            div({
-                                className: `xh-admin-activity-detail__json ${formattedData ? '' : 'xh-admin-activity-detail__json--empty'}`,
-                                item: formattedData ?? 'No additional data tracked.'
-                            })
-                        ],
-                        bbar: [
-                            filler(),
-                            clipboardButton({
-                                getCopyText: () => formattedData,
-                                successMessage: 'Additional tracking data copied to clipboard.',
-                                disabled: !formattedData,
-                                outlined: true
+                            jsonInput({
+                                readonly: true,
+                                width: '100%',
+                                height: '100%',
+                                showCopyButton: true,
+                                value: formattedData ?? '{}'
                             })
                         ]
                     })

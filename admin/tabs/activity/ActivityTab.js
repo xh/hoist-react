@@ -10,6 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 import {clientErrorsView} from './clienterrors/ClientErrorsView';
 import {feedbackPanel} from './feedback/FeedbackPanel';
 import {activityTrackingView} from './tracking/ActivityTrackingView';
+import './ActivityTab.scss';
 
 export const activityTab = hoistCmp.factory(
     () => tabContainer({

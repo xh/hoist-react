@@ -15,7 +15,7 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isEmpty, isFinite} from 'lodash';
+import {compact, isEmpty, isFinite} from 'lodash';
 import moment from 'moment';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
@@ -46,6 +46,23 @@ export class ActivityTrackingModel {
     @bindable.ref lookups = {};
 
     get dimensions() {return this.dimChooserModel.value}
+
+    /** @returns {string} - summary of overall query. */
+    get queryDisplayString() {
+        const {formModel} = this,
+            vals = formModel.values,
+            parts = [
+                `${XH.appName} Activity`,
+                vals.category ? `${vals.category} Category` : null,
+                this.dateRangeRenderer({min: vals.startDate, max: vals.endDate}),
+                vals.username,
+                vals.device,
+                vals.browser,
+                vals.msg ? `"${vals.msg}"` : null
+            ];
+
+        return compact(parts).join(' · ');
+    }
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
