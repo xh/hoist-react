@@ -9,7 +9,7 @@ import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
-import {isDate, isFunction, isNil, isNumber, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
 
 /**
@@ -48,7 +48,7 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
-        return this.fetchInternalAsync(opts).timeout(this.parseTimeout(opts));
+        return this.withTimeoutAsync(this.fetchInternalAsync(opts), opts);
     }
 
     /**
@@ -57,13 +57,12 @@ export class FetchService {
      * @returns {Promise} the decoded JSON object, or null if the response had no content.
      */
     async fetchJson(opts) {
-        return this.fetchInternalAsync({
-            ...opts,
-            headers: {'Accept': 'application/json', ...opts.headers}
-        }).then(
-            r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()
-        ).timeout(
-            this.parseTimeout(opts)
+        return this.withTimeoutAsync(
+            this.fetchInternalAsync({
+                ...opts,
+                headers: {'Accept': 'application/json', ...opts.headers}
+            }).then(r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()),
+            opts
         );
     }
 
@@ -115,6 +114,14 @@ export class FetchService {
     //-----------------------
     // Implementation
     //-----------------------
+    async withTimeoutAsync(promise, opts) {
+        return promise
+            .timeout(opts.timeout)
+            .catchWhen('Timeout Exception', e => {
+                throw Exception.fetchTimeout(opts, e);
+            });
+    }
+
     async fetchInternalAsync(opts) {
         const {defaultHeaders, abortControllers} = this;
         let {url, method, headers, body, params, autoAbortKey} = opts;
@@ -223,15 +230,6 @@ export class FetchService {
         } catch (ignore) {
             return null;
         }
-    }
-
-    parseTimeout(opts) {
-        const {timeout, url} = opts;
-        if (!timeout) return null;
-
-        return isNumber(timeout) ?
-            {interval: timeout, message: `Failure calling ${url} - timed out after ${timeout}ms.`} :
-            timeout;
     }
 
     qsFilterFn = (prefix, value) => {

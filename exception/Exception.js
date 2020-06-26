@@ -85,7 +85,26 @@ export class Exception {
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
             isFetchAborted: true,
-            fetchOptions
+            fetchOptions,
+            stack: null // Skip for fetch -- server-sourced exceptions do not include
+        });
+    }
+
+    /**
+     * Create an Error for when a fetch is timed out
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Error} e - Error object for raw timeout
+     * @returns {Error}
+     */
+    static fetchTimeout(fetchOptions, e) {
+        const {url, timeout} = fetchOptions,
+            message = timeout.message ?? `Failure calling '${url}' - timed out after ${e.interval}ms.`;
+
+        return this.createInternal({
+            name: 'Fetch Timeout',
+            message,
+            fetchOptions,
+            stack: null
         });
     }
 
@@ -109,7 +128,8 @@ export class Exception {
             message,
             httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
-            fetchOptions
+            fetchOptions,
+            stack: null
         });
     }
 
