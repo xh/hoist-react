@@ -1,5 +1,9 @@
 # Changelog
 
+## v36.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.0...develop)
+
 ## v35.0.0 - 2020-06-29
 
 ### ⚖️ Licensing Change
