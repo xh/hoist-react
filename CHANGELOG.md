@@ -1,6 +1,6 @@
 # Changelog
 
-## v35.0.0-SNAPSHOT - unreleased
+## v35.0.0 - 2020-06-29
 
 ### ⚖️ Licensing Change
 
@@ -92,7 +92,7 @@ project, as per note in Breaking Changes above.
 * ag-Grid `23.0.2` > `23.2.0` (See Toolbox app for example on this upgrade)
 * Highcharts `8.0.4 -> 8.1.1`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...v35.0.0)
 
 
 ## v34.0.0 - 2020-05-26
