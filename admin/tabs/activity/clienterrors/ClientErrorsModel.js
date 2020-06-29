@@ -40,7 +40,7 @@ export class ClientErrorsModel {
 
     constructor() {
         this.gridModel = new GridModel({
-            // persistWith: this.persistWith,
+            persistWith: this.persistWith,
             enableColChooser: true,
             enableExport: true,
             exportOptions: {
@@ -60,7 +60,7 @@ export class ClientErrorsModel {
                     width: 50,
                     renderer: (v, {record}) => {
                         const {msg} = record.data;
-                        return msg ?Icon.comment({asHtml: true}) : '';
+                        return msg ? Icon.comment({asHtml: true}) : '';
                     }
                 },
                 {
