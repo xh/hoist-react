@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {compactDateCol} from '@xh/hoist/cmp/grid';
+import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
@@ -58,13 +58,13 @@ const modelSpec = {
     sortBy: 'dateCreated|desc',
     filterFields: ['username', 'msg'],
     columns: [
-        {field: 'dateCreated', ...compactDateCol, width: 140},
         {field: 'username', ...usernameCol},
         {field: 'browser', width: 120},
         {field: 'device', width: 100},
         {field: 'appVersion', headerName: 'Version', width: 120},
         {field: 'appEnvironment', headerName: 'Environment', width: 130},
-        {field: 'msg', headerName: 'Message', minWidth: 120, flex: true}
+        {field: 'msg', headerName: 'Message', minWidth: 120, flex: true},
+        {field: 'dateCreated', ...dateTimeCol}
     ],
     editors: [
         {field: 'username'},

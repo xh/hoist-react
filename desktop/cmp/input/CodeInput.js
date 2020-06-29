@@ -8,6 +8,7 @@ import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
@@ -42,8 +43,11 @@ import './CodeInput.scss';
 @LayoutSupport
 export class CodeInput extends HoistInput {
 
+    /** @member {CodeMirror} - a CodeMirror editor instance. */
+    editor;
+
     @bindable fullScreen = false;
-    editor
+    baseClassName = 'xh-code-input';
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -77,25 +81,36 @@ export class CodeInput extends HoistInput {
         mode: PT.string,
 
         /**
-         * True (default) to display autoformat button at top-right of input.
-         * Requires a `formatter` to be configured - button will never show otherwise.
+         * True to prevent user modification of editor contents, while still allowing user to
+         * focus, select, and copy contents.
+         */
+        readonly: PT.bool,
+
+        /** True to display a copy button at bottom-right of input. */
+        showCopyButton: PT.bool,
+
+        /**
+         * True (default) to display autoformat button at bottom-right of input. Requires a
+         * `formatter` to be configured and content to be editable (!readonly, !disabled).
          */
         showFormatButton: PT.bool,
 
-        /** True (default) to display Fullscreen button at top-right of input. */
+        /** True (default) to display Fullscreen button at bottom-right of input. */
         showFullscreenButton: PT.bool
     };
 
-    get commitOnChange() {
-        return withDefault(this.props.commitOnChange, true);
-    }
-
-    get showFullscreenButton() {
-        return withDefault(this.props.showFullscreenButton, true);
-    }
+    get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
+    get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
+    get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
 
     get showFormatButton() {
-        return isFunction(this.props.formatter) && withDefault(this.props.showFormatButton, true);
+        const {disabled, readonly, formatter, showFormatButton} = this.props;
+        return (
+            !disabled &&
+            !readonly &&
+            isFunction(formatter) &&
+            withDefault(showFormatButton, true)
+        );
     }
 
     constructor(props, context) {
@@ -121,15 +136,12 @@ export class CodeInput extends HoistInput {
         });
 
         this.addReaction({
-            track: () => this.props.disabled,
-            run: (disable) => {
-                this.editor.setOption('readOnly', disable);
+            track: () => [this.props.readonly, this.props.disabled],
+            run: (readonly, disabled) => {
+                this.editor.setOption('readOnly', readonly || disabled);
             }
         });
     }
-
-    editor = null;
-    baseClassName = 'xh-code-input';
 
     render() {
         const {width, height, ...layoutProps} = this.getLayoutProps(),
@@ -180,12 +192,18 @@ export class CodeInput extends HoistInput {
     renderActionButtons() {
         if (!this.hasFocus || (!this.showFormatButton && !this.showFullscreenButton)) return null;
 
-        const {fullScreen} = this;
+        const {fullScreen, editor} = this;
         return hbox({
             className: 'xh-code-input__action-buttons',
             items: [
+                this.showCopyButton ? clipboardButton({
+                    text: null,
+                    title: 'Copy to clipboard',
+                    successMessage: 'Contents copied to clipboard',
+                    getCopyText: () => editor.getValue()
+                }) : null,
                 this.showFormatButton ? button({
-                    icon: Icon.code(),
+                    icon: Icon.magic(),
                     title: 'Auto-format',
                     onClick: () => this.onAutoFormat()
                 }) : null,
@@ -227,7 +245,7 @@ export class CodeInput extends HoistInput {
     }
 
     createDefaults() {
-        const {disabled, mode, linter, autoFocus} = this.props;
+        const {disabled, readonly, mode, linter, autoFocus} = this.props;
         let gutters = [
             'CodeMirror-linenumbers',
             'CodeMirror-foldgutter'
@@ -246,7 +264,7 @@ export class CodeInput extends HoistInput {
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
-            readOnly: disabled,
+            readOnly: disabled || readonly,
             gutters,
             lint: linter ? {getAnnotations: linter} : false,
             autofocus: autoFocus

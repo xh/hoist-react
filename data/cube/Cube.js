@@ -24,22 +24,22 @@ export class Cube {
 
     static RECORD_ID_DELIMITER = '>>';
 
-    @managed
-    store = null;
-    lockFn = null;
+    /** @member {Store} */
+    @managed store;
+    /** @member {function} */
+    lockFn;
 
     _info = null;
     _connectedViews = new Set();
 
     /**
      * @param {Object} c - Cube configuration.
-     * @param {(CubeField[]|Object[])} - array of CubeFields / {@see CubeField} configs.
-     *      See Store.fields.
+     * @param {(CubeField[]|Object[])} fields - array of {@see CubeField} instances or configs.
      * @param {Object[]} [c.data] - array of initial raw data.
-     * @param {(function|string)} [c.idSpec] - see Store.idSpec.  Default 'id'
-     * @param {function} [c.processRawData] - see Store.processRawData.
-     * @param {Object} [c.info] - map of metadata associated with this data.
-     * @param {LockFn} [c.lockFn] - optional function to be called for each node to aggregate to
+     * @param {(function|string)} [c.idSpec] - {@see Store.idSpec} - default 'id'.
+     * @param {function} [c.processRawData] - {@see Store.processRawData}
+     * @param {Object} [c.info] - app-specific metadata to be associated with this data.
+     * @param {LockFn} [c.lockFn] - optional function to be called for each aggregate node to
      *      determine if it should be "locked", preventing drilldown into its children.
      */
     constructor({
@@ -180,6 +180,11 @@ export class Cube {
                 (v) => v.noteCubeUpdated(changeLog)
             );
         }
+    }
+
+    /** Clear any/all data and info from this Cube. */
+    async clearAsync() {
+        await this.loadDataAsync([]);
     }
 
     /**

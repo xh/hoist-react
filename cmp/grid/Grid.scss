@@ -52,13 +52,10 @@
       text-overflow: ellipsis;
     }
 
-    svg {
-      margin-left: var(--xh-pad-half-px);
-      color: var(--xh-grid-header-icon-color);
-    }
-
     .xh-grid-header-sort-icon,
     .xh-grid-header-menu-icon {
+      color: var(--xh-grid-header-icon-color);
+      margin-left: var(--xh-pad-half-px);
       width: 1.5em;
     }
 
