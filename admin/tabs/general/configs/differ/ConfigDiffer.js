@@ -45,7 +45,7 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: 'Select or enter a remote host to compare against...',
+                    item: 'Select/enter a remote host to compare against...',
                     padding: 10
                 }),
             bbar: [
