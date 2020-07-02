@@ -247,6 +247,7 @@
 
   .xh-grid-header-sort-icon,
   .xh-grid-header-menu-icon {
+    margin-left: var(--xh-pad-half-px);
     width: 1.5em;
     display: none;
   }
