@@ -9,6 +9,7 @@ import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
+import {PrefDifferModel} from './differ/PrefDifferModel';
 
 @HoistModel
 @LoadSupport
@@ -96,6 +97,9 @@ export class PreferenceModel {
             {field: 'lastUpdatedBy'}
         ]
     });
+
+    @managed
+    differModel = new PrefDifferModel(this.gridModel);
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

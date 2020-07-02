@@ -9,6 +9,7 @@ import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {prefDiffer} from './differ/PrefDiffer';
 import {PreferenceModel} from './PreferenceModel';
 
 export const preferencePanel = hoistCmp.factory({
@@ -20,10 +21,12 @@ export const preferencePanel = hoistCmp.factory({
                 extraToolbarItems: () => {
                     return button({
                         icon: Icon.diff(),
-                        text: 'Compare w/ Remote'
+                        text: 'Compare w/ Remote',
+                        onClick: () => model.differModel.open()
                     });
                 }
-            })
+            }),
+            prefDiffer()
         );
     }
 });
