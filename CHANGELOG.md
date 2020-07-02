@@ -2,7 +2,17 @@
 
 ## v36.0.0-SNAPSHOT - unreleased
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
+
+## v35.0.1 - 2020-07-02
+
+### 🐞 Bug Fixes
+
+* Column headers no longer allocate space for a sort arrow icon when the column has an active
+  `GridSorter` in the special state of `sort: null`.
+* Grid auto-sizing better accounts for margins on sort arrow icons.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.0...v35.0.1)
 
 ## v35.0.0 - 2020-06-29
 
