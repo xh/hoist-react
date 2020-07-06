@@ -9,13 +9,13 @@ import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
-import {PrefDifferModel} from './differ/PrefDifferModel';
+import {DifferModel} from '../../differ/DifferModel';
 
 @HoistModel
 @LoadSupport
 export class PreferenceModel {
 
-    persistWith = {localStorageKey: 'xhAdminPreferenceState'}
+    persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed
     gridModel = new RestGridModel({
@@ -99,7 +99,7 @@ export class PreferenceModel {
     });
 
     @managed
-    differModel = new PrefDifferModel(this.gridModel);
+    differModel = new DifferModel(this.gridModel, 'Preference', 'preferenceDiffAdmin');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

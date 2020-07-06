@@ -11,11 +11,11 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {keys, toString} from 'lodash';
-import {PrefDifferDetailModel} from './PrefDifferDetailModel';
+import {DifferDetailModel} from './DifferDetailModel';
 import './Differ.scss';
 
-export const prefDifferDetail = hoistCmp.factory({
-    model: uses(PrefDifferDetailModel),
+export const differDetail = hoistCmp.factory({
+    model: uses(DifferDetailModel),
 
     render({model}) {
         if (!model.record) return null;
@@ -59,7 +59,7 @@ const diffTable = hoistCmp.factory(
         });
 
         return table({
-            className: 'pref-diff-table',
+            className: 'diff-table',
             item: tbody(
                 tr(
                     th('Property'),

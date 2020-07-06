@@ -16,7 +16,7 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
-import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {DifferModel} from '../../../differ/DifferModel';
 
 
 @HoistModel
@@ -121,7 +121,7 @@ export class ConfigModel {
     });
 
     @managed
-    differModel = new ConfigDifferModel(this.gridModel);
+    differModel = new DifferModel(this.gridModel, 'Config', 'configDiffAdmin');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

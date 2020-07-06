@@ -14,23 +14,23 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {identity} from 'lodash';
-import {configDifferDetail} from './ConfigDifferDetail';
-import {ConfigDifferModel} from './ConfigDifferModel';
+import {differDetail} from './DifferDetail';
+import {DifferModel} from './DifferModel';
 
-export const configDiffer = hoistCmp.factory({
-    model: uses(ConfigDifferModel),
+export const differ = hoistCmp.factory({
+    model: uses(DifferModel),
 
     render({model}) {
         return fragment(
             dialog({
-                title: 'Configuration Differ',
+                title: `${model.entityName} Differ`,
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
                 style: {height: 600, width: '80%'},
                 item: contents()
             }),
-            configDifferDetail()
+            differDetail()
         );
     }
 });

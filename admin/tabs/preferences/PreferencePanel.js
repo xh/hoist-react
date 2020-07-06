@@ -9,7 +9,7 @@ import {hoistCmp, creates} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {prefDiffer} from './differ/PrefDiffer';
+import {differ} from '../../differ/Differ';
 import {PreferenceModel} from './PreferenceModel';
 
 export const preferencePanel = hoistCmp.factory({
@@ -26,7 +26,7 @@ export const preferencePanel = hoistCmp.factory({
                     });
                 }
             }),
-            prefDiffer()
+            differ()
         );
     }
 });
