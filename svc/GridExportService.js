@@ -39,6 +39,7 @@ export class GridExportService {
 
         const config = XH.configService.get('xhExportConfig', {}),
             exportColumns = this.getExportableColumns(gridModel, columns),
+            summaryRecord = gridModel.store.summaryRecord,
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns),
             rows = [];
@@ -49,7 +50,16 @@ export class GridExportService {
         }
 
         rows.push(this.getHeaderRow(exportColumns, type, gridModel));
-        rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
+
+        // If the grid includes a summary row, add it to the export payload as a root-level node
+        if (gridModel.showSummary && summaryRecord) {
+            rows.push(
+                this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
+                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 1)
+            );
+        } else {
+            rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
+        }
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
