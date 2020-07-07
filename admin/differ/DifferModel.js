@@ -271,19 +271,16 @@ export class DifferModel  {
     }
 
     @action
-    setRemoteHost(remoteHost) {
-        this.remoteHost = remoteHost;
-    }
-
-    @action
     open() {
+        this.hasLoaded = false;
+        this.remoteHost = null;
         this.isOpen = true;
     }
 
     @action
     close() {
+        this.hasLoaded = false;
+        this.remoteHost = null;
         this.isOpen = false;
-        this.gridModel.clear();
-        this.setRemoteHost(null);
     }
 }
