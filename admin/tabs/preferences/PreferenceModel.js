@@ -99,7 +99,7 @@ export class PreferenceModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'Preference', 'preferenceDiffAdmin');
+    differModel = new DifferModel(this.gridModel, 'preference');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

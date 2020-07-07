@@ -249,18 +249,25 @@ export class DifferModel  {
 
     valueRenderer(v) {
         if (v == null) return '';
-        return v.valueType === 'pwd' ? '*****' : v.value;
+        // Handle both the config and pref names for type and value, respectively
+        const type = v.valueType ?? v.type,
+            value = v.value ?? v.defaultValue;
+        return  type === 'pwd' ? '*****' : value;
     }
 
     valueTypeRenderer(v, {record}) {
         const local = record.data.localValue,
             remote = record.data.remoteValue;
 
+        // Handle both the config and pref names for type respectively
+        const localType = local?.valueType ?? local?.type,
+            remoteType = remote?.valueType ?? local?.type;
+
         if (local && remote) {
-            return local.valueType == remote.valueType ? local.valueType : '??';
+            return localType === remoteType ? localType : '??';
         }
 
-        return local ? local.valueType : remote.valueType;
+        return local ? localType : remoteType;
     }
 
     @action
