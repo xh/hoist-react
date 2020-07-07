@@ -7,7 +7,7 @@
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find} from 'lodash';
+import {cloneDeep, find, isEmpty} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -29,6 +29,9 @@ export class TabContainerModel {
 
     /** @member {string} */
     @observable activeTabId;
+
+    /** @member {TabState} */
+    @observable.ref tabState = {};
 
     /** @member {string} */
     switcherPosition;
@@ -162,6 +165,23 @@ export class TabContainerModel {
         if (nextTab) this.activateTab(nextTab.id);
     }
 
+    /**
+     * This method will update the current tabs definition. Throws an exception if any of the
+     * tabs provided in tabStateChanges are not present in the current tab list.
+     *
+     * @param {TabState} tabStateChanges - changes to apply to the tabs. If all leaf
+     *     columns are represented in these changes then the sort order will be applied as well.
+     */
+    @action
+    applyColumnStateChanges(tabStateChanges) {
+        if (isEmpty(tabStateChanges)) return;
+
+        let tabState = cloneDeep(this.tabState);
+
+
+        this.tabState = tabState;
+    }
+
     //-------------------------
     // Implementation
     //-------------------------
@@ -216,3 +236,14 @@ export class TabContainerModel {
         return null;
     }
 }
+
+/**
+ * @typedef {Object} TabState
+ * @property {string} activeTabId - unique identifier of the active tab
+ */
+
+/**
+ * @typedef {Object} TabContainerModelPersistOptions
+ * @extends PersistOptions
+ * @property {boolean} [persistActiveTab] - true to include active tab information (default true)
+ */
