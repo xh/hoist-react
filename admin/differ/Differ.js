@@ -13,7 +13,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {identity} from 'lodash';
+import {identity, capitalize} from 'lodash';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
 
@@ -23,7 +23,7 @@ export const differ = hoistCmp.factory({
     render({model}) {
         return fragment(
             dialog({
-                title: `${model.entityName} Differ`,
+                title: `${capitalize(model.entityName)} Differ`,
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),

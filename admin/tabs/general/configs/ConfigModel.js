@@ -121,7 +121,7 @@ export class ConfigModel {
     });
 
     @managed
-    differModel = new DifferModel(this.gridModel, 'Config', 'configDiffAdmin');
+    differModel = new DifferModel(this.gridModel, 'config');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

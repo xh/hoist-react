@@ -51,10 +51,10 @@ export class DifferModel  {
         return XH.getConf('xhAppInstances').filter(it => it !== window.location.origin);
     }
 
-    constructor(parentGridModel, entityName, url) {
+    constructor(parentGridModel, entityName) {
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
-        this.url = url;
+        this.url = entityName + 'DiffAdmin';
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
@@ -104,12 +104,13 @@ export class DifferModel  {
         const remoteHost = trimEnd(this.remoteHost, '/'),
             // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
             apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
-            remoteBaseUrl = remoteHost + apiAffix;
+            remoteBaseUrl = remoteHost + apiAffix,
+            {entityName, url} = this;
 
         try {
             const resp = await Promise.all([
-                XH.fetchJson({url: `${XH.baseUrl}${this.url}/records`, loadSpec}),
-                XH.fetchJson({url: `${remoteBaseUrl}${this.url}/configs`, loadSpec})
+                XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
+                XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
