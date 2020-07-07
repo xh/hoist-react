@@ -14,6 +14,13 @@
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.0...v35.0.1)
 
+### 🎁 New Features
+* Extend existing environment diff tool to preferences.  Now, both configs and preferences may be
+diffed across servers.  This feature will require an update of hoist-core to a version > 8.0.1.
+
+### 🐞 Bug Fixes
+* `GridModel`s export feature was previously excluding summary rows.  These are now included.
+
 ## v35.0.0 - 2020-06-29
 
 ### ⚖️ Licensing Change

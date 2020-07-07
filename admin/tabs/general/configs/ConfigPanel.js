@@ -10,7 +10,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {ConfigModel} from './ConfigModel';
-import {configDiffer} from './differ/ConfigDiffer';
+import {differ} from '../../../differ/Differ';
 
 export const configPanel = hoistCmp.factory({
     model: creates(ConfigModel),
@@ -26,7 +26,7 @@ export const configPanel = hoistCmp.factory({
                     });
                 }
             }),
-            configDiffer()
+            differ()
         );
     }
 });
