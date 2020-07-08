@@ -2,6 +2,10 @@
 
 ## v36.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* TreeMap now sorts heatValues as numbers, not as text.
+  
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
 ## v35.0.1 - 2020-07-02
