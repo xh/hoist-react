@@ -9,6 +9,7 @@ import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {FacetChooserModel} from '@xh/hoist/cmp/facetchooser';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
@@ -32,6 +33,8 @@ export class ActivityTrackingModel {
     @managed formModel;
     /** @member {DimensionChooserModel} */
     @managed dimChooserModel;
+    /** @member {FacetChooserModel} */
+    @managed facetChooserModel;
     /** @member {Cube} */
     @managed cube;
     /** @member {GridModel} */
@@ -70,14 +73,10 @@ export class ActivityTrackingModel {
     constructor() {
         this.formModel = new FormModel({
             fields: [
+                {name: 'category'},
                 {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
                 // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-                {name: 'endDate', initialValue: LocalDate.today().add(1)},
-                {name: 'category'},
-                {name: 'username'},
-                {name: 'device'},
-                {name: 'browser'},
-                {name: 'msg'}
+                {name: 'endDate', initialValue: LocalDate.today().add(1)}
             ]
         });
 
@@ -113,6 +112,11 @@ export class ActivityTrackingModel {
                 {label: 'User Agent', value: 'userAgent'}
             ],
             initialValue: this._defaultDims
+        });
+
+        this.facetChooserModel = new FacetChooserModel({
+            cube: this.cube,
+            dimensions: ['username', 'device', 'browser', 'msg']
         });
 
         this.gridModel = new GridModel({
@@ -170,10 +174,12 @@ export class ActivityTrackingModel {
 
         this.addReaction({
             track: () => {
-                const vals = this.formModel.values;
+                const vals = this.formModel.values,
+                    facets = this.facetChooserModel.valueFilters;
+
                 return [
-                    vals.startDate, vals.endDate,
-                    vals.username, vals.msg, vals.category, vals.device, vals.browser
+                    vals.category, vals.startDate, vals.endDate,
+                    facets
                 ];
             },
             run: () => this.loadAsync(),
@@ -193,9 +199,15 @@ export class ActivityTrackingModel {
         try {
             await this.loadLookupsAsync(loadSpec);
 
+            const params = formModel.getData();
+            this.facetChooserModel.valueFilters?.forEach(filter => {
+                const {fieldName, values} = filter;
+                params[fieldName] = values;
+            });
+
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: formModel.getData(),
+                params,
                 loadSpec
             });
 
