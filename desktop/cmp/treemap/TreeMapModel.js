@@ -281,7 +281,7 @@ export class TreeMapModel {
 
         // 1) Extract heat values and split into positive and negative
         const heatValues = this.store.records.map(it => it.data[this.heatField]),
-              numbSort = (a, b) => a - b;
+            numbSort = (a, b) => a - b;
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
         posHeatValues = posHeatValues.sort(numbSort);
         negHeatValues = negHeatValues.map(it => Math.abs(it)).sort(numbSort);
