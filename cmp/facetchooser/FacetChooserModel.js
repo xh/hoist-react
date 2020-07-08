@@ -53,7 +53,7 @@ export class FacetChooserModel {
         dimensions = [],
         limit
     }) {
-        throwIf(!cube || isEmpty(facetSpecs), 'Must provide either `cube` or `facetSpecs`');
+        throwIf(!cube && isEmpty(facetSpecs), 'Must provide either `cube` or `facetSpecs`');
 
         this.cube = cube;
         this.facetSpecs = facetSpecs;
