@@ -13,19 +13,21 @@ import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
-import {ConfigDifferDetailModel} from './ConfigDifferDetailModel';
+import {DifferDetailModel} from './DifferDetailModel';
 
 /**
  * @private
  */
 @HoistModel
 @LoadSupport
-export class ConfigDifferModel  {
+export class DifferModel  {
 
-    configModel;
+    parentGridModel;
+    entityName;
+    url;
 
     @managed
-    detailModel = new ConfigDifferDetailModel({parent: this});
+    detailModel = new DifferDetailModel({parent: this});
 
     @managed
     gridModel;
@@ -46,17 +48,19 @@ export class ConfigDifferModel  {
     };
 
     get remoteHosts() {
-        return XH.getConf('xhAppInstances').filter(it => it != window.location.origin);
+        return XH.getConf('xhAppInstances').filter(it => it !== window.location.origin);
     }
 
-    constructor(configModel) {
-        this.configModel = configModel;
+    constructor(parentGridModel, entityName) {
+        this.parentGridModel = parentGridModel;
+        this.entityName = entityName;
+        this.url = entityName + 'DiffAdmin';
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
                 filter: (it) => it.data.status !== 'Identical'
             },
-            emptyText: 'All configs match!',
+            emptyText: 'All records match!',
             selModel: 'multiple',
             sortBy: 'name',
             groupBy: 'status',
@@ -73,7 +77,7 @@ export class ConfigDifferModel  {
                 {
                     field: 'type',
                     width: 80,
-                    renderer: this.configValueTypeRenderer
+                    renderer: this.valueTypeRenderer
                 },
                 {
                     field: 'localValue',
@@ -100,21 +104,22 @@ export class ConfigDifferModel  {
         const remoteHost = trimEnd(this.remoteHost, '/'),
             // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
             apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
-            remoteBaseUrl = remoteHost + apiAffix;
+            remoteBaseUrl = remoteHost + apiAffix,
+            {entityName, url} = this;
 
         try {
             const resp = await Promise.all([
-                XH.fetchJson({url: XH.baseUrl + 'configDiffAdmin/configs', loadSpec}),
-                XH.fetchJson({url: remoteBaseUrl + 'configDiffAdmin/configs', loadSpec})
+                XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
+                XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
             this.processFailedLoad();
-            if (e.httpStatus == 401) {
+            if (e.httpStatus === 401) {
                 XH.alert({
                     title: 'Access Denied',
                     icon: Icon.accessDenied(),
-                    message: 'Access denied when querying configs. Are you logged in to an account with admin rights on the remote instance?'
+                    message: 'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
                 });
             } else {
                 XH.handleException(e, {showAsError: false, logOnServer: false});
@@ -125,10 +130,10 @@ export class ConfigDifferModel  {
     processResponse(resp) {
         const local = this.cleanRawData(resp[0].data),
             remote = this.cleanRawData(resp[1].data),
-            diffedConfigs = this.diffRawConfigs(local, remote),
+            diffedRecords = this.diffRawRecords(local, remote),
             {store} = this.gridModel;
 
-        store.loadData(diffedConfigs);
+        store.loadData(diffedRecords);
         this.setHasLoaded(true);
         if (store.empty) this.showNoDiffToast();
     }
@@ -138,27 +143,27 @@ export class ConfigDifferModel  {
         this.setHasLoaded(false);
     }
 
-    diffRawConfigs(localConfigs, remoteConfigs) {
+    diffRawRecords(localRecords, remoteRecords) {
         const ret = [];
 
-        // 0) Check each local config against (possible) remote counterpart. Cull remote config if found.
-        localConfigs.forEach(local => {
-            const remote = remoteConfigs.find(it => it.name == local.name);
+        // 0) Check each local record against (possible) remote counterpart. Cull remote record if found.
+        localRecords.forEach(local => {
+            const remote = remoteRecords.find(it => it.name === local.name);
 
             ret.push({
                 name: local.name,
                 localValue: local,
                 remoteValue: remote,
-                status: this.rawConfigsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
+                status: this.rawRecordsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
             });
 
             if (remote) {
-                remove(remoteConfigs, {name: remote.name});
+                remove(remoteRecords, {name: remote.name});
             }
         });
 
-        // 1) Any remote configs left in array are remote only
-        remoteConfigs.forEach(remote => {
+        // 1) Any remote records left in array are remote only
+        remoteRecords.forEach(remote => {
             ret.push({
                 name: remote.name,
                 localValue: null,
@@ -170,10 +175,10 @@ export class ConfigDifferModel  {
         return ret;
     }
 
-    rawConfigsAreEqual(local, remote) {
-        // For JSON configs, parse JSON to do an accurate value compare,
+    rawRecordsAreEqual(local, remote) {
+        // For JSON records, parse JSON to do an accurate value compare,
         // cloning to avoid disturbing the source data.
-        if (local?.valueType == 'json' && remote?.valueType == 'json') {
+        if (local?.valueType === 'json' && remote?.valueType === 'json') {
             local = cloneDeep(local);
             local.value = JSON.parse(local.value);
             remote = cloneDeep(remote);
@@ -195,15 +200,15 @@ export class ConfigDifferModel  {
 
     confirmApplyRemote(records) {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
-            hadPwdConfig = records.length != filteredRecords.length,
-            willDeleteConfig = filteredRecords.some(it => !it.data.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize('config', filteredRecords.length, true)}?`;
+            hadPwd = records.length !== filteredRecords.length,
+            willDelete = filteredRecords.some(it => !it.data.remoteValue),
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.entityName, filteredRecords.length, true)}?`;
 
         const message = (
             <div>
                 <p>{confirmMsg}</p>
-                <p hidden={!hadPwdConfig}>Warning: No changes will be applied to password configs. These must be changed manually.</p>
-                <p hidden={!willDeleteConfig}>Warning: Operation includes deletions.</p>
+                <p hidden={!hadPwd}>Warning: No changes will be applied to password records. These must be changed manually.</p>
+                <p hidden={!willDelete}>Warning: Operation includes deletions.</p>
             </div>
         );
 
@@ -217,7 +222,7 @@ export class ConfigDifferModel  {
 
     isPwd(rec) {
         const {localValue, remoteValue} = rec.data;
-        return localValue?.valueType == 'pwd' || remoteValue?.valueType == 'pwd';
+        return localValue?.valueType === 'pwd' || remoteValue?.valueType === 'pwd';
     }
 
     doApplyRemote(records) {
@@ -227,11 +232,11 @@ export class ConfigDifferModel  {
         });
 
         XH.fetchJson({
-            url: 'configDiffAdmin/applyRemoteValues',
+            url: `${this.url}/applyRemoteValues`,
             params: {records: JSON.stringify(recsForPost)}
         }).finally(() => {
             this.loadAsync();
-            this.configModel.loadAsync();
+            this.parentGridModel.loadAsync();
             this.detailModel.close();
         }).linkTo(
             this.pendingTaskModel
@@ -239,39 +244,43 @@ export class ConfigDifferModel  {
     }
 
     showNoDiffToast() {
-        XH.toast({message: 'Good news - all configs match remote host.'});
+        XH.toast({message: 'Good news - all records match remote host.'});
     }
 
     valueRenderer(v) {
         if (v == null) return '';
-        return v.valueType === 'pwd' ? '*****' : v.value;
+        // Handle both the config and pref names for type and value, respectively
+        const type = v.valueType ?? v.type,
+            value = v.value ?? v.defaultValue;
+        return  type === 'pwd' ? '*****' : value;
     }
 
-    configValueTypeRenderer(v, {record}) {
+    valueTypeRenderer(v, {record}) {
         const local = record.data.localValue,
             remote = record.data.remoteValue;
 
+        // Handle both the config and pref names for type respectively
+        const localType = local?.valueType ?? local?.type,
+            remoteType = remote?.valueType ?? local?.type;
+
         if (local && remote) {
-            return local.valueType == remote.valueType ? local.valueType : '??';
+            return localType === remoteType ? localType : '??';
         }
 
-        return local ? local.valueType : remote.valueType;
-    }
-
-    @action
-    setRemoteHost(remoteHost) {
-        this.remoteHost = remoteHost;
+        return local ? localType : remoteType;
     }
 
     @action
     open() {
+        this.hasLoaded = false;
+        this.remoteHost = null;
         this.isOpen = true;
     }
 
     @action
     close() {
+        this.hasLoaded = false;
+        this.remoteHost = null;
         this.isOpen = false;
-        this.gridModel.clear();
-        this.setRemoteHost(null);
     }
 }
