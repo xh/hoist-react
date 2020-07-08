@@ -280,10 +280,11 @@ export class TreeMapModel {
         if (!data.length || colorMode === 'none') return data;
 
         // 1) Extract heat values and split into positive and negative
-        const heatValues = this.store.records.map(it => it.data[this.heatField]);
+        const heatValues = this.store.records.map(it => it.data[this.heatField]),
+              numbSort = (a, b) => a - b;
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
-        posHeatValues = posHeatValues.sort();
-        negHeatValues = negHeatValues.map(it => Math.abs(it)).sort();
+        posHeatValues = posHeatValues.sort(numbSort);
+        negHeatValues = negHeatValues.map(it => Math.abs(it)).sort(numbSort);
 
         // 2) Calculate bounds and midpoints for each range
         let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;
