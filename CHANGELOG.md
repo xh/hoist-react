@@ -4,8 +4,8 @@
 
 ### 🐞 Bug Fixes
 
-* TreeMap now sorts heatValues as numbers, not as text.
-  
+* Fixed problems with coloring and shading algorithm in `TreeMap`.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
 ## v35.0.1 - 2020-07-02
