@@ -31,3 +31,6 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+
+export * from './filter/Filter';
+export * from './filter/FilterModel';
