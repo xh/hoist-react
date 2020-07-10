@@ -28,6 +28,8 @@ export const [FacetChooser, facetChooser] = hoistCmp.withFactory({
             optionRenderer: (opt) => facetOption(opt),
             hideDropdownIndicator: true,
             rsOptions: {
+                // Todo: Use defaultOptions to render history options?
+                // e.g. defaultOptions: model.historyOptions,
                 openMenuOnClick: false,
                 openMenuOnFocus: false,
                 isOptionDisabled: (opt) => opt.value === 'TRUNCATED-MESSAGE'

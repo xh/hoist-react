@@ -116,7 +116,8 @@ export class ActivityTrackingModel {
 
         this.facetChooserModel = new FacetChooserModel({
             cube: this.cube,
-            dimensions: ['username', 'device', 'browser', 'msg']
+            dimensions: ['username', 'device', 'browser', 'msg'],
+            persistWith: this.persistWith
         });
 
         this.gridModel = new GridModel({

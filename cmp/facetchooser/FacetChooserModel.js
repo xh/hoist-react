@@ -5,12 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {fmtNumber, fmtDate} from '@xh/hoist/format';
-import {action, bindable, computed} from '@xh/hoist/mobx';
+import {action, observable, bindable, computed} from '@xh/hoist/mobx';
 import {ValueFilter} from '@xh/hoist/data/cube/filter/ValueFilter';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, sortBy} from 'lodash';
+import {differenceWith, isEmpty, isEqual, sortBy, take} from 'lodash';
 
 /**
  *  A select based component for allowing quick search-as-you type selection of facets and values for filtering.
@@ -31,13 +31,17 @@ import {isEmpty, sortBy} from 'lodash';
 @HoistModel
 export class FacetChooserModel {
 
-    @bindable value;
     @bindable cube;
     @bindable.ref facetSpecs = [];
+    @observable.ref value;
+    @observable.ref history;
 
     // Immutable properties
     dimensions = [];
-    limit;
+    limit = null;
+    maxHistoryLength = null;
+
+    @managed provider;
 
     /**
      * @param c - FacetChooserModel configuration.
@@ -46,12 +50,17 @@ export class FacetChooserModel {
      * @param {string[]} [c.dimensions] - cube dimensions available for selection. If not provided,
      *      all cube leaf dimensions will be available. Ignored if `cube` is not provided.
      * @param {number} [c.limit] - maximum number of results to show before truncating.
+     * @param {PersistOptions} [c.persistWith] - options governing history persistence
+     * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
+     *      history (maintained automatically by the control on a FIFO basis).
      */
     constructor({
         cube,
         facetSpecs = [],
         dimensions = [],
-        limit
+        limit,
+        persistWith,
+        maxHistoryLength = 5
     }) {
         throwIf(!cube && isEmpty(facetSpecs), 'Must provide either `cube` or `facetSpecs`');
 
@@ -59,6 +68,20 @@ export class FacetChooserModel {
         this.facetSpecs = facetSpecs;
         this.dimensions = dimensions;
         this.limit = limit;
+        this.maxHistoryLength = maxHistoryLength;
+
+        // Read state from provider -- fail gently
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'facetChooser', ...persistWith});
+                const state = this.provider.read();
+                if (state?.history) this.history = state.history;
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
+        }
 
         this.addReaction({
             track: () => this.cube,
@@ -91,6 +114,12 @@ export class FacetChooserModel {
     setValueFilters(valueFilters) {
         const value = valueFilters?.map(it => `${it.fieldName}:${it.values[0]}`) ?? [];
         this.setValue(value);
+    }
+
+    @action
+    setValue(value) {
+        this.value = value;
+        this.addToHistory(value);
     }
 
     //--------------------
@@ -126,17 +155,6 @@ export class FacetChooserModel {
         });
 
         this.facetSpecs = facetSpecs;
-    }
-
-    filtersToFacets(filters) {
-        return filters?.map(it => `${it.fieldName}:${it.values[0]}`) ?? [];
-    }
-
-    facetsToFilters(facets) {
-        return facets?.map(it => {
-            const [fieldName, value] = it.split(':');
-            return new ValueFilter(fieldName, value);
-        });
     }
 
     //--------------------
@@ -227,6 +245,22 @@ export class FacetChooserModel {
 
             return `${sorter}-${displayName}-${value}`;
         });
+    }
+
+    //--------------------
+    // History
+    //--------------------
+    @action
+    addToHistory(value) {
+        if (isEmpty(value)) return;
+
+        // Todo: Lookup and store facetSpecs?
+
+        // Remove, add to front, and truncate
+        let {history, maxHistoryLength} = this;
+        history = differenceWith(history, [value], isEqual);
+        this.history = take([value, ...history], maxHistoryLength);
+        this.provider?.write({history: this.history});
     }
 }
 
