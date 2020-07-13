@@ -162,6 +162,27 @@ $pt-transition-duration: 100ms !default;
   // With tighter default LR padding in minimal mode.
   &.bp3-minimal {
     padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+
+    &.bp3-intent-primary {
+      color: var(--xh-intent-primary);
+      border-color: var(--xh-intent-primary);
+    }
+
+    &.bp3-intent-danger {
+      color: var(--xh-intent-danger);
+      border-color: var(--xh-intent-danger);
+    }
+
+    &.bp3-intent-success {
+      color: var(--xh-intent-success);
+      border-color: var(--xh-intent-success);
+    }
+
+    &.bp3-intent-warning {
+      color: var(--xh-intent-warning);
+      border-color: var(--xh-intent-warning);
+    }
+
   }
 
   // Except in button groups, which are already compressing buttons more closely together.
