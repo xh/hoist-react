@@ -4,12 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {FilterFieldModel} from '@xh/hoist/cmp/filter';
 import {Cube} from '@xh/hoist/data';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
@@ -17,6 +18,7 @@ import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, isEmpty, isFinite} from 'lodash';
 import moment from 'moment';
+
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
 
@@ -32,6 +34,8 @@ export class ActivityTrackingModel {
     @managed formModel;
     /** @member {DimensionChooserModel} */
     @managed dimChooserModel;
+    /** @member {FilterFieldModel} */
+    @managed filterFieldModel;
     /** @member {Cube} */
     @managed cube;
     /** @member {GridModel} */
@@ -70,20 +74,16 @@ export class ActivityTrackingModel {
     constructor() {
         this.formModel = new FormModel({
             fields: [
+                {name: 'category'},
                 {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
                 // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-                {name: 'endDate', initialValue: LocalDate.today().add(1)},
-                {name: 'category'},
-                {name: 'username'},
-                {name: 'device'},
-                {name: 'browser'},
-                {name: 'msg'}
+                {name: 'endDate', initialValue: LocalDate.today().add(1)}
             ]
         });
 
         this.cube = new Cube({
             fields: [
-                {name: 'day', isDimension: true, aggregator: new RangeAggregator()},
+                {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'username', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'msg', isDimension: true, aggregator: 'UNIQUE'},
@@ -91,12 +91,12 @@ export class ActivityTrackingModel {
                 {name: 'device', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'elapsed', aggregator: 'AVG'},
-                {name: 'impersonating'},
-                {name: 'dateCreated'},
-                {name: 'data'},
-                {name: 'count', aggregator: new ChildCountAggregator()},
-                {name: 'entryCount', aggregator: new LeafCountAggregator()}
+                {name: 'elapsed', type: 'int', aggregator: 'AVG'},
+                {name: 'impersonating', type: 'bool'},
+                {name: 'dateCreated', type: 'date'},
+                {name: 'data', type: 'json'},
+                {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
+                {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
             ]
         });
 
@@ -113,6 +113,13 @@ export class ActivityTrackingModel {
                 {label: 'User Agent', value: 'userAgent'}
             ],
             initialValue: this._defaultDims
+        });
+
+        this.filterFieldModel = new FilterFieldModel({
+            filterOptionsModel: {
+                source: this.cube
+            },
+            persistWith: this.persistWith
         });
 
         this.gridModel = new GridModel({
@@ -170,10 +177,12 @@ export class ActivityTrackingModel {
 
         this.addReaction({
             track: () => {
-                const vals = this.formModel.values;
+                const vals = this.formModel.values,
+                    filters = this.filterFieldModel.valueFilters;
+
                 return [
-                    vals.startDate, vals.endDate,
-                    vals.username, vals.msg, vals.category, vals.device, vals.browser
+                    vals.category, vals.startDate, vals.endDate,
+                    filters
                 ];
             },
             run: () => this.loadAsync(),
@@ -189,13 +198,19 @@ export class ActivityTrackingModel {
     }
 
     async doLoadAsync(loadSpec) {
-        const {cube, formModel} = this;
+        const {cube, formModel, filterFieldModel} = this;
         try {
             await this.loadLookupsAsync(loadSpec);
 
+            const params = formModel.getData();
+            filterFieldModel.valueFilters?.forEach(filter => {
+                const {fieldName, values} = filter;
+                params[fieldName] = values;
+            });
+
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: formModel.getData(),
+                params,
                 loadSpec
             });
 

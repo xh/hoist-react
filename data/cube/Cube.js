@@ -32,6 +32,8 @@ export class Cube {
     _info = null;
     _connectedViews = new Set();
 
+    get isCube() {return true}
+
     /**
      * @param {Object} c - Cube configuration.
      * @param {(CubeField[]|Object[])} fields - array of {@see CubeField} instances or configs.

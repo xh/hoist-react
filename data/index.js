@@ -34,3 +34,4 @@ export * from './cube/View';
 
 export * from './filter/Filter';
 export * from './filter/FilterModel';
+export * from './filter/FilterOptionsModel';
