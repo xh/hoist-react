@@ -693,7 +693,13 @@ class XHClass {
                             category: 'App',
                             msg: `Loaded ${this.clientAppName}`,
                             elapsed: now - loadStarted - loginElapsed,
-                            data: getClientDeviceInfo()
+                            data: {
+                                appVersion: this.appVersion,
+                                appBuild: this.appBuild,
+                                clientAppCode: this.clientAppCode,
+                                locationHref: window.location.href,
+                                ...getClientDeviceInfo()
+                            }
                         });
                         disposer();
                         break;
