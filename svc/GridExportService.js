@@ -179,9 +179,29 @@ export class GridExportService {
         records = [...records];
 
         [...sortBy].reverse().forEach(it => {
-            const compFn = it.comparator.bind(it),
-                direction = it.sort === 'desc' ? -1 : 1;
-            records.sort((a, b) => compFn(a.get(it.colId), b.get(it.colId)) * direction);
+            const column = columns.find(column => column.colId === it.colId),
+                {field, getValueFn} = column,
+
+                // Get comparator function via getAgSpec method because
+                // getAgSpec already has logic determine which comparator
+                // (column or GridSorter) to use.
+                compFn = column.getAgSpec().comparator.bind(column),
+
+                // `direction` should be neutralized here
+                // if column.comparator is defined
+                // because that function takes `sortDir` as its 3rd arg
+                // so presumably the column.comparator function will calc its own `direction`
+                direction = !column.comparator && it.sort === 'desc' ? -1 : 1;
+
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    agNodeA = gridModel.agApi.getRowNode(a.id),
+                    agNodeB = gridModel.agApi.getRowNode(b.id);
+
+                // agNodeA, agNodeB not used if defaultComparator function is used
+                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
+            });
         });
 
         records.forEach(record => {
