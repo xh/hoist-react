@@ -323,6 +323,13 @@ project, as per note in Breaking Changes above.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v33.0.0)
 
+## v32.0.5 - 2020-07-14
+
+### 🐞 Bug Fixes
+* Fixes a regression in which grid exports were no longer sorting rows properly.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v32.0.5)
+
 ## v32.0.4 - 2020-04-09
 
 ### 🐞 Bug Fixes
