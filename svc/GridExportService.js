@@ -186,12 +186,7 @@ export class GridExportService {
                 // getAgSpec already has logic to determine which comparator
                 // (column.comparator or defaultComparator (via sortCfg)) to use.
                 compFn = column.getAgSpec().comparator.bind(column),
-
-                // `direction` should be neutralized here
-                // if column.comparator is defined
-                // because that function takes `sortDir` as its 3rd arg
-                // so presumably the column.comparator function will calc its own `direction`.
-                direction = !column.comparator && it.sort === 'desc' ? -1 : 1;
+                direction = it.sort === 'desc' ? -1 : 1;
 
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, field, column, gridModel}),
