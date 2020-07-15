@@ -6,6 +6,9 @@
 
 * Fixed problems with coloring and shading algorithm in `TreeMap`.
 * Fixed problems with sort order of exports in `GridModel`.
+* Ensure that preferences are written to server, even if set right before navigating away from page.
+* Prevent situation where a spurious exception can be sent to server when application is unloaded
+ while waiting on a fetch request.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
