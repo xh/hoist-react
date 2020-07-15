@@ -179,9 +179,24 @@ export class GridExportService {
         records = [...records];
 
         [...sortBy].reverse().forEach(it => {
-            const compFn = it.comparator.bind(it),
+            const column = columns.find(column => column.colId === it.colId),
+                {field, getValueFn} = column,
+
+                // Get comparator function via getAgSpec method because
+                // getAgSpec already has logic to determine which comparator
+                // (column.comparator or defaultComparator (via sortCfg)) to use.
+                compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
-            records.sort((a, b) => compFn(a.get(it.colId), b.get(it.colId)) * direction);
+
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    agNodeA = gridModel.agApi?.getRowNode(a.id),
+                    agNodeB = gridModel.agApi?.getRowNode(b.id);
+
+                // agNodeA, agNodeB not used if defaultComparator function is used.
+                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
+            });
         });
 
         records.forEach(record => {
