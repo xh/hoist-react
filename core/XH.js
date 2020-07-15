@@ -691,9 +691,14 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppName}`,
+                            msg: `Loaded ${this.clientAppCode}`,
                             elapsed: now - loadStarted - loginElapsed,
-                            data: getClientDeviceInfo()
+                            data: {
+                                appVersion: this.appVersion,
+                                appBuild: this.appBuild,
+                                locationHref: window.location.href,
+                                ...getClientDeviceInfo()
+                            }
                         });
                         disposer();
                         break;
