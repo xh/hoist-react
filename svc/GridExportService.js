@@ -191,8 +191,8 @@ export class GridExportService {
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, field, column, gridModel}),
                     valueB = getValueFn({record: b, field, column, gridModel}),
-                    agNodeA = gridModel.agApi.getRowNode(a.id),
-                    agNodeB = gridModel.agApi.getRowNode(b.id);
+                    agNodeA = gridModel.agApi?.getRowNode(a.id),
+                    agNodeB = gridModel.agApi?.getRowNode(b.id);
 
                 // agNodeA, agNodeB not used if defaultComparator function is used.
                 return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
