@@ -691,12 +691,11 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppName}`,
+                            msg: `Loaded ${this.clientAppCode}`,
                             elapsed: now - loadStarted - loginElapsed,
                             data: {
                                 appVersion: this.appVersion,
                                 appBuild: this.appBuild,
-                                clientAppCode: this.clientAppCode,
                                 locationHref: window.location.href,
                                 ...getClientDeviceInfo()
                             }
