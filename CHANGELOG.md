@@ -7,6 +7,10 @@
 * Fixed problems with coloring and shading algorithm in `TreeMap`.
 * Fixed problems with sort order of exports in `GridModel`.
 
+### 🎁 New Features
+* `ExportOptions.columns` provided to `GridModel` can now be specified as a function,
+allowing for full control of columns to export, including their sort order.
+
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
 ## v35.0.1 - 2020-07-02

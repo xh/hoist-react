@@ -112,6 +112,8 @@ export class GridExportService {
     // Implementation
     //-----------------------
     getExportableColumns(gridModel, columns) {
+        if (isFunction(columns)) return columns(gridModel);
+
         const toExport = castArray(columns),
             includeAll = toExport.includes('ALL'),
             includeViz = toExport.includes('VISIBLE');
@@ -122,11 +124,9 @@ export class GridExportService {
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
-                !excludeFromExport &&
-                (
-                    includeAll ||
-                    toExport.includes(colId) ||
-                    (includeViz && gridModel.isColumnVisible(colId))
+                toExport.includes(colId) ||
+                (!excludeFromExport &&
+                    (includeAll || (includeViz && gridModel.isColumnVisible(colId)))
                 )
             );
         });
@@ -275,8 +275,9 @@ export class GridExportService {
  * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
  *      Do not include the file extension - that will be appended based on the specified type.
  * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
- * @property {(string|string[])} [options.columns] - columns to include in export. Supports tokens
- *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
- *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
- *      enumerated columns).
+ * @property {(string|string[]|function)} [options.columns] - columns to include in export. Supports
+ *      tokens 'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+ *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
+ *      enumerated columns). Also supports a function taking the GridModel, and returning an array
+ *      of column IDs to include.
  */
