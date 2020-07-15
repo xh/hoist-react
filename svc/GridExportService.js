@@ -181,7 +181,7 @@ export class GridExportService {
         [...sortBy].reverse().forEach(it => {
             const compFn = it.comparator.bind(it),
                 direction = it.sort === 'desc' ? -1 : 1;
-            records.sort((a, b) => compFn(a[it.colId], b[it.colId]) * direction);
+            records.sort((a, b) => compFn(a.get(it.colId), b.get(it.colId)) * direction);
         });
 
         records.forEach(record => {
