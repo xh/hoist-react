@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed problems with coloring and shading algorithm in `TreeMap`.
+* Fixed problems with sort order of exports in `GridModel`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
