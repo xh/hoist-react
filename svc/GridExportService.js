@@ -173,15 +173,27 @@ export class GridExportService {
     }
 
     getRecordRowsRecursive(gridModel, records, columns, depth) {
-        const {sortBy, treeMode} = gridModel,
+        const {sortBy, treeMode, agApi} = gridModel,
             ret = [];
 
         records = [...records];
 
+        // Sort using comparator functions we pass to ag-Grid - imitating rendered data
         [...sortBy].reverse().forEach(it => {
-            const compFn = it.comparator.bind(it),
+            const column = columns.find(column => column.colId === it.colId),
+                {field, getValueFn} = column,
+
+                compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
-            records.sort((a, b) => compFn(a[it.colId], b[it.colId]) * direction);
+
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    agNodeA = agApi?.getRowNode(a.id),
+                    agNodeB = agApi?.getRowNode(b.id);
+
+                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
+            });
         });
 
         records.forEach(record => {
