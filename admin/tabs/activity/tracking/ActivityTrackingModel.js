@@ -34,10 +34,10 @@ export class ActivityTrackingModel {
     @managed formModel;
     /** @member {DimensionChooserModel} */
     @managed dimChooserModel;
-    /** @member {FilterModel} */
-    @managed filterModel;
     /** @member {Cube} */
     @managed cube;
+    /** @member {FilterModel} */
+    @managed filterModel;
     /** @member {FilterFieldModel} */
     @managed filterFieldModel;
     /** @member {GridModel} */
@@ -98,10 +98,7 @@ export class ActivityTrackingModel {
             initialValue: this._defaultDims
         });
 
-        this.filterModel = new FilterModel();
-
         this.cube = new Cube({
-            filterModel: this.filterModel,
             fields: [
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', isDimension: true, aggregator: 'UNIQUE'},
@@ -119,6 +116,8 @@ export class ActivityTrackingModel {
                 {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
             ]
         });
+
+        this.filterModel = new FilterModel();
 
         this.filterFieldModel = new FilterFieldModel({
             filterModel: this.filterModel,
@@ -190,7 +189,7 @@ export class ActivityTrackingModel {
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.cube.filters, this.dimensions],
+            track: () => [this.cube.records, this.filterModel.filters, this.dimensions],
             run: () => this.loadGridAndChartAsync(),
             debounce: 100
         });
@@ -242,7 +241,11 @@ export class ActivityTrackingModel {
 
     async loadGridAndChartAsync() {
         const {cube, gridModel, chartsModel, dimensions} = this,
-            data = cube.executeQuery({dimensions, includeLeaves: true});
+            data = cube.executeQuery({
+                dimensions,
+                filters: this.filterModel.filters,
+                includeLeaves: true
+            });
 
         data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);

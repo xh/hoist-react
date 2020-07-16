@@ -7,18 +7,19 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {isEqual, isEmpty, groupBy, every, some, castArray} from 'lodash';
+import {isEmpty, groupBy, every, some, values, castArray} from 'lodash';
 
 import {Filter} from './Filter';
 
 @HoistModel
 export class FilterModel {
 
-    /**
-     * @member {Filter[]}
-     */
+    /** @member {Filter[]} */
     @observable.ref
     filters = null;
+
+    /** @member {function(v: (Record|Object)):boolean} */
+    test = null;
 
     /**
      * @param {Object} c - FilterModel configuration.
@@ -26,6 +27,7 @@ export class FilterModel {
      */
     constructor({filters = []} = {}) {
         this.filters = this.parseFilters(filters);
+        this.updateTestFunction();
     }
 
     /**
@@ -35,6 +37,7 @@ export class FilterModel {
     @action
     setFilters(filters) {
         this.filters = this.parseFilters(filters);
+        this.updateTestFunction();
     }
 
     /**
@@ -43,8 +46,12 @@ export class FilterModel {
      */
     @action
     addFilters(filters) {
-        const toAdd = this.parseFilters(filters).filter(f => !this.findEqualFilter(f));
+        filters = this.parseFilters(filters);
+        const toAdd = filters.filter(f => {
+            return every(this.filters, it => !it.equals(f));
+        });
         this.filters = [...this.filters, ...toAdd];
+        this.updateTestFunction();
     }
 
     /**
@@ -54,42 +61,36 @@ export class FilterModel {
     @action
     removeFilters(filters) {
         filters = this.parseFilters(filters);
-        const result = this.filters.filter(f => {
-            return every(filters, it => !isEqual(f, it));
+        this.filters = this.filters.filter(f => {
+            return every(filters, it => !it.equals(f));
         });
-        this.filters = result;
-    }
-
-    /**
-     * Find a filter
-     * @param {(Filter|string|Object)} filter - filter, filter string or config to find
-     */
-    findEqualFilter(filter) {
-        filter = this.parseFilter(filter);
-        return this.filters.find(f => isEqual(f, filter));
-    }
-
-    /**
-     * Evaluates a Record or value against all the Filters.
-     * Filters that share fields are applied using OR, whilst
-     * filter across fields are applied using AND.
-     * 
-     * @param {(Record|*)} v - Record or value to evaluate
-     * @returns {boolean}
-     */
-    fn(v) {
-        const {filters} = this;
-        if (isEmpty(filters)) return true;
-
-        const byField = groupBy(filters, f => f.field);
-        return every(byField, fieldFilters => {
-            return some(fieldFilters, f => f.fn(v));
-        });
+        this.updateTestFunction();
     }
 
     //------------------------
     // Implementation
     //------------------------
+    updateTestFunction() {
+        this.test = this.createTestFunction();
+    }
+
+    /**
+     * Creates a function that tests a Record or Object against all the Filters.
+     * Filters that share fields are applied using OR, whilst
+     * filter across fields are applied using AND.
+     */
+    createTestFunction() {
+        const {filters} = this;
+        if (isEmpty(filters)) return () => true;
+
+        const byField = values(groupBy(filters, f => f.field));
+        return (v) => {
+            return every(byField, fieldFilters => {
+                return some(fieldFilters, f => f.test(v));
+            });
+        };
+    }
+
     parseFilters(filters) {
         if (!filters) return null;
         return castArray(filters).map(f => this.parseFilter(f));

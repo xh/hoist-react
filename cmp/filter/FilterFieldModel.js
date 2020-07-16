@@ -99,7 +99,7 @@ export class FilterFieldModel {
                 ret.push({
                     displayName,
                     displayValue,
-                    value: name + '|==|' + value,
+                    value: name + '|=|' + value,
                     label: displayName + ' = ' + displayValue
                 });
             });

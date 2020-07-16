@@ -211,7 +211,7 @@ export class View {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new Filter({field: dimName, operator: '==', value: val});
+            const filter = new Filter({field: dimName, operator: '=', value: val});
             const id = parentId + Cube.RECORD_ID_DELIMITER + filter.toString();
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
@@ -224,20 +224,20 @@ export class View {
         const {_leafMap} = this;
 
         // 1) Simple case: no filters
-        if (!this.isFiltered) {
+        if (isEmpty(this.query.filters)) {
             return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
         }
 
         // 2) Examine, accounting for filters
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(rec => this.filterRecord(rec))) return false;
+        if (t.add?.some(rec => this.query.test(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
-                const passes = this.filterRecord(r),
+                const passes = this.query.test(r),
                     present = _leafMap.has(r.id);
 
                 if (passes !== present) return false;
@@ -251,22 +251,11 @@ export class View {
     generateLeaves(records) {
         const ret = new Map();
         records.forEach(rec => {
-            if (this.filterRecord(rec)) {
+            if (this.query.test(rec)) {
                 ret.set(rec.id, createLeafRow(this, rec));
             }
         });
         return ret;
-    }
-
-    filterRecord(rec) {
-        // Test against both the Cube's filterModel and query filters
-        const {filterModel} = this.cube,
-            {filters} = this.query;
-
-        return (
-            (!filterModel || filterModel.fn(rec)) &&
-            (!filters || filters.every(f => f.fn(rec)))
-        );
     }
 
     destroy() {

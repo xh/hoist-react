@@ -9,6 +9,14 @@ import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
+/**
+ * Todo: Document
+ *
+ * Todo: Handle different data types in test(). i.e. Case-sensitivity.
+ * Todo: Add 'in' and 'notin', value is an array
+ *
+ * Immutable
+ */
 export class Filter {
 
     field;
@@ -48,6 +56,8 @@ export class Filter {
         this.field = field;
         this.operator = operator;
         this.value = value;
+
+        Object.freeze(this);
     }
 
     /**
@@ -63,19 +73,16 @@ export class Filter {
     }
 
     /**
-     * Evaluates a Record or value using the operator.
-     * @param {(Record|*)} v - Record or value to evaluate
+     * Evaluates a Record or Object using the operator.
+     * @param {(Record|Object)} v - Record or Object to evaluate
      * @returns {boolean}
      */
-    fn(v) {
+    test(v) {
         const {field, operator, value} = this;
 
-        if (v.isRecord) {
-            v = v.get(field);
-        }
-
+        v = v.isRecord ? v.get(field) : v[field];
         switch (operator) {
-            case '==':
+            case '=':
                 return v === value;
             case '!=':
                 return v !== value;
@@ -95,10 +102,14 @@ export class Filter {
     valueOf() {
         return this.toString();
     }
+
+    equals(other) {
+        return this.toString() === other.toString();
+    }
 }
 
 const VALID_OPERATORS = [
-    '==',
+    '=',
     '!=',
     '>',
     '>=',

@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {Filter} from '@xh/hoist/data';
+import {Filter, FilterModel} from '@xh/hoist/data';
 import {find} from 'lodash';
 
 /**
@@ -18,14 +18,17 @@ export class Query {
     fields;
     /** @member {CubeField[]} */
     dimensions;
-    /** @member {Filter[]} */
-    filters;
     /** @member {boolean} */
     includeRoot;
     /** @member {boolean} */
     includeLeaves;
     /** @member {Cube} */
     cube;
+
+    /** @member {Filter[]} */
+    get filters() {
+        return this._filterModel.filters;
+    }
 
     /**
      * @param {Object} c - Query configuration.
@@ -54,9 +57,12 @@ export class Query {
         this.cube = cube;
         this.fields = this.parseFields(fields);
         this.dimensions = this.parseDimensions(dimensions);
-        this.filters = this.parseFilters(filters);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
+
+        this._filterModel = new FilterModel({
+            filters: this.parseFilters(filters)
+        });
     }
 
     clone(overrides) {
@@ -83,6 +89,14 @@ export class Query {
             });
         }
         return ret;
+    }
+
+    /**
+     * @param {Record} record
+     * @returns {boolean}
+     */
+    test(record) {
+        return this._filterModel.test(record);
     }
 
     //------------------------
