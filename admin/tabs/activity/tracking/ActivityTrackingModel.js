@@ -121,7 +121,10 @@ export class ActivityTrackingModel {
 
         this.filterFieldModel = new FilterFieldModel({
             filterModel: this.filterModel,
-            filterOptionsModel: {source: this.cube},
+            filterOptionsModel: {
+                store: this.cube.store,
+                fields: ['username', 'device', 'browser']
+            },
             persistWith: this.persistWith
         });
 

@@ -8,9 +8,11 @@
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {FilterModel, FilterOptionsModel} from '@xh/hoist/data';
+import {FilterModel} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {differenceWith, isEmpty, isEqual, isPlainObject, sortBy, take} from 'lodash';
+
+import {FilterOptionsModel} from './FilterOptionsModel';
 
 @HoistModel
 export class FilterFieldModel {

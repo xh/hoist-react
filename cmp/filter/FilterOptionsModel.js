@@ -8,7 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {isDate, isEmpty} from 'lodash';
+import {isDate, isEmpty, isNil} from 'lodash';
 
 @HoistModel
 export class FilterOptionsModel {
@@ -16,8 +16,8 @@ export class FilterOptionsModel {
     /** @member {FieldFilterSpec[]} */
     @observable.ref specs = [];
 
-    /** @member {(Cube|Store)} */
-    source;
+    /** @member {Store} */
+    store;
 
     /** @member {string[]} */
     fields;
@@ -27,60 +27,48 @@ export class FilterOptionsModel {
 
     /**
      * @param {Object} c - FilterOptionsModel configuration.
-     * @param {(Cube|Store)} c.source - Options source.
-     * @param {string[]} [c.fields] - Source fields to include. If not provided,
-     *      all source fields will be included
+     * @param {Store} c.store - Store from which to derive options.
+     * @param {string[]} [c.fields] - Store fields to include. If not provided,
+     *      all store fields will be included
      */
     constructor({
-        source,
+        store,
         fields
     }) {
-        this.source = source;
+        this.store = store;
         this.fields = fields;
 
-        if (source.isCube) {
-            this.mode = MODES.cube;
-            this.initCubeMode();
-        } else if (source.isStore) {
-            this.mode = MODES.store;
-            this.initStoreMode();
-        }
-    }
-
-    //--------------------
-    // Cube
-    //--------------------
-    initCubeMode() {
-        this.cubeView = this.source.createView({
-            query: {includeLeaves: true},
-            connect: true
-        });
-
         this.addReaction({
-            track: () => this.cubeView.result,
-            run: () => this.setSpecsFromCubeView()
+            track: () => this.store.lastUpdated,
+            run: () => this.updateSpecs()
         });
     }
 
+    //--------------------
+    // Implementation
+    //--------------------
     @action
-    setSpecsFromCubeView() {
-        const {cubeView, fields} = this,
-            dimVals = cubeView.getDimensionValues(),
+    updateSpecs() {
+        const {store, fields} = this,
             specs = [];
 
-        dimVals.forEach(dimVal => {
-            const {name, label: displayName, type: fieldType} = dimVal.field;
+        store.fields.forEach(field => {
+            const {name, label: displayName, type: fieldType} = field;
 
             if (isEmpty(fields) || fields.includes(name)) {
                 const type = this.getFilterType(fieldType),
                     spec = {name, type, displayName};
 
                 if (type === 'value') {
-                    spec.values = dimVal.values.map(value => {
-                        return {
-                            value,
-                            displayValue: this.getFilterDisplayValue(value)
-                        };
+                    const values = new Set();
+                    store.records.forEach(record => {
+                        const value = record.get(name);
+                        if (!isNil(value)) values.add(value);
+                    });
+
+                    spec.values = values.map(value => {
+                        const displayValue = this.getFilterDisplayValue(value);
+                        return {value, displayValue};
                     });
                 }
 
@@ -105,31 +93,19 @@ export class FilterOptionsModel {
 
     getFilterDisplayValue(value) {
         let displayValue = value;
-        if (isDate(value) || value.isLocalDate) {
+        if (isDate(value) || value?.isLocalDate) {
             displayValue = fmtDate(value);
         }
         return displayValue.toString();
     }
-
-    //--------------------
-    // Store
-    //--------------------
-    initStoreMode() {
-        // Todo: Implement Store Mode
-    }
 }
-
-const MODES = {
-    cube: 'cube',
-    store: 'store'
-};
 
 /**
  * @typedef FieldFilterSpec
  * @property {string} name - Name of field
  * @property {string} type - Field type, either 'range' or 'value'. Determines what operations are applicable for the field.
- *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '==', '!=')
- *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '==', '!=')
+ *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '=', '!=')
+ *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=')
  * @property {string} [displayName] - Name suitable for display to user, defaults to name (e.g. 'Country')
  * @property {FilterValue[]} [values] - Available value options. Only applicable when type == 'value'
  */
