@@ -6,6 +6,7 @@
  */
 import {StoreFilter} from '../../StoreFilter';
 
+// Todo: Do we still need this?
 export class NoMatchFilter extends StoreFilter {
 
     constructor(record) {

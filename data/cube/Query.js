@@ -6,8 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
+import {Filter} from '@xh/hoist/data';
 import {find} from 'lodash';
-import {ValueFilter} from './filter/ValueFilter';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
@@ -18,7 +18,7 @@ export class Query {
     fields;
     /** @member {CubeField[]} */
     dimensions;
-    /** @member {StoreFilter[]} */
+    /** @member {Filter[]} */
     filters;
     /** @member {boolean} */
     includeRoot;
@@ -107,6 +107,6 @@ export class Query {
 
     parseFilters(filters) {
         if (!filters) return null;
-        return filters.map(f => f instanceof ValueFilter ? f : new ValueFilter(f.name, f.values));
+        return filters.map(f => f instanceof Filter ? f : Filter.parse(f));
     }
 }

@@ -18,6 +18,20 @@ export class Filter {
     get isFilter() {return true}
 
     /**
+     * Create a new Filter. Accepts a Filter configuration or a pipe delimited string
+     * generated using Filter.toString().
+     *
+     * @param {Object|String} [cfg] - Filter configuration or string representation.
+     */
+    static parse(cfg) {
+        if (isString(cfg)) {
+            const [field, operator, value] = cfg.split('|');
+            cfg = {field, operator, value};
+        }
+        return new Filter(cfg);
+    }
+
+    /**
      * @param {Object} c - Filter configuration.
      * @param {string} c.field - field to filter.
      * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS
@@ -29,14 +43,23 @@ export class Filter {
         value
     }) {
         throwIf(!isString(field), 'Filter requires a field');
-        throwIf(
-            !isString(operator) || !VALID_OPERATORS.includes(operator),
-            `Filter requires valid operator. Operator "${operator}" not recognized.`
-        );
+        throwIf(!VALID_OPERATORS.includes(operator), `Filter requires valid operator. Operator "${operator}" not recognized.`);
 
         this.field = field;
         this.operator = operator;
         this.value = value;
+    }
+
+    /**
+     * Generate a delimited string representation suitable for consumption by parse().
+     * @returns {string}
+     */
+    toString() {
+        return [
+            this.field,
+            this.operator,
+            this.value
+        ].join('|');
     }
 
     /**
@@ -70,8 +93,7 @@ export class Filter {
     }
 
     valueOf() {
-        const {field, operator, value} = this;
-        return {field, operator, value};
+        return this.toString();
     }
 }
 

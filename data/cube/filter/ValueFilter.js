@@ -9,6 +9,7 @@ import {castArray, flattenDeep, forEach, groupBy, map, uniq} from 'lodash';
 import {StoreFilter} from '../../StoreFilter';
 import {Cube} from '../Cube';
 
+// Todo: Do we still need this?
 export class ValueFilter extends StoreFilter {
 
     static encode(fieldName, values) {

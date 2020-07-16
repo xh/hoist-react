@@ -26,6 +26,8 @@ export class Cube {
 
     /** @member {Store} */
     @managed store;
+    /** @member {FilterModel} */
+    filterModel;
     /** @member {function} */
     lockFn;
 
@@ -38,6 +40,7 @@ export class Cube {
      * @param {Object} c - Cube configuration.
      * @param {(CubeField[]|Object[])} fields - array of {@see CubeField} instances or configs.
      * @param {Object[]} [c.data] - array of initial raw data.
+     * @param {FilterModel} [c.filterModel] - Optional FilterModel, to be applied to each query.
      * @param {(function|string)} [c.idSpec] - {@see Store.idSpec} - default 'id'.
      * @param {function} [c.processRawData] - {@see Store.processRawData}
      * @param {Object} [c.info] - app-specific metadata to be associated with this data.
@@ -46,9 +49,10 @@ export class Cube {
      */
     constructor({
         fields,
+        data = [],
+        filterModel,
         idSpec = 'id',
         processRawData,
-        data = [],
         info = {},
         lockFn
     }) {
@@ -58,8 +62,16 @@ export class Cube {
             processRawData
         });
         this.store.loadData(data);
+        this.filterModel = filterModel;
         this.lockFn = lockFn;
         this._info = info;
+    }
+
+    /**
+     * @returns {Filter[]} - filters from bound FilterModel (if provided)
+     */
+    get filters() {
+        return this.filterModel?.filters ?? [];
     }
 
     /**
@@ -98,7 +110,10 @@ export class Cube {
      * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
      */
     executeQuery(query) {
-        query = new Query({...query, cube: this});
+        const filters = query.filters ?? [];
+        filters.push(...this.filters);
+        query = new Query({...query, filters, cube: this});
+
         const view = new View({query}),
             rows = view.result.rows;
 

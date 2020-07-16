@@ -10,8 +10,8 @@ import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {FilterModel, Cube} from '@xh/hoist/data';
 import {FilterFieldModel} from '@xh/hoist/cmp/filter';
-import {Cube} from '@xh/hoist/data';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -34,10 +34,12 @@ export class ActivityTrackingModel {
     @managed formModel;
     /** @member {DimensionChooserModel} */
     @managed dimChooserModel;
-    /** @member {FilterFieldModel} */
-    @managed filterFieldModel;
+    /** @member {FilterModel} */
+    @managed filterModel;
     /** @member {Cube} */
     @managed cube;
+    /** @member {FilterFieldModel} */
+    @managed filterFieldModel;
     /** @member {GridModel} */
     @managed gridModel;
 
@@ -81,7 +83,25 @@ export class ActivityTrackingModel {
             ]
         });
 
+        this.dimChooserModel = new DimensionChooserModel({
+            persistWith: this.persistWith,
+            dimensions: [
+                {label: 'Date', value: 'day'},
+                {label: 'Month', value: 'month'},
+                {label: 'User', value: 'username'},
+                {label: 'Message', value: 'msg'},
+                {label: 'Category', value: 'category'},
+                {label: 'Device', value: 'device'},
+                {label: 'Browser', value: 'browser'},
+                {label: 'User Agent', value: 'userAgent'}
+            ],
+            initialValue: this._defaultDims
+        });
+
+        this.filterModel = new FilterModel();
+
         this.cube = new Cube({
+            filterModel: this.filterModel,
             fields: [
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', isDimension: true, aggregator: 'UNIQUE'},
@@ -100,25 +120,9 @@ export class ActivityTrackingModel {
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
-            persistWith: this.persistWith,
-            dimensions: [
-                {label: 'Date', value: 'day'},
-                {label: 'Month', value: 'month'},
-                {label: 'User', value: 'username'},
-                {label: 'Message', value: 'msg'},
-                {label: 'Category', value: 'category'},
-                {label: 'Device', value: 'device'},
-                {label: 'Browser', value: 'browser'},
-                {label: 'User Agent', value: 'userAgent'}
-            ],
-            initialValue: this._defaultDims
-        });
-
         this.filterFieldModel = new FilterFieldModel({
-            filterOptionsModel: {
-                source: this.cube
-            },
+            filterModel: this.filterModel,
+            filterOptionsModel: {source: this.cube},
             persistWith: this.persistWith
         });
 
@@ -177,13 +181,8 @@ export class ActivityTrackingModel {
 
         this.addReaction({
             track: () => {
-                const vals = this.formModel.values,
-                    filters = this.filterFieldModel.valueFilters;
-
-                return [
-                    vals.category, vals.startDate, vals.endDate,
-                    filters
-                ];
+                const vals = this.formModel.values;
+                return [vals.category, vals.startDate, vals.endDate];
             },
             run: () => this.loadAsync(),
             fireImmediately: true,
@@ -191,26 +190,20 @@ export class ActivityTrackingModel {
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.dimensions],
+            track: () => [this.cube.records, this.cube.filters, this.dimensions],
             run: () => this.loadGridAndChartAsync(),
             debounce: 100
         });
     }
 
     async doLoadAsync(loadSpec) {
-        const {cube, formModel, filterFieldModel} = this;
+        const {cube, formModel} = this;
         try {
             await this.loadLookupsAsync(loadSpec);
 
-            const params = formModel.getData();
-            filterFieldModel.valueFilters?.forEach(filter => {
-                const {fieldName, values} = filter;
-                params[fieldName] = values;
-            });
-
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params,
+                params: formModel.getData(),
                 loadSpec
             });
 

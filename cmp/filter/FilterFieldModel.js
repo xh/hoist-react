@@ -7,9 +7,8 @@
 
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {action, observable, computed} from '@xh/hoist/mobx';
-import {FilterOptionsModel} from '@xh/hoist/data';
-import {ValueFilter} from '@xh/hoist/data/cube/filter/ValueFilter';
+import {action, observable} from '@xh/hoist/mobx';
+import {FilterModel, FilterOptionsModel} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {differenceWith, isEmpty, isEqual, isPlainObject, sortBy, take} from 'lodash';
 
@@ -20,6 +19,7 @@ export class FilterFieldModel {
     @observable.ref history;
 
     // Immutable properties
+    filterModel = null;
     filterOptionsModel = null;
     limit = null;
     maxHistoryLength = null;
@@ -28,23 +28,34 @@ export class FilterFieldModel {
 
     /**
      * @param c - FilterFieldModel configuration.
-     * @param {(FilterOptionsModel|Object)} filterOptionsModel - FilterOptionsModel, or config to create one.
+     * @param {(FilterModel|Object)} c.filterModel - FilterModel, or config to create one.
+     * @param {(FilterOptionsModel|Object)} c.filterOptionsModel - FilterOptionsModel, or config to create one.
      * @param {number} [c.limit] - maximum number of results to show before truncating.
      * @param {PersistOptions} [c.persistWith] - options governing history persistence
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      */
     constructor({
+        filterModel,
         filterOptionsModel,
         limit,
         persistWith,
         maxHistoryLength = 5
     }) {
-        throwIf(!filterOptionsModel, 'Must a FilterOptionsModel (or a config to create one)');
+        throwIf(!filterModel, 'Must provide a FilterModel (or a config to create one)');
+        throwIf(!filterOptionsModel, 'Must provide a FilterOptionsModel (or a config to create one)');
 
-        this.filterOptionsModel = isPlainObject(filterOptionsModel) ?
-            new FilterOptionsModel(filterOptionsModel) :
-            filterOptionsModel;
+        if (isPlainObject(filterModel)) {
+            this.filterModel = this.markManaged(new FilterModel(filterModel));
+        } else {
+            this.filterModel = filterModel;
+        }
+
+        if (isPlainObject(filterOptionsModel)) {
+            this.filterOptionsModel = this.markManaged(new FilterOptionsModel(filterOptionsModel));
+        } else {
+            this.filterOptionsModel = filterOptionsModel;
+        }
 
         this.limit = limit;
         this.maxHistoryLength = maxHistoryLength;
@@ -61,27 +72,11 @@ export class FilterFieldModel {
                 this.provider = null;
             }
         }
-    }
 
-    /**
-     * Selected filters as ValueFilters, ready for use with Cube
-     * @returns {ValueFilter[]}
-     */
-    @computed
-    get valueFilters() {
-        return this.value?.map(it => {
-            const [fieldName, value] = it.split(':');
-            return new ValueFilter(fieldName, value);
+        this.addReaction({
+            track: () => this.value,
+            run: () => this.filterModel.setFilters(this.value)
         });
-    }
-
-    /**
-     * Convenience method for setting value from an array of Cube ValueFilters.
-     * @param {ValueFilter[]} valueFilters
-     */
-    setValueFilters(valueFilters) {
-        const value = valueFilters?.map(it => `${it.fieldName}:${it.values[0]}`) ?? [];
-        this.setValue(value);
     }
 
     @action
@@ -104,8 +99,8 @@ export class FilterFieldModel {
                 ret.push({
                     displayName,
                     displayValue,
-                    value: name + ':' + value,
-                    label: displayName + ': ' + displayValue
+                    value: name + '|==|' + value,
+                    label: displayName + ' = ' + displayValue
                 });
             });
         });

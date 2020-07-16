@@ -6,7 +6,7 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {observable, action} from '@xh/hoist/mobx';
 import {isEqual, every, castArray} from 'lodash';
 
 import {Filter} from './Filter';
@@ -17,49 +17,52 @@ export class FilterModel {
     /**
      * @member {Filter[]}
      */
-    @bindable.ref
+    @observable.ref
     filters = null;
 
     /**
      * @param {Object} c - FilterModel configuration.
      * @param {(Filter[]|Object[])} [c.filters] - collection of filters, or configs to create them.
      */
-    constructor({filters = []}) {
+    constructor({filters = []} = {}) {
+        this.filters = this.parseFilters(filters);
+    }
+
+    /**
+     * Sets filters to the filter model.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs.
+     */
+    @action
+    setFilters(filters) {
         this.filters = this.parseFilters(filters);
     }
 
     /**
      * Adds filters to the filter model. If a matching filter already exists, it will be skipped.
-     * @param {(Filter|Filter[]|Object|Object[])} filters - filters or configs to add.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs to add.
      */
+    @action
     addFilters(filters) {
         const toAdd = this.parseFilters(filters).filter(f => !this.findEqualFilter(f));
-        this.setFilters([...this.filters, ...toAdd]);
+        this.filters = [...this.filters, ...toAdd];
     }
 
     /**
      * Removes filters from the filter model.
-     * @param {(Filter|Filter[]|Object|Object[])} filters - filters or configs to remove.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs to remove.
      */
+    @action
     removeFilters(filters) {
         filters = this.parseFilters(filters);
         const result = this.filters.filter(f => {
             return every(filters, it => !isEqual(f, it));
         });
-        this.setFilters(result);
+        this.filters = result;
     }
 
     /**
-     * Find a filter instance.
-     * @param {Filter} filter - filter to find
-     */
-    findFilter(filter) {
-        return this.filters.find(f => f === filter);
-    }
-
-    /**
-     * Find an equivalent filter
-     * @param {(Filter|Object)} filter - filter or config to find
+     * Find a filter
+     * @param {(Filter|string|Object)} filter - filter, filter string or config to find
      */
     findEqualFilter(filter) {
         filter = this.parseFilter(filter);
@@ -84,6 +87,6 @@ export class FilterModel {
     }
 
     parseFilter(filter) {
-        return filter instanceof Filter ? filter : new Filter(filter);
+        return filter instanceof Filter ? filter : Filter.parse(filter);
     }
 }
