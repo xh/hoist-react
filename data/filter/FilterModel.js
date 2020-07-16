@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
-import {isEqual, every, castArray} from 'lodash';
+import {isEqual, isEmpty, groupBy, every, some, castArray} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -71,11 +71,20 @@ export class FilterModel {
 
     /**
      * Evaluates a Record or value against all the Filters.
+     * Filters that share fields are applied using OR, whilst
+     * filter across fields are applied using AND.
+     * 
      * @param {(Record|*)} v - Record or value to evaluate
      * @returns {boolean}
      */
     fn(v) {
-        return every(this.filters, f => f.fn(v));
+        const {filters} = this;
+        if (isEmpty(filters)) return true;
+
+        const byField = groupBy(filters, f => f.field);
+        return every(byField, fieldFilters => {
+            return some(fieldFilters, f => f.fn(v));
+        });
     }
 
     //------------------------

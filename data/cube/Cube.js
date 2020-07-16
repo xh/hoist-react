@@ -110,10 +110,7 @@ export class Cube {
      * @returns {Object[]} - data containing the results of the query as a hierarchical set of rows.
      */
     executeQuery(query) {
-        const filters = query.filters ?? [];
-        filters.push(...this.filters);
-        query = new Query({...query, filters, cube: this});
-
+        query = new Query({...query, cube: this});
         const view = new View({query}),
             rows = view.result.rows;
 

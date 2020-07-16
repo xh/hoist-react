@@ -91,6 +91,10 @@ export class View {
         return this.cube._connectedViews.has(this);
     }
 
+    get isFiltered() {
+        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filters);
+    }
+
     disconnect() {
         this.cube._connectedViews.delete(this);
     }
@@ -217,28 +221,26 @@ export class View {
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         if (!t) return [];
-        const {filters} = this.query,
-            {_leafMap} = this,
-            recordFilter = (r) => filters.every(f => f.fn(r));
+        const {_leafMap} = this;
 
         // 1) Simple case: no filters
-        if (isEmpty(filters)) {
+        if (!this.isFiltered) {
             return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
         }
 
         // 2) Examine, accounting for filters
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(recordFilter)) return false;
+        if (t.add?.some(rec => this.filterRecord(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
-                const passes = recordFilter(r),
+                const passes = this.filterRecord(r),
                     present = _leafMap.has(r.id);
-                if (passes !== present) return false;
 
+                if (passes !== present) return false;
                 if (present) ret.push(r);
             }
         }
@@ -248,15 +250,23 @@ export class View {
 
     generateLeaves(records) {
         const ret = new Map();
-        let {filters} = this.query;
-        if (isEmpty(filters)) filters = null;
-
         records.forEach(rec => {
-            if (!filters || filters.every(f => f.fn(rec))) {
+            if (this.filterRecord(rec)) {
                 ret.set(rec.id, createLeafRow(this, rec));
             }
         });
         return ret;
+    }
+
+    filterRecord(rec) {
+        // Test against both the Cube's filterModel and query filters
+        const {filterModel} = this.cube,
+            {filters} = this.query;
+
+        return (
+            (!filterModel || filterModel.fn(rec)) &&
+            (!filters || filters.every(f => f.fn(rec)))
+        );
     }
 
     destroy() {
