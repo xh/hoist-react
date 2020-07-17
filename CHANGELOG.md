@@ -1,9 +1,11 @@
 # Changelog
 
-## v36.0.0-SNAPSHOT - unreleased
+## v35.1.1 - 2007-07-17
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.0...develop)
+### 📚 Libraries
+* @blueprintjs/core `3.29 -> 3.30`
 
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.0...v35.1.1)
 
 ## v35.1.0 - 2020-07-16
 
@@ -27,6 +29,9 @@ allowing for full control of columns to export, including their sort order.
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...v35.1.0)
 
 ## v35.0.1 - 2020-07-02
+
+### 📚 Libraries
+
 
 ### 🐞 Bug Fixes
 
