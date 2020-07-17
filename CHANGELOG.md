@@ -1,6 +1,6 @@
 # Changelog
 
-## v35.1.1 - 2007-07-17
+## v35.1.1 - 2020-07-17
 
 ### 📚 Libraries
 * @blueprintjs/core `3.29 -> 3.30`
