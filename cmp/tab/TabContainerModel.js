@@ -7,7 +7,7 @@
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find, isNil} from 'lodash';
+import {find, isUndefined} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -224,8 +224,8 @@ export class TabContainerModel {
         }
 
         // Initialize state.
-        if (!isNil(state?.activeTabId)) {
-            this.activateTab(state?.activeTabId);
+        if (!isUndefined(state?.activeTabId)) {
+            this.activateTab(state.activeTabId);
         }
 
         // Attach to provider last
