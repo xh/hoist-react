@@ -4,12 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find} from 'lodash';
 import {TabModel} from './TabModel';
-import {TabPersistenceModel} from './TabPersistenceModel';
 
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
@@ -73,7 +72,7 @@ export class TabContainerModel {
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        persistWith
+        persistWith = null
     }) {
 
         tabs = tabs.filter(p => !p.omit);
@@ -95,29 +94,18 @@ export class TabContainerModel {
                 return;
             }
 
+            if (persistWith) {
+                console.warn('Active tab persistance is ignored when a tab container uses routing.');
+            }
+
             this.addReaction({
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
 
             this.forwardRouterToTab(this.activeTabId);
-        } else {
-            this.persistenceModel = persistWith ? new TabPersistenceModel(this, persistWith) : null;
-        }
-
-        if (track) {
-            this.addReaction({
-                track: () => this.activeTab,
-                run: (activeTab) => {
-                    const {route} = this;
-                    XH.track({
-                        category: 'Navigation',
-                        message: `Viewed ${activeTab.title} tab`,
-                        // If using routing, data field specifies route for non-top-level tabs.
-                        data: route && route !== 'default' ? {route: route} : null
-                    });
-                }
-            });
+        } else if (persistWith) {
+            this.setupStateProvider(persistWith);
         }
     }
 
@@ -151,7 +139,7 @@ export class TabContainerModel {
         if (this.activeTabId === id) return;
 
         const tab = this.findTab(id);
-        if (tab.disabled) return;
+        if (tab && tab.disabled) return;
 
         const {route} = this;
         if (route) {
@@ -225,6 +213,32 @@ export class TabContainerModel {
         if (ret) return ret.id;
 
         return null;
+    }
+
+    setupStateProvider(persistWith) {
+        // Read state from provider -- fail gently
+        let state = null;
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
+                state = this.provider.read();
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
+        }
+
+        // Initialize state.
+        this.activateTab(state?.activeTabId);
+
+        // Attach to provider last
+        if (this.provider) {
+            this.addReaction({
+                track: () => this.activeTabId,
+                run: (activeTabId) => this.provider.write({activeTabId})
+            });
+        }
     }
 
     findTab(id) {
