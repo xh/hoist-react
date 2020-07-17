@@ -1,3 +1,12 @@
+/**
+ * This file replaces the MUCH larger versions included within the @blueprintjs/icons dependency,
+ * which itself is required by Blueprint core. This file is swapped in at build-time by the
+ * `@xh/hoist-dev-utils` webpack config to only bundle the icons required by BP-based  Hoist React
+ * components, nicely reducing overall app bundle size.
+ *
+ * See https://github.com/xh/hoist-react/issues/1963 for further details, see the dev-utils
+ * `configureWebpack()` method for the implementation referencing this file.
+ */
 export const IconSvgPaths16 = {
     // used on context menu menuItem when a menu has submenus
     'caret-right': ['M11 8c0-.15-.07-.28-.17-.37l-4-3.5A.495.495 0 006 4.5v7a.495.495 0 00.83.37l4-3.5c.1-.09.17-.22.17-.37z'],
