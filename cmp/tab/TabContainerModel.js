@@ -7,7 +7,7 @@
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find} from 'lodash';
+import {find, isNil} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -30,9 +30,6 @@ export class TabContainerModel {
     /** @member {string} */
     @observable activeTabId;
 
-    /** @member {TabState} */
-    @observable.ref tabState = {};
-
     /** @member {string} */
     switcherPosition;
 
@@ -44,9 +41,6 @@ export class TabContainerModel {
 
     /** @member {RefreshMode} */
     refreshMode;
-
-    /** @member {TabPersistenceModel} */
-    @managed persistenceModel;
 
     /**
      * @param {Object} c - TabContainerModel configuration.
@@ -62,7 +56,7 @@ export class TabContainerModel {
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
-     * @param {TabContainerModelPersistOptions} [c.persistWith] - options governing persistence.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
         tabs,
@@ -138,8 +132,8 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = this.findTab(id);
-        if (tab && tab.disabled) return;
+        const tab = find(this.tabs, {id});
+        if (tab.disabled) return;
 
         const {route} = this;
         if (route) {
@@ -221,7 +215,7 @@ export class TabContainerModel {
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
-                state = this.provider.read();
+                state = this.provider.read() || null;
             } catch (e) {
                 console.error(e);
                 XH.safeDestroy(this.provider);
@@ -230,7 +224,9 @@ export class TabContainerModel {
         }
 
         // Initialize state.
-        this.activateTab(state?.activeTabId);
+        if (!isNil(state?.activeTabId)) {
+            this.activateTab(state?.activeTabId);
+        }
 
         // Attach to provider last
         if (this.provider) {
@@ -240,14 +236,4 @@ export class TabContainerModel {
             });
         }
     }
-
-    findTab(id) {
-        return find(this.tabs, {id});
-    }
 }
-
-/**
- * @typedef {Object} TabContainerModelPersistOptions
- * @extends PersistOptions
- * @property {boolean} [persistActiveTab] - true to include active tab information (default true)
- */
