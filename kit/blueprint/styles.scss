@@ -155,6 +155,7 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 // Buttons
 //------------------------
+.bp3-dark .bp3-button,
 .bp3-button {
   // Use padding vars.
   padding: var(--xh-pad-half-px) var(--xh-pad-px);
