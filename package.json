@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "35.0.0-SNAPSHOT",
+  "version": "36.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -75,7 +75,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "^5.0.0",
+    "@xh/hoist-dev-utils": "~5.1.0",
     "husky": "~4.2.5",
     "lint-staged": "~10.2.11",
     "react": "~16.13.1",

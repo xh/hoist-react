@@ -13,24 +13,24 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {identity} from 'lodash';
-import {configDifferDetail} from './ConfigDifferDetail';
-import {ConfigDifferModel} from './ConfigDifferModel';
+import {identity, capitalize} from 'lodash';
+import {differDetail} from './DifferDetail';
+import {DifferModel} from './DifferModel';
 
-export const configDiffer = hoistCmp.factory({
-    model: uses(ConfigDifferModel),
+export const differ = hoistCmp.factory({
+    model: uses(DifferModel),
 
     render({model}) {
         return fragment(
             dialog({
-                title: 'Configuration Differ',
+                title: `${capitalize(model.entityName)} Differ`,
                 isOpen: model.isOpen,
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
                 style: {height: 600, width: '80%'},
                 item: contents()
             }),
-            configDifferDetail()
+            differDetail()
         );
     }
 });
@@ -45,7 +45,7 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: 'Select or enter a remote host to compare against...',
+                    item: 'Select/enter a remote host to compare against...',
                     padding: 10
                 }),
             bbar: [

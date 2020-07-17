@@ -34,9 +34,8 @@ export const columnHeader = hoistCmp.factory({
         useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
-            const activeGridSorter = impl.activeGridSorter;
-            if (!activeGridSorter) return null;
-            const {abs, sort} = activeGridSorter;
+            const {abs, sort} = impl.activeGridSorter ?? {};
+            if (!sort) return null;
 
             let icon;
             if (sort === 'asc') {

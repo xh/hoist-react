@@ -14,6 +14,12 @@ import {XH} from './XH';
  */
 export class ExceptionHandler {
 
+    _isUnloading = false;
+
+    constructor() {
+        window.addEventListener('unload', () => this._isUnloading = true);
+    }
+
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
@@ -50,6 +56,8 @@ export class ExceptionHandler {
      *      the exception log and alert.
      */
     handleException(exception, options) {
+        if (this._isUnloading) return;
+
         if (!(exception instanceof Error)) {
             exception = Exception.create(exception);
         }
