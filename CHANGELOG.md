@@ -2,20 +2,49 @@
 
 ## v36.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Supports smaller bundle sizes via a greatly reduced set of BlueprintJS icons. (Requires apps to be
+  built with `@xh/hoist-dev-utils` v5.2 or greater to take advantage of this optimization.)
+
+### 📚 Libraries
+
+* @fortawesome/fontawesome-pro `5.13 -> 5.14`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...develop)
+
+
+## v35.1.1 - 2020-07-17
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.29 -> 3.30`
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.0...v35.1.1)
+
+
+## v35.1.0 - 2020-07-16
+
+### 🎁 New Features
+
+* Extend existing environment diff tool to preferences. Now, both configs and preferences may be
+  diffed across servers. This feature will require an update of hoist-core to a version 8.1.0 or
+  greater.
+* `ExportOptions.columns` provided to `GridModel` can now be specified as a function, allowing for
+  full control of columns to export, including their sort order.
+
 ### 🐞 Bug Fixes
 
+* `GridModel`s export feature was previously excluding summary rows. These are now included.
 * Fixed problems with coloring and shading algorithm in `TreeMap`.
 * Fixed problems with sort order of exports in `GridModel`.
 * Ensure that preferences are written to server, even if set right before navigating away from page.
 * Prevent situation where a spurious exception can be sent to server when application is unloaded
- while waiting on a fetch request.
+  while waiting on a fetch request.
 
 ### 🎁 New Features
-* `ExportOptions.columns` provided to `GridModel` can now be specified as a function,
-allowing for full control of columns to export, including their sort order.
 * `TabContainerModel` now supports a `persistWith` config to perist the active tab.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
 ## v35.0.1 - 2020-07-02
 
@@ -27,12 +56,6 @@ allowing for full control of columns to export, including their sort order.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.0...v35.0.1)
 
-### 🎁 New Features
-* Extend existing environment diff tool to preferences.  Now, both configs and preferences may be
-diffed across servers.  This feature will require an update of hoist-core to a version > 8.0.1.
-
-### 🐞 Bug Fixes
-* `GridModel`s export feature was previously excluding summary rows.  These are now included.
 
 ## v35.0.0 - 2020-06-29
 
@@ -335,6 +358,7 @@ project, as per note in Breaking Changes above.
 ## v32.0.5 - 2020-07-14
 
 ### 🐞 Bug Fixes
+
 * Fixes a regression in which grid exports were no longer sorting rows properly.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v32.0.5)
