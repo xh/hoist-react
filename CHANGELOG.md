@@ -13,6 +13,7 @@
 ### 🎁 New Features
 * `ExportOptions.columns` provided to `GridModel` can now be specified as a function,
 allowing for full control of columns to export, including their sort order.
+* `TabContainerModel` now supports a `persistWith` config to perist the active tab.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...develop)
 
