@@ -132,7 +132,7 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = find(this.tabs, {id});
+        const tab = this.findTab(id);
         if (tab.disabled) return;
 
         const {route} = this;
@@ -160,7 +160,7 @@ export class TabContainerModel {
     //-------------------------
     @action
     setActiveTabId(id) {
-        const tab = find(this.tabs, {id});
+        const tab = this.findTab(id);
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -223,9 +223,14 @@ export class TabContainerModel {
             }
         }
 
-        // Initialize state.
+        // Initialize state, or clear if state's activeTabId no longer exists
         if (!isUndefined(state?.activeTabId)) {
-            this.activateTab(state.activeTabId);
+            const id = state.activeTabId;
+            if (this.findTab(id)) {
+                this.activateTab(id);
+            } else {
+                this.provider.clear();
+            }
         }
 
         // Attach to provider last
@@ -235,5 +240,9 @@ export class TabContainerModel {
                 run: (activeTabId) => this.provider.write({activeTabId})
             });
         }
+    }
+
+    findTab(id) {
+        return find(this.tabs, {id});
     }
 }
