@@ -6,6 +6,7 @@
  */
 import {HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {observable, action} from '@xh/hoist/mobx';
+import {isUndefined} from 'lodash';
 
 
 /**
@@ -78,24 +79,21 @@ export class TabPersistenceModel {
     }
 
     updateActiveTab() {
-        const {tabContainerModel, state} = this;
-        if (!state.tabState.activeTabId) return;
+        const {state} = this;
+        if (isUndefined(state.activeTabId)) return;
 
-        const tabState = this.cleanTabState(state.tabState);
-        tabContainerModel.applyTabStateChanges(tabState);
+        this.cleanState(state);
+        this.tabContainerModel.activateTab(state.activeTabId);
     }
 
     //--------------------------
     // Other Implementation
     //--------------------------
-    cleanTabState(tabState) {
-        const {tabContainerModel} = this,
-            tabs = tabContainerModel.tabs;
-
-        // REMOVE an activeTabId that is no longer found in the tab set. It was likely saved
+    cleanState(state) {
+        // REMOVE an activeTabId if the id is no longer found in the tab set. It was likely saved
         // under a prior release of the app and has since been removed from the code.
-        if (!tabs.find(it => it.id === tabState.activeTabId)) {
-            delete tabState.activeTabId;
+        if (!this.tabContainerModel.findTab(state.activeTabId)) {
+            delete state.activeTabId;
         }
     }
 

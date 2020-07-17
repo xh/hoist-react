@@ -7,8 +7,9 @@
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, find, isEmpty} from 'lodash';
+import {find} from 'lodash';
 import {TabModel} from './TabModel';
+import {TabPersistenceModel} from './TabPersistenceModel';
 
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
@@ -45,6 +46,9 @@ export class TabContainerModel {
     /** @member {RefreshMode} */
     refreshMode;
 
+    /** @member {TabPersistenceModel} */
+    @managed persistenceModel;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
@@ -59,6 +63,7 @@ export class TabContainerModel {
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
+     * @param {TabContainerModelPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
         tabs,
@@ -67,7 +72,8 @@ export class TabContainerModel {
         switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
         track = false,
         renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY
+        refreshMode = RefreshMode.ON_SHOW_LAZY,
+        persistWith
     }) {
 
         tabs = tabs.filter(p => !p.omit);
@@ -95,6 +101,8 @@ export class TabContainerModel {
             });
 
             this.forwardRouterToTab(this.activeTabId);
+        } else {
+            this.persistenceModel = persistWith ? new TabPersistenceModel(this, persistWith) : null;
         }
 
         if (track) {
@@ -142,7 +150,7 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = find(this.tabs, {id});
+        const tab = this.findTab(id);
         if (tab.disabled) return;
 
         const {route} = this;
@@ -163,23 +171,6 @@ export class TabContainerModel {
     activateNextTab() {
         const {nextTab} = this;
         if (nextTab) this.activateTab(nextTab.id);
-    }
-
-    /**
-     * This method will update the current tabs definition. Throws an exception if any of the
-     * tabs provided in tabStateChanges are not present in the current tab list.
-     *
-     * @param {TabState} tabStateChanges - changes to apply to the tabs. If all leaf
-     *     columns are represented in these changes then the sort order will be applied as well.
-     */
-    @action
-    applyColumnStateChanges(tabStateChanges) {
-        if (isEmpty(tabStateChanges)) return;
-
-        let tabState = cloneDeep(this.tabState);
-
-
-        this.tabState = tabState;
     }
 
     //-------------------------
@@ -235,12 +226,11 @@ export class TabContainerModel {
 
         return null;
     }
-}
 
-/**
- * @typedef {Object} TabState
- * @property {string} activeTabId - unique identifier of the active tab
- */
+    findTab(id) {
+        return find(this.tabs, {id});
+    }
+}
 
 /**
  * @typedef {Object} TabContainerModelPersistOptions
