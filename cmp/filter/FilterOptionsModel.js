@@ -52,17 +52,17 @@ export class FilterOptionsModel {
         const {store, fields} = this,
             specs = [];
 
-        store.fields.forEach(field => {
-            const {name, label: displayName, type: fieldType} = field;
+        store.fields.forEach(it => {
+            const {name: field, label: displayName, type: fieldType} = it;
 
-            if (isEmpty(fields) || fields.includes(name)) {
+            if (isEmpty(fields) || fields.includes(field)) {
                 const type = this.getFilterType(fieldType),
-                    spec = {name, type, displayName};
+                    spec = {field, type, displayName};
 
                 if (type === 'value') {
                     const values = new Set();
                     store.records.forEach(record => {
-                        const value = record.get(name);
+                        const value = record.get(field);
                         if (!isNil(value)) values.add(value);
                     });
 
@@ -102,11 +102,11 @@ export class FilterOptionsModel {
 
 /**
  * @typedef FieldFilterSpec
- * @property {string} name - Name of field
+ * @property {string} field - Name of field
  * @property {string} type - Field type, either 'range' or 'value'. Determines what operations are applicable for the field.
  *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '=', '!=')
  *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=')
- * @property {string} [displayName] - Name suitable for display to user, defaults to name (e.g. 'Country')
+ * @property {string} [displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')
  * @property {FilterValue[]} [values] - Available value options. Only applicable when type == 'value'
  */
 

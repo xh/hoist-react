@@ -8,9 +8,9 @@
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {FilterModel} from '@xh/hoist/data';
+import {Filter, FilterModel} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {differenceWith, isEmpty, isEqual, isPlainObject, sortBy, take} from 'lodash';
+import {differenceWith, isEmpty, isEqual, isPlainObject, sortBy, take, partition} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -90,26 +90,6 @@ export class FilterFieldModel {
     //--------------------
     // Querying
     //--------------------
-    get options() {
-        const fieldSpecs = this.filterOptionsModel.specs.filter(it => it.type === 'value'),
-            ret = [];
-
-        fieldSpecs.forEach(f => {
-            const {name, displayName, values} = f;
-            values.forEach(v => {
-                const {value, displayValue} = v;
-                ret.push({
-                    displayName,
-                    displayValue,
-                    value: name + '|=|' + value,
-                    label: displayName + ' = ' + displayValue
-                });
-            });
-        });
-
-        return ret;
-    }
-
     async queryAsync(query) {
         const {limit} = this,
             results = this.sortByQuery(this.filterByQuery(query), query);
@@ -126,39 +106,102 @@ export class FilterFieldModel {
     }
 
     filterByQuery(query) {
-        const {options} = this,
-            sep = ':';
-
         if (!query || !query.length) return [];
 
-        // Handle space after : separator
-        query = query.replace(sep + ' ', sep);
-        const sepIdx = query.indexOf(sep);
+        // Determine operator specified in query. If not specified, assume '='
+        const words = query.split(' '),
+            [keywords, queryParts] = partition(words, w => this.getOperatorForKeyword(w)),
+            [queryField, queryValue] = queryParts;
 
-        if (sepIdx > -1) {
-            // Matching for advanced usage where type:value is specified, with partial matching for either side.
-            const facetStr = query.substr(0, sepIdx),
-                facetRe = facetStr ? new RegExp('\\b' + facetStr, 'i') : null,
-                valStr = query.substr(sepIdx + 1),
-                valRe = valStr ? new RegExp('\\b' + valStr, 'i') : null;
+        const operator = keywords.length ? this.getOperatorForKeyword(keywords[0]) : '=',
+            valueOperators = ['=', '!='],
+            rangeOperators = ['>', '>=', '<', '<='];
 
-            return options.filter(f => {
-                const {displayName, value} = f;
-                return (
-                    (!facetRe || facetRe.test(displayName)) &&
-                    (!valRe || valRe.test(value))
-                );
-            });
-        } else {
-            // Separator not used - match against both name and value to catch both possibilities
-            const regex = new RegExp('\\b' + query, 'i');
-            return options.filter(f => {
-                const {displayName, value} = f;
-                return regex.test(displayName + sep + value);
-            });
+        if (valueOperators.includes(operator)) {
+            return this.filterOptionsForValue(queryField, queryValue, operator);
+        } else if (rangeOperators.includes(operator)) {
+            return this.filterOptionsForRange(queryField, queryValue, operator);
         }
+
+        return [];
     }
 
+    filterOptionsForValue(queryField, queryValue, operator) {
+        const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
+            options = [];
+
+        const fieldSpecs = this.filterOptionsModel.specs.filter(spec => {
+            const {type, displayName} = spec;
+            return (
+                type === 'value' &&
+                (!fullQuery || this.getRegExp(queryField).test(displayName))
+            );
+        });
+
+        fieldSpecs.forEach(f => {
+            const {field, displayName, values} = f;
+            values.forEach(v => {
+                const {value, displayValue} = v;
+
+                let match;
+                if (fullQuery) {
+                    // Matching for usage where both field and value are specified, with partial
+                    // matching for either side.
+                    const fieldMatch = this.getRegExp(queryField).test(displayName),
+                        valueMatch = this.getRegExp(queryValue).test(value);
+                    match = fieldMatch && valueMatch;
+                } else {
+                    // One one part provided - match against both field and value to catch
+                    // both possibilities
+                    match = this.getRegExp(queryField).test(displayName + ' ' + value);
+                }
+                if (!match) return;
+
+                const option = {field, displayName, value, displayValue, operator};
+                options.push(this.createOption(option));
+            });
+        });
+
+        return options;
+    }
+
+    filterOptionsForRange(queryField, queryValue, operator) {
+        // Todo
+        return [];
+    }
+
+    createOption(opt) {
+        const {field, displayName, value, displayValue, operator} = opt,
+            filter = new Filter({field, operator, value});
+
+        return {
+            displayName,
+            displayValue,
+            operator,
+            value: filter.toString(),
+            label: `${displayName} ${operator} ${displayValue}`
+        };
+    }
+
+    // Returns a case-insensitive reg exp for query testing
+    getRegExp(pattern) {
+        return new RegExp('\\b' + pattern, 'i');
+    }
+
+    // Todo: Expand keywords for all operators
+    getOperatorForKeyword(keyword) {
+        switch (keyword) {
+            case ':':
+            case '=':
+                return '=';
+            case '!=':
+            case 'not':
+                return '!=';
+        }
+        return null;
+    }
+
+    // Todo: Ensure sorting still works
     sortByQuery(options, query) {
         if (!query) return sortBy(options, it => it.value);
 

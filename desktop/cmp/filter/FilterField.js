@@ -6,7 +6,7 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FilterFieldModel} from '@xh/hoist/cmp/filter';
-import {div, frame, hframe} from '@xh/hoist/cmp/layout';
+import {div, hframe} from '@xh/hoist/cmp/layout';
 import {Select, select} from '@xh/hoist/desktop/cmp/input';
 
 import './FilterField.scss';
@@ -42,13 +42,13 @@ export const [FilterField, filterField] = hoistCmp.withFactory({
 const filterOption = hoistCmp.factory({
     model: false,
     className: 'xh-filter-field-option',
-    render({className, displayName, displayValue, count}) {
+    render({className, displayName, operator, displayValue}) {
         return hframe({
             className,
             items: [
                 div({className: 'name', item: displayName}),
-                frame({className: 'value', item: displayValue}),
-                div({className: 'count', item: count})
+                div({className: 'operator', item: operator}),
+                div({className: 'value', item: displayValue})
             ]
         });
     }
