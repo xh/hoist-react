@@ -4,96 +4,29 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {hoistCmp} from '@xh/hoist/core';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {fragment} from '@xh/hoist/cmp/layout';
+import {hoistCmp, creates} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {truncate} from 'lodash';
+import {differ} from '../../differ/Differ';
+import {PreferenceModel} from './PreferenceModel';
 
-export const preferencePanel = hoistCmp.factory(
-    () => restGrid({model: modelSpec})
-);
+export const preferencePanel = hoistCmp.factory({
+    model: creates(PreferenceModel),
 
-const modelSpec = {
-    persistWith: {localStorageKey: 'xhAdminPreferenceState'},
-    enableColChooser: true,
-    enableExport: true,
-    store: {
-        url: 'rest/preferenceAdmin',
-        reloadLookupsOnLoad: true,
-        fields: [
-            {
-                name: 'name',
-                required: true
-            },
-            {
-                name: 'groupName',
-                label: 'Group',
-                lookupName: 'groupNames',
-                required: true,
-                enableCreate: true
-            },
-            {
-                name: 'type',
-                defaultValue: 'string',
-                lookupName: 'types',
-                editable: 'onAdd',
-                required: true
-            },
-            {
-                name: 'defaultValue',
-                typeField: 'type',
-                required: true
-            },
-            {
-                name: 'notes'
-            },
-            {
-                name: 'local',
-                type: 'bool',
-                defaultValue: false,
-                required: true
-            },
-            {
-                name: 'lastUpdated',
-                type: 'date',
-                editable: false
-            },
-            {
-                name: 'lastUpdatedBy',
-                editable: false
-            }
-        ]
-    },
-    sortBy: 'name',
-    groupBy: 'groupName',
-    unit: 'preference',
-    filterFields: ['name', 'groupName'],
-    actionWarning: {
-        del: 'Are you sure you want to delete? Deleting preferences can break running apps.'
-    },
-    columns: [
-        {field: 'local', ...boolCheckCol, width: 70},
-        {field: 'name', width: 200},
-        {field: 'type', width: 100},
-        {field: 'defaultValue', width: 200, renderer: truncateIfJson},
-        {field: 'groupName', hidden: true},
-        {field: 'notes', minWidth: 200, flex: true},
-        {field: 'lastUpdatedBy', width: 160, hidden: true},
-        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
-    ],
-    editors: [
-        {field: 'name'},
-        {field: 'groupName'},
-        {field: 'type'},
-        {field: 'defaultValue'},
-        {field: 'local'},
-        {field: 'notes', formField: {item: textArea()}},
-        {field: 'lastUpdated'},
-        {field: 'lastUpdatedBy'}
-    ]
-};
-
-function truncateIfJson(defaultValue, {record}) {
-    return record.data.type === 'json' ? truncate(defaultValue, {length: 500}) : defaultValue;
-}
+    render({model}) {
+        return fragment(
+            restGrid({
+                extraToolbarItems: () => {
+                    return button({
+                        icon: Icon.diff(),
+                        text: 'Compare w/ Remote',
+                        onClick: () => model.differModel.open()
+                    });
+                }
+            }),
+            differ()
+        );
+    }
+});

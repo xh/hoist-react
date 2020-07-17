@@ -30,8 +30,8 @@ body.xh-app {
   ::-webkit-scrollbar {
     -webkit-appearance: none;
     background-color: var(--xh-scrollbar-bg);
-    width: 10px;
-    height: 10px;
+    width: var(--xh-scrollbar-size-px);
+    height: var(--xh-scrollbar-size-px);
   }
 
   ::-webkit-scrollbar-corner {
@@ -101,7 +101,7 @@ body.xh-app {
   .xh-align-center { text-align: center; }
   .xh-align-left { text-align: left; }
   .xh-align-right { text-align: right; }
-  .xh-bold { font-weight: bold; }
+
   .xh-border { border: var(--xh-border-solid); }
   .xh-border-bottom { border-bottom: var(--xh-border-solid) !important; }
   .xh-border-dotted { border: var(--xh-border-dotted); }
@@ -109,16 +109,30 @@ body.xh-app {
   .xh-border-right { border-right: var(--xh-border-solid) !important; }
   .xh-border-solid { border: var(--xh-border-solid); }
   .xh-border-top { border-top: var(--xh-border-solid) !important; }
+
+  .xh-bold { font-weight: bold; }
+  .xh-font-family-headings { font-family: var(--xh-font-family-headings); }
+  .xh-font-family-mono { font-family: var(--xh-font-family-mono); }
   .xh-font-size-large { font-size: var(--xh-font-size-large-em); }
   .xh-font-size-small { font-size: var(--xh-font-size-small-em); }
+
   .xh-margin { margin: var(--xh-pad-px); }
   .xh-margin-double { margin: var(--xh-pad-double-px); }
   .xh-margin-half { margin: var(--xh-pad-half-px); }
+  .xh-margin-top { margin-top: var(--xh-pad-px); }
+  .xh-margin-right { margin-right: var(--xh-pad-px); }
+  .xh-margin-bottom { margin-bottom: var(--xh-pad-px); }
+  .xh-margin-left { margin-left: var(--xh-pad-px); }
   .xh-margin-lr { margin: 0 var(--xh-pad-px); }
   .xh-margin-tb { margin: var(--xh-pad-px) 0; }
+
   .xh-pad { padding: var(--xh-pad-px); }
   .xh-pad-double { padding: var(--xh-pad-double-px); }
   .xh-pad-half { padding: var(--xh-pad-half-px); }
+  .xh-pad-top { padding-top: var(--xh-pad-px); }
+  .xh-pad-right { padding-right: var(--xh-pad-px); }
+  .xh-pad-bottom { padding-bottom: var(--xh-pad-px); }
+  .xh-pad-left { padding-left: var(--xh-pad-px); }
   .xh-pad-lr { padding: 0 var(--xh-pad-px); }
   .xh-pad-tb { padding: var(--xh-pad-px) 0; }
 }

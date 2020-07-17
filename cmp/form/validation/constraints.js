@@ -109,7 +109,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 /**
 * Apply a constraint to an array of values, e.g values coming from a tag picker.
 *
-* @param {function()} the executed constraint function to use on the array of values
+* @param {function} constraint - the executed constraint function to use on the array of values
 * @returns ConstraintCb
 */
 export function constrainAll(constraint) {

@@ -7,7 +7,11 @@
     ],
     "rules": {
         "at-rule-no-unknown": null,
+        "block-closing-brace-empty-line-before": null,
+        "custom-property-empty-line-before": null,
+        "max-empty-lines": 2,
         "no-descending-specificity": null,
+        "no-eol-whitespace": null,
         "no-missing-end-of-source-newline": null,
         "property-no-unknown": [
             true,

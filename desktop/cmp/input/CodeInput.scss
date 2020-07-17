@@ -42,12 +42,33 @@
       flex: 1;
       box-sizing: content-box !important;
     }
+
+    .CodeMirror-simplescroll-vertical,
+    .CodeMirror-simplescroll-horizontal {
+      background-color: var(--xh-scrollbar-bg);
+      > div {
+        background-color: var(--xh-scrollbar-thumb);
+        border: none;
+      }
+    }
+
+    .CodeMirror-scrollbar-filler {
+      background-color: var(--xh-scrollbar-bg);
+    }
+
+    .CodeMirror-simplescroll-horizontal {
+      height: var(--xh-scrollbar-size-px);
+    }
+
+    .CodeMirror-simplescroll-vertical {
+      width: var(--xh-scrollbar-size-px);
+    }
   }
 
   &__action-buttons {
     position: absolute !important;
-    bottom: 6px;
-    right: 6px;
+    bottom: var(--xh-scrollbar-size-px);
+    right: var(--xh-scrollbar-size-px);
     z-index: 3; // render on top of code-mirror content to enable click
 
     .xh-button {

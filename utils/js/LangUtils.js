@@ -19,16 +19,21 @@ export function withDefault(...args) {
 }
 
 /**
- * Recursively freeze an object, preventing future modifications.
- * Adapted from MDN.
+ * Recursively freeze an object, preventing future modifications. Not all objects are supported -
+ * FREEZABLE_TYPES limits what we will attempt to freeze to a whitelist of types known to be safely
+ * freezable without side effects. This avoids freezing other types of objects where this routine
+ * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
+ * their internal state remaining mutable to function.
  */
+const FREEZABLE_TYPES = new Set(['Object', 'Array', 'Map', 'Set']);
 export function deepFreeze(obj) {
-    if (!isObjectLike(obj)) return obj;
+    if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
 
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
         deepFreeze(obj[name]);
     }
+
     return Object.freeze(obj);
 }
 
