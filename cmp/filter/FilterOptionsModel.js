@@ -8,7 +8,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {isDate, isEmpty, isNil} from 'lodash';
+import {isEmpty, isNil} from 'lodash';
 
 @HoistModel
 export class FilterOptionsModel {
@@ -56,10 +56,10 @@ export class FilterOptionsModel {
             const {name: field, label: displayName, type: fieldType} = it;
 
             if (isEmpty(fields) || fields.includes(field)) {
-                const type = this.getFilterType(fieldType),
-                    spec = {field, type, displayName};
+                const filterType = this.getFilterType(fieldType),
+                    spec = {field, fieldType, filterType, displayName};
 
-                if (type === 'value') {
+                if (filterType === 'value') {
                     const values = new Set();
                     store.records.forEach(record => {
                         const value = record.get(field);
@@ -67,7 +67,7 @@ export class FilterOptionsModel {
                     });
 
                     spec.values = values.map(value => {
-                        const displayValue = this.getFilterDisplayValue(value);
+                        const displayValue = this.getFilterDisplayValue(value, fieldType);
                         return {value, displayValue};
                     });
                 }
@@ -91,9 +91,9 @@ export class FilterOptionsModel {
         }
     }
 
-    getFilterDisplayValue(value) {
+    getFilterDisplayValue(value, fieldType) {
         let displayValue = value;
-        if (isDate(value) || value?.isLocalDate) {
+        if (fieldType === 'date' || fieldType === 'localDate') {
             displayValue = fmtDate(value);
         }
         return displayValue.toString();
@@ -103,7 +103,8 @@ export class FilterOptionsModel {
 /**
  * @typedef FieldFilterSpec
  * @property {string} field - Name of field
- * @property {string} type - Field type, either 'range' or 'value'. Determines what operations are applicable for the field.
+ * @property {string} fieldType - Type of field. @see Field.type for available options.
+ * @property {string} filterType - Filter type, either 'range' or 'value'. Determines what operations are applicable for the field.
  *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '=', '!=')
  *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=')
  * @property {string} [displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')

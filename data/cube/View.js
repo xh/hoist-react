@@ -10,6 +10,7 @@ import {action, observable} from 'mobx';
 import {Filter} from '@xh/hoist/data';
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
+import {Query} from './Query';
 import {createAggregateRow} from './impl/AggregateRow';
 import {createLeafRow} from './impl/LeafRow';
 
@@ -212,7 +213,7 @@ export class View {
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
             const filter = new Filter({field: dimName, operator: '=', value: val});
-            const id = parentId + Cube.RECORD_ID_DELIMITER + filter.toString();
+            const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
         });

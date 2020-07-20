@@ -7,13 +7,11 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {isString, isEqual, isArray, castArray, isDate} from 'lodash';
 
 /**
  * Todo: Document
- *
- * Todo: Handle different data types in test(). i.e. Case-sensitivity.
- * Todo: Add 'in' and 'notin', value is an array
  *
  * Immutable
  */
@@ -22,19 +20,20 @@ export class Filter {
     field;
     operator;
     value;
+    fieldType;
 
     get isFilter() {return true}
 
     /**
-     * Create a new Filter. Accepts a Filter configuration or a pipe delimited string
-     * generated using Filter.toString().
+     * Create a new Filter. Accepts a Filter configuration or a string representation
+     * generated using Filter.serialize().
      *
      * @param {Object|String} [cfg] - Filter configuration or string representation.
      */
     static parse(cfg) {
         if (isString(cfg)) {
-            const [field, operator, value] = cfg.split('|');
-            cfg = {field, operator, value};
+            const {field, operator, value, fieldType} = JSON.parse(cfg);
+            cfg = {field, operator, value, fieldType};
         }
         return new Filter(cfg);
     }
@@ -42,13 +41,15 @@ export class Filter {
     /**
      * @param {Object} c - Filter configuration.
      * @param {string} c.field - field to filter.
-     * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS
-     * @param {*} [c.value] - value to use with operator in filter
+     * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS.
+     * @param {(*|*[])} [c.value] - value(s) to use with operator in filter.
+     * @param {string} [c.fieldType] - @see Field.type for available options.
      */
     constructor({
         field,
         operator,
-        value
+        value,
+        fieldType = 'auto'
     }) {
         throwIf(!isString(field), 'Filter requires a field');
         throwIf(!VALID_OPERATORS.includes(operator), `Filter requires valid operator. Operator "${operator}" not recognized.`);
@@ -56,20 +57,18 @@ export class Filter {
         this.field = field;
         this.operator = operator;
         this.value = value;
+        this.fieldType = fieldType;
 
         Object.freeze(this);
     }
 
     /**
-     * Generate a delimited string representation suitable for consumption by parse().
+     * Generate a complete string representation suitable for consumption by parse().
      * @returns {string}
      */
-    toString() {
-        return [
-            this.field,
-            this.operator,
-            this.value
-        ].join('|');
+    serialize() {
+        const {field, operator, value, fieldType} = this;
+        return JSON.stringify({field, operator, value, fieldType});
     }
 
     /**
@@ -78,9 +77,17 @@ export class Filter {
      * @returns {boolean}
      */
     test(v) {
-        const {field, operator, value} = this;
+        const {field, operator} = this;
 
-        v = v.isRecord ? v.get(field) : v[field];
+        v = this.parseValue(v.isRecord ? v.get(field) : v[field]);
+
+        let value;
+        if (isArray(this.value)) {
+            value = this.value.map(it => this.parseValue(it));
+        } else {
+            value = this.parseValue(this.value);
+        }
+
         switch (operator) {
             case '=':
                 return v === value;
@@ -94,17 +101,46 @@ export class Filter {
                 return v < value;
             case '<=':
                 return v <= value;
+            case 'in':
+                return castArray(value).includes(v);
+            case 'notin':
+                return !castArray(value).includes(v);
             default:
                 throw XH.exception(`Unknown operator: ${operator}`);
         }
     }
 
-    valueOf() {
-        return this.toString();
+    equals(other) {
+        return isEqual(this.serialize(), other.serialize());
     }
 
-    equals(other) {
-        return this.toString() === other.toString();
+    //--------------------
+    // Implementation
+    //--------------------
+    parseValue(val) {
+        if (val === undefined || val === null) return val;
+
+        const {fieldType} = this;
+        switch (fieldType) {
+            case 'auto':
+            case 'json':
+                return val;
+            case 'int':
+                return parseInt(val);
+            case 'number':
+                return parseFloat(val);
+            case 'bool':
+                return !!val;
+            case 'pwd':
+            case 'string':
+                return val.toString().toLowerCase();
+            case 'date':
+                return isDate(val) ? val : new Date(val);
+            case 'localDate':
+                return isLocalDate(val) ? val : LocalDate.get(val);
+        }
+
+        throw XH.exception(`Unknown field type '${fieldType}'`);
     }
 }
 
@@ -114,5 +150,7 @@ const VALID_OPERATORS = [
     '>',
     '>=',
     '<',
-    '<='
+    '<=',
+    'in',
+    'notin'
 ];

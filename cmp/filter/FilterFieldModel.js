@@ -10,7 +10,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Filter, FilterModel} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {differenceWith, isEmpty, isEqual, isPlainObject, sortBy, take, partition} from 'lodash';
+import {differenceWith, isEmpty, isEqual, isPlainObject, groupBy, sortBy, map, take, partition} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -74,17 +74,39 @@ export class FilterFieldModel {
                 this.provider = null;
             }
         }
-
-        this.addReaction({
-            track: () => this.value,
-            run: () => this.filterModel.setFilters(this.value)
-        });
     }
 
     @action
     setValue(value) {
         this.value = value;
         this.addToHistory(value);
+        this.syncToFilterModel();
+    }
+
+    //--------------------
+    // Filter Model
+    //--------------------
+    syncToFilterModel() {
+        // Convert value to filters
+        const filters = this.value?.map(it => Filter.parse(it)) ?? [],
+            [valueFilters, rangeFilters] = partition(filters, it => ['=', '!='].includes(it.operator));
+
+        // Group value filters (== | !=) on same field / operation into 'in' and 'notin' filters
+        const groupMap = groupBy(valueFilters, f => {
+            const {field, operator, fieldType} = f;
+            return [field, operator === '=' ? 'in' : 'notin', fieldType].join('|');
+        });
+        const groupedFilters = map(groupMap, (v, k) => {
+            const [field, operator, fieldType] = k.split('|'),
+                value = v.map(it => it.value);
+            return new Filter({field, value, operator, fieldType});
+        });
+
+        // Add to filter model
+        this.filterModel.setFilters([
+            ...groupedFilters,
+            ...rangeFilters
+        ]);
     }
 
     //--------------------
@@ -131,15 +153,15 @@ export class FilterFieldModel {
             options = [];
 
         const fieldSpecs = this.filterOptionsModel.specs.filter(spec => {
-            const {type, displayName} = spec;
+            const {filterType, displayName} = spec;
             return (
-                type === 'value' &&
+                filterType === 'value' &&
                 (!fullQuery || this.getRegExp(queryField).test(displayName))
             );
         });
 
         fieldSpecs.forEach(f => {
-            const {field, displayName, values} = f;
+            const {field, fieldType, displayName, values} = f;
             values.forEach(v => {
                 const {value, displayValue} = v;
 
@@ -157,7 +179,7 @@ export class FilterFieldModel {
                 }
                 if (!match) return;
 
-                const option = {field, displayName, value, displayValue, operator};
+                const option = {field, value, operator, fieldType, displayName, displayValue};
                 options.push(this.createOption(option));
             });
         });
@@ -171,14 +193,14 @@ export class FilterFieldModel {
     }
 
     createOption(opt) {
-        const {field, displayName, value, displayValue, operator} = opt,
-            filter = new Filter({field, operator, value});
+        const {field, value, operator, fieldType, displayName, displayValue} = opt,
+            filter = new Filter({field, operator, value, fieldType});
 
         return {
             displayName,
             displayValue,
             operator,
-            value: filter.toString(),
+            value: filter.serialize(),
             label: `${displayName} ${operator} ${displayValue}`
         };
     }
