@@ -75,7 +75,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~5.1.0",
+    "@xh/hoist-dev-utils": "^5.2.0",
     "husky": "~4.2.5",
     "lint-staged": "~10.2.11",
     "react": "~16.13.1",
