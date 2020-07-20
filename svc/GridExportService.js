@@ -10,7 +10,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -30,10 +30,15 @@ export class GridExportService {
         type = 'excelTable',
         columns = 'VISIBLE'
     } = {}) {
-        throwIf(!gridModel, 'GridModel required for export');
-        throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
-        throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
-        throwIf(!isArray(columns) && !['ALL', 'VISIBLE'].includes(columns), 'Invalid columns config - must be "ALL", "VISIBLE" or an array of colIds');
+        throwIf(!gridModel,
+            'GridModel required for export');
+        throwIf(!isString(filename) && !isFunction(filename),
+            'Export filename must be either a string or a closure');
+        throwIf(!['excel', 'excelTable', 'csv'].includes(type),
+            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
+        throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
+            'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
+        );
 
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -112,6 +117,12 @@ export class GridExportService {
     // Implementation
     //-----------------------
     getExportableColumns(gridModel, columns) {
+        if (isFunction(columns)) {
+            return compact(
+                columns(gridModel).map(it => gridModel.getColumn(it))
+            );
+        }
+
         const toExport = castArray(columns),
             includeAll = toExport.includes('ALL'),
             includeViz = toExport.includes('VISIBLE');
@@ -122,11 +133,9 @@ export class GridExportService {
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
-                !excludeFromExport &&
-                (
-                    includeAll ||
-                    toExport.includes(colId) ||
-                    (includeViz && gridModel.isColumnVisible(colId))
+                toExport.includes(colId) ||
+                (!excludeFromExport &&
+                    (includeAll || (includeViz && gridModel.isColumnVisible(colId)))
                 )
             );
         });
@@ -180,9 +189,10 @@ export class GridExportService {
 
         // Sort using comparator functions we pass to ag-Grid - imitating rendered data
         [...sortBy].reverse().forEach(it => {
-            const column = columns.find(column => column.colId === it.colId),
-                {field, getValueFn} = column,
+            const column = gridModel.getColumn(it.colId);
+            if (!column) return;
 
+            const {field, getValueFn} = column,
                 compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
 
@@ -275,8 +285,9 @@ export class GridExportService {
  * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
  *      Do not include the file extension - that will be appended based on the specified type.
  * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
- * @property {(string|string[])} [options.columns] - columns to include in export. Supports tokens
- *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
- *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
- *      enumerated columns).
+ * @property {(string|string[]|function)} [options.columns] - columns to include in export. Supports
+ *      tokens 'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+ *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
+ *      enumerated columns). Also supports a function taking the GridModel, and returning an array
+ *      of column IDs to include.
  */
