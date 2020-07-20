@@ -7,6 +7,11 @@
 * Supports smaller bundle sizes via a greatly reduced set of BlueprintJS icons. (Requires apps to be
   built with `@xh/hoist-dev-utils` v5.2 or greater to take advantage of this optimization.)
 
+### 🐞 Bug Fixes
+
+* Colors specified via the `--xh-intent-` CSS vars are now applied to minimal / outlined desktop
+  `Button` components. Previously they fell through to use default Blueprint colors in these modes.
+
 ### 📚 Libraries
 
 * @fortawesome/fontawesome-pro `5.13 -> 5.14`
