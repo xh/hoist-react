@@ -123,7 +123,19 @@ export class ActivityTrackingModel {
             filterModel: this.filterModel,
             filterOptionsModel: {
                 store: this.cube.store,
-                fields: ['username', 'device', 'browser']
+                fields: [
+                    'username',
+                    'device',
+                    'browser',
+                    {
+                        field: 'elapsed',
+                        valueRenderer: numberRenderer({
+                            label: 'ms',
+                            nullDisplay: '-',
+                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                        })
+                    }
+                ]
             },
             persistWith: this.persistWith
         });

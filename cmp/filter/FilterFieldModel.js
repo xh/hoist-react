@@ -8,9 +8,9 @@
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {Filter, FilterModel} from '@xh/hoist/data';
+import {Filter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {differenceWith, isEmpty, isEqual, isPlainObject, groupBy, sortBy, map, take, partition} from 'lodash';
+import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy, map, take, partition} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -131,7 +131,7 @@ export class FilterFieldModel {
         if (!query || !query.length) return [];
 
         // Determine operator specified in query. If not specified, assume '='
-        const words = query.split(' '),
+        const words = query.split(' ').map(it => it.trim()),
             [keywords, queryParts] = partition(words, w => this.getOperatorForKeyword(w)),
             [queryField, queryValue] = queryParts;
 
@@ -152,18 +152,18 @@ export class FilterFieldModel {
         const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
             options = [];
 
-        const fieldSpecs = this.filterOptionsModel.specs.filter(spec => {
-            const {filterType, displayName} = spec;
+        const fieldSpecs = this.filterOptionsModel.fieldSpecs.filter(fieldSpec => {
+            const {filterType, displayName} = fieldSpec;
             return (
                 filterType === 'value' &&
                 (!fullQuery || this.getRegExp(queryField).test(displayName))
             );
         });
 
-        fieldSpecs.forEach(f => {
-            const {field, fieldType, displayName, values} = f;
-            values.forEach(v => {
-                const {value, displayValue} = v;
+        fieldSpecs.forEach(fieldSpec => {
+            const {field, fieldType, displayName, values} = fieldSpec;
+            values.forEach(value => {
+                const displayValue = fieldSpec.renderValue(value);
 
                 let match;
                 if (fullQuery) {
@@ -171,6 +171,7 @@ export class FilterFieldModel {
                     // matching for either side.
                     const fieldMatch = this.getRegExp(queryField).test(displayName),
                         valueMatch = this.getRegExp(queryValue).test(value);
+
                     match = fieldMatch && valueMatch;
                 } else {
                     // One one part provided - match against both field and value to catch
@@ -188,8 +189,37 @@ export class FilterFieldModel {
     }
 
     filterOptionsForRange(queryField, queryValue, operator) {
-        // Todo
-        return [];
+        const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
+            options = [];
+
+        const fieldSpecs = this.filterOptionsModel.fieldSpecs.filter(fieldSpec => {
+            const {filterType, displayName} = fieldSpec;
+            return (
+                filterType === 'range' &&
+                (!fullQuery || this.getRegExp(queryField).test(displayName))
+            );
+        });
+
+        fieldSpecs.forEach(fieldSpec => {
+            const {field, fieldType, displayName} = fieldSpec,
+                value = parseFieldValue(fullQuery ? queryValue : queryField, fieldType, null);
+
+            if (isNil(value) || isNaN(value)) return;
+
+            // If both both field and value are specified, only return an option for specified field.
+            // Otherwise, return an option for each field
+            if (fullQuery) {
+                const match = this.getRegExp(queryField).test(displayName);
+                if (!match) return;
+            }
+
+            const displayValue = fieldSpec.renderValue(value),
+                option = {field, value, operator, fieldType, displayName, displayValue};
+
+            options.push(this.createOption(option));
+        });
+
+        return options;
     }
 
     createOption(opt) {
@@ -210,7 +240,6 @@ export class FilterFieldModel {
         return new RegExp('\\b' + pattern, 'i');
     }
 
-    // Todo: Expand keywords for all operators
     getOperatorForKeyword(keyword) {
         switch (keyword) {
             case ':':
@@ -219,11 +248,15 @@ export class FilterFieldModel {
             case '!=':
             case 'not':
                 return '!=';
+            case '>':
+            case '>=':
+            case '<':
+            case '<=':
+                return keyword;
         }
         return null;
     }
 
-    // Todo: Ensure sorting still works
     sortByQuery(options, query) {
         if (!query) return sortBy(options, it => it.value);
 

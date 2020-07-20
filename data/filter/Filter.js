@@ -7,13 +7,14 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {isString, isEqual, isArray, castArray, isDate} from 'lodash';
+import {parseFieldValue} from '@xh/hoist/data';
+import {isString, isEqual, isArray, castArray} from 'lodash';
 
 /**
- * Todo: Document
+ * Represents a filter operation on field. Typically used by @see FilterModel to
+ * produce a filtered set of Records.
  *
- * Immutable
+ * Immutable.
  */
 export class Filter {
 
@@ -77,15 +78,15 @@ export class Filter {
      * @returns {boolean}
      */
     test(v) {
-        const {field, operator} = this;
+        const {field, fieldType, operator} = this;
 
-        v = this.parseValue(v.isRecord ? v.get(field) : v[field]);
+        v = parseFieldValue(v.isRecord ? v.get(field) : v[field], fieldType);
 
         let value;
         if (isArray(this.value)) {
-            value = this.value.map(it => this.parseValue(it));
+            value = this.value.map(it => parseFieldValue(it, fieldType));
         } else {
-            value = this.parseValue(this.value);
+            value = parseFieldValue(this.value, fieldType);
         }
 
         switch (operator) {
@@ -112,35 +113,6 @@ export class Filter {
 
     equals(other) {
         return isEqual(this.serialize(), other.serialize());
-    }
-
-    //--------------------
-    // Implementation
-    //--------------------
-    parseValue(val) {
-        if (val === undefined || val === null) return val;
-
-        const {fieldType} = this;
-        switch (fieldType) {
-            case 'auto':
-            case 'json':
-                return val;
-            case 'int':
-                return parseInt(val);
-            case 'number':
-                return parseFloat(val);
-            case 'bool':
-                return !!val;
-            case 'pwd':
-            case 'string':
-                return val.toString().toLowerCase();
-            case 'date':
-                return isDate(val) ? val : new Date(val);
-            case 'localDate':
-                return isLocalDate(val) ? val : LocalDate.get(val);
-        }
-
-        throw XH.exception(`Unknown field type '${fieldType}'`);
     }
 }
 

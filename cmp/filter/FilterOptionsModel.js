@@ -6,15 +6,16 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {fmtDate} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
-import {isEmpty, isNil} from 'lodash';
+import {isEmpty, isNil, isString} from 'lodash';
+
+import {FieldFilterSpec} from './FieldFilterSpec';
 
 @HoistModel
 export class FilterOptionsModel {
 
     /** @member {FieldFilterSpec[]} */
-    @observable.ref specs = [];
+    @observable.ref fieldSpecs = [];
 
     /** @member {Store} */
     store;
@@ -28,8 +29,10 @@ export class FilterOptionsModel {
     /**
      * @param {Object} c - FilterOptionsModel configuration.
      * @param {Store} c.store - Store from which to derive options.
-     * @param {string[]} [c.fields] - Store fields to include. If not provided,
-     *      all store fields will be included
+     * @param {(string[]|Object[])} [c.fields] - List of store fields to create FieldFilterSpecs.
+     *      Can provide either just a string field name, or a partial FieldFilterSpec config.
+     *      FieldFilterSpecs will be created for each field, extracting unspecified properties from
+     *      the Store. If empty or not provided, FieldFilterSpec will generated for all store fields.
      */
     constructor({
         store,
@@ -49,70 +52,35 @@ export class FilterOptionsModel {
     //--------------------
     @action
     updateSpecs() {
-        const {store, fields} = this,
-            specs = [];
+        const {store} = this,
+            fieldCfgs = this.fields.map(field => isString(field) ? {field} : field),
+            fieldSpecs = [];
 
-        store.fields.forEach(it => {
-            const {name: field, label: displayName, type: fieldType} = it;
+        store.fields.forEach(storeField => {
+            const fieldCfg = fieldCfgs.find(f => f.field === storeField.name);
 
-            if (isEmpty(fields) || fields.includes(field)) {
-                const filterType = this.getFilterType(fieldType),
-                    spec = {field, fieldType, filterType, displayName};
+            if (fieldCfg || isEmpty(fieldCfgs)) {
+                // Set defaults from store
+                const fieldSpec = new FieldFilterSpec({
+                    displayName: storeField.label,
+                    fieldType: storeField.type,
+                    ...fieldCfg
+                });
 
-                if (filterType === 'value') {
+                // Set values from store, if not specified
+                if (fieldSpec.filterType === 'value' && isNil(fieldCfg.values)) {
                     const values = new Set();
                     store.records.forEach(record => {
-                        const value = record.get(field);
+                        const value = record.get(fieldSpec.field);
                         if (!isNil(value)) values.add(value);
                     });
-
-                    spec.values = values.map(value => {
-                        const displayValue = this.getFilterDisplayValue(value, fieldType);
-                        return {value, displayValue};
-                    });
+                    fieldSpec.setValues(values);
                 }
 
-                specs.push(spec);
+                fieldSpecs.push(fieldSpec);
             }
         });
 
-        this.specs = specs;
-    }
-
-    getFilterType(fieldType) {
-        switch (fieldType) {
-            case 'int':
-            case 'number':
-            case 'date':
-            case 'localDate':
-                return 'range';
-            default:
-                return 'value';
-        }
-    }
-
-    getFilterDisplayValue(value, fieldType) {
-        let displayValue = value;
-        if (fieldType === 'date' || fieldType === 'localDate') {
-            displayValue = fmtDate(value);
-        }
-        return displayValue.toString();
+        this.fieldSpecs = fieldSpecs;
     }
 }
-
-/**
- * @typedef FieldFilterSpec
- * @property {string} field - Name of field
- * @property {string} fieldType - Type of field. @see Field.type for available options.
- * @property {string} filterType - Filter type, either 'range' or 'value'. Determines what operations are applicable for the field.
- *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '=', '!=')
- *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=')
- * @property {string} [displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')
- * @property {FilterValue[]} [values] - Available value options. Only applicable when type == 'value'
- */
-
-/**
- * @typedef FilterValue
- * @property {*} value - Value
- * @property {string} [displayValue] - Value suitable for display to user, defaults to value
- */

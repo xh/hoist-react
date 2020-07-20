@@ -76,14 +76,14 @@ export class FilterModel {
 
     /**
      * Creates a function that tests a Record or Object against all the Filters.
-     * Filters that share fields are applied using OR, whilst
-     * filter across fields are applied using AND.
+     * Filters across disparate fields are applied using AND.
+     * Filters that share a field and operator are applied using OR.
      */
     createTestFunction() {
         const {filters} = this;
         if (isEmpty(filters)) return () => true;
 
-        const byField = values(groupBy(filters, f => f.field));
+        const byField = values(groupBy(filters, f => f.field + '|' + f.operator));
         return (v) => {
             return every(byField, fieldFilters => {
                 return some(fieldFilters, f => f.test(v));

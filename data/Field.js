@@ -46,32 +46,40 @@ export class Field {
 
     parseVal(val) {
         const {type, defaultValue} = this;
-        if (val === undefined || val === null) val = defaultValue;
-        if (val === null) return val;
-
-        switch (type) {
-            case 'auto':
-            case 'json':
-                return val;
-            case 'int':
-                return parseInt(val);
-            case 'number':
-                return parseFloat(val);
-            case 'bool':
-                return !!val;
-            case 'pwd':
-            case 'string':
-                return val.toString();
-            case 'date':
-                return isDate(val) ? val : new Date(val);
-            case 'localDate':
-                return isLocalDate(val) ? val : LocalDate.get(val);
-        }
-
-        throw XH.exception(`Unknown field type '${type}'`);
+        return parseFieldValue(val, type, defaultValue);
     }
 
     isEqual(val1, val2) {
         return equal(val1, val2);
     }
+}
+
+/**
+ * Parse a value according to a field type
+ * @returns {string|boolean|number|*}
+ */
+export function parseFieldValue(val, type, defaultValue) {
+    if (val === undefined || val === null) val = defaultValue;
+    if (val === null) return val;
+
+    switch (type) {
+        case 'auto':
+        case 'json':
+            return val;
+        case 'int':
+            return parseInt(val);
+        case 'number':
+            return parseFloat(val);
+        case 'bool':
+            return !!val;
+        case 'pwd':
+        case 'string':
+            return val.toString();
+        case 'date':
+            return isDate(val) ? val : new Date(val);
+        case 'localDate':
+            return isLocalDate(val) ? val : LocalDate.get(val);
+    }
+
+    throw XH.exception(`Unknown field type '${type}'`);
 }
