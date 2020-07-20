@@ -26,13 +26,13 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.29.0",
-    "@blueprintjs/datetime": "~3.18.3",
-    "@fortawesome/fontawesome-pro": "~5.13.1",
+    "@blueprintjs/core": "~3.30.0",
+    "@blueprintjs/datetime": "~3.18.4",
+    "@fortawesome/fontawesome-pro": "~5.14.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.29",
-    "@fortawesome/pro-light-svg-icons": "~5.13.1",
-    "@fortawesome/pro-regular-svg-icons": "~5.13.1",
-    "@fortawesome/pro-solid-svg-icons": "~5.13.1",
+    "@fortawesome/pro-light-svg-icons": "~5.14.0",
+    "@fortawesome/pro-regular-svg-icons": "~5.14.0",
+    "@fortawesome/pro-solid-svg-icons": "~5.14.0",
     "@fortawesome/react-fontawesome": "~0.1.11",
     "@seznam/compose-react-refs": "~1.0.4",
     "@xh/onsenui": "~0.1.2",
@@ -75,7 +75,7 @@
     "react-dom-factories": "~1.0.2"
   },
   "devDependencies": {
-    "@xh/hoist-dev-utils": "~5.1.0",
+    "@xh/hoist-dev-utils": "^5.2.0",
     "husky": "~4.2.5",
     "lint-staged": "~10.2.11",
     "react": "~16.13.1",
