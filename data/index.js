@@ -24,9 +24,6 @@ export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
 
-export * from './cube/filter/NoMatchFilter';
-export * from './cube/filter/ValueFilter';
-
 export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
