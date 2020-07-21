@@ -48,7 +48,7 @@ export class TabContainerModel {
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
-     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
+     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".  Cannot be used with `persistWith`.
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
      *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
@@ -56,7 +56,7 @@ export class TabContainerModel {
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
-     * @param {PersistOptions} [c.persistWith] - options governing persistence.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.  Cannot be used with `route`.
      */
     constructor({
         tabs,
@@ -73,6 +73,7 @@ export class TabContainerModel {
         ensureNotEmpty(tabs, 'TabContainerModel needs at least one child.');
         ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
+        throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
 
         this.switcherPosition = switcherPosition;
         this.renderMode = renderMode;
@@ -88,10 +89,6 @@ export class TabContainerModel {
                 return;
             }
 
-            if (persistWith) {
-                console.warn('Active tab persistance is ignored when a tab container uses routing.');
-            }
-
             this.addReaction({
                 track: () => XH.routerState,
                 run: this.syncWithRouter
@@ -100,6 +97,21 @@ export class TabContainerModel {
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
             this.setupStateProvider(persistWith);
+        }
+
+        if (track) {
+            this.addReaction({
+                track: () => this.activeTab,
+                run: (activeTab) => {
+                    const {route} = this;
+                    XH.track({
+                        category: 'Navigation',
+                        message: `Viewed ${activeTab.title} tab`,
+                        // If using routing, data field specifies route for non-top-level tabs.
+                        data: route && route !== 'default' ? {route: route} : null
+                    });
+                }
+            });
         }
     }
 
@@ -212,15 +224,14 @@ export class TabContainerModel {
     setupStateProvider(persistWith) {
         // Read state from provider -- fail gently
         let state = null;
-        if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
-                state = this.provider.read() || null;
-            } catch (e) {
-                console.error(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
+
+        try {
+            this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
+            state = this.provider.read() || null;
+        } catch (e) {
+            console.error(e);
+            XH.safeDestroy(this.provider);
+            this.provider = null;
         }
 
         // Initialize state, or clear if state's activeTabId no longer exists
