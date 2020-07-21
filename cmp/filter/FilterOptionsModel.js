@@ -47,6 +47,15 @@ export class FilterOptionsModel {
         });
     }
 
+    /**
+     * Find the option spec for a given field.
+     * @param {string} field
+     * @returns {FilterOptionsSpec}
+     */
+    getSpec(field) {
+        return this.specs.find(spec => spec.field === field);
+    }
+
     //--------------------
     // Implementation
     //--------------------

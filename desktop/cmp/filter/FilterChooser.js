@@ -27,6 +27,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             queryFn: (q) => model.queryAsync(q),
             optionRenderer: (opt) => filterOption(opt),
             hideDropdownIndicator: true,
+            options: model.options,
             rsOptions: {
                 // Todo: Use defaultOptions to render history options?
                 // e.g. defaultOptions: model.historyOptions,

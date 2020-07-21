@@ -19,6 +19,7 @@ export class FilterChooserModel {
 
     @observable.ref value;
     @observable.ref history;
+    @observable.ref options;
 
     // Immutable properties
     filterModel = null;
@@ -27,13 +28,15 @@ export class FilterChooserModel {
     maxHistoryLength = null;
 
     @managed provider;
+    persistValue = false;
+    persistHistory = false;
 
     /**
      * @param c - FilterChooserModel configuration.
      * @param {(FilterModel|Object)} c.filterModel - FilterModel, or config to create one.
      * @param {(FilterOptionsModel|Object)} c.filterOptionsModel - FilterOptionsModel, or config to create one.
      * @param {number} [c.limit] - maximum number of results to show before truncating.
-     * @param {PersistOptions} [c.persistWith] - options governing history persistence
+     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing history persistence
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a FIFO basis).
      */
@@ -54,17 +57,26 @@ export class FilterChooserModel {
         this.maxHistoryLength = maxHistoryLength;
 
         // Read state from provider -- fail gently
+        const persistValue = this.persistValue = persistWith ? (persistWith.persistValue ?? true) : false;
+        const persistHistory = this.persistHistory = persistWith ? (persistWith.persistHistory ?? true) : false;
+
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 const state = this.provider.read();
-                if (state?.history) this.history = state.history;
+                if (persistValue && state?.value) this.filterModel.setFilters(state.value);
+                if (persistHistory && state?.history) this.history = state.history;
             } catch (e) {
                 console.error(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
         }
+
+        this.addReaction({
+            track: () => [this.filterModel.filters, this.filterOptionsModel.specs],
+            run: () => this.syncFromFilterModel()
+        });
     }
 
     @action
@@ -78,9 +90,25 @@ export class FilterChooserModel {
     // Filter Model
     //--------------------
     syncToFilterModel() {
-        // Convert value to filters
-        const filters = this.value?.map(it => Filter.parse(it)) ?? [],
-            [valueFilters, rangeFilters] = partition(filters, it => ['=', '!='].includes(it.operator));
+        const filters = this.combineFilters(this.value?.map(it => Filter.parse(it)) ?? []);
+        this.filterModel.setFilters(filters);
+        if (this.persistValue) this.provider.write({value: filters});
+    }
+
+    @action
+    syncFromFilterModel() {
+        const filters = this.splitFilters(this.filterModel.filters),
+            options = this.getOptionsForFilters(filters);
+
+        this.options = options.length ? options : null;
+        this.value = filters.map(f => f.serialize());
+    }
+
+    /**
+     * Combine value filters (= | !=) on same field / operation into 'in' and 'notin' filters
+     */
+    combineFilters(filters) {
+        const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!='].includes(f.operator));
 
         // Group value filters (== | !=) on same field / operation into 'in' and 'notin' filters
         const groupMap = groupBy(valueFilters, f => {
@@ -93,11 +121,29 @@ export class FilterChooserModel {
             return new Filter({field, value, operator, fieldType});
         });
 
-        // Add to filter model
-        this.filterModel.setFilters([
-            ...groupedFilters,
-            ...rangeFilters
-        ]);
+        return [...groupedFilters, ...rangeFilters];
+    }
+
+    /**
+     * Split 'in' and 'notin' filters into collections of '=' and '!=' filters
+     */
+    splitFilters(filters) {
+        const ret = [];
+        filters.forEach(filter => {
+            if (['in', 'notin'].includes(filter.operator)) {
+                const {field, fieldType} = filter,
+                    operator = filter.operator === 'in' ? '=' : '!=';
+
+                ret.push(
+                    ...filter.value.map(value => {
+                        return new Filter({field, operator, value, fieldType});
+                    })
+                );
+            } else {
+                ret.push(filter);
+            }
+        });
+        return ret;
     }
 
     //--------------------
@@ -131,15 +177,15 @@ export class FilterChooserModel {
             rangeOperators = ['>', '>=', '<', '<='];
 
         if (valueOperators.includes(operator)) {
-            return this.filterOptionsForValue(queryField, queryValue, operator);
+            return this.getOptionsForValueQuery(queryField, queryValue, operator);
         } else if (rangeOperators.includes(operator)) {
-            return this.filterOptionsForRange(queryField, queryValue, operator);
+            return this.getOptionsForRangeQuery(queryField, queryValue, operator);
         }
 
         return [];
     }
 
-    filterOptionsForValue(queryField, queryValue, operator) {
+    getOptionsForValueQuery(queryField, queryValue, operator) {
         const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
             options = [];
 
@@ -179,7 +225,7 @@ export class FilterChooserModel {
         return options;
     }
 
-    filterOptionsForRange(queryField, queryValue, operator) {
+    getOptionsForRangeQuery(queryField, queryValue, operator) {
         const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
             options = [];
 
@@ -213,9 +259,28 @@ export class FilterChooserModel {
         return options;
     }
 
+    getOptionsForFilters(filters) {
+        const options = [];
+
+        filters.forEach(filter => {
+            const spec = this.filterOptionsModel.getSpec(filter.field);
+            if (!spec) return;
+
+            const {field, operator, fieldType} = filter,
+                value = parseFieldValue(filter.value, fieldType, null),
+                displayName = spec.displayName,
+                displayValue = spec.renderValue(value);
+
+            const option = {field, value, operator, fieldType, displayName, displayValue, filter};
+            options.push(this.createOption(option));
+        });
+
+        return options;
+    }
+
     createOption(opt) {
         const {field, value, operator, fieldType, displayName, displayValue} = opt,
-            filter = new Filter({field, operator, value, fieldType});
+            filter = opt.filter ?? new Filter({field, operator, value, fieldType});
 
         return {
             displayName,
@@ -277,12 +342,19 @@ export class FilterChooserModel {
     //--------------------
     @action
     addToHistory(value) {
-        if (isEmpty(value)) return;
+        if (!this.persistHistory || isEmpty(value)) return;
 
         // Remove, add to front, and truncate
         let {history, maxHistoryLength} = this;
         history = differenceWith(history, [value], isEqual);
         this.history = take([value, ...history], maxHistoryLength);
-        this.provider?.write({history: this.history});
+        this.provider.write({history: this.history});
     }
 }
+
+/**
+ * @typedef {Object} FilterChooserPersistOptions
+ * @extends PersistOptions
+ * @property {boolean} [persistValue] - true to include value, as filters (default true)
+ * @property {boolean} [persistHistory] - true to include history (default true)
+ */
