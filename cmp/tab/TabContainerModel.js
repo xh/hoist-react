@@ -44,7 +44,7 @@ export class TabContainerModel {
     /** @member {RefreshMode} */
     refreshMode;
 
-    /** @member {string|element} */
+    /** @member {(string|ReactNode)} */
     emptyText;
 
     /**
@@ -53,7 +53,8 @@ export class TabContainerModel {
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
-     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".  Cannot be used with `persistWith`.
+     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
+     *      Cannot be used with `persistWith`.
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
      *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
@@ -61,9 +62,10 @@ export class TabContainerModel {
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
-     * @param {PersistOptions} [c.persistWith] - options governing persistence.  Cannot be used with `route`.
-     * @param {string|element} [c.emptyText] - text or element to display in case tabContainer is
-     *      not provided with any tabs or all tabs are omitted.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.
+     *      Cannot be used with `route`.
+     * @param {(string|ReactNode)} [c.emptyText] - placeholder to display if no tabs are provided
+     *      or all tabs have been removed via their `omit` config.
      */
     constructor({
         tabs,
@@ -73,13 +75,18 @@ export class TabContainerModel {
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        persistWith = null,
-        emptyText = 'No tabs to display'
+        persistWith,
+        emptyText = 'No tabs to display.'
     }) {
 
         tabs = tabs.filter(p => !p.omit);
         if (isEmpty(tabs)) {
-            tabs.push({content: () => div(emptyText)});
+            tabs.push({
+                content: () => div({
+                    className: 'xh-text-color-accent xh-pad',
+                    item: emptyText
+                })
+            });
             switcherPosition = 'none';
         }
 
