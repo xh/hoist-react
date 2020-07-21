@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * `TabContainerModel` now supports a `persistWith` config to persist the active tab.
+* `TabContainerModel` now supports a `emptyText` config to display when TabContainer
+   gets rendered with no children.
 
 ### ⚙️ Technical
 
