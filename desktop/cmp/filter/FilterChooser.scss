@@ -25,4 +25,37 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  &__suggestions,
+  &__truncated {
+    margin-bottom: -4px;
+    border-top: var(--xh-border-solid);
+    background: var(--xh-bg-alt);
+    color: var(--xh-text-color-muted);
+    border-radius: 0 0 3px 3px;
+  }
+
+  &__truncated {
+    padding: var(--xh-pad-half-px) var(--xh-pad-px) !important;
+    font-size: var(--xh-font-size-small-px);
+  }
+
+  &__suggestion-row {
+    .name {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-intent-primary);
+    }
+
+    .operators {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-text-color-muted);
+      font-weight: bold;
+    }
+
+    .value {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-intent-primary);
+      text-transform: uppercase;
+    }
+  }
 }

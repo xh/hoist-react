@@ -103,7 +103,7 @@ export class ActivityTrackingModel {
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'username', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', label: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
@@ -133,6 +133,14 @@ export class ActivityTrackingModel {
                             label: 'ms',
                             formatConfig: {thousandSeparated: false, mantissa: 0}
                         })
+                    },
+                    {
+                        field: 'msg',
+                        operators: ['like']
+                    },
+                    {
+                        field: 'userAgent',
+                        operators: ['like']
                     }
                 ]
             },

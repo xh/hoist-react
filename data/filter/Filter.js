@@ -40,6 +40,16 @@ export class Filter {
     }
 
     /**
+     * Is the given operator valid?
+     *
+     * @param {string} operator
+     * @returns {boolean}
+     */
+    static isValidOperator(operator) {
+        return VALID_OPERATORS.includes(operator);
+    }
+
+    /**
      * @param {Object} c - Filter configuration.
      * @param {string} c.field - field to filter.
      * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS.
@@ -53,7 +63,7 @@ export class Filter {
         fieldType = 'auto'
     }) {
         throwIf(!isString(field), 'Filter requires a field');
-        throwIf(!VALID_OPERATORS.includes(operator), `Filter requires valid operator. Operator "${operator}" not recognized.`);
+        throwIf(!Filter.isValidOperator(operator), `Filter requires valid operator. Operator "${operator}" not recognized.`);
 
         this.field = field;
         this.operator = operator;
@@ -106,6 +116,8 @@ export class Filter {
                 return castArray(value).includes(v);
             case 'notin':
                 return !castArray(value).includes(v);
+            case 'like':
+                return new RegExp(value, 'ig').test(v);
             default:
                 throw XH.exception(`Unknown operator: ${operator}`);
         }
@@ -124,5 +136,6 @@ const VALID_OPERATORS = [
     '<',
     '<=',
     'in',
-    'notin'
+    'notin',
+    'like'
 ];

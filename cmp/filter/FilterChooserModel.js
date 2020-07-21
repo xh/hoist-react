@@ -6,7 +6,6 @@
  */
 
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Filter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -31,6 +30,10 @@ export class FilterChooserModel {
     persistValue = false;
     persistHistory = false;
 
+    // Option values with special handling
+    static TRUNCATED = 'TRUNCATED';
+    static SUGGESTIONS = 'SUGGESTIONS';
+
     /**
      * @param c - FilterChooserModel configuration.
      * @param {(FilterModel|Object)} c.filterModel - FilterModel, or config to create one.
@@ -43,9 +46,9 @@ export class FilterChooserModel {
     constructor({
         filterModel,
         filterOptionsModel,
-        limit,
+        limit= 10,
         persistWith,
-        maxHistoryLength = 5
+        maxHistoryLength = 10
     }) {
         throwIf(!filterModel, 'Must provide a FilterModel (or a config to create one)');
         throwIf(!filterOptionsModel, 'Must provide a FilterOptionsModel (or a config to create one)');
@@ -157,7 +160,7 @@ export class FilterChooserModel {
             const truncateCount = results.length - limit;
             return [
                 ...results.slice(0, limit),
-                {value: 'TRUNCATED-MESSAGE', displayValue: `${fmtNumber(truncateCount)} results truncated`}
+                {value: FilterChooserModel.TRUNCATED, truncateCount}
             ];
         }
 
@@ -173,16 +176,26 @@ export class FilterChooserModel {
             [queryField, queryValue] = queryParts;
 
         const operator = keywords.length ? this.getOperatorForKeyword(keywords[0]) : '=',
-            valueOperators = ['=', '!='],
+            valueOperators = ['=', '!=', 'like'],
             rangeOperators = ['>', '>=', '<', '<='];
 
+        // Get options for the give query
+        const options = [];
         if (valueOperators.includes(operator)) {
-            return this.getOptionsForValueQuery(queryField, queryValue, operator);
+            options.push(...this.getOptionsForValueQuery(queryField, queryValue, operator));
         } else if (rangeOperators.includes(operator)) {
-            return this.getOptionsForRangeQuery(queryField, queryValue, operator);
+            options.push(...this.getOptionsForRangeQuery(queryField, queryValue, operator));
         }
 
-        return [];
+        // Get suggestions for field specs that partially match the query.
+        const suggestions = this.filterOptionsModel.specs.filter(spec => {
+            return this.getRegExp(queryField).test(spec.displayName);
+        });
+        if (!isEmpty(suggestions)) {
+            options.push({value: FilterChooserModel.SUGGESTIONS, suggestions});
+        }
+
+        return options;
     }
 
     getOptionsForValueQuery(queryField, queryValue, operator) {
@@ -190,36 +203,49 @@ export class FilterChooserModel {
             options = [];
 
         const specs = this.filterOptionsModel.specs.filter(spec => {
-            const {filterType, displayName} = spec;
-            return (
-                filterType === 'value' &&
-                (!fullQuery || this.getRegExp(queryField).test(displayName))
-            );
+            const {filterType, displayName, operators} = spec;
+
+            if (!operators.includes(operator)) return;
+
+            if (filterType === 'value') {
+                return !fullQuery || this.getRegExp(queryField).test(displayName);
+            } else {
+                return fullQuery && this.getRegExp(queryField).test(displayName);
+            }
         });
 
         specs.forEach(spec => {
-            const {field, fieldType, displayName, values} = spec;
-            values.forEach(value => {
-                const displayValue = spec.renderValue(value);
+            const {field, filterType, fieldType, displayName, values} = spec;
 
-                let match;
-                if (fullQuery) {
-                    // Matching for usage where both field and value are specified, with partial
-                    // matching for either side.
-                    const fieldMatch = this.getRegExp(queryField).test(displayName),
-                        valueMatch = this.getRegExp(queryValue).test(value);
+            if (filterType === 'value' && ['=', '!='].includes(operator)) {
+                values.forEach(value => {
+                    const displayValue = spec.renderValue(value);
 
-                    match = fieldMatch && valueMatch;
-                } else {
-                    // One one part provided - match against both field and value to catch
-                    // both possibilities
-                    match = this.getRegExp(queryField).test(displayName + ' ' + value);
-                }
-                if (!match) return;
+                    let match;
+                    if (fullQuery) {
+                        // Matching for usage where both field and value are specified, with partial
+                        // matching for either side.
+                        const fieldMatch = this.getRegExp(queryField).test(displayName),
+                            valueMatch = this.getRegExp(queryValue).test(value);
 
-                const option = {field, value, operator, fieldType, displayName, displayValue};
+                        match = fieldMatch && valueMatch;
+                    } else {
+                        // One one part provided - match against both field and value to catch
+                        // both possibilities
+                        match = this.getRegExp(queryField).test(displayName + ' ' + value);
+                    }
+                    if (!match) return;
+
+                    const option = {field, value, operator, fieldType, displayName, displayValue};
+                    options.push(this.createOption(option));
+                });
+            } else if (fullQuery) {
+                const value = parseFieldValue(queryValue, fieldType, null),
+                    displayValue = spec.renderValue(value),
+                    option = {field, value, operator, fieldType, displayName, displayValue};
+
                 options.push(this.createOption(option));
-            });
+            }
         });
 
         return options;
@@ -293,7 +319,7 @@ export class FilterChooserModel {
 
     // Returns a case-insensitive reg exp for query testing
     getRegExp(pattern) {
-        return new RegExp('\\b' + pattern, 'i');
+        return new RegExp(pattern, 'ig');
     }
 
     getOperatorForKeyword(keyword) {
@@ -309,6 +335,7 @@ export class FilterChooserModel {
             case '>=':
             case '<':
             case '<=':
+            case 'like':
                 return keyword;
         }
         return null;
