@@ -1,6 +1,6 @@
 # Changelog
 
-## v36.0.0-SNAPSHOT - unreleased
+## v35.2.0 - 2020-07-21
 
 ### 🎁 New Features
 
@@ -22,8 +22,9 @@
 ### 📚 Libraries
 
 * @fortawesome/fontawesome-pro `5.13 -> 5.14`
+* codemirror `5.55 -> 5.56`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...v35.2.0)
 
 
 ## v35.1.1 - 2020-07-17
