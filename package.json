@@ -39,7 +39,7 @@
     "@xh/react-onsenui": "~0.1.2",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
-    "codemirror": "~5.55.0",
+    "codemirror": "~5.56.0",
     "compare-versions": "~3.6.0",
     "core-js": "~3.6.5",
     "debounce-promise": "~3.1.0",
