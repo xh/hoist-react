@@ -11,7 +11,7 @@ import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterModel, Cube} from '@xh/hoist/data';
-import {FilterFieldModel} from '@xh/hoist/cmp/filter';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -38,8 +38,8 @@ export class ActivityTrackingModel {
     @managed cube;
     /** @member {FilterModel} */
     @managed filterModel;
-    /** @member {FilterFieldModel} */
-    @managed filterFieldModel;
+    /** @member {FilterChooserModel} */
+    @managed filterChooserModel;
     /** @member {GridModel} */
     @managed gridModel;
 
@@ -119,7 +119,7 @@ export class ActivityTrackingModel {
 
         this.filterModel = new FilterModel();
 
-        this.filterFieldModel = new FilterFieldModel({
+        this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
             filterOptionsModel: {
                 store: this.cube.store,
@@ -131,7 +131,6 @@ export class ActivityTrackingModel {
                         field: 'elapsed',
                         valueRenderer: numberRenderer({
                             label: 'ms',
-                            nullDisplay: '-',
                             formatConfig: {thousandSeparated: false, mantissa: 0}
                         })
                     }

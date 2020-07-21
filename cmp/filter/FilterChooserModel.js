@@ -15,7 +15,7 @@ import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy,
 import {FilterOptionsModel} from './FilterOptionsModel';
 
 @HoistModel
-export class FilterFieldModel {
+export class FilterChooserModel {
 
     @observable.ref value;
     @observable.ref history;
@@ -29,7 +29,7 @@ export class FilterFieldModel {
     @managed provider;
 
     /**
-     * @param c - FilterFieldModel configuration.
+     * @param c - FilterChooserModel configuration.
      * @param {(FilterModel|Object)} c.filterModel - FilterModel, or config to create one.
      * @param {(FilterOptionsModel|Object)} c.filterOptionsModel - FilterOptionsModel, or config to create one.
      * @param {number} [c.limit] - maximum number of results to show before truncating.
@@ -47,17 +47,8 @@ export class FilterFieldModel {
         throwIf(!filterModel, 'Must provide a FilterModel (or a config to create one)');
         throwIf(!filterOptionsModel, 'Must provide a FilterOptionsModel (or a config to create one)');
 
-        if (isPlainObject(filterModel)) {
-            this.filterModel = this.markManaged(new FilterModel(filterModel));
-        } else {
-            this.filterModel = filterModel;
-        }
-
-        if (isPlainObject(filterOptionsModel)) {
-            this.filterOptionsModel = this.markManaged(new FilterOptionsModel(filterOptionsModel));
-        } else {
-            this.filterOptionsModel = filterOptionsModel;
-        }
+        this.filterModel = isPlainObject(filterModel) ? this.markManaged(new FilterModel(filterModel)) : filterModel;
+        this.filterOptionsModel = isPlainObject(filterOptionsModel) ? this.markManaged(new FilterOptionsModel(filterOptionsModel)) : filterOptionsModel;
 
         this.limit = limit;
         this.maxHistoryLength = maxHistoryLength;
@@ -65,7 +56,7 @@ export class FilterFieldModel {
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'filterField', ...persistWith});
+                this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 const state = this.provider.read();
                 if (state?.history) this.history = state.history;
             } catch (e) {
@@ -152,18 +143,18 @@ export class FilterFieldModel {
         const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
             options = [];
 
-        const fieldSpecs = this.filterOptionsModel.fieldSpecs.filter(fieldSpec => {
-            const {filterType, displayName} = fieldSpec;
+        const specs = this.filterOptionsModel.specs.filter(spec => {
+            const {filterType, displayName} = spec;
             return (
                 filterType === 'value' &&
                 (!fullQuery || this.getRegExp(queryField).test(displayName))
             );
         });
 
-        fieldSpecs.forEach(fieldSpec => {
-            const {field, fieldType, displayName, values} = fieldSpec;
+        specs.forEach(spec => {
+            const {field, fieldType, displayName, values} = spec;
             values.forEach(value => {
-                const displayValue = fieldSpec.renderValue(value);
+                const displayValue = spec.renderValue(value);
 
                 let match;
                 if (fullQuery) {
@@ -192,16 +183,16 @@ export class FilterFieldModel {
         const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
             options = [];
 
-        const fieldSpecs = this.filterOptionsModel.fieldSpecs.filter(fieldSpec => {
-            const {filterType, displayName} = fieldSpec;
+        const specs = this.filterOptionsModel.specs.filter(spec => {
+            const {filterType, displayName} = spec;
             return (
                 filterType === 'range' &&
                 (!fullQuery || this.getRegExp(queryField).test(displayName))
             );
         });
 
-        fieldSpecs.forEach(fieldSpec => {
-            const {field, fieldType, displayName} = fieldSpec,
+        specs.forEach(spec => {
+            const {field, fieldType, displayName} = spec,
                 value = parseFieldValue(fullQuery ? queryValue : queryField, fieldType, null);
 
             if (isNil(value) || isNaN(value)) return;
@@ -213,7 +204,7 @@ export class FilterFieldModel {
                 if (!match) return;
             }
 
-            const displayValue = fieldSpec.renderValue(value),
+            const displayValue = spec.renderValue(value),
                 option = {field, value, operator, fieldType, displayName, displayValue};
 
             options.push(this.createOption(option));
@@ -242,8 +233,9 @@ export class FilterFieldModel {
 
     getOperatorForKeyword(keyword) {
         switch (keyword) {
-            case ':':
             case '=':
+            case ':':
+            case 'is':
                 return '=';
             case '!=':
             case 'not':

@@ -14,7 +14,7 @@ import {isString, startCase} from 'lodash';
  * provides useful metadata for including these options in UI affordances.
  * Typically generated from a Store via @see FilterOptionsModel
  */
-export class FieldFilterSpec {
+export class FilterOptionsSpec {
 
     /** @member {string} */
     field;
@@ -25,7 +25,7 @@ export class FieldFilterSpec {
     /** @member {string} */
     fieldType;
 
-    /** @member {*[]} */
+    /** @member {Array} */
     values;
 
     /** @member {function} */
@@ -49,7 +49,7 @@ export class FieldFilterSpec {
     }
 
     /**
-     * @param {Object} c - FieldFilterSpec configuration.
+     * @param {Object} c - FilterOptionsSpec configuration.
      * @property {string} c.field - Name of field
      * @property {string} [c.displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')
      * @property {string} [c.fieldType] - Type of field. @see Field.type for available options. Defaults to 'auto'.
@@ -63,7 +63,7 @@ export class FieldFilterSpec {
         values,
         valueRenderer
     }) {
-        throwIf(!isString(field), 'FieldFilterSpec requires a field');
+        throwIf(!isString(field), 'FilterOptionsSpec requires a field');
 
         this.field = field;
         this.displayName = displayName ?? startCase(field);

@@ -43,7 +43,7 @@ export class Filter {
      * @param {Object} c - Filter configuration.
      * @param {string} c.field - field to filter.
      * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS.
-     * @param {(*|*[])} [c.value] - value(s) to use with operator in filter.
+     * @param {(*|Array)} [c.value] - value(s) to use with operator in filter.
      * @param {string} [c.fieldType] - @see Field.type for available options.
      */
     constructor({

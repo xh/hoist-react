@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {XH, managed} from '@xh/hoist/core';
 import {Filter, FilterModel} from '@xh/hoist/data';
 import {castArray, find} from 'lodash';
 
@@ -24,6 +24,9 @@ export class Query {
     includeLeaves;
     /** @member {Cube} */
     cube;
+
+    @managed
+    _filterModel;
 
     /** @member {Filter[]} */
     get filters() {

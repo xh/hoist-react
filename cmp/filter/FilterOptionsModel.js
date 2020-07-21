@@ -9,13 +9,13 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isEmpty, isNil, isString} from 'lodash';
 
-import {FieldFilterSpec} from './FieldFilterSpec';
+import {FilterOptionsSpec} from './FilterOptionsSpec';
 
 @HoistModel
 export class FilterOptionsModel {
 
-    /** @member {FieldFilterSpec[]} */
-    @observable.ref fieldSpecs = [];
+    /** @member {FilterOptionsSpec[]} */
+    @observable.ref specs = [];
 
     /** @member {Store} */
     store;
@@ -29,10 +29,10 @@ export class FilterOptionsModel {
     /**
      * @param {Object} c - FilterOptionsModel configuration.
      * @param {Store} c.store - Store from which to derive options.
-     * @param {(string[]|Object[])} [c.fields] - List of store fields to create FieldFilterSpecs.
-     *      Can provide either just a string field name, or a partial FieldFilterSpec config.
-     *      FieldFilterSpecs will be created for each field, extracting unspecified properties from
-     *      the Store. If empty or not provided, FieldFilterSpec will generated for all store fields.
+     * @param {(string[]|Object[])} [c.fields] - List of store fields to create FilterOptionsSpecs.
+     *      Can provide either just a string field name, or a partial FilterOptionsSpec config.
+     *      FilterOptionsSpecs will be created for each field, extracting unspecified properties from
+     *      the Store. If empty or not provided, FilterOptionsSpecs will generated for all store fields.
      */
     constructor({
         store,
@@ -54,33 +54,33 @@ export class FilterOptionsModel {
     updateSpecs() {
         const {store} = this,
             fieldCfgs = this.fields.map(field => isString(field) ? {field} : field),
-            fieldSpecs = [];
+            specs = [];
 
         store.fields.forEach(storeField => {
             const fieldCfg = fieldCfgs.find(f => f.field === storeField.name);
 
             if (fieldCfg || isEmpty(fieldCfgs)) {
                 // Set defaults from store
-                const fieldSpec = new FieldFilterSpec({
+                const spec = new FilterOptionsSpec({
                     displayName: storeField.label,
                     fieldType: storeField.type,
                     ...fieldCfg
                 });
 
                 // Set values from store, if not specified
-                if (fieldSpec.filterType === 'value' && isNil(fieldCfg.values)) {
+                if (spec.filterType === 'value' && isNil(fieldCfg.values)) {
                     const values = new Set();
                     store.records.forEach(record => {
-                        const value = record.get(fieldSpec.field);
+                        const value = record.get(spec.field);
                         if (!isNil(value)) values.add(value);
                     });
-                    fieldSpec.setValues(values);
+                    spec.setValues(values);
                 }
 
-                fieldSpecs.push(fieldSpec);
+                specs.push(spec);
             }
         });
 
-        this.fieldSpecs = fieldSpecs;
+        this.specs = specs;
     }
 }

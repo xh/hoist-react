@@ -12,7 +12,7 @@ import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/butt
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {dateInput, select} from '@xh/hoist/desktop/cmp/input';
-import {filterField} from '@xh/hoist/desktop/cmp/filter';
+import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -24,7 +24,7 @@ import {activityDetailView} from './detail/ActivityDetailView';
 export const activityTrackingView = hoistCmp.factory({
     model: creates(ActivityTrackingModel),
 
-    render({model}) {
+    render() {
         return panel({
             mask: 'onLoad',
             className: 'xh-admin-activity-panel',
@@ -73,7 +73,7 @@ const tbar = hoistCmp.factory(
                         disabled: model.endDate >= LocalDate.today()
                     }),
                     toolbarSep(),
-                    filterField({
+                    filterChooser({
                         flex: 1,
                         placeholder: 'Search...',
                         enableClear: true
