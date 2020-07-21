@@ -137,8 +137,9 @@ export class CodeInput extends HoistInput {
 
         this.addReaction({
             track: () => [this.props.readonly, this.props.disabled],
-            run: (readonly, disabled) => {
-                this.editor.setOption('readOnly', readonly || disabled);
+            run: (arr) => {
+                const [readonly, disabled] = arr;
+                this.editor.setOption('readOnly',  disabled || readonly);
             }
         });
     }

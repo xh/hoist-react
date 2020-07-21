@@ -371,9 +371,9 @@ body.xh-dark {
   --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
 
   // Blueprint intents
-  --xh-intent-primary: var(--intent-primary, var(--xh-blue-muted));
-  --xh-intent-danger: var(--intent-danger, var(--xh-red-muted));
-  --xh-intent-success: var(--intent-success, var(--xh-green-muted));
+  --xh-intent-primary: var(--intent-primary, var(--xh-blue-light));
+  --xh-intent-danger: var(--intent-danger, var(--xh-red));
+  --xh-intent-success: var(--intent-success, var(--xh-green));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 
   // Buttons
