@@ -2,6 +2,10 @@
 
 ## v36.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `TabContainerModel` now supports a `persistWith` config to perist the active tab.
+
 ### ⚙️ Technical
 
 * Supports smaller bundle sizes via a greatly reduced set of BlueprintJS icons. (Requires apps to be
@@ -47,8 +51,6 @@
 * Ensure that preferences are written to server, even if set right before navigating away from page.
 * Prevent situation where a spurious exception can be sent to server when application is unloaded
   while waiting on a fetch request.
-
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.0.1...v35.1.0)
 
 
 ## v35.0.1 - 2020-07-02

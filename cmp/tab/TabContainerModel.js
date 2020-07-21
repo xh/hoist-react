@@ -4,10 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find} from 'lodash';
+import {find, isUndefined} from 'lodash';
 import {TabModel} from './TabModel';
 
 /**
@@ -48,7 +48,7 @@ export class TabContainerModel {
      * @param {?string} [c.defaultTabId] - ID of Tab to be shown initially if routing does not
      *      specify otherwise. If not set, will default to first tab in the provided collection.
      * @param {?string} [c.route] - base route name for this container. If set, this container will
-     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".
+     *      be route-enabled, with the route for each tab being "[route]/[tab.id]".  Cannot be used with `persistWith`.
      * @param {string} [c.switcherPosition] - Position of the switcher docked within this component.
      *      Valid values are 'top', 'bottom', 'left', 'right', or 'none' if no switcher shown.
      * @param {boolean} [c.track] - True to enable activity tracking of tab views (default false).
@@ -56,6 +56,7 @@ export class TabContainerModel {
      *      per-tab via `TabModel.renderMode`. See enum for description of supported modes.
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.  Cannot be used with `route`.
      */
     constructor({
         tabs,
@@ -64,13 +65,15 @@ export class TabContainerModel {
         switcherPosition = XH.isMobileApp ? 'bottom' : 'top',
         track = false,
         renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY
+        refreshMode = RefreshMode.ON_SHOW_LAZY,
+        persistWith = null
     }) {
 
         tabs = tabs.filter(p => !p.omit);
         ensureNotEmpty(tabs, 'TabContainerModel needs at least one child.');
         ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
+        throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
 
         this.switcherPosition = switcherPosition;
         this.renderMode = renderMode;
@@ -92,6 +95,8 @@ export class TabContainerModel {
             });
 
             this.forwardRouterToTab(this.activeTabId);
+        } else if (persistWith) {
+            this.setupStateProvider(persistWith);
         }
 
         if (track) {
@@ -139,7 +144,7 @@ export class TabContainerModel {
     activateTab(id) {
         if (this.activeTabId === id) return;
 
-        const tab = find(this.tabs, {id});
+        const tab = this.findTab(id);
         if (tab.disabled) return;
 
         const {route} = this;
@@ -167,7 +172,7 @@ export class TabContainerModel {
     //-------------------------
     @action
     setActiveTabId(id) {
-        const tab = find(this.tabs, {id});
+        const tab = this.findTab(id);
 
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -214,5 +219,41 @@ export class TabContainerModel {
         if (ret) return ret.id;
 
         return null;
+    }
+
+    setupStateProvider(persistWith) {
+        // Read state from provider -- fail gently
+        let state = null;
+
+        try {
+            this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
+            state = this.provider.read() || null;
+        } catch (e) {
+            console.error(e);
+            XH.safeDestroy(this.provider);
+            this.provider = null;
+        }
+
+        // Initialize state, or clear if state's activeTabId no longer exists
+        if (!isUndefined(state?.activeTabId)) {
+            const id = state.activeTabId;
+            if (this.findTab(id)) {
+                this.activateTab(id);
+            } else {
+                this.provider.clear();
+            }
+        }
+
+        // Attach to provider last
+        if (this.provider) {
+            this.addReaction({
+                track: () => this.activeTabId,
+                run: (activeTabId) => this.provider.write({activeTabId})
+            });
+        }
+    }
+
+    findTab(id) {
+        return find(this.tabs, {id});
     }
 }
