@@ -11,6 +11,7 @@
 
 * Colors specified via the `--xh-intent-` CSS vars are now applied to minimal / outlined desktop
   `Button` components. Previously they fell through to use default Blueprint colors in these modes.
+* Code input correctly handles dynamically toggling readonly/disabled state.
 
 ### 📚 Libraries
 
