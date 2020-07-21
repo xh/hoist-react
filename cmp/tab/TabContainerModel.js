@@ -4,9 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {isEmpty} from 'lodash';
 import {HoistModel, managed, PersistenceProvider, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {div} from '../layout';
 import {action, observable} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {find, isUndefined} from 'lodash';
 import {TabModel} from './TabModel';
 
@@ -57,6 +59,8 @@ export class TabContainerModel {
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      * @param {PersistOptions} [c.persistWith] - options governing persistence.  Cannot be used with `route`.
+     * * @param {string|element} [c.emptyText] - text or element to display in case tabContainer is
+     *      not provided with any tabs or all tabs are omitted.
      */
     constructor({
         tabs,
@@ -66,11 +70,16 @@ export class TabContainerModel {
         track = false,
         renderMode = RenderMode.LAZY,
         refreshMode = RefreshMode.ON_SHOW_LAZY,
-        persistWith = null
+        persistWith = null,
+        emptyText = 'No tabs to display'
     }) {
 
         tabs = tabs.filter(p => !p.omit);
-        ensureNotEmpty(tabs, 'TabContainerModel needs at least one child.');
+        if (isEmpty(tabs)) {
+            tabs.push({content: () => div(emptyText)});
+            switcherPosition = 'none';
+        }
+
         ensureUniqueBy(tabs, 'id', 'Multiple TabContainerModel tabs have the same id.');
         throwIf(!['top', 'bottom', 'left', 'right', 'none'].includes(switcherPosition), 'Unsupported value for switcherPosition.');
         throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
