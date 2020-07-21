@@ -44,6 +44,9 @@ export class TabContainerModel {
     /** @member {RefreshMode} */
     refreshMode;
 
+    /** @member {string|element} */
+    emptyText;
+
     /**
      * @param {Object} c - TabContainerModel configuration.
      * @param {Object[]} c.tabs - configs for TabModels to be displayed.
@@ -59,7 +62,7 @@ export class TabContainerModel {
      * @param {RefreshMode} [c.refreshMode] - strategy for refreshing child tabs. Can be set
      *      per-tab via `TabModel.refreshMode`. See enum for description of supported modes.
      * @param {PersistOptions} [c.persistWith] - options governing persistence.  Cannot be used with `route`.
-     * * @param {string|element} [c.emptyText] - text or element to display in case tabContainer is
+     * @param {string|element} [c.emptyText] - text or element to display in case tabContainer is
      *      not provided with any tabs or all tabs are omitted.
      */
     constructor({
