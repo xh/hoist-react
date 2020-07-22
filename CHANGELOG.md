@@ -1,17 +1,30 @@
 # Changelog
 
-## v36.0.0-SNAPSHOT - unreleased
+## v35.2.0 - 2020-07-21
+
+### 🎁 New Features
+
+* `TabContainerModel` now supports a `persistWith` config to persist the active tab.
+* `TabContainerModel` now supports a `emptyText` config to display when TabContainer
+   gets rendered with no children.
 
 ### ⚙️ Technical
 
 * Supports smaller bundle sizes via a greatly reduced set of BlueprintJS icons. (Requires apps to be
   built with `@xh/hoist-dev-utils` v5.2 or greater to take advantage of this optimization.)
 
+### 🐞 Bug Fixes
+
+* Colors specified via the `--xh-intent-` CSS vars are now applied to minimal / outlined desktop
+  `Button` components. Previously they fell through to use default Blueprint colors in these modes.
+* Code input correctly handles dynamically toggling readonly/disabled state.
+
 ### 📚 Libraries
 
 * @fortawesome/fontawesome-pro `5.13 -> 5.14`
+* codemirror `5.55 -> 5.56`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...v35.2.0)
 
 
 ## v35.1.1 - 2020-07-17
