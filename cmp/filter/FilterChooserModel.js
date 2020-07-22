@@ -170,46 +170,63 @@ export class FilterChooserModel {
     filterByQuery(query) {
         if (!query || !query.length) return [];
 
-        // Determine operator specified in query. If not specified, assume '='
+        // Determine operator provided in query.
         const words = query.split(' ').map(it => it.trim()),
             [keywords, queryParts] = partition(words, w => this.getOperatorForKeyword(w)),
-            [queryField, queryValue] = queryParts;
+            queryOperator = keywords.length === 1 ? this.getOperatorForKeyword(keywords[0]) : null;
 
-        const operator = keywords.length ? this.getOperatorForKeyword(keywords[0]) : '=',
-            valueOperators = ['=', '!=', 'like'],
-            rangeOperators = ['>', '>=', '<', '<='];
-
-        // Get options for the give query
-        const options = [];
-        if (valueOperators.includes(operator)) {
-            options.push(...this.getOptionsForValueQuery(queryField, queryValue, operator));
-        } else if (rangeOperators.includes(operator)) {
-            options.push(...this.getOptionsForRangeQuery(queryField, queryValue, operator));
+        // Determine which parts of the query correspond to field and value
+        let queryField, queryValue;
+        if (queryOperator) {
+            // If an operator has been provided, treat everything to its left as the field,
+            // and everything to its right as the value.
+            const idx = words.indexOf(queryOperator);
+            queryField = queryParts.slice(0, idx).join(' ');
+            queryValue = queryParts.slice(idx).join(' ');
+        } else {
+            // If no operator has been provided, treat the entire query as the field with no value.
+            queryField = queryParts.join(' ');
         }
 
-        // Get suggestions for field specs that partially match the query.
-        const suggestions = this.filterOptionsModel.specs.filter(spec => {
-            return this.getRegExp(queryField).test(spec.displayName);
-        });
-        if (!isEmpty(suggestions)) {
-            options.push({value: FilterChooserModel.SUGGESTIONS, suggestions});
+        // Get options for the given query, according to the query type specified by the operator
+        const valueOperators = ['=', '!=', 'like'],
+            rangeOperators = ['>', '>=', '<', '<='],
+            options = [];
+
+        if (!queryOperator || valueOperators.includes(queryOperator)) {
+            options.push(...this.getOptionsForValueQuery(queryField, queryValue, queryOperator));
+        } else if (rangeOperators.includes(queryOperator)) {
+            options.push(...this.getOptionsForRangeQuery(queryField, queryValue, queryOperator));
+        }
+
+        // Provide suggestions for field specs that partially match the query.
+        if (isEmpty(queryValue)) {
+            const suggestions = this.filterOptionsModel.specs.filter(spec => {
+                return this.getRegExp(queryField).test(spec.displayName);
+            });
+            if (!isEmpty(suggestions)) {
+                options.push({value: FilterChooserModel.SUGGESTIONS, suggestions});
+            }
         }
 
         return options;
     }
 
-    getOptionsForValueQuery(queryField, queryValue, operator) {
-        const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
+    getOptionsForValueQuery(queryField, queryValue, queryOperator) {
+        const fullQuery = queryOperator && !isEmpty(queryField) && !isEmpty(queryValue),
+            operator = queryOperator ?? '=', // If no operator included in query, assume '='
             options = [];
 
         const specs = this.filterOptionsModel.specs.filter(spec => {
             const {filterType, displayName, operators} = spec;
-
-            if (!operators.includes(operator)) return;
+            if (!operators.includes(operator)) return false;
 
             if (filterType === 'value') {
+                // For value filters, provide options based only on partial field match.
                 return !fullQuery || this.getRegExp(queryField).test(displayName);
             } else {
+                // Range filters support value operators (e.g. '=', '!='). For range filters
+                // the user must have provided the full query to get a match.
                 return fullQuery && this.getRegExp(queryField).test(displayName);
             }
         });
@@ -240,6 +257,8 @@ export class FilterChooserModel {
                     options.push(this.createOption(option));
                 });
             } else if (fullQuery) {
+                // For range filters with a fully specified query, create and option with the
+                // query value.
                 const value = parseFieldValue(queryValue, fieldType, null),
                     displayValue = spec.renderValue(value),
                     option = {field, value, operator, fieldType, displayName, displayValue};
@@ -251,30 +270,26 @@ export class FilterChooserModel {
         return options;
     }
 
-    getOptionsForRangeQuery(queryField, queryValue, operator) {
-        const fullQuery = !isEmpty(queryField) && !isEmpty(queryValue),
+    getOptionsForRangeQuery(queryField, queryValue, queryOperator) {
+        if (!queryOperator || isEmpty(queryValue)) return [];
+
+        const operator = queryOperator,
             options = [];
 
         const specs = this.filterOptionsModel.specs.filter(spec => {
-            const {filterType, displayName} = spec;
-            return (
-                filterType === 'range' &&
-                (!fullQuery || this.getRegExp(queryField).test(displayName))
-            );
+            const {filterType, displayName, operators} = spec;
+            if (!operators.includes(operator)) return false;
+            return filterType === 'range' && this.getRegExp(queryField).test(displayName);
         });
 
         specs.forEach(spec => {
-            const {field, fieldType, displayName} = spec,
-                value = parseFieldValue(fullQuery ? queryValue : queryField, fieldType, null);
+            const {field, fieldType, displayName} = spec;
 
+            const match = this.getRegExp(queryField).test(displayName);
+            if (!match) return;
+
+            const value = parseFieldValue(queryValue, fieldType, null);
             if (isNil(value) || isNaN(value)) return;
-
-            // If both both field and value are specified, only return an option for specified field.
-            // Otherwise, return an option for each field
-            if (fullQuery) {
-                const match = this.getRegExp(queryField).test(displayName);
-                if (!match) return;
-            }
 
             const displayValue = spec.renderValue(value),
                 option = {field, value, operator, fieldType, displayName, displayValue};
