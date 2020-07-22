@@ -5,15 +5,17 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Filter} from '@xh/hoist/data';
+import {Filter, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {throwIf, stripTags} from '@xh/hoist/utils/js';
-import {isString, isEmpty, startCase} from 'lodash';
+import {isString, isFunction, isEmpty, startCase} from 'lodash';
 
 /**
  * Defines the filter options available for a given store field, and also
  * provides useful metadata for including these options in UI affordances.
- * Typically generated from a Store via @see FilterOptionsModel
+ * Typically generated from a Store via @see FilterOptionsModel.
+ *
+ * Immutable.
  */
 export class FilterOptionsSpec {
 
@@ -31,6 +33,12 @@ export class FilterOptionsSpec {
 
     /** @member {function} */
     valueRenderer;
+
+    /** @member {function} */
+    valueParser;
+
+    /** @member {string} */
+    example;
 
     /**
      * Filter type, either 'range' or 'value'. Determines what operations are applicable for the field.
@@ -67,6 +75,10 @@ export class FilterOptionsSpec {
      * @property {string[]} [c.operators] - Available operators. Defaults according to filterType.
      * @property {*[]} [c.values] - Available value options. Only applicable when filterType == 'value'
      * @property {function} [c.valueRenderer] - Function to return a readable string for a value.
+     *      Receives (value, operator) as arguments.
+     * @property {function} [c.valueParser] - Function to return a value from an entered string.
+     *      Receives (value, operator) as arguments.
+     * @property {string} [c.example] - An example value. Used by components to aid usability.
      */
     constructor({
         field,
@@ -74,7 +86,9 @@ export class FilterOptionsSpec {
         fieldType = 'auto',
         values,
         operators,
-        valueRenderer
+        valueRenderer,
+        valueParser,
+        example
     }) {
         throwIf(!isString(field), 'FilterOptionsSpec requires a field');
 
@@ -83,22 +97,30 @@ export class FilterOptionsSpec {
         this.fieldType = fieldType;
         this.values = values;
         this.valueRenderer = valueRenderer;
+        this.valueParser = valueParser;
+        this.example = example;
         this._operators = operators ? operators.filter(it => Filter.isValidOperator(it)) : null;
+
+        Object.freeze(this);
     }
 
-    setValues(values) {
-        this.values = values;
-    }
-
-    renderValue(value) {
-        let ret = value?.toString();
-
-        if (this.valueRenderer) {
-            ret = this.valueRenderer(value);
+    renderValue(value, operator) {
+        let ret;
+        if (isFunction(this.valueRenderer)) {
+            ret = this.valueRenderer(value, operator);
         } else if (this.fieldType === 'date' || this.fieldType === 'localDate') {
             ret = fmtDate(value);
+        } else {
+            ret = value?.toString();
         }
-
         return stripTags(ret);
+    }
+
+    parseValue(value, operator) {
+        if (isFunction(this.valueParser)) {
+            return this.valueParser(value, operator);
+        } else {
+            return parseFieldValue(value, this.fieldType);
+        }
     }
 }

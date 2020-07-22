@@ -70,23 +70,23 @@ export class FilterOptionsModel {
 
             if (fieldCfg || isEmpty(fieldCfgs)) {
                 // Set defaults from store
-                const spec = new FilterOptionsSpec({
+                const specCfg = {
                     displayName: storeField.label,
                     fieldType: storeField.type,
                     ...fieldCfg
-                });
+                };
 
                 // Set values from store, if not specified
-                if (spec.filterType === 'value' && isNil(fieldCfg.values)) {
+                if (isNil(fieldCfg.values)) {
                     const values = new Set();
                     store.records.forEach(record => {
-                        const value = record.get(spec.field);
+                        const value = record.get(fieldCfg.field);
                         if (!isNil(value)) values.add(value);
                     });
-                    spec.setValues(values);
+                    specCfg.values = values;
                 }
 
-                specs.push(spec);
+                specs.push(new FilterOptionsSpec(specCfg));
             }
         });
 

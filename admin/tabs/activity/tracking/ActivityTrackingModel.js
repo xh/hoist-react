@@ -12,7 +12,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterModel, Cube} from '@xh/hoist/data';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {fmtDate, numberRenderer} from '@xh/hoist/format';
+import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -110,7 +110,7 @@ export class ActivityTrackingModel {
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
                 {name: 'impersonating', type: 'bool'},
-                {name: 'dateCreated', type: 'date'},
+                {name: 'dateCreated', label: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
                 {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
@@ -124,23 +124,43 @@ export class ActivityTrackingModel {
             filterOptionsModel: {
                 store: this.cube.store,
                 fields: [
+                    'month',
                     'username',
-                    'device',
-                    'browser',
-                    {
-                        field: 'elapsed',
-                        valueRenderer: numberRenderer({
-                            label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
-                        })
-                    },
                     {
                         field: 'msg',
                         operators: ['like']
                     },
+                    'device',
+                    'browser',
                     {
                         field: 'userAgent',
                         operators: ['like']
+                    },
+                    {
+                        field: 'elapsed',
+                        valueRenderer: (v) => {
+                            return fmtNumber(v, {
+                                label: 'ms',
+                                formatConfig: {thousandSeparated: false, mantissa: 0}
+                            });
+                        }
+                    },
+                    {
+                        field: 'dateCreated',
+                        example: fmtDate(Date.now()),
+                        valueParser: (v, operator) => {
+                            let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                            if (!ret.isValid()) return null;
+
+                            // Note special handling for '>' & '<=' queries.
+                            if (['>', '<='].includes(operator)) {
+                                ret = moment(ret).endOf('day');
+                            }
+
+                            return ret.toDate();
+                        },
+                        valueRenderer: (v) => fmtDate(v),
+                        operators: ['>', '>=', '<', '<=']
                     }
                 ]
             },

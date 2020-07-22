@@ -25,6 +25,18 @@ export class Filter {
 
     get isFilter() {return true}
 
+    static OPERATORS = [
+        '=',
+        '!=',
+        '>',
+        '>=',
+        '<',
+        '<=',
+        'in',
+        'notin',
+        'like'
+    ];
+
     /**
      * Create a new Filter. Accepts a Filter configuration or a string representation
      * generated using Filter.serialize().
@@ -46,13 +58,13 @@ export class Filter {
      * @returns {boolean}
      */
     static isValidOperator(operator) {
-        return VALID_OPERATORS.includes(operator);
+        return Filter.OPERATORS.includes(operator);
     }
 
     /**
      * @param {Object} c - Filter configuration.
      * @param {string} c.field - field to filter.
-     * @param {string} c.operator - operator to use in filter. Must be one of the VALID_OPERATORS.
+     * @param {string} c.operator - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|Array)} [c.value] - value(s) to use with operator in filter.
      * @param {string} [c.fieldType] - @see Field.type for available options.
      */
@@ -88,15 +100,15 @@ export class Filter {
      * @returns {boolean}
      */
     test(v) {
-        const {field, fieldType, operator} = this;
+        const {field, operator} = this;
 
-        v = parseFieldValue(v.isRecord ? v.get(field) : v[field], fieldType);
+        v = this.parseValue(v.isRecord ? v.get(field) : v[field]);
 
         let value;
         if (isArray(this.value)) {
-            value = this.value.map(it => parseFieldValue(it, fieldType));
+            value = this.value.map(it => this.parseValue(it));
         } else {
-            value = parseFieldValue(this.value, fieldType);
+            value = this.parseValue(this.value);
         }
 
         switch (operator) {
@@ -126,16 +138,8 @@ export class Filter {
     equals(other) {
         return isEqual(this.serialize(), other.serialize());
     }
-}
 
-const VALID_OPERATORS = [
-    '=',
-    '!=',
-    '>',
-    '>=',
-    '<',
-    '<=',
-    'in',
-    'notin',
-    'like'
-];
+    parseValue(value) {
+        return parseFieldValue(value, this.fieldType);
+    }
+}

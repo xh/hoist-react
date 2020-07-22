@@ -200,7 +200,7 @@ export class FilterChooserModel {
         }
 
         // Provide suggestions for field specs that partially match the query.
-        if (isEmpty(queryValue)) {
+        if (isEmpty(queryValue) || isEmpty(options)) {
             const suggestions = this.filterOptionsModel.specs.filter(spec => {
                 return this.getRegExp(queryField).test(spec.displayName);
             });
@@ -236,7 +236,7 @@ export class FilterChooserModel {
 
             if (filterType === 'value' && ['=', '!='].includes(operator)) {
                 values.forEach(value => {
-                    const displayValue = spec.renderValue(value);
+                    const displayValue = spec.renderValue(value, operator);
 
                     let match;
                     if (fullQuery) {
@@ -257,10 +257,12 @@ export class FilterChooserModel {
                     options.push(this.createOption(option));
                 });
             } else if (fullQuery) {
-                // For range filters with a fully specified query, create and option with the
+                // For range filters with a fully specified query, create an option with the
                 // query value.
-                const value = parseFieldValue(queryValue, fieldType, null),
-                    displayValue = spec.renderValue(value),
+                const value = spec.parseValue(queryValue, operator);
+                if (isNil(value) || isNaN(value)) return;
+
+                const displayValue = spec.renderValue(value, operator),
                     option = {field, value, operator, fieldType, displayName, displayValue};
 
                 options.push(this.createOption(option));
@@ -288,10 +290,10 @@ export class FilterChooserModel {
             const match = this.getRegExp(queryField).test(displayName);
             if (!match) return;
 
-            const value = parseFieldValue(queryValue, fieldType, null);
+            const value = spec.parseValue(queryValue, operator);
             if (isNil(value) || isNaN(value)) return;
 
-            const displayValue = spec.renderValue(value),
+            const displayValue = spec.renderValue(value, operator),
                 option = {field, value, operator, fieldType, displayName, displayValue};
 
             options.push(this.createOption(option));
@@ -310,7 +312,7 @@ export class FilterChooserModel {
             const {field, operator, fieldType} = filter,
                 value = parseFieldValue(filter.value, fieldType, null),
                 displayName = spec.displayName,
-                displayValue = spec.renderValue(value);
+                displayValue = spec.renderValue(value, operator);
 
             const option = {field, value, operator, fieldType, displayName, displayValue, filter};
             options.push(this.createOption(option));
