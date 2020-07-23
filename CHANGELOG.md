@@ -1,5 +1,9 @@
 # Changelog
 
+### 🎁 New Features
+
+* Added a `validEmail` constraint for forms.
+
 ## v35.2.0 - 2020-07-21
 
 ### 🎁 New Features
