@@ -38,7 +38,7 @@ export const validEmail = ({value, displayName}) => {
     // eslint-disable-next-line no-useless-escape
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         isValid = re.test(value);
-    if (!isValid) return `${displayName} is not valid.`;
+    if (!isValid) return `${displayName} is not a properly formatted address.`;
 };
 
 /**
