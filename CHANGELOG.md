@@ -4,6 +4,12 @@
 
 * Added a `validEmail` constraint for forms.
 
+### 🐞 Bug Fixes
+
+* Colors specified via the `--xh-intent-` CSS vars have been removed from minimal / outlined desktop
+  `Button` components because of incompatibility with `ButtonGroupInput` component. Fix to address
+  issue forthcoming.
+
 ## v35.2.0 - 2020-07-21
 
 ### 🎁 New Features
