@@ -295,8 +295,24 @@ body {
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   // Blueprint intents
-  --xh-intent-primary: var(--intent-primary, var(--xh-blue-dark));
+  // TODO - this approach below does not feel good at all, but I believe we need variations to support:
+  //    + Standard button background + outlined/minimal button text.
+  //    + Hovered standard button background
+  //    + Hovered minimal/outlined button background
+  //    + Active standard button background (in buttonGroupInput)
+  //    + Active minimal/outlined button background (in buttonGroupInput)
+  //    + All of these in dark mode as well....
+  //  See attempt to start using these variations in Button.scss
+  //  Maybe these vars should be specific to buttons, I am not sure....
+  --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
+  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '900', 0.9)});
+  --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '900', 0.8)});
+  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('blue', '600')});
+
   --xh-intent-danger: var(--intent-danger, var(--xh-red));
+  --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
+  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '900')});
+
   --xh-intent-success: var(--intent-success, var(--xh-green));
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
 }

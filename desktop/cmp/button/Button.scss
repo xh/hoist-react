@@ -5,43 +5,38 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 .xh-app,
-.xh-app.xh-dark {
+.xh-app.xh-dark,
+.xh-app.xh-dark.bp3-dark {
   .xh-button.bp3-button {
     border-radius: var(--xh-border-radius-px);
     font-family: var(--xh-button-font-family);
     font-size: var(--xh-button-font-size-px);
     white-space: nowrap;
 
-    &:not(.xh-button--minimal),
-    &:not(.xh-button--outlined) {
+    &:not(.xh-button--minimal) {
       color: var(--xh-button-text-color);
       padding: var(--xh-pad-half-px) var(--xh-pad-px);
+      background-color: var(--xh-button-bg);
 
-      &:not([class*="bp3-intent-"]):not(:hover) {
-        background-color: var(--xh-button-bg);
-
-        // Handle background of buttons in minimal button groups, such as in toasts
-        .bp3-button-group.bp3-minimal & {
-          background: none;
+      &.xh-button--intent-primary {
+        color: white;
+        background-color: var(--xh-intent-primary);
+        &:hover {
+          background-color: var(--xh-intent-primary-bg-3);
         }
       }
 
-      &.bp3-intent-primary {
-        color: white;
-        background-color: var(--xh-intent-primary);
-      }
-
-      &.bp3-intent-danger {
+      &.xh-button--intent-danger {
         color: white;
         background-color: var(--xh-intent-danger);
       }
 
-      &.bp3-intent-success {
+      &.xh-button--intent-success {
         color: white;
         background-color: var(--xh-intent-success);
       }
 
-      &.bp3-intent-warning {
+      &.xh-button--intent-warning {
         color: white;
         background-color: var(--xh-intent-warning);
       }
@@ -51,40 +46,44 @@
     &.xh-button--minimal,
     &.xh-button--outlined {
       color: var(--xh-button-text-color);
+
+      // More minimal padding here.
       padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
 
       &.xh-button--intent-primary {
         color: var(--xh-intent-primary);
+        background-color: transparent;
         border-color: var(--xh-intent-primary);
+        &:hover {
+          background-color: var(--xh-intent-primary-bg-1);
+        }
       }
 
       &.xh-button--intent-danger {
         color: var(--xh-intent-danger);
+        background-color: transparent;
         border-color: var(--xh-intent-danger);
+        &:hover {
+          background-color: var(--xh-intent-danger-bg-1);
+        }
       }
 
       &.xh-button--intent-success {
         color: var(--xh-intent-success);
+        background-color: transparent;
         border-color: var(--xh-intent-success);
       }
 
       &.xh-button--intent-warning {
         color: var(--xh-intent-warning);
+        background-color: transparent;
         border-color: var(--xh-intent-warning);
       }
-
-    }
-
-    // Except in button groups, which are already compressing buttons more closely together.
-    .xh-button-group & {
-      padding: var(--xh-pad-half-px) var(--xh-pad-px);
     }
 
     &.bp3-disabled {
       opacity: 0.6;
     }
-
-
 
     &--autofocus-enabled {
       // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
@@ -94,6 +93,49 @@
         outline: var(--xh-focus-outline) !important;
         outline-offset: var(--xh-focus-outline-offset-px) !important;
       }
+    }
+  }
+
+  //------------------------
+  // Button group (input)
+  //------------------------
+  .xh-button-group {
+    .xh-button.bp3-button {
+      &.bp3-active {
+        &:not([class*="xh-button--intent-"]) {
+          background-color: var(--xh-button-active-bg);
+          color: var(--xh-button-active-text-color);
+        }
+
+        &.xh-button--intent-primary {
+          background-color: var(--xh-intent-primary-bg-3);
+        }
+      }
+
+      &.xh-button--minimal,
+      &.xh-button--outlined {
+        background-color: transparent;
+        // Restore full default padding for minimal buttonGroup buttons.
+        padding: var(--xh-pad-half-px) var(--xh-pad-px);
+
+        &.bp3-active {
+          &.xh-button--intent-primary {
+            background-color: var(--xh-intent-primary-bg-2);
+          }
+        }
+
+      }
+
+      &:first-child {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+      }
+
     }
   }
 
