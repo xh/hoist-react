@@ -4,17 +4,97 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+.xh-app,
+.xh-app.xh-dark {
+  .xh-button.bp3-button {
+    border-radius: var(--xh-border-radius-px);
+    font-family: var(--xh-button-font-family);
+    font-size: var(--xh-button-font-size-px);
+    white-space: nowrap;
 
-.xh-button {
-  font-family: var(--xh-button-font-family);
+    &:not(.xh-button--minimal),
+    &:not(.xh-button--outlined) {
+      color: var(--xh-button-text-color);
+      padding: var(--xh-pad-half-px) var(--xh-pad-px);
 
-  &--autofocus-enabled {
-    // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
-    // unless a component has been tabbed into via keyboard. Override here to always show a focus
-    // indicator for an autoFocus button so it's clear that it has focus.
-    &:focus {
-      outline: var(--xh-focus-outline) !important;
-      outline-offset: var(--xh-focus-outline-offset-px) !important;
+      &:not([class*="bp3-intent-"]):not(:hover) {
+        background-color: var(--xh-button-bg);
+
+        // Handle background of buttons in minimal button groups, such as in toasts
+        .bp3-button-group.bp3-minimal & {
+          background: none;
+        }
+      }
+
+      &.bp3-intent-primary {
+        color: white;
+        background-color: var(--xh-intent-primary);
+      }
+
+      &.bp3-intent-danger {
+        color: white;
+        background-color: var(--xh-intent-danger);
+      }
+
+      &.bp3-intent-success {
+        color: white;
+        background-color: var(--xh-intent-success);
+      }
+
+      &.bp3-intent-warning {
+        color: white;
+        background-color: var(--xh-intent-warning);
+      }
+    }
+
+    // Minimal and outlined modes
+    &.xh-button--minimal,
+    &.xh-button--outlined {
+      color: var(--xh-button-text-color);
+      padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+
+      &.xh-button--intent-primary {
+        color: var(--xh-intent-primary);
+        border-color: var(--xh-intent-primary);
+      }
+
+      &.xh-button--intent-danger {
+        color: var(--xh-intent-danger);
+        border-color: var(--xh-intent-danger);
+      }
+
+      &.xh-button--intent-success {
+        color: var(--xh-intent-success);
+        border-color: var(--xh-intent-success);
+      }
+
+      &.xh-button--intent-warning {
+        color: var(--xh-intent-warning);
+        border-color: var(--xh-intent-warning);
+      }
+
+    }
+
+    // Except in button groups, which are already compressing buttons more closely together.
+    .xh-button-group & {
+      padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    }
+
+    &.bp3-disabled {
+      opacity: 0.6;
+    }
+
+
+
+    &--autofocus-enabled {
+      // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
+      // unless a component has been tabbed into via keyboard. Override here to always show a focus
+      // indicator for an autoFocus button so it's clear that it has focus.
+      &:focus {
+        outline: var(--xh-focus-outline) !important;
+        outline-offset: var(--xh-focus-outline-offset-px) !important;
+      }
     }
   }
+
 }
