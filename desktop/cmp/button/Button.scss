@@ -29,16 +29,25 @@
       &.xh-button--intent-danger {
         color: white;
         background-color: var(--xh-intent-danger);
+        &:hover {
+          background-color: var(--xh-intent-danger-bg-3);
+        }
       }
 
       &.xh-button--intent-success {
         color: white;
         background-color: var(--xh-intent-success);
+        &:hover {
+          background-color: var(--xh-intent-success-bg-3);
+        }
       }
 
       &.xh-button--intent-warning {
         color: white;
         background-color: var(--xh-intent-warning);
+      }
+      &:hover {
+        background-color: var(--xh-intent-warning-bg-3);
       }
     }
 
@@ -72,12 +81,18 @@
         color: var(--xh-intent-success);
         background-color: transparent;
         border-color: var(--xh-intent-success);
+        &:hover {
+          background-color: var(--xh-intent-success-bg-1);
+        }
       }
 
       &.xh-button--intent-warning {
         color: var(--xh-intent-warning);
         background-color: transparent;
         border-color: var(--xh-intent-warning);
+        &:hover {
+          background-color: var(--xh-intent-warning-bg-1);
+        }
       }
     }
 
@@ -109,6 +124,23 @@
 
         &.xh-button--intent-primary {
           background-color: var(--xh-intent-primary-bg-3);
+          color: var(--xh-button-active-text-color);
+
+        }
+        &.xh-button--intent-danger {
+          background-color: var(--xh-intent-danger-bg-3);
+          color: var(--xh-button-active-text-color);
+
+        }
+        &.xh-button--intent-success {
+          background-color: var(--xh-intent-success-bg-3);
+          color: var(--xh-button-active-text-color);
+
+        }
+        &.xh-button--intent-warning {
+          background-color: var(--xh-intent-warning-bg-3);
+          color: var(--xh-button-active-text-color);
+
         }
       }
 
@@ -121,6 +153,15 @@
         &.bp3-active {
           &.xh-button--intent-primary {
             background-color: var(--xh-intent-primary-bg-2);
+          }
+          &.xh-button--intent-danger {
+            background-color: var(--xh-intent-danger-bg-2);
+          }
+          &.xh-button--intent-success {
+            background-color: var(--xh-intent-success-bg-2);
+          }
+          &.xh-button--intent-warning {
+            background-color: var(--xh-intent-warning-bg-2);
           }
         }
 

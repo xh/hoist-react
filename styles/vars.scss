@@ -307,14 +307,24 @@ body {
   --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
   --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '900', 0.9)});
   --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '900', 0.8)});
-  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('blue', '600')});
+  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('light-blue', '600')});
 
   --xh-intent-danger: var(--intent-danger, var(--xh-red));
   --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
-  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '900')});
+  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '900', 0.8)});
+  --xh-intent-danger-bg-3: var(--intent-danger-bg-3, #{mc-trans('red', '600')});
 
   --xh-intent-success: var(--intent-success, var(--xh-green));
+  --xh-intent-success-bg-1: var(--intent-success-bg-1, #{mc-trans('green', '900', 0.9)});
+  --xh-intent-success-bg-2: var(--intent-success-bg-2, #{mc-trans('green', '900', 0.8)});
+  --xh-intent-success-bg-3: var(--intent-success-bg-3, #{mc-trans('green', '600')});
+
+
   --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
+  --xh-intent-warning-bg-1: var(--intent-warning-bg-1, #{mc-trans('orange', '900', 0.9)});
+  --xh-intent-warning-bg-2: var(--intent-warning-bg-2, #{mc-trans('orange', '900', 0.8)});
+  --xh-intent-warning-bg-3: var(--intent-warning-bg-3, #{mc-trans('orange', '600')});
+
 }
 
 //------------------------
@@ -386,17 +396,33 @@ body.xh-dark {
   --xh-text-color-highlight: var(--text-color-highlight, white);
   --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
 
-  // Blueprint intents
-  --xh-intent-primary: var(--intent-primary, var(--xh-blue-light));
-  --xh-intent-danger: var(--intent-danger, var(--xh-red));
-  --xh-intent-success: var(--intent-success, var(--xh-green));
-  --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
-
   // Buttons
   --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '600'), mc('light-blue', '700'), 90%)});
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
   --xh-button-bg: var(--button-bg, #{mc('blue-grey', '800')});
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
+
+  --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
+  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '900', 0.9)});
+  --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '900', 0.8)});
+  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc-trans('light-blue', '500')});
+
+  --xh-intent-danger: var(--intent-danger, var(--xh-red));
+  --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
+  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '900', 0.8)});
+  --xh-intent-danger-bg-3: var(--intent-danger-bg-3, #{mc-trans('red', '500')});
+
+  --xh-intent-success: var(--intent-success, var(--xh-green));
+  --xh-intent-success-bg-1: var(--intent-success-bg-1, #{mc-trans('green', '900', 0.9)});
+  --xh-intent-success-bg-2: var(--intent-success-bg-2, #{mc-trans('green', '900', 0.8)});
+  --xh-intent-success-bg-3: var(--intent-success-bg-3, #{mc-trans('green', '500')});
+
+
+  --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
+  --xh-intent-warning-bg-1: var(--intent-warning-bg-1, #{mc-trans('orange', '900', 0.9)});
+  --xh-intent-warning-bg-2: var(--intent-warning-bg-2, #{mc-trans('orange', '900', 0.8)});
+  --xh-intent-warning-bg-3: var(--intent-warning-bg-3, #{mc-trans('orange', '500')});
+
 }
 
 //------------------------
