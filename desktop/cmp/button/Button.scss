@@ -157,6 +157,10 @@
         // Restore full default padding for minimal buttonGroup buttons.
         padding: var(--xh-pad-half-px) var(--xh-pad-px);
 
+        &:not([class*="xh-button--intent-"]):hover {
+          background-color: var(--xh-button-active-bg);
+        }
+
         &.bp3-active {
           &.xh-button--intent-primary {
             background-color: var(--xh-intent-primary-bg-2);

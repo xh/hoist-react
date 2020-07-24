@@ -404,9 +404,9 @@ body.xh-dark {
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
 
   --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
-  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '900', 0.9)});
+  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '800', 0.9)});
   --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '800', 0.7)});
-  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('light-blue', '500')});
+  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('light-blue', '600')});
 
   --xh-intent-danger: var(--intent-danger, #{mc-trans('red', '600')});
   --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
