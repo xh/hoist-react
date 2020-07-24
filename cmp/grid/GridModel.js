@@ -695,7 +695,7 @@ export class GridModel {
 
     /**
      * Return all leaf-level column ids - i.e. excluding column groups.
-     * @returns {String[]}
+     * @returns {string[]}
      */
     getLeafColumnIds() {
         return this.getLeafColumns().map(col => col.colId);
@@ -715,7 +715,7 @@ export class GridModel {
      * Call this method instead of inspecting the `hidden` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {boolean}
      */
     isColumnVisible(colId) {
@@ -729,7 +729,7 @@ export class GridModel {
      * Call this method instead of inspecting the `pinned` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {string}
      */
     getColumnPinned(colId) {

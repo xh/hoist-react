@@ -96,7 +96,7 @@ export class FormModel {
     }
 
     /**
-     * @param {String} fieldName
+     * @param {string} fieldName
      * @return {FieldModel}
      */
     getField(fieldName) {
@@ -165,7 +165,7 @@ export class FormModel {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @return {String[]} - list of all validation errors for this form. */
+    /** @return {string[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
     }
