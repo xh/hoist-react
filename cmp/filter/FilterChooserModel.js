@@ -9,7 +9,8 @@ import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy, map, take, partition} from 'lodash';
+import {start} from '@xh/hoist/promise';
+import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy, map, take, partition, flatten, compact} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -66,9 +67,15 @@ export class FilterChooserModel {
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
+
                 const state = this.provider.read();
                 if (persistValue && state?.value) this.filterModel.setFilters(state.value);
                 if (persistHistory && state?.history) this.history = state.history;
+
+                this.addReaction({
+                    track: () => this.persistState,
+                    run: (state) => this.provider.write(state)
+                });
             } catch (e) {
                 console.error(e);
                 XH.safeDestroy(this.provider);
@@ -84,8 +91,7 @@ export class FilterChooserModel {
 
     @action
     setValue(value) {
-        this.value = value;
-        this.addToHistory(value);
+        this.value = compact(flatten(value));
         this.syncToFilterModel();
     }
 
@@ -93,9 +99,12 @@ export class FilterChooserModel {
     // Filter Model
     //--------------------
     syncToFilterModel() {
-        const filters = this.combineFilters(this.value?.map(it => FieldFilter.parse(it)) ?? []);
-        this.filterModel.setFilters(filters);
-        if (this.persistValue) this.provider.write({value: filters});
+        const filters = this.value?.map(it => FieldFilter.parse(it)) ?? [],
+            combinedFilters = this.combineFilters(filters);
+
+        this.filterModel.setFilters(combinedFilters);
+        this.addToHistory(filters);
+        start(() => this.syncFromFilterModel());
     }
 
     @action
@@ -323,7 +332,7 @@ export class FilterChooserModel {
 
     createOption(opt) {
         const {field, value, operator, fieldType, displayName, displayValue} = opt,
-            filter = opt.filter ?? new FieldFilter({field, operator, value, fieldType});
+            filter = FieldFilter.parse(opt.filter ?? {field, operator, value, fieldType});
 
         return {
             displayName,
@@ -369,7 +378,9 @@ export class FilterChooserModel {
             const {value, displayName} = it;
 
             let sorter;
-            if (sortRe.test(value)) {
+            if (value === FilterChooserModel.SUGGESTIONS) {
+                sorter = 6;
+            } else if (sortRe.test(value)) {
                 sorter = queryLength === value.length ? 1 : 2;
             } else if (sortRe.test(displayName)) {
                 sorter = queryLength === value.length ? 3 : 4;
@@ -384,15 +395,49 @@ export class FilterChooserModel {
     //--------------------
     // History
     //--------------------
+    get hasHistory() {
+        return !isEmpty(this.historyOptions);
+    }
+
+    get historyOptions() {
+        if (!isEmpty(this.value) || isEmpty(this.history)) return [];
+
+        return this.history.map(entry => {
+            const labels = entry.map(it => it.label),
+                value = entry.map(it => it.value);
+
+            return {isHistory: true, value, labels};
+        });
+    }
+
     @action
-    addToHistory(value) {
-        if (!this.persistHistory || isEmpty(value)) return;
+    addToHistory(filters) {
+        if (isEmpty(filters)) return;
+
+        // Convert filters to history items
+        const items = this.getHistoryValue(filters);
 
         // Remove, add to front, and truncate
         let {history, maxHistoryLength} = this;
-        history = differenceWith(history, [value], isEqual);
-        this.history = take([value, ...history], maxHistoryLength);
-        this.provider.write({history: this.history});
+        history = differenceWith(history, [items], isEqual);
+        this.history = take([items, ...history], maxHistoryLength);
+    }
+
+    getHistoryValue(filters) {
+        return this.getOptionsForFilters(filters).map(it => {
+            const {value, label} = it;
+            return {value, label};
+        });
+    }
+
+    //-------------------------
+    // Persistence handling
+    //-------------------------
+    get persistState() {
+        const ret = {};
+        if (this.persistValue) ret.value = this.value;
+        if (this.persistHistory) ret.history = this.history;
+        return ret;
     }
 }
 

@@ -26,6 +26,20 @@
     white-space: nowrap;
   }
 
+  &__history {
+    padding: var(--xh-pad-half-px) !important;
+  }
+
+  &__history-tag {
+    margin-right: var(--xh-pad-half-px);
+    padding: 3px 5px;
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg-alt);
+    border: var(--xh-border-solid);
+    border-radius: 2px;
+  }
+
   &__suggestions,
   &__truncated {
     margin-bottom: -4px;

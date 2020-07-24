@@ -20,6 +20,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...rest}) {
+        const {options, historyOptions, hasHistory} = model;
         return select({
             className,
             bind: 'value',
@@ -28,12 +29,11 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             queryFn: (q) => model.queryAsync(q),
             optionRenderer: (opt) => getFilterOption(opt),
             hideDropdownIndicator: true,
-            options: model.options,
+            options: options,
             rsOptions: {
-                // Todo: Use defaultOptions to render history options?
-                // e.g. defaultOptions: model.historyOptions,
-                openMenuOnClick: false,
-                openMenuOnFocus: false,
+                defaultOptions: historyOptions,
+                openMenuOnClick: hasHistory,
+                openMenuOnFocus: hasHistory,
                 isOptionDisabled: (opt) => {
                     return [
                         FilterChooserModel.TRUNCATED,
@@ -50,6 +50,10 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
 });
 
 function getFilterOption(opt) {
+    if (opt.isHistory) {
+        return historyOption({labels: opt.labels});
+    }
+
     switch (opt.value) {
         case FilterChooserModel.TRUNCATED:
             return truncatedMessage(opt);
@@ -72,6 +76,25 @@ const filterOption = hoistCmp.factory({
                 div({className: 'value', item: displayValue})
             ]
         });
+    }
+});
+
+const historyOption = hoistCmp.factory({
+    model: false,
+    className: 'xh-filter-chooser-option__history',
+    render({className, labels}) {
+        return hframe({
+            className,
+            item: labels?.map(label => historyOptionTag({label}))
+        });
+    }
+});
+
+const historyOptionTag = hoistCmp.factory({
+    model: false,
+    className: 'xh-filter-chooser-option__history-tag',
+    render({className, label}) {
+        return div({className, item: label});
     }
 });
 
