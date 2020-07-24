@@ -56,7 +56,7 @@ export class FormModel {
     _valuesProxy = this.createValuesProxy();
 
     /**
-     * @member {Object} - proxy for accessing all of the current data values in this form by name.
+     * @return {Object} - proxy for accessing all of the current data values in this form by name.
      *      Values accessed via this object are observable, and can be used directly in reactions to
      *      implement logic on change, such as disabling one field based on the value of another.
      *      Also passed to validation rules to facilitate observable cross-field validation.
@@ -135,7 +135,7 @@ export class FormModel {
         forOwn(this.fields, m => m.init(initialValues[m.name]));
     }
 
-    /** @member {boolean} - true if any fields have been changed since last reset/init. */
+    /** @return {boolean} - true if any fields have been changed since last reset/init. */
     @computed
     get isDirty() {
         return some(this.fields, m => m.isDirty);
@@ -144,7 +144,7 @@ export class FormModel {
     //------------------------
     // Validation
     //------------------------
-    /** @member {ValidationState} - the current validation state. */
+    /** @return {ValidationState} - the current validation state. */
     @computed
     get validationState() {
         const VS = ValidationState,
@@ -154,18 +154,18 @@ export class FormModel {
         return VS.Valid;
     }
 
-    /** @member {boolean} - true if any fields are currently recomputing their validation state. */
+    /** @return {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isValidationPending() {
         return some(this.fields, m => m.isValidationPending);
     }
 
-    /** @member {boolean} - true if all fields are valid. */
+    /** @return {boolean} - true if all fields are valid. */
     get isValid() {
         return this.validationState == ValidationState.Valid;
     }
 
-    /** @member {String[]} - list of all validation errors for this form. */
+    /** @return {String[]} - list of all validation errors for this form. */
     get allErrors() {
         return flatMap(this.fields, s => s.allErrors);
     }
