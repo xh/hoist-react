@@ -7,7 +7,8 @@
 
 import {castArray, groupBy, isEmpty, map} from 'lodash';
 import {action, observable} from 'mobx';
-import {Filter} from '@xh/hoist/data';
+import {FieldFilter} from '@xh/hoist/data';
+
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
 import {Query} from './Query';
@@ -212,7 +213,7 @@ export class View {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new Filter({field: dimName, operator: '=', value: val});
+            const filter = new FieldFilter({field: dimName, operator: '=', value: val});
             const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);

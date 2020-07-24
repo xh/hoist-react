@@ -6,7 +6,7 @@
  */
 
 import {XH, managed} from '@xh/hoist/core';
-import {Filter, FilterModel} from '@xh/hoist/data';
+import {FilterModel} from '@xh/hoist/data';
 import {castArray, find} from 'lodash';
 
 /**
@@ -63,9 +63,7 @@ export class Query {
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
 
-        this._filterModel = new FilterModel({
-            filters: this.parseFilters(filters)
-        });
+        this._filterModel = new FilterModel({filters});
     }
 
     clone(overrides) {
@@ -126,10 +124,5 @@ export class Query {
             }
             return field;
         });
-    }
-
-    parseFilters(filters) {
-        if (!filters) return null;
-        return filters.map(f => f instanceof Filter ? f : Filter.parse(f));
     }
 }

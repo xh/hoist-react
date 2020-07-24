@@ -7,6 +7,8 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {start} from '@xh/hoist/promise';
+import {FunctionFilter} from '@xh/hoist/data';
 import {
     debounce,
     escapeRegExp,
@@ -27,8 +29,8 @@ export class StoreFilterFieldImplModel {
     gridModel;
     store;
 
+    testFn;
     filterBuffer;
-    filterOptions;
     onFilterChange;
     includeFields;
     excludeFields;
@@ -41,9 +43,9 @@ export class StoreFilterFieldImplModel {
         bind,
         gridModel,
         store,
+        testFn,
         filterBuffer = 200,
         onFilterChange,
-        filterOptions,
         includeFields,
         excludeFields
     }) {
@@ -51,9 +53,9 @@ export class StoreFilterFieldImplModel {
         this.bind = bind;
         this.gridModel = gridModel;
         this.store = store;
+        this.testFn = testFn;
         this.filterBuffer = filterBuffer;
         this.onFilterChange = onFilterChange;
-        this.filterOptions = filterOptions;
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
 
@@ -74,7 +76,7 @@ export class StoreFilterFieldImplModel {
     // We allow these to be dynamic by updating on every render.
     updateFilterProps({
         onFilterChange,
-        filterOptions,
+        testFn,
         includeFields,
         excludeFields
     }) {
@@ -83,10 +85,10 @@ export class StoreFilterFieldImplModel {
 
         // ...other changes require re-generation
         if (!isEqual(
-            [filterOptions, includeFields, excludeFields],
-            [this.filterOptions, this.includeFields, this.excludeFields])
+            [testFn, includeFields, excludeFields],
+            [this.testFn, this.includeFields, this.excludeFields])
         ) {
-            this.filterOptions = filterOptions;
+            this.testFn = testFn;
             this.includeFields = includeFields;
             this.excludeFields = excludeFields;
             this.regenerateFilter();
@@ -115,20 +117,20 @@ export class StoreFilterFieldImplModel {
     // Implementation
     //------------------------
     applyFilter() {
-        this.store?.setFilter(this.filter);
+        this.store?.filterModel.replaceFilters(this.filter);
     }
 
     regenerateFilter() {
-        const {filter, filterText, filterOptions} = this,
+        const {filter, filterText} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
             searchTerm = escapeRegExp(filterText),
             initializing = isUndefined(filter);
 
-        let fn = null;
-        if (searchTerm && !isEmpty(activeFields)) {
+        let {testFn} = this;
+        if (!testFn && searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
-            fn = (rec) => activeFields.some(f => {
+            testFn = (rec) => activeFields.some(f => {
                 // Use of lodash get() slower than direct access - use only when needed to support
                 // dot-separated field paths. (See note in getActiveFields() below.)
                 const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
@@ -136,9 +138,10 @@ export class StoreFilterFieldImplModel {
             });
         }
 
-        const newFilter = fn ? {...filterOptions, fn} : null;
-        if (filter === newFilter) return;
-
+        const newFilter = testFn ? new FunctionFilter({id: this.xhId, testFn}) : null;
+        if (!newFilter && this.filter) {
+            this.store?.filterModel.removeFilters(this.filter);
+        }
         this.filter = newFilter;
         if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);
 
@@ -146,7 +149,9 @@ export class StoreFilterFieldImplModel {
         if (!initializing && newFilter) {
             this.bufferedApplyFilter();
         } else {
-            this.applyFilter();
+            // start() here required to resolve a "Cannot update during an existing state transition"
+            // React error. Further investigation required.
+            start(() => this.applyFilter());
         }
     }
 

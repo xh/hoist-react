@@ -7,7 +7,7 @@
 
 import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
-import {Filter, FilterModel, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy, map, take, partition} from 'lodash';
 
@@ -93,7 +93,7 @@ export class FilterChooserModel {
     // Filter Model
     //--------------------
     syncToFilterModel() {
-        const filters = this.combineFilters(this.value?.map(it => Filter.parse(it)) ?? []);
+        const filters = this.combineFilters(this.value?.map(it => FieldFilter.parse(it)) ?? []);
         this.filterModel.setFilters(filters);
         if (this.persistValue) this.provider.write({value: filters});
     }
@@ -121,7 +121,7 @@ export class FilterChooserModel {
         const groupedFilters = map(groupMap, (v, k) => {
             const [field, operator, fieldType] = k.split('|'),
                 value = v.map(it => it.value);
-            return new Filter({field, value, operator, fieldType});
+            return new FieldFilter({field, value, operator, fieldType});
         });
 
         return [...groupedFilters, ...rangeFilters];
@@ -132,14 +132,14 @@ export class FilterChooserModel {
      */
     splitFilters(filters) {
         const ret = [];
-        filters.forEach(filter => {
+        filters.filter(it => it.isFieldFilter).forEach(filter => {
             if (['in', 'notin'].includes(filter.operator)) {
                 const {field, fieldType} = filter,
                     operator = filter.operator === 'in' ? '=' : '!=';
 
                 ret.push(
                     ...filter.value.map(value => {
-                        return new Filter({field, operator, value, fieldType});
+                        return new FieldFilter({field, operator, value, fieldType});
                     })
                 );
             } else {
@@ -323,7 +323,7 @@ export class FilterChooserModel {
 
     createOption(opt) {
         const {field, value, operator, fieldType, displayName, displayValue} = opt,
-            filter = opt.filter ?? new Filter({field, operator, value, fieldType});
+            filter = opt.filter ?? new FieldFilter({field, operator, value, fieldType});
 
         return {
             displayName,

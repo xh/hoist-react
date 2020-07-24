@@ -6,10 +6,12 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {isEmpty, groupBy, every, some, values, castArray} from 'lodash';
+import {observable, bindable, action} from '@xh/hoist/mobx';
+import {isEmpty, isPlainObject, groupBy, every, some, values, castArray} from 'lodash';
 
 import {Filter} from './Filter';
+import {FieldFilter} from './FieldFilter';
+import {FunctionFilter} from './FunctionFilter';
 
 @HoistModel
 export class FilterModel {
@@ -21,12 +23,22 @@ export class FilterModel {
     /** @member {function(v: (Record|Object)):boolean} */
     test = null;
 
+    /** @member {Boolean} */
+    @bindable
+    includeChildren;
+
     /**
      * @param {Object} c - FilterModel configuration.
      * @param {(Filter[]|Object[])} [c.filters] - collection of filters, or configs to create them.
+     * @param {boolean} [c.includeChildren] - true if all children of a passing record should
+     *      also be considered passing (default false).
      */
-    constructor({filters = []} = {}) {
+    constructor({
+        filters = [],
+        includeChildren = false
+    } = {}) {
         this.filters = this.parseFilters(filters);
+        this.includeChildren = includeChildren;
         this.updateTestFunction();
     }
 
@@ -67,6 +79,24 @@ export class FilterModel {
         this.updateTestFunction();
     }
 
+    /**
+     * Removes all filters from the filter model.
+     */
+    @action
+    clearFilters() {
+        this.filters = [];
+    }
+
+    /**
+     * Convenience method to replace any matching Filters with a new set of Filters
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - new filters. Any matching filters will be replaced.
+     */
+    @action
+    replaceFilters(filters) {
+        this.removeFilters(filters);
+        this.addFilters(filters);
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -76,27 +106,33 @@ export class FilterModel {
 
     /**
      * Creates a function that tests a Record or Object against all the Filters.
-     * Filters across disparate fields are applied using AND.
-     * Filters that share a field and operator are applied using OR.
+     * FunctionFilters and FieldFilters across disparate fields are applied using AND.
+     * FieldFilters that share a field and operator are applied using OR.
      */
     createTestFunction() {
         const {filters} = this;
         if (isEmpty(filters)) return () => true;
 
-        const byField = values(groupBy(filters, f => f.field + '|' + f.operator));
+        const groups = values(groupBy(filters, f => {
+            if (f.isFunctionFilter) return f.testFn;
+            if (f.isFieldFilter) return f.field + '|' + f.operator;
+        }));
+
         return (v) => {
-            return every(byField, fieldFilters => {
-                return some(fieldFilters, f => f.test(v));
+            return every(groups, groupedFilters => {
+                return some(groupedFilters, f => f.test(v));
             });
         };
     }
 
     parseFilters(filters) {
-        if (!filters) return null;
+        if (!filters) return [];
         return castArray(filters).map(f => this.parseFilter(f));
     }
 
     parseFilter(filter) {
-        return filter instanceof Filter ? filter : Filter.parse(filter);
+        if (filter instanceof Filter) return filter;
+        if (isPlainObject(filter) && filter.testFn) return new FunctionFilter(filter);
+        return FieldFilter.parse(filter);
     }
 }

@@ -5,13 +5,13 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {Filter, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {throwIf, stripTags} from '@xh/hoist/utils/js';
 import {isString, isFunction, isEmpty, startCase} from 'lodash';
 
 /**
- * Defines the filter options available for a given store field, and also
+ * Defines the FieldFilter options available for a given store field, and also
  * provides useful metadata for including these options in UI affordances.
  * Typically generated from a Store via @see FilterOptionsModel.
  *
@@ -41,7 +41,7 @@ export class FilterOptionsSpec {
     example;
 
     /**
-     * Filter type, either 'range' or 'value'. Determines what operations are applicable for the field.
+     * FieldFilter type, either 'range' or 'value'. Determines what operations are applicable for the field.
      *      Type 'range' indicates the field should use mathematical / logical operations (i.e. '>', '>=', '<', '<=', '=', '!=')
      *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=', 'like')
      */
@@ -99,7 +99,7 @@ export class FilterOptionsSpec {
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
         this.example = example;
-        this._operators = operators ? operators.filter(it => Filter.isValidOperator(it)) : null;
+        this._operators = operators ? operators.filter(it => FieldFilter.isValidOperator(it)) : null;
 
         Object.freeze(this);
     }

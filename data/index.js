@@ -7,7 +7,6 @@
 
 export * from './Field';
 export * from './Store';
-export * from './StoreFilter';
 export * from './Record';
 export * from './RecordAction';
 export * from './StoreSelectionModel';
@@ -30,4 +29,6 @@ export * from './cube/Query';
 export * from './cube/View';
 
 export * from './filter/Filter';
+export * from './filter/FieldFilter';
+export * from './filter/FunctionFilter';
 export * from './filter/FilterModel';

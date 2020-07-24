@@ -100,9 +100,9 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    withFilter(filter) {
-        if (!filter) return this;
-        const {fn, includeChildren} = filter;
+    withFilterModel(filterModel) {
+        if (!filterModel) return this;
+        const {test, includeChildren} = filterModel;
 
         const passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
@@ -124,7 +124,7 @@ export class RecordSet {
             };
         }
         this.recordMap.forEach(rec => {
-            if (!isMarked(rec) && fn(rec)) {
+            if (!isMarked(rec) && test(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
             }
