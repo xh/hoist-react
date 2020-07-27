@@ -94,7 +94,7 @@ export class Exception {
      * Create an Error for when a fetch is timed out
      * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
      * @param {Error} e - Error object for raw timeout
-     * @param {String} [message] - optional custom message
+     * @param {string} [message] - optional custom message
      * @returns {Error}
      */
     static fetchTimeout(fetchOptions, e, message) {
