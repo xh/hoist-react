@@ -4,6 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+
+//------------------------
+// Core button styles (color-related styles in separate block below)
+//------------------------
 .xh-app,
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp3-dark {
@@ -13,95 +17,15 @@
     font-size: var(--xh-button-font-size-px);
     white-space: nowrap;
 
-    &:not(.xh-button--minimal) {
-      color: var(--xh-button-text-color);
+    // Shaded/filled-in (non-minimal) mode.
+    &.xh-button--standard {
       padding: var(--xh-pad-half-px) var(--xh-pad-px);
-      background-color: var(--xh-button-bg);
-
-      &:hover {
-        background-color: var(--xh-button-active-bg);
-      }
-
-      &.xh-button--intent-primary {
-        color: white;
-        background-color: var(--xh-intent-primary);
-        &:hover {
-          background-color: var(--xh-intent-primary-bg-3);
-        }
-      }
-
-      &.xh-button--intent-danger {
-        color: white;
-        background-color: var(--xh-intent-danger);
-        &:hover {
-          background-color: var(--xh-intent-danger-bg-3);
-        }
-      }
-
-      &.xh-button--intent-success {
-        color: white;
-        background-color: var(--xh-intent-success);
-        &:hover {
-          background-color: var(--xh-intent-success-bg-3);
-        }
-      }
-
-      &.xh-button--intent-warning {
-        color: white;
-        background-color: var(--xh-intent-warning);
-        &:hover {
-          background-color: var(--xh-intent-warning-bg-3);
-        }
-      }
     }
 
-    // Minimal and outlined modes
+    // Minimal (Hoist default) and outlined mode.
     &.xh-button--minimal,
     &.xh-button--outlined {
-      color: var(--xh-button-text-color);
-
-      // More minimal padding here.
       padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
-
-      &:hover {
-        background-color: var(--xh-button-active-bg);
-      }
-
-      &.xh-button--intent-primary {
-        color: var(--xh-intent-primary);
-        background-color: transparent;
-        border-color: var(--xh-intent-primary);
-        &:hover {
-          background-color: var(--xh-intent-primary-bg-2);
-        }
-      }
-
-      &.xh-button--intent-danger {
-        color: var(--xh-intent-danger);
-        background-color: transparent;
-        border-color: var(--xh-intent-danger);
-        &:hover {
-          background-color: var(--xh-intent-danger-bg-2);
-        }
-      }
-
-      &.xh-button--intent-success {
-        color: var(--xh-intent-success);
-        background-color: transparent;
-        border-color: var(--xh-intent-success);
-        &:hover {
-          background-color: var(--xh-intent-success-bg-2);
-        }
-      }
-
-      &.xh-button--intent-warning {
-        color: var(--xh-intent-warning);
-        background-color: transparent;
-        border-color: var(--xh-intent-warning);
-        &:hover {
-          background-color: var(--xh-intent-warning-bg-2);
-        }
-      }
     }
 
     &.bp3-disabled {
@@ -124,71 +48,333 @@
   //------------------------
   .xh-button-group {
     .xh-button.bp3-button {
-      &.bp3-active {
-        &:not([class*="xh-button--intent-"]) {
-          background-color: var(--xh-button-active-bg);
+      &.xh-button--minimal,
+      &.xh-button--outlined {
+        padding: var(--xh-pad-half-px) var(--xh-pad-px);
+      }
+
+      // Standard and outlined have borders - remove standard radius in between adjacent buttons so
+      // they seamlessly combine their inner borders.
+      border-radius: 0;
+      &.xh-button--standard,
+      &.xh-button--outlined {
+        &:first-child {
+          border-bottom-left-radius: var(--xh-border-radius-px);
+          border-top-left-radius: var(--xh-border-radius-px);
+        }
+
+        &:last-child {
+          border-bottom-right-radius: var(--xh-border-radius-px);
+          border-top-right-radius: var(--xh-border-radius-px);
+        }
+      }
+
+      // Minimal has no borders - radius is made visible by background shading when hovered or
+      // pressed, and looks more natural without any radius.
+      &.xh-button--minimal {
+        border-radius: 0;
+      }
+
+      // Outlined buttons should avoid doubled-up inner borders.
+      &.xh-button--outlined:not(:last-child) {
+        border-right: none;
+      }
+    }
+  }
+}
+
+
+//---------------------------
+// Default/light theme colors
+//---------------------------
+.xh-app {
+  .xh-button.bp3-button {
+    // Shaded/filled-in (non-minimal) mode.
+    &.xh-button--standard {
+      &.xh-button--intent-none {
+        color: var(--xh-button-text-color);
+        background-color: var(--xh-button-bg-lightest);
+        &:hover {background-color: var(--xh-button-bg-lighter)}
+        &:active {background-color: var(--xh-button-bg-darkest)}
+      }
+
+      &.xh-button--intent-primary {
+        color: white;
+        background-color: var(--xh-intent-primary);
+        &:hover {background-color: var(--xh-intent-primary-darker)}
+        &:active {background-color: var(--xh-intent-primary-darkest)}
+      }
+
+      &.xh-button--intent-success {
+        color: white;
+        background-color: var(--xh-intent-success);
+        &:hover {background-color: var(--xh-intent-success-darker)}
+        &:active {background-color: var(--xh-intent-success-darkest)}
+      }
+
+      &.xh-button--intent-warning {
+        color: white;
+        background-color: var(--xh-intent-warning);
+        &:hover {background-color: var(--xh-intent-warning-darker)}
+        &:active {background-color: var(--xh-intent-warning-darkest)}
+      }
+
+      &.xh-button--intent-danger {
+        color: white;
+        background-color: var(--xh-intent-danger);
+        &:hover {background-color: var(--xh-intent-danger-darker)}
+        &:active {background-color: var(--xh-intent-danger-darkest)}
+      }
+    }
+
+    // Minimal (Hoist default) and outlined mode.
+    &.xh-button--minimal,
+    &.xh-button--outlined {
+      &.xh-button--intent-none {
+        color: var(--xh-button-text-color);
+        background-color: transparent;
+        border-color: var(--xh-button-border-color);
+        &:hover {background-color: var(--xh-button-bg-darker)}
+        &:active {background-color: var(--xh-button-bg-darkest)}
+      }
+
+      &.xh-button--intent-primary {
+        color: var(--xh-intent-primary-darker);
+        background-color: transparent;
+        border-color: var(--xh-intent-primary);
+        &:hover {background-color: var(--xh-intent-primary-trans1)}
+        &:active {background-color: var(--xh-intent-primary-trans2)}
+      }
+
+      &.xh-button--intent-success {
+        color: var(--xh-intent-success-darker);
+        background-color: transparent;
+        border-color: var(--xh-intent-success);
+        &:hover {background-color: var(--xh-intent-success-trans1)}
+        &:active {background-color: var(--xh-intent-success-trans2)}
+      }
+
+      &.xh-button--intent-warning {
+        color: var(--xh-intent-warning-darker);
+        background-color: transparent;
+        border-color: var(--xh-intent-warning);
+        &:hover {background-color: var(--xh-intent-warning-trans1)}
+        &:active {background-color: var(--xh-intent-warning-trans2)}
+      }
+
+      &.xh-button--intent-danger {
+        color: var(--xh-intent-danger-darker);
+        background-color: transparent;
+        border-color: var(--xh-intent-danger);
+        &:hover {background-color: var(--xh-intent-danger-trans1)}
+        &:active {background-color: var(--xh-intent-danger-trans2)}
+      }
+    }
+  }
+
+  //------------------------
+  // Button group (input)
+  //------------------------
+  .xh-button-group {
+    .xh-button.bp3-button {
+      &.xh-button--standard {
+        &.xh-button--intent-none {
+          &.bp3-active {
+            color: var(--xh-button-active-text-color);
+            background-color: var(--xh-button-active-bg);
+          }
         }
 
         &.xh-button--intent-primary {
-          color: white;
-          background-color: var(--xh-intent-primary-bg-3);
-
+          &.bp3-active {background-color: var(--xh-intent-primary-darkest)}
         }
-        &.xh-button--intent-danger {
-          color: white;
-          background-color: var(--xh-intent-danger-bg-3);
 
-        }
         &.xh-button--intent-success {
-          color: white;
-          background-color: var(--xh-intent-success-bg-3);
-
+          &.bp3-active {background-color: var(--xh-intent-success-darkest)}
         }
-        &.xh-button--intent-warning {
-          color: white;
-          background-color: var(--xh-intent-warning-bg-3);
 
+        &.xh-button--intent-warning {
+          &.bp3-active {background-color: var(--xh-intent-warning-darkest)}
+        }
+
+        &.xh-button--intent-danger {
+          &.bp3-active {background-color: var(--xh-intent-danger-darkest)}
         }
       }
 
       &.xh-button--minimal,
       &.xh-button--outlined {
+        &.xh-button--intent-none {
+          &.bp3-active {
+            color: var(--xh-button-active-text-color);
+            background-color: var(--xh-button-active-bg);
+          }
+        }
+
+        &.xh-button--intent-primary {
+          &.bp3-active {background-color: var(--xh-intent-primary-trans2)}
+        }
+
+        &.xh-button--intent-success {
+          &.bp3-active {background-color: var(--xh-intent-success-trans2)}
+        }
+
+        &.xh-button--intent-warning {
+          &.bp3-active {background-color: var(--xh-intent-warning-trans2)}
+        }
+
+        &.xh-button--intent-danger {
+          &.bp3-active {background-color: var(--xh-intent-danger-trans2)}
+        }
+      }
+    }
+  }
+}
+
+//---------------------------
+// Dark theme colors
+//---------------------------
+.xh-app.xh-dark,
+.xh-app.xh-dark.bp3-dark {
+  .xh-button.bp3-button {
+    // Shaded/filled-in (non-minimal) mode.
+    &.xh-button--standard {
+      &.xh-button--intent-none {
+        color: var(--xh-button-text-color);
+        background-color: var(--xh-button-bg);
+        &:hover {background-color: var(--xh-button-bg-darker)}
+        &:active {background-color: var(--xh-button-bg-darkest)}
+      }
+
+      &.xh-button--intent-primary {
+        color: white;
+        background-color: var(--xh-intent-primary);
+        &:hover {background-color: var(--xh-intent-primary-darker)}
+        &:active {background-color: var(--xh-intent-primary-darkest)}
+      }
+
+      &.xh-button--intent-success {
+        color: white;
+        background-color: var(--xh-intent-success);
+        &:hover {background-color: var(--xh-intent-success-darker)}
+        &:active {background-color: var(--xh-intent-success-darkest)}
+      }
+
+      &.xh-button--intent-warning {
+        color: white;
+        background-color: var(--xh-intent-warning);
+        &:hover {background-color: var(--xh-intent-warning-darker)}
+        &:active {background-color: var(--xh-intent-warning-darkest)}
+      }
+
+      &.xh-button--intent-danger {
+        color: white;
+        background-color: var(--xh-intent-danger);
+        &:hover {background-color: var(--xh-intent-danger-darker)}
+        &:active {background-color: var(--xh-intent-danger-darkest)}
+      }
+    }
+
+    // Minimal (Hoist default) and outlined mode.
+    &.xh-button--minimal,
+    &.xh-button--outlined {
+      &.xh-button--intent-none {
+        color: var(--xh-button-text-color);
         background-color: transparent;
-        // Restore full default padding for minimal buttonGroup buttons.
-        padding: var(--xh-pad-half-px) var(--xh-pad-px);
-
-        &:not([class*="xh-button--intent-"]):hover {
-          background-color: var(--xh-button-active-bg);
-        }
-
-        &.bp3-active {
-          &.xh-button--intent-primary {
-            background-color: var(--xh-intent-primary-bg-2);
-          }
-          &.xh-button--intent-danger {
-            background-color: var(--xh-intent-danger-bg-2);
-          }
-          &.xh-button--intent-success {
-            background-color: var(--xh-intent-success-bg-2);
-          }
-          &.xh-button--intent-warning {
-            background-color: var(--xh-intent-warning-bg-2);
-          }
-        }
-
+        border-color: var(--xh-button-border-color);
+        &:hover {background-color: var(--xh-button-bg-lighter)}
+        &:active {background-color: var(--xh-button-bg-lightest)}
       }
 
-      &:first-child {
-        border-bottom-right-radius: 0;
-        border-top-right-radius: 0;
+      &.xh-button--intent-primary {
+        color: var(--xh-intent-primary-lighter);
+        background-color: transparent;
+        border-color: var(--xh-intent-primary-lighter);
+        &:hover {background-color: var(--xh-intent-primary-trans1)}
+        &:active {background-color: var(--xh-intent-primary-trans2)}
       }
 
-      &:last-child {
-        border-bottom-left-radius: 0;
-        border-top-left-radius: 0;
+      &.xh-button--intent-success {
+        color: var(--xh-intent-success-lighter);
+        background-color: transparent;
+        border-color: var(--xh-intent-success-lighter);
+        &:hover {background-color: var(--xh-intent-success-trans1)}
+        &:active {background-color: var(--xh-intent-success-trans2)}
       }
 
+      &.xh-button--intent-warning {
+        color: var(--xh-intent-warning-lighter);
+        background-color: transparent;
+        border-color: var(--xh-intent-warning-lighter);
+        &:hover {background-color: var(--xh-intent-warning-trans1)}
+        &:active {background-color: var(--xh-intent-warning-trans2)}
+      }
+
+      &.xh-button--intent-danger {
+        color: var(--xh-intent-danger-lighter);
+        background-color: transparent;
+        border-color: var(--xh-intent-danger-lighter);
+        &:hover {background-color: var(--xh-intent-danger-trans1)}
+        &:active {background-color: var(--xh-intent-danger-trans2)}
+      }
     }
   }
 
+  //------------------------
+  // Button group (input)
+  //------------------------
+  .xh-button-group {
+    .xh-button.bp3-button {
+      &.xh-button--standard {
+        &.xh-button--intent-none {
+          &.bp3-active {
+            color: var(--xh-button-active-text-color);
+            background-color: var(--xh-button-active-bg);
+          }
+        }
+
+        &.xh-button--intent-primary {
+          &.bp3-active {background-color: var(--xh-intent-primary-darkest)}
+        }
+
+        &.xh-button--intent-success {
+          &.bp3-active {background-color: var(--xh-intent-success-darkest)}
+        }
+
+        &.xh-button--intent-warning {
+          &.bp3-active {background-color: var(--xh-intent-warning-darkest)}
+        }
+
+        &.xh-button--intent-danger {
+          &.bp3-active {background-color: var(--xh-intent-danger-darkest)}
+        }
+      }
+
+      &.xh-button--minimal,
+      &.xh-button--outlined {
+        &.xh-button--intent-none {
+          &.bp3-active {
+            color: var(--xh-button-active-text-color);
+            background-color: var(--xh-button-active-bg);
+          }
+        }
+
+        &.xh-button--intent-primary {
+          &.bp3-active {background-color: var(--xh-intent-primary-trans2)}
+        }
+
+        &.xh-button--intent-success {
+          &.bp3-active {background-color: var(--xh-intent-success-trans2)}
+        }
+
+        &.xh-button--intent-warning {
+          &.bp3-active {background-color: var(--xh-intent-warning-trans2)}
+        }
+
+        &.xh-button--intent-danger {
+          &.bp3-active {background-color: var(--xh-intent-danger-trans2)}
+        }
+      }
+    }
+  }
 }

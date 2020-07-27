@@ -46,6 +46,92 @@ body {
   --xh-yellow: var(--yellow, #{mc('yellow', '800')});
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
+  // Intent Colors - using HSL here to support multiple levels of lightness w/o varying hue.
+  // Note dark-mode overrides below. Neutral colors used for styling buttons w/o intent.
+  --xh-intent-neutral-h: 180;
+  --xh-intent-neutral-s: 10%;
+  --xh-intent-neutral-l1: 82%;
+  --xh-intent-neutral-l2: 86%;
+  --xh-intent-neutral-l3: 90%;
+  --xh-intent-neutral-l4: 94%;
+  --xh-intent-neutral-l5: 98%;
+
+  --xh-intent-primary-h: 206;
+  --xh-intent-primary-s: 100%;
+  --xh-intent-primary-l1: 23%;
+  --xh-intent-primary-l2: 26%;
+  --xh-intent-primary-l3: 30%;
+  --xh-intent-primary-l4: 85%;
+  --xh-intent-primary-l5: 95%;
+
+  --xh-intent-success-h: 123;
+  --xh-intent-success-s: 43%;
+  --xh-intent-success-l1: 26%;
+  --xh-intent-success-l2: 30%;
+  --xh-intent-success-l3: 37%;
+  --xh-intent-success-l4: 85%;
+  --xh-intent-success-l5: 95%;
+
+  --xh-intent-warning-h: 30;
+  --xh-intent-warning-s: 100%;
+  --xh-intent-warning-l1: 34%;
+  --xh-intent-warning-l2: 38%;
+  --xh-intent-warning-l3: 43%;
+  --xh-intent-warning-l4: 85%;
+  --xh-intent-warning-l5: 95%;
+
+  --xh-intent-danger-h: 0;
+  --xh-intent-danger-s: 73%;
+  --xh-intent-danger-l1: 26%;
+  --xh-intent-danger-l2: 30%;
+  --xh-intent-danger-l3: 40%;
+  --xh-intent-danger-l4: 85%;
+  --xh-intent-danger-l5: 95%;
+
+  // Intent colors - alpha (opacity) variants.
+  --xh-intent-a1: 0.15;
+  --xh-intent-a2: 0.25;
+
+  --xh-intent-neutral-darkest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l1));
+  --xh-intent-neutral-darker: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l2));
+  --xh-intent-neutral: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3));
+  --xh-intent-neutral-lighter: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l4));
+  --xh-intent-neutral-lightest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l5));
+  --xh-intent-neutral-trans1: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a1));
+  --xh-intent-neutral-trans2: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a2));
+
+  --xh-intent-primary-darkest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l1));
+  --xh-intent-primary-darker: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l2));
+  --xh-intent-primary: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3));
+  --xh-intent-primary-lighter: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l4));
+  --xh-intent-primary-lightest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l5));
+  --xh-intent-primary-trans1: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a1));
+  --xh-intent-primary-trans2: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a2));
+
+  --xh-intent-success-darkest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l1));
+  --xh-intent-success-darker: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l2));
+  --xh-intent-success: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3));
+  --xh-intent-success-lighter: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l4));
+  --xh-intent-success-lightest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l5));
+  --xh-intent-success-trans1: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a1));
+  --xh-intent-success-trans2: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a2));
+
+  --xh-intent-warning-darkest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l1));
+  --xh-intent-warning-darker: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l2));
+  --xh-intent-warning: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3));
+  --xh-intent-warning-lighter: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l4));
+  --xh-intent-warning-lightest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l5));
+  --xh-intent-warning-trans1: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a1));
+  --xh-intent-warning-trans2: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a2));
+
+  --xh-intent-danger-darkest: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l1));
+  --xh-intent-danger-darker: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l2));
+  --xh-intent-danger: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3));
+  --xh-intent-danger-lighter: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l4));
+  --xh-intent-danger-lightest: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l5));
+  --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
+  --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
+
   // Background (app / components in general)
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
@@ -64,24 +150,31 @@ body {
   --xh-border-radius: var(--border-radius, 4);
   --xh-border-radius-px: calc(var(--xh-border-radius) * 1px);
 
+  // Buttons
+  --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
+  --xh-button-bg-darker: var(--xh-intent-neutral-darker);
+  --xh-button-bg: var(--xh-intent-neutral);
+  --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
+  --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
+  --xh-button-border-color: var(--button-border-color, var(--xh-border-color));
+  --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
+  --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
+  --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
+  --xh-button-text-color: var(--button-text-color, var(--xh-text-color));
+
+  // Buttons - special override for active, standard (no intent) only button in buttonGroups
+  --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
+
+  // Chart
+  --xh-chart-bg: var(--chart-bg, var(--xh-bg));
+
   // Focus indicator outline for interactive components - apps can use `--focus-outline: 0;` if
   // they wish to disable completely. Note form inputs provide their own dedicated props.
   --xh-focus-outline-width-px: var(--focus-outline-width-px, 0.5px);
   --xh-focus-outline-offset-px: var(--focus-outline-offset-px, -1px);
   --xh-focus-outline-color: var(--focus-outline-color, rgba(19, 124, 189, 0.6));
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
-
-  // Buttons
-  --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
-  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '100'), mc('blue', '200'), 90%)});
-  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
-  --xh-button-bg: var(--button-bg, #{mc('grey', '50')});
-  --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
-  --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
-  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
-
-  // Chart
-  --xh-chart-bg: var(--chart-bg, var(--xh-bg));
 
   // Grid
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
@@ -293,39 +386,6 @@ body {
   --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
   --xh-title-compact-height: var(--title-compact-height, 28);
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
-
-  // Blueprint intents
-  // TODO - this approach below does not feel good at all, but I believe we need variations to support:
-  //    + Standard button background + outlined/minimal button text.
-  //    + Hovered standard button background
-  //    + Hovered minimal/outlined button background
-  //    + Active standard button background (in buttonGroupInput)
-  //    + Active minimal/outlined button background (in buttonGroupInput)
-  //    + All of these in dark mode as well....
-  //  See attempt to start using these variations in Button.scss
-  //  Maybe these vars should be specific to buttons, I am not sure....
-  --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
-  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '900', 0.9)});
-  --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '600')});
-  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc-trans('light-blue', '600')});
-
-
-  --xh-intent-danger: var(--intent-danger, var(--xh-red));
-  --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
-  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '600')});
-  --xh-intent-danger-bg-3: var(--intent-danger-bg-3, #{mc-trans('red', '600')});
-
-  --xh-intent-success: var(--intent-success, var(--xh-green));
-  --xh-intent-success-bg-1: var(--intent-success-bg-1, #{mc-trans('green', '900', 0.9)});
-  --xh-intent-success-bg-2: var(--intent-success-bg-2, #{mc-trans('green', '600')});
-  --xh-intent-success-bg-3: var(--intent-success-bg-3, #{mc-trans('green', '600')});
-
-
-  --xh-intent-warning: var(--intent-warning, var(--xh-orange-muted));
-  --xh-intent-warning-bg-1: var(--intent-warning-bg-1, #{mc-trans('orange', '900', 0.9)});
-  --xh-intent-warning-bg-2: var(--intent-warning-bg-2, #{mc-trans('orange', '600')});
-  --xh-intent-warning-bg-3: var(--intent-warning-bg-3, #{mc-trans('orange', '600')});
-
 }
 
 //------------------------
@@ -339,6 +399,47 @@ body.xh-dark {
   --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
   --xh-red: var(--red, #{mc('red', 'a700')});
 
+  // Intent colors
+  --xh-intent-neutral-h: 180;
+  --xh-intent-neutral-s: 10%;
+  --xh-intent-neutral-l1: 20%;
+  --xh-intent-neutral-l2: 25%;
+  --xh-intent-neutral-l3: 32%;
+  --xh-intent-neutral-l4: 24%;
+  --xh-intent-neutral-l5: 28%;
+
+  --xh-intent-primary-h: 206;
+  --xh-intent-primary-s: 100%;
+  --xh-intent-primary-l1: 25%;
+  --xh-intent-primary-l2: 30%;
+  --xh-intent-primary-l3: 45%;
+  --xh-intent-primary-l4: 65%;
+  --xh-intent-primary-l5: 75%;
+
+  --xh-intent-success-h: 123;
+  --xh-intent-success-s: 50%;
+  --xh-intent-success-l1: 23%;
+  --xh-intent-success-l2: 30%;
+  --xh-intent-success-l3: 40%;
+  --xh-intent-success-l4: 60%;
+  --xh-intent-success-l5: 75%;
+
+  --xh-intent-warning-h: 30;
+  --xh-intent-warning-s: 100%;
+  --xh-intent-warning-l1: 25%;
+  --xh-intent-warning-l2: 30%;
+  --xh-intent-warning-l3: 40%;
+  --xh-intent-warning-l4: 65%;
+  --xh-intent-warning-l5: 75%;
+
+  --xh-intent-danger-h: 0;
+  --xh-intent-danger-s: 90%;
+  --xh-intent-danger-l1: 25%;
+  --xh-intent-danger-l2: 30%;
+  --xh-intent-danger-l3: 38%;
+  --xh-intent-danger-l4: 55%;
+  --xh-intent-danger-l5: 65%;
+
   // Background (app / components in general)
   --xh-bg: var(--bg, var(--xh-black));
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
@@ -346,6 +447,10 @@ body.xh-dark {
 
   // Borders
   --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
+
+  // Buttons
+  --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
+  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
 
   // Grid
   --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
@@ -396,33 +501,6 @@ body.xh-dark {
   --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
   --xh-text-color-highlight: var(--text-color-highlight, white);
   --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
-
-  // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '600'), mc('light-blue', '700'), 90%)});
-  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-text-color-highlight));
-  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '800')});
-  --xh-button-text-color: var(--button-text-color, var(--xh-text-color-highlight));
-
-  --xh-intent-primary: var(--intent-primary, #{mc('light-blue', '900')});
-  --xh-intent-primary-bg-1: var(--intent-primary-bg-1, #{mc-trans('light-blue', '800', 0.9)});
-  --xh-intent-primary-bg-2: var(--intent-primary-bg-2, #{mc-trans('light-blue', '800', 0.7)});
-  --xh-intent-primary-bg-3: var(--intent-primary-bg-3, #{mc('light-blue', '600')});
-
-  --xh-intent-danger: var(--intent-danger, #{mc-trans('red', '600')});
-  --xh-intent-danger-bg-1: var(--intent-danger-bg-1, #{mc-trans('red', '900', 0.9)});
-  --xh-intent-danger-bg-2: var(--intent-danger-bg-2, #{mc-trans('red', '800', 0.7)});
-  --xh-intent-danger-bg-3: var(--intent-danger-bg-3, #{mc('red', '700')});
-
-  --xh-intent-success: var(--intent-success, #{mc('green', '900')});
-  --xh-intent-success-bg-1: var(--intent-success-bg-1, #{mc-trans('green', '900', 0.9)});
-  --xh-intent-success-bg-2: var(--intent-success-bg-2, #{mc-trans('green', '800', 0.7)});
-  --xh-intent-success-bg-3: var(--intent-success-bg-3, var(--xh-green));
-
-
-  --xh-intent-warning: var(--intent-warning, #{mc-trans('amber', '900')});
-  --xh-intent-warning-bg-1: var(--intent-warning-bg-1, #{mc-trans('orange', '800', 0.9)});
-  --xh-intent-warning-bg-2: var(--intent-warning-bg-2, #{mc-trans('orange', '800', 0.7)});
-  --xh-intent-warning-bg-3: var(--intent-warning-bg-3, #{mc('orange', '900')});
 
 }
 
