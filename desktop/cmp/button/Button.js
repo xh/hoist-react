@@ -29,9 +29,13 @@ export const [Button, button] = hoistCmp.withFactory({
             classes = [];
 
         if (autoFocus) classes.push('xh-button--autofocus-enabled');
+
         if (intent) classes.push(`xh-button--intent-${intent}`);
+        if (!intent) classes.push(`xh-button--intent-none`);
+
         if (minimal) classes.push('xh-button--minimal');
         if (outlined) classes.push('xh-button--outlined');
+        if (!minimal && !outlined) classes.push('xh-button--standard');
 
         return bpButton({
             autoFocus,
