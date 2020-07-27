@@ -43,6 +43,7 @@ export class ButtonGroupInput extends HoistInput {
         const {
             children,
             //  HoistInput Props
+            bind,
             disabled,
             model,
             onChange,
@@ -90,6 +91,7 @@ export class ButtonGroupInput extends HoistInput {
         return buttonGroup({
             items: buttons,
             ...buttonGroupProps,
+            minimal: withDefault(minimal, outlined, false),
             ...this.getLayoutProps(),
             className: this.getClassName()
         });
