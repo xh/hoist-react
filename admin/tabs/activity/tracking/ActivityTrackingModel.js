@@ -103,14 +103,14 @@ export class ActivityTrackingModel {
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'username', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', label: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
                 {name: 'impersonating', type: 'bool'},
-                {name: 'dateCreated', label: 'Timestamp', type: 'date'},
+                {name: 'dateCreated', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
                 {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
@@ -128,6 +128,7 @@ export class ActivityTrackingModel {
                     'username',
                     {
                         field: 'msg',
+                        displayName: 'Message',
                         operators: ['like']
                     },
                     'device',
@@ -147,6 +148,7 @@ export class ActivityTrackingModel {
                     },
                     {
                         field: 'dateCreated',
+                        displayName: 'Timestamp',
                         exampleValue: Date.now(),
                         valueParser: (v, operator) => {
                             let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);

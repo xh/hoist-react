@@ -69,7 +69,7 @@ export class FilterOptionsModel {
     @action
     updateSpecs() {
         const {store, storeMode} = this,
-            fieldCfgs = this.fields.map(field => isString(field) ? {field} : field),
+            fieldCfgs = this.fields?.map(field => isString(field) ? {field} : field) ?? [],
             specs = [];
 
         store.fields.forEach(storeField => {
@@ -78,18 +78,19 @@ export class FilterOptionsModel {
             if (fieldCfg || isEmpty(fieldCfgs)) {
                 // Set defaults from store
                 const specCfg = {
+                    field: storeField.name,
                     displayName: storeField.label,
                     fieldType: storeField.type,
                     ...fieldCfg
                 };
 
                 // Set values from store, if not specified
-                if (isNil(fieldCfg.values)) {
+                if (isNil(fieldCfg?.values)) {
                     const values = new Set(),
                         records = storeMode === 'filtered' ? store.records : store.allRecords;
 
                     records.forEach(record => {
-                        const value = record.get(fieldCfg.field);
+                        const value = record.get(specCfg.field);
                         if (!isNil(value)) values.add(value);
                     });
 

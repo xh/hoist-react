@@ -6,13 +6,16 @@
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, dateTimeCol} from '@xh/hoist/cmp/grid';
+import {FilterModel} from '@xh/hoist/data';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {fmtSpan} from '@xh/hoist/format';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import moment from 'moment';
 
 @HoistModel
 @LoadSupport
@@ -22,13 +25,15 @@ export class ClientErrorsModel {
 
     @bindable.ref startDate = LocalDate.today().subtract(6, 'months');
     @bindable.ref endDate = LocalDate.today();
-    @bindable username;
-    @bindable error;
 
     /** @member {GridModel} */
     @managed gridModel
     /** @member {FormModel} */
     @managed formModel;
+    /** @member {FilterModel} */
+    @managed filterModel;
+    /** @member {FilterChooserModel} */
+    @managed filterChooserModel;
 
     /** @member {{}} - distinct values for key dimensions, used to power query selects. */
     @bindable.ref lookups = {};
@@ -39,10 +44,26 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        this.filterModel = new FilterModel();
+
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
             enableColChooser: true,
             enableExport: true,
+            store: {
+                filterModel: this.filterModel,
+                fields: [
+                    {field: 'username', type: 'string'},
+                    {field: 'browser', type: 'string'},
+                    {field: 'device', type: 'string'},
+                    {field: 'userAgent', type: 'string'},
+                    {field: 'appVersion', type: 'string'},
+                    {field: 'appEnvironment', type: 'string'},
+                    {field: 'msg', type: 'string'},
+                    {field: 'error', type: 'string'},
+                    {field: 'dateCreated', type: 'date'}
+                ]
+            },
             exportOptions: {
                 filename: `${XH.appCode}-client-errors`,
                 columns: 'ALL'
@@ -94,6 +115,56 @@ export class ClientErrorsModel {
             ]
         });
 
+        this.filterChooserModel = new FilterChooserModel({
+            filterModel: this.filterModel,
+            filterOptionsModel: {
+                store: this.gridModel.store,
+                fields: [
+                    'username',
+                    'browser',
+                    'device',
+                    {
+                        field: 'userAgent',
+                        operators: ['like']
+                    },
+                    'appVersion',
+                    {
+                        field: 'appEnvironment',
+                        displayName: 'Environment'
+                    },
+                    {
+                        field: 'msg',
+                        displayName: 'User Message',
+                        operators: ['like']
+                    },
+                    {
+                        field: 'error',
+                        displayName: 'Error Details',
+                        operators: ['like']
+                    },
+                    {
+                        field: 'dateCreated',
+                        displayName: 'Timestamp',
+                        exampleValue: Date.now(),
+                        valueParser: (v, operator) => {
+                            let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                            if (!ret.isValid()) return null;
+
+                            // Note special handling for '>' & '<=' queries.
+                            if (['>', '<='].includes(operator)) {
+                                ret = moment(ret).endOf('day');
+                            }
+
+                            return ret.toDate();
+                        },
+                        valueRenderer: (v) => fmtDate(v),
+                        operators: ['>', '>=', '<', '<=']
+                    }
+                ]
+            },
+            persistWith: this.persistWith
+        });
+
         this.formModel = new FormModel({
             readonly: true,
             fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
@@ -115,8 +186,7 @@ export class ClientErrorsModel {
     resetQuery() {
         this.startDate = LocalDate.today().subtract(6, 'months');
         this.endDate = LocalDate.today();
-        this.username = null;
-        this.error = null;
+        this.filterModel.clearFilters();
     }
 
     async doLoadAsync(loadSpec) {
@@ -188,11 +258,7 @@ export class ClientErrorsModel {
     }
 
     getParams() {
-        return {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            username: this.username,
-            error: this.error
-        };
+        const {startDate, endDate} = this;
+        return {startDate, endDate};
     }
 }
