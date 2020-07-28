@@ -4,6 +4,13 @@
 
 * Added a `validEmail` constraint for forms.
 
+### 🐞 Bug Fixes
+
+* Grid Summary Row is now cleared when grid is cleared
+* `chevron-right/left` svg icons added to `requiredBlueprintIcons.js`
+  to bring back calendar scroll icons on the DatePicker component.
+
+
 ## v35.2.0 - 2020-07-21
 
 ### 🎁 New Features
