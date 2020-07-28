@@ -30,6 +30,9 @@ export class ButtonGroupInput extends HoistInput {
         /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
         enableClear: PT.bool,
 
+        /** Intent applied to each button. */
+        intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
+
         /** True to create minimal-style buttons. */
         minimal: PT.bool,
 
