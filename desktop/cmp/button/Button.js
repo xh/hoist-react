@@ -24,11 +24,12 @@ export const [Button, button] = hoistCmp.withFactory({
 
     render(props) {
         const [layoutProps, {
-                autoFocus, className, icon, intent, minimal = true, onClick, outlined, style, text, title, ...rest
+                autoFocus, className, disabled, icon, intent, minimal = true, onClick, outlined, style, text, title, ...rest
             }] = splitLayoutProps(props),
             classes = [];
 
         if (autoFocus) classes.push('xh-button--autofocus-enabled');
+        if (disabled) classes.push('xh-button--disabled');
 
         if (intent) classes.push(`xh-button--intent-${intent}`);
         if (!intent) classes.push(`xh-button--intent-none`);
@@ -40,6 +41,7 @@ export const [Button, button] = hoistCmp.withFactory({
         return bpButton({
             autoFocus,
             className: classNames(className, classes),
+            disabled,
             icon,
             intent,
             minimal,
@@ -59,6 +61,7 @@ export const [Button, button] = hoistCmp.withFactory({
 Button.propTypes = {
     autoFocus: PT.bool,
     className: PT.string,
+    disabled: PT.bool,
     icon: PT.element,
     intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
     minimal: PT.bool,
