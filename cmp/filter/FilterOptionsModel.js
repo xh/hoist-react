@@ -7,6 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty, isNil, isString} from 'lodash';
 
 import {FilterOptionsSpec} from './FilterOptionsSpec';
@@ -20,15 +21,17 @@ export class FilterOptionsModel {
     /** @member {Store} */
     store;
 
+    /** @member {string} */
+    storeMode;
+
     /** @member {string[]} */
     fields;
-
-    /** @member {string} */
-    mode;
 
     /**
      * @param {Object} c - FilterOptionsModel configuration.
      * @param {Store} c.store - Store from which to derive options.
+     * @param {string} [c.storeMode] - Whether to use Store.records or Store.allRecords to collect
+     *      FilterOptionsSpec values. Either 'all' or 'filtered'. Defaults to 'filtered'.
      * @param {(string[]|Object[])} [c.fields] - List of store fields to create FilterOptionsSpecs.
      *      Can provide either just a string field name, or a partial FilterOptionsSpec config.
      *      FilterOptionsSpecs will be created for each field, extracting unspecified properties from
@@ -36,9 +39,13 @@ export class FilterOptionsModel {
      */
     constructor({
         store,
+        storeMode = 'filtered',
         fields
     }) {
+        throwIf(!['filtered', 'all'].includes(storeMode), `Store mode ${storeMode} not recognized.`);
+
         this.store = store;
+        this.storeMode = storeMode;
         this.fields = fields;
 
         this.addReaction({
@@ -61,7 +68,7 @@ export class FilterOptionsModel {
     //--------------------
     @action
     updateSpecs() {
-        const {store} = this,
+        const {store, storeMode} = this,
             fieldCfgs = this.fields.map(field => isString(field) ? {field} : field),
             specs = [];
 
@@ -78,11 +85,14 @@ export class FilterOptionsModel {
 
                 // Set values from store, if not specified
                 if (isNil(fieldCfg.values)) {
-                    const values = new Set();
-                    store.records.forEach(record => {
+                    const values = new Set(),
+                        records = storeMode === 'filtered' ? store.records : store.allRecords;
+
+                    records.forEach(record => {
                         const value = record.get(fieldCfg.field);
                         if (!isNil(value)) values.add(value);
                     });
+
                     specCfg.values = values;
                 }
 

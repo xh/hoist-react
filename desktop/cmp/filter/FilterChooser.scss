@@ -55,6 +55,10 @@
   }
 
   &__suggestion-row {
+    &:not(:last-of-type) {
+      margin-bottom: var(--xh-pad-half-px);
+    }
+
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);
@@ -63,12 +67,12 @@
     .operators {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-text-color-muted);
-      font-weight: bold;
     }
 
     .example {
       margin-left: var(--xh-pad-half-px);
-      color: var(--xh-intent-primary);
+      color: var(--xh-text-color-muted);
+      font-weight: bold;
     }
   }
 }

@@ -37,8 +37,8 @@ export class FilterOptionsSpec {
     /** @member {function} */
     valueParser;
 
-    /** @member {string} */
-    example;
+    /** @member {*} */
+    exampleValue;
 
     /**
      * FieldFilter type, either 'range' or 'value'. Determines what operations are applicable for the field.
@@ -68,6 +68,14 @@ export class FilterOptionsSpec {
     }
 
     /**
+     * Returns a string for an example value.
+     */
+    get example() {
+        if (this.exampleValue) return this.renderValue(this.exampleValue);
+        return this.fieldType.toUpperCase();
+    }
+
+    /**
      * @param {Object} c - FilterOptionsSpec configuration.
      * @property {string} c.field - Name of field
      * @property {string} [c.displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')
@@ -78,7 +86,7 @@ export class FilterOptionsSpec {
      *      Receives (value, operator) as arguments.
      * @property {function} [c.valueParser] - Function to return a value from an entered string.
      *      Receives (value, operator) as arguments.
-     * @property {string} [c.example] - An example value. Used by components to aid usability.
+     * @property {*} [c.exampleValue] - An example value. Used by components to aid usability.
      */
     constructor({
         field,
@@ -88,7 +96,7 @@ export class FilterOptionsSpec {
         operators,
         valueRenderer,
         valueParser,
-        example
+        exampleValue
     }) {
         throwIf(!isString(field), 'FilterOptionsSpec requires a field');
 
@@ -98,7 +106,7 @@ export class FilterOptionsSpec {
         this.values = values;
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
-        this.example = example;
+        this.exampleValue = exampleValue;
         this._operators = operators ? operators.filter(it => FieldFilter.isValidOperator(it)) : null;
 
         Object.freeze(this);

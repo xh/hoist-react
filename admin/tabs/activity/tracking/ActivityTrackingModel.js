@@ -147,7 +147,7 @@ export class ActivityTrackingModel {
                     },
                     {
                         field: 'dateCreated',
-                        example: fmtDate(Date.now()),
+                        exampleValue: Date.now(),
                         valueParser: (v, operator) => {
                             let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
                             if (!ret.isValid()) return null;

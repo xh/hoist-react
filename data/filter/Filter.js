@@ -5,6 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
+
 /**
  * Base class for Filters. Not intended to be created / used directly.
  */
@@ -17,7 +19,7 @@ export class Filter {
      * @returns {string}
      */
     serialize() {
-        throw new Error('Filter.serialize() not implemented. Use a Filter subclass instead.');
+        throw XH.exception('Not implemented.');
     }
 
     /**
@@ -26,7 +28,7 @@ export class Filter {
      * @returns {boolean}
      */
     test(v) {
-        throw new Error('Filter.test() not implemented. Use a Filter subclass instead.');
+        throw XH.exception('Not implemented.');
     }
 
     /**
@@ -34,6 +36,6 @@ export class Filter {
      * @returns {boolean}
      */
     equals(other) {
-        throw new Error('Filter.equals() not implemented. Use a Filter subclass instead.');
+        throw XH.exception('Not implemented.');
     }
 }

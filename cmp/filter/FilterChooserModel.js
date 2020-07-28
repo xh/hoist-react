@@ -10,7 +10,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {start} from '@xh/hoist/promise';
-import {differenceWith, isEmpty, isEqual, isNil, isPlainObject, groupBy, sortBy, map, take, partition, flatten, compact} from 'lodash';
+import {differenceWith, isEmpty, isEqual, isNil, isNaN, isPlainObject, groupBy, sortBy, map, take, partition, flatten, compact} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -266,7 +266,7 @@ export class FilterChooserModel {
                     options.push(this.createOption(option));
                 });
             } else if (fullQuery) {
-                // For range filters with a fully specified query, create an option with the
+                // For filters which require a fully specified query, create an option with the
                 // query value.
                 const value = spec.parseValue(queryValue, operator);
                 if (isNil(value) || isNaN(value)) return;

@@ -113,14 +113,14 @@ const suggestionRow = hoistCmp.factory({
     model: false,
     className: 'xh-filter-chooser-option__suggestion-row',
     render({className, spec}) {
-        const {displayName, operators, example, fieldType} = spec;
+        const {displayName, operators, example} = spec;
         return hbox({
             className,
             items: [
                 div('e.g.'),
                 div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '( ' + operators.join(', ') + ' )'}),
-                div({className: 'example', item: example ?? fieldType.toUpperCase()})
+                div({className: 'operators', item: '[ ' + operators.join(', ') + ' ]'}),
+                div({className: 'example', item: example})
             ]
         });
     }

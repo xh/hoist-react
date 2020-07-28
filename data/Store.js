@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, ReactiveSupport} from '@xh/hoist/core';
+import {XH, ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {FilterModel} from '@xh/hoist/data';
@@ -31,6 +31,7 @@ import {Record} from './Record';
  * A managed and observable set of local, in-memory Records.
  */
 @ReactiveSupport
+@ManagedSupport
 export class Store {
 
     /** @member {Field[]} */
@@ -92,19 +93,11 @@ export class Store {
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
 
-        // Support deprecated 'filter' config and StoreFilter syntax.
-        warnIf(!isNil(filter), "The 'filter' config has been deprecated. Use 'filterModel' instead");
-        if (filter) {
-            let testFn;
-            if (isFunction(filter)) {
-                testFn = filter;
-            } else if (isPlainObject(filter)) {
-                testFn = filter.fn;
-            }
-            this.filterModel.addFilters({id: XH.getId(), testFn});
-        }
-
         this.resetRecords();
+
+        warnIf(!isNil(filter), "The 'filter' config has been deprecated. Use 'filterModel' instead");
+        if (filter) this.setFilter(filter);
+
         if (data) this.loadData(data);
 
         this.addReaction({
@@ -536,7 +529,23 @@ export class Store {
         return this._current !== this._committed;
     }
 
-    /** Convenience method to clear the filter model applied to this store. */
+    /**
+     * Convenience method to set a filter on the FilterModel applied to this store.
+     * Note that this will replace all filters on the FilterModel.
+     *
+     * @param {(FunctionFilter|Object|function)} filter - Filter to be applied to
+     *      Records, a config to create one, or a function.
+     */
+    setFilter(filter) {
+        if (isFunction(filter)) filter = {id: XH.getId(), testFn: filter};
+
+        // Support deprecated StoreFilter syntax.
+        if (isPlainObject(filter) && filter.fn) filter.testFn = filter.fn;
+
+        this.filterModel.setFilters(filter);
+    }
+
+    /** Convenience method to clear the FilterModel applied to this store. */
     clearFilter() {
         this.filterModel.clearFilters();
     }
@@ -703,7 +712,7 @@ export class Store {
 
     parseFilterModel(filterModel) {
         filterModel = filterModel ?? {};
-        return isPlainObject(filterModel) ? new FilterModel(filterModel) : filterModel;
+        return isPlainObject(filterModel) ? this.markManaged(new FilterModel(filterModel)) : filterModel;
     }
 
     @action

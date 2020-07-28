@@ -9,7 +9,6 @@ import {HoistModel} from '@xh/hoist/core';
 import {observable, bindable, action} from '@xh/hoist/mobx';
 import {isEmpty, isPlainObject, groupBy, every, some, values, castArray} from 'lodash';
 
-import {Filter} from './Filter';
 import {FieldFilter} from './FieldFilter';
 import {FunctionFilter} from './FunctionFilter';
 
@@ -114,8 +113,7 @@ export class FilterModel {
         if (isEmpty(filters)) return () => true;
 
         const groups = values(groupBy(filters, f => {
-            if (f.isFunctionFilter) return f.testFn;
-            if (f.isFieldFilter) return f.field + '|' + f.operator;
+            return f.isFieldFilter ? f.field + '|' + f.operator : f.id;
         }));
 
         return (v) => {
@@ -131,7 +129,7 @@ export class FilterModel {
     }
 
     parseFilter(filter) {
-        if (filter instanceof Filter) return filter;
+        if (filter instanceof FieldFilter || filter instanceof FunctionFilter) return filter;
         if (isPlainObject(filter) && filter.testFn) return new FunctionFilter(filter);
         return FieldFilter.parse(filter);
     }
