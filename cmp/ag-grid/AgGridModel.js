@@ -400,7 +400,7 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
+     * @returns {number} - the id of the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {

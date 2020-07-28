@@ -140,14 +140,14 @@ export class BaseFieldModel {
         this.value = v;
     }
 
-    /** @member {String[]} - all validation errors for this field. */
+    /** @member {string[]} - all validation errors for this field. */
     @computed
     get errors() {
         return compact(flatten(this._errors));
     }
 
 
-    /** @member {String[]} - all validation errors for this field and its sub-forms. */
+    /** @member {string[]} - all validation errors for this field and its sub-forms. */
     get allErrors() {
         return this.errors;
     }

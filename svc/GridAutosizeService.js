@@ -33,7 +33,7 @@ export class GridAutosizeService {
      * Calculate and apply autosized column widths.
      *
      * @param {GridModel} gridModel - GridModel to autosize.
-     * @param {String[]} colIds - array of columns in model to compute sizing for.
+     * @param {string[]} colIds - array of columns in model to compute sizing for.
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     async autosizeAsync(gridModel, colIds, options) {
@@ -72,7 +72,7 @@ export class GridAutosizeService {
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
      *
      * @param {GridModel} gridModel - GridModel to autosize.
-     * @param {String[]} colIds - array of columns in model to compute sizing for.
+     * @param {string[]} colIds - array of columns in model to compute sizing for.
      * @param {GridAutosizeOptions} options - options to use for this autosize.
      */
     calcRequiredWidths(gridModel, colIds, options) {
@@ -108,8 +108,8 @@ export class GridAutosizeService {
      * form [{colId, width}] suitable for consumption by GridModel.applyColumnStateChanges().
      *
      * @param {GridModel} gridModel - GridModel to autosize.
-     * @param {String[]} colIds - array of columns in model to compute sizing for.
-     * @param {String} fillMode
+     * @param {string[]} colIds - array of columns in model to compute sizing for.
+     * @param {string} fillMode
      */
     calcFillWidths(gridModel, colIds, fillMode) {
         if (gridModel.getVisibleLeafColumns().some(it => it.flex)) {
