@@ -136,9 +136,9 @@ export class Store {
         this._committed = this._current = this._committed.withNewRecords(records);
         this.rebuildFiltered();
 
-        if (rawSummaryData) {
-            this.summaryRecord = this.createRecord(rawSummaryData, null, true);
-        }
+        this.summaryRecord = rawSummaryData ?
+            this.createRecord(rawSummaryData, null, true) :
+            null;
 
         this.lastLoaded = this.lastUpdated = Date.now();
     }
