@@ -1,8 +1,19 @@
 # Changelog
 
+## v36.0.0-SNAPSHOT - under development
+
 ### 🎁 New Features
 
 * Added a `validEmail` constraint for forms.
+
+### 🐞 Bug Fixes
+
+* A Grid's docked summary row is now properly cleared when its bound Store is cleared.
+* Additional SVG paths added to `requiredBlueprintIcons.js` to bring back calendar scroll icons on
+  the DatePicker component.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.0...develop)
+
 
 ## v35.2.0 - 2020-07-21
 
