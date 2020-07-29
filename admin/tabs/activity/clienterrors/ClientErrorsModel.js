@@ -23,8 +23,8 @@ export class ClientErrorsModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
-    @bindable.ref startDate = LocalDate.today().subtract(6, 'months');
-    @bindable.ref endDate = LocalDate.today();
+    @bindable.ref startDate;
+    @bindable.ref endDate;
 
     /** @member {GridModel} */
     @managed gridModel
@@ -41,6 +41,9 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        this.startDate = this.getDefaultStartDate();
+        this.endDate = this.getDefaultEndDate();
+
         this.filterModel = new FilterModel();
 
         this.gridModel = new GridModel({
@@ -183,8 +186,8 @@ export class ClientErrorsModel {
 
     @action
     resetQuery() {
-        this.startDate = LocalDate.today().subtract(6, 'months');
-        this.endDate = LocalDate.today();
+        this.startDate = this.getDefaultStartDate();
+        this.endDate = this.getDefaultEndDate();
         this.filterModel.clear();
     }
 
@@ -225,8 +228,9 @@ export class ClientErrorsModel {
         this.formattedErrorJson = formattedErrorJson;
     }
 
-    adjustDates(dir, toToday = false) {
-        const today = LocalDate.today(),
+    @action
+    adjustDates(dir) {
+        const tomorrow = LocalDate.tomorrow(),
             start = this.startDate,
             end = this.endDate,
             diff = end.diff(start),
@@ -235,18 +239,22 @@ export class ClientErrorsModel {
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd.diff(today) > 0 || toToday) {
-            newStart = today.subtract(Math.abs(diff));
-            newEnd = today;
+        if (newEnd > tomorrow) {
+            newStart = tomorrow.subtract(Math.abs(diff));
+            newEnd = tomorrow;
         }
 
-        this.setStartDate(newStart);
-        this.setEndDate(newEnd);
-        this.loadAsync();
+        this.startDate = newStart;
+        this.endDate = newEnd;
     }
 
     getParams() {
         const {startDate, endDate} = this;
         return {startDate, endDate};
     }
+
+    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
+    getDefaultStartDate() {return LocalDate.today().subtract(6, 'months')}
+    getDefaultEndDate() {return LocalDate.tomorrow()}
+
 }

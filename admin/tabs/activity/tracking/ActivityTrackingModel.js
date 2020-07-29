@@ -216,10 +216,9 @@ export class ActivityTrackingModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [vals.category, vals.startDate, vals.endDate];
+                return [vals.startDate, vals.endDate];
             },
             run: () => this.loadAsync(),
-            fireImmediately: true,
             debounce: 100
         });
 
@@ -361,8 +360,8 @@ export class ActivityTrackingModel {
         }
     }
 
-    getDefaultStartDate() {return LocalDate.today().subtract(6, 'months')}
     // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
+    getDefaultStartDate() {return LocalDate.today().subtract(6, 'months')}
     getDefaultEndDate() {return LocalDate.tomorrow()}
 
 }

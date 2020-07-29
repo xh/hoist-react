@@ -46,7 +46,7 @@ const tbar = hoistCmp.factory(
             button({
                 icon: Icon.angleRight(),
                 onClick: () => model.adjustDates('add'),
-                disabled: model.endDate >= LocalDate.today()
+                disabled: model.endDate >= LocalDate.tomorrow()
             }),
             filterChooser({
                 flex: 1,
