@@ -53,15 +53,15 @@ export class ClientErrorsModel {
             store: {
                 filterModel: this.filterModel,
                 fields: [
-                    {field: 'username', type: 'string'},
-                    {field: 'browser', type: 'string'},
-                    {field: 'device', type: 'string'},
-                    {field: 'userAgent', type: 'string'},
-                    {field: 'appVersion', type: 'string'},
-                    {field: 'appEnvironment', type: 'string'},
-                    {field: 'msg', type: 'string'},
-                    {field: 'error', type: 'string'},
-                    {field: 'dateCreated', type: 'date'}
+                    {name: 'username', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'device', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'appVersion', type: 'string'},
+                    {name: 'appEnvironment', type: 'string'},
+                    {name: 'msg', type: 'string'},
+                    {name: 'error', type: 'string'},
+                    {name: 'dateCreated', type: 'date'}
                 ]
             },
             exportOptions: {
