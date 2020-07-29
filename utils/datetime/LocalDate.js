@@ -69,12 +69,19 @@ export class LocalDate {
         return this.get(m.format('YYYYMMDD'));
     }
 
-    /**
-     * Return a LocalDate representing the current day.
-     * @returns {LocalDate}
-     */
+    /** @returns {LocalDate} - a LocalDate representing the current day. */
     static today() {
         return this.from(moment());
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the next day. */
+    static tomorrow() {
+        return this.today().nextDay();
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the previous day. */
+    static yesterday() {
+        return this.today().previousDay();
     }
 
     /**
