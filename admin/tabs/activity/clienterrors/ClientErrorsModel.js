@@ -35,9 +35,6 @@ export class ClientErrorsModel {
     /** @member {FilterChooserModel} */
     @managed filterChooserModel;
 
-    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
-    @bindable.ref lookups = {};
-
     get selectedRecord() {return this.gridModel.selectedRecord}
 
     /** @member {string} - parsed and JSON-formatted stacktrace / additional data for selected error. */
@@ -61,7 +58,8 @@ export class ClientErrorsModel {
                     {name: 'appEnvironment', type: 'string'},
                     {name: 'msg', type: 'string'},
                     {name: 'error', type: 'string'},
-                    {name: 'dateCreated', type: 'date'}
+                    {name: 'dateCreated', type: 'date'},
+                    {name: 'userAlerted', type: 'bool'}
                 ]
             },
             exportOptions: {
@@ -123,11 +121,12 @@ export class ClientErrorsModel {
                     'username',
                     'browser',
                     'device',
+                    'appVersion',
+                    'userAlerted',
                     {
                         field: 'userAgent',
                         operators: ['like']
                     },
-                    'appVersion',
                     {
                         field: 'appEnvironment',
                         displayName: 'Environment'
@@ -193,8 +192,6 @@ export class ClientErrorsModel {
         const {gridModel} = this;
 
         try {
-            await this.loadLookupsAsync(loadSpec);
-
             const data = await XH.fetchJson({
                 url: 'clientErrorAdmin',
                 params: this.getParams(),
@@ -209,15 +206,6 @@ export class ClientErrorsModel {
             gridModel.clear();
             XH.handleException(e);
         }
-    }
-
-    async loadLookupsAsync(loadSpec) {
-        const lookups = await XH.fetchJson({
-            url: 'clientErrorAdmin/lookups',
-            loadSpec
-        });
-
-        this.setLookups(lookups);
     }
 
     @action

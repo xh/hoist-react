@@ -124,15 +124,16 @@ export class ActivityTrackingModel {
             filterOptionsModel: {
                 store: this.cube.store,
                 fields: [
+                    'category',
                     'month',
                     'username',
+                    'device',
+                    'browser',
                     {
                         field: 'msg',
                         displayName: 'Message',
                         operators: ['like']
                     },
-                    'device',
-                    'browser',
                     {
                         field: 'userAgent',
                         operators: ['like']
