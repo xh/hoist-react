@@ -185,7 +185,7 @@ export class ClientErrorsModel {
     resetQuery() {
         this.startDate = LocalDate.today().subtract(6, 'months');
         this.endDate = LocalDate.today();
-        this.filterModel.clearFilters();
+        this.filterModel.clear();
     }
 
     async doLoadAsync(loadSpec) {

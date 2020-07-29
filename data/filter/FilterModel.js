@@ -80,7 +80,7 @@ export class FilterModel {
 
     /** Removes all filters from the filter model. */
     @action
-    clearFilters() {
+    clear() {
         this.filters = [];
     }
 

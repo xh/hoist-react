@@ -547,7 +547,7 @@ export class Store {
 
     /** Convenience method to clear the FilterModel applied to this store. */
     clearFilter() {
-        this.filterModel.clearFilters();
+        this.filterModel.clear();
     }
 
     /**
