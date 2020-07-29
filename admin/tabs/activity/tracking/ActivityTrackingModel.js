@@ -15,7 +15,7 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, isFinite} from 'lodash';
+import {compact, isFinite} from 'lodash';
 import moment from 'moment';
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
 import {ChartsModel} from './charts/ChartsModel';
@@ -73,7 +73,7 @@ export class ActivityTrackingModel {
                 {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
                 // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
                 {name: 'endDate', initialValue: LocalDate.today().add(1)},
-                {name: 'category'},
+                {name: 'category', initialValue: 'App'},
                 {name: 'username'},
                 {name: 'device'},
                 {name: 'browser'},
@@ -177,7 +177,6 @@ export class ActivityTrackingModel {
                 ];
             },
             run: () => this.loadAsync(),
-            fireImmediately: true,
             debounce: 100
         });
 
@@ -216,8 +215,7 @@ export class ActivityTrackingModel {
     // track application visits / load times).
     async loadLookupsAsync(loadSpec) {
         const {formModel} = this,
-            categoryField = formModel.fields.category,
-            isFirstLookupLoad = isEmpty(this.lookups);
+            categoryField = formModel.fields.category;
 
         const lookups = await XH.fetchJson({
             url: 'trackLogAdmin/lookups',
@@ -227,8 +225,8 @@ export class ActivityTrackingModel {
         this.setLookups(lookups);
 
         const {categories} = this.lookups;
-        if (isFirstLookupLoad && categories.includes('App') && !categoryField.value) {
-            categoryField.setValue('App');
+        if (!categories.includes(categoryField.value)) {
+            categoryField.setValue(null);
         }
     }
 

@@ -102,7 +102,8 @@ export class ClientErrorsModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural
+            equals: comparer.structural,
+            debounce: 100
         });
 
         this.addReaction({
@@ -184,7 +185,6 @@ export class ClientErrorsModel {
 
         this.setStartDate(newStart);
         this.setEndDate(newEnd);
-        this.loadAsync();
     }
 
     getParams() {
