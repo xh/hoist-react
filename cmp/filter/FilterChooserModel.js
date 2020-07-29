@@ -211,7 +211,7 @@ export class FilterChooserModel {
         // Provide suggestions for field specs that partially match the query.
         if (isEmpty(queryValue) || isEmpty(options)) {
             const suggestions = this.filterOptionsModel.specs.filter(spec => {
-                return this.getRegExp(queryField).test(spec.displayName);
+                return spec.displayName.toLowerCase().startsWith(queryField.toLowerCase());
             });
             if (!isEmpty(suggestions)) {
                 options.push({value: FilterChooserModel.SUGGESTIONS, suggestions});
