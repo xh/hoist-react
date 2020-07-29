@@ -9,6 +9,7 @@ import {XH} from '@xh/hoist/core';
 
 /**
  * Base class for Filters. Not intended to be created / used directly.
+ * @abstract
  */
 export class Filter {
 

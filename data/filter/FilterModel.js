@@ -4,13 +4,10 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel} from '@xh/hoist/core';
-import {observable, bindable, action} from '@xh/hoist/mobx';
-import {isEmpty, isPlainObject, groupBy, every, some, values, castArray} from 'lodash';
-
-import {FieldFilter} from './FieldFilter';
-import {FunctionFilter} from './FunctionFilter';
+import {FieldFilter, FunctionFilter} from '@xh/hoist/data';
+import {action, bindable, observable} from '@xh/hoist/mobx';
+import {castArray, every, groupBy, isEmpty, isPlainObject, some, values} from 'lodash';
 
 @HoistModel
 export class FilterModel {
@@ -43,7 +40,8 @@ export class FilterModel {
 
     /**
      * Sets filters to the filter model.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
+     *      strings, or configs.
      */
     @action
     setFilters(filters) {
@@ -53,7 +51,8 @@ export class FilterModel {
 
     /**
      * Adds filters to the filter model. If a matching filter already exists, it will be skipped.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs to add.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
+     *      strings, or configs.
      */
     @action
     addFilters(filters) {
@@ -67,7 +66,8 @@ export class FilterModel {
 
     /**
      * Removes filters from the filter model.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - filters, filter strings or configs to remove.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
+     *      strings, or configs.
      */
     @action
     removeFilters(filters) {
@@ -78,9 +78,7 @@ export class FilterModel {
         this.updateTestFunction();
     }
 
-    /**
-     * Removes all filters from the filter model.
-     */
+    /** Removes all filters from the filter model. */
     @action
     clearFilters() {
         this.filters = [];
@@ -88,7 +86,11 @@ export class FilterModel {
 
     /**
      * Convenience method to replace any matching Filters with a new set of Filters
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - new filters. Any matching filters will be replaced.
+     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
+     *      strings, or configs to replace. Any equivalent filters will be replaced, all other
+     *      filters will be left in place. Note this method is only useful with FunctionFilters,
+     *      which match on their `id` but can hold differing function implementations. FieldFilters
+     *      include their value when matching, rendering this call a no-op.
      */
     @action
     replaceFilters(filters) {

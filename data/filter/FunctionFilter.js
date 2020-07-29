@@ -12,7 +12,7 @@ import {isEqual, isFunction} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation using a function. Typically used by @see FilterModel to
+ * Represents a filter operation using a function. Typically used by {@see FilterModel} to
  * produce a filtered set of Records.
  *
  * Immutable.
@@ -26,7 +26,7 @@ export class FunctionFilter extends Filter {
 
     /**
      * @param {Object} c - FunctionFilter configuration.
-     * @param {string} c.id - Id for this Filter. Used to replace / deduplicate filters.
+     * @param {string} c.id - ID for this Filter. Used to replace / deduplicate filters.
      * @param {function} c.testFn - Function to run. Will receive (Record|Object) as argument,
      *      and should return a boolean.
      */
