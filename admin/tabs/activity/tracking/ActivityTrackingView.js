@@ -10,9 +10,9 @@ import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
-import {formField} from '@xh/hoist/desktop/cmp/form';
-import {dateInput, select} from '@xh/hoist/desktop/cmp/input';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -39,21 +39,10 @@ export const activityTrackingView = hoistCmp.factory({
 
 const tbar = hoistCmp.factory(
     ({model}) => {
-        const {lookups} = model;
         return toolbar(
             form({
                 fieldDefaults: {label: null},
                 items: [
-                    formField({
-                        field: 'category',
-                        label: 'Category:',
-                        item: select({
-                            placeholder: 'All categories',
-                            options: lookups.categories,
-                            ...selectInputProps
-                        })
-                    }),
-                    toolbarSep(),
                     button({
                         icon: Icon.angleLeft(),
                         onClick: () => model.adjustDates('subtract')
@@ -70,13 +59,19 @@ const tbar = hoistCmp.factory(
                     button({
                         icon: Icon.angleRight(),
                         onClick: () => model.adjustDates('add'),
-                        disabled: model.endDate >= LocalDate.today()
+                        disabled: model.endDate >= LocalDate.tomorrow()
                     }),
                     toolbarSep(),
                     filterChooser({
                         flex: 1,
                         placeholder: 'Search...',
                         enableClear: true
+                    }),
+                    button({
+                        icon: Icon.reset(),
+                        intent: 'danger',
+                        title: 'Reset query to defaults',
+                        onClick: () => model.resetQuery()
                     })
                 ]
             })
@@ -114,4 +109,3 @@ const aggregateView = hoistCmp.factory(
 );
 
 const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
-const selectInputProps = {width: 160, enableClear: true};

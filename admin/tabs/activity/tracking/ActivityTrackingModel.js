@@ -4,19 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {ActivityDetailModel} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailModel';
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {FilterModel, Cube} from '@xh/hoist/data';
-import {FilterChooserModel} from '@xh/hoist/cmp/filter';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {Cube, FilterModel} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
-import {action, bindable} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, isFinite} from 'lodash';
+import {isFinite} from 'lodash';
 import moment from 'moment';
 
 import {ChildCountAggregator, LeafCountAggregator, RangeAggregator} from '../aggregators';
@@ -48,38 +48,28 @@ export class ActivityTrackingModel {
     /** @member {ChartsModel} */
     @managed chartsModel;
 
-    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
-    @bindable.ref lookups = {};
-
     get dimensions() {return this.dimChooserModel.value}
 
-    /** @returns {string} - summary of overall query. */
+    /**
+     * @returns {string} - summary of currently active query / filters.
+     *      TODO - include new local filters if feasible, or drop this altogether.
+     *          Formerly summarized server-side filters, but was misleading w/new filtering.
+     */
     get queryDisplayString() {
-        const {formModel} = this,
-            vals = formModel.values,
-            parts = [
-                `${XH.appName} Activity`,
-                vals.category ? `${vals.category} Category` : null,
-                this.dateRangeRenderer({min: vals.startDate, max: vals.endDate}),
-                vals.username,
-                vals.device,
-                vals.browser,
-                vals.msg ? `"${vals.msg}"` : null
-            ];
-
-        return compact(parts).join(' · ');
+        return `${XH.appName} Activity`;
     }
+
+    get endDate() {return this.formModel.values.endDate}
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
+    _defaultFilters = [{field: 'category', fieldType: 'string', operator: '=', value: 'App'}]
 
     constructor() {
         this.formModel = new FormModel({
             fields: [
-                {name: 'category'},
-                {name: 'startDate', initialValue: LocalDate.today().subtract(6, 'months')},
-                // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-                {name: 'endDate', initialValue: LocalDate.today().add(1)}
+                {name: 'startDate', initialValue: this.getDefaultStartDate()},
+                {name: 'endDate', initialValue: this.getDefaultEndDate()}
             ]
         });
 
@@ -117,7 +107,7 @@ export class ActivityTrackingModel {
             ]
         });
 
-        this.filterModel = new FilterModel();
+        this.filterModel = new FilterModel({filters: this._defaultFilters});
 
         this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
@@ -243,8 +233,6 @@ export class ActivityTrackingModel {
     async doLoadAsync(loadSpec) {
         const {cube, formModel} = this;
         try {
-            await this.loadLookupsAsync(loadSpec);
-
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
                 params: formModel.getData(),
@@ -260,27 +248,6 @@ export class ActivityTrackingModel {
         } catch (e) {
             await cube.clearAsync();
             XH.handleException(e);
-        }
-    }
-
-    // Load lookups for query selects to which we wish to provide the set of available values.
-    // Will also default the category field to the special "App" value (used within Hoist init() to
-    // track application visits / load times).
-    async loadLookupsAsync(loadSpec) {
-        const {formModel} = this,
-            categoryField = formModel.fields.category,
-            isFirstLookupLoad = isEmpty(this.lookups);
-
-        const lookups = await XH.fetchJson({
-            url: 'trackLogAdmin/lookups',
-            loadSpec
-        });
-
-        this.setLookups(lookups);
-
-        const {categories} = this.lookups;
-        if (isFirstLookupLoad && categories.includes('App') && !categoryField.value) {
-            categoryField.setValue('App');
         }
     }
 
@@ -318,18 +285,18 @@ export class ActivityTrackingModel {
 
     @action
     resetQuery() {
-        const {formModel, dimChooserModel, lookups, _defaultDims} = this;
-        formModel.reset();
-        if (lookups?.categories?.includes('App')) {
-            formModel.fields.category.setValue('App');
-        }
-
+        const {formModel, filterModel, dimChooserModel, _defaultDims, _defaultFilters} = this;
+        formModel.init({
+            startDate: this.getDefaultStartDate(),
+            endDate: this.getDefaultEndDate()
+        });
+        filterModel.setFilters(_defaultFilters);
         dimChooserModel.setValue(_defaultDims);
     }
 
-    adjustDates(dir, toToday = false) {
+    adjustDates(dir) {
         const {startDate, endDate} = this.formModel.fields,
-            today = LocalDate.today(),
+            tomorrow = LocalDate.tomorrow(),
             start = startDate.value,
             end = endDate.value,
             diff = end.diff(start),
@@ -338,9 +305,9 @@ export class ActivityTrackingModel {
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd.diff(today) > 0 || toToday) {
-            newStart = today.subtract(Math.abs(diff));
-            newEnd = today;
+        if (newEnd > tomorrow) {
+            newStart = tomorrow.subtract(Math.abs(diff));
+            newEnd = tomorrow;
         }
 
         startDate.setValue(newStart);
@@ -393,5 +360,9 @@ export class ActivityTrackingModel {
             default: return rawVal;
         }
     }
+
+    getDefaultStartDate() {return LocalDate.today().subtract(6, 'months')}
+    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
+    getDefaultEndDate() {return LocalDate.tomorrow()}
 
 }
