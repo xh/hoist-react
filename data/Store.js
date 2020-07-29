@@ -537,7 +537,7 @@ export class Store {
      *      Records, a config to create one, or a function.
      */
     setFilter(filter) {
-        if (isFunction(filter)) filter = {id: XH.getId(), testFn: filter};
+        if (isFunction(filter)) filter = {id: XH.genId(), testFn: filter};
 
         // Support deprecated StoreFilter syntax.
         if (isPlainObject(filter) && filter.fn) filter.testFn = filter.fn;
