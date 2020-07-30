@@ -6,7 +6,7 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {div, hframe, hbox} from '@xh/hoist/cmp/layout';
+import {div, hframe} from '@xh/hoist/cmp/layout';
 import {Select, select} from '@xh/hoist/desktop/cmp/input';
 import {fmtNumber} from '@xh/hoist/format';
 
@@ -20,10 +20,11 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...rest}) {
-        const {options, historyOptions, hasHistory} = model;
+        const {inputRef, options, historyOptions, hasHistory} = model;
         return select({
             className,
             bind: 'value',
+            ref: inputRef,
             enableMulti: true,
             enableClear: true,
             queryFn: (q) => model.queryAsync(q),
@@ -34,12 +35,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                 defaultOptions: historyOptions,
                 openMenuOnClick: hasHistory,
                 openMenuOnFocus: hasHistory,
-                isOptionDisabled: (opt) => {
-                    return [
-                        FilterChooserModel.TRUNCATED,
-                        FilterChooserModel.SUGGESTIONS
-                    ].includes(opt.value);
-                },
+                isOptionDisabled: (opt) => opt.value === FilterChooserModel.TRUNCATED,
                 styles: {
                     menuList: (base) => ({...base, maxHeight: 'unset'})
                 }
@@ -50,18 +46,10 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
 });
 
 function getFilterOption(opt) {
-    if (opt.isHistory) {
-        return historyOption({labels: opt.labels});
-    }
-
-    switch (opt.value) {
-        case FilterChooserModel.TRUNCATED:
-            return truncatedMessage(opt);
-        case FilterChooserModel.SUGGESTIONS:
-            return suggestionMessage(opt);
-        default:
-            return filterOption(opt);
-    }
+    if (opt.isHistory) return historyOption({labels: opt.labels});
+    if (opt.isSuggestion) return suggestionOption(opt);
+    if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
+    return filterOption(opt);
 }
 
 const filterOption = hoistCmp.factory({
@@ -98,23 +86,12 @@ const historyOptionTag = hoistCmp.factory({
     }
 });
 
-const suggestionMessage = hoistCmp.factory({
+const suggestionOption = hoistCmp.factory({
     model: false,
-    className: 'xh-filter-chooser-option__suggestions',
-    render({className, suggestions}) {
-        return div({
-            className,
-            items: suggestions.map(spec => suggestionRow({spec}))
-        });
-    }
-});
-
-const suggestionRow = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option__suggestion-row',
+    className: 'xh-filter-chooser-option__suggestion',
     render({className, spec}) {
         const {displayName, operators, example} = spec;
-        return hbox({
+        return hframe({
             className,
             items: [
                 div('e.g.'),

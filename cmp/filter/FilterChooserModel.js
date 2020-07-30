@@ -9,7 +9,8 @@ import {XH, HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {start} from '@xh/hoist/promise';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {start, wait} from '@xh/hoist/promise';
 import {differenceWith, isEmpty, isEqual, isNil, isNaN, isPlainObject, groupBy, sortBy, map, take, partition, flatten, compact} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
@@ -20,6 +21,8 @@ export class FilterChooserModel {
     @observable.ref value;
     @observable.ref history;
     @observable.ref options;
+
+    inputRef = createObservableRef();
 
     // Immutable properties
     filterModel = null;
@@ -33,7 +36,7 @@ export class FilterChooserModel {
 
     // Option values with special handling
     static TRUNCATED = 'TRUNCATED';
-    static SUGGESTIONS = 'SUGGESTIONS';
+    static SUGGEST_PREFIX = '*SUGGEST*';
 
     /**
      * @param c - FilterChooserModel configuration.
@@ -91,8 +94,32 @@ export class FilterChooserModel {
 
     @action
     setValue(value) {
-        this.value = compact(flatten(value));
+        const [suggestions, filters] = partition(compact(flatten(value)), v => {
+            return v.startsWith(FilterChooserModel.SUGGEST_PREFIX);
+        });
+
+        this.value = filters;
         this.syncToFilterModel();
+
+        if (suggestions.length === 1) this.autoComplete(suggestions[0]);
+    }
+
+    //--------------------
+    // Autocomplete
+    //--------------------
+    autoComplete(value) {
+        const rsSelectCmp = this.inputRef.current?.reactSelectRef?.current;
+        if (!rsSelectCmp) return;
+
+        const currentVal = rsSelectCmp.select.state.inputValue,
+            newVal = value.replace(FilterChooserModel.SUGGEST_PREFIX, ''),
+            inputValue = newVal.length > currentVal.length ? newVal : currentVal;
+
+        rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
+        wait(0).then(() => {
+            rsSelectCmp.focus();
+            rsSelectCmp.handleInputChange(inputValue);
+        });
     }
 
     //--------------------
@@ -112,6 +139,7 @@ export class FilterChooserModel {
         const filters = this.splitFilters(this.filterModel.filters),
             options = this.getOptionsForFilters(filters);
 
+        // Todo: Preserve existing order in this.value when syncing
         this.options = options.length ? options : null;
         this.value = filters.map(f => f.serialize());
     }
@@ -212,9 +240,16 @@ export class FilterChooserModel {
         if (isEmpty(queryValue) || isEmpty(options)) {
             const suggestions = this.filterOptionsModel.specs.filter(spec => {
                 return spec.displayName.toLowerCase().startsWith(queryField.toLowerCase());
+            }).map(spec => {
+                return {
+                    isSuggestion: true,
+                    value: `${FilterChooserModel.SUGGEST_PREFIX}${spec.displayName}`,
+                    spec: spec
+                };
             });
+
             if (!isEmpty(suggestions)) {
-                options.push({value: FilterChooserModel.SUGGESTIONS, suggestions});
+                options.push(...suggestions);
             }
         }
 
@@ -378,8 +413,8 @@ export class FilterChooserModel {
             const {value, displayName} = it;
 
             let sorter;
-            if (value === FilterChooserModel.SUGGESTIONS) {
-                sorter = 6;
+            if (it.isSuggestion) {
+                sorter = 0;
             } else if (sortRe.test(value)) {
                 sorter = queryLength === value.length ? 1 : 2;
             } else if (sortRe.test(displayName)) {
