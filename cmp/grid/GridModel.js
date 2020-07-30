@@ -14,6 +14,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiRemoved,
+    apiDeprecated,
     debounced,
     deepFreeze,
     ensureUnique,
@@ -848,7 +849,7 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeAsync()` instead.');
+        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
         this.autosizeAsync({columns: colIds});
     }
 
