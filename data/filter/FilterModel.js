@@ -120,7 +120,14 @@ export class FilterModel {
 
         return (v) => {
             return every(groups, groupedFilters => {
-                return some(groupedFilters, f => f.test(v));
+                return some(groupedFilters, filter => {
+                    try {
+                        return filter.test(v);
+                    } catch (e) {
+                        console.error(e);
+                        return true; // Ignore this filter
+                    }
+                });
             });
         };
     }
