@@ -11,7 +11,23 @@ import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {start, wait} from '@xh/hoist/promise';
-import {differenceWith, isEmpty, isEqual, isNil, isNaN, isPlainObject, groupBy, sortBy, map, take, partition, flatten, compact} from 'lodash';
+import {
+    differenceWith,
+    isEmpty,
+    isEqual,
+    isNil,
+    isNaN,
+    isPlainObject,
+    groupBy,
+    sortBy,
+    map,
+    take,
+    partition,
+    flatten,
+    compact,
+    escapeRegExp,
+    without
+} from 'lodash';
 
 import {FilterOptionsModel} from './FilterOptionsModel';
 
@@ -209,23 +225,17 @@ export class FilterChooserModel {
     filterByQuery(query) {
         if (!query || !query.length) return [];
 
-        // Determine operator provided in query.
-        const words = query.split(' ').map(it => it.trim()),
-            [keywords, queryParts] = partition(words, w => this.getOperatorForKeyword(w)),
-            queryOperator = keywords.length === 1 ? this.getOperatorForKeyword(keywords[0]) : null;
+        // Split query into field, operator and value.
+        const operators = without(FieldFilter.OPERATORS, 'in', 'notin'),
+            operatorReg = sortBy(operators, o => {
+                return -o.length;
+            }).map(o => {
+                return escapeRegExp(o);
+            }).join('|');
 
-        // Determine which parts of the query correspond to field and value
-        let queryField, queryValue;
-        if (queryOperator) {
-            // If an operator has been provided, treat everything to its left as the field,
-            // and everything to its right as the value.
-            const idx = words.indexOf(queryOperator);
-            queryField = queryParts.slice(0, idx).join(' ');
-            queryValue = queryParts.slice(idx).join(' ');
-        } else {
-            // If no operator has been provided, treat the entire query as the field with no value.
-            queryField = queryParts.join(' ');
-        }
+        const [queryField, queryOperator, queryValue] = query.split(
+            this.getRegExp('(' + operatorReg + ')')
+        ).map(it => it.trim());
 
         // Get options for the given query, according to the query type specified by the operator
         const valueOperators = ['=', '!=', 'like'],
@@ -383,25 +393,6 @@ export class FilterChooserModel {
     // Returns a case-insensitive reg exp for query testing
     getRegExp(pattern) {
         return new RegExp(pattern, 'ig');
-    }
-
-    getOperatorForKeyword(keyword) {
-        switch (keyword) {
-            case '=':
-            case ':':
-            case 'is':
-                return '=';
-            case '!=':
-            case 'not':
-                return '!=';
-            case '>':
-            case '>=':
-            case '<':
-            case '<=':
-            case 'like':
-                return keyword;
-        }
-        return null;
     }
 
     sortByQuery(options, query) {
