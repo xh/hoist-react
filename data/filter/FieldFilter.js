@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {parseFieldValue} from '@xh/hoist/data';
-import {isString, isArray, castArray, isEqual} from 'lodash';
+import {isString, isArray, castArray, isEqual, escapeRegExp} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -133,7 +133,7 @@ export class FieldFilter extends Filter {
             case 'notin':
                 return !castArray(value).includes(v);
             case 'like':
-                return new RegExp(value, 'ig').test(v);
+                return new RegExp(escapeRegExp(value), 'ig').test(v);
             default:
                 throw XH.exception(`Unknown operator: ${operator}`);
         }
