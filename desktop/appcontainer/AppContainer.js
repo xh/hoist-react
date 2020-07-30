@@ -97,15 +97,18 @@ const appContainerView = hoistCmp.factory({
     render({model}) {
         return useHotkeys(
             viewport(
-                vframe(
-                    impersonationBar(),
-                    updateBar(),
-                    refreshContextView({
-                        model: model.refreshContextModel,
-                        item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                    }),
-                    versionBar()
-                ),
+                vframe({
+                    items: [
+                        impersonationBar(),
+                        updateBar(),
+                        refreshContextView({
+                            model: model.refreshContextModel,
+                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                        }),
+                        versionBar()
+                    ],
+                    onContextMenu
+                }),
                 mask({model: model.appLoadModel, spinner: true}),
                 messageSource(),
                 toastSource(),
@@ -117,6 +120,10 @@ const appContainerView = hoistCmp.factory({
         );
     }
 });
+
+function onContextMenu(e) {
+    if (!XH.appSpec.showBrowserContextMenu) e.preventDefault();
+}
 
 function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,

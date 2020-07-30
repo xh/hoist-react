@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * Added a `validEmail` constraint for forms.
+* Added new `AppSpec` option `showBrowserContextMenu` to control whether the browser's default
+context menu will be shown if no other context menu has been triggered. Defaults to `false`.
 
 ### 🐞 Bug Fixes
 
