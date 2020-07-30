@@ -5,13 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed} from '@xh/hoist/core';
+import {XH, ManagedSupport, managed} from '@xh/hoist/core';
 import {FilterModel} from '@xh/hoist/data';
 import {castArray, find} from 'lodash';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
  */
+@ManagedSupport
 export class Query {
 
     /** @member {CubeField[]} */

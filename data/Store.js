@@ -7,7 +7,7 @@
 
 import {XH, ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {FilterModel} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
 import {
@@ -95,7 +95,7 @@ export class Store {
 
         this.resetRecords();
 
-        warnIf(!isNil(filter), "The 'filter' config has been deprecated. Use 'filterModel' instead");
+        apiDeprecated(filter, 'filter', "Use 'filterModel' instead.");
         if (filter) this.setFilter(filter);
 
         if (data) this.loadData(data);

@@ -54,10 +54,7 @@ export class Field {
     }
 }
 
-/**
- * Parse a value according to a field type
- * @returns {string|boolean|number|*}
- */
+/** Parse a value according to a field type */
 export function parseFieldValue(val, type, defaultValue = null) {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;

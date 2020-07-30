@@ -96,6 +96,17 @@ export function apiRemoved(paramValue, paramName, message = '') {
 }
 
 /**
+ * Document and warn on usage of a deprecated parameter.
+ *
+ * @param {*} paramValue - value of the deprecated parameter.  If defined, this method will warn.
+ * @param {string} paramName - the name of the deprecated parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ */
+export function apiDeprecated(paramValue, paramName, message = '') {
+    throwIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
+}
+
+/**
  * Log a warning to the console if a condition evaluates as truthy.
  * @param {*} condition
  * @param {string} message
