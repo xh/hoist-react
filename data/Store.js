@@ -84,7 +84,7 @@ export class Store {
         filterModel = null,
         loadRootAsSummary = false,
         data,
-        filter = null
+        filter
     }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;

@@ -103,7 +103,7 @@ export function apiRemoved(paramValue, paramName, message = '') {
  * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
  */
 export function apiDeprecated(paramValue, paramName, message = '') {
-    throwIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
+    warnIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
 }
 
 /**
