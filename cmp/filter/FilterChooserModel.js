@@ -139,9 +139,11 @@ export class FilterChooserModel {
         const filters = this.splitFilters(this.filterModel.filters),
             options = this.getOptionsForFilters(filters);
 
-        // Todo: Preserve existing order in this.value when syncing
         this.options = options.length ? options : null;
-        this.value = filters.map(f => f.serialize());
+        this.value = sortBy(filters.map(f => f.serialize()), f => {
+            const idx = this.value?.indexOf(f);
+            return isFinite(idx) && idx > -1 ? idx : filters.length;
+        });
     }
 
     /**
