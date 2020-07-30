@@ -96,7 +96,7 @@ export class AppSpec {
         this.idlePanel = idlePanel;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
-        this.showBrowserContextMenu = false;
+        this.showBrowserContextMenu = showBrowserContextMenu;
 
         Object.freeze(this);
     }
