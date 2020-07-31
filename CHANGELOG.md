@@ -10,6 +10,7 @@
 * Colors specified via the `--xh-intent-` CSS vars have been removed from minimal / outlined desktop
   `Button` components because of incompatibility with `ButtonGroupInput` component. Fix to address
   issue forthcoming. (This reverts the change made in 35.2.0 below.)
+* Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.0...v35.2.1)
 
