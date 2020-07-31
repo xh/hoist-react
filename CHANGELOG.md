@@ -11,6 +11,9 @@
 * A Grid's docked summary row is now properly cleared when its bound Store is cleared.
 * Additional SVG paths added to `requiredBlueprintIcons.js` to bring back calendar scroll icons on
   the DatePicker component.
+* Colors specified via the `--xh-intent-` CSS vars have been removed from minimal / outlined desktop
+  `Button` components because of incompatibility with `ButtonGroupInput` component. Fix to address
+  issue forthcoming. (This reverts the change made in 35.2.0 below.)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.0...develop)
 
