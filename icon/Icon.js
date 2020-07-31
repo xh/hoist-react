@@ -259,7 +259,7 @@ export const Icon = {
      * Create an Icon for a file with default styling appropriate for the file type.
      *
      * @param {Object} c - See Icon.icon().
-     * @param {String} [c.filename] - filename to be used to create icon.  Name will be parsed
+     * @param {string} [c.filename] - filename to be used to create icon.  Name will be parsed
      *      for an extension.  If not provided or recognized, a default icon will be returned.
      * @returns {(Element|string)}
      */

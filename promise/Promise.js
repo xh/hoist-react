@@ -201,7 +201,7 @@ const enhancePromise = (promisePrototype) => {
          *
          * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
          * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
-         * @param {String} [cfg.message] - Optional custom message for use by PendingTaskModel.
+         * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */

@@ -239,7 +239,7 @@ export class RestGridModel {
 
 /**
  * @typedef {Object} RestGridEditor
- * @property {String} field - name of field to appear in the editor form.  Should correspond to member in
+ * @property {string} field - name of field to appear in the editor form.  Should correspond to member in
  *      the store's Fields collection.
  * @property {Object} formField - partial config for FormField to be used to display this field.  Used to specify
  *      control to be used for this Field.

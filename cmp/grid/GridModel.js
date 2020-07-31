@@ -14,6 +14,7 @@ import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
     apiRemoved,
+    apiDeprecated,
     debounced,
     deepFreeze,
     ensureUnique,
@@ -695,7 +696,7 @@ export class GridModel {
 
     /**
      * Return all leaf-level column ids - i.e. excluding column groups.
-     * @returns {String[]}
+     * @returns {string[]}
      */
     getLeafColumnIds() {
         return this.getLeafColumns().map(col => col.colId);
@@ -715,7 +716,7 @@ export class GridModel {
      * Call this method instead of inspecting the `hidden` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {boolean}
      */
     isColumnVisible(colId) {
@@ -729,7 +730,7 @@ export class GridModel {
      * Call this method instead of inspecting the `pinned` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {string}
      */
     getColumnPinned(colId) {
@@ -848,7 +849,7 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeAsync()` instead.');
+        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
         this.autosizeAsync({columns: colIds});
     }
 
