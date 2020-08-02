@@ -4,9 +4,13 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {form, FormModel} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {elemFactory, HoistComponent, LayoutSupport, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {Icon} from '@xh/hoist/icon';
@@ -22,6 +26,7 @@ import 'codemirror/addon/lint/lint.css';
 import 'codemirror/addon/lint/lint.js';
 import 'codemirror/addon/scroll/simplescrollbars.css';
 import 'codemirror/addon/scroll/simplescrollbars.js';
+import 'codemirror/addon/search/searchcursor.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {defaultsDeep, isFunction} from 'lodash';
@@ -45,9 +50,16 @@ export class CodeInput extends HoistInput {
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
+    cursor;
 
     @bindable fullScreen = false;
     baseClassName = 'xh-code-input';
+
+    @managed formModel = new FormModel({
+        fields: [
+            {name: 'query'}
+        ]
+    });
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -96,12 +108,16 @@ export class CodeInput extends HoistInput {
         showFormatButton: PT.bool,
 
         /** True (default) to display Fullscreen button at bottom-right of input. */
-        showFullscreenButton: PT.bool
+        showFullscreenButton: PT.bool,
+
+        /** True to display search bar at bottom of input. */
+        showToolbar: PT.bool
     };
 
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
     get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
     get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
+    get showToolbar() {return withDefault(this.props.showToolbar, false)}
 
     get showFormatButton() {
         const {disabled, readonly, formatter, showFormatButton} = this.props;
@@ -140,6 +156,19 @@ export class CodeInput extends HoistInput {
             run: (arr) => {
                 const [readonly, disabled] = arr;
                 this.editor.setOption('readOnly',  disabled || readonly);
+            }
+        });
+
+        this.addReaction({
+            track: () => this.query,
+            run: (query) => {
+                if (!this.editor) return;
+                if (!query) {
+                    this.editor.setCursor(0);
+                    this.cursor = null;
+                } else {
+                    this.cursor = this.editor.getSearchCursor(query);
+                }
             }
         });
     }
@@ -191,39 +220,88 @@ export class CodeInput extends HoistInput {
     }
 
     renderActionButtons() {
-        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
+        const {showCopyButton, showFormatButton, showFullscreenButton, showToolbar} = this;
 
-        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton)) {
+        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton) || !showToolbar) {
             return null;
         }
 
         const {fullScreen, editor} = this;
         return hbox({
             className: 'xh-code-input__action-buttons',
-            items: [
-                showCopyButton ? clipboardButton({
-                    text: null,
-                    title: 'Copy to clipboard',
-                    successMessage: 'Contents copied to clipboard',
-                    getCopyText: () => editor.getValue()
-                }) : null,
-                showFormatButton ? button({
-                    icon: Icon.magic(),
-                    title: 'Auto-format',
-                    onClick: () => this.onAutoFormat()
-                }) : null,
-                showFullscreenButton ? button({
-                    icon: fullScreen ? Icon.collapse() : Icon.expand(),
-                    title: fullScreen ? 'Exit full screen' : 'Full screen',
-                    onClick: () => this.setFullScreen(!fullScreen)
-                }) : null
-            ]
+            items: showToolbar ? toolbar({
+                items: [
+                    form({
+                        model: this.formModel,
+                        items: [
+                            formField({
+                                field: 'query',
+                                label: null,
+                                item: textInput({
+                                    leftIcon: Icon.search(),
+                                    width: 150,
+                                    enableClear: true,
+                                    onKeyDown: (e) => this.findNext(e)
+                                })
+                            }),
+                            button({
+                                icon: Icon.arrowUp(),
+                                title: 'Find previous',
+                                onClick: () => this.findPrevious()
+                            }),
+                            button({
+                                icon: Icon.arrowDown(),
+                                title: 'Find next',
+                                onClick: () => this.findNext()
+                            })
+                        ]
+                    }),
+                    showCopyButton ? clipboardButton({
+                        text: null,
+                        title: 'Copy to clipboard',
+                        successMessage: 'Contents copied to clipboard',
+                        getCopyText: () => editor.getValue()
+                    }) : null,
+                    showFormatButton ? button({
+                        icon: Icon.magic(),
+                        title: 'Auto-format',
+                        onClick: () => this.onAutoFormat()
+                    }) : null,
+                    showFullscreenButton ? button({
+                        icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                        title: fullScreen ? 'Exit full screen' : 'Full screen',
+                        onClick: () => this.setFullScreen(!fullScreen)
+                    }) : null
+                ]
+            }) :
+                [
+                    showCopyButton ? clipboardButton({
+                        text: null,
+                        title: 'Copy to clipboard',
+                        successMessage: 'Contents copied to clipboard',
+                        getCopyText: () => editor.getValue()
+                    }) : null,
+                    showFormatButton ? button({
+                        icon: Icon.magic(),
+                        title: 'Auto-format',
+                        onClick: () => this.onAutoFormat()
+                    }) : null,
+                    showFullscreenButton ? button({
+                        icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                        title: fullScreen ? 'Exit full screen' : 'Full screen',
+                        onClick: () => this.setFullScreen(!fullScreen)
+                    }) : null
+                ]
         });
     }
 
     //------------------
     // Implementation
     //------------------
+
+    get query() {
+        return this.formModel.values.query;
+    }
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
@@ -250,7 +328,7 @@ export class CodeInput extends HoistInput {
     }
 
     createDefaults() {
-        const {disabled, readonly, mode, linter, autoFocus} = this.props;
+        const {disabled, readonly, mode, linter, autoFocus, showToolbar} = this.props;
         let gutters = [
             'CodeMirror-linenumbers',
             'CodeMirror-foldgutter'
@@ -258,7 +336,7 @@ export class CodeInput extends HoistInput {
         if (linter) gutters.push('CodeMirror-lint-markers');
 
         return {
-            mode,
+            mode: showToolbar ? 'text/html' : mode,
             theme: XH.darkTheme ? 'dracula' : 'default',
             lineWrapping: false,
             lineNumbers: true,
@@ -299,6 +377,30 @@ export class CodeInput extends HoistInput {
             return str;
         }
     }
+
+    findNext = (e) => {
+        if (e && e.key !== 'Enter' || !this.cursor) return;
+
+        const {editor, query, cursor} = this,
+            found = cursor.findNext(query);
+
+        if (found) {
+            editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
+            editor.setSelection(cursor.from(), cursor.to());
+        }
+    };
+
+    findPrevious = () => {
+        if (!this.cursor) return;
+
+        const {editor, query, cursor} = this,
+            found = cursor.findPrevious(query);
+
+        if (found) {
+            editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
+            editor.setSelection(cursor.from(), cursor.to());
+        }
+    };
 
     destroy() {
         // Cleanup editor component as per CodeMirror docs.
