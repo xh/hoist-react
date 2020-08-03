@@ -191,24 +191,28 @@ export class CodeInput extends HoistInput {
     }
 
     renderActionButtons() {
-        if (!this.hasFocus || (!this.showFormatButton && !this.showFullscreenButton)) return null;
+        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
+
+        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton)) {
+            return null;
+        }
 
         const {fullScreen, editor} = this;
         return hbox({
             className: 'xh-code-input__action-buttons',
             items: [
-                this.showCopyButton ? clipboardButton({
+                showCopyButton ? clipboardButton({
                     text: null,
                     title: 'Copy to clipboard',
                     successMessage: 'Contents copied to clipboard',
                     getCopyText: () => editor.getValue()
                 }) : null,
-                this.showFormatButton ? button({
+                showFormatButton ? button({
                     icon: Icon.magic(),
                     title: 'Auto-format',
                     onClick: () => this.onAutoFormat()
                 }) : null,
-                this.showFullscreenButton ? button({
+                showFullscreenButton ? button({
                     icon: fullScreen ? Icon.collapse() : Icon.expand(),
                     title: fullScreen ? 'Exit full screen' : 'Full screen',
                     onClick: () => this.setFullScreen(!fullScreen)

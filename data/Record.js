@@ -201,7 +201,15 @@ export class Record {
     // --------------------------
     // Protected methods
     // --------------------------
-    /** Freezes this Record and its data. Not for application use. */
+    /**
+     * Freezes this Record and its data.
+     *
+     * Note that we freeze the Record post-construction in RecordSet, only when we know that
+     * it is going to be accepted in the new RecordSet (and is not a duplicate).  This is a
+     * performance optimization to avoid freezing transient records.
+     *
+     * Not for application use.
+     */
     freeze() {
         deepFreeze(this.data);
         Object.freeze(this);

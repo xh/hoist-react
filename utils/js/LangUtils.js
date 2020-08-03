@@ -85,17 +85,6 @@ export function throwIf(condition, message) {
 }
 
 /**
- * Document and prevent usage of a removed parameter.
- *
- * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
- * @param {string} paramName - the name of the removed parameter
- * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
- */
-export function apiRemoved(paramValue, paramName, message = '') {
-    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
-}
-
-/**
  * Log a warning to the console if a condition evaluates as truthy.
  * @param {*} condition
  * @param {string} message
@@ -115,6 +104,28 @@ export function errorIf(condition, message) {
     if (condition) {
         console.error(message);
     }
+}
+
+/**
+ * Document and prevent usage of a removed parameter.
+ *
+ * @param {*} paramValue - value of the removed parameter.  If defined, this method will throw.
+ * @param {string} paramName - the name of the removed parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ */
+export function apiRemoved(paramValue, paramName, message = '') {
+    throwIf(paramValue !== undefined, `The use of '${paramName}' is no longer supported. ${message}`);
+}
+
+/**
+ * Document and warn on usage of a deprecated parameter.
+ *
+ * @param {*} paramValue - value of the deprecated parameter.  If defined, this method will warn.
+ * @param {string} paramName - the name of the deprecated parameter
+ * @param {string} [message] - an additional message.  Can contain suggestions for alternatives.
+ */
+export function apiDeprecated(paramValue, paramName, message = '') {
+    warnIf(paramValue !== undefined, `The use of '${paramName}' has been deprecated. ${message}`);
 }
 
 /**
