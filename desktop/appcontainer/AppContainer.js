@@ -16,7 +16,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
-import {useHotkeys} from '@xh/hoist/desktop/hooks';
+import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
@@ -95,35 +95,34 @@ const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
-        return useHotkeys(
-            viewport(
-                vframe({
-                    items: [
-                        impersonationBar(),
-                        updateBar(),
-                        refreshContextView({
-                            model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                        }),
-                        versionBar()
-                    ],
-                    onContextMenu
+        const {appSpec, appModel} = XH;
+        let ret = viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(appSpec.componentClass, {model: appModel}))
                 }),
-                mask({model: model.appLoadModel, spinner: true}),
-                messageSource(),
-                toastSource(),
-                optionsDialog(),
-                feedbackDialog(),
-                aboutDialog()
+                versionBar()
             ),
-            globalHotKeys(model)
+            mask({model: model.appLoadModel, spinner: true}),
+            messageSource(),
+            toastSource(),
+            optionsDialog(),
+            feedbackDialog(),
+            aboutDialog()
         );
+
+        if (!appSpec.showBrowserContextMenu) {
+            ret = useContextMenu(ret, null);
+        }
+
+        ret = useHotkeys(ret, globalHotKeys(model));
+
+        return ret;
     }
 });
-
-function onContextMenu(e) {
-    if (!XH.appSpec.showBrowserContextMenu) e.preventDefault();
-}
 
 function globalHotKeys(model) {
     const {impersonationBarModel, optionsDialogModel} = model,
