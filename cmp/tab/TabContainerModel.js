@@ -83,7 +83,7 @@ export class TabContainerModel {
         if (isEmpty(tabs)) {
             tabs.push({
                 content: () => div({
-                    className: 'xh-text-color-accent xh-pad xh-empty-text-tab',
+                    className: 'xh-text-color-accent xh-pad xh-tab--empty',
                     item: emptyText
                 })
             });
