@@ -736,7 +736,12 @@ export class Store {
         const id = this.idSpec(raw);
 
         data = this.parseFieldValues(data);
-        return new Record({id, data, raw, parent, store: this, isSummary});
+        const ret = new Record({id, data, raw, parent, store: this, isSummary});
+
+        // Freeze summary only.  Non-summary will get frozen by RecordSet. See Record.freeze()
+        if (isSummary) ret.freeze();
+
+        return ret;
     }
 
     createRecords(rawData, parent, recordMap = new Map()) {
