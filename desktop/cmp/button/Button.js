@@ -29,10 +29,18 @@ export const [Button, button] = hoistCmp.withFactory({
             classes = [];
 
         if (autoFocus) classes.push('xh-button--autofocus-enabled');
-        if (disabled) classes.push('xh-button--disabled');
 
-        if (intent) classes.push(`xh-button--intent-${intent}`);
-        if (!intent) classes.push(`xh-button--intent-none`);
+        if (disabled) {
+            classes.push('xh-button--disabled');
+        } else {
+            classes.push('xh-button--enabled');
+        }
+
+        if (intent) {
+            classes.push(`xh-button--intent-${intent}`);
+        } else {
+            classes.push(`xh-button--intent-none`);
+        }
 
         if (minimal) classes.push('xh-button--minimal');
         if (outlined) classes.push('xh-button--outlined');
