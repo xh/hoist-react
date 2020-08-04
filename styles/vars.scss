@@ -10,21 +10,26 @@
 // Functions to fetch Google material design colors (https://material.io/color/)
 // While not strictly following any material design conventions within Hoist, using these color
 // helps to keep things more consistent and harmonious (vs. choosing "arbitrary" color vals).
+//noinspection CssInvalidFunction
 @function mc($color-name, $color-variant) {
   @return material-color($color-name, $color-variant);
 }
 
+//noinspection CssInvalidFunction
 @function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
   @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
 }
 
+//noinspection CssInvalidFunction
 @function mc-trans($color-name, $color-variant, $amount:0.5) {
   @return transparentize(material-color($color-name, $color-variant), $amount);
 }
 
-// Core variable declarations - non-color-related + light-theme color defaults
 body {
-  // Core colors
+
+  //------------------------
+  // Core Colors
+  //------------------------
   --xh-black: var(--black, #{mc('grey', '900')});
   --xh-blue: var(--blue, #{mc('blue', '700')});
   --xh-blue-muted: var(--blue-muted, #{mc-muted('blue', '800', 40%)});
@@ -46,52 +51,112 @@ body {
   --xh-yellow: var(--yellow, #{mc('yellow', '800')});
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
-  // Intent Colors - using HSL here to support multiple levels of lightness w/o varying hue.
-  // Note dark-mode overrides below. Neutral colors used for styling buttons w/o intent.
-  --xh-intent-neutral-h: 180;
-  --xh-intent-neutral-s: 10%;
-  --xh-intent-neutral-l1: 82%;
-  --xh-intent-neutral-l2: 86%;
-  --xh-intent-neutral-l3: 90%;
-  --xh-intent-neutral-l4: 94%;
-  --xh-intent-neutral-l5: 98%;
+  &.xh-dark {
+    --xh-black: var(--black, #12171a);
+    --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
+    --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
+    --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
+    --xh-red: var(--red, #{mc('red', 'a700')});
+  }
 
-  --xh-intent-primary-h: 206;
-  --xh-intent-primary-s: 100%;
-  --xh-intent-primary-l1: 23%;
-  --xh-intent-primary-l2: 26%;
-  --xh-intent-primary-l3: 30%;
-  --xh-intent-primary-l4: 85%;
-  --xh-intent-primary-l5: 95%;
+  &.xh-mobile {
+    --xh-accent-color: var(--accent-color, var(--xh-blue-light));
+    --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
+  }
 
-  --xh-intent-success-h: 123;
-  --xh-intent-success-s: 43%;
-  --xh-intent-success-l1: 26%;
-  --xh-intent-success-l2: 30%;
-  --xh-intent-success-l3: 37%;
-  --xh-intent-success-l4: 85%;
-  --xh-intent-success-l5: 95%;
 
-  --xh-intent-warning-h: 30;
-  --xh-intent-warning-s: 100%;
-  --xh-intent-warning-l1: 34%;
-  --xh-intent-warning-l2: 38%;
-  --xh-intent-warning-l3: 43%;
-  --xh-intent-warning-l4: 85%;
-  --xh-intent-warning-l5: 95%;
+  //--------------------------------------------------------
+  // Intent Colors - HSL supports varying lightness w/o hue
+  //--------------------------------------------------------
+  // Neutral (no intent) - default gray - e.g. standard buttons.
+  --xh-intent-neutral-h: var(--intent-neutral-h, 180);
+  --xh-intent-neutral-s: var(--intent-neutral-s, 10%);
+  --xh-intent-neutral-l1: var(--intent-neutral-l1, 82%);
+  --xh-intent-neutral-l2: var(--intent-neutral-l2, 86%);
+  --xh-intent-neutral-l3: var(--intent-neutral-l3, 90%);
+  --xh-intent-neutral-l4: var(--intent-neutral-l4, 94%);
+  --xh-intent-neutral-l5: var(--intent-neutral-l5, 98%);
+  // Primary - default blue - indicates a prominent call-to-action button/element.
+  --xh-intent-primary-h: var(--intent-primary-h, 206);
+  --xh-intent-primary-s: var(--intent-primary-s, 100%);
+  --xh-intent-primary-l1: var(--intent-primary-l1, 23%);
+  --xh-intent-primary-l2: var(--intent-primary-l2, 26%);
+  --xh-intent-primary-l3: var(--intent-primary-l3, 30%);
+  --xh-intent-primary-l4: var(--intent-primary-l4, 85%);
+  --xh-intent-primary-l5: var(--intent-primary-l5, 95%);
+  // Success - default green - indicates OK, confirm, or a successful result.
+  --xh-intent-success-h: var(--intent-success-h, 123);
+  --xh-intent-success-s: var(--intent-success-s, 43%);
+  --xh-intent-success-l1: var(--intent-success-l1, 26%);
+  --xh-intent-success-l2: var(--intent-success-l2, 30%);
+  --xh-intent-success-l3: var(--intent-success-l3, 37%);
+  --xh-intent-success-l4: var(--intent-success-l4, 85%);
+  --xh-intent-success-l5: var(--intent-success-l5, 95%);
+  // Warning - default orange - indicates need for caution, or a potential error condition.
+  --xh-intent-warning-h: var(--intent-warning-h, 30);
+  --xh-intent-warning-s: var(--intent-warning-s, 100%);
+  --xh-intent-warning-l1: var(--intent-warning-l1, 34%);
+  --xh-intent-warning-l2: var(--intent-warning-l2, 38%);
+  --xh-intent-warning-l3: var(--intent-warning-l3, 43%);
+  --xh-intent-warning-l4: var(--intent-warning-l4, 85%);
+  --xh-intent-warning-l5: var(--intent-warning-l5, 95%);
+  // Danger - default red - indicates dangerous operation, delete, or a serious error condition.
+  --xh-intent-danger-h: var(--intent-danger-h, 0);
+  --xh-intent-danger-s: var(--intent-danger-s, 73%);
+  --xh-intent-danger-l1: var(--intent-danger-l1, 26%);
+  --xh-intent-danger-l2: var(--intent-danger-l2, 30%);
+  --xh-intent-danger-l3: var(--intent-danger-l3, 40%);
+  --xh-intent-danger-l4: var(--intent-danger-l4, 85%);
+  --xh-intent-danger-l5: var(--intent-danger-l5, 95%);
 
-  --xh-intent-danger-h: 0;
-  --xh-intent-danger-s: 73%;
-  --xh-intent-danger-l1: 26%;
-  --xh-intent-danger-l2: 30%;
-  --xh-intent-danger-l3: 40%;
-  --xh-intent-danger-l4: 85%;
-  --xh-intent-danger-l5: 95%;
+  &.xh-dark {
+    // Dark theme Neutral intent
+    --xh-intent-neutral-h: var(--intent-neutral-h, 180);
+    --xh-intent-neutral-s: var(--intent-neutral-s, 10%);
+    --xh-intent-neutral-l1: var(--intent-neutral-l1, 20%);
+    --xh-intent-neutral-l2: var(--intent-neutral-l2, 25%);
+    --xh-intent-neutral-l3: var(--intent-neutral-l3, 32%);
+    --xh-intent-neutral-l4: var(--intent-neutral-l4, 44%);
+    --xh-intent-neutral-l5: var(--intent-neutral-l5, 50%);
+    // Dark theme Primary intent
+    --xh-intent-primary-h: var(--intent-primary-h, 206);
+    --xh-intent-primary-s: var(--intent-primary-s, 100%);
+    --xh-intent-primary-l1: var(--intent-primary-l1, 25%);
+    --xh-intent-primary-l2: var(--intent-primary-l2, 30%);
+    --xh-intent-primary-l3: var(--intent-primary-l3, 45%);
+    --xh-intent-primary-l4: var(--intent-primary-l4, 65%);
+    --xh-intent-primary-l5: var(--intent-primary-l5, 75%);
+    // Dark theme Success intent
+    --xh-intent-success-h: var(--intent-success-h, 123);
+    --xh-intent-success-s: var(--intent-success-s, 50%);
+    --xh-intent-success-l1: var(--intent-success-l1, 23%);
+    --xh-intent-success-l2: var(--intent-success-l2, 30%);
+    --xh-intent-success-l3: var(--intent-success-l3, 40%);
+    --xh-intent-success-l4: var(--intent-success-l4, 60%);
+    --xh-intent-success-l5: var(--intent-success-l5, 75%);
+    // Dark theme Warning intent
+    --xh-intent-warning-h: var(--intent-warning-h, 30);
+    --xh-intent-warning-s: var(--intent-warning-s, 100%);
+    --xh-intent-warning-l1: var(--intent-warning-l1, 25%);
+    --xh-intent-warning-l2: var(--intent-warning-l2, 30%);
+    --xh-intent-warning-l3: var(--intent-warning-l3, 40%);
+    --xh-intent-warning-l4: var(--intent-warning-l4, 65%);
+    --xh-intent-warning-l5: var(--intent-warning-l5, 75%);
+    // Dark theme Danger intent
+    --xh-intent-danger-h: var(--intent-danger-h, 0);
+    --xh-intent-danger-s: var(--intent-danger-s, 90%);
+    --xh-intent-danger-l1: var(--intent-danger-l1, 25%);
+    --xh-intent-danger-l2: var(--intent-danger-l2, 30%);
+    --xh-intent-danger-l3: var(--intent-danger-l3, 38%);
+    --xh-intent-danger-l4: var(--intent-danger-l4, 55%);
+    --xh-intent-danger-l5: var(--intent-danger-l5, 65%);
+  }
 
-  // Intent colors - alpha (opacity) variants.
-  --xh-intent-a1: 0.15;
-  --xh-intent-a2: 0.25;
+  // Alpha (opacity) variants for use in the `trans` variants below.
+  --xh-intent-a1: var(--intent-a1, 0.15);
+  --xh-intent-a2: var(--intent-a2, 0.3);
 
+  // Bake intent HSL values into a set of seven defined colors per-intent.
   --xh-intent-neutral-darkest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l1));
   --xh-intent-neutral-darker: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l2));
   --xh-intent-neutral: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3));
@@ -99,7 +164,6 @@ body {
   --xh-intent-neutral-lightest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l5));
   --xh-intent-neutral-trans1: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a1));
   --xh-intent-neutral-trans2: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a2));
-
   --xh-intent-primary-darkest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l1));
   --xh-intent-primary-darker: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l2));
   --xh-intent-primary: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3));
@@ -107,7 +171,6 @@ body {
   --xh-intent-primary-lightest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l5));
   --xh-intent-primary-trans1: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a1));
   --xh-intent-primary-trans2: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a2));
-
   --xh-intent-success-darkest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l1));
   --xh-intent-success-darker: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l2));
   --xh-intent-success: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3));
@@ -115,7 +178,6 @@ body {
   --xh-intent-success-lightest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l5));
   --xh-intent-success-trans1: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a1));
   --xh-intent-success-trans2: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a2));
-
   --xh-intent-warning-darkest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l1));
   --xh-intent-warning-darker: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l2));
   --xh-intent-warning: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3));
@@ -123,7 +185,6 @@ body {
   --xh-intent-warning-lightest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l5));
   --xh-intent-warning-trans1: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a1));
   --xh-intent-warning-trans2: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a2));
-
   --xh-intent-danger-darkest: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l1));
   --xh-intent-danger-darker: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l2));
   --xh-intent-danger: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3));
@@ -132,15 +193,31 @@ body {
   --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
+
+  //-----------------------------------------
   // Background (app / components in general)
+  //-----------------------------------------
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
   --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
 
+  &.xh-dark {
+    --xh-bg: var(--bg, var(--xh-black));
+    --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
+    --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
+  }
+
+
+  //------------------------
   // Borders
+  //------------------------
   --xh-border-color: var(--border-color, #{mc('grey', '400')});
   --xh-border-width: var(--border-width, 1);
   --xh-border-width-px: calc(var(--xh-border-width) * 1px);
+
+  &.xh-dark {
+    --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
+  }
 
   // Borders - one-stop definitions
   --xh-border-solid: #{(var(--xh-border-width-px) solid var(--xh-border-color))};
@@ -150,25 +227,55 @@ body {
   --xh-border-radius: var(--border-radius, 4);
   --xh-border-radius-px: calc(var(--xh-border-radius) * 1px);
 
+
+  //------------------------
   // Buttons
-  --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
-  --xh-button-bg-darker: var(--xh-intent-neutral-darker);
+  //------------------------
+  --xh-button-border-color: var(--button-border-color, var(--xh-border-color));
   --xh-button-bg: var(--xh-intent-neutral);
+  --xh-button-bg-darker: var(--xh-intent-neutral-darker);
+  --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
   --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
   --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
-  --xh-button-border-color: var(--button-border-color, var(--xh-border-color));
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
   --xh-button-text-color: var(--button-text-color, var(--xh-text-color));
 
-  // Buttons - special override for active, standard (no intent) only button in buttonGroups
+  // Buttons - override available to color active button in buttonGroups w/standard (null/neutral) intent styling.
   --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
   --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
 
-  // Chart
+  &.xh-dark {
+    // This breaks the standard of having the active button bg default to the pressed bg, but in
+    // dark mode having the active button take the darkest color simply does not read as "active" -
+    // especially for buttonGroupInputs with only two buttons. So we flip it on its head and make
+    // the active button the lightest in dark mode so it stands out as much as possible.
+    --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-lightest));
+  }
+
+  &.xh-mobile {
+    --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
+    --xh-button-active-text-color: var(--button-active-text-color, white);
+    --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
+    --xh-button-text-color: var(--button-text-color, white);
+    --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
+
+    &.xh-dark {
+      --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
+    }
+  }
+
+
+  //------------------------
+  // Charts
+  //------------------------
   --xh-chart-bg: var(--chart-bg, var(--xh-bg));
 
+
+  //------------------------
+  // Focus
+  //------------------------
   // Focus indicator outline for interactive components - apps can use `--focus-outline: 0;` if
   // they wish to disable completely. Note form inputs provide their own dedicated props.
   --xh-focus-outline-width-px: var(--focus-outline-width-px, 0.5px);
@@ -176,7 +283,56 @@ body {
   --xh-focus-outline-color: var(--focus-outline-color, rgba(19, 124, 189, 0.6));
   --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
 
-  // Grid
+
+  //------------------------
+  // Fonts
+  //------------------------
+  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-headings: var(--font-family-headings, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
+  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
+
+  --xh-font-size: var(--font-size, 13);
+  --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
+  --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
+  --xh-font-size-small-mult: var(--font-size-small-mult, 0.8);
+  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
+  --xh-font-size-large: calc(var(--xh-font-size) * var(--xh-font-size-large-mult));
+  --xh-font-size-large-px: calc(var(--xh-font-size-large) * 1px);
+  --xh-font-size-small: calc(var(--xh-font-size) * var(--xh-font-size-small-mult));
+  --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
+
+  &.xh-mobile {
+    --xh-font-size: var(--font-size, 15);
+  }
+
+
+  //------------------------
+  // Form Fields
+  //------------------------
+  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
+  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
+  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
+  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
+  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
+  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
+  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
+  --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
+  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
+  --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
+  --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
+  --xh-form-field-margin-right: var(--form-field-margin-right, 0);
+
+  &.xh-dark {
+    --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
+    --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
+  }
+
+
+  //------------------------
+  // Grids
+  //------------------------
   --xh-grid-bg-highlight: var(--grid-bg-highlight, var(--xh-bg-highlight));
   --xh-grid-bg-hover: var(--grid-bg-hover, #{mc-trans('blue', '200', 0.8)});
   --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
@@ -253,46 +409,45 @@ body {
   --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 14);
   --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
 
-  // Fonts
-  --xh-font-family: var(--font-family, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
-  --xh-font-family-headings: var(--font-family-headings, #{(-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif)});
-  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
-  --xh-font-size: var(--font-size, 13);
-  --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
-  --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
-  --xh-font-size-small-mult: var(--font-size-small-mult, 0.8);
-  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+  // Dark Grid
+  &.xh-dark {
+    --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
+    --xh-grid-border-color: var(--grid-border-color, #293233);
+    --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
+    --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
+    --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
+    --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
+    --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
+  }
 
-  // Font sizes - calculated from above
-  --xh-font-size-px: calc(var(--xh-font-size) * 1px);
-  --xh-font-size-large: calc(var(--xh-font-size) * var(--xh-font-size-large-mult));
-  --xh-font-size-large-px: calc(var(--xh-font-size-large) * 1px);
-  --xh-font-size-small: calc(var(--xh-font-size) * var(--xh-font-size-small-mult));
-  --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
+  // Mobile Grid
+  &.xh-mobile {
+    --xh-grid-font-size: var(--grid-font-size, 14);
+    --xh-grid-line-height: var(--grid-line-height, 30);
+    --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
+    --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
+  }
 
+
+  //------------------------
   // Inputs
+  //------------------------
   --xh-input-bg: var(--input-bg, var(--xh-bg));
   --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
   --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
   --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
 
-  // Form fields
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
-  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
-  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
-  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
-  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
-  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
-  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
-  --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
-  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
-  --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
-  --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
-  --xh-form-field-margin-right: var(--form-field-margin-right, 0);
+  &.xh-dark {
+    --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
+    --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
+    --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
+  }
 
+
+  //------------------------
   // Mask + LoadingIndicator
+  //------------------------
   --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '300', 0.3)});
   --xh-mask-text-bg: var(--mask-text-bg, #{mc('blue-grey', '100')});
   --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
@@ -300,7 +455,22 @@ body {
   --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
 
-  // Navbar (top app toolbar)
+  &.xh-dark {
+    --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
+    --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
+    --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
+    --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
+    --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
+  }
+
+  &.xh-mobile {
+    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
+  }
+
+
+  //-------------------------
+  // Navbar (aka AppBar)
+  //-------------------------
   --xh-navbar-bg: var(--navbar-bg, var(--xh-bg-alt));
   --xh-navbar-border-color: var(--navbar-border-color, transparent);
   --xh-navbar-color: var(--navbar-color, var(--xh-text-color));
@@ -310,7 +480,26 @@ body {
   --xh-navbar-title-font-size: var(--navbar-title-font-size, calc(var(--xh-font-size) * 1.9));
   --xh-navbar-title-font-size-px: calc(var(--xh-navbar-title-font-size) * 1px);
 
-  // Padding / Margin (spacing in general)
+  &.xh-dark {
+    --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
+    --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '50')});
+  }
+
+  &.xh-mobile {
+    --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '600')});
+    --xh-navbar-color: var(--navbar-color, #{mc('blue-grey', '50')});
+    --xh-navbar-title-color: var(--navbar-title-color, var(--xh-navbar-color));
+    --xh-navbar-title-font-size: var(--navbar-title-font-size, 19);
+
+    &.xh-dark {
+      --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
+    }
+  }
+
+
+  //------------------------
+  // Padding / Margins
+  //------------------------
   --xh-pad: var(--pad, 10);
   --xh-pad-px: calc(var(--xh-pad) * 1px);
   --xh-pad-double: calc(var(--xh-pad) * 2);
@@ -318,13 +507,19 @@ body {
   --xh-pad-half: calc(var(--xh-pad) * 0.5);
   --xh-pad-half-px: calc(var(--xh-pad-half) * 1px);
 
+
+  //------------------------
   // Panels
+  //------------------------
   --xh-panel-bg: var(--panel-bg, var(--xh-bg));
   --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
   --xh-panel-border-width: var(--panel-border-width, 0);
   --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
 
+
+  //------------------------
   // Popups / dialogs
+  //------------------------
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
@@ -334,7 +529,10 @@ body {
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
 
-  // Resizable splitter
+
+  //------------------------
+  // Resizable splitters
+  //------------------------
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});
   --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
   --xh-resizable-border-width: var(--resizable-border-width, 1);
@@ -344,33 +542,54 @@ body {
   --xh-resizable-size: var(--resizable-size, 8);
   --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
 
-  // Scrollbars (customized for webkit)
+  &.xh-dark {
+    --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
+    --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
+    --xh-resizable-button-bg: var(--resizable-button-bg, rgba(255, 255, 255, 0.08));
+    --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
+  }
+
+
+  //------------------------
+  // Scrollbars
+  //------------------------
   --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('blue-grey', '100')});
   --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '300')});
   --xh-scrollbar-size-px: var(--scrollbar-size-px, 10px);
 
+  &.xh-dark {
+    --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
+    --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
+  }
+
+
+  //------------------------
   // Tabs
+  //------------------------
   --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
 
-  // Toolbars
-  --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
-  --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
-  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
-  --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
-  --xh-tbar-min-size: var(--tbar-min-size, 41);
-  --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
-  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
-  --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
+  //------------------------
   // Text
+  //------------------------
   --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
   --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
   --xh-text-color-headings: var(--text-color-headings, var(--xh-text-color));
   --xh-text-color-highlight: var(--text-color-highlight, #{mc('blue-grey', '800')});
   --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
 
+  &.xh-dark {
+    --xh-text-color: var(--text-color, white);
+    --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
+    --xh-text-color-highlight: var(--text-color-highlight, white);
+    --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
+  }
+
+
+  //------------------------------
   // Titles (e.g. panels, dialogs)
+  //------------------------------
   --xh-title-bg: var(--title-bg, var(--xh-blue-gray));
   --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
   --xh-title-font-family: var(--title-font-family, var(--xh-font-family-headings));
@@ -386,166 +605,40 @@ body {
   --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
   --xh-title-compact-height: var(--title-compact-height, 28);
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
-}
 
-//------------------------
-// Dark Theme
-//------------------------
-body.xh-dark {
-  // Colors
-  --xh-black: var(--black, #12171a);
-  --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
-  --xh-green: var(--green, #009e0a); // could not find a MC green that works, especially in grids....
-  --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
-  --xh-red: var(--red, #{mc('red', 'a700')});
+  &.xh-mobile {
+    --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
+    --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
+    --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
 
-  // Intent colors
-  --xh-intent-neutral-h: 180;
-  --xh-intent-neutral-s: 10%;
-  --xh-intent-neutral-l1: 20%;
-  --xh-intent-neutral-l2: 25%;
-  --xh-intent-neutral-l3: 32%;
-  --xh-intent-neutral-l4: 24%;
-  --xh-intent-neutral-l5: 28%;
+    &.xh-dark {
+      --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
+      --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
+    }
+  }
 
-  --xh-intent-primary-h: 206;
-  --xh-intent-primary-s: 100%;
-  --xh-intent-primary-l1: 25%;
-  --xh-intent-primary-l2: 30%;
-  --xh-intent-primary-l3: 45%;
-  --xh-intent-primary-l4: 65%;
-  --xh-intent-primary-l5: 75%;
 
-  --xh-intent-success-h: 123;
-  --xh-intent-success-s: 50%;
-  --xh-intent-success-l1: 23%;
-  --xh-intent-success-l2: 30%;
-  --xh-intent-success-l3: 40%;
-  --xh-intent-success-l4: 60%;
-  --xh-intent-success-l5: 75%;
-
-  --xh-intent-warning-h: 30;
-  --xh-intent-warning-s: 100%;
-  --xh-intent-warning-l1: 25%;
-  --xh-intent-warning-l2: 30%;
-  --xh-intent-warning-l3: 40%;
-  --xh-intent-warning-l4: 65%;
-  --xh-intent-warning-l5: 75%;
-
-  --xh-intent-danger-h: 0;
-  --xh-intent-danger-s: 90%;
-  --xh-intent-danger-l1: 25%;
-  --xh-intent-danger-l2: 30%;
-  --xh-intent-danger-l3: 38%;
-  --xh-intent-danger-l4: 55%;
-  --xh-intent-danger-l5: 65%;
-
-  // Background (app / components in general)
-  --xh-bg: var(--bg, var(--xh-black));
-  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
-  --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
-
-  // Borders
-  --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
-
-  // Buttons
-  --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
-  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
-
-  // Grid
-  --xh-grid-bg-odd: var(--grid-bg-odd, #151f24);
-  --xh-grid-border-color: var(--grid-border-color, #293233);
-  --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
-  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
-  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-black));
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
-
-  // Inputs
-  --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
-  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
-  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
-
-  // Form Fields
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
-
-  // Mask + LoadingIndicator
-  --xh-mask-bg: var(--mask-bg, #{mc-trans('blue-grey', '900', 0.2)});
-  --xh-mask-text-bg: var(--mask-text-bg, #{mc-trans('grey', '900', 0.1)});
-  --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
-  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
-  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
-
-  // Navbar
-  --xh-navbar-border-color: var(--navbar-border-color, #{mc('blue-grey', '700')});
-  --xh-navbar-title-color: var(--navbar-title-color, #{mc('blue-grey', '50')});
-
-  // Resizable splitter
-  --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
-  --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
-  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(255, 255, 255, 0.08));
-  --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
-
-  // Scrollbars (customized for webkit)
-  --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
-  --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
-
+  //------------------------
   // Toolbars
-  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
-  --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
-  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('blue-grey', '600')});
+  //------------------------
+  --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
+  --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
+  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
+  --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
+  --xh-tbar-min-size: var(--tbar-min-size, 41);
+  --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
+  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
+  --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
 
-  // Text
-  --xh-text-color: var(--text-color, white);
-  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
-  --xh-text-color-highlight: var(--text-color-highlight, white);
-  --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
+  &.xh-dark {
+    --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+    --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
+    --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('blue-grey', '600')});
+  }
 
-}
-
-//------------------------
-// Mobile
-//------------------------
-body.xh-mobile {
-  --xh-accent-color: var(--accent-color, var(--xh-blue-light));
-  --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
-
-  // Buttons
-  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
-  --xh-button-active-text-color: var(--button-active-text-color, white);
-  --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
-  --xh-button-text-color: var(--button-text-color, white);
-  --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
-
-  // Grid
-  --xh-grid-font-size: var(--grid-font-size, 14);
-  --xh-grid-line-height: var(--grid-line-height, 30);
-  --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
-  --xh-grid-compact-line-height: var(--grid-compact-line-height, 26);
-
-  // Fonts
-  --xh-font-size: var(--font-size, 15);
-
-  // Navbar (top app toolbar)
-  --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '600')});
-  --xh-navbar-color: var(--navbar-color, #{mc('blue-grey', '50')});
-  --xh-navbar-title-color: var(--navbar-title-color, var(--xh-navbar-color));
-  --xh-navbar-title-font-size: var(--navbar-title-font-size, 19);
-
-  // Titles (e.g. panels, dialogs)
-  --xh-title-bg: var(--title-bg, #{mc('blue-grey', '100')});
-  --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '800')});
-  --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
-
-  // Mask
-  --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.2));
-}
-
-body.xh-mobile.xh-dark {
-  --xh-button-active-bg: var(--button-active-bg, #{mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
-  --xh-navbar-bg: var(--navbar-bg, #{mc('blue-grey', '700')});
-  --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
-  --xh-title-bg: var(--title-bg, #{mc('blue-grey', '900')});
-  --xh-title-text-color: var(--title-text-color, #{mc('blue-grey', '50')});
+  &.xh-mobile {
+    &.xh-dark {
+      --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+    }
+  }
 }
