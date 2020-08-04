@@ -361,7 +361,7 @@ export class ActivityTrackingModel {
     }
 
     // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-    getDefaultStartDate() {return LocalDate.today().subtract(6, 'months')}
+    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
     getDefaultEndDate() {return LocalDate.tomorrow()}
 
 }
