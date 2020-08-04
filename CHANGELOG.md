@@ -9,6 +9,24 @@
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
 
+### ✨ Style
+
+* CSS variables for "intents" - most commonly used on buttons - have been reworked to use HSL color
+  values and support several standard variations of lightness and transparency.
+  * Developers are encouraged to customize intents by setting the individual HSL vars provided for
+    each intent (e.g. `--intent-primary-h` to adjust the primary hue) and/or the different levels of
+    lightness (e.g. `--intent-primary-l3` to adjust the default lightness).
+  * ⚠ Uses of the prior intent var overrides such as `--intent-primary` will no longer work. It is
+    possible to set directly via `--xh-intent-primary`, but components such as buttons will still
+    use the default intent shades for variations such as hover and pressed states. Again, review and
+    customize the HSL vars if required.
+* Desktop `Button` styles and classes have been rationalized and reworked to allow for more
+  consistent and direct styling of buttons in all their many permutations (standard/minimal/outlined
+  styles * default/hovered/pressed/disabled states * light/dark themes).
+  * Customized intent colors will now also be applied to outlined and minimal buttons.
+  * Dedicated classes are now applied to desktop buttons based on their style and state. Developers
+    can key off of these classes directly if required.
+
 ### 🐞 Bug Fixes
 
 * Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
