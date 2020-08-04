@@ -73,38 +73,29 @@ export class ActivityTrackingModel {
             ]
         });
 
-        this.dimChooserModel = new DimensionChooserModel({
-            persistWith: this.persistWith,
-            dimensions: [
-                {label: 'Date', value: 'day'},
-                {label: 'Month', value: 'month'},
-                {label: 'User', value: 'username'},
-                {label: 'Message', value: 'msg'},
-                {label: 'Category', value: 'category'},
-                {label: 'Device', value: 'device'},
-                {label: 'Browser', value: 'browser'},
-                {label: 'User Agent', value: 'userAgent'}
-            ],
-            initialValue: this._defaultDims
-        });
-
         this.cube = new Cube({
             fields: [
                 {name: 'day', type: 'localDate', isDimension: true, aggregator: new RangeAggregator()},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'username', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                {name: 'msg', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'username', displayName: 'User', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                {name: 'msg', displayName: 'Message', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'category', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'device', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'browser', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'userAgent', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
                 {name: 'elapsed', type: 'int', aggregator: 'AVG'},
                 {name: 'impersonating', type: 'bool'},
-                {name: 'dateCreated', type: 'date'},
+                {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                 {name: 'data', type: 'json'},
                 {name: 'count', type: 'int', aggregator: new ChildCountAggregator()},
                 {name: 'entryCount', type: 'int', aggregator: new LeafCountAggregator()}
             ]
+        });
+
+        this.dimChooserModel = new DimensionChooserModel({
+            dimensions: this.cube.dimensions,
+            persistWith: this.persistWith,
+            initialValue: this._defaultDims
         });
 
         this.filterModel = new FilterModel({filters: this._defaultFilters});

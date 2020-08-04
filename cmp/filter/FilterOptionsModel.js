@@ -79,7 +79,7 @@ export class FilterOptionsModel {
                 // Set defaults from store
                 const specCfg = {
                     field: storeField.name,
-                    displayName: storeField.label,
+                    displayName: storeField.displayName,
                     fieldType: storeField.type,
                     ...fieldCfg
                 };

@@ -34,7 +34,7 @@ export class Cube {
 
     /**
      * @param {Object} c - Cube configuration.
-     * @param {(CubeField[]|Object[])} fields - array of {@see CubeField} instances or configs.
+     * @param {(CubeField[]|CubeFieldConfig[])} c.fields - CubeField instances or configs.
      * @param {Object[]} [c.data] - array of initial raw data.
      * @param {(function|string)} [c.idSpec] - {@see Store.idSpec} - default 'id'.
      * @param {function} [c.processRawData] - {@see Store.processRawData}
@@ -60,31 +60,30 @@ export class Cube {
         this._info = info;
     }
 
-    /**
-     * @returns {Object} - optional metadata associated with this Cube at the last data load.
-     */
+    /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
     get info() {
         return this._info;
     }
 
-    /**
-     * @returns {CubeField[]} - fields associated with this cube.
-     */
+    /** @returns {CubeField[]} - Fields configured for this Cube. */
     get fields() {
         return this.store.fields;
     }
 
-    /**
-     * @returns {Record[]} - records loaded in to this cube.
-     */
+    /** @returns {CubeField[]} - Dimension Fields configured for this Cube. */
+    get dimensions() {
+        return this.fields.filter(it => it.isDimension);
+    }
+
+    /** @returns {Record[]} - records loaded in to this Cube. */
     get records() {
         return this.store.records;
     }
 
+
     //------------------
     // Querying API
     //-----------------
-
     /**
      * Query the cube.
      *
@@ -116,16 +115,17 @@ export class Cube {
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
      *      To receive data only, use the 'results' property of the returned object instead.
      * @param {boolean} [c.connect] - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
-     * @returns {View}.
+     * @returns {View}
      */
     createView({query, stores, connect = false}) {
         query = new Query({...query, cube: this});
         return new View({query, stores, connect});
     }
+
 
     //-------------------
     // Data Loading API
@@ -153,11 +153,9 @@ export class Cube {
 
     /**
      * Update this cube with incremental data set changes and/or info.
+     * This method largely delegates to {@see Store.updateData()} - see that method for more info.
      *
-     * This method largely delegates to Store.updateData().  See that method for more
-     * information.
-     *
-     * Note that this method will update its views asynchronously, in order to avoid locking
+     * Note that this method will update its views asynchronously in order to avoid locking
      * up the browser when attached to multiple expensive views.
      *
      * @param {(Object[]|StoreTransaction)} rawData
@@ -189,13 +187,13 @@ export class Cube {
 
     /**
      * Populate the metadata associated with this cube.
-     *
      * @param {Object} infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
     updateInfo(infoUpdates = {}) {
         this._info = Object.freeze({...this._info, ...infoUpdates});
         this._connectedViews.forEach((v) => v.noteCubeUpdated(null));
     }
+
 
     //---------------------
     // Implementation

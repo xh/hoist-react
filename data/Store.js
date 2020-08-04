@@ -62,7 +62,7 @@ export class Store {
 
     /**
      * @param {Object} c - Store configuration.
-     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or Field config objects.
+     * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function

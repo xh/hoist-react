@@ -17,30 +17,23 @@ export class Field {
 
     /** @member {string} */
     name;
-    /** @member {string} */
+    /** @member {FieldType} */
     type;
     /** @member {string} */
-    label;
+    displayName;
     /** @member {*} */
     defaultValue;
 
-    /**
-     * @param {Object} c - Field configuration.
-     * @param {string} c.name - unique key representing this field.
-     * @param {string} [c.type] - one of ['auto', 'string', 'int', 'number', 'bool', 'json', 'pwd', 'date', 'localDate']
-     *      Default 'auto' indicates no conversion.
-     * @param {string} [c.label] - label for display, defaults to capitalized name.
-     * @param {*} [c.defaultValue] - value to be used for records with a null, or non-existent value.
-     */
+    /** @param {FieldConfig} c - Field configuration */
     constructor({
         name,
-        type = 'auto',
-        label = startCase(name),
+        type = FieldType.AUTO,
+        displayName = startCase(name),
         defaultValue = null
     }) {
         this.name = name;
         this.type = type;
-        this.label = label;
+        this.displayName = displayName;
         this.defaultValue = defaultValue;
     }
 
@@ -54,29 +47,58 @@ export class Field {
     }
 }
 
-/** Parse a value according to a field type */
+/**
+ * Parse a value according to a field type.
+ * @param {*} val - raw value to parse.
+ * @param {FieldType} type - data type of the field to use for possible conversion.
+ * @param {*} [defaultValue] - typed value to return if `val` undefined or null.
+ * @return {*} resulting value, potentially parsed or cast as per type.
+ */
 export function parseFieldValue(val, type, defaultValue = null) {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
+    const FT = FieldType;
     switch (type) {
-        case 'auto':
-        case 'json':
+        case FT.AUTO:
+        case FT.JSON:
             return val;
-        case 'int':
+        case FT.INT:
             return parseInt(val);
-        case 'number':
+        case FT.NUMBER:
             return parseFloat(val);
-        case 'bool':
+        case FT.BOOL:
             return !!val;
-        case 'pwd':
-        case 'string':
+        case FT.PWD:
+        case FT.STRING:
             return val.toString();
-        case 'date':
+        case FT.DATE:
             return isDate(val) ? val : new Date(val);
-        case 'localDate':
+        case FT.LOCAL_DATE:
             return isLocalDate(val) ? val : LocalDate.get(val);
     }
 
     throw XH.exception(`Unknown field type '${type}'`);
 }
+
+/** @enum {string} - data types for Fields used within Hoist Store Records and Cubes. */
+export const FieldType = Object.freeze({
+    AUTO: 'auto',
+    BOOL: 'bool',
+    DATE: 'date',
+    INT: 'int',
+    JSON: 'json',
+    LOCAL_DATE: 'localDate',
+    NUMBER: 'number',
+    PWD: 'pwd',
+    STRING: 'string'
+});
+
+/**
+ * @typedef {Object} FieldConfig - ctor arguments for a Hoist data package Field.
+ * @property {string} name - unique key representing this field.
+ * @property {FieldType} [type] - default `FieldType.AUTO` indicates no conversion.
+ * @property {string} [displayName] - user-friendly / longer name for display, defaults to `name`
+ *      transformed via lodash `startCase` (e.g. fooBar -> Foo Bar).
+ * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
+ */

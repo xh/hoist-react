@@ -18,8 +18,7 @@ import {createLeafRow} from './impl/LeafRow';
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
  *
- * Not created directly by application.  Applications should use the method
- * Cube.createView() instead.
+ * Not created directly by application - use {@see Cube.createView()} instead.
  */
 export class View {
 

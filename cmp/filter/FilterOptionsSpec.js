@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {FieldFilter, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {throwIf, stripTags} from '@xh/hoist/utils/js';
 import {isString, isFunction, isEmpty, startCase} from 'lodash';
@@ -25,7 +25,7 @@ export class FilterOptionsSpec {
     /** @member {string} */
     displayName;
 
-    /** @member {string} */
+    /** @member {FieldType} */
     fieldType;
 
     /** @member {Array} */
@@ -46,11 +46,12 @@ export class FilterOptionsSpec {
      *      Type 'value' indicates the field should use equality operations against a set of values (i.e. '=', '!=', 'like')
      */
     get filterType() {
+        const FT = FieldType;
         switch (this.fieldType) {
-            case 'int':
-            case 'number':
-            case 'date':
-            case 'localDate':
+            case FT.INT:
+            case FT.NUMBER:
+            case FT.DATE:
+            case FT.LOCAL_DATE:
                 return 'range';
             default:
                 return 'value';
@@ -79,7 +80,7 @@ export class FilterOptionsSpec {
      * @param {Object} c - FilterOptionsSpec configuration.
      * @property {string} c.field - Name of field
      * @property {string} [c.displayName] - Name suitable for display to user, defaults to field (e.g. 'Country')
-     * @property {string} [c.fieldType] - Type of field. @see Field.type for available options. Defaults to 'auto'.
+     * @property {FieldType} [c.fieldType] - Type of field. @see Field.type for available options. Defaults to 'auto'.
      * @property {string[]} [c.operators] - Available operators. Defaults according to filterType.
      * @property {*[]} [c.values] - Available value options. Only applicable when filterType == 'value'
      * @property {function} [c.valueRenderer] - Function to return a readable string for a value.
@@ -91,7 +92,7 @@ export class FilterOptionsSpec {
     constructor({
         field,
         displayName,
-        fieldType = 'auto',
+        fieldType = FieldType.AUTO,
         values,
         operators,
         valueRenderer,
@@ -116,7 +117,7 @@ export class FilterOptionsSpec {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, operator);
-        } else if (this.fieldType === 'date' || this.fieldType === 'localDate') {
+        } else if (this.fieldType === FieldType.DATE || this.fieldType === FieldType.LOCAL_DATE) {
             ret = fmtDate(value);
         } else {
             ret = value?.toString();
