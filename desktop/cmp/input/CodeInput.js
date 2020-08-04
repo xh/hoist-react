@@ -403,6 +403,7 @@ export class CodeInput extends HoistInput {
     }
 
     findAll = (e) => {
+        this.clearSearchResults();
         this.cursor = this.editor.getSearchCursor(this.query);
         if (e && e.key !== 'Enter') return;
 
