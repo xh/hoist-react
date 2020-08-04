@@ -4,15 +4,30 @@
 
 ### 🎁 New Features
 
-* Added a `validEmail` constraint for forms.
+* Added new a `AppSpec.showBrowserContextMenu` config to control whether the browser's default
+  context menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
+  * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
+    available. Developers should set to true for apps that expect/depend on the built-in menu.
+
+### 🐞 Bug Fixes
+
+* Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)
+
+
+## v35.2.1 - 2020-07-31
 
 ### 🐞 Bug Fixes
 
 * A Grid's docked summary row is now properly cleared when its bound Store is cleared.
 * Additional SVG paths added to `requiredBlueprintIcons.js` to bring back calendar scroll icons on
   the DatePicker component.
+* Colors specified via the `--xh-intent-` CSS vars have been removed from minimal / outlined desktop
+  `Button` components because of incompatibility with `ButtonGroupInput` component. Fix to address
+  issue forthcoming. (This reverts the change made in 35.2.0 below.)
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.0...v35.2.1)
 
 
 ## v35.2.0 - 2020-07-21
@@ -20,8 +35,8 @@
 ### 🎁 New Features
 
 * `TabContainerModel` now supports a `persistWith` config to persist the active tab.
-* `TabContainerModel` now supports a `emptyText` config to display when TabContainer
-   gets rendered with no children.
+* `TabContainerModel` now supports a `emptyText` config to display when TabContainer gets rendered
+  with no children.
 
 ### ⚙️ Technical
 
