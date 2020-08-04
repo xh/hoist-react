@@ -14,6 +14,7 @@
         "declaration-block-trailing-semicolon": null,
         "max-empty-lines": 2,
         "no-descending-specificity": null,
+        "no-duplicate-selectors": null,
         "no-eol-whitespace": null,
         "no-missing-end-of-source-newline": null,
         "property-no-unknown": [
