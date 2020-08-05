@@ -12,16 +12,16 @@ import {isEqual, isFunction} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation using a function. Typically used by {@see FilterModel} to
- * produce a filtered set of Records.
- *
+ * Represents a filter operation using a function. Used by {@see FilterModel}.
  * Immutable.
  */
 export class FunctionFilter extends Filter {
 
     get isFunctionFilter() {return true}
 
+    /** @member {string} */
     id;
+    /** @member {function} */
     testFn;
 
     /**
@@ -50,22 +50,18 @@ export class FunctionFilter extends Filter {
     }
 
     /**
-     * Evaluates a Record or Object using the function.
      * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean}
+     * @returns {boolean} - true if the provided Record/Object passes this filter's testFn.
      */
     test(v) {
         return this.testFn(v);
     }
 
     /**
-     * Should two FunctionFilters be considered equal?
-     * @returns {boolean}
+     * @param {FunctionFilter} other
+     * @returns {boolean} - true if the other filter is equivalent with this instance.
      */
     equals(other) {
-        return (
-            isEqual(this.isFunctionFilter, other.isFunctionFilter) &&
-            isEqual(this.id, other.id)
-        );
+        return other.isFunctionFilter && isEqual(this.id, other.id);
     }
 }

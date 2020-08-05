@@ -155,9 +155,8 @@ export class FilterChooserFieldSpec {
     // Implementation
     //------------------------
     parseOperators(operators) {
-        return operators ?
-            operators.filter(it => FieldFilter.isValidOperator(it)) :
-            this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
+        operators = operators ?? this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
+        return operators.filter(it => FieldFilter.isValidOperator(it));
     }
 
     extractValuesFromRecords(storeRecords) {
