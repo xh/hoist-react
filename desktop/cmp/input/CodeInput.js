@@ -375,6 +375,7 @@ export class CodeInput extends HoistInput {
 
     handleEditorChange = (editor) => {
         this.noteValueChange(editor.getValue());
+        if (this.cursor) this.clearSearchResults();
     };
 
     onAutoFormat = () => {
