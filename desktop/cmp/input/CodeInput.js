@@ -418,6 +418,8 @@ export class CodeInput extends HoistInput {
             editor.scrollIntoView({from: ranges[0].anchor, to: ranges[0].head}, 10);
             editor.setSelection(ranges[0].anchor, ranges[0].head);
             this.setOccurrence(1);
+        } else {
+            this.setOccurrence(0);
         }
     }
 
@@ -426,13 +428,15 @@ export class CodeInput extends HoistInput {
 
         const {editor, query, cursor, ranges} = this,
             found = cursor.findNext(query);
-
         if (found) {
             editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
             editor.setSelection(cursor.from(), cursor.to());
             this.setOccurrence(1 + ranges.findIndex(found => {
                 return isEqual(found.anchor, cursor.from());
             }));
+        } else if (ranges.length) {
+            this.cursor = editor.getSearchCursor(query);
+            this.findNext();
         }
     };
 
@@ -441,13 +445,15 @@ export class CodeInput extends HoistInput {
 
         const {editor, query, cursor, ranges} = this,
             found = cursor.findPrevious(query);
-
         if (found) {
             editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
             editor.setSelection(cursor.from(), cursor.to());
             this.setOccurrence(1 + ranges.findIndex(found => {
                 return isEqual(found.anchor, cursor.from());
             }));
+        } else if (ranges.length) {
+            this.cursor = editor.getSearchCursor(query, ranges[ranges.length-1].head);
+            this.findPrevious();
         }
     };
 
