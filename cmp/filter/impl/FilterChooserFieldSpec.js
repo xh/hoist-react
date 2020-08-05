@@ -115,7 +115,7 @@ export class FilterChooserFieldSpec {
 
         // Read values available for suggestion from direct config if provided, or extract from
         // Store Records if suggestions enabled.
-        this.values = values ?? (this.suggestValues ? this.extractValuesFromRecords(storeRecords) : null);
+        this.values = this.parseValues(values, storeRecords);
 
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
@@ -154,9 +154,24 @@ export class FilterChooserFieldSpec {
     //------------------------
     // Implementation
     //------------------------
+    parseValues(values, storeRecords) {
+        return values ?? (
+            this.suggestValues ? (
+                this.fieldType === FieldType.BOOL ?
+                    [true, false] :
+                    this.extractValuesFromRecords(storeRecords)
+            ) : null
+        );
+    }
+
     parseOperators(operators) {
-        operators = operators ?? this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
+        operators = operators ?? this.getDefaultOperators();
         return operators.filter(it => FieldFilter.isValidOperator(it));
+    }
+
+    getDefaultOperators() {
+        if (this.fieldType === FieldType.BOOL) return ['=', '!='];
+        return this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
     extractValuesFromRecords(storeRecords) {
