@@ -380,8 +380,11 @@ export class Column {
                 getReactContainerClasses() {return ['xh-grid-tooltip']}
                 render() {
                     const agParams = this.props,
-                        {value, rowIndex, api} = agParams,
-                        record = api.getDisplayedRowAtIndex(rowIndex).data;
+                        {rowIndex, api, colDef} = agParams,
+                        {headerTooltip} = colDef,
+                        value = isNil(rowIndex) ? headerTooltip : agParams.value;
+
+                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
 
                     // ag-Grid encodes the value, so we decode it before passing to the renderer
                     return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
