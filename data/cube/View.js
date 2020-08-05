@@ -17,38 +17,25 @@ import {createLeafRow} from './impl/LeafRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- *
- * Not created directly by application - use {@see Cube.createView()} instead.
+ * Applications should create via the {@see Cube.createView()} factory.
  */
 export class View {
 
-    /**
-     * @member {Query}
-     * Query defining this View.  Update with updateView();
-     */
+    /** @member {Query} - Query defining this View. Update via `updateView()`. */
     @observable.ref
     query = null;
 
     /**
-     * @member {Object}
-     * Results of this view.  Will contain a single property 'rows' containing an array of
-     * hierarchical data objects. This is an observable property.
+     * @member {Object} - results of this view, an observable object with a `rows` property
+     *      containing an array of hierarchical data objects.
      */
     @observable.ref
     result = null;
 
-    /**
-     * @member {Store[]}
-     * Stores to which results of this view should be (re)loaded
-     */
+    /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
-    /**
-     * @member {Object}
-     *
-     * Cube info associated with the view when it was last updated.
-     * This is an observable property.
-     */
+    /** @member {Object} - observable Cube info associated with this View when last updated. */
     @observable.ref
     info = null;
 
@@ -57,15 +44,14 @@ export class View {
     _leafMap = null;
 
     /**
-     * @private.  Applications should use createView() instead.
+     * @private - applications should use `Cube.createView()`.
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with
-     *      data from this view.  Optional. To receive data only, use the
-     *      rows property instead.
-     * @param {boolean} [c.connect] - true to updated rows property and loaded
-     *      store when data in the underlying cube is changed.
+     * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     *      Optional - to receive data only, observe/read this class's `result` property instead.
+     * @param {boolean} [c.connect] - true to reactively update this class's `result` and connected
+     *      store(s) (if any) when data in the underlying Cube is changed.
      */
     constructor({query, connect = false, stores = []}) {
         this.query = query;
@@ -80,34 +66,28 @@ export class View {
     //--------------------
     // Main Public API
     //--------------------
-    get cube() {
-        return this.query.cube;
-    }
+    /** @return {Cube} */
+    get cube() {return this.query.cube}
 
-    get fields() {
-        return this.query.fields;
-    }
+    /** @return {CubeField[]} */
+    get fields() {return this.query.fields}
 
-    get isConnected() {
-        return this.cube._connectedViews.has(this);
-    }
+    /** @return {boolean} */
+    get isConnected() {return this.cube.viewIsConnected(this)}
 
+    /** @return {boolean} */
     get isFiltered() {
         return !isEmpty(this.cube.filters) && !isEmpty(this.query.filters);
     }
 
-    disconnect() {
-        this.cube._connectedViews.delete(this);
-    }
+    /** Stop receiving live updates into this view when the linked Cube data changes. */
+    disconnect() {this.cube.disconnectView(this)}
 
     /**
-     * Change the query in some way.
+     * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
-     * Setting this property will cause the data in this view to be re-computed to reflect
-     * the new query.
-     *
-     * @param {Object} overrides - changes to be applied to the query.  May include any
-     *      arguments to the query constructor, other than cube.
+     * @param {Object} overrides - changes to be applied to the query. May include any arguments to
+     *      the query constructor, other than cube.
      */
     @action
     updateQuery(overrides) {

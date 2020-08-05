@@ -448,13 +448,16 @@ export class Store {
     }
 
     /**
-     * Get a specific Field, by name.
+     * Get a specific Field by name.
      * @param {string} name - field name to locate.
      * @return {Field}
      */
     getField(name) {
         return this.fields.find(it => it.name === name);
     }
+
+    /**  @return {string[]} */
+    get fieldNames() {return this.fields.map(it => it.name)}
 
     /**
      * Records in this store, respecting any filter (if applied).

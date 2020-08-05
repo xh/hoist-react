@@ -38,10 +38,10 @@ export class Query {
      * @param {Object} c - Query configuration.
      * @param {Cube} c.cube - associated Cube. Required, but note that `Cube.executeQuery()` will
      *      install a reference to itself on the query config automatically.
-     * @param {string[]} [c.fields] - field names. Default of null to include all available fields
-     *      from the source Cube, or supply a subset to optimize aggregation performance.
+     * @param {string[]} [c.fields] - field names. If unspecified will include all available fields
+     *      from the source Cube, otherwise supply a subset to optimize aggregation performance.
      * @param {string[]} [c.dimensions] - field names to group on. Any fields provided must also be
-     *      in fields config, above. Default of null will skip grouping.
+     *      in fields config, above. If none given the resulting data will not be grouped.
      * @param {(Filter[]|Object[])} [c.filters] - Filters (or configs for such) to be applied
      * @param {boolean} [c.includeRoot] - true to include a synthetic root node in the return with
      *      grand total aggregate values.
@@ -52,8 +52,8 @@ export class Query {
      */
     constructor({
         cube,
-        fields = null,
-        dimensions = null,
+        fields,
+        dimensions,
         filters = null,
         includeRoot = false,
         includeLeaves = false
@@ -121,7 +121,7 @@ export class Query {
         return names.map(name => {
             const field = find(fields, {name});
             if (!field || !field.isDimension) {
-                throw XH.exception(`Dimension is not a field, or is not a field specified as dimension '${name}'`);
+                throw XH.exception(`Dimension '${name}' is not a Field on this Cube, or is not specified with isDimension:true.`);
             }
             return field;
         });

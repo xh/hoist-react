@@ -29,7 +29,9 @@ export class Cube {
     /** @member {function} */
     lockFn;
 
+    /** @member {Object} */
     _info = null;
+    /** @member {Set<View>} */
     _connectedViews = new Set();
 
     /**
@@ -61,24 +63,16 @@ export class Cube {
     }
 
     /** @returns {Object} - optional metadata associated with this Cube at the last data load. */
-    get info() {
-        return this._info;
-    }
+    get info() {return this._info}
 
     /** @returns {CubeField[]} - Fields configured for this Cube. */
-    get fields() {
-        return this.store.fields;
-    }
+    get fields() {return this.store.fields}
 
     /** @returns {CubeField[]} - Dimension Fields configured for this Cube. */
-    get dimensions() {
-        return this.fields.filter(it => it.isDimension);
-    }
+    get dimensions() {return this.fields.filter(it => it.isDimension)}
 
     /** @returns {Record[]} - records loaded in to this Cube. */
-    get records() {
-        return this.store.records;
-    }
+    get records() {return this.store.records}
 
 
     //------------------
@@ -124,6 +118,19 @@ export class Cube {
     createView({query, stores, connect = false}) {
         query = new Query({...query, cube: this});
         return new View({query, stores, connect});
+    }
+
+    /**
+     * @param {View} view
+     * @return {boolean} - true if the provided view is connected to this Cube for live updates.
+     */
+    viewIsConnected(view) {
+        this._connectedViews.has(view);
+    }
+
+    /** @param {View} view - view to disconnect from live updates. */
+    disconnectView(view) {
+        this._connectedViews.delete(view);
     }
 
 

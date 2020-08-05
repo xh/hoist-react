@@ -6,25 +6,27 @@
  */
 
 import {XH} from '@xh/hoist/core';
+import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {parseFieldValue} from '@xh/hoist/data';
-import {isString, isArray, castArray, isEqual, escapeRegExp} from 'lodash';
+import {castArray, escapeRegExp, isArray, isEqual, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation on field. Typically used by @see FilterModel to
- * produce a filtered set of Records.
- *
+ * Represents a filter operation on a predefined Field. Used by {@see FilterModel}.
  * Immutable.
  */
 export class FieldFilter extends Filter {
 
     get isFieldFilter() {return true}
 
+    /** @member {string} */
     field;
+    /** @member {string} */
     operator;
+    /** @member {(*|[])} */
     value;
+    /** @member {FieldType} */
     fieldType;
 
     static OPERATORS = [
@@ -40,10 +42,8 @@ export class FieldFilter extends Filter {
     ];
 
     /**
-     * Is the given operator valid?
-     *
      * @param {string} operator
-     * @returns {boolean}
+     * @returns {boolean} - true if the given operator is valid.
      */
     static isValidOperator(operator) {
         return FieldFilter.OPERATORS.includes(operator);
@@ -65,23 +65,23 @@ export class FieldFilter extends Filter {
 
     /**
      * @param {Object} c - FieldFilter configuration.
-     * @param {string} c.field - field to filter.
+     * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
      * @param {string} c.operator - operator to use in filter. Must be one of the OPERATORS.
-     * @param {(*|Array)} [c.value] - value(s) to use with operator in filter.
-     * @param {string} [c.fieldType] - @see Field.type for available options.
+     * @param {(*|[])} [c.value] - value(s) to use with operator in filter.
+     * @param {FieldType} [c.fieldType]
      */
     constructor({
         field,
         operator,
         value,
-        fieldType = 'auto'
+        fieldType = FieldType.AUTO
     }) {
         super();
 
-        throwIf(!isString(field), 'FieldFilter requires a field');
+        throwIf(!field, 'FieldFilter requires a field');
         throwIf(!FieldFilter.isValidOperator(operator), `FieldFilter requires valid operator. Operator "${operator}" not recognized.`);
 
-        this.field = field;
+        this.field = isString(field) ? field : field.name;
         this.operator = operator;
         this.value = value;
         this.fieldType = fieldType;
@@ -99,9 +99,9 @@ export class FieldFilter extends Filter {
     }
 
     /**
-     * Evaluates a Record or Object using the operator.
      * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean}
+     * @returns {boolean} - true if the provided Record/Object passes this filter based on its
+     *      operator and comparison value(s).
      */
     test(v) {
         const {field, operator} = this;
@@ -140,14 +140,11 @@ export class FieldFilter extends Filter {
     }
 
     /**
-     * Should two FieldFilters be considered equal?
-     * @returns {boolean}
+     * @param {FieldFilter} other
+     * @returns {boolean} - true if the other filter is fully equivalent with this instance.
      */
     equals(other) {
-        return (
-            isEqual(this.isFieldFilter, other.isFieldFilter) &&
-            isEqual(this.serialize(), other.serialize())
-        );
+        return other.isFieldFilter && isEqual(this.serialize(), other.serialize());
     }
 
     parseValue(value) {

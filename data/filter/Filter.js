@@ -24,17 +24,15 @@ export class Filter {
     }
 
     /**
-     * Evaluates a Record or Object.
      * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean}
+     * @returns {boolean} - true if the provided Record/Object passes the filter.
      */
     test(v) {
         throw XH.exception('Not implemented.');
     }
 
     /**
-     * Should two Filters be considered equal?
-     * @returns {boolean}
+     * @returns {boolean} - true if the provided other Filter is equivalent to this instance.
      */
     equals(other) {
         throw XH.exception('Not implemented.');

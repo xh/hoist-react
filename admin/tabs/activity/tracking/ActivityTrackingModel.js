@@ -102,52 +102,49 @@ export class ActivityTrackingModel {
 
         this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
-            filterOptionsModel: {
-                store: this.cube.store,
-                fields: [
-                    'category',
-                    'month',
-                    'username',
-                    'device',
-                    'browser',
-                    {
-                        field: 'msg',
-                        displayName: 'Message',
-                        operators: ['like']
-                    },
-                    {
-                        field: 'userAgent',
-                        operators: ['like']
-                    },
-                    {
-                        field: 'elapsed',
-                        valueRenderer: (v) => {
-                            return fmtNumber(v, {
-                                label: 'ms',
-                                formatConfig: {thousandSeparated: false, mantissa: 0}
-                            });
-                        }
-                    },
-                    {
-                        field: 'dateCreated',
-                        displayName: 'Timestamp',
-                        exampleValue: Date.now(),
-                        valueParser: (v, operator) => {
-                            let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                            if (!ret.isValid()) return null;
-
-                            // Note special handling for '>' & '<=' queries.
-                            if (['>', '<='].includes(operator)) {
-                                ret = moment(ret).endOf('day');
-                            }
-
-                            return ret.toDate();
-                        },
-                        valueRenderer: (v) => fmtDate(v),
-                        operators: ['>', '>=', '<', '<=']
+            store: this.cube.store,
+            valueSourceRecords: 'all',
+            fieldSpecs: [
+                'category',
+                'month',
+                'username',
+                'device',
+                'browser',
+                {
+                    field: 'msg',
+                    suggestValues: false
+                },
+                {
+                    field: 'userAgent',
+                    suggestValues: false
+                },
+                {
+                    field: 'elapsed',
+                    valueRenderer: (v) => {
+                        return fmtNumber(v, {
+                            label: 'ms',
+                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                        });
                     }
-                ]
-            },
+                },
+                {
+                    field: 'dateCreated',
+                    exampleValue: Date.now(),
+                    valueParser: (v, operator) => {
+                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                        if (!ret.isValid()) return null;
+
+                        // Note special handling for '>' & '<=' queries.
+                        if (['>', '<='].includes(operator)) {
+                            ret = moment(ret).endOf('day');
+                        }
+
+                        return ret.toDate();
+                    },
+                    valueRenderer: (v) => fmtDate(v),
+                    operators: ['>', '>=', '<', '<=']
+                }
+            ],
             persistWith: this.persistWith
         });
 

@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
-import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel, dateTimeCol} from '@xh/hoist/cmp/grid';
-import {FilterModel} from '@xh/hoist/data';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
+import {FormModel} from '@xh/hoist/cmp/form';
+import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {FilterModel} from '@xh/hoist/data';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
@@ -58,10 +58,10 @@ export class ClientErrorsModel {
                     {name: 'device', type: 'string'},
                     {name: 'userAgent', type: 'string'},
                     {name: 'appVersion', type: 'string'},
-                    {name: 'appEnvironment', type: 'string'},
-                    {name: 'msg', type: 'string'},
-                    {name: 'error', type: 'string'},
-                    {name: 'dateCreated', type: 'date'},
+                    {name: 'appEnvironment', displayName: 'Environment', type: 'string'},
+                    {name: 'msg', displayName: 'User Message', type: 'string'},
+                    {name: 'error', displayName: 'Error Details', type: 'string'},
+                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
                     {name: 'userAlerted', type: 'bool'}
                 ]
             },
@@ -118,52 +118,44 @@ export class ClientErrorsModel {
 
         this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
-            filterOptionsModel: {
-                store: this.gridModel.store,
-                fields: [
-                    'username',
-                    'browser',
-                    'device',
-                    'appVersion',
-                    'userAlerted',
-                    {
-                        field: 'userAgent',
-                        operators: ['like']
-                    },
-                    {
-                        field: 'appEnvironment',
-                        displayName: 'Environment'
-                    },
-                    {
-                        field: 'msg',
-                        displayName: 'User Message',
-                        operators: ['like']
-                    },
-                    {
-                        field: 'error',
-                        displayName: 'Error Details',
-                        operators: ['like']
-                    },
-                    {
-                        field: 'dateCreated',
-                        displayName: 'Timestamp',
-                        exampleValue: Date.now(),
-                        valueParser: (v, operator) => {
-                            let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                            if (!ret.isValid()) return null;
+            store: this.gridModel.store,
+            fieldSpecs: [
+                'username',
+                'browser',
+                'device',
+                'appVersion',
+                'appEnvironment',
+                'userAlerted',
+                {
+                    field: 'userAgent',
+                    suggestValues: false
+                },
+                {
+                    field: 'msg',
+                    suggestValues: false
+                },
+                {
+                    field: 'error',
+                    suggestValues: false
+                },
+                {
+                    field: 'dateCreated',
+                    exampleValue: Date.now(),
+                    valueParser: (v, operator) => {
+                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                        if (!ret.isValid()) return null;
 
-                            // Note special handling for '>' & '<=' queries.
-                            if (['>', '<='].includes(operator)) {
-                                ret = moment(ret).endOf('day');
-                            }
+                        // Note special handling for '>' & '<=' queries.
+                        if (['>', '<='].includes(operator)) {
+                            ret = moment(ret).endOf('day');
+                        }
 
-                            return ret.toDate();
-                        },
-                        valueRenderer: (v) => fmtDate(v),
-                        operators: ['>', '>=', '<', '<=']
-                    }
-                ]
-            },
+                        return ret.toDate();
+                    },
+                    valueRenderer: (v) => fmtDate(v),
+                    operators: ['>', '>=', '<', '<=']
+                }
+            ],
             persistWith: this.persistWith
         });
 

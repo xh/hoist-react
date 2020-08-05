@@ -19,7 +19,7 @@ export class FilterModel {
     /** @member {function(v: (Record|Object)):boolean} */
     test = null;
 
-    /** @member {Boolean} */
+    /** @member {boolean} */
     @bindable
     includeChildren;
 

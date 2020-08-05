@@ -6,4 +6,3 @@
  */
 
 export * from './FilterChooserModel';
-export * from './FilterOptionsModel';
