@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -59,11 +59,12 @@ export const columnHeader = hoistCmp.factory({
             });
         };
 
-        const extraClasses = [
-            impl.isFiltered ? 'xh-grid-header-filtered' : null,
-            impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
-            impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
-        ];
+        const {isDesktop} = XH,
+            extraClasses = [
+                impl.isFiltered ? 'xh-grid-header-filtered' : null,
+                impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
+                impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
+            ];
 
         let headerName = props.displayName;
         if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
@@ -71,7 +72,16 @@ export const columnHeader = hoistCmp.factory({
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
-        const {isDesktop} = XH;
+        const showTooltipWhenElided = isNil(impl.xhColumn.agOptions.headerTooltip),
+            doShowTooltipWhenElided = (evt) => {
+                const el = evt.target,
+                    isElided = el.offsetWidth < el.scrollWidth;
+
+                if (isElided) {
+                    el.setAttribute('title', el.innerHTML);
+                }
+            };
+
         return div({
             className: classNames(props.className, extraClasses),
 
@@ -82,7 +92,10 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
-                span(headerName),
+                span({
+                    onMouseEnter: isDesktop && showTooltipWhenElided ? doShowTooltipWhenElided : null,
+                    item: headerName
+                }),
                 sortIcon(),
                 menuIcon()
             ]
