@@ -384,9 +384,7 @@ export class Column {
                         {headerTooltip} = colDef,
                         overHeader = isNil(rowIndex),
                         value = overHeader ? headerTooltip : agParams.value,
-                        record = overHeader ? null : api.getDisplayedRowAtIndex(rowIndex).data
-
-                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
+                        record = overHeader ? null : api.getDisplayedRowAtIndex(rowIndex).data;
 
                     // ag-Grid encodes the value, so we decode it before passing to the renderer
                     return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
