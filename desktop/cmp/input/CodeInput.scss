@@ -79,10 +79,16 @@
     }
   }
 
+  &__match-label {
+    color: var(--xh-text-color-muted);
+    line-height: 2.4;
+  }
+
   &--dialog {
     width: 90vw;
     height: 90vh;
   }
+
 }
 
 .xh-form-field-inline .xh-code-input {

@@ -6,7 +6,7 @@
  */
 import {form, FormModel} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, fragment, hbox, hspacer, span} from '@xh/hoist/cmp/layout';
+import {box, fragment, hbox, hspacer, label} from '@xh/hoist/cmp/layout';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -51,20 +51,19 @@ export class CodeInput extends HoistInput {
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
+
     cursor;
-    ranges = [];
-
-    @bindable occurrence = null;
-    @bindable foundOccurrences = null;
-
-    @bindable fullScreen = false;
-    baseClassName = 'xh-code-input';
-
+    selectedMatches = [];
+    @bindable match = null;
+    @bindable matches = null;
     @managed formModel = new FormModel({
         fields: [
             {name: 'query'}
         ]
     });
+
+    @bindable fullScreen = false;
+    baseClassName = 'xh-code-input';
 
     static propTypes = {
         ...HoistInput.propTypes,
@@ -123,6 +122,7 @@ export class CodeInput extends HoistInput {
     get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
     get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
     get showToolbar() {return withDefault(this.props.showToolbar, false)}
+    get query() {return this.formModel.values.query}
 
     get showFormatButton() {
         const {disabled, readonly, formatter, showFormatButton} = this.props;
@@ -167,7 +167,6 @@ export class CodeInput extends HoistInput {
         this.addReaction({
             track: () => this.query,
             run: (query) => {
-                if (!this.editor) return;
                 if (!query) this.clearSearchResults();
                 else this.findAll();
             }
@@ -227,7 +226,7 @@ export class CodeInput extends HoistInput {
             return null;
         }
 
-        const {fullScreen, editor} = this;
+        const {fullScreen, editor, match, matches} = this;
         return hbox({
             className: 'xh-code-input__action-buttons',
             items: showToolbar ? toolbar({
@@ -242,10 +241,26 @@ export class CodeInput extends HoistInput {
                                     leftIcon: Icon.search(),
                                     width: 150,
                                     enableClear: true,
+                                    rightElement: hbox(
+                                        label({
+                                            className: 'xh-code-input__match-label',
+                                            omit: isNull(matches),
+                                            item: `${match} / ${matches}`
+                                        }),
+                                        button({
+                                            icon: Icon.cross(),
+                                            omit: !this.query,
+                                            tabIndex: -1,
+                                            minimal: true,
+                                            onClick: () => {
+                                                this.formModel.fields.query.setValue(null);
+                                            }
+                                        })
+                                    ),
                                     onKeyDown: (e) => {
                                         if (e.key == 'Enter') {
                                             if (!e.shiftKey) {
-                                                if (isNull(this.foundOccurrences)) this.findAll(e);
+                                                if (isNull(matches)) this.findAll();
                                                 else this.findNext();
                                             } else {
                                                 this.findPrevious();
@@ -257,16 +272,18 @@ export class CodeInput extends HoistInput {
                             button({
                                 icon: Icon.arrowUp(),
                                 title: 'Find previous',
-                                onClick: () => this.findPrevious()
+                                onClick: () => {
+                                    if (isNull(matches)) this.findAll();
+                                    else this.findPrevious();
+                                }
                             }),
                             button({
                                 icon: Icon.arrowDown(),
                                 title: 'Find next',
-                                onClick: () => this.findNext()
-                            }),
-                            span({
-                                omit: isNull(this.foundOccurrences),
-                                item: `${this.occurrence} / ${this.foundOccurrences}`
+                                onClick: () => {
+                                    if (isNull(matches)) this.findAll();
+                                    else this.findNext();
+                                }
                             }),
                             hspacer(5)
                         ]
@@ -314,9 +331,6 @@ export class CodeInput extends HoistInput {
     // Implementation
     //------------------
 
-    get query() {
-        return this.formModel.values.query;
-    }
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
@@ -395,47 +409,57 @@ export class CodeInput extends HoistInput {
     }
 
     clearSearchResults() {
-        this.editor.getSearchCursor('', 0);
         this.cursor = null;
-        this.setFoundOccurrences(null);
-        this.setOccurrence(null);
-        this.ranges.forEach(occurrence => occurrence.textMarker.clear());
-        this.ranges = [];
+        this.setMatches(null);
+        this.setMatch(null);
+        this.selectedMatches.forEach(match => match.textMarker.clear());
+        this.selectedMatches = [];
     }
 
-    findAll = (e) => {
+    findAll = () => {
         this.clearSearchResults();
-        this.cursor = this.editor.getSearchCursor(this.query);
-        if (e && e.key !== 'Enter') return;
+        this.cursor = this.editor.getSearchCursor(this.query, 0, true);
 
-        const {cursor, editor, ranges, query} = this;
+        const {cursor, editor, selectedMatches} = this;
+
         while (cursor.findNext()) {
-            ranges.push({anchor: cursor.from(), head: cursor.to(), textMarker: editor.markText(cursor.from(), cursor.to(), {className: 'selection-highlight'})});
+            const anchor = cursor.from(),
+                head = cursor.to();
+
+            selectedMatches.push({
+                anchor,
+                head,
+                textMarker: editor.markText(anchor, head, {className: 'selection-highlight'})
+            });
         }
-        this.setFoundOccurrences(ranges.length);
-        if (ranges.length) {
-            this.cursor = this.editor.getSearchCursor(query, 0);
-            editor.scrollIntoView({from: ranges[0].anchor, to: ranges[0].head}, 10);
-            editor.setSelection(ranges[0].anchor, ranges[0].head);
-            this.setOccurrence(1);
+
+        const matchLength = selectedMatches.length;
+
+        this.setMatches(matchLength);
+        if (matchLength) {
+            const first = selectedMatches[0];
+            editor.scrollIntoView({from: first.anchor, to: first.head}, 10);
+            editor.setSelection(first.anchor, first.head);
+            this.setMatch(1);
         } else {
-            this.setOccurrence(0);
+            this.setMatch(0);
         }
     }
 
     findNext = () => {
         if (!this.cursor) return;
 
-        const {editor, query, cursor, ranges} = this,
+        const {editor, query, cursor, selectedMatches} = this,
             found = cursor.findNext(query);
+
         if (found) {
-            editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
-            editor.setSelection(cursor.from(), cursor.to());
-            this.setOccurrence(1 + ranges.findIndex(found => {
-                return isEqual(found.anchor, cursor.from());
-            }));
-        } else if (ranges.length) {
-            this.cursor = editor.getSearchCursor(query);
+            const from = cursor.from(),
+                to = cursor.to();
+            editor.scrollIntoView({from, to}, 10);
+            editor.setSelection(from, to);
+            this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
+        } else {
+            this.cursor = editor.getSearchCursor(query, 0, true);
             this.findNext();
         }
     };
@@ -443,16 +467,18 @@ export class CodeInput extends HoistInput {
     findPrevious = () => {
         if (!this.cursor) return;
 
-        const {editor, query, cursor, ranges} = this,
+        const {editor, query, cursor, selectedMatches} = this,
+            matchLength = selectedMatches.length,
             found = cursor.findPrevious(query);
+
         if (found) {
-            editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
-            editor.setSelection(cursor.from(), cursor.to());
-            this.setOccurrence(1 + ranges.findIndex(found => {
-                return isEqual(found.anchor, cursor.from());
-            }));
-        } else if (ranges.length) {
-            this.cursor = editor.getSearchCursor(query, ranges[ranges.length-1].head);
+            const from = cursor.from(),
+                to = cursor.to();
+            editor.scrollIntoView({from, to}, 10);
+            editor.setSelection(from, to);
+            this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
+        } else {
+            this.cursor = editor.getSearchCursor(query, selectedMatches[matchLength - 1].head, true);
             this.findPrevious();
         }
     };
