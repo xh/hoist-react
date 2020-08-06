@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString, unescape} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -72,13 +72,16 @@ export const columnHeader = hoistCmp.factory({
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
-        const showTooltipWhenElided = isNil(impl.xhColumn.agOptions.headerTooltip),
+        const showTooltipWhenElided = isNil(impl.xhColumn.headerTooltip),
             doShowTooltipWhenElided = (evt) => {
                 const el = evt.target,
-                    isElided = el.offsetWidth < el.scrollWidth;
+                    isElided = el.offsetWidth < el.scrollWidth,
+                    title = unescape(el.innerHTML);
 
                 if (isElided) {
-                    el.setAttribute('title', el.innerHTML);
+                    el.setAttribute('title', title);
+                } else {
+                    el.removeAttribute('title');
                 }
             };
 
