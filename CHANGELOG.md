@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Elided Grid column headers now show the full `headerName` value in a browser "title" tooltip on hover.
 * Added new a `AppSpec.showBrowserContextMenu` config to control whether the browser's default
   context menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
@@ -28,7 +29,7 @@
     can key off of these classes directly if required.
 
 ### 🐞 Bug Fixes
-
+* Fixed tooltipElement so that it can work if a headerTooltip is also specified on the same column.
 * Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)
