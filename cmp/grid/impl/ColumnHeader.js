@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString, unescape} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -59,12 +59,11 @@ export const columnHeader = hoistCmp.factory({
             });
         };
 
-        const {isDesktop} = XH,
-            extraClasses = [
-                impl.isFiltered ? 'xh-grid-header-filtered' : null,
-                impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
-                impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
-            ];
+        const extraClasses = [
+            impl.isFiltered ? 'xh-grid-header-filtered' : null,
+            impl.activeGridSorter ? 'xh-grid-header-sorted' : null,
+            impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
+        ];
 
         let headerName = props.displayName;
         if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
@@ -75,15 +74,16 @@ export const columnHeader = hoistCmp.factory({
         const showTooltipWhenElided = isNil(impl.xhColumn.headerTooltip),
             doShowTooltipWhenElided = (evt) => {
                 const el = evt.target,
-                    isElided = el.offsetWidth < el.scrollWidth,
-                    title = unescape(el.innerHTML);
+                    isElided = el.offsetWidth < el.scrollWidth;
 
                 if (isElided) {
-                    el.setAttribute('title', title);
+                    el.setAttribute('title', headerName);
                 } else {
                     el.removeAttribute('title');
                 }
             };
+
+        const {isDesktop} = XH;
 
         return div({
             className: classNames(props.className, extraClasses),
