@@ -6,10 +6,10 @@
  */
 import {form, FormModel} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, fragment, hbox, hspacer, label} from '@xh/hoist/cmp/layout';
+import {box, fragment, hbox, label} from '@xh/hoist/cmp/layout';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {elemFactory, HoistComponent, LayoutSupport, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -222,7 +222,7 @@ export class CodeInput extends HoistInput {
     renderActionButtons() {
         const {showCopyButton, showFormatButton, showFullscreenButton, showToolbar} = this;
 
-        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton) || !showToolbar) {
+        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton && !showToolbar)) {
             return null;
         }
 
@@ -284,10 +284,10 @@ export class CodeInput extends HoistInput {
                                     if (isNull(matches)) this.findAll();
                                     else this.findNext();
                                 }
-                            }),
-                            hspacer(5)
+                            })
                         ]
                     }),
+                    (showCopyButton || showFormatButton || showFullscreenButton) ? toolbarSep() : null,
                     showCopyButton ? clipboardButton({
                         text: null,
                         title: 'Copy to clipboard',
