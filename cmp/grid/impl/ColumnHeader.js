@@ -84,7 +84,6 @@ export const columnHeader = hoistCmp.factory({
             };
 
         const {isDesktop} = XH;
-
         return div({
             className: classNames(props.className, extraClasses),
 
