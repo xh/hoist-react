@@ -66,12 +66,12 @@ export const columnHeader = hoistCmp.factory({
         ];
 
         let headerName = props.displayName;
-        if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
+        if (isFunction(impl.xhColumn?.headerName)) {
             const {xhColumn, gridModel} = impl;
             headerName = xhColumn.headerName({column: xhColumn, gridModel});
         }
 
-        const showTooltipWhenElided = isNil(impl.xhColumn.headerTooltip),
+        const showTooltipWhenElided = isNil(impl.xhColumn?.headerTooltip),
             doShowTooltipWhenElided = (evt) => {
                 const el = evt.target,
                     isElided = el.offsetWidth < el.scrollWidth;
