@@ -382,7 +382,9 @@ export class Column {
                     const agParams = this.props,
                         {rowIndex, api, colDef} = agParams,
                         {headerTooltip} = colDef,
-                        value = isNil(rowIndex) ? headerTooltip : agParams.value;
+                        overHeader = isNil(rowIndex),
+                        value = overHeader ? headerTooltip : agParams.value,
+                        record = overHeader ? null : api.getDisplayedRowAtIndex(rowIndex).data
 
                     const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
 
