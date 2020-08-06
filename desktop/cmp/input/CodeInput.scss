@@ -79,7 +79,22 @@
     }
   }
 
-  &__match-label {
+  &__toolbar {
+    position: absolute !important;
+    padding: 0 !important;
+    bottom: 0;
+    right: 0;
+    z-index: 3; // render on top of code-mirror content to enable click
+
+    .xh-button {
+      padding: 0;
+      min-width: 22px;
+      min-height: 22px;
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  &--label {
     color: var(--xh-text-color-muted);
     line-height: 2.4;
   }

@@ -51,16 +51,14 @@ export class CodeInput extends HoistInput {
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
-
+    /** @member {FormModel} */
+    @managed formModel = new FormModel({fields: [{name: 'query'}]});
+    /** CodeMirror SearchCursor add-on */
     cursor;
-    selectedMatches = [];
+    @bindable showToolbar = false;
     @bindable match = null;
     @bindable matches = null;
-    @managed formModel = new FormModel({
-        fields: [
-            {name: 'query'}
-        ]
-    });
+    selectedMatches = [];
 
     @bindable fullScreen = false;
     baseClassName = 'xh-code-input';
@@ -114,14 +112,17 @@ export class CodeInput extends HoistInput {
         /** True (default) to display Fullscreen button at bottom-right of input. */
         showFullscreenButton: PT.bool,
 
-        /** True to display search bar at bottom of input. */
-        showToolbar: PT.bool
+        /** True to display Search button at bottom-right of input. When clicked, it will expand
+         * to a toolbar component at the bottom-right of input. Will collapse when search input is
+         * cleared. Search is case-insensitive.
+         * */
+        enableSearch: PT.bool
     };
 
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
     get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
     get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
-    get showToolbar() {return withDefault(this.props.showToolbar, false)}
+    get enableSearch() {return withDefault(this.props.enableSearch, false)}
     get query() {return this.formModel.values.query}
 
     get showFormatButton() {
@@ -208,122 +209,142 @@ export class CodeInput extends HoistInput {
                     ref: this.manageCodeEditor,
                     onChange: this.onChange
                 }),
-                this.renderActionButtons()
+                this.enableSearch ? this.renderToolbar() : this.renderActionButtons()
             ],
-
             className: this.getClassName(),
             onBlur: this.onBlur,
             onFocus: this.onFocus,
-
             ...props
         });
     }
 
-    renderActionButtons() {
-        const {showCopyButton, showFormatButton, showFullscreenButton, showToolbar} = this;
+    renderToolbar() {
+        const {editor, match, matches, showCopyButton, showFormatButton, showFullscreenButton,
+            formModel, hasFocus, fullScreen, showToolbar} = this;
+        if (!hasFocus) return null;
 
-        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton && !showToolbar)) {
+        if (!showToolbar) {
+            return this.renderActionButtons();
+        } else {
+            return hbox({
+                className: 'xh-code-input__toolbar',
+                item: toolbar({
+                    items: [
+                        form({
+                            model: formModel,
+                            items: [
+                                formField({
+                                    field: 'query',
+                                    label: null,
+                                    item: textInput({
+                                        leftIcon: Icon.search(),
+                                        width: 150,
+                                        enableClear: true,
+                                        rightElement: hbox(
+                                            label({
+                                                className: 'xh-code-input--label',
+                                                omit: isNull(matches),
+                                                item: `${match} / ${matches}`
+                                            }),
+                                            button({
+                                                icon: Icon.cross(),
+                                                omit: !this.query,
+                                                tabIndex: -1,
+                                                minimal: true,
+                                                onClick: () => {
+                                                    formModel.fields.query.setValue(null);
+                                                    this.setShowToolbar(false);
+                                                }
+                                            })
+                                        ),
+                                        onKeyDown: (e) => {
+                                            if (e.key == 'Enter') {
+                                                if (!e.shiftKey) {
+                                                    if (isNull(matches)) this.findAll();
+                                                    else this.findNext();
+                                                } else {
+                                                    this.findPrevious();
+                                                }
+                                            }
+                                        }
+                                    })
+                                }),
+                                button({
+                                    icon: Icon.arrowUp(),
+                                    title: 'Find previous',
+                                    onClick: () => {
+                                        if (isNull(matches)) this.findAll();
+                                        else this.findPrevious();
+                                    }
+                                }),
+                                button({
+                                    icon: Icon.arrowDown(),
+                                    title: 'Find next',
+                                    onClick: () => {
+                                        if (isNull(matches)) this.findAll();
+                                        else this.findNext();
+                                    }
+                                })
+                            ]
+                        }),
+                        (showCopyButton || showFormatButton || showFullscreenButton) ? toolbarSep() : null,
+                        showCopyButton ? clipboardButton({
+                            text: null,
+                            title: 'Copy to clipboard',
+                            successMessage: 'Contents copied to clipboard',
+                            getCopyText: () => editor.getValue()
+                        }) : null,
+                        showFormatButton ? button({
+                            icon: Icon.magic(),
+                            title: 'Auto-format',
+                            onClick: () => this.onAutoFormat()
+                        }) : null,
+                        showFullscreenButton ? button({
+                            icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                            title: fullScreen ? 'Exit full screen' : 'Full screen',
+                            onClick: () => this.setFullScreen(!fullScreen)
+                        }) : null
+                    ]
+                })
+            });
+        }
+    }
+
+    renderActionButtons() {
+        const {showCopyButton, showFormatButton, showFullscreenButton, showToolbar, enableSearch} = this;
+
+        if (!this.hasFocus || (!showCopyButton && !showFormatButton && !showFullscreenButton)) {
             return null;
         }
 
-        const {fullScreen, editor, match, matches} = this;
+        const {fullScreen, editor} = this;
+
         return hbox({
             className: 'xh-code-input__action-buttons',
-            items: showToolbar ? toolbar({
-                items: [
-                    form({
-                        model: this.formModel,
-                        items: [
-                            formField({
-                                field: 'query',
-                                label: null,
-                                item: textInput({
-                                    leftIcon: Icon.search(),
-                                    width: 150,
-                                    enableClear: true,
-                                    rightElement: hbox(
-                                        label({
-                                            className: 'xh-code-input__match-label',
-                                            omit: isNull(matches),
-                                            item: `${match} / ${matches}`
-                                        }),
-                                        button({
-                                            icon: Icon.cross(),
-                                            omit: !this.query,
-                                            tabIndex: -1,
-                                            minimal: true,
-                                            onClick: () => {
-                                                this.formModel.fields.query.setValue(null);
-                                            }
-                                        })
-                                    ),
-                                    onKeyDown: (e) => {
-                                        if (e.key == 'Enter') {
-                                            if (!e.shiftKey) {
-                                                if (isNull(matches)) this.findAll();
-                                                else this.findNext();
-                                            } else {
-                                                this.findPrevious();
-                                            }
-                                        }
-                                    }
-                                })
-                            }),
-                            button({
-                                icon: Icon.arrowUp(),
-                                title: 'Find previous',
-                                onClick: () => {
-                                    if (isNull(matches)) this.findAll();
-                                    else this.findPrevious();
-                                }
-                            }),
-                            button({
-                                icon: Icon.arrowDown(),
-                                title: 'Find next',
-                                onClick: () => {
-                                    if (isNull(matches)) this.findAll();
-                                    else this.findNext();
-                                }
-                            })
-                        ]
-                    }),
-                    (showCopyButton || showFormatButton || showFullscreenButton) ? toolbarSep() : null,
-                    showCopyButton ? clipboardButton({
-                        text: null,
-                        title: 'Copy to clipboard',
-                        successMessage: 'Contents copied to clipboard',
-                        getCopyText: () => editor.getValue()
-                    }) : null,
-                    showFormatButton ? button({
-                        icon: Icon.magic(),
-                        title: 'Auto-format',
-                        onClick: () => this.onAutoFormat()
-                    }) : null,
-                    showFullscreenButton ? button({
-                        icon: fullScreen ? Icon.collapse() : Icon.expand(),
-                        title: fullScreen ? 'Exit full screen' : 'Full screen',
-                        onClick: () => this.setFullScreen(!fullScreen)
-                    }) : null
-                ]
-            }) :
-                [
-                    showCopyButton ? clipboardButton({
-                        text: null,
-                        title: 'Copy to clipboard',
-                        successMessage: 'Contents copied to clipboard',
-                        getCopyText: () => editor.getValue()
-                    }) : null,
-                    showFormatButton ? button({
-                        icon: Icon.magic(),
-                        title: 'Auto-format',
-                        onClick: () => this.onAutoFormat()
-                    }) : null,
-                    showFullscreenButton ? button({
-                        icon: fullScreen ? Icon.collapse() : Icon.expand(),
-                        title: fullScreen ? 'Exit full screen' : 'Full screen',
-                        onClick: () => this.setFullScreen(!fullScreen)
-                    }) : null
-                ]
+            items: [
+                enableSearch ? button({
+                    icon: Icon.search(),
+                    title: 'Search',
+                    minimal: true,
+                    onClick: () => this.setShowToolbar(!showToolbar)
+                }) : null,
+                showCopyButton ? clipboardButton({
+                    text: null,
+                    title: 'Copy to clipboard',
+                    successMessage: 'Contents copied to clipboard',
+                    getCopyText: () => editor.getValue()
+                }) : null,
+                showFormatButton ? button({
+                    icon: Icon.magic(),
+                    title: 'Auto-format',
+                    onClick: () => this.onAutoFormat()
+                }) : null,
+                showFullscreenButton ? button({
+                    icon: fullScreen ? Icon.collapse() : Icon.expand(),
+                    title: fullScreen ? 'Exit full screen' : 'Full screen',
+                    onClick: () => this.setFullScreen(!fullScreen)
+                }) : null
+            ]
         });
     }
 
@@ -408,34 +429,23 @@ export class CodeInput extends HoistInput {
         }
     }
 
-    clearSearchResults() {
-        this.cursor = null;
-        this.setMatches(null);
-        this.setMatch(null);
-        this.selectedMatches.forEach(match => match.textMarker.clear());
-        this.selectedMatches = [];
-    }
-
     findAll = () => {
         this.clearSearchResults();
         this.cursor = this.editor.getSearchCursor(this.query, 0, true);
 
         const {cursor, editor, selectedMatches} = this;
-
         while (cursor.findNext()) {
             const anchor = cursor.from(),
                 head = cursor.to();
-
             selectedMatches.push({
                 anchor,
                 head,
                 textMarker: editor.markText(anchor, head, {className: 'selection-highlight'})
             });
         }
-
         const matchLength = selectedMatches.length;
-
         this.setMatches(matchLength);
+
         if (matchLength) {
             const first = selectedMatches[0];
             editor.scrollIntoView({from: first.anchor, to: first.head}, 10);
@@ -447,18 +457,18 @@ export class CodeInput extends HoistInput {
     }
 
     findNext = () => {
-        if (!this.cursor) return;
+        if (!this.cursor || !this.query) return;
 
         const {editor, query, cursor, selectedMatches} = this,
+            matchLength = selectedMatches.length,
             found = cursor.findNext(query);
-
         if (found) {
             const from = cursor.from(),
                 to = cursor.to();
             editor.scrollIntoView({from, to}, 10);
             editor.setSelection(from, to);
             this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
-        } else {
+        } else if (matchLength) {
             this.cursor = editor.getSearchCursor(query, 0, true);
             this.findNext();
         }
@@ -470,18 +480,25 @@ export class CodeInput extends HoistInput {
         const {editor, query, cursor, selectedMatches} = this,
             matchLength = selectedMatches.length,
             found = cursor.findPrevious(query);
-
         if (found) {
             const from = cursor.from(),
                 to = cursor.to();
             editor.scrollIntoView({from, to}, 10);
             editor.setSelection(from, to);
             this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
-        } else {
+        } else if (matchLength) {
             this.cursor = editor.getSearchCursor(query, selectedMatches[matchLength - 1].head, true);
             this.findPrevious();
         }
     };
+
+    clearSearchResults() {
+        this.cursor = null;
+        this.setMatches(null);
+        this.setMatch(null);
+        this.selectedMatches.forEach(match => match.textMarker.clear());
+        this.selectedMatches = [];
+    }
 
     destroy() {
         // Cleanup editor component as per CodeMirror docs.
