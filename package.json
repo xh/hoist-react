@@ -84,5 +84,9 @@
     "stylelint": "~13.6.1",
     "stylelint-config-standard": "~20.0.0",
     "stylelint-scss": "~3.18.0"
+  },
+  "resolutions": {
+    "jimp": "^0.14.0",
+    "resize-img": "^2.0.0"
   }
 }
