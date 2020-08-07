@@ -144,7 +144,7 @@ body {
     --xh-intent-warning-l5: var(--intent-warning-l5, 75%);
     // Dark theme Danger intent
     --xh-intent-danger-h: var(--intent-danger-h, 0);
-    --xh-intent-danger-s: var(--intent-danger-s, 90%);
+    --xh-intent-danger-s: var(--intent-danger-s, 70%);
     --xh-intent-danger-l1: var(--intent-danger-l1, 25%);
     --xh-intent-danger-l2: var(--intent-danger-l2, 30%);
     --xh-intent-danger-l3: var(--intent-danger-l3, 38%);
@@ -237,6 +237,7 @@ body {
   --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
   --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
   --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
+  --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.4);
   --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
   --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
@@ -252,6 +253,7 @@ body {
     // especially for buttonGroupInputs with only two buttons. So we flip it on its head and make
     // the active button the lightest in dark mode so it stands out as much as possible.
     --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-lightest));
+    --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.3);
   }
 
   &.xh-mobile {

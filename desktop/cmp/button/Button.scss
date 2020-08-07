@@ -29,8 +29,8 @@
       padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
     }
 
-    &.bp3-disabled {
-      opacity: 0.6;
+    &.xh-button--disabled {
+      opacity: var(--xh-button-disabled-opacity);
     }
 
     &--autofocus-enabled {

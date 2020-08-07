@@ -8,6 +8,9 @@
   context menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
+* Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
+  convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
+  show or hide a single column.
 
 ### 💥 Breaking Changes
 
