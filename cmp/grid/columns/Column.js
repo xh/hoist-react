@@ -393,10 +393,9 @@ export class Column {
                         return div(colDef.headerTooltip);
                     }
 
-                    const value = agParams.value,
-                        record = api.getDisplayedRowAtIndex(rowIndex).data;
-                    // ag-Grid encodes the value, so we decode it before passing to the renderer
-                    return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
+                    const record = api.getDisplayedRowAtIndex(rowIndex).data,
+                        value = record.get(colDef.colId);
+                    return me.tooltipElement(value, {record, column: me, gridModel, agParams});
                 }
             };
         }
