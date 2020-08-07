@@ -19,6 +19,7 @@ import {
     isString,
     startCase
 } from 'lodash';
+import {div} from '@xh/hoist/cmp/layout';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 import {GridSorter} from '../impl/GridSorter';
@@ -377,15 +378,23 @@ export class Column {
         } else if (this.tooltipElement) {
             ret.tooltipValueGetter = ({value}) => value;
             ret.tooltipComponentFramework = class extends Component {
-                getReactContainerClasses() {return ['xh-grid-tooltip']}
+                getReactContainerClasses() {
+                    const agParams = this.props,
+                        {location} = agParams;
+                    return location === 'header' ?
+                        ['ag-tooltip'] :
+                        ['xh-grid-tooltip'];
+                }
                 render() {
                     const agParams = this.props,
-                        {rowIndex, api, colDef} = agParams,
-                        {headerTooltip} = colDef,
-                        overHeader = isNil(rowIndex),
-                        value = overHeader ? headerTooltip : agParams.value,
-                        record = overHeader ? null : api.getDisplayedRowAtIndex(rowIndex).data;
+                        {rowIndex, api, colDef, location} = agParams;
 
+                    if (location === 'header') {
+                        return div(colDef.headerTooltip);
+                    }
+
+                    const value = agParams.value,
+                        record = api.getDisplayedRowAtIndex(rowIndex).data;
                     // ag-Grid encodes the value, so we decode it before passing to the renderer
                     return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
                 }
