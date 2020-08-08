@@ -200,13 +200,16 @@ body {
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
   --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
-  --xh-selected-highlight: var(--bg-highlight, #{mc-trans('orange', '800')});
+  --xh-selected-highlight: var(--selected-highlight, #{mc-trans('indigo', '200', 0.2)});
+  --xh-match-highlight: var(--match-highlight, #{mc-trans('orange', '900')});
 
 
   &.xh-dark {
     --xh-bg: var(--bg, var(--xh-black));
     --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
     --xh-bg-highlight: var(--bg-highlight, #{mc-trans('light-blue', '500', 0.65)});
+    --xh-selected-highlight: var(--selected-highlight, #{mc-trans('yellow', '300', 0.4)});
+    --xh-match-highlight: var(--match-highlight, #{mc-trans('yellow', '400')});
   }
 
 

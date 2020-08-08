@@ -355,6 +355,7 @@ export class CodeInput extends HoistInput {
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
+            this.preserveSearchResults();
         }
     };
 
@@ -448,7 +449,7 @@ export class CodeInput extends HoistInput {
 
         if (matchLength) {
             const first = selectedMatches[0];
-            editor.scrollIntoView({from: first.anchor, to: first.head}, 10);
+            editor.scrollIntoView({from: first.anchor, to: first.head}, 50);
             editor.setSelection(first.anchor, first.head);
             this.setMatch(1);
         } else {
@@ -465,7 +466,7 @@ export class CodeInput extends HoistInput {
         if (found) {
             const from = cursor.from(),
                 to = cursor.to();
-            editor.scrollIntoView({from, to}, 10);
+            editor.scrollIntoView({from, to}, 50);
             editor.setSelection(from, to);
             this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
         } else if (matchLength) {
@@ -483,7 +484,7 @@ export class CodeInput extends HoistInput {
         if (found) {
             const from = cursor.from(),
                 to = cursor.to();
-            editor.scrollIntoView({from, to}, 10);
+            editor.scrollIntoView({from, to}, 50);
             editor.setSelection(from, to);
             this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
         } else if (matchLength) {
@@ -491,6 +492,15 @@ export class CodeInput extends HoistInput {
             this.findPrevious();
         }
     };
+
+    preserveSearchResults() {
+        const {selectedMatches, editor} = this;
+        if (selectedMatches.length) {
+            selectedMatches.forEach(match => {
+                match.textMarker = editor.markText(match.anchor, match.head, {className: 'selection-highlight'});
+            });
+        }
+    }
 
     clearSearchResults() {
         this.cursor = null;
