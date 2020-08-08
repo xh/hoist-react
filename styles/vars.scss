@@ -200,8 +200,8 @@ body {
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
   --xh-bg-highlight: var(--bg-highlight, #{mc-trans('blue', '200')});
-  --xh-selected-highlight: var(--selected-highlight, #{mc-trans('indigo', '200', 0.2)});
-  --xh-match-highlight: var(--match-highlight, #{mc-trans('orange', '900')});
+  --xh-selected-highlight: var(--selected-highlight, #{mc-trans('indigo', '300', 0.3)});
+  --xh-match-highlight: var(--match-highlight, #{mc-trans('amber', '700')});
 
 
   &.xh-dark {
