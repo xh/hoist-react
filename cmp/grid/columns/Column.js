@@ -394,7 +394,7 @@ export class Column {
                     }
 
                     const record = api.getDisplayedRowAtIndex(rowIndex).data,
-                        value = record.get(colDef.colId);
+                        value = record.data[colDef.field];
                     return me.tooltipElement(value, {record, column: me, gridModel, agParams});
                 }
             };
