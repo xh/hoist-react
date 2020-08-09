@@ -58,9 +58,10 @@ export class FilterChooserModel {
     persistValue = false;
     persistHistory = false;
 
+    inputRef = createObservableRef();
+
     /** @member {RawFilterChooserFieldSpec[]} */
     _rawFieldSpecs;
-    _inputRef = createObservableRef();
 
 
     // Option values with special handling
@@ -154,7 +155,7 @@ export class FilterChooserModel {
     // Autocomplete
     //--------------------
     autoComplete(value) {
-        const rsSelectCmp = this._inputRef.current?.reactSelectRef?.current;
+        const rsSelectCmp = this.inputRef.current?.reactSelectRef?.current;
         if (!rsSelectCmp) return;
 
         const currentVal = rsSelectCmp.select.state.inputValue,

@@ -27,10 +27,10 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             ref: inputRef,
             enableMulti: true,
             enableClear: true,
-            queryFn: (q) => model.queryAsync(q),
-            optionRenderer: (opt) => getFilterOption(opt),
             hideDropdownIndicator: true,
-            options: options,
+            queryFn: (q) => model.queryAsync(q),
+            options,
+            optionRenderer,
             rsOptions: {
                 defaultOptions: historyOptions,
                 openMenuOnClick: hasHistory,
@@ -45,7 +45,15 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     }
 });
 
-function getFilterOption(opt) {
+FilterChooser.propTypes = {
+    ...Select.propTypes
+};
+
+
+//-----------------
+// Implementation
+//------------------
+function optionRenderer(opt) {
     if (opt.isHistory) return historyOption({labels: opt.labels});
     if (opt.isSuggestion) return suggestionOption(opt);
     if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
@@ -53,11 +61,10 @@ function getFilterOption(opt) {
 }
 
 const filterOption = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option',
-    render({className, displayName, operator, displayValue}) {
+    model: false, observer: false,
+    render({displayName, operator, displayValue}) {
         return hframe({
-            className,
+            className: 'xh-filter-chooser-option',
             items: [
                 div({className: 'name', item: displayName}),
                 div({className: 'operator', item: operator}),
@@ -68,31 +75,31 @@ const filterOption = hoistCmp.factory({
 });
 
 const historyOption = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option__history',
-    render({className, labels}) {
+    model: false, observer: false, memo: false,
+    render({labels}) {
         return hframe({
-            className,
+            className: 'xh-filter-chooser-option__history',
             item: labels?.map(label => historyOptionTag({label}))
         });
     }
 });
 
 const historyOptionTag = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option__history-tag',
-    render({className, label}) {
-        return div({className, item: label});
+    model: false, observer: false, memo: false,
+    render({label}) {
+        return div({
+            className: 'xh-filter-chooser-option__history-tag',
+            item: label
+        });
     }
 });
 
 const suggestionOption = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option__suggestion',
-    render({className, spec}) {
+    model: false, observer: false, memo: false,
+    render({spec}) {
         const {displayName, operators, example} = spec;
         return hframe({
-            className,
+            className: 'xh-filter-chooser-option__suggestion',
             items: [
                 div('e.g.'),
                 div({className: 'name', item: displayName}),
@@ -104,16 +111,11 @@ const suggestionOption = hoistCmp.factory({
 });
 
 const truncatedMessage = hoistCmp.factory({
-    model: false,
-    className: 'xh-filter-chooser-option__truncated',
-    render({className, truncateCount}) {
+    model: false, observer: false,
+    render({truncateCount}) {
         return hframe({
-            className,
+            className: 'xh-filter-chooser-option__truncated',
             item: `${fmtNumber(truncateCount)} results truncated`
         });
     }
 });
-
-FilterChooser.propTypes = {
-    ...Select.propTypes
-};
