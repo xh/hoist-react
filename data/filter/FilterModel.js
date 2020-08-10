@@ -29,10 +29,7 @@ export class FilterModel {
      * @param {boolean} [c.includeChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
      */
-    constructor({
-        filters = [],
-        includeChildren = false
-    } = {}) {
+    constructor({filters = [], includeChildren = false} = {}) {
         this.filters = this.parseFilters(filters);
         this.includeChildren = includeChildren;
         this.updateTestFunction();
@@ -56,10 +53,9 @@ export class FilterModel {
      */
     @action
     addFilters(filters) {
-        filters = this.parseFilters(filters);
-        const toAdd = filters.filter(f => {
-            return every(this.filters, it => !it.equals(f));
-        });
+        const toAdd = this
+            .parseFilter(filters)
+            .filter(f => !this.filters.some(it => it.equals(f)));
         this.filters = [...this.filters, ...toAdd];
         this.updateTestFunction();
     }
@@ -71,10 +67,10 @@ export class FilterModel {
      */
     @action
     removeFilters(filters) {
-        filters = this.parseFilters(filters);
-        this.filters = this.filters.filter(f => {
-            return every(filters, it => !it.equals(f));
-        });
+        const toRemove = this.parseFilters(filters);
+        this.filters = this.filters.filter(
+            f => toRemove.some(it => it.equals(f))
+        );
         this.updateTestFunction();
     }
 
