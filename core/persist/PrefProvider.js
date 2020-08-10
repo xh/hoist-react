@@ -5,12 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {PersistenceProvider, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {PersistenceProvider} from './PersistenceProvider';
-import {XH} from '@xh/hoist/core';
 
 /**
- * State Provider that uses the Hoist preference system for underlying storage.
+ * PersistenceProvider that stores state within the Hoist Preferences system.
  */
 export class PrefProvider extends PersistenceProvider {
 
@@ -18,7 +17,7 @@ export class PrefProvider extends PersistenceProvider {
 
     /** @param {string} prefKey */
     constructor({prefKey: key, ...rest}) {
-        throwIf(!key, `Persistence Provider requires a 'prefKey'.`);
+        throwIf(!key, `PrefProvider requires a 'prefKey'.`);
         super(rest);
         this.key = key;
     }

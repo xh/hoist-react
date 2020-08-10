@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.30.0",
-    "@blueprintjs/datetime": "~3.18.4",
+    "@blueprintjs/core": "~3.30.1",
+    "@blueprintjs/datetime": "~3.18.5",
     "@fortawesome/fontawesome-pro": "~5.14.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.29",
     "@fortawesome/pro-light-svg-icons": "~5.14.0",
@@ -50,7 +50,7 @@
     "http-status-codes": "~1.4.0",
     "lodash": "~4.17.15",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.15.4",
+    "mobx": "~5.15.5",
     "mobx-react": "~6.2.5",
     "moment": "~2.24.0",
     "numbro": "~2.2.0",
@@ -84,5 +84,9 @@
     "stylelint": "~13.6.1",
     "stylelint-config-standard": "~20.0.0",
     "stylelint-scss": "~3.18.0"
+  },
+  "resolutions": {
+    "jimp": "^0.14.0",
+    "resize-img": "^2.0.0"
   }
 }
