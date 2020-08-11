@@ -18,8 +18,7 @@ import {
     isEmpty,
     isEqual,
     without,
-    isUndefined,
-    filter
+    isUndefined
 } from 'lodash';
 
 @HoistModel
@@ -120,7 +119,7 @@ export class StoreFilterFieldImplModel {
     applyFilter() {
         if (this.store) {
             const {filterModel} = this.store;
-            const newFilters = filter(filterModel.filters, {group: this.xhId});
+            const newFilters = filterModel.filters.filter(f => f.group !== this.xhId);
             if (this.filter) newFilters.push(this.filter);
             filterModel.setFilters(newFilters);
         }
