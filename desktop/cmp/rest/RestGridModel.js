@@ -4,13 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {isFunction} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
+import {RegroupDialogModel} from './regroup/RegroupDialogModel';
 import {RestFormModel} from './impl/RestFormModel';
 
 export const addAction = {
@@ -55,6 +56,20 @@ export const deleteAction = {
     actionFn: ({record, gridModel}) => gridModel.restGridModel.confirmDeleteRecord(record)
 };
 
+export const bulkDeleteAction = {
+    text: 'Delete',
+    icon: Icon.delete(),
+    intent: 'danger',
+    recordsRequired: true,
+    actionFn: ({gridModel}) => gridModel.restGridModel.confirmBulkDeleteRecords()
+};
+
+export const regroupAction = {
+    text: 'Change Group',
+    icon: Icon.grip(),
+    recordsRequired: true,
+    actionFn: ({gridModel}) => gridModel.restGridModel.openRegroupDialog(gridModel)
+};
 /**
  * Core Model for a RestGrid.
  */
@@ -89,6 +104,9 @@ export class RestGridModel {
     @managed
     formModel = null;
 
+    @managed
+    regroupDialogModel
+
     get store() {return this.gridModel.store}
 
     get selModel() {return this.gridModel.selModel}
@@ -102,7 +120,8 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
-     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string.  See default prop.
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string or a fn to create one. See default prop.
+     *      Function will be passed selected record(s) to be acted upon.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
@@ -146,6 +165,7 @@ export class RestGridModel {
         });
 
         this.formModel = new RestFormModel(this);
+        this.regroupDialogModel = new RegroupDialogModel(this);
     }
 
     /** Load the underlying store. */
@@ -161,12 +181,10 @@ export class RestGridModel {
     //-----------------
     // Actions
     //------------------
-    @action
     addRecord() {
         this.formModel.openAdd();
     }
 
-    @action
     cloneRecord(record) {
         const editableFields = filter(record.fields, 'editable').map(it => it.name),
             clone = pickBy(record.data, (v, k) => editableFields.includes(k));
@@ -175,13 +193,6 @@ export class RestGridModel {
         this.formModel.openClone(clone);
     }
 
-    @action
-    deleteSelection() {
-        const record = this.selectedRecord;
-        if (record) this.deleteRecord(record);
-    }
-
-    @action
     deleteRecord(record) {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
@@ -189,45 +200,63 @@ export class RestGridModel {
             .catchDefault();
     }
 
-    @action
-    editSelection() {
-        const record = this.selectedRecord;
-        if (record) this.editRecord(record);
+    async bulkDeleteRecordsAsync(records) {
+        throwIf(this.readonly, 'Records not deleted: this grid is read-only');
+        const resp = await this.store.bulkDeleteRecordsAsync(records).catchDefault(),
+            intent = resp.fail > 0 ? 'warning' : 'success',
+            message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
+
+        XH.toast({intent, message});
     }
 
-    @action
     editRecord(record) {
         this.formModel.openEdit(record);
     }
 
-    @action
     viewRecord(record) {
         this.formModel.openView(record);
     }
 
-    confirmDeleteSelection() {
-        const record = this.selectedRecord;
-        if (record) this.confirmDeleteRecord(record);
-    }
-
     confirmDeleteRecord(record) {
         const warning = this.actionWarning.del;
-        if (warning) {
+
+        if (!warning) {
+            this.deleteRecord(record);
+        } else {
+            const message = isFunction(warning) ? warning(record) : warning;
             XH.confirm({
-                message: warning,
+                message,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'}),
                 onConfirm: () => this.deleteRecord(record)
             });
-        } else {
-            this.deleteRecord(record);
         }
+    }
+
+    confirmBulkDeleteRecords() {
+        const records = this.selection,
+            warning = this.actionWarning.del;
+
+        if (!warning) {
+            this.bulkDeleteRecordsAsync(records);
+        } else {
+            const message = isFunction(warning) ? warning(records) : warning;
+            XH.confirm({
+                message,
+                title: 'Warning',
+                icon: Icon.warning({size: 'lg'}),
+                onConfirm: () => this.bulkDeleteRecordsAsync(records)
+            });
+        }
+    }
+
+    openRegroupDialog() {
+        this.regroupDialogModel.open();
     }
 
     async exportAsync(...args) {
         return this.gridModel.exportAsync(...args);
     }
-
 
     //-----------------
     // Implementation

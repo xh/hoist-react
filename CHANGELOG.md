@@ -11,6 +11,14 @@
 * Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
   convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
   show or hide a single column.
+* RestGrids now support bulk delete and bulk regrouping actions. These have been added to the
+  Preference and Config panels in the Hoist admin app.
+
+### 💥 Breaking Changes
+
+* The `deleteSelection` and `editSelection` methods have been removed from `RestGridModel`. These
+  methods are no longer called internally by Hoist. This could be breaking change in the unlikely
+  event that an application is relying on them.
 
 ### ✨ Style
 

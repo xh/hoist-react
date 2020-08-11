@@ -4,14 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {castArray} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
     cloneAction,
-    deleteAction,
+    bulkDeleteAction,
     editAction,
+    regroupAction,
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
@@ -30,6 +32,7 @@ export class ConfigModel {
         persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
+        selModel: 'multiple',
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
@@ -78,19 +81,24 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps.'
+            del: (records) =>  {
+                records = castArray(records);
+                return `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`;
+            }
         },
         toolbarActions: [
             addAction,
             editAction,
             cloneAction,
-            deleteAction
+            bulkDeleteAction,
+            regroupAction
         ],
         menuActions: [
             addAction,
             editAction,
             cloneAction,
-            deleteAction
+            bulkDeleteAction,
+            regroupAction
         ],
         prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',

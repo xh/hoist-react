@@ -4,12 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {truncate} from 'lodash';
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {truncate} from 'lodash';
-
+import {
+    addAction,
+    bulkDeleteAction,
+    editAction
+} from '@xh/hoist/desktop/cmp/rest';
 
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
@@ -19,6 +23,7 @@ const modelSpec = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     enableColChooser: true,
     enableExport: true,
+    selModel: 'multiple',
     store: {
         url: 'rest/userPreferenceAdmin',
         reloadLookupsOnLoad: true,
@@ -65,6 +70,16 @@ const modelSpec = {
     groupBy: 'groupName',
     unit: 'preference',
     filterFields: ['name', 'username'],
+    toolbarActions: [
+        addAction,
+        editAction,
+        bulkDeleteAction
+    ],
+    menuActions: [
+        addAction,
+        editAction,
+        bulkDeleteAction
+    ],
     columns: [
         {field: 'name', width: 200},
         {field: 'type', width: 100},

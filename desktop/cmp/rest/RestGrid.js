@@ -4,16 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+
+import PT from 'prop-types';
+import {cloneElement, isValidElement} from 'react';
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
-import {cloneElement, isValidElement} from 'react';
+
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
+import {regroupDialog} from './regroup/RegroupDialog';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
@@ -29,7 +32,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         ...props
     }) {
 
-        const {formModel, gridModel} = model;
+        const {formModel, gridModel, regroupDialogModel} = model;
 
         onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
             if (!row.data) return;
@@ -48,7 +51,8 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel})
+            restForm({model: formModel}),
+            regroupDialog({model: regroupDialogModel})
         );
     }
 });

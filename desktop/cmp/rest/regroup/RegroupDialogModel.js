@@ -1,0 +1,55 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+import {uniq} from 'lodash';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
+
+
+@HoistModel
+export class RegroupDialogModel {
+
+    @bindable.ref groupName = null;
+
+    @observable.ref isOpen = false
+
+    restGridModel
+
+    get options() {
+        return uniq(this.restGridModel.store.allRecords.map(it => it.data.groupName));
+    }
+
+    constructor(parent) {
+        this.restGridModel = parent;
+    }
+
+    async saveAsync() {
+        const {restGridModel, groupName} = this,
+            {selection, store} = restGridModel,
+            ids = selection.map(it => it.id),
+            resp = await store.regroupRecordsAsync(ids, groupName),
+            intent = resp.fail > 0 ? 'warning' : 'success',
+            message = `Change group complete with ${resp.fail} failures.`;
+
+        XH.toast({intent, message});
+        this.close();
+    }
+
+    //-----------------
+    // Actions
+    //-----------------
+    @action
+    close() {
+        this.setGroupName(null);
+        this.isOpen = false;
+    }
+
+    @action
+    open() {
+        this.isOpen = true;
+    }
+
+}
