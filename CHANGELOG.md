@@ -4,8 +4,8 @@
 
 ### 🎁 New Features
 
-* Added new `AppSpec.showBrowserContextMenu` config to control whether the browser's default
-  context menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
+* Added new `AppSpec.showBrowserContextMenu` config to control whether the browser's default context
+  menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
 * Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
@@ -14,6 +14,7 @@
 * Added new `GridModel.showGroupRowCounts` config to allow easy hiding of group row member counts
   within each full-width group row. Default is `true`, maintaining current behavior of showing the
   counts for each group.
+* By default, elided Grid column headers now show the full `headerName` value in a tooltip
 
 ### ✨ Style
 
@@ -35,6 +36,9 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `Column.tooltipElement` so that it can work if a `headerTooltip` is also specified on the
+  same column.
+* Fixed issue where certain values (e.g. `%`) would break in `Column.tooltipElement`.
 * Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)
@@ -1860,7 +1864,7 @@ leverage the context for model support discussed above.
 * The mobile APIs for `TabContainerModel`, `TabModel`, and `RefreshButton` have been rewritten to
   more closely mirror the desktop API.
 * The API for `RecordGridModel` editors has changed -- `type` is no longer supported. Use
-  `fieldModel` and `formField` intead.
+  `fieldModel` and `formField` instead.
 * `LocalStore.loadRawData` requires that all records presented to store have unique IDs specified.
   See `LocalStore.idSpec` for more information.
 
@@ -2039,7 +2043,7 @@ leverage the context for model support discussed above.
   records are included in the count. By default this is `false`.
 * `Checkbox` now supports a `displayUnsetState` prop which may be used to display a visually
   distinct state for null values.
-* `Select` now renders with a checkbox next to the selected item in its drowndown menu, instead of
+* `Select` now renders with a checkbox next to the selected item in its dropdown menu, instead of
   relying on highlighting. A new `hideSelectedOptionCheck` prop is available to disable.
 * `RestGridModel` supports a `readonly` property.
 * `DimensionChooser`, various `HoistInput` components, `Toolbar` and `ToolbarSeparator` have been
@@ -2087,7 +2091,7 @@ leverage the context for model support discussed above.
 * Grouping state is now saved by the grid state support on `GridModel`.
 * The Hoist `DimChooser` component has been ported to hoist-react.
 * `fetchService` now supports an `autoAbortKey` in its fetch methods. This can be used to
-  automatically cancel obsolete requests that have been superceded by more recent variants.
+  automatically cancel obsolete requests that have been superseded by more recent variants.
 * Support for new `clickableLabel` property on `FormField`.
 * `RestForm` now supports a read-only view.
 * Hoist now supports automatic tracking of app/page load times.
@@ -2301,7 +2305,7 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 #### Other Components
 
-* RadioInput and ButtonGroupInputhave been added to the desktop/cmp/form package.
+* RadioInput and ButtonGroupInput have been added to the desktop/cmp/form package.
 * DateInput now has support for entering and displaying time values.
 * NumberInput displays its unformatted value when focused.
 * Focused components are now better highlighted, with additional CSS vars provided to customize as
@@ -2464,8 +2468,6 @@ intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid impl
 * The "factory pattern" for Column templates / defaults has been removed, replaced by a simpler
   approach that recommends exporting simple configuration partials and spreading them into
   instance-specific column configs.
-  [See the Admin app for some examples](https://github.com/xh/hoist-react/blob/a1b14ac6d41aa8f8108a518218ce889fe5596780/admin/tabs/activity/tracking/ActivityGridModel.js#L42)
-  of this pattern.
 * See 0798f6bb20092c59659cf888aeaf9ecb01db52a6 for primary commit.
 
 #### ⭐️ Element Factory, LayoutSupport, BaseClassName
@@ -2771,8 +2773,7 @@ and ag-Grid upgrade, and more. 🚀
 * **Initial version of grid state** now available, supporting easy persistence of user grid column
   selections and sorting. The `GridModel` constructor now takes a `stateModel` argument, which in
   its simplest form is a string `xhStateId` used to persist grid state to local storage. See the
-  [`GridStateModel` class](https://github.com/xh/hoist-react/blob/develop/cmp/grid/GridStateModel.js)
-  for implementation details. #331
+  `GridStateModel` class for implementation details. #331
 * The **Message API** has been improved and simplified, with new `XH.confirm()` and `XH.alert()`
   methods providing an easy way to show pop-up alerts without needing to manually construct or
   maintain a `MessageModel`. #349

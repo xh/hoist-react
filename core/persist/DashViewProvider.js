@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider} from './PersistenceProvider';
+import {PersistenceProvider} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
- * PersistenceProvider that stores state within a DashView.
+ * PersistenceProvider that stores state within a DashViewModel.
  */
 export class DashViewProvider extends PersistenceProvider {
 
@@ -17,7 +17,7 @@ export class DashViewProvider extends PersistenceProvider {
 
     /** @param {DashViewModel} dashViewModel */
     constructor({dashViewModel, ...rest}) {
-        throwIf(!dashViewModel, `Persistence Provider requires a 'dashViewModel'.`);
+        throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
         super(rest);
         this.dashViewModel = dashViewModel;
     }
