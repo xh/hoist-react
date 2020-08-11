@@ -79,6 +79,13 @@ export class CodeInput extends HoistInput {
         editorProps: PT.object,
 
         /**
+         * True to display Search button at bottom-right of input. When clicked, it will expand
+         * to a toolbar component at the bottom-right of input. Will collapse when search input is
+         * cleared. Search is case-insensitive.
+         */
+        enableSearch: PT.bool,
+
+        /**
          * Callback to autoformat the code. Given the unformatted code, this should return a
          * properly-formatted copy.
          */
@@ -110,13 +117,7 @@ export class CodeInput extends HoistInput {
         showFormatButton: PT.bool,
 
         /** True (default) to display Fullscreen button at bottom-right of input. */
-        showFullscreenButton: PT.bool,
-
-        /** True to display Search button at bottom-right of input. When clicked, it will expand
-         * to a toolbar component at the bottom-right of input. Will collapse when search input is
-         * cleared. Search is case-insensitive.
-         * */
-        enableSearch: PT.bool
+        showFullscreenButton: PT.bool
     };
 
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
@@ -168,8 +169,11 @@ export class CodeInput extends HoistInput {
         this.addReaction({
             track: () => this.query,
             run: (query) => {
-                if (!query) this.clearSearchResults();
-                else this.findAll();
+                if (!query) {
+                    this.clearSearchResults();
+                } else {
+                    this.findAll();
+                }
             }
         });
     }
@@ -242,7 +246,7 @@ export class CodeInput extends HoistInput {
                                         enableClear: true,
                                         rightElement: hbox(
                                             label({
-                                                className: 'xh-code-input--label',
+                                                className: 'xh-code-input__label',
                                                 omit: isNull(matches),
                                                 item: `${match} / ${matches}`
                                             }),
@@ -441,7 +445,7 @@ export class CodeInput extends HoistInput {
             selectedMatches.push({
                 anchor,
                 head,
-                textMarker: editor.markText(anchor, head, {className: 'selection-highlight'})
+                textMarker: editor.markText(anchor, head, {className: 'xh-code-input--highlight'})
             });
         }
         const matchLength = selectedMatches.length;
@@ -497,7 +501,7 @@ export class CodeInput extends HoistInput {
         const {selectedMatches, editor} = this;
         if (selectedMatches.length) {
             selectedMatches.forEach(match => {
-                match.textMarker = editor.markText(match.anchor, match.head, {className: 'selection-highlight'});
+                match.textMarker = editor.markText(match.anchor, match.head, {className: 'xh-code-input--highlight'});
             });
         }
     }
