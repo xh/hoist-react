@@ -81,9 +81,9 @@ export class Store {
         idSpec = 'id',
         processRawData = null,
         filterModel = null,
+        filter = null,
         loadRootAsSummary = false,
-        data,
-        filter
+        data
     }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
@@ -532,17 +532,19 @@ export class Store {
     }
 
     /**
-     * Convenience method to set a filter on the FilterModel applied to this store.
-     * Note that this will replace all filters on the FilterModel.
+     * Convenience method to set one or more filters on this store.
      *
-     * @param {(FunctionFilter|Object|function)} filter - Filter to be applied to
-     *      Records, a config to create one, or a function.
+     * Note that this will replace all existing filters. More advanced
+     * usages should modify the store's filterModel directly.
+     *
+     * @param {(*|*[]} filters - Filter or configs for filters to be applied.
      */
-    setFilter(filter) {
-        // Support deprecated StoreFilter syntax.
-        if (isFunction(filter.fn)) filter = filter.fn;
+    setFilter(filters) {
 
-        this.filterModel.setFilters(filter);
+        // Support deprecated StoreFilter syntax.
+        if (isFunction(filters.fn)) filters = filters.fn;
+
+        this.filterModel.setFilters(filters);
     }
 
     /** Convenience method to clear the FilterModel applied to this store. */

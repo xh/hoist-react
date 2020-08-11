@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isEqual, isString} from 'lodash';
+import {castArray, escapeRegExp, isArray, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -147,7 +147,7 @@ export class FieldFilter extends Filter {
      */
     equals(other) {
         return other.isFieldFilter &&
-            isEqual(this.serialize(), other.serialize()) &&
+            other.serialize() === this.serialize() &&
             other.group === this.group;
     }
 

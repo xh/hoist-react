@@ -158,7 +158,7 @@ export class FilterChooserFieldSpec {
     // Implementation
     //------------------------
     parseValues(values, storeRecords) {
-        if (values) return values;
+        if (values) return values; // If explicit values provided by caller, return as-is
         if (this.suggestValues) {
             return this.fieldType === FieldType.BOOL ? [true, false] : this.extractValuesFromRecords(storeRecords);
         }

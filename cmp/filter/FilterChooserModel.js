@@ -344,10 +344,11 @@ export class FilterChooserModel {
         const operator = queryOperator,
             options = [];
 
+        const testField = (s) => this.getRegExp(queryField).test(s);
         const specs = this.fieldSpecs.filter(spec => {
-            return spec.supportsOperator(operator) &&
-                spec.isRangeFilter &&
-                this.getRegExp(queryField).test(spec.displayName);
+            return spec.isRangeFilter &&
+                spec.supportsOperator(operator) &&
+                testField(spec.displayName);
         });
 
         specs.forEach(spec => {
