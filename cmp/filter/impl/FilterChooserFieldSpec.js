@@ -111,7 +111,7 @@ export class FilterChooserFieldSpec {
         this.operators = this.parseOperators(operators);
 
         // Enable value suggestion based on explicit config, filterType, or presence of values list.
-        this.suggestValues = withDefault(suggestValues, this.filterType == 'value' || values);
+        this.suggestValues = withDefault(suggestValues, this.filterType === 'value' || values);
 
         // Read values available for suggestion from direct config if provided, or extract from
         // Store Records if suggestions enabled.
@@ -170,7 +170,7 @@ export class FilterChooserFieldSpec {
     }
 
     getDefaultOperators() {
-        if (this.fieldType === FieldType.BOOL) return ['=', '!='];
+        if (this.fieldType === FieldType.BOOL) return ['='];
         return this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
