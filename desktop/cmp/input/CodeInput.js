@@ -160,6 +160,52 @@ export class CodeInput extends HoistInput {
         ];
     }
 
+    get searchInput() {
+        const {enableSearch, fullScreen, query, match, matches, selectedMatches} = this;
+
+        if (!enableSearch && !fullScreen) return null;
+
+        return [
+            textInput({
+                flex: 1,
+                model: this,
+                bind: 'query',
+                leftIcon: Icon.search(),
+                enableClear: true,
+                commitOnChange: true,
+                onKeyDown: (e) => {
+                    if (e.key == 'Enter') {
+                        if (!e.shiftKey) {
+                            if (isNull(matches)) {
+                                this.findAll();
+                            } else {
+                                this.findNext();
+                            }
+                        } else {
+                            this.findPrevious();
+                        }
+                    }
+                }
+            }),
+            label({
+                className: 'xh-code-input__label',
+                item: (isNull(matches) || !query) ? '0 results' : `${match} / ${matches}`
+            }),
+            button({
+                icon: Icon.arrowUp(),
+                title: 'Find previous',
+                disabled: selectedMatches?.length <= 1,
+                onClick: () => isNull(matches) ? this.findAll() : this.findPrevious()
+            }),
+            button({
+                icon: Icon.arrowDown(),
+                title: 'Find next',
+                disabled: selectedMatches?.length <= 1,
+                onClick: () => isNull(matches) ? this.findAll() : this.findNext()
+            })
+        ];
+    }
+
     constructor(props, context) {
         super(props, context);
 
@@ -249,56 +295,15 @@ export class CodeInput extends HoistInput {
     }
 
     renderToolbar() {
-        const {enableSearch, fullScreen, query, match, matches, selectedMatches} = this,
-            showSearch = enableSearch || fullScreen;
+        const showSearch = this.enableSearch || this.fullScreen;
 
         return toolbar({
             className: 'xh-code-input__toolbar',
             items: [
-                !showSearch ? filler() : null,
-                textInput({
-                    flex: 1,
-                    model: this,
-                    omit: !showSearch,
-                    bind: 'query',
-                    leftIcon: Icon.search(),
-                    enableClear: true,
-                    commitOnChange: true,
-                    onKeyDown: (e) => {
-                        if (e.key == 'Enter') {
-                            if (!e.shiftKey) {
-                                if (isNull(matches)) {
-                                    this.findAll();
-                                } else {
-                                    this.findNext();
-                                }
-                            } else {
-                                this.findPrevious();
-                            }
-                        }
-                    }
-                }),
-                label({
-                    omit: !showSearch,
-                    className: 'xh-code-input__label',
-                    item: (isNull(matches) || !query) ? '0 results' : `${match} / ${matches}`
-                }),
-                button({
-                    omit: !showSearch,
-                    icon: Icon.arrowUp(),
-                    title: 'Find previous',
-                    disabled: selectedMatches?.length <= 1,
-                    onClick: () => isNull(matches) ? this.findAll() : this.findPrevious()
-                }),
-                button({
-                    omit: !showSearch,
-                    icon: Icon.arrowDown(),
-                    title: 'Find next',
-                    disabled: selectedMatches?.length <= 1,
-                    onClick: () => isNull(matches) ? this.findAll() : this.findNext()
-                }),
+                showSearch ? null : filler(),
+                ...(this.searchInput ?? []),
                 showSearch ? toolbarSep() : null,
-                ...this.actionButtons
+                ...(this.actionButtons ?? [])
             ]
         });
     }
