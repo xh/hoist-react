@@ -19,6 +19,7 @@ import {
     isString,
     startCase
 } from 'lodash';
+import {div} from '@xh/hoist/cmp/layout';
 import {Component} from 'react';
 import {ExportFormat} from './ExportFormat';
 import {GridSorter} from '../impl/GridSorter';
@@ -370,21 +371,40 @@ export class Column {
             };
         }
 
-        if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                ({value}) => value;
-        } else if (this.tooltipElement) {
-            ret.tooltipValueGetter = ({value}) => value;
+        // Tooltip Handling
+        const {tooltip, tooltipElement} = this;
+        if (tooltip && !isFunction(tooltip)) {
+            // 1) Basic string -- use agGrid native
+            ret.tooltipValueGetter = (agParams) => agParams.value;
+        } else if (tooltip && isFunction(tooltip)) {
+            // 2) Enhanced string -- run through app function
+            ret.tooltipValueGetter = (agParams) => {
+                return tooltip(
+                    agParams.value,
+                    {record: agParams.data, column: this, gridModel, agParams}
+                );
+            };
+        } else if (tooltipElement) {
+            // 3) Full React element.
+            ret.tooltipValueGetter = (agParams) => agParams.value;
             ret.tooltipComponentFramework = class extends Component {
-                getReactContainerClasses() {return ['xh-grid-tooltip']}
+                getReactContainerClasses() {
+                    return this.props.location === 'header' ? ['ag-tooltip'] : ['xh-grid-tooltip'];
+                }
                 render() {
                     const agParams = this.props,
-                        {value, rowIndex, api} = agParams,
-                        record = api.getDisplayedRowAtIndex(rowIndex).data;
+                        {location, api, rowIndex} = agParams;
 
-                    // ag-Grid encodes the value, so we decode it before passing to the renderer
-                    return me.tooltipElement(decodeURIComponent(value), {record, column: me, gridModel, agParams});
+                    if (location === 'header') return div(me.headerTooltip);
+
+                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
+                    if (record) {
+                        // ag-Grid cmp gets escaped value, lookup raw value from record instead
+                        const {store} = record,
+                            value = me.getValueFn({record, column: me, gridModel, agParams, store});
+                        return tooltipElement(value, {record, column: me, gridModel, agParams});
+                    }
+                    return null;
                 }
             };
         }

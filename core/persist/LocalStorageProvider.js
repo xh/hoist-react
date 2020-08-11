@@ -5,8 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
-import {PersistenceProvider} from './PersistenceProvider';
+import {PersistenceProvider, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -18,7 +17,7 @@ export class LocalStorageProvider extends PersistenceProvider {
 
     /** @param {string} localStorageKey */
     constructor({localStorageKey: key, ...rest}) {
-        throwIf(!key, `Persistence Provider requires a 'localStorageKey'.`);
+        throwIf(!key, `LocalStorageProvider requires a 'localStorageKey'.`);
         super(rest);
         this.key = key;
     }
