@@ -53,7 +53,7 @@ export class FieldFilter extends Filter {
      * Create a new FieldFilter. Accepts a FieldFilter configuration or a string representation
      * generated using FieldFilter.serialize().
      *
-     * @param {(Object|string)} cfg - FieldFilter configuration or string representation.
+     * @param {(Object|string)} cfg - FieldFilter configuration as object or serialized JSON string.
      */
     static create(cfg) {
         if (isString(cfg)) {
