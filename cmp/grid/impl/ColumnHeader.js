@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isNil, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -65,25 +65,25 @@ export const columnHeader = hoistCmp.factory({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        let headerName = props.displayName;
-        if (isFunction(impl.xhColumn?.headerName)) {
-            const {xhColumn, gridModel} = impl;
-            headerName = xhColumn.headerName({column: xhColumn, gridModel});
-        }
+        const {xhColumn, gridModel} = impl,
+            {isDesktop} = XH;
 
-        const showTooltipWhenElided = isNil(impl.xhColumn?.headerTooltip),
-            doShowTooltipWhenElided = (evt) => {
-                const el = evt.target,
-                    isElided = el.offsetWidth < el.scrollWidth;
+        const headerName = isFunction(xhColumn?.headerName) ?
+            xhColumn.headerName({column: xhColumn, gridModel}) :
+            props.displayName;
 
-                if (isElided) {
+        // If no app tooltip dynamically toggle a tooltip to display elided header
+        let onMouseEnter = null;
+        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
+            onMouseEnter = ({target: el}) => {
+                if (el.offsetWidth < el.scrollWidth) {
                     el.setAttribute('title', headerName);
                 } else {
                     el.removeAttribute('title');
                 }
             };
+        }
 
-        const {isDesktop} = XH;
         return div({
             className: classNames(props.className, extraClasses),
 
@@ -94,10 +94,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
-                span({
-                    onMouseEnter: isDesktop && showTooltipWhenElided ? doShowTooltipWhenElided : null,
-                    item: headerName
-                }),
+                span({onMouseEnter, item: headerName}),
                 sortIcon(),
                 menuIcon()
             ]

@@ -371,31 +371,40 @@ export class Column {
             };
         }
 
-        if (this.tooltip) {
-            ret.tooltipValueGetter = isFunction(this.tooltip) ?
-                (agParams) => this.tooltip(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                ({value}) => value;
-        } else if (this.tooltipElement) {
-            ret.tooltipValueGetter = ({value}) => value;
+        // Tooltip Handling
+        const {tooltip, tooltipElement} = this;
+        if (tooltip && !isFunction(tooltip)) {
+            // 1) Basic string -- use agGrid native
+            ret.tooltipValueGetter = (agParams) => agParams.value;
+        } else if (tooltip && isFunction(tooltip)) {
+            // 2) Enhanced string -- run through app function
+            ret.tooltipValueGetter = (agParams) => {
+                return tooltip(
+                    agParams.value,
+                    {record: agParams.data, column: this, gridModel, agParams}
+                );
+            };
+        } else if (tooltipElement) {
+            // 3) Full React element.
+            ret.tooltipValueGetter = (agParams) => agParams.value;
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {
-                    const agParams = this.props,
-                        {location} = agParams;
-                    return location === 'header' ?
-                        ['ag-tooltip'] :
-                        ['xh-grid-tooltip'];
+                    return this.props.location === 'header' ? ['ag-tooltip'] : ['xh-grid-tooltip'];
                 }
                 render() {
                     const agParams = this.props,
-                        {rowIndex, api, colDef, location} = agParams;
+                        {location, api, rowIndex} = agParams;
 
-                    if (location === 'header') {
-                        return div(colDef.headerTooltip);
+                    if (location === 'header') return div(me.headerTooltip);
+
+                    const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
+                    if (record) {
+                        // ag-Grid cmp gets escaped value, lookup raw value from record instead
+                        const {store} = record,
+                            value = me.getValueFn({record, column: me, gridModel, agParams, store});
+                        return tooltipElement(value, {record, column: me, gridModel, agParams});
                     }
-
-                    const record = api.getDisplayedRowAtIndex(rowIndex).data,
-                        value = record.data[colDef.field];
-                    return me.tooltipElement(value, {record, column: me, gridModel, agParams});
+                    return null;
                 }
             };
         }
