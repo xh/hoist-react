@@ -18,7 +18,8 @@ import {
     isEmpty,
     isEqual,
     without,
-    isUndefined
+    isUndefined,
+    filter
 } from 'lodash';
 
 @HoistModel
@@ -117,11 +118,16 @@ export class StoreFilterFieldImplModel {
     // Implementation
     //------------------------
     applyFilter() {
-        this.store?.filterModel.replaceFilters(this.filter);
+        if (this.store) {
+            const {filterModel} = this.store;
+            const newFilters = filter(filterModel.filters, {group: this.xhId});
+            if (this.filter) newFilters.push(this.filter);
+            filterModel.setFilters(newFilters);
+        }
     }
 
     regenerateFilter() {
-        const {filter, filterText} = this,
+        const {filter, filterText, store} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
             searchTerm = escapeRegExp(filterText),
@@ -138,9 +144,9 @@ export class StoreFilterFieldImplModel {
             });
         }
 
-        const newFilter = testFn ? new FunctionFilter({id: this.xhId, testFn}) : null;
-        if (!newFilter && this.filter) {
-            this.store?.filterModel.removeFilters(this.filter);
+        const newFilter = testFn ? new FunctionFilter({testFn, group: this.xhId}) : null;
+        if (!newFilter && filter && store) {
+            store.filterModel.removeFiltersByGroup(this.xhId);
         }
         this.filter = newFilter;
         if (!initializing && this.onFilterChange) this.onFilterChange(newFilter);

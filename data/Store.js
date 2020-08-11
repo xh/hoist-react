@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
+import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf, apiDeprecated} from '@xh/hoist/utils/js';
 import {FilterModel} from '@xh/hoist/data';
@@ -18,7 +18,6 @@ import {
     isEmpty,
     isFunction,
     isNil,
-    isPlainObject,
     isString,
     remove as lodashRemove
 } from 'lodash';
@@ -540,10 +539,8 @@ export class Store {
      *      Records, a config to create one, or a function.
      */
     setFilter(filter) {
-        if (isFunction(filter)) filter = {id: XH.genId(), testFn: filter};
-
         // Support deprecated StoreFilter syntax.
-        if (isPlainObject(filter) && filter.fn) filter.testFn = filter.fn;
+        if (isFunction(filter.fn)) filter = filter.fn;
 
         this.filterModel.setFilters(filter);
     }
@@ -714,8 +711,8 @@ export class Store {
     }
 
     parseFilterModel(filterModel) {
-        filterModel = filterModel ?? {};
-        return isPlainObject(filterModel) ? this.markManaged(new FilterModel(filterModel)) : filterModel;
+        filterModel = filterModel ?? [];
+        return filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
     }
 
     @action

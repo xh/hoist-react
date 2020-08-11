@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEqual, isFunction} from 'lodash';
+import {isFunction} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -19,28 +19,31 @@ export class FunctionFilter extends Filter {
 
     get isFunctionFilter() {return true}
 
-    /** @member {string} */
-    id;
     /** @member {function} */
     testFn;
 
     /**
-     * @param {Object} c - FunctionFilter configuration.
-     * @param {string} c.id - ID for this Filter. Used to replace / deduplicate filters.
-     * @param {function} c.testFn - Function to run. Will receive (Record|Object) as argument,
-     *      and should return a boolean.
+     * Create a new FunctionFilter.
+     *
+     * @param {(Object|function)} cfg - FunctionFilter configuration or raw function.
      */
-    constructor({
-        id,
-        testFn
-    }) {
+    static create(cfg) {
+        if (isFunction(cfg)) {
+            cfg = {testFn: cfg};
+        }
+        return new FunctionFilter(cfg);
+    }
+
+    /**
+     * @param {Object} c - Config object.
+     * @param {function} [c.testFn] - function receiving (Record|Object) as argument and returning a boolean.
+     * @param {string} [c.group] - Optional group associated with this filter.
+     */
+    constructor({testFn, group = null}) {
         super();
-
-        throwIf(!id, 'FunctionFilter requires an `id`');
         throwIf(!isFunction(testFn), 'FunctionFilter requires a `testFn`');
-
-        this.id = id;
         this.testFn = testFn;
+        this.group = group;
 
         Object.freeze(this);
     }
@@ -62,6 +65,6 @@ export class FunctionFilter extends Filter {
      * @returns {boolean} - true if the other filter is equivalent with this instance.
      */
     equals(other) {
-        return other.isFunctionFilter && isEqual(this.id, other.id);
+        return other.isFunctionFilter && this.testFn === other.testFn && other.group === this.group;
     }
 }

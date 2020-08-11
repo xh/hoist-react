@@ -22,7 +22,6 @@ import {
     isEqual,
     isNaN,
     isNil,
-    isPlainObject,
     isString,
     map,
     partition,
@@ -99,7 +98,7 @@ export class FilterChooserModel {
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
         throwIf(!['filtered', 'all'].includes(valueSourceRecords), `Invalid valueSourceRecords config '${valueSourceRecords}'.`);
 
-        this.filterModel = isPlainObject(filterModel) ? this.markManaged(new FilterModel(filterModel)) : filterModel;
+        this.filterModel = filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
         this.store = store;
         this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
 
@@ -173,7 +172,7 @@ export class FilterChooserModel {
     // Filter Model
     //--------------------
     syncToFilterModel() {
-        const filters = this.value?.map(it => FieldFilter.parse(it)) ?? [],
+        const filters = this.value?.map(it => FieldFilter.create(it)) ?? [],
             combinedFilters = this.combineFilters(filters);
 
         this.filterModel.setFilters(combinedFilters);
@@ -380,7 +379,7 @@ export class FilterChooserModel {
     createOption({spec, value, operator, filter}) {
         const {displayName, field} = spec,
             displayValue = spec.renderValue(value);
-        filter = FieldFilter.parse(filter ?? {field, operator, value, fieldType: field.type});
+        filter = FieldFilter.create(filter ?? {field, operator, value, fieldType: field.type});
 
         return {
             displayName,

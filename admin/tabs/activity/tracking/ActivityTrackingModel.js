@@ -98,7 +98,7 @@ export class ActivityTrackingModel {
             initialValue: this._defaultDims
         });
 
-        this.filterModel = new FilterModel({filters: this._defaultFilters});
+        this.filterModel = new FilterModel(this._defaultFilters);
 
         this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
