@@ -167,7 +167,8 @@ export class CodeInput extends HoistInput {
 
         return [
             textInput({
-                flex: 1,
+                flex: !fullScreen ? 1 : 'none',
+                width: fullScreen ? 250: null,
                 model: this,
                 bind: 'query',
                 leftIcon: Icon.search(),
@@ -295,14 +296,14 @@ export class CodeInput extends HoistInput {
     }
 
     renderToolbar() {
-        const showSearch = this.enableSearch || this.fullScreen;
+        const {enableSearch, fullScreen} = this;
 
         return toolbar({
             className: 'xh-code-input__toolbar',
             items: [
-                showSearch ? null : filler(),
+                fullScreen ? filler() : null,
                 ...(this.searchInput ?? []),
-                showSearch ? toolbarSep() : null,
+                enableSearch || fullScreen ? toolbarSep() : null,
                 ...(this.actionButtons ?? [])
             ]
         });
