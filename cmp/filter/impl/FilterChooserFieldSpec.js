@@ -171,7 +171,7 @@ export class FilterChooserFieldSpec {
     }
 
     getDefaultOperators() {
-        if (this.fieldType === FieldType.BOOL) return ['=', '!='];
+        if (this.fieldType === FieldType.BOOL) return ['='];
         return this.isValueType ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 

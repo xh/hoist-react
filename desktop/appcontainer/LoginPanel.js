@@ -25,7 +25,7 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {loadModel, warning, isValid} = model;
+            {loadModel, warning, isValid, loginInProgress} = model;
 
         const onKeyDown = (ev) => {
             if (ev.key === 'Enter') model.submitAsync();
@@ -77,10 +77,10 @@ export const loginPanel = hoistCmp.factory({
                 bbar: [
                     filler(),
                     button({
-                        text: 'Login',
+                        text: loginInProgress ? 'Please wait...' : 'Login',
                         intent: 'primary',
                         icon: Icon.login(),
-                        disabled: !isValid,
+                        disabled: !isValid || loginInProgress,
                         onClick: () => model.submitAsync()
                     })
                 ]

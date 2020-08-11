@@ -134,22 +134,27 @@ function createDescriptor(target, property, descriptor, options) {
 
 
 /**
- * @typedef {Object} PersistOptions
+ * @typedef {Object} PersistOptions - contains options for configuring Hoist's shared approach
+ *      to state persistence. It is designed to include some standard properties as well as
+ *      accommodate a flexible set of properties for both the particular target object being
+ *      persisted and the concrete `PersistenceProvider` instance created to do so.
  *
- * This object contains options for configuring Persistence for objects.  It is designed to
- * include some standard properties, as well as accommodate a flexible set of properties for both
- * the particular target object being persisted and the PersistenceProvider.
- *
- * @property {string} [type] - Type of PersistenceProvider to be used.  May be one of
- *      'pref'|'localStorage'|'dashView'.  If not provided, Hoist will auto-detect the type based
- *      on other keys provided.  For example a 'prefKey' argument will indicate a type of 'pref',
- *      while a 'localStorageKey' will indicate a type of 'localStorage'.
- * @property {string} [path] - path or key in provider data where state should be stored.  Optional
- *      value. If not provided, the property name or a name appropriate for the target will
- *      be used (e.g. 'gridModel')
+ * @property {string} [type] - Type of PersistenceProvider to be used. May be one of
+ *      'pref'|'localStorage'|'dashView'. If not provided (most common), Hoist will auto-detect
+ *      the type based on other keys provided. For example a 'prefKey' argument implies a type of
+ *      'pref', while a 'localStorageKey' implies a type of 'localStorage' - see below.
+ * @property {string} [prefKey] - name of Hoist preference for pref-based storage. Supplying a
+ *      value for this property will create a {@see PrefProvider}.
+ * @property {string} [localStorageKey] - unique string key for LocalStorage based state storage.
+ *      Supplying a value for this property will create a {@see LocalStorageProvider}.
+ * @property {DashViewModel} [dashViewModel] - model instance for Dashboard-based state storage.
+ *      Supplying a value for this property will create a {@see DashViewProvider}.
+ * @property {string} [path] - path or key in provider data where state should be stored.
+ *      If not provided, the provider will use the name of the class property being persisted or
+ *      another auto-selected name suitable to the particular target (e.g. 'gridModel')
  * @property {(object|number)} [debounce] - specification appropriate for lodash debounce. Governs
- *      the frequency at which the state is written back to the provider.  If not provided, a
+ *      the frequency at which the state is written back to the provider. If not provided, a
  *      provider-appropriate default will be used (typically 250ms).
- * @property {*} spec.rest - Additional arguments. See PersistenceProvider and specific target
+ * @property {*} spec.rest - Additional arguments. {@see PersistenceProvider} and specific target
  *      for more details.
  */

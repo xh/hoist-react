@@ -8,7 +8,6 @@
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {FilterModel} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
@@ -31,9 +30,6 @@ export class DifferModel  {
 
     @managed
     detailModel = new DifferDetailModel({parent: this});
-
-    @managed
-    filterModel;
 
     @managed
     gridModel;
@@ -62,17 +58,15 @@ export class DifferModel  {
         this.entityName = entityName;
         this.url = entityName + 'DiffAdmin';
 
-        this.filterModel = new FilterModel({
-            filters: [{
-                id: XH.genId(),
-                testFn: (rec) => rec.get('status') !== 'Identical'
-            }]
-        });
-
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
-                filterModel: this.filterModel
+                filterModel: {
+                    filters: [{
+                        id: XH.genId(),
+                        testFn: (rec) => rec.get('status') !== 'Identical'
+                    }]
+                }
             },
             emptyText: 'All records match!',
             selModel: 'multiple',
