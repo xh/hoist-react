@@ -336,7 +336,7 @@ export class FilterChooserModel {
 
         const testField = (s) => this.getRegExp(queryField).test(s);
         const specs = this.fieldSpecs.filter(spec => {
-            return spec.isRangeFilter &&
+            return spec.isRangeType &&
                 spec.supportsOperator(operator) &&
                 testField(spec.displayName);
         });
