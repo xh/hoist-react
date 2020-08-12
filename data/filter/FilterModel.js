@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilter, FunctionFilter} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {castArray, every, groupBy, isEmpty, isFunction, some, values, isEqual} from 'lodash';
+import {castArray, every, isEmpty, isFunction, isEqual} from 'lodash';
 
 @HoistModel
 export class FilterModel {
@@ -95,29 +95,11 @@ export class FilterModel {
 
     /**
      * Creates a function that tests a Record or Object against all the Filters.
-     * FunctionFilters and FieldFilters across disparate fields are applied using AND.
-     * FieldFilters that share a field and operator are applied using OR.
      */
     createTestFunction() {
         const {filters} = this;
         if (isEmpty(filters)) return () => true;
-
-        const groups = values(groupBy(filters, f => {
-            return f.isFieldFilter ? f.field + '|' + f.operator : f.testFn;
-        }));
-
-        return (v) => {
-            return every(groups, groupedFilters => {
-                return some(groupedFilters, filter => {
-                    try {
-                        return filter.test(v);
-                    } catch (e) {
-                        console.error(e);
-                        return true; // Ignore this filter
-                    }
-                });
-            });
-        };
+        return (v) => every(filters, filter => filter.test(v));
     }
 
     parseFilters(filters) {
