@@ -18,6 +18,7 @@ import {
     escapeRegExp,
     flatten,
     groupBy,
+    isArray,
     isEmpty,
     isEqual,
     isNaN,
@@ -26,8 +27,7 @@ import {
     map,
     partition,
     sortBy,
-    take,
-    without
+    take
 } from 'lodash';
 
 @HoistModel
@@ -187,16 +187,15 @@ export class FilterChooserModel {
     }
 
     /**
-     * Combine value filters (= | !=) on same field / operation into 'in' and 'notin' filters.
+     * Combine value filters (= | !=) on same field / operation.
      * @return {FieldFilter[]}
      */
     combineFilters(filters) {
         const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!='].includes(f.operator));
 
-        // Group value filters (== | !=) on same field / operation into 'in' and 'notin' filters
         const groupMap = groupBy(valueFilters, f => {
             const {field, operator, fieldType} = f;
-            return [field, operator === '=' ? 'in' : 'notin', fieldType].join('|');
+            return [field, operator, fieldType].join('|');
         });
         const groupedFilters = map(groupMap, (v, k) => {
             const [field, operator, fieldType] = k.split('|'),
@@ -208,19 +207,17 @@ export class FilterChooserModel {
     }
 
     /**
-     * Split 'in' and 'notin' filters into collections of '=' and '!=' filters.
+     * Split values filters with multiple values into single filters.
      * @return {FieldFilter[]}
      */
     splitFilters(filters) {
         const ret = [];
         filters.filter(it => it.isFieldFilter).forEach(filter => {
-            if (['in', 'notin'].includes(filter.operator)) {
-                const {field, fieldType} = filter,
-                    operator = filter.operator === 'in' ? '=' : '!=';
-
+            const {value} = filter;
+            if (isArray(value)) {
                 ret.push(
-                    ...filter.value.map(value => {
-                        return new FieldFilter({field, operator, value, fieldType});
+                    ...value.map(v => {
+                        return new FieldFilter({...filter, value: v});
                     })
                 );
             } else {
@@ -252,10 +249,9 @@ export class FilterChooserModel {
         if (isEmpty(query)) return [];
 
         // Split query into field, operator and value.
-        const operators = without(FieldFilter.OPERATORS, 'in', 'notin'),
-            operatorReg = sortBy(operators, o => -o.length)
-                .map(o => escapeRegExp(o))
-                .join('|');
+        const operatorReg = sortBy(FieldFilter.OPERATORS, o => -o.length)
+            .map(o => escapeRegExp(o))
+            .join('|');
 
         const [queryField, queryOperator, queryValue] = query
             .split(this.getRegExp('(' + operatorReg + ')'))

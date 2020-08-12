@@ -36,8 +36,6 @@ export class FieldFilter extends Filter {
         '>=',
         '<',
         '<=',
-        'in',
-        'notin',
         'like'
     ];
 
@@ -119,9 +117,9 @@ export class FieldFilter extends Filter {
 
         switch (operator) {
             case '=':
-                return v === value;
+                return castArray(value).includes(v);
             case '!=':
-                return v !== value;
+                return !castArray(value).includes(v);
             case '>':
                 return v > value;
             case '>=':
@@ -130,10 +128,6 @@ export class FieldFilter extends Filter {
                 return v < value;
             case '<=':
                 return v <= value;
-            case 'in':
-                return castArray(value).includes(v);
-            case 'notin':
-                return !castArray(value).includes(v);
             case 'like':
                 return new RegExp(escapeRegExp(value), 'ig').test(v);
             default:
