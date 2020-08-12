@@ -86,8 +86,7 @@ export class PreferenceModel {
         toolbarActions: [
             addAction,
             editAction,
-            bulkDeleteAction,
-            regroupAction
+            bulkDeleteAction
         ],
         menuActions: [
             addAction,

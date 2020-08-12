@@ -81,17 +81,13 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: (records) =>  {
-                records = castArray(records);
-                return `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`;
-            }
+            del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
         },
         toolbarActions: [
             addAction,
             editAction,
             cloneAction,
-            bulkDeleteAction,
-            regroupAction
+            bulkDeleteAction
         ],
         menuActions: [
             addAction,

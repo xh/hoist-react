@@ -120,7 +120,7 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [toolbarActions] - actions to display in the toolbar. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
-     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'delete') to string or a fn to create one. See default prop.
+     * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'del') to string or a fn to create one. See default prop.
      *      Function will be passed selected record(s) to be acted upon.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
