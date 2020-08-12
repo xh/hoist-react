@@ -7,7 +7,7 @@
 
 import {FieldFilter, FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
 /**
@@ -71,6 +71,9 @@ export class FilterChooserFieldSpec {
         }
     }
 
+    get isRangeType() { return this.filterType === 'range'}
+    get isValueType() { return this.filterType === 'value'}
+
     /**
      * @return {string} - a rendered example / representative data value to aid usability.
      *      TODO - default return of upper fieldType is a bit rough (e.g. "INT")
@@ -111,7 +114,7 @@ export class FilterChooserFieldSpec {
         this.operators = this.parseOperators(operators);
 
         // Enable value suggestion based on explicit config, filterType, or presence of values list.
-        this.suggestValues = withDefault(suggestValues, this.filterType === 'value' || values);
+        this.suggestValues = suggestValues ?? (this.isValueType || values);
 
         // Read values available for suggestion from direct config if provided, or extract from
         // Store Records if suggestions enabled.
@@ -126,7 +129,7 @@ export class FilterChooserFieldSpec {
 
     renderValue(value, operator) {
         let ret;
-        if (this.valueRenderer) {
+        if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, operator);
         } else if (this.fieldType === FieldType.DATE || this.fieldType === FieldType.LOCAL_DATE) {
             ret = fmtDate(value);
@@ -137,31 +140,29 @@ export class FilterChooserFieldSpec {
     }
 
     parseValue(value, operator) {
-        if (isFunction(this.valueParser)) {
-            return this.valueParser(value, operator);
-        } else {
-            return parseFieldValue(value, this.fieldType);
-        }
+        return isFunction(this.valueParser) ?
+            this.valueParser(value, operator) :
+            parseFieldValue(value, this.fieldType);
     }
 
     /**
      * @param {string} operator
      * @return {boolean} - true if the provided operator is supported by this spec.
      */
-    supportsOperator(operator) {return this.operators.includes(operator)}
+    supportsOperator(operator) {
+        return this.operators.includes(operator);
+    }
 
 
     //------------------------
     // Implementation
     //------------------------
     parseValues(values, storeRecords) {
-        return values ?? (
-            this.suggestValues ? (
-                this.fieldType === FieldType.BOOL ?
-                    [true, false] :
-                    this.extractValuesFromRecords(storeRecords)
-            ) : null
-        );
+        if (values) return values; // If explicit values provided by caller, return as-is
+        if (this.suggestValues) {
+            return this.fieldType === FieldType.BOOL ? [true, false] : this.extractValuesFromRecords(storeRecords);
+        }
+        return null;
     }
 
     parseOperators(operators) {
@@ -171,7 +172,7 @@ export class FilterChooserFieldSpec {
 
     getDefaultOperators() {
         if (this.fieldType === FieldType.BOOL) return ['='];
-        return this.filterType === 'value' ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
+        return this.isValueType ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
     extractValuesFromRecords(storeRecords) {

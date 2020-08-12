@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {FieldType, parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isEqual, isString} from 'lodash';
+import {castArray, escapeRegExp, isArray, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -53,12 +53,11 @@ export class FieldFilter extends Filter {
      * Create a new FieldFilter. Accepts a FieldFilter configuration or a string representation
      * generated using FieldFilter.serialize().
      *
-     * @param {(Object|string)} [cfg] - FieldFilter configuration or string representation.
+     * @param {(Object|string)} cfg - FieldFilter configuration as object or serialized JSON string.
      */
-    static parse(cfg) {
+    static create(cfg) {
         if (isString(cfg)) {
-            const {field, operator, value, fieldType} = JSON.parse(cfg);
-            cfg = {field, operator, value, fieldType};
+            cfg = JSON.parse(cfg);
         }
         return new FieldFilter(cfg);
     }
@@ -69,12 +68,14 @@ export class FieldFilter extends Filter {
      * @param {string} c.operator - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|[])} [c.value] - value(s) to use with operator in filter.
      * @param {FieldType} [c.fieldType]
+     * @param {string} [c.group] - Optional group associated with this filter.
      */
     constructor({
         field,
         operator,
         value,
-        fieldType = FieldType.AUTO
+        fieldType = FieldType.AUTO,
+        group = null
     }) {
         super();
 
@@ -85,6 +86,7 @@ export class FieldFilter extends Filter {
         this.operator = operator;
         this.value = value;
         this.fieldType = fieldType;
+        this.group = group;
 
         Object.freeze(this);
     }
@@ -144,7 +146,9 @@ export class FieldFilter extends Filter {
      * @returns {boolean} - true if the other filter is fully equivalent with this instance.
      */
     equals(other) {
-        return other.isFieldFilter && isEqual(this.serialize(), other.serialize());
+        return other.isFieldFilter &&
+            other.serialize() === this.serialize() &&
+            other.group === this.group;
     }
 
     parseValue(value) {

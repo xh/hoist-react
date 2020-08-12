@@ -7,10 +7,12 @@
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilter, FunctionFilter} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {castArray, every, groupBy, isEmpty, isPlainObject, some, values} from 'lodash';
+import {castArray, every, groupBy, isEmpty, isFunction, some, values, isEqual} from 'lodash';
 
 @HoistModel
 export class FilterModel {
+
+    get isFilterModel() {return true}
 
     /** @member {Filter[]} */
     @observable.ref
@@ -24,85 +26,71 @@ export class FilterModel {
     includeChildren;
 
     /**
-     * @param {Object} c - FilterModel configuration.
-     * @param {(Filter[]|Object[])} [c.filters] - collection of filters, or configs to create them.
+     * @param {*|*[]} filters - One or more filter instances, or configs to create them.
+     * @param {Object} [c] - Additional optional configuration.
      * @param {boolean} [c.includeChildren] - true if all children of a passing record should
      *      also be considered passing (default false).
      */
-    constructor({
-        filters = [],
-        includeChildren = false
-    } = {}) {
-        this.filters = this.parseFilters(filters);
+    constructor(filters = [], {includeChildren = false} = {}) {
         this.includeChildren = includeChildren;
-        this.updateTestFunction();
+        this.setFilters(filters);
     }
 
     /**
      * Sets filters to the filter model.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
-     *      strings, or configs.
+     * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
-    @action
     setFilters(filters) {
-        this.filters = this.parseFilters(filters);
-        this.updateTestFunction();
+        this.setFiltersInternal(this.parseFilters(filters));
     }
 
     /**
      * Adds filters to the filter model. If a matching filter already exists, it will be skipped.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
-     *      strings, or configs.
+     * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
-    @action
     addFilters(filters) {
-        filters = this.parseFilters(filters);
-        const toAdd = filters.filter(f => {
-            return every(this.filters, it => !it.equals(f));
-        });
-        this.filters = [...this.filters, ...toAdd];
-        this.updateTestFunction();
+        const toAdd = this
+            .parseFilters(filters)
+            .filter(f => !this.filters.some(it => it.equals(f)));
+        this.setFiltersInternal([...this.filters, ...toAdd]);
     }
 
     /**
      * Removes filters from the filter model.
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
-     *      strings, or configs.
+     * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
-    @action
     removeFilters(filters) {
-        filters = this.parseFilters(filters);
-        this.filters = this.filters.filter(f => {
-            return every(filters, it => !it.equals(f));
-        });
-        this.updateTestFunction();
-    }
-
-    /** Removes all filters from the filter model. */
-    @action
-    clear() {
-        this.filters = [];
+        const toRemove = this.parseFilters(filters);
+        this.setFiltersInternal(
+            this.filters.filter(f => !toRemove.some(it => it.equals(f)))
+        );
     }
 
     /**
-     * Convenience method to replace any matching Filters with a new set of Filters
-     * @param {(Filter|Filter[]|string|string[]|Object|Object[])} filters - Filter instances,
-     *      strings, or configs to replace. Any equivalent filters will be replaced, all other
-     *      filters will be left in place. Note this method is only useful with FunctionFilters,
-     *      which match on their `id` but can hold differing function implementations. FieldFilters
-     *      include their value when matching, rendering this call a no-op.
+     * Removes all filters associated with a group from this model.
+     * @param {String} group
      */
-    @action
-    replaceFilters(filters) {
-        this.removeFilters(filters);
-        this.addFilters(filters);
+    removeFiltersByGroup(group) {
+        this.setFiltersInternal(
+            this.filters.filter(f => f.group != group)
+        );
+    }
+
+
+    /** Removes all filters from the filter model. */
+    clear() {
+        this.setFiltersInternal([]);
     }
 
     //------------------------
     // Implementation
     //------------------------
-    updateTestFunction() {
-        this.test = this.createTestFunction();
+    @action
+    setFiltersInternal(filters) {
+        if (!isEqual(filters, this.filters)) {
+            this.filters = Object.freeze(filters);
+            this.test = this.createTestFunction();
+        }
     }
 
     /**
@@ -115,7 +103,7 @@ export class FilterModel {
         if (isEmpty(filters)) return () => true;
 
         const groups = values(groupBy(filters, f => {
-            return f.isFieldFilter ? f.field + '|' + f.operator : f.id;
+            return f.isFieldFilter ? f.field + '|' + f.operator : f.testFn;
         }));
 
         return (v) => {
@@ -138,8 +126,9 @@ export class FilterModel {
     }
 
     parseFilter(filter) {
-        if (filter instanceof FieldFilter || filter instanceof FunctionFilter) return filter;
-        if (isPlainObject(filter) && filter.testFn) return new FunctionFilter(filter);
-        return FieldFilter.parse(filter);
+        if (filter.isFieldFilter || filter.isFunctionFilter) return filter;
+        return (isFunction(filter) || filter.testFn) ?
+            FunctionFilter.create(filter) :
+            FieldFilter.create(filter);
     }
 }

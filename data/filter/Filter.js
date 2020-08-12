@@ -16,6 +16,13 @@ export class Filter {
     get isFilter() {return true}
 
     /**
+     * @member string -- optional group associated with this filter.  Useful for
+     *      components that need to find and identify Filters that they own.
+     */
+    group;
+
+
+    /**
      * Generate a complete string representation suitable for consumption by parse().
      * @returns {string}
      */

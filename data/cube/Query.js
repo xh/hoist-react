@@ -64,7 +64,7 @@ export class Query {
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
 
-        this._filterModel = new FilterModel({filters});
+        this._filterModel = new FilterModel(filters);
     }
 
     clone(overrides) {

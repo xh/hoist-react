@@ -22,7 +22,6 @@ import {
     isEqual,
     isNaN,
     isNil,
-    isPlainObject,
     isString,
     map,
     partition,
@@ -37,8 +36,6 @@ export class FilterChooserModel {
     @observable.ref value;
     @observable.ref history;
     @observable.ref options;
-
-    inputRef = createObservableRef();
 
     /** @member {FilterModel} */
     filterModel;
@@ -60,8 +57,11 @@ export class FilterChooserModel {
     persistValue = false;
     persistHistory = false;
 
+    inputRef = createObservableRef();
+
     /** @member {RawFilterChooserFieldSpec[]} */
     _rawFieldSpecs;
+
 
     // Option values with special handling
     static TRUNCATED = 'TRUNCATED';
@@ -90,7 +90,7 @@ export class FilterChooserModel {
         store,
         fieldSpecs,
         valueSourceRecords = 'filtered',
-        limit= 10,
+        limit = 10,
         persistWith,
         maxHistoryLength = 10
     }) {
@@ -98,7 +98,7 @@ export class FilterChooserModel {
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
         throwIf(!['filtered', 'all'].includes(valueSourceRecords), `Invalid valueSourceRecords config '${valueSourceRecords}'.`);
 
-        this.filterModel = isPlainObject(filterModel) ? this.markManaged(new FilterModel(filterModel)) : filterModel;
+        this.filterModel = filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
         this.store = store;
         this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
 
@@ -111,16 +111,15 @@ export class FilterChooserModel {
         this.maxHistoryLength = maxHistoryLength;
 
         // Read state from provider -- fail gently
-        const persistValue = this.persistValue = persistWith ? (persistWith.persistValue ?? true) : false;
-        const persistHistory = this.persistHistory = persistWith ? (persistWith.persistHistory ?? true) : false;
-
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
+                this.persistValue = persistWith.persistValue ?? true;
+                this.persistHistory = persistWith.persistHistory ?? true;
 
                 const state = this.provider.read();
-                if (persistValue && state?.value) this.filterModel.setFilters(state.value);
-                if (persistHistory && state?.history) this.history = state.history;
+                if (this.persistValue && state?.value) this.filterModel.setFilters(state.value);
+                if (this.persistHistory && state?.history) this.history = state.history;
 
                 this.addReaction({
                     track: () => this.persistState,
@@ -173,7 +172,7 @@ export class FilterChooserModel {
     // Filter Model
     //--------------------
     syncToFilterModel() {
-        const filters = this.value?.map(it => FieldFilter.parse(it)) ?? [],
+        const filters = this.value?.map(it => FieldFilter.create(it)) ?? [],
             combinedFilters = this.combineFilters(filters);
 
         this.filterModel.setFilters(combinedFilters);
@@ -256,19 +255,17 @@ export class FilterChooserModel {
     }
 
     filterByQuery(query) {
-        if (!query || !query.length) return [];
+        if (isEmpty(query)) return [];
 
         // Split query into field, operator and value.
         const operators = without(FieldFilter.OPERATORS, 'in', 'notin'),
-            operatorReg = sortBy(operators, o => {
-                return -o.length;
-            }).map(o => {
-                return escapeRegExp(o);
-            }).join('|');
+            operatorReg = sortBy(operators, o => -o.length)
+                .map(o => escapeRegExp(o))
+                .join('|');
 
-        const [queryField, queryOperator, queryValue] = query.split(
-            this.getRegExp('(' + operatorReg + ')')
-        ).map(it => it.trim());
+        const [queryField, queryOperator, queryValue] = query
+            .split(this.getRegExp('(' + operatorReg + ')'))
+            .map(it => it.trim());
 
         // Get options for the given query, according to the query type specified by the operator
         const valueOperators = ['=', '!=', 'like'],
@@ -283,19 +280,14 @@ export class FilterChooserModel {
 
         // Provide suggestions for field specs that partially match the query.
         if (isEmpty(queryValue) || isEmpty(options)) {
-            const suggestions = this.fieldSpecs.filter(spec => {
-                return spec.displayName.toLowerCase().startsWith(queryField.toLowerCase());
-            }).map(spec => {
-                return {
+            const suggestions = this.fieldSpecs
+                .filter(spec => spec.displayName.toLowerCase().startsWith(queryField.toLowerCase()))
+                .map(spec => ({
                     isSuggestion: true,
                     value: `${FilterChooserModel.SUGGEST_PREFIX}${spec.displayName}`,
-                    spec: spec
-                };
-            });
-
-            if (!isEmpty(suggestions)) {
-                options.push(...suggestions);
-            }
+                    spec
+                }));
+            options.push(...suggestions);
         }
 
         return options;
@@ -306,55 +298,40 @@ export class FilterChooserModel {
             operator = queryOperator ?? '=', // If no operator included in query, assume '='
             options = [];
 
+        const testField = (s) => this.getRegExp(queryField).test(s);
+        const testValue = (s) => this.getRegExp(queryValue).test(s);
         const specs = this.fieldSpecs.filter(spec => {
-            const {filterType, displayName} = spec;
             if (!spec.supportsOperator(operator)) return false;
 
-            if (filterType === 'value') {
-                // For value filters, provide options based only on partial field match.
-                return !fullQuery || this.getRegExp(queryField).test(displayName);
-            } else {
-                // Range filters support value operators (e.g. '=', '!='). For range filters
-                // the user must have provided the full query to get a match.
-                return fullQuery && this.getRegExp(queryField).test(displayName);
-            }
+            // Value filters provide options based only on partial field match.
+            // Range filters support value operators (e.g. '=', '!='). Must provide full query.
+            return spec.isValueType ?
+                !fullQuery || testField(spec.displayName) :
+                fullQuery && testField(spec.displayName);
         });
 
         specs.forEach(spec => {
-            const {field, fieldType, displayName, values} = spec;
+            const {displayName, values} = spec;
 
             if (values && ['=', '!='].includes(operator)) {
+                const nameMatches = testField(displayName);
                 values.forEach(value => {
-                    const displayValue = spec.renderValue(value, operator);
+                    // Where both field and value specified use partial match for either side
+                    // If only one part provided just match against both together
+                    const match = fullQuery ?
+                        nameMatches && testValue(value) :
+                        testField(displayName + ' ' + value);
 
-                    let match;
-                    if (fullQuery) {
-                        // Matching for usage where both field and value are specified, with partial
-                        // matching for either side.
-                        const fieldMatch = this.getRegExp(queryField).test(displayName),
-                            valueMatch = this.getRegExp(queryValue).test(value);
-
-                        match = fieldMatch && valueMatch;
-                    } else {
-                        // One one part provided - match against both field and value to catch
-                        // both possibilities
-                        match = this.getRegExp(queryField).test(displayName + ' ' + value);
+                    if (match) {
+                        options.push(this.createOption({spec, value, operator}));
                     }
-                    if (!match) return;
-
-                    const option = {field, value, operator, fieldType, displayName, displayValue};
-                    options.push(this.createOption(option));
                 });
             } else if (fullQuery) {
-                // For filters which require a fully specified query, create an option with the
-                // query value.
+                // For filters which require a fully spec'ed query, create an option with the value.
                 const value = spec.parseValue(queryValue, operator);
-                if (isNil(value) || isNaN(value)) return;
-
-                const displayValue = spec.renderValue(value, operator),
-                    option = {field, value, operator, fieldType, displayName, displayValue};
-
-                options.push(this.createOption(option));
+                if (!isNil(value) && !isNaN(value)) {
+                    options.push(this.createOption({spec, value, operator}));
+                }
             }
         });
 
@@ -367,25 +344,18 @@ export class FilterChooserModel {
         const operator = queryOperator,
             options = [];
 
+        const testField = (s) => this.getRegExp(queryField).test(s);
         const specs = this.fieldSpecs.filter(spec => {
-            const {filterType, displayName} = spec;
-            if (!spec.supportsOperator(operator)) return false;
-            return filterType === 'range' && this.getRegExp(queryField).test(displayName);
+            return spec.isRangeFilter &&
+                spec.supportsOperator(operator) &&
+                testField(spec.displayName);
         });
 
         specs.forEach(spec => {
-            const {field, fieldType, displayName} = spec;
-
-            const match = this.getRegExp(queryField).test(displayName);
-            if (!match) return;
-
             const value = spec.parseValue(queryValue, operator);
-            if (isNil(value) || isNaN(value)) return;
-
-            const displayValue = spec.renderValue(value, operator),
-                option = {field, value, operator, fieldType, displayName, displayValue};
-
-            options.push(this.createOption(option));
+            if (!isNil(value) && !isNaN(value)) {
+                options.push(this.createOption({spec, value, operator}));
+            }
         });
 
         return options;
@@ -397,23 +367,20 @@ export class FilterChooserModel {
 
         filters.forEach(filter => {
             const spec = this.getFieldSpec(filter.field);
-            if (!spec) return;
-
-            const {field, operator, fieldType} = filter,
-                value = parseFieldValue(filter.value, fieldType, null),
-                displayName = spec.displayName,
-                displayValue = spec.renderValue(value, operator);
-
-            const option = {field, value, operator, fieldType, displayName, displayValue, filter};
-            options.push(this.createOption(option));
+            if (spec) {
+                const {operator, fieldType} = filter,
+                    value = parseFieldValue(filter.value, fieldType, null);
+                options.push(this.createOption({spec, value, operator, filter}));
+            }
         });
 
         return options;
     }
 
-    createOption(opt) {
-        const {field, value, operator, fieldType, displayName, displayValue} = opt,
-            filter = FieldFilter.parse(opt.filter ?? {field, operator, value, fieldType});
+    createOption({spec, value, operator, filter}) {
+        const {displayName, field} = spec,
+            displayValue = spec.renderValue(value);
+        filter = FieldFilter.create(filter ?? {field, operator, value, fieldType: field.type});
 
         return {
             displayName,
@@ -465,8 +432,8 @@ export class FilterChooserModel {
         if (!isEmpty(this.value) || isEmpty(this.history)) return [];
 
         return this.history.map(entry => {
-            const labels = entry.map(it => it.label),
-                value = entry.map(it => it.value);
+            const labels = map(entry, 'label'),
+                value = map(entry, 'value');
 
             return {isHistory: true, value, labels};
         });
@@ -486,8 +453,7 @@ export class FilterChooserModel {
     }
 
     getHistoryValue(filters) {
-        return this.getOptionsForFilters(filters).map(it => {
-            const {value, label} = it;
+        return this.getOptionsForFilters(filters).map(({value, label}) => {
             return {value, label};
         });
     }
@@ -545,7 +511,7 @@ export class FilterChooserModel {
     }
 
     getFieldSpec(fieldName) {
-        return this.fieldSpecs.find(it => it.field.name == fieldName);
+        return this.fieldSpecs.find(it => it.field.name === fieldName);
     }
 }
 
