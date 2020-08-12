@@ -4,7 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {castArray} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
