@@ -48,7 +48,7 @@ export class FilterChooserModel {
     /** @member {string} */
     valueSourceRecords;
     /** @member {number} */
-    limit;
+    maxResults;
     /** @member {number} */
     maxHistoryLength;
 
@@ -80,7 +80,7 @@ export class FilterChooserModel {
      *      provided, all Store Fields will be included with options defaulted based on their type.
      * @param {string} [c.valueSourceRecords] - determines the set of Store Records used to extract
      *      value suggestions for applicable field filters - either 'filtered' (default) or 'all'.
-     * @param {number} [c.limit] - maximum number of results to show before truncating.
+     * @param {number} [c.maxResults] - maximum number of results to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing history persistence
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
      *      history (maintained automatically by the control on a LRU basis).
@@ -90,7 +90,7 @@ export class FilterChooserModel {
         store,
         fieldSpecs,
         valueSourceRecords = 'filtered',
-        limit = 10,
+        maxResults = 10,
         persistWith,
         maxHistoryLength = 10
     }) {
@@ -107,7 +107,7 @@ export class FilterChooserModel {
             run: () => this.updateFieldSpecs()
         });
 
-        this.limit = limit;
+        this.maxResults = maxResults;
         this.maxHistoryLength = maxHistoryLength;
 
         // Read state from provider -- fail gently
@@ -240,13 +240,13 @@ export class FilterChooserModel {
     // Querying
     //--------------------
     async queryAsync(query) {
-        const {limit} = this,
+        const {maxResults} = this,
             results = this.sortByQuery(this.filterByQuery(query), query);
 
-        if (limit > 0 && results.length > limit) {
-            const truncateCount = results.length - limit;
+        if (maxResults > 0 && results.length > maxResults) {
+            const truncateCount = results.length - maxResults;
             return [
-                ...results.slice(0, limit),
+                ...results.slice(0, maxResults),
                 {value: FilterChooserModel.TRUNCATED, truncateCount}
             ];
         }
