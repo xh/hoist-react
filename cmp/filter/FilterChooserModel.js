@@ -45,8 +45,6 @@ export class FilterChooserModel {
     /** @member {FilterChooserFieldSpec[]} */
     @observable.ref fieldSpecs = [];
 
-    /** @member {string} */
-    valueSourceRecords;
     /** @member {number} */
     maxResults;
     /** @member {number} */
@@ -78,8 +76,6 @@ export class FilterChooserModel {
      *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
      *      objects to select and customize fields available for filtering. Optional - if not
      *      provided, all Store Fields will be included with options defaulted based on their type.
-     * @param {string} [c.valueSourceRecords] - determines the set of Store Records used to extract
-     *      value suggestions for applicable field filters - either 'filtered' (default) or 'all'.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing history persistence
      * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
@@ -89,14 +85,12 @@ export class FilterChooserModel {
         filterModel,
         store,
         fieldSpecs,
-        valueSourceRecords = 'filtered',
         maxResults = 10,
         persistWith,
         maxHistoryLength = 10
     }) {
         throwIf(!filterModel, 'Must provide a FilterModel (or a config to create one).');
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
-        throwIf(!['filtered', 'all'].includes(valueSourceRecords), `Invalid valueSourceRecords config '${valueSourceRecords}'.`);
 
         this.filterModel = filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
         this.store = store;
@@ -473,12 +467,12 @@ export class FilterChooserModel {
     //--------------------------------
     @action
     updateFieldSpecs() {
-        const {store, valueSourceRecords, _rawFieldSpecs} = this;
+        const {store, _rawFieldSpecs} = this;
 
         this.fieldSpecs = _rawFieldSpecs.map(rawSpec => {
             return new FilterChooserFieldSpec({
                 ...rawSpec,
-                storeRecords: valueSourceRecords === 'filtered' ? store.records : store.allRecords
+                storeRecords: store.allRecords
             });
         });
     }

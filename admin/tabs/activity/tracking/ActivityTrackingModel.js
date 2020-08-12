@@ -103,7 +103,6 @@ export class ActivityTrackingModel {
         this.filterChooserModel = new FilterChooserModel({
             filterModel: this.filterModel,
             store: this.cube.store,
-            valueSourceRecords: 'all',
             fieldSpecs: [
                 'category',
                 'month',
