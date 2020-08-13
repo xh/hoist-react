@@ -453,8 +453,10 @@ export class Store {
         return this.fields.find(it => it.name === name);
     }
 
-    /**  @return {string[]} */
-    get fieldNames() {return this.fields.map(it => it.name)}
+    /** @return {string[]} */
+    get fieldNames() {
+        return this.fields.map(it => it.name);
+    }
 
     /**
      * Records in this store, respecting any filter (if applied).

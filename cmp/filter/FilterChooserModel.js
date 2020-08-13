@@ -193,8 +193,8 @@ export class FilterChooserModel {
         const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!=', 'like'].includes(f.op));
 
         const groupMap = groupBy(valueFilters, f => {
-            const {field, op, fieldType} = f;
-            return [field, op, fieldType].join('|');
+            const {field, op} = f;
+            return [field, op].join('|');
         });
 
         const compositeFilters = map(groupMap, filters => {
@@ -353,8 +353,8 @@ export class FilterChooserModel {
         filters.forEach(filter => {
             const spec = this.getFieldSpec(filter.field);
             if (spec) {
-                const {op, fieldType} = filter,
-                    value = parseFieldValue(filter.value, fieldType, null);
+                const {op} = filter,
+                    value = parseFieldValue(filter.value, spec.fieldType, null);
                 options.push(this.createOption({spec, value, op, filter}));
             }
         });
@@ -365,7 +365,8 @@ export class FilterChooserModel {
     createOption({spec, value, op, filter}) {
         const {displayName, field} = spec,
             displayValue = spec.renderValue(value);
-        filter = FieldFilter.create(filter ?? {field, op, value, fieldType: field.type});
+
+        filter = FieldFilter.create(filter ?? {field, op, value});
 
         return {
             displayName,
