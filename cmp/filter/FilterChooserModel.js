@@ -7,7 +7,7 @@
 
 import {FilterChooserFieldSpec} from '@xh/hoist/cmp/filter/impl/FilterChooserFieldSpec';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, CompositeFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {start, wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -18,7 +18,6 @@ import {
     escapeRegExp,
     flatten,
     groupBy,
-    isArray,
     isEmpty,
     isEqual,
     isNaN,
@@ -187,7 +186,7 @@ export class FilterChooserModel {
     }
 
     /**
-     * Combine value filters (= | !=) on same field / operation.
+     * Combine value filters (= | !=) on same field / operation into OR CompositeFilters
      * @return {FieldFilter[]}
      */
     combineFilters(filters) {
@@ -197,29 +196,27 @@ export class FilterChooserModel {
             const {field, op, fieldType} = f;
             return [field, op, fieldType].join('|');
         });
-        const groupedFilters = map(groupMap, (v, k) => {
-            const [field, op, fieldType] = k.split('|'),
-                value = v.map(it => it.value);
-            return new FieldFilter({field, value, op, fieldType});
+
+        const compositeFilters = map(groupMap, filters => {
+            if (filters.length > 1) {
+                return new CompositeFilter({filters, op: 'OR'});
+            } else {
+                return filters[0];
+            }
         });
 
-        return [...groupedFilters, ...rangeFilters];
+        return [...compositeFilters, ...rangeFilters];
     }
 
     /**
-     * Split values filters with multiple values into single filters.
+     * Split CompositeFilter into single FieldFilter.
      * @return {FieldFilter[]}
      */
     splitFilters(filters) {
         const ret = [];
-        filters.filter(it => it.isFieldFilter).forEach(filter => {
-            const {value} = filter;
-            if (isArray(value)) {
-                ret.push(
-                    ...value.map(v => {
-                        return new FieldFilter({...filter, value: v});
-                    })
-                );
+        filters.forEach(filter => {
+            if (filter.isCompositeFilter) {
+                ret.push(...filter.filters);
             } else {
                 ret.push(filter);
             }
