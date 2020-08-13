@@ -5,15 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, hbox, label} from '@xh/hoist/cmp/layout';
-import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {box, fragment, frame, hbox, label, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
+import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, textArea} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import * as codemirror from 'codemirror';
 import 'codemirror/addon/fold/brace-fold.js';
@@ -28,7 +28,7 @@ import 'codemirror/addon/search/searchcursor.js';
 import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
-import {defaultsDeep, isEqual, isFunction, isNull} from 'lodash';
+import {compact, defaultsDeep, isEmpty, isEqual, isFunction} from 'lodash';
 import PT from 'prop-types';
 import ReactDOM from 'react-dom';
 import './CodeInput.scss';
@@ -49,12 +49,17 @@ export class CodeInput extends HoistInput {
 
     /** @member {CodeMirror} - a CodeMirror editor instance. */
     editor;
+
     /** CodeMirror SearchCursor add-on */
     cursor;
+    /** @member {string} - local search input value. */
     @bindable query;
-    @bindable match = null;
-    @bindable matches = null;
-    selectedMatches = [];
+    /** @member {Object[]} - metadata on text matches for current search query. */
+    @observable.ref matches = [];
+    /** @member {?number} */
+    @observable currentMatchIdx = null;
+
+    get matchCount() {return this.matches.length}
 
     @bindable fullScreen = false;
     baseClassName = 'xh-code-input';
@@ -75,8 +80,9 @@ export class CodeInput extends HoistInput {
         editorProps: PT.object,
 
         /**
-         * True to enable case-insensitive search tool for input. When set to true, showToolbar
-         * will also default to true.
+         * True to enable case-insensitive search tool for input. Default false, except in
+         * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
+         * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
          */
         enableSearch: PT.bool,
 
@@ -114,16 +120,18 @@ export class CodeInput extends HoistInput {
         /** True (default) to display Fullscreen button at bottom-right of input. */
         showFullscreenButton: PT.bool,
 
-        /** True to display action buttons and/or find functionality in toolbar below input. */
+        /**
+         * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
+         * Default is false unless enableSearch==true or in fullscreen mode. When false, action
+         * buttons show only when input is focused and float in the bottom-right corner.
+         */
         showToolbar: PT.bool
     };
 
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
-    get enableSearch() {return withDefault(this.props.enableSearch, false)}
+
     get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
     get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
-    get showToolbar() {return withDefault(this.props.showToolbar, this.props.enableSearch)}
-
     get showFormatButton() {
         const {disabled, readonly, formatter, showFormatButton} = this.props;
         return (
@@ -134,13 +142,28 @@ export class CodeInput extends HoistInput {
         );
     }
 
+    get showAnyActionButtons() {
+        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
+        return showCopyButton || showFormatButton || showFullscreenButton;
+    }
+
+    get showSearchInput() {
+        return withDefault(this.props.enableSearch, this.fullScreen);
+    }
+
+    get showToolbar() {
+        const {props, showSearchInput, showAnyActionButtons, fullScreen} = this;
+        // Always show if showing searchInput - it's the only place searchInput can live.
+        if (showSearchInput) return true;
+        // Show if prop enabled and at least one action button.
+        if (props.showToolbar && showAnyActionButtons) return true;
+        // Show if fullscreen and prop not explicitly *disabled*.
+        return (fullScreen && props.showToolbar !== false);
+    }
+
     get actionButtons() {
         const {showCopyButton, showFormatButton, showFullscreenButton, fullScreen, editor} = this;
-        if (!showCopyButton && !showFormatButton && !showFullscreenButton) {
-            return null;
-        }
-
-        return [
+        return compact([
             showCopyButton ? clipboardButton({
                 text: null,
                 title: 'Copy to clipboard',
@@ -157,54 +180,7 @@ export class CodeInput extends HoistInput {
                 title: this.fullScreen ? 'Exit full screen' : 'Full screen',
                 onClick: () => this.setFullScreen(!fullScreen)
             }) : null
-        ];
-    }
-
-    get searchInput() {
-        const {enableSearch, fullScreen, query, match, matches, selectedMatches} = this;
-
-        if (!enableSearch && !fullScreen) return null;
-
-        return [
-            textInput({
-                flex: !fullScreen ? 1 : 'none',
-                width: fullScreen ? 250: null,
-                model: this,
-                bind: 'query',
-                leftIcon: Icon.search(),
-                enableClear: true,
-                commitOnChange: true,
-                onKeyDown: (e) => {
-                    if (e.key == 'Enter') {
-                        if (!e.shiftKey) {
-                            if (isNull(matches)) {
-                                this.findAll();
-                            } else {
-                                this.findNext();
-                            }
-                        } else {
-                            this.findPrevious();
-                        }
-                    }
-                }
-            }),
-            label({
-                className: 'xh-code-input__label',
-                item: (isNull(matches) || !query) ? '0 results' : `${match} / ${matches}`
-            }),
-            button({
-                icon: Icon.arrowUp(),
-                title: 'Find previous',
-                disabled: selectedMatches?.length <= 1,
-                onClick: () => isNull(matches) ? this.findAll() : this.findPrevious()
-            }),
-            button({
-                icon: Icon.arrowDown(),
-                title: 'Find next',
-                disabled: selectedMatches?.length <= 1,
-                onClick: () => isNull(matches) ? this.findAll() : this.findNext()
-            })
-        ];
+        ]);
     }
 
     constructor(props, context) {
@@ -237,18 +213,20 @@ export class CodeInput extends HoistInput {
             }
         });
 
-        this.addReaction({
-            track: () => this.query,
-            run: (query) => {
-                if (!query) {
-                    this.clearSearchResults();
-                } else {
-                    this.findAll();
-                }
-            },
-            fireImmediately: true,
-            debounce: 300
-        });
+        if (props.enableSearch) {
+            this.addReaction({
+                track: () => this.query,
+                run: (query) => {
+                    if (query) {
+                        this.findAll();
+                    } else {
+                        this.clearSearchResults();
+                    }
+                },
+                fireImmediately: true,
+                debounce: 300
+            });
+        }
     }
 
     render() {
@@ -279,6 +257,7 @@ export class CodeInput extends HoistInput {
     }
 
     renderInput(props) {
+        const {showToolbar} = this;
         return box({
             items: [
                 textArea({
@@ -286,7 +265,7 @@ export class CodeInput extends HoistInput {
                     ref: this.manageCodeEditor,
                     onChange: this.onChange
                 }),
-                this.showToolbar || this.fullScreen ? this.renderToolbar() : this.renderActionButtons()
+                showToolbar ? this.renderToolbar() : this.renderActionButtons()
             ],
             className: this.getClassName(),
             onBlur: this.onBlur,
@@ -296,34 +275,85 @@ export class CodeInput extends HoistInput {
     }
 
     renderToolbar() {
-        const {enableSearch, fullScreen} = this;
+        const {actionButtons} = this,
+            searchInput = this.renderSearchInput();
 
         return toolbar({
             className: 'xh-code-input__toolbar',
             items: [
-                fullScreen ? filler() : null,
-                ...(this.searchInput ?? []),
-                enableSearch || fullScreen ? toolbarSep() : null,
-                ...(this.actionButtons ?? [])
+                searchInput,
+                toolbarSep({omit: !searchInput || isEmpty(actionButtons)}),
+                ...actionButtons
             ]
         });
     }
 
+    renderSearchInput() {
+        const {showSearchInput, cursor, currentMatchIdx, matchCount} = this;
+        if (!showSearchInput) return null;
+
+        return fragment(
+            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
+            frame({
+                flex: 1,
+                maxWidth: 500,
+                item: textInput({
+                    width: null,
+                    flex: 1,
+                    model: this,
+                    bind: 'query',
+                    leftIcon: Icon.search(),
+                    enableClear: true,
+                    commitOnChange: true,
+                    onKeyDown: (e) => {
+                        if (e.key != 'Enter') return;
+                        if (!cursor) {
+                            this.findAll();
+                        } else if (e.shiftKey) {
+                            this.findPrevious();
+                        } else {
+                            this.findNext();
+                        }
+                    }
+                })
+            }),
+            label({
+                className: 'xh-code-input__label',
+                item: matchCount ?
+                    `${currentMatchIdx + 1} / ${matchCount}` :
+                    span({item: '0 results', className: 'xh-text-color-muted'})
+            }),
+            button({
+                icon: Icon.arrowUp(),
+                title: 'Find previous (shift+enter)',
+                disabled: !matchCount,
+                onClick: () => this.findPrevious()
+            }),
+            button({
+                icon: Icon.arrowDown(),
+                title: 'Find next (enter)',
+                disabled: !matchCount,
+                onClick: () => this.findNext()
+            })
+        );
+    }
+
     renderActionButtons() {
-        if (!this.hasFocus) {
+        const {hasFocus, actionButtons} = this;
+
+        if (!hasFocus || isEmpty(actionButtons)) {
             return null;
         }
 
         return hbox({
             className: 'xh-code-input__action-buttons',
-            items: this.actionButtons
+            items: actionButtons
         });
     }
 
     //------------------
     // Implementation
     //------------------
-
     manageCodeEditor = (textAreaComp) => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
@@ -402,85 +432,95 @@ export class CodeInput extends HoistInput {
         }
     }
 
+
+    //------------------------
+    // Local Searching
+    //------------------------
+    @action
     findAll() {
+        this.clearSearchResults();
         if (!this.query) return;
 
-        this.clearSearchResults();
         this.cursor = this.editor.getSearchCursor(this.query, 0, true);
 
-        const {cursor, editor, selectedMatches} = this;
+        const {cursor, editor} = this,
+            newMatches = [];
+
         while (cursor.findNext()) {
             const anchor = cursor.from(),
                 head = cursor.to();
-            selectedMatches.push({
+            newMatches.push({
                 anchor,
                 head,
                 textMarker: editor.markText(anchor, head, {className: 'xh-code-input--highlight'})
             });
         }
-        const matchLength = selectedMatches.length;
-        this.setMatches(matchLength);
 
-        if (matchLength) {
+        this.matches = newMatches;
+        if (newMatches.length) {
             this.findNext();
         } else {
-            this.setMatch(0);
+            this.currentMatchIdx = -1;
         }
     }
 
+    @action
     findNext() {
-        if (!this.cursor) return;
+        const {editor, query, cursor, matchCount} = this;
+        if (!cursor || !matchCount) return;
 
-        const {editor, query, cursor, selectedMatches} = this,
-            matchLength = selectedMatches.length,
-            found = cursor.findNext(query);
-        if (found) {
-            const from = cursor.from(),
-                to = cursor.to();
-            editor.scrollIntoView({from, to}, 50);
-            editor.setSelection(from, to);
-            this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
-        } else if (matchLength) {
+        if (cursor.findNext(query)) {
+            this.handleCursorMatchUpdate();
+        } else {
+            // Loop around
             this.cursor = editor.getSearchCursor(query, 0, true);
             this.findNext();
         }
     }
 
+    @action
     findPrevious() {
-        if (!this.cursor) return;
+        const {editor, query, cursor, matches, matchCount} = this;
+        if (!cursor || !matchCount) return;
 
-        const {editor, query, cursor, selectedMatches} = this,
-            matchLength = selectedMatches.length,
-            found = cursor.findPrevious(query);
-        if (found) {
-            const from = cursor.from(),
-                to = cursor.to();
-            editor.scrollIntoView({from, to}, 50);
-            editor.setSelection(from, to);
-            this.setMatch(1 + selectedMatches.findIndex(match => isEqual(match.anchor, from)));
-        } else if (matchLength) {
-            this.cursor = editor.getSearchCursor(query, selectedMatches[matchLength - 1].head, true);
+        if (cursor.findPrevious(query)) {
+            this.handleCursorMatchUpdate();
+        } else {
+            // Loop around
+            this.cursor = editor.getSearchCursor(query, matches[matchCount - 1].head, true);
             this.findPrevious();
         }
     }
 
-    preserveSearchResults() {
-        const {selectedMatches, editor} = this;
-        if (selectedMatches.length) {
-            selectedMatches.forEach(match => {
-                match.textMarker = editor.markText(match.anchor, match.head, {className: 'xh-code-input--highlight'});
-            });
-        }
+    @action
+    handleCursorMatchUpdate() {
+        const {editor, cursor, matches} = this,
+            from = cursor.from(),
+            to = cursor.to();
+        editor.scrollIntoView({from, to}, 50);
+        editor.setSelection(from, to);
+        this.currentMatchIdx = matches.findIndex(match => isEqual(match.anchor, from));
     }
 
+    preserveSearchResults() {
+        const {matches, editor} = this;
+        matches.forEach(match => {
+            match.textMarker = editor.markText(match.anchor, match.head, {className: 'xh-code-input--highlight'});
+        });
+    }
+
+    @action
     clearSearchResults() {
         this.cursor = null;
-        this.setMatches(null);
-        this.setMatch(null);
-        this.selectedMatches.forEach(match => match.textMarker.clear());
-        this.selectedMatches = [];
+        this.currentMatchIdx = -1;
+        this.matches.forEach(match => match.textMarker.clear());
+        this.matches = [];
     }
 
+
+    //------------------------
+    // Other Lifecycle
+    //------------------------
     destroy() {
         // Cleanup editor component as per CodeMirror docs.
         if (this.editor) this.editor.toTextArea();
