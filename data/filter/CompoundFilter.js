@@ -14,9 +14,9 @@ import {every, some, isEmpty, isString} from 'lodash';
  * Represents a collection of Filters operation, combined with either 'AND' or 'OR. Used by {@see FilterModel}.
  * Immutable.
  */
-export class CompositeFilter extends Filter {
+export class CompoundFilter extends Filter {
 
-    get isCompositeFilter() {return true}
+    get isCompoundFilter() {return true}
 
     /** @member {Filter[]} */
     filters;
@@ -33,24 +33,24 @@ export class CompositeFilter extends Filter {
      * @returns {boolean} - true if the given operator is valid.
      */
     static isValidOperator(op) {
-        return CompositeFilter.OPERATORS.includes(op);
+        return CompoundFilter.OPERATORS.includes(op);
     }
 
     /**
-     * Create a new CompositeFilter. Accepts a CompositeFilter configuration or a string representation
-     * generated using CompositeFilter.serialize().
+     * Create a new CompoundFilter. Accepts a CompoundFilter configuration or a string representation
+     * generated using CompoundFilter.serialize().
      *
-     * @param {(Object|string)} cfg - CompositeFilter configuration as object or serialized JSON string.
+     * @param {(Object|string)} cfg - CompoundFilter configuration as object or serialized JSON string.
      */
     static create(cfg) {
         if (isString(cfg)) {
             cfg = JSON.parse(cfg);
         }
-        return new CompositeFilter(cfg);
+        return new CompoundFilter(cfg);
     }
 
     /**
-     * @param {Object} c - CompositeFilter configuration.
+     * @param {Object} c - CompoundFilter configuration.
      * @param {Filter[]|Object[]} c.filters - collection of Filters, or configs to create.
      * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
      * @param {string} [c.group] - Optional group associated with this filter.
@@ -62,8 +62,8 @@ export class CompositeFilter extends Filter {
     }) {
         super();
 
-        throwIf(isEmpty(filters), 'CompositeFilter requires at least one filter');
-        throwIf(!CompositeFilter.isValidOperator(op), `CompositeFilter requires valid "op" value. Operator "${op}" not recognized.`);
+        throwIf(isEmpty(filters), 'CompoundFilter requires at least one filter');
+        throwIf(!CompoundFilter.isValidOperator(op), `CompoundFilter requires valid "op" value. Operator "${op}" not recognized.`);
 
         this.filters = parseFilters(filters);
         this.op = op;
@@ -100,11 +100,11 @@ export class CompositeFilter extends Filter {
     }
 
     /**
-     * @param {CompositeFilter} other
+     * @param {CompoundFilter} other
      * @returns {boolean} - true if the other filter is fully equivalent with this instance.
      */
     equals(other) {
-        return other.isCompositeFilter &&
+        return other.isCompoundFilter &&
             other.serialize() === this.serialize() &&
             other.group === this.group;
     }

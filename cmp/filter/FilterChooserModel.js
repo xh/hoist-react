@@ -7,7 +7,7 @@
 
 import {FilterChooserFieldSpec} from '@xh/hoist/cmp/filter/impl/FilterChooserFieldSpec';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, CompositeFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, CompoundFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {start, wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -186,7 +186,7 @@ export class FilterChooserModel {
     }
 
     /**
-     * Combine value filters (= | !=) on same field / operation into OR CompositeFilters
+     * Combine value filters (= | !=) on same field / operation into OR CompoundFilters
      * @return {FieldFilter[]}
      */
     combineFilters(filters) {
@@ -197,25 +197,25 @@ export class FilterChooserModel {
             return [field, op].join('|');
         });
 
-        const compositeFilters = map(groupMap, filters => {
+        const compoundFilters = map(groupMap, filters => {
             if (filters.length > 1) {
-                return new CompositeFilter({filters, op: 'OR'});
+                return new CompoundFilter({filters, op: 'OR'});
             } else {
                 return filters[0];
             }
         });
 
-        return [...compositeFilters, ...rangeFilters];
+        return [...compoundFilters, ...rangeFilters];
     }
 
     /**
-     * Split CompositeFilter into single FieldFilter.
+     * Split CompoundFilter into single FieldFilter.
      * @return {FieldFilter[]}
      */
     splitFilters(filters) {
         const ret = [];
         filters.forEach(filter => {
-            if (filter.isCompositeFilter) {
+            if (filter.isCompoundFilter) {
                 ret.push(...filter.filters);
             } else {
                 ret.push(filter);

@@ -29,7 +29,7 @@ export * from './cube/Query';
 export * from './cube/View';
 
 export * from './filter/Filter';
-export * from './filter/CompositeFilter';
+export * from './filter/CompoundFilter';
 export * from './filter/FieldFilter';
 export * from './filter/FunctionFilter';
 export * from './filter/FilterModel';

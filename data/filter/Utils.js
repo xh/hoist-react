@@ -7,7 +7,7 @@
 
 import {castArray, isEmpty, isFunction} from 'lodash';
 
-import {CompositeFilter} from './CompositeFilter';
+import {CompoundFilter} from './CompoundFilter';
 import {FieldFilter} from './FieldFilter';
 import {FunctionFilter} from './FunctionFilter';
 
@@ -19,6 +19,6 @@ export function parseFilters(filters) {
 export function parseFilter(filter) {
     if (filter.isFilter) return filter;
     if (isFunction(filter) || filter.testFn) return FunctionFilter.create(filter);
-    if (!isEmpty(filter.filters)) return CompositeFilter.create(filter);
+    if (!isEmpty(filter.filters)) return CompoundFilter.create(filter);
     return FieldFilter.create(filter);
 }
