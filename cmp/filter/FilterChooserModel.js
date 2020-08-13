@@ -112,7 +112,7 @@ export class FilterChooserModel {
                 this.persistHistory = persistWith.persistHistory ?? true;
 
                 const state = this.provider.read();
-                if (this.persistValue && state?.value) this.filterModel.setFilters(state.value);
+                if (this.persistValue && state?.value) this.setValue(state.value);
                 if (this.persistHistory && state?.history) this.history = state.history;
 
                 this.addReaction({
@@ -191,7 +191,7 @@ export class FilterChooserModel {
      * @return {FieldFilter[]}
      */
     combineFilters(filters) {
-        const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!='].includes(f.op));
+        const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!=', 'like'].includes(f.op));
 
         const groupMap = groupBy(valueFilters, f => {
             const {field, op, fieldType} = f;
