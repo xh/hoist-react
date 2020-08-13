@@ -83,8 +83,8 @@ export class Query {
 
     /** @return {string} */
     static filterAsString(filter) {
-        const {field, operator, value} = filter;
-        return `${field}${operator}[${castArray(value).join('||')}]`;
+        const {field, op, value} = filter;
+        return `${field}${op}[${castArray(value).join('||')}]`;
     }
 
     /** @returns {string} */

@@ -63,7 +63,7 @@ export class ActivityTrackingModel {
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
-    _defaultFilters = [{field: 'category', fieldType: 'string', operator: '=', value: 'App'}]
+    _defaultFilters = [{field: 'category', fieldType: 'string', op: '=', value: 'App'}]
 
     constructor() {
         this.formModel = new FormModel({
@@ -129,19 +129,19 @@ export class ActivityTrackingModel {
                 {
                     field: 'dateCreated',
                     exampleValue: Date.now(),
-                    valueParser: (v, operator) => {
+                    valueParser: (v, op) => {
                         let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
                         if (!ret.isValid()) return null;
 
                         // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(operator)) {
+                        if (['>', '<='].includes(op)) {
                             ret = moment(ret).endOf('day');
                         }
 
                         return ret.toDate();
                     },
                     valueRenderer: (v) => fmtDate(v),
-                    operators: ['>', '>=', '<', '<=']
+                    ops: ['>', '>=', '<', '<=']
                 }
             ],
             persistWith: this.persistWith

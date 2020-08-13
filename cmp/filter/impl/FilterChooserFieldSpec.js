@@ -29,7 +29,7 @@ export class FilterChooserFieldSpec {
     displayName;
 
     /** @member {string[]} */
-    operators;
+    ops;
 
     /** @member {boolean} */
     suggestValues;
@@ -89,7 +89,7 @@ export class FilterChooserFieldSpec {
      * @param {Object} c - FilterChooserFieldSpec configuration.
      * @param {Field} c.field
      * @param {string} [c.displayName]
-     * @param {string[]} [c.operators]
+     * @param {string[]} [c.ops]
      * @param {boolean} [c.suggestValues]
      * @param {[]} [c.values]
      * @param {FilterOptionValueRendererCb} [c.valueRenderer]
@@ -101,7 +101,7 @@ export class FilterChooserFieldSpec {
     constructor({
         field,
         displayName,
-        operators,
+        ops,
         suggestValues,
         values,
         valueRenderer,
@@ -111,7 +111,7 @@ export class FilterChooserFieldSpec {
     }) {
         this.field = field;
         this.displayName = displayName ?? field.displayName;
-        this.operators = this.parseOperators(operators);
+        this.ops = this.parseOperators(ops);
 
         // Enable value suggestion based on explicit config, filterType, or presence of values list.
         this.suggestValues = suggestValues ?? (this.isValueType || values);
@@ -127,10 +127,10 @@ export class FilterChooserFieldSpec {
         Object.freeze(this);
     }
 
-    renderValue(value, operator) {
+    renderValue(value, op) {
         let ret;
         if (isFunction(this.valueRenderer)) {
-            ret = this.valueRenderer(value, operator);
+            ret = this.valueRenderer(value, op);
         } else if (this.fieldType === FieldType.DATE || this.fieldType === FieldType.LOCAL_DATE) {
             ret = fmtDate(value);
         } else {
@@ -139,18 +139,18 @@ export class FilterChooserFieldSpec {
         return stripTags(ret);
     }
 
-    parseValue(value, operator) {
+    parseValue(value, op) {
         return isFunction(this.valueParser) ?
-            this.valueParser(value, operator) :
+            this.valueParser(value, op) :
             parseFieldValue(value, this.fieldType);
     }
 
     /**
-     * @param {string} operator
-     * @return {boolean} - true if the provided operator is supported by this spec.
+     * @param {string} op
+     * @return {boolean} - true if the provided op is supported by this spec.
      */
-    supportsOperator(operator) {
-        return this.operators.includes(operator);
+    supportsOperator(op) {
+        return this.ops.includes(op);
     }
 
 
@@ -165,9 +165,9 @@ export class FilterChooserFieldSpec {
         return null;
     }
 
-    parseOperators(operators) {
-        operators = operators ?? this.getDefaultOperators();
-        return operators.filter(it => FieldFilter.isValidOperator(it));
+    parseOperators(ops) {
+        ops = ops ?? this.getDefaultOperators();
+        return ops.filter(it => FieldFilter.isValidOperator(it));
     }
 
     getDefaultOperators() {

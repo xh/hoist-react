@@ -103,7 +103,7 @@ export class FilterModel {
         if (isEmpty(filters)) return () => true;
 
         const groups = values(groupBy(filters, f => {
-            return f.isFieldFilter ? f.field + '|' + f.operator : f.testFn;
+            return f.isFieldFilter ? f.field + '|' + f.op : f.testFn;
         }));
 
         return (v) => {

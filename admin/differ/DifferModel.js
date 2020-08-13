@@ -61,7 +61,7 @@ export class DifferModel  {
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
-                filter: r => r.get('status') !== 'Identical'
+                filter: {field: 'status', op: '!=', value: 'Identical'}
             },
             emptyText: 'All records match!',
             selModel: 'multiple',

@@ -62,12 +62,12 @@ function optionRenderer(opt) {
 
 const filterOption = hoistCmp.factory({
     model: false, observer: false,
-    render({displayName, operator, displayValue}) {
+    render({displayName, op, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
             items: [
                 div({className: 'name', item: displayName}),
-                div({className: 'operator', item: operator}),
+                div({className: 'operator', item: op}),
                 div({className: 'value', item: displayValue})
             ]
         });
@@ -97,13 +97,13 @@ const historyOptionTag = hoistCmp.factory({
 const suggestionOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
     render({spec}) {
-        const {displayName, operators, example} = spec;
+        const {displayName, ops, example} = spec;
         return hframe({
             className: 'xh-filter-chooser-option__suggestion',
             items: [
                 div('e.g.'),
                 div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '[ ' + operators.join(', ') + ' ]'}),
+                div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
                 div({className: 'example', item: example})
             ]
         });

@@ -23,7 +23,7 @@ export class FieldFilter extends Filter {
     /** @member {string} */
     field;
     /** @member {string} */
-    operator;
+    op;
     /** @member {(*|[])} */
     value;
     /** @member {FieldType} */
@@ -40,11 +40,11 @@ export class FieldFilter extends Filter {
     ];
 
     /**
-     * @param {string} operator
+     * @param {string} op
      * @returns {boolean} - true if the given operator is valid.
      */
-    static isValidOperator(operator) {
-        return FieldFilter.OPERATORS.includes(operator);
+    static isValidOperator(op) {
+        return FieldFilter.OPERATORS.includes(op);
     }
 
     /**
@@ -63,14 +63,14 @@ export class FieldFilter extends Filter {
     /**
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
-     * @param {string} c.operator - operator to use in filter. Must be one of the OPERATORS.
+     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|[])} [c.value] - value(s) to use with operator in filter.
      * @param {FieldType} [c.fieldType]
      * @param {string} [c.group] - Optional group associated with this filter.
      */
     constructor({
         field,
-        operator,
+        op,
         value,
         fieldType = FieldType.AUTO,
         group = null
@@ -78,10 +78,10 @@ export class FieldFilter extends Filter {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
-        throwIf(!FieldFilter.isValidOperator(operator), `FieldFilter requires valid operator. Operator "${operator}" not recognized.`);
+        throwIf(!FieldFilter.isValidOperator(op), `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`);
 
         this.field = isString(field) ? field : field.name;
-        this.operator = operator;
+        this.op = op;
         this.value = value;
         this.fieldType = fieldType;
         this.group = group;
@@ -94,8 +94,8 @@ export class FieldFilter extends Filter {
      * @returns {string}
      */
     serialize() {
-        const {field, operator, value, fieldType} = this;
-        return JSON.stringify({field, operator, value, fieldType});
+        const {field, op, value, fieldType} = this;
+        return JSON.stringify({field, op, value, fieldType});
     }
 
     /**
@@ -104,7 +104,7 @@ export class FieldFilter extends Filter {
      *      operator and comparison value(s).
      */
     test(v) {
-        const {field, operator} = this;
+        const {field, op} = this;
 
         v = this.parseValue(v.isRecord ? v.get(field) : v[field]);
 
@@ -115,7 +115,7 @@ export class FieldFilter extends Filter {
             value = this.parseValue(this.value);
         }
 
-        switch (operator) {
+        switch (op) {
             case '=':
                 return castArray(value).includes(v);
             case '!=':
@@ -131,7 +131,7 @@ export class FieldFilter extends Filter {
             case 'like':
                 return new RegExp(escapeRegExp(value), 'ig').test(v);
             default:
-                throw XH.exception(`Unknown operator: ${operator}`);
+                throw XH.exception(`Unknown operator: ${op}`);
         }
     }
 

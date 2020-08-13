@@ -141,19 +141,19 @@ export class ClientErrorsModel {
                 {
                     field: 'dateCreated',
                     exampleValue: Date.now(),
-                    valueParser: (v, operator) => {
+                    valueParser: (v, op) => {
                         let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
                         if (!ret.isValid()) return null;
 
                         // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(operator)) {
+                        if (['>', '<='].includes(op)) {
                             ret = moment(ret).endOf('day');
                         }
 
                         return ret.toDate();
                     },
                     valueRenderer: (v) => fmtDate(v),
-                    operators: ['>', '>=', '<', '<=']
+                    ops: ['>', '>=', '<', '<=']
                 }
             ],
             persistWith: this.persistWith
