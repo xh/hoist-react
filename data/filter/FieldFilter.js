@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, some, escapeRegExp, isArray, isString} from 'lodash';
+import {isString, escapeRegExp} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -24,7 +24,7 @@ export class FieldFilter extends Filter {
     field;
     /** @member {string} */
     op;
-    /** @member {(*|[])} */
+    /** @member {*} */
     value;
 
     static OPERATORS = [
@@ -62,7 +62,7 @@ export class FieldFilter extends Filter {
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
      * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
-     * @param {(*|[])} [c.value] - value(s) to use with operator in filter.
+     * @param {*} [c.value] - value to use with operator in filter.
      * @param {string} [c.group] - Optional group associated with this filter.
      */
     constructor({
@@ -96,7 +96,7 @@ export class FieldFilter extends Filter {
     /**
      * @param {(Record|Object)} v - Record or Object to evaluate
      * @returns {boolean} - true if the provided Record/Object passes this filter based on its
-     *      operator and comparison value(s).
+     *      operator and comparison value.
      */
     test(v) {
         const {field, op} = this,
@@ -109,11 +109,7 @@ export class FieldFilter extends Filter {
             // If the evaluation target is a Record, parse this filter's value according
             // to the Store's fieldType to ensure an accurate evaluation.
             const fieldType = store.getField(field).type;
-            if (isArray(this.value)) {
-                value = this.value.map(it => parseFieldValue(it, fieldType));
-            } else {
-                value = parseFieldValue(this.value, fieldType);
-            }
+            value = parseFieldValue(this.value, fieldType);
         } else {
             v = v[field];
             value = this.value;
@@ -121,9 +117,9 @@ export class FieldFilter extends Filter {
 
         switch (op) {
             case '=':
-                return castArray(value).includes(v);
+                return v === value;
             case '!=':
-                return !castArray(value).includes(v);
+                return v !== value;
             case '>':
                 return v > value;
             case '>=':
@@ -133,7 +129,7 @@ export class FieldFilter extends Filter {
             case '<=':
                 return v <= value;
             case 'like':
-                return some(castArray(value), it => new RegExp(escapeRegExp(it), 'ig').test(v));
+                return new RegExp(escapeRegExp(value), 'ig').test(v);
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }

@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {FieldFilter, FunctionFilter} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {castArray, every, isEmpty, isFunction, isEqual} from 'lodash';
+import {parseFilters} from '@xh/hoist/data';
+import {every, isEmpty, isEqual} from 'lodash';
 
 @HoistModel
 export class FilterModel {
@@ -41,7 +41,7 @@ export class FilterModel {
      * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
     setFilters(filters) {
-        this.setFiltersInternal(this.parseFilters(filters));
+        this.setFiltersInternal(parseFilters(filters));
     }
 
     /**
@@ -49,8 +49,7 @@ export class FilterModel {
      * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
     addFilters(filters) {
-        const toAdd = this
-            .parseFilters(filters)
+        const toAdd = parseFilters(filters)
             .filter(f => !this.filters.some(it => it.equals(f)));
         this.setFiltersInternal([...this.filters, ...toAdd]);
     }
@@ -60,7 +59,7 @@ export class FilterModel {
      * @param {*|*[]} filters - One or more filter instances, or configs to create them.
      */
     removeFilters(filters) {
-        const toRemove = this.parseFilters(filters);
+        const toRemove = parseFilters(filters);
         this.setFiltersInternal(
             this.filters.filter(f => !toRemove.some(it => it.equals(f)))
         );
@@ -100,17 +99,5 @@ export class FilterModel {
         const {filters} = this;
         if (isEmpty(filters)) return () => true;
         return (v) => every(filters, filter => filter.test(v));
-    }
-
-    parseFilters(filters) {
-        if (!filters) return [];
-        return castArray(filters).map(f => this.parseFilter(f));
-    }
-
-    parseFilter(filter) {
-        if (filter.isFieldFilter || filter.isFunctionFilter) return filter;
-        return (isFunction(filter) || filter.testFn) ?
-            FunctionFilter.create(filter) :
-            FieldFilter.create(filter);
     }
 }
