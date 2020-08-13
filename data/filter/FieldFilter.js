@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {FieldType, parseFieldValue} from '@xh/hoist/data';
+import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, some, escapeRegExp, isArray, isString} from 'lodash';
 
@@ -26,8 +26,6 @@ export class FieldFilter extends Filter {
     op;
     /** @member {(*|[])} */
     value;
-    /** @member {FieldType} */
-    fieldType;
 
     static OPERATORS = [
         '=',
@@ -65,14 +63,12 @@ export class FieldFilter extends Filter {
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
      * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|[])} [c.value] - value(s) to use with operator in filter.
-     * @param {FieldType} [c.fieldType]
      * @param {string} [c.group] - Optional group associated with this filter.
      */
     constructor({
         field,
         op,
         value,
-        fieldType = FieldType.AUTO,
         group = null
     }) {
         super();
@@ -83,7 +79,6 @@ export class FieldFilter extends Filter {
         this.field = isString(field) ? field : field.name;
         this.op = op;
         this.value = value;
-        this.fieldType = fieldType;
         this.group = group;
 
         Object.freeze(this);
@@ -94,8 +89,8 @@ export class FieldFilter extends Filter {
      * @returns {string}
      */
     serialize() {
-        const {field, op, value, fieldType} = this;
-        return JSON.stringify({field, op, value, fieldType});
+        const {field, op, value} = this;
+        return JSON.stringify({field, op, value});
     }
 
     /**
@@ -104,15 +99,24 @@ export class FieldFilter extends Filter {
      *      operator and comparison value(s).
      */
     test(v) {
-        const {field, op} = this;
-
-        v = this.parseValue(v.isRecord ? v.get(field) : v[field]);
+        const {field, op} = this,
+            {isRecord, store} = v;
 
         let value;
-        if (isArray(this.value)) {
-            value = this.value.map(it => this.parseValue(it));
+        if (isRecord && store) {
+            v = v.get(field);
+
+            // If the evaluation target is a Record, parse this filter's value according
+            // to the Store's fieldType to ensure an accurate evaluation.
+            const fieldType = store.getField(field).type;
+            if (isArray(this.value)) {
+                value = this.value.map(it => parseFieldValue(it, fieldType));
+            } else {
+                value = parseFieldValue(this.value, fieldType);
+            }
         } else {
-            value = this.parseValue(this.value);
+            v = v[field];
+            value = this.value;
         }
 
         switch (op) {
@@ -143,9 +147,5 @@ export class FieldFilter extends Filter {
         return other.isFieldFilter &&
             other.serialize() === this.serialize() &&
             other.group === this.group;
-    }
-
-    parseValue(value) {
-        return parseFieldValue(value, this.fieldType);
     }
 }
