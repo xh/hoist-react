@@ -63,7 +63,7 @@ export class ActivityTrackingModel {
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
-    _defaultFilters = [{field: 'category', fieldType: 'string', op: '=', value: 'App'}]
+    _defaultFilters = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
         this.formModel = new FormModel({
