@@ -26,7 +26,7 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {isValid, loadModel, warning} = model;
+            {isValid, loadModel, warning, loginInProgress} = model;
 
         return panel({
             className: 'xh-login',
@@ -70,9 +70,9 @@ export const loginPanel = hoistCmp.factory({
                         }),
                         button({
                             icon: Icon.login(),
-                            text: 'Login',
+                            text: loginInProgress ? 'Please wait...' : 'Login',
                             modifier: 'cta',
-                            disabled: !isValid,
+                            disabled: !isValid || loginInProgress,
                             onClick: () => model.submitAsync()
                         })
                     ]

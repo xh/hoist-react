@@ -415,15 +415,17 @@ class XHClass {
      *      the exception log and alert.
      */
     handleException(exception, options) {
-        return this.exceptionHandler.handleException(exception, options);
+        this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Create a new exception.
-     * @see Exception.create
+     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
+     * @param {(Object|string)} cfg - properties to add to the returned Error.
+     *      If a string, will become the 'message' value.
+     * @returns {Error}
      */
-    exception(...args) {
-        return Exception.create(...args);
+    exception(cfg) {
+        return Exception.create(cfg);
     }
 
     //---------------------------

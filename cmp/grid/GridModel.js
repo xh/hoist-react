@@ -725,6 +725,20 @@ export class GridModel {
     }
 
     /**
+     * @param {string} colId
+     * @param {boolean} visible
+     */
+    setColumnVisible(colId, visible) {
+        this.applyColumnStateChanges([{colId, hidden: !visible}]);
+    }
+
+    /** @param {string} colId */
+    showColumn(colId) {this.setColumnVisible(colId, true)}
+
+    /** @param {string} colId */
+    hideColumn(colId) {this.setColumnVisible(colId, false)}
+
+    /**
      * Determine if a leaf-level column is currently pinned.
      *
      * Call this method instead of inspecting the `pinned` property on the Column itself, as that
