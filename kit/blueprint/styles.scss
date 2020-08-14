@@ -184,6 +184,51 @@ $pt-transition-duration: 100ms !default;
 }
 
 //------------------------
+// Tooltips
+//------------------------
+.bp3-tooltip {
+  &.bp3-intent-primary {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-primary);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-primary);
+    }
+  }
+
+  &.bp3-intent-danger {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-danger);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-danger);
+    }
+  }
+
+  &.bp3-intent-success {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-success);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-success);
+    }
+  }
+
+  &.bp3-intent-warning {
+    .bp3-popover-content {
+      background-color: var(--xh-intent-warning);
+    }
+
+    .bp3-popover-arrow-fill {
+      fill: var(--xh-intent-warning);
+    }
+  }
+}
+
+//------------------------
 // Forms + Inputs
 //------------------------
 .bp3-input,
