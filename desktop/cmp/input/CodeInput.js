@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, fragment, frame, hbox, label, span} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment, frame, hbox, label, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -281,6 +281,7 @@ export class CodeInput extends HoistInput {
         return toolbar({
             className: 'xh-code-input__toolbar',
             items: [
+                filler(),
                 searchInput,
                 toolbarSep({omit: !searchInput || isEmpty(actionButtons)}),
                 ...actionButtons
