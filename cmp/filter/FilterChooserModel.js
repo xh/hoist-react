@@ -108,7 +108,7 @@ export class FilterChooserModel {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 this.persistValue = persistWith.persistValue ?? true;
-                this.persistHistory = persistWith.persistHistory ?? true;
+                this.persistHistory = persistWith.persistHistory ?? false;
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) this.setValue(state.value);
@@ -411,7 +411,11 @@ export class FilterChooserModel {
     // History
     //--------------------
     get hasHistory() {
-        return !isEmpty(this.historyOptions);
+        // Note: Short-circuiting here to disable history, as we
+        // are intending to replace with 'favorites' soon.
+        //
+        // return !isEmpty(this.historyOptions);
+        return false;
     }
 
     get historyOptions() {
