@@ -26,8 +26,8 @@
     }
   },
   "dependencies": {
-    "@blueprintjs/core": "~3.30.1",
-    "@blueprintjs/datetime": "~3.18.5",
+    "@blueprintjs/core": "~3.31.0",
+    "@blueprintjs/datetime": "~3.18.6",
     "@fortawesome/fontawesome-pro": "~5.14.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.29",
     "@fortawesome/pro-light-svg-icons": "~5.14.0",
@@ -86,7 +86,7 @@
     "stylelint-scss": "~3.18.0"
   },
   "resolutions": {
-    "jimp": "^0.14.0",
+    "jimp": "^0.16.0",
     "resize-img": "^2.0.0"
   }
 }
