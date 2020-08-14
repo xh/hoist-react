@@ -213,7 +213,7 @@ export class CodeInput extends HoistInput {
             }
         });
 
-        if (props.enableSearch) {
+        if (props.enableSearch || this.showFullscreenButton) {
             this.addReaction({
                 track: () => this.query,
                 run: (query) => {
