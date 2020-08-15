@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Filter, parseFilters} from '@xh/hoist/data';
-import {every, some, isEmpty, isString} from 'lodash';
+import {isString, isEmpty} from 'lodash';
 
 /**
  * Represents a collection of Filters operation, combined with either 'AND' or 'OR. Used by {@see FilterModel}.
@@ -16,17 +16,14 @@ import {every, some, isEmpty, isString} from 'lodash';
  */
 export class CompoundFilter extends Filter {
 
+    static OPERATORS = ['AND', 'OR'];
+
     get isCompoundFilter() {return true}
 
     /** @member {Filter[]} */
     filters;
     /** @member {string} */
     op;
-
-    static OPERATORS = [
-        'AND',
-        'OR'
-    ];
 
     /**
      * @param {string} op
@@ -55,15 +52,13 @@ export class CompoundFilter extends Filter {
      * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
      * @param {string} [c.group] - Optional group associated with this filter.
      */
-    constructor({
-        filters,
-        op,
-        group = null
-    }) {
+    constructor({filters, op, group = null}) {
         super();
 
         throwIf(isEmpty(filters), 'CompoundFilter requires at least one filter');
-        throwIf(!CompoundFilter.isValidOperator(op), `CompoundFilter requires valid "op" value. Operator "${op}" not recognized.`);
+        throwIf(!CompoundFilter.isValidOperator(op),
+            `CompoundFilter requires valid "op" value. Operator "${op}" not recognized.`
+        );
 
         this.filters = parseFilters(filters);
         this.op = op;
@@ -72,37 +67,29 @@ export class CompoundFilter extends Filter {
         Object.freeze(this);
     }
 
-    /**
-     * Generate a complete string representation suitable for consumption by parse().
-     * @returns {string}
-     */
+
+    //-----------------
+    // Overrides
+    //-----------------
     serialize() {
         const {op} = this,
             filters = this.filters.map(f => f.serialize());
         return JSON.stringify({filters, op});
     }
 
-    /**
-     * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean} - true if the provided Record/Object passes this filter based on its
-     *      operator and filters.
-     */
-    test(v) {
-        const {op} = this;
+    getTestFn(store) {
+        const {op, filters} = this,
+            tests = filters.map(f => f.getTestFn(store));
         switch (op) {
             case 'AND':
-                return every(this.filters, f => f.test(v));
+                return r => tests.every(test => test(r));
             case 'OR':
-                return some(this.filters, f => f.test(v));
+                return r => tests.some(test => test(r));
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }
     }
 
-    /**
-     * @param {CompoundFilter} other
-     * @returns {boolean} - true if the other filter is fully equivalent with this instance.
-     */
     equals(other) {
         return other.isCompoundFilter &&
             other.serialize() === this.serialize() &&

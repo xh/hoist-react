@@ -26,7 +26,8 @@ import {
     map,
     partition,
     sortBy,
-    take
+    take,
+    flatMap
 } from 'lodash';
 
 @HoistModel
@@ -185,43 +186,19 @@ export class FilterChooserModel {
         });
     }
 
-    /**
-     * Combine value filters (= | !=) on same field / operation into OR CompoundFilters
-     * @return {FieldFilter[]}
-     */
+    // Combine value filters (= | like) on same field / operation into OR CompoundFilters
     combineFilters(filters) {
-        const [valueFilters, rangeFilters] = partition(filters, f => ['=', '!=', 'like'].includes(f.op));
-
-        const groupMap = groupBy(valueFilters, f => {
-            const {field, op} = f;
-            return [field, op].join('|');
+        const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
+        return flatMap(groupMap, (filters, key) => {
+            return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
+                new CompoundFilter({filters, op: 'OR'}) :
+                filters;
         });
-
-        const compoundFilters = map(groupMap, filters => {
-            if (filters.length > 1) {
-                return new CompoundFilter({filters, op: 'OR'});
-            } else {
-                return filters[0];
-            }
-        });
-
-        return [...compoundFilters, ...rangeFilters];
     }
 
-    /**
-     * Split CompoundFilter into single FieldFilter.
-     * @return {FieldFilter[]}
-     */
+    // Split CompoundFilter into single FieldFilter.
     splitFilters(filters) {
-        const ret = [];
-        filters.forEach(filter => {
-            if (filter.isCompoundFilter) {
-                ret.push(...filter.filters);
-            } else {
-                ret.push(filter);
-            }
-        });
-        return ret;
+        return flatMap(filters, f => f.isCompoundFilter ? f.filters : f);
     }
 
     //--------------------

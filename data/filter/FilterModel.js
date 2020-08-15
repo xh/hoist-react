@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {parseFilters} from '@xh/hoist/data';
-import {every, isEmpty, isEqual} from 'lodash';
+import {isEmpty, isEqual} from 'lodash';
 
 @HoistModel
 export class FilterModel {
@@ -17,9 +17,6 @@ export class FilterModel {
     /** @member {Filter[]} */
     @observable.ref
     filters = null;
-
-    /** @member {function(v: (Record|Object)):boolean} */
-    test = null;
 
     /** @member {boolean} */
     @bindable
@@ -34,6 +31,30 @@ export class FilterModel {
     constructor(filters = [], {includeChildren = false} = {}) {
         this.includeChildren = includeChildren;
         this.setFilters(filters);
+    }
+    /**
+     * Return a function that can be used to test a record or object.
+     *
+     * @param {Store} [store] - if provided, function returned will be a test appropriate
+     *      for records of this store.  Otherwise, will be a test appropriate for anonymous
+     *      objects.
+     * @returns {function} - function taking a record or object and returning a boolean
+     */
+    getTestFn(store) {
+        const tests = this.filters.map(f => f.getTestFn(store));
+        return r => tests.every(test => test(r));
+    }
+
+    /**
+     * Apply filter to an array of records or objects
+     *
+     * @param {(Object[] | Record[])} records
+     * @return {(Object[] | Record[])} - records that pass this filter.
+     */
+    execute(records) {
+        if (isEmpty(records)) return [];
+        const testFn = this.getTestFn(records[0].store);
+        return records.filter(testFn);
     }
 
     /**
@@ -88,16 +109,6 @@ export class FilterModel {
     setFiltersInternal(filters) {
         if (!isEqual(filters, this.filters)) {
             this.filters = Object.freeze(filters);
-            this.test = this.createTestFunction();
         }
-    }
-
-    /**
-     * Creates a function that tests a Record or Object against all the Filters.
-     */
-    createTestFunction() {
-        const {filters} = this;
-        if (isEmpty(filters)) return () => true;
-        return (v) => every(filters, filter => filter.test(v));
     }
 }

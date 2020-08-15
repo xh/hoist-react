@@ -12,6 +12,13 @@ export * from './RecordAction';
 export * from './StoreSelectionModel';
 export * from './UrlStore';
 
+export * from './filter/Filter';
+export * from './filter/CompoundFilter';
+export * from './filter/FieldFilter';
+export * from './filter/FunctionFilter';
+export * from './filter/FilterModel';
+export * from './filter/Utils';
+
 export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
@@ -27,10 +34,3 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
-
-export * from './filter/Filter';
-export * from './filter/CompoundFilter';
-export * from './filter/FieldFilter';
-export * from './filter/FunctionFilter';
-export * from './filter/FilterModel';
-export * from './filter/Utils';

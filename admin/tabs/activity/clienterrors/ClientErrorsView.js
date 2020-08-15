@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
@@ -61,7 +60,6 @@ const tbar = hoistCmp.factory(
             }),
             toolbarSep(),
             gridCountLabel({unit: 'error'}),
-            storeFilterField(),
             colChooserButton(),
             exportButton()
         );

@@ -21,7 +21,6 @@ export class Filter {
      */
     group;
 
-
     /**
      * Generate a complete string representation suitable for consumption by parse().
      * @returns {string}
@@ -31,10 +30,14 @@ export class Filter {
     }
 
     /**
-     * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean} - true if the provided Record/Object passes the filter.
+     * Return a function that can be used to test a record or object.
+     *
+     * @param {Store} [store] - if provided, function returned will be a test appropriate
+     *      for records of this store.  Otherwise, will be a test appropriate for anonymous
+     *      objects.
+     * @returns {function} - function taking a record or object and returning a boolean
      */
-    test(v) {
+    getTestFn(store) {
         throw XH.exception('Not implemented.');
     }
 

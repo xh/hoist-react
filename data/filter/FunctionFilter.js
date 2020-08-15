@@ -48,22 +48,18 @@ export class FunctionFilter extends Filter {
         Object.freeze(this);
     }
 
+
+    //-----------------
+    // Overrides
+    //-----------------
     serialize() {
         throw XH.exception('FunctionFilter can not be serialized using serialize().');
     }
 
-    /**
-     * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean} - true if the provided Record/Object passes this filter's testFn.
-     */
-    test(v) {
-        return this.testFn(v);
+    getTestFn(store) {
+        return this.testFn;
     }
 
-    /**
-     * @param {FunctionFilter} other
-     * @returns {boolean} - true if the other filter is equivalent with this instance.
-     */
     equals(other) {
         return other.isFunctionFilter && this.testFn === other.testFn && other.group === this.group;
     }

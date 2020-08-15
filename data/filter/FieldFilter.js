@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isString, escapeRegExp} from 'lodash';
+import {castArray, escapeRegExp, isArray, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -61,20 +61,17 @@ export class FieldFilter extends Filter {
     /**
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
-     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
-     * @param {*} [c.value] - value to use with operator in filter.
+     * @param {string} [c.op] - operator to use in filter. Must be one of the OPERATORS.
+     * @param {(*|[])} c.value - value(s) to use with operator in filter.
      * @param {string} [c.group] - Optional group associated with this filter.
      */
-    constructor({
-        field,
-        op,
-        value,
-        group = null
-    }) {
+    constructor({field, op = '=', value, group = null}) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
-        throwIf(!FieldFilter.isValidOperator(op), `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`);
+        throwIf(!FieldFilter.isValidOperator(op),
+            `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
+        );
 
         this.field = isString(field) ? field : field.name;
         this.op = op;
@@ -84,61 +81,51 @@ export class FieldFilter extends Filter {
         Object.freeze(this);
     }
 
-    /**
-     * Generate a complete string representation suitable for consumption by parse().
-     * @returns {string}
-     */
+    //-----------------
+    // Overrides
+    //-----------------
     serialize() {
         const {field, op, value} = this;
         return JSON.stringify({field, op, value});
     }
 
-    /**
-     * @param {(Record|Object)} v - Record or Object to evaluate
-     * @returns {boolean} - true if the provided Record/Object passes this filter based on its
-     *      operator and comparison value.
-     */
-    test(v) {
-        const {field, op} = this,
-            {isRecord, store} = v;
+    getTestFn(store) {
+        let {field, value, op} = this,
+            regExps;
 
-        let value;
-        if (isRecord && store) {
-            v = v.get(field);
-
-            // If the evaluation target is a Record, parse this filter's value according
-            // to the Store's fieldType to ensure an accurate evaluation.
+        if (store) {
             const fieldType = store.getField(field).type;
-            value = parseFieldValue(this.value, fieldType);
-        } else {
-            v = v[field];
-            value = this.value;
+            value = isArray(value) ?
+                value.map(v => parseFieldValue(v, fieldType)) :
+                parseFieldValue(value, fieldType);
+        }
+        const getVal = store ? r => r.get(field) : r => r[field];
+
+        if (op === '=' || op === '!=' || op === 'like') {
+            value = castArray(value);
         }
 
         switch (op) {
             case '=':
-                return v === value;
+                return r => value.includes(getVal(r));
             case '!=':
-                return v !== value;
+                return r => !value.includes(getVal(r));
             case '>':
-                return v > value;
+                return r => getVal(r) > value;
             case '>=':
-                return v >= value;
+                return r => getVal(r) >= value;
             case '<':
-                return v < value;
+                return r => getVal(r) < value;
             case '<=':
-                return v <= value;
+                return r => getVal(r) <= value;
             case 'like':
-                return new RegExp(escapeRegExp(value), 'ig').test(v);
+                regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => regExps.some(re => re.test(getVal(r)));
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }
     }
 
-    /**
-     * @param {FieldFilter} other
-     * @returns {boolean} - true if the other filter is fully equivalent with this instance.
-     */
     equals(other) {
         return other.isFieldFilter &&
             other.serialize() === this.serialize() &&

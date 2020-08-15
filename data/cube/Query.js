@@ -5,8 +5,8 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH, ManagedSupport, managed} from '@xh/hoist/core';
-import {FilterModel} from '@xh/hoist/data';
+import {XH, ManagedSupport} from '@xh/hoist/core';
+import {parseFilters} from '../filter/Utils';
 import {castArray, find} from 'lodash';
 
 /**
@@ -19,6 +19,8 @@ export class Query {
     fields;
     /** @member {CubeField[]} */
     dimensions;
+    /** @member {Filter[]} */
+    filters;
     /** @member {boolean} */
     includeRoot;
     /** @member {boolean} */
@@ -26,13 +28,6 @@ export class Query {
     /** @member {Cube} */
     cube;
 
-    @managed
-    _filterModel;
-
-    /** @member {Filter[]} */
-    get filters() {
-        return this._filterModel.filters;
-    }
 
     /**
      * @param {Object} c - Query configuration.
@@ -63,8 +58,9 @@ export class Query {
         this.dimensions = this.parseDimensions(dimensions);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
+        this.filters = parseFilters(filters);
 
-        this._filterModel = new FilterModel(filters);
+        this._testFn = this.createTestFn();
     }
 
     clone(overrides) {
@@ -104,7 +100,7 @@ export class Query {
      * @returns {boolean}
      */
     test(record) {
-        return this._filterModel.test(record);
+        return this._testFn(record);
     }
 
     //------------------------
@@ -125,5 +121,10 @@ export class Query {
             }
             return field;
         });
+    }
+
+    createTestFn() {
+        const tests = this.filters.map(it => it.getTestFn(this.cube.store));
+        return r => tests.every(test => test(r));
     }
 }

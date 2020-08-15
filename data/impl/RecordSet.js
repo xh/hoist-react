@@ -101,7 +101,8 @@ export class RecordSet {
 
     withFilterModel(filterModel) {
         if (!filterModel) return this;
-        const {test, includeChildren} = filterModel;
+        const {includeChildren} = filterModel;
+        const test = filterModel.getTestFn(this.store);
 
         const passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
