@@ -89,13 +89,9 @@ export class Query {
 
     /** @returns {string} */
     filtersAsString() {
-        const {filters} = this;
+        const {filter} = this;
         let ret = 'root';
-        if (filters) {
-            filters.forEach(it => {
-                ret += '>>' + Query.filterAsString(it);
-            });
-        }
+        if (filter) ret += '>>' + Query.filterAsString(filter);
         return ret;
     }
 
