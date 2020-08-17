@@ -167,7 +167,7 @@ export class FilterChooserFieldSpec {
 
     parseOperators(ops) {
         ops = ops ?? this.getDefaultOperators();
-        return ops.filter(it => FieldFilter.isValidOperator(it));
+        return ops.filter(it => FieldFilter.OPERATORS.includes(it));
     }
 
     getDefaultOperators() {

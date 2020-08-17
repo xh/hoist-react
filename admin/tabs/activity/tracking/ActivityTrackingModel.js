@@ -237,7 +237,7 @@ export class ActivityTrackingModel {
         const {cube, gridModel, chartsModel, dimensions} = this,
             data = cube.executeQuery({
                 dimensions,
-                filter: this.filterChooserModel.filter,
+                filter: this.filterChooserModel.value,
                 includeLeaves: true
             });
 

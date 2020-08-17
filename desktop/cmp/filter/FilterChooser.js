@@ -20,7 +20,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...rest}) {
-        const {inputRef, options} = model;
+        const {inputRef, selectOptions} = model;
         return select({
             className,
             bind: 'selectValue',
@@ -29,7 +29,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             enableClear: true,
             hideDropdownIndicator: true,
             queryFn: (q) => model.queryAsync(q),
-            options,
+            options: selectOptions,
             optionRenderer,
             rsOptions: {
                 defaultOptions: [],

@@ -113,14 +113,11 @@ export class FilterChooserModel {
 
         this.addReaction({
             track: () => this.store.lastUpdated,
-            run: () => this.updateFieldSpecs()
-        });
-        this.addReaction({
-            track: () => this.fieldSpecs,
-            run: () => this.updateFieldSpecs
+            run: () => this.updateFieldSpecs(),
+            fireImmediately: true
         });
 
-        this.value = this.setValue(initialValue);
+        this.setValue(initialValue);
     }
 
     /**
@@ -139,6 +136,7 @@ export class FilterChooserModel {
             value = parseFilter(value);
             const fieldFilters = this.toFieldFilters(value),
                 options = this.getOptionsForFilters(fieldFilters);
+
             this.selectOptions = !isEmpty(options) ? options : null;
             this.selectValue = sortBy(fieldFilters.map(f => f.serialize()), f => {
                 const idx = this.selectValue?.indexOf(f);
@@ -164,7 +162,7 @@ export class FilterChooserModel {
         });
 
         // Re-hydrate and round-trip selected filters through main value setter above.
-        this.setValue(this.recombineFilters(filters.map(f => FieldFilter.create(f))));
+        this.setValue(this.recombineOrFilters(filters.map(f => FieldFilter.create(f))));
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
@@ -203,7 +201,7 @@ export class FilterChooserModel {
         return flatMap(ret, (f) => {
             return isArray(f.value) ?
                 f.value.map(value => FieldFilter.create({...f, value})) :
-                f.value;
+                f;
         });
     }
 
