@@ -8,7 +8,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {parseFilter} from './Utils';
 import {Filter} from './Filter';
-import {compact, isString, isArray} from 'lodash';
+import {compact, isString, isArray, isEmpty} from 'lodash';
 
 /**
  * Represents a collection of Filters combined with either 'AND' or 'OR.
@@ -37,7 +37,7 @@ export class CompoundFilter extends Filter {
         if (isArray(cfg)) {
             cfg = {filters: cfg};
         }
-        return new CompoundFilter(cfg);
+        return !isEmpty(cfg.filters) ? new CompoundFilter(cfg) : null;
     }
 
     /**
@@ -66,8 +66,10 @@ export class CompoundFilter extends Filter {
     }
 
     getTestFn(store) {
-        const {op, filters} = this,
-            tests = filters.map(f => f.getTestFn(store));
+        const {op, filters} = this;
+        if (isEmpty(filters)) return () => true;
+
+        const tests = filters.map(f => f.getTestFn(store));
         return op === 'AND' ?
             r => tests.every(test => test(r)) :
             r => tests.some(test => test(r));

@@ -25,6 +25,6 @@ export function parseFilter(filter) {
     if (isArray(filter) || filter.filters) return CompoundFilter.create(filter);
     if (filter.field) return FieldFilter.create(filter);
 
-    console.error('Unable to identify filter');
+    console.error('Unable to identify filter:', filter);
     return null;
 }
