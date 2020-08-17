@@ -45,10 +45,10 @@ export class FieldFilter extends Filter {
     /**
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
+     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|[])} c.value - value(s) to use with operator in filter.
-     * @param {string} [c.op] - operator to use in filter. Must be one of the OPERATORS.
      */
-    constructor({field, value, op = '='}) {
+    constructor({field, op, value}) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
@@ -57,8 +57,8 @@ export class FieldFilter extends Filter {
         );
 
         this.field = isString(field) ? field : field.name;
-        this.value = value;
         this.op = op;
+        this.value = value;
 
         Object.freeze(this);
     }
@@ -72,7 +72,7 @@ export class FieldFilter extends Filter {
     }
 
     getTestFn(store) {
-        let {field, value, op} = this,
+        let {field, op, value} = this,
             regExps;
 
         if (store) {

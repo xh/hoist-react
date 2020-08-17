@@ -192,7 +192,7 @@ export class View {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new FieldFilter({field: dimName, value: val});
+            const filter = new FieldFilter({field: dimName, op: '=', value: val});
             const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
