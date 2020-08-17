@@ -532,7 +532,7 @@ export class Store {
     /**
      * Set a filter on this store.
      *
-     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     * @param {(Filter|*|*[])} filter - one or more filters or configs to create one.  If an
      *      array, a single 'AND' filter will be created.
      */
     @action

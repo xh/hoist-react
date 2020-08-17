@@ -202,23 +202,23 @@ export class View {
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         if (!t) return [];
-        const {_leafMap} = this;
+        const {_leafMap, query} = this;
 
         // 1) Simple case: no filter
-        if (isEmpty(this.query.filter)) {
+        if (!query.filter) {
             return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
         }
 
         // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(rec => this.query.test(rec))) return false;
+        if (t.add?.some(rec => query.test(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
-                const passes = this.query.test(r),
+                const passes = query.test(r),
                     present = _leafMap.has(r.id);
 
                 if (passes !== present) return false;

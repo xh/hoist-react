@@ -55,7 +55,7 @@ export class Query {
         includeRoot = false,
         includeLeaves = false
     }) {
-        apiRemoved(this.filters, 'filters', 'use filter instead.');
+        apiRemoved(this.filters, 'filters', 'Use filter instead.');
 
         this.cube = cube;
         this.fields = this.parseFields(fields);

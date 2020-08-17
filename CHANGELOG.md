@@ -19,6 +19,7 @@
   convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
   show or hide a single column.
 * By default, elided Grid column headers now show the full `headerName` value in a tooltip
+* `LocalDate` has gained new static factories `tommorrow()` and `yesterday()`.
 
 ### 💥 Breaking Changes
 
@@ -35,8 +36,10 @@
    * The `filters/setFilters` property on `Query` has been changed to `filter/setFilter`. In most
    case apps should not need to change anything other than the name of this property-- the new
    property will continue to support array representations of multiple filters.
-   * `Store` has gained a new property `filterIncludesChildren`.  This replaces the functionality
+   * `Store` has gained a new property `filterIncludesChildren` to replace the functionality
     previously provided by `StoreFilter.includesChildren`.
+   * `StoreFilterField.filterOptions` has been removed.  Set `filterIncludesChildren` directly
+   on the store instead.
 
 ### ✨ Style
 
