@@ -156,7 +156,7 @@ export class FilterChooserModel {
     //--------------------
     @action
     setSelectValue(selectValue) {
-        // Seperate suggestions from actual selected filters.
+        // Separate suggestions from actual selected filters.
         const [suggestions, filters] = partition(compact(flatten(selectValue)), v => {
             return v.startsWith(FilterChooserModel.SUGGEST_PREFIX);
         });
@@ -339,38 +339,27 @@ export class FilterChooserModel {
     getOptionsForRangeQuery(queryField, queryValue, queryOp) {
         if (!queryOp || isEmpty(queryValue)) return [];
 
-        const op = queryOp,
-            options = [];
-
+        const op = queryOp;
         const testField = (s) => this.getRegExp(queryField).test(s);
         const specs = this.fieldSpecs.filter(spec => {
             return spec.isRangeType && spec.supportsOperator(op) && testField(spec.displayName);
         });
 
-        specs.forEach(spec => {
+        return flatMap(specs, spec => {
             const value = spec.parseValue(queryValue, op);
-            if (!isNil(value) && !isNaN(value)) {
-                options.push(this.createOption({spec, value, op}));
-            }
+            return !isNil(value) && !isNaN(value) ? this.createOption({spec, value, op}) : [];
         });
-
-        return options;
     }
 
     /** @param {FieldFilter[]} filters */
     getOptionsForFilters(filters) {
-        const options = [];
-
-        filters.forEach(filter => {
+        return flatMap(filters, filter => {
             const spec = this.getFieldSpec(filter.field);
-            if (spec) {
-                const {op} = filter,
-                    value = parseFieldValue(filter.value, spec.fieldType, null);
-                options.push(this.createOption({spec, value, op, filter}));
-            }
+            if (!spec) return [];
+            const {op} = filter,
+                value = parseFieldValue(filter.value, spec.fieldType, null);
+            return this.createOption({spec, value, op, filter});
         });
-
-        return options;
     }
 
     createOption({spec, value, op, filter}) {
@@ -445,28 +434,22 @@ export class FilterChooserModel {
     // Normalize provided raw fieldSpecs / field name strings into partial configs ready for use
     // in constructing FilterChooserFieldSpec instances when Store data is ready / updated.
     parseRawFieldSpecs(rawSpecs) {
-        const {store} = this,
-            ret = [];
+        const {store} = this;
 
         // If no specs provided, include all Store Fields.
         if (isEmpty(rawSpecs)) rawSpecs = store.fieldNames;
 
-        rawSpecs.forEach(spec => {
+        return flatMap(rawSpecs, spec => {
             if (isString(spec)) spec = {field: spec};
             const storeField = store.getField(spec.field);
 
             if (!storeField) {
                 console.warn(`Field '${spec.field}' not found in linked Store - will be ignored.`);
-                return;
+                return [];
             }
 
-            ret.push({
-                ...spec,
-                field: storeField
-            });
+            return {...spec, field: storeField};
         });
-
-        return ret;
     }
 
     getFieldSpec(fieldName) {
