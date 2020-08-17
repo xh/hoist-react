@@ -272,7 +272,7 @@ export class ActivityTrackingModel {
             startDate: this.getDefaultStartDate(),
             endDate: this.getDefaultEndDate()
         });
-        filterChooserModel.setFilter(_defaultFilter);
+        filterChooserModel.setValue(_defaultFilter);
         dimChooserModel.setValue(_defaultDims);
     }
 
