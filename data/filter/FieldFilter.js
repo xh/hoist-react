@@ -13,7 +13,7 @@ import {castArray, escapeRegExp, isArray, isString} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation on a predefined Field. Used by {@see FilterModel}.
+ * Represents a filter operation on a predefined Field.
  * Immutable.
  */
 export class FieldFilter extends Filter {
@@ -27,23 +27,8 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = [
-        '=',
-        '!=',
-        '>',
-        '>=',
-        '<',
-        '<=',
-        'like'
-    ];
-
-    /**
-     * @param {string} op
-     * @returns {boolean} - true if the given operator is valid.
-     */
-    static isValidOperator(op) {
-        return FieldFilter.OPERATORS.includes(op);
-    }
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like'];
 
     /**
      * Create a new FieldFilter. Accepts a FieldFilter configuration or a string representation
@@ -61,22 +46,25 @@ export class FieldFilter extends Filter {
     /**
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
-     * @param {string} [c.op] - operator to use in filter. Must be one of the OPERATORS.
-     * @param {(*|[])} c.value - value(s) to use with operator in filter.
-     * @param {string} [c.group] - Optional group associated with this filter.
+     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
+     * @param {(*|[])} c.value - value(s) to use with operator in filter. In the case of the
+     *      '=', '!=', 'like' may be specified as an array of values.  In this case, the filter will
+     *      implement an implicit 'OR' for '=' and 'like' and an implicit 'AND' for '!='.
      */
-    constructor({field, op = '=', value, group = null}) {
+    constructor({field, op, value}) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
-        throwIf(!FieldFilter.isValidOperator(op),
+        throwIf(!FieldFilter.OPERATORS.includes(op),
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
+        );
+        throwIf(!FieldFilter.ARRAY_OPERATORS.includes(op) && isArray(value),
+            `Operator "${op}" does not support multiple values.  Use a CompoundFilter instead.`
         );
 
         this.field = isString(field) ? field : field.name;
         this.op = op;
-        this.value = value;
-        this.group = group;
+        this.value = isArray(value) ? [...value] : value;
 
         Object.freeze(this);
     }
@@ -90,7 +78,7 @@ export class FieldFilter extends Filter {
     }
 
     getTestFn(store) {
-        let {field, value, op} = this,
+        let {field, op, value} = this,
             regExps;
 
         if (store) {
@@ -101,7 +89,7 @@ export class FieldFilter extends Filter {
         }
         const getVal = store ? r => r.get(field) : r => r[field];
 
-        if (op === '=' || op === '!=' || op === 'like') {
+        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             value = castArray(value);
         }
 
@@ -127,8 +115,6 @@ export class FieldFilter extends Filter {
     }
 
     equals(other) {
-        return other.isFieldFilter &&
-            other.serialize() === this.serialize() &&
-            other.group === this.group;
+        return other.isFieldFilter && other.serialize() === this.serialize();
     }
 }

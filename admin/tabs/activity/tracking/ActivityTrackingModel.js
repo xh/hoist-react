@@ -11,7 +11,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {Cube, FilterModel} from '@xh/hoist/data';
+import {Cube} from '@xh/hoist/data';
 import {fmtDate, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -36,8 +36,6 @@ export class ActivityTrackingModel {
     @managed dimChooserModel;
     /** @member {Cube} */
     @managed cube;
-    /** @member {FilterModel} */
-    @managed filterModel;
     /** @member {FilterChooserModel} */
     @managed filterChooserModel;
     /** @member {GridModel} */
@@ -63,7 +61,7 @@ export class ActivityTrackingModel {
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
-    _defaultFilters = [{field: 'category', value: 'App'}]
+    _defaultFilter = [{field: 'category', op: '=', value: 'App'}]
 
     constructor() {
         this.formModel = new FormModel({
@@ -98,10 +96,8 @@ export class ActivityTrackingModel {
             initialValue: this._defaultDims
         });
 
-        this.filterModel = new FilterModel(this._defaultFilters);
-
         this.filterChooserModel = new FilterChooserModel({
-            filterModel: this.filterModel,
+            initialValue: this._defaultFilter,
             store: this.cube.store,
             fieldSpecs: [
                 'category',
@@ -210,7 +206,7 @@ export class ActivityTrackingModel {
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.filterModel.filters, this.dimensions],
+            track: () => [this.cube.records, this.filterChooserModel.value, this.dimensions],
             run: () => this.loadGridAndChartAsync(),
             debounce: 100
         });
@@ -241,7 +237,7 @@ export class ActivityTrackingModel {
         const {cube, gridModel, chartsModel, dimensions} = this,
             data = cube.executeQuery({
                 dimensions,
-                filters: this.filterModel.filters,
+                filter: this.filterChooserModel.value,
                 includeLeaves: true
             });
 
@@ -271,12 +267,12 @@ export class ActivityTrackingModel {
 
     @action
     resetQuery() {
-        const {formModel, filterModel, dimChooserModel, _defaultDims, _defaultFilters} = this;
+        const {formModel, filterChooserModel, dimChooserModel, _defaultDims, _defaultFilter} = this;
         formModel.init({
             startDate: this.getDefaultStartDate(),
             endDate: this.getDefaultEndDate()
         });
-        filterModel.setFilters(_defaultFilters);
+        filterChooserModel.setValue(_defaultFilter);
         dimChooserModel.setValue(_defaultDims);
     }
 

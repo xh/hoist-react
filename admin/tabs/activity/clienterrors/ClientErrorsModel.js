@@ -9,7 +9,6 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {FilterModel} from '@xh/hoist/data';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
@@ -27,11 +26,9 @@ export class ClientErrorsModel {
     @bindable.ref endDate;
 
     /** @member {GridModel} */
-    @managed gridModel
+    @managed gridModel;
     /** @member {FormModel} */
     @managed formModel;
-    /** @member {FilterModel} */
-    @managed filterModel;
     /** @member {FilterChooserModel} */
     @managed filterChooserModel;
 
@@ -44,14 +41,11 @@ export class ClientErrorsModel {
         this.startDate = this.getDefaultStartDate();
         this.endDate = this.getDefaultEndDate();
 
-        this.filterModel = new FilterModel();
-
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
             enableColChooser: true,
             enableExport: true,
             store: {
-                filterModel: this.filterModel,
                 fields: [
                     {name: 'username', type: 'string'},
                     {name: 'browser', type: 'string'},
@@ -117,7 +111,6 @@ export class ClientErrorsModel {
         });
 
         this.filterChooserModel = new FilterChooserModel({
-            filterModel: this.filterModel,
             store: this.gridModel.store,
             fieldSpecs: [
                 'username',
@@ -174,13 +167,19 @@ export class ClientErrorsModel {
             track: () => this.gridModel.selectedRecord,
             run: (detailRec) => this.showEntryDetail(detailRec)
         });
+
+        this.addReaction({
+            track: () => this.filterChooserModel.value,
+            run: (v) => this.gridModel.setFilter(v),
+            fireImmediately: true
+        });
     }
 
     @action
     resetQuery() {
         this.startDate = this.getDefaultStartDate();
         this.endDate = this.getDefaultEndDate();
-        this.filterModel.clear();
+        this.filterChooserModel.setValue(null);
     }
 
     async doLoadAsync(loadSpec) {

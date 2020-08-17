@@ -7,38 +7,33 @@
 
 import {FilterChooserFieldSpec} from '@xh/hoist/cmp/filter/impl/FilterChooserFieldSpec';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, CompoundFilter, FilterModel, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, parseFilter, parseFieldValue} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
-import {start, wait} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
-    differenceWith,
     escapeRegExp,
     flatten,
     groupBy,
     isEmpty,
-    isEqual,
     isNaN,
     isNil,
     isString,
-    map,
     partition,
     sortBy,
-    take,
-    flatMap
+    flatMap,
+    forEach,
+    isArray
 } from 'lodash';
 
 @HoistModel
 export class FilterChooserModel {
 
+    /** @member Filter */
     @observable.ref value;
-    @observable.ref history;
-    @observable.ref options;
 
-    /** @member {FilterModel} */
-    filterModel;
     /** @member {Store} */
     store;
 
@@ -47,14 +42,14 @@ export class FilterChooserModel {
 
     /** @member {number} */
     maxResults;
-    /** @member {number} */
-    maxHistoryLength;
 
     /** @member {PersistenceProvider} */
     @managed provider;
     persistValue = false;
-    persistHistory = false;
 
+    // Implementation fields for Control
+    @observable.ref selectOptions;
+    @observable.ref selectValue;
     inputRef = createObservableRef();
 
     /** @member {RawFilterChooserFieldSpec[]} */
@@ -67,53 +62,43 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {(FilterModel|Object)} c.filterModel - FilterModel, or config to create one.
+     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
+     *      shown in this field. Currently this control only edits and creates a flat collection of
+     *      FilterFields, to be 'AND' together.
      * @param {Store} c.store - Store to use for Field resolution as well as extraction of available
      *      Record values for field-specific suggestions. Note that configuring the store here does
-     *      NOT cause that store to be automatically filtered or otherwise bound to the FilterModel.
+     *      NOT cause that store to be automatically filtered or otherwise bound to the Filter.
      * @param {(string[]|FilterChooserFieldSpecConfig[])} [c.fieldSpecs] - specifies the Store
      *      Fields this model will support for filtering and customizes how their available values
      *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
      *      objects to select and customize fields available for filtering. Optional - if not
      *      provided, all Store Fields will be included with options defaulted based on their type.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
-     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing history persistence
-     * @param {number} [c.maxHistoryLength] - number of recent selections to maintain in the user's
-     *      history (maintained automatically by the control on a LRU basis).
+     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence
      */
     constructor({
-        filterModel,
+        initialValue = null,
         store,
         fieldSpecs,
         maxResults = 10,
-        persistWith,
-        maxHistoryLength = 10
+        persistWith
     }) {
-        throwIf(!filterModel, 'Must provide a FilterModel (or a config to create one).');
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
 
-        this.filterModel = filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
+        this.initialValue = initialValue;
         this.store = store;
         this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
 
-        this.addReaction({
-            track: () => this.store.lastUpdated,
-            run: () => this.updateFieldSpecs()
-        });
-
         this.maxResults = maxResults;
-        this.maxHistoryLength = maxHistoryLength;
 
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 this.persistValue = persistWith.persistValue ?? true;
-                this.persistHistory = persistWith.persistHistory ?? false;
 
                 const state = this.provider.read();
-                if (this.persistValue && state?.value) this.setValue(state.value);
-                if (this.persistHistory && state?.history) this.history = state.history;
+                if (this.persistValue && state?.value) initialValue = state.value;
 
                 this.addReaction({
                     track: () => this.persistState,
@@ -127,22 +112,109 @@ export class FilterChooserModel {
         }
 
         this.addReaction({
-            track: () => [this.filterModel.filters, this.fieldSpecs],
-            run: () => this.syncFromFilterModel()
+            track: () => this.store.lastUpdated,
+            run: () => this.updateFieldSpecs(),
+            fireImmediately: true
         });
+
+        this.setValue(initialValue);
     }
 
+    /**
+     * Set the value displayed by this control.
+     *
+     * @param {(Filter|* |[])} value -  Configuration for a filter appropriate to be
+     *      shown in this field.
+     *
+     * Currently this control only supports a flat collection of FilterFields, to
+     * be 'AND'ed together. Filter Values that cannot be parsed, or are not supported
+     * will cause the control to be cleared.
+     */
     @action
     setValue(value) {
-        const [suggestions, filters] = partition(compact(flatten(value)), v => {
+        try {
+            value = parseFilter(value);
+            const fieldFilters = this.toFieldFilters(value),
+                options = this.getOptionsForFilters(fieldFilters);
+
+            this.selectOptions = !isEmpty(options) ? options : null;
+            this.selectValue = sortBy(fieldFilters.map(f => f.serialize()), f => {
+                const idx = this.selectValue?.indexOf(f);
+                return isFinite(idx) && idx > -1 ? idx : fieldFilters.length;
+            });
+            this.value = value;
+        } catch (e) {
+            console.error('Failed to set value on FilterChoooserModel', e);
+            this.value = null;
+            this.selectOptions = this.getOptionsForFilters([]);
+            this.selectValue = [];
+        }
+    }
+
+    //--------------------
+    // Value Handling/Processing
+    //--------------------
+    @action
+    setSelectValue(selectValue) {
+        // Seperate suggestions from actual selected filters.
+        const [suggestions, filters] = partition(compact(flatten(selectValue)), v => {
             return v.startsWith(FilterChooserModel.SUGGEST_PREFIX);
         });
 
-        this.value = filters;
-        this.syncToFilterModel();
-
+        // Re-hydrate and round-trip selected filters through main value setter above.
+        this.setValue(this.recombineOrFilters(filters.map(f => FieldFilter.create(f))));
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
+
+    // Transfer the value filter to the canonical set of individual field filters for display.
+    // Implicit 'ORs' on '=' and 'like' will be split.
+    toFieldFilters(filter) {
+        if (!filter) return [];
+
+        let ret;
+        const unsupported = (s) => {
+            throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
+        };
+
+        // 1) Flatten to FieldFilters.
+        if (filter.isCompoundFilter) {
+            if (filter.operator === 'OR') unsupported('OR not supported.');
+            ret = filter.filters;
+        } else  {
+            ret = [filter];
+        }
+        ret.forEach(f => {
+            if (!f.isFieldFilter) unsupported('Filters must be FieldFilters.');
+        });
+
+        // 2) Recognize unsupported ANDing of '=' and 'like' for a given Field.
+        // FilterChooser treats multiple values for these operators as 'OR' -- see (3) below.
+        const groupMap = groupBy(ret, ({op, field}) => [op, field].join('|'));
+        forEach(groupMap, (filters, key) => {
+            if (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) {
+                unsupported('Multiple filters cannot be provided with "like" or "=" operator');
+            }
+        });
+
+        // 3) Finally unroll all multi-value filters to one value per filter.
+        // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
+        return flatMap(ret, (f) => {
+            return isArray(f.value) ?
+                f.value.map(value => FieldFilter.create({...f, value})) :
+                f;
+        });
+    }
+
+    // Recombine value filters on '=' and 'like' on same field into single FieldFilter
+    recombineOrFilters(filters) {
+        const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
+        return flatMap(groupMap, (filters, key) => {
+            return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
+                new FieldFilter({...filters[0], value: filters.map(it => it.value)}) :
+                filters;
+        });
+    }
+
 
     //--------------------
     // Autocomplete
@@ -162,44 +234,6 @@ export class FilterChooserModel {
         });
     }
 
-    //--------------------
-    // Filter Model
-    //--------------------
-    syncToFilterModel() {
-        const filters = this.value?.map(it => FieldFilter.create(it)) ?? [],
-            combinedFilters = this.combineFilters(filters);
-
-        this.filterModel.setFilters(combinedFilters);
-        this.addToHistory(filters);
-        start(() => this.syncFromFilterModel());
-    }
-
-    @action
-    syncFromFilterModel() {
-        const filters = this.splitFilters(this.filterModel.filters),
-            options = this.getOptionsForFilters(filters);
-
-        this.options = options.length ? options : null;
-        this.value = sortBy(filters.map(f => f.serialize()), f => {
-            const idx = this.value?.indexOf(f);
-            return isFinite(idx) && idx > -1 ? idx : filters.length;
-        });
-    }
-
-    // Combine value filters (= | like) on same field / operation into OR CompoundFilters
-    combineFilters(filters) {
-        const groupMap = groupBy(filters, ({op, field}) => [op, field].join('|'));
-        return flatMap(groupMap, (filters, key) => {
-            return (filters.length > 1 && (key.startsWith('=') || key.startsWith('like'))) ?
-                new CompoundFilter({filters, op: 'OR'}) :
-                filters;
-        });
-    }
-
-    // Split CompoundFilter into single FieldFilter.
-    splitFilters(filters) {
-        return flatMap(filters, f => f.isCompoundFilter ? f.filters : f);
-    }
 
     //--------------------
     // Querying
@@ -384,54 +418,12 @@ export class FilterChooserModel {
         });
     }
 
-    //--------------------
-    // History
-    //--------------------
-    get hasHistory() {
-        // Note: Short-circuiting here to disable history, as we
-        // are intending to replace with 'favorites' soon.
-        //
-        // return !isEmpty(this.historyOptions);
-        return false;
-    }
-
-    get historyOptions() {
-        if (!isEmpty(this.value) || isEmpty(this.history)) return [];
-
-        return this.history.map(entry => {
-            const labels = map(entry, 'label'),
-                value = map(entry, 'value');
-
-            return {isHistory: true, value, labels};
-        });
-    }
-
-    @action
-    addToHistory(filters) {
-        if (isEmpty(filters)) return;
-
-        // Convert filters to history items
-        const items = this.getHistoryValue(filters);
-
-        // Remove, add to front, and truncate
-        let {history, maxHistoryLength} = this;
-        history = differenceWith(history, [items], isEqual);
-        this.history = take([items, ...history], maxHistoryLength);
-    }
-
-    getHistoryValue(filters) {
-        return this.getOptionsForFilters(filters).map(({value, label}) => {
-            return {value, label};
-        });
-    }
-
     //-------------------------
     // Persistence handling
     //-------------------------
     get persistState() {
         const ret = {};
         if (this.persistValue) ret.value = this.value;
-        if (this.persistHistory) ret.history = this.history;
         return ret;
     }
 
@@ -535,5 +527,4 @@ export class FilterChooserModel {
  * @typedef {Object} FilterChooserPersistOptions
  * @extends PersistOptions
  * @property {boolean} [persistValue] - true (default) to include value (serialized filters)
- * @property {boolean} [persistHistory] - true (default) to include history
  */

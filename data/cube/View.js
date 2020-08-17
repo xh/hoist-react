@@ -77,7 +77,7 @@ export class View {
 
     /** @return {boolean} */
     get isFiltered() {
-        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filters);
+        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filter);
     }
 
     /** Stop receiving live updates into this view when the linked Cube data changes. */
@@ -192,7 +192,7 @@ export class View {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const filter = new FieldFilter({field: dimName, value: val});
+            const filter = new FieldFilter({field: dimName, op: '=', value: val});
             const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
@@ -204,12 +204,12 @@ export class View {
         if (!t) return [];
         const {_leafMap} = this;
 
-        // 1) Simple case: no filters
-        if (isEmpty(this.query.filters)) {
+        // 1) Simple case: no filter
+        if (isEmpty(this.query.filter)) {
             return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
         }
 
-        // 2) Examine, accounting for filters
+        // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
         if (t.add?.some(rec => this.query.test(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;

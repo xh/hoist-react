@@ -551,6 +551,12 @@ export class GridModel {
         this.store.clear();
     }
 
+    /** Filter the underlying store.*/
+    setFilter(filter) {
+        this.store.setFilter(filter);
+    }
+
+
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {

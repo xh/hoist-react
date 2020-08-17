@@ -6,8 +6,9 @@
  */
 
 import {XH, ManagedSupport} from '@xh/hoist/core';
-import {parseFilters} from '../filter/Utils';
+import {parseFilter} from '../filter/Utils';
 import {castArray, find} from 'lodash';
+import {apiRemoved} from '@xh/hoist/utils/js';
 
 /**
  *  Specification used to define the shape of the data returned by a Cube.
@@ -19,8 +20,8 @@ export class Query {
     fields;
     /** @member {CubeField[]} */
     dimensions;
-    /** @member {Filter[]} */
-    filters;
+    /** @member {Filter} */
+    filter;
     /** @member {boolean} */
     includeRoot;
     /** @member {boolean} */
@@ -37,7 +38,8 @@ export class Query {
      *      from the source Cube, otherwise supply a subset to optimize aggregation performance.
      * @param {string[]} [c.dimensions] - field names to group on. Any fields provided must also be
      *      in fields config, above. If none given the resulting data will not be grouped.
-     * @param {(Filter[]|Object[])} [c.filters] - Filters (or configs for such) to be applied
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
      * @param {boolean} [c.includeRoot] - true to include a synthetic root node in the return with
      *      grand total aggregate values.
      * @param {boolean} [c.includeLeaves] - true to include leaf nodes in return.
@@ -49,25 +51,27 @@ export class Query {
         cube,
         fields,
         dimensions,
-        filters = null,
+        filter = null,
         includeRoot = false,
         includeLeaves = false
     }) {
+        apiRemoved(this.filters, 'filters', 'use filter instead.');
+
         this.cube = cube;
         this.fields = this.parseFields(fields);
         this.dimensions = this.parseDimensions(dimensions);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
-        this.filters = parseFilters(filters);
+        this.filter = parseFilter(filter);
 
-        this._testFn = this.createTestFn();
+        this._testFn = this.filter?.getTestFn(this.cube.store) ?? null;
     }
 
     clone(overrides) {
         const conf = {
             dimensions: this.dimensions?.map(d => d.name),
             fields: this.fields?.map(f => f.name),
-            filters: this.filters,
+            filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
             cube: this.cube,
@@ -85,13 +89,9 @@ export class Query {
 
     /** @returns {string} */
     filtersAsString() {
-        const {filters} = this;
+        const {filter} = this;
         let ret = 'root';
-        if (filters) {
-            filters.forEach(it => {
-                ret += '>>' + Query.filterAsString(it);
-            });
-        }
+        if (filter) ret += '>>' + Query.filterAsString(filter);
         return ret;
     }
 
@@ -100,7 +100,7 @@ export class Query {
      * @returns {boolean}
      */
     test(record) {
-        return this._testFn(record);
+        return this._testFn ? this._testFn(record) : true;
     }
 
     //------------------------
@@ -121,10 +121,5 @@ export class Query {
             }
             return field;
         });
-    }
-
-    createTestFn() {
-        const tests = this.filters.map(it => it.getTestFn(this.cube.store));
-        return r => tests.every(test => test(r));
     }
 }

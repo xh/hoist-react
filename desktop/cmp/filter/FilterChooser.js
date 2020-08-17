@@ -20,21 +20,21 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...rest}) {
-        const {inputRef, options, historyOptions, hasHistory} = model;
+        const {inputRef, selectOptions} = model;
         return select({
             className,
-            bind: 'value',
+            bind: 'selectValue',
             ref: inputRef,
             enableMulti: true,
             enableClear: true,
             hideDropdownIndicator: true,
             queryFn: (q) => model.queryAsync(q),
-            options,
+            options: selectOptions,
             optionRenderer,
             rsOptions: {
-                defaultOptions: historyOptions,
-                openMenuOnClick: hasHistory,
-                openMenuOnFocus: hasHistory,
+                defaultOptions: [],
+                openMenuOnClick: false,
+                openMenuOnFocus: false,
                 isOptionDisabled: (opt) => opt.value === FilterChooserModel.TRUNCATED,
                 styles: {
                     menuList: (base) => ({...base, maxHeight: 'unset'})
@@ -54,7 +54,6 @@ FilterChooser.propTypes = {
 // Implementation
 //------------------
 function optionRenderer(opt) {
-    if (opt.isHistory) return historyOption({labels: opt.labels});
     if (opt.isSuggestion) return suggestionOption(opt);
     if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
     return filterOption(opt);
@@ -70,26 +69,6 @@ const filterOption = hoistCmp.factory({
                 div({className: 'operator', item: op}),
                 div({className: 'value', item: displayValue})
             ]
-        });
-    }
-});
-
-const historyOption = hoistCmp.factory({
-    model: false, observer: false, memo: false,
-    render({labels}) {
-        return hframe({
-            className: 'xh-filter-chooser-option__history',
-            item: labels?.map(label => historyOptionTag({label}))
-        });
-    }
-});
-
-const historyOptionTag = hoistCmp.factory({
-    model: false, observer: false, memo: false,
-    render({label}) {
-        return div({
-            className: 'xh-filter-chooser-option__history-tag',
-            item: label
         });
     }
 });

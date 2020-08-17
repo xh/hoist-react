@@ -12,7 +12,7 @@ import {isFunction} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation using a function. Used by {@see FilterModel}.
+ * Represents a filter operation using a function.
  * Immutable.
  */
 export class FunctionFilter extends Filter {
@@ -37,14 +37,11 @@ export class FunctionFilter extends Filter {
     /**
      * @param {Object} c - Config object.
      * @param {function} [c.testFn] - function receiving (Record|Object) as argument and returning a boolean.
-     * @param {string} [c.group] - Optional group associated with this filter.
      */
-    constructor({testFn, group = null}) {
+    constructor({testFn}) {
         super();
         throwIf(!isFunction(testFn), 'FunctionFilter requires a `testFn`');
         this.testFn = testFn;
-        this.group = group;
-
         Object.freeze(this);
     }
 
@@ -61,6 +58,6 @@ export class FunctionFilter extends Filter {
     }
 
     equals(other) {
-        return other.isFunctionFilter && this.testFn === other.testFn && other.group === this.group;
+        return other.isFunctionFilter && this.testFn === other.testFn;
     }
 }
