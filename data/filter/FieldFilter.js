@@ -13,7 +13,7 @@ import {castArray, escapeRegExp, isArray, isString} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation on a predefined Field. Used by {@see FilterModel}.
+ * Represents a filter operation on a predefined Field.
  * Immutable.
  */
 export class FieldFilter extends Filter {
@@ -27,23 +27,7 @@ export class FieldFilter extends Filter {
     /** @member {*} */
     value;
 
-    static OPERATORS = [
-        '=',
-        '!=',
-        '>',
-        '>=',
-        '<',
-        '<=',
-        'like'
-    ];
-
-    /**
-     * @param {string} op
-     * @returns {boolean} - true if the given operator is valid.
-     */
-    static isValidOperator(op) {
-        return FieldFilter.OPERATORS.includes(op);
-    }
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like'];
 
     /**
      * Create a new FieldFilter. Accepts a FieldFilter configuration or a string representation
@@ -61,22 +45,20 @@ export class FieldFilter extends Filter {
     /**
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
-     * @param {string} [c.op] - operator to use in filter. Must be one of the OPERATORS.
      * @param {(*|[])} c.value - value(s) to use with operator in filter.
-     * @param {string} [c.group] - Optional group associated with this filter.
+     * @param {string} [c.op] - operator to use in filter. Must be one of the OPERATORS.
      */
-    constructor({field, op = '=', value, group = null}) {
+    constructor({field, value, op = '='}) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
-        throwIf(!FieldFilter.isValidOperator(op),
+        throwIf(!FieldFilter.OPERATORS.includes(op),
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
         );
 
         this.field = isString(field) ? field : field.name;
-        this.op = op;
         this.value = value;
-        this.group = group;
+        this.op = op;
 
         Object.freeze(this);
     }
@@ -127,8 +109,6 @@ export class FieldFilter extends Filter {
     }
 
     equals(other) {
-        return other.isFieldFilter &&
-            other.serialize() === this.serialize() &&
-            other.group === this.group;
+        return other.isFieldFilter && other.serialize() === this.serialize();
     }
 }

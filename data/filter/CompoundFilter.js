@@ -5,18 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {Filter, parseFilters} from '@xh/hoist/data';
-import {isString, isEmpty} from 'lodash';
+import {parseFilter} from './Utils';
+import {Filter} from './Filter';
+import {compact, isString, isArray} from 'lodash';
 
 /**
- * Represents a collection of Filters operation, combined with either 'AND' or 'OR. Used by {@see FilterModel}.
+ * Represents a collection of Filters combined with either 'AND' or 'OR.
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-
-    static OPERATORS = ['AND', 'OR'];
 
     get isCompoundFilter() {return true}
 
@@ -26,22 +24,18 @@ export class CompoundFilter extends Filter {
     op;
 
     /**
-     * @param {string} op
-     * @returns {boolean} - true if the given operator is valid.
-     */
-    static isValidOperator(op) {
-        return CompoundFilter.OPERATORS.includes(op);
-    }
-
-    /**
-     * Create a new CompoundFilter. Accepts a CompoundFilter configuration or a string representation
+     * Create a new CompoundFilter.  Accepts a CompoundFilter configuration or a string representation
      * generated using CompoundFilter.serialize().
      *
-     * @param {(Object|string)} cfg - CompoundFilter configuration as object or serialized JSON string.
+     * @param {(Object|string)|*[]} cfg - CompoundFilter configuration object, serialized JSON
+     *      string, or array of Filter configs.
      */
     static create(cfg) {
         if (isString(cfg)) {
             cfg = JSON.parse(cfg);
+        }
+        if (isArray(cfg)) {
+            cfg = {filters: cfg};
         }
         return new CompoundFilter(cfg);
     }
@@ -49,21 +43,15 @@ export class CompoundFilter extends Filter {
     /**
      * @param {Object} c - CompoundFilter configuration.
      * @param {Filter[]|Object[]} c.filters - collection of Filters, or configs to create.
-     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
-     * @param {string} [c.group] - Optional group associated with this filter.
+     * @param {string} [c.op] - logical operator 'AND' (default) or 'OR'
      */
-    constructor({filters, op, group = null}) {
+    constructor({filters, op = 'AND'}) {
         super();
+        op = op?.toUpperCase();
+        throwIf(op !== 'AND' && op !== 'OR', 'CompoundFilter requires "op" value of "AND" or "OR"');
 
-        throwIf(isEmpty(filters), 'CompoundFilter requires at least one filter');
-        throwIf(!CompoundFilter.isValidOperator(op),
-            `CompoundFilter requires valid "op" value. Operator "${op}" not recognized.`
-        );
-
-        this.filters = parseFilters(filters);
+        this.filters = compact(filters.map(parseFilter));
         this.op = op;
-        this.group = group;
-
         Object.freeze(this);
     }
 
@@ -80,19 +68,12 @@ export class CompoundFilter extends Filter {
     getTestFn(store) {
         const {op, filters} = this,
             tests = filters.map(f => f.getTestFn(store));
-        switch (op) {
-            case 'AND':
-                return r => tests.every(test => test(r));
-            case 'OR':
-                return r => tests.some(test => test(r));
-            default:
-                throw XH.exception(`Unknown operator: ${op}`);
-        }
+        return op === 'AND' ?
+            r => tests.every(test => test(r)) :
+            r => tests.some(test => test(r));
     }
 
     equals(other) {
-        return other.isCompoundFilter &&
-            other.serialize() === this.serialize() &&
-            other.group === this.group;
+        return other.isCompoundFilter && other.serialize() === this.serialize();
     }
 }

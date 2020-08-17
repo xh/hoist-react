@@ -8,15 +8,14 @@
 import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {FilterModel} from '@xh/hoist/data';
 import equal from 'fast-deep-equal';
+import {parseFilter} from './filter/Utils';
 import {
     castArray,
     differenceBy,
     has,
     isArray,
     isEmpty,
-    isFunction,
     isNil,
     isString,
     remove as lodashRemove
@@ -39,8 +38,12 @@ export class Store {
     idSpec;
     /** @member {function} */
     processRawData;
-    /** @member {FilterModel} */
-    filterModel = null;
+
+    /** @member {boolean} */
+    @observable filterIncludesChildren;
+
+    /** @member {Filter}  */
+    @observable.ref filter;
 
     /** @member {number} - timestamp (ms) of the last time this store's data was changed. */
     @observable lastUpdated;
@@ -71,7 +74,10 @@ export class Store {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a Record from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
-     * @param {(FilterModel|Object)} [c.filterModel] - FilterModel, or config to create one.
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
+     * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
+     *      also be considered passing (default false).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      * @param {Object[]} [c.data] - source data to load
@@ -80,30 +86,22 @@ export class Store {
         fields,
         idSpec = 'id',
         processRawData = null,
-        filterModel = null,
         filter = null,
+        filterIncludesChildren = false,
         loadRootAsSummary = false,
         data
     }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
-        this.filterModel = this.parseFilterModel(filterModel);
+        this.filter = parseFilter(filter);
+        this.filterIncludesChildren = filterIncludesChildren;
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
 
         this.resetRecords();
 
-        if (filter) this.setFilter(filter);
         if (data) this.loadData(data);
-
-        this.addReaction({
-            track: () => [this.filterModel.filters, this.filterModel.includeChildren],
-            run: ([filters]) => {
-                if (isEmpty(filters)) this.setXhFilterText(null);
-                this.rebuildFiltered();
-            }
-        });
     }
 
     /** Remove all records from the store. Equivalent to calling `loadData([])`. */
@@ -279,7 +277,7 @@ export class Store {
     }
 
     /**
-     * Re-runs the FilterModel on the current data. Applications only need to call this method if
+     * Re-runs the Filter on the current data. Applications only need to call this method if
      * the state underlying the filter, other than the record data itself, has changed. Store will
      * re-filter automatically whenever Record data is updated or modified.
      */
@@ -532,24 +530,27 @@ export class Store {
     }
 
     /**
-     * Convenience method to set one or more filters on this store.
+     * Set a filter on this store.
      *
-     * Note that this will replace all existing filters. More advanced
-     * usages should modify the store's filterModel directly.
-     *
-     * @param {(*|*[]} filters - Filter or configs for filters to be applied.
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
      */
-    setFilter(filters) {
-
-        // Support deprecated StoreFilter syntax.
-        if (isFunction(filters.fn)) filters = filters.fn;
-
-        this.filterModel.setFilters(filters);
+    @action
+    setFilter(filter) {
+        this.filter = parseFilter(filter);
+        if (!this.filter) this.setXhFilterText(null);
+        this.rebuildFiltered();
     }
 
-    /** Convenience method to clear the FilterModel applied to this store. */
+    @action
+    setFilterIncludesChildren(val) {
+        this.filterIncludesChildren = val;
+        this.rebuildFiltered();
+    }
+
+    /** Convenience method to clear the Filter applied to this store. */
     clearFilter() {
-        this.filterModel.clear();
+        this.setFilter(null);
     }
 
     /**
@@ -712,14 +713,9 @@ export class Store {
         return ret;
     }
 
-    parseFilterModel(filterModel) {
-        filterModel = filterModel ?? [];
-        return filterModel.isFilterModel ? filterModel : this.markManaged(new FilterModel(filterModel));
-    }
-
     @action
     rebuildFiltered() {
-        this._filtered = this._current.withFilterModel(this.filterModel);
+        this._filtered = this._current.withFilter(this.filter);
     }
 
     //---------------------------------------

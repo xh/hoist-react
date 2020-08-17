@@ -99,12 +99,12 @@ export class RecordSet {
         return this.isEqual(target) ? target : this;
     }
 
-    withFilterModel(filterModel) {
-        if (!filterModel) return this;
-        const {includeChildren} = filterModel;
-        const test = filterModel.getTestFn(this.store);
-
-        const passes = new Map(),
+    withFilter(filter) {
+        if (!filter) return this;
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
+            test = filter.getTestFn(store),
+            passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
             mark = (rec) => passes.set(rec.id, rec);
 

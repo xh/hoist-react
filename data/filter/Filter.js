@@ -16,12 +16,6 @@ export class Filter {
     get isFilter() {return true}
 
     /**
-     * @member string -- optional group associated with this filter.  Useful for
-     *      components that need to find and identify Filters that they own.
-     */
-    group;
-
-    /**
      * Generate a complete string representation suitable for consumption by parse().
      * @returns {string}
      */
@@ -32,9 +26,9 @@ export class Filter {
     /**
      * Return a function that can be used to test a record or object.
      *
-     * @param {Store} [store] - if provided, function returned will be a test appropriate
-     *      for records of this store.  Otherwise, will be a test appropriate for anonymous
-     *      objects.
+     * @param {Store} [store] - if provided, function returned will be appropriate
+     *      for testing records of this store.  Otherwise, function returned will be appropriate
+     *      for testing anonymous objects.
      * @returns {function} - function taking a record or object and returning a boolean
      */
     getTestFn(store) {
