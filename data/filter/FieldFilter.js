@@ -61,6 +61,12 @@ export class FieldFilter extends Filter {
         Object.freeze(this);
     }
 
+    /** Outputs JSON appropriate for recreation via `parseFilter` */
+    toJSON() {
+        const {field, op, value} = this;
+        return {field, op, value};
+    }
+
     //-----------------
     // Overrides
     //-----------------

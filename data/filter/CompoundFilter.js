@@ -43,6 +43,11 @@ export class CompoundFilter extends Filter {
         Object.freeze(this);
     }
 
+    /** Outputs JSON appropriate for recreation via `parseFilter` */
+    toJSON() {
+        const {filters, op} = this;
+        return {filters, op};
+    }
 
     //-----------------
     // Overrides

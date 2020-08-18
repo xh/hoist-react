@@ -154,10 +154,6 @@ export class FilterChooserModel {
         }
     }
 
-    serializeFilter({field, op, value}) {
-        return JSON.stringify({field, op, value});
-    }
-
     //---------------------------
     // Value Handling/Processing
     //---------------------------
@@ -223,6 +219,9 @@ export class FilterChooserModel {
         });
     }
 
+    serializeFilter(filter) {
+        return JSON.stringify(filter);
+    }
 
     //--------------------
     // Autocomplete
