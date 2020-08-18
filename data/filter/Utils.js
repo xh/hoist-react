@@ -5,25 +5,22 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {CompoundFilter} from './CompoundFilter';
-import {FieldFilter} from './FieldFilter';
-import {FunctionFilter} from './FunctionFilter';
-
-import {isFunction, isArray} from 'lodash';
+import {CompoundFilter, FieldFilter, FunctionFilter} from '@xh/hoist/data';
+import {isArray, isFunction} from 'lodash';
 
 /**
  * Parse a filter from an object or array representation.
  *
- * @param {(*|Filter|*[])} spec -  one or more filters or configs to create one.
+ * @param {(*|Filter|*[])} spec - one or more filters or configs to create one.
+ *      * An existing Filter instance will be returned directly as-is.
+ *      * A null value will also be returned as-is. A null filter represents no filter at all,
+ *        or the equivalent of a filter that always passes every record.
+ *      * A raw Function will be converted to a `FunctionFilter`.
+ *      * Arrays will be converted to a `CompoundFilter` with a default 'AND' operator.
+ *      * Config objects will be returned as an appropriate concrete `Filter` subclass based on
+ *        their properties.
  *
- * If either an existing Filter or null is passed, it will simply be returned.  A null filter
- * will be no filter at all, or the equivalent of a filter that always passes every record.
- *
- * Raw Function will be converted to a FunctionFilter, and Arrays will be converted to
- * a CompoundFilter with a default 'AND'.
- *
- * See `CompoundFilter`, `FieldFilter` and `FunctionFilter` for more information on
- * supported configs.
+ * See `CompoundFilter`, `FieldFilter` and `FunctionFilter` for more info on supported configs.
  *
  * @returns {Filter}
  */

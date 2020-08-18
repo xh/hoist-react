@@ -4,13 +4,37 @@
 
 ### 🎁 New Features
 
-* Added enhanced support for data filtering, including:
-  * A new API for creating composable Filters in the package `@xh/hoist/data`.  This package
-  supports filtering both `Store`s and collections of objects, and has support for declarative
-  filters and combining multiple filters using boolean operations. See `Filter`.
-  * A new Component `FilterChooser` for displaying and editing `Filter`s via type-ahead queries.
-  * `StoreFilterField`, `Query`, `Store`, have all been adapted to use the new Filter API.
-  * A new convenience method `setFilter` has been added to `Grid` and `DataView`.
+#### Data Filtering
+
+We have enhanced support for filtering data in Hoist Grids, Stores, and Cubes with an upgraded
+`Filter` API and a new `FilterChooser` component. This bundle of enhancements includes:
+
+* A new `@xh/hoist/data/filter` package to support the creation of composable filters, including the
+  following new classes:
+  * `FieldFilter` - filters by comparing the value of a given field to one or more given candidate
+    values using one of several supported operators.
+  * `FunctionFilter` - filters via a custom function specified by the developer.
+  * `CompoundFilter` - combines multiple filters (including other nested CompoundFilters) via an AND
+    or OR operator.
+* A new `FilterChooser` UI component that integrates tightly with these data package classes to
+  provide a user and developer friendly autocomplete-enabled UI for filtering data based on
+  dimensions (e.g. trader = jdoe, assetClass != Equities), metrics (e.g. P&L > 1m), or any
+  combination thereof.
+* Updates to `Store`, `StoreFilterField`, and `cube/Query` to use the new Filter API.
+* A new `setFilter()` convenience method to `Grid` and `DataView`.
+
+To get the most out of the new Filtering capabilities, developers are encouraged to add or expand
+the configs for any relevant `Store.fields` to include both their `type` and a `displayName`. Many
+applications might not have Field configs specified at all for their Stores, instead relying on
+Store's ability to infer its Fields from Grid Column definitions.
+
+We are looking to gradually invert this relationship, so that core information about an app's
+business objects and their properties is configured once at the `data/Field` level and then made
+available to related APIs and components such as grids, filters, and forms. These deeper
+integrations remain a work in progress.
+
+#### Other
+
 * Added new `AppSpec.showBrowserContextMenu` config to control whether the browser's default context
   menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
@@ -18,8 +42,8 @@
 * Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
   convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
   show or hide a single column.
-* By default, elided Grid column headers now show the full `headerName` value in a tooltip
-* `LocalDate` has gained new static factories `tommorrow()` and `yesterday()`.
+* Elided Grid column headers now show the full `headerName` value in a tooltip.
+* `LocalDate` has gained new static factories `tomorrow()` and `yesterday()`.
 
 ### 💥 Breaking Changes
 
@@ -27,19 +51,19 @@
 * Changed the `DimensionChooserModel.dimensions` config to require objects of the form `{name,
   displayName, isLeafDimension}` when provided as an `Object[]`.
   * Previously these objects were expected to be of the form `{value, label, isLeaf}`.
-  * Note however that this same config can now be passed the `dimensions` from a configured `Cube`
-    instead instead, which is the recommended approach and should DRY up dimension definitions for
+  * Note however that this same config can now be passed the `dimensions` directly from a configured
+    `Cube` instead, which is the recommended approach and should DRY up dimension definitions for
     typical use cases.
 * Changes required due to the new filter API:
-   * The classes `StoreFilter` and `ValueFilter` have been removed and replaced by `FunctionFilter`
-   and `FieldFilter`, respectively.  In most cases apps will need to make minimal or no changes.
-   * The `filters/setFilters` property on `Query` has been changed to `filter/setFilter`. In most
-   case apps should not need to change anything other than the name of this property-- the new
-   property will continue to support array representations of multiple filters.
-   * `Store` has gained a new property `filterIncludesChildren` to replace the functionality
+  * The classes `StoreFilter` and `ValueFilter` have been removed and replaced by `FunctionFilter`
+    and `FieldFilter`, respectively. In most cases apps will need to make minimal or no changes.
+  * The `filters/setFilters` property on `Query` has been changed to `filter/setFilter`. In most
+    case apps should not need to change anything other than the name of this property - the new
+    property will continue to support array representations of multiple filters.
+  * `Store` has gained a new property `filterIncludesChildren` to replace the functionality
     previously provided by `StoreFilter.includesChildren`.
-   * `StoreFilterField.filterOptions` has been removed.  Set `filterIncludesChildren` directly
-   on the store instead.
+  * `StoreFilterField.filterOptions` has been removed. Set `filterIncludesChildren` directly on the
+    store instead.
 
 ### ✨ Style
 

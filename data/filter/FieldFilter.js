@@ -13,7 +13,9 @@ import {castArray, escapeRegExp, isArray, isString, isEqual} from 'lodash';
 import {Filter} from './Filter';
 
 /**
- * Represents a filter operation on a predefined Field.
+ * Filters by comparing the value of a given field to one or more given candidate values using one
+ * of several supported operators.
+ *
  * Immutable.
  */
 export class FieldFilter extends Filter {
@@ -31,17 +33,14 @@ export class FieldFilter extends Filter {
     static ARRAY_OPERATORS = ['=', '!=', 'like'];
 
     /**
-     * Construct this object.
+     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
      *
-     * Not typically called directly by applications.  Create from config using parseFilter()
-     * instead.
-     *
-     * @param {Object} c - FieldFilter configuration.
-     * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
-     * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
-     * @param {(*|[])} c.value - value(s) to use with operator in filter. In the case of the
-     *      '=', '!=', 'like' may be specified as an array of values.  In this case, the filter will
-     *      implement an implicit 'OR' for '=' and 'like' and an implicit 'AND' for '!='.
+     * @param {Object} c - FieldFilter config.
+     * @param {(string|Field)} c.field - name of Field to filter or Field instance.
+     * @param {string} c.op - one of the supported Filter.OPERATORS to use for comparison.
+     * @param {(*|[])} c.value - value(s) to use with operator in filter. When used with the '=',
+     *      '!=', or 'like' operators, value may be specified as an array. In these cases, the
+     *      filter will implement an implicit 'OR' for '='/'like' and an implicit 'AND' for '!='.
      */
     constructor({field, op, value}) {
         super();
@@ -51,7 +50,7 @@ export class FieldFilter extends Filter {
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
         );
         throwIf(!FieldFilter.ARRAY_OPERATORS.includes(op) && isArray(value),
-            `Operator "${op}" does not support multiple values.  Use a CompoundFilter instead.`
+            `Operator "${op}" does not support multiple values. Use a CompoundFilter instead.`
         );
 
         this.field = isString(field) ? field : field.name;

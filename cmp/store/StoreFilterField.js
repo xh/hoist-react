@@ -23,9 +23,9 @@ import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
  * A Store can be bound to this component via either its `store` OR `gridModel` props, or manually
  * by writing an onFilterChange prop.
  *
- * This object will default to point to the store of a GridModel found in context, if neither a store,
- * nor a GridModel are provided.  If you *do* not want this behavior (e.g. you intend to manually
- * wire it with onFilterChange) be sure to set GridModel to *null*.
+ * If not configured to bind to a specific Store or GridModel, this component will bind by default
+ * to the store of the nearest GridModel found in context. If you do *not* want this behavior (e.g.
+ * you are using the `onFilterChange` callback) be sure to explicitly set GridModel to *null*.
  *
  * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
  * customized via the include/excludeFields props. See prop comments for details.

@@ -11,7 +11,7 @@ import {Filter} from './Filter';
 import {compact, isEmpty, isEqualWith} from 'lodash';
 
 /**
- * Represents a collection of Filters combined with either 'AND' or 'OR.
+ * Combines multiple filters (including other nested CompoundFilters) via an AND or OR operator.
  * Immutable.
  */
 export class CompoundFilter extends Filter {
@@ -24,13 +24,10 @@ export class CompoundFilter extends Filter {
     op;
 
     /**
-     * Construct this object.
+     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
      *
-     * Not typically called directly by applications.  Create from config using parseFilter()
-     * instead.
-     *
-     * @param {Object} c - CompoundFilter configuration.
-     * @param {Filter[]|Object[]} c.filters - collection of Filters, or configs to create.
+     * @param {Object} c - CompoundFilter config.
+     * @param {(Filter[]|Object[])} c.filters - collection of Filters or configs to create.
      * @param {string} [c.op] - logical operator 'AND' (default) or 'OR'
      */
     constructor({filters, op = 'AND'}) {
