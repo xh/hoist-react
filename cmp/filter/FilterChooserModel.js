@@ -34,6 +34,9 @@ export class FilterChooserModel {
     /** @member Filter */
     @observable.ref value;
 
+    /** @member Filter[] */
+    @observable.ref favorites;
+
     /** @member {Store} */
     store;
 
@@ -46,6 +49,7 @@ export class FilterChooserModel {
     /** @member {PersistenceProvider} */
     @managed provider;
     persistValue = false;
+    persistFavorites = false;
 
     // Implementation fields for Control
     @observable.ref selectOptions;
@@ -73,7 +77,7 @@ export class FilterChooserModel {
      *      objects to select and customize fields available for filtering. Optional - if not
      *      provided, all Store Fields will be included with options defaulted based on their type.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
-     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence
+     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
         initialValue = null,
@@ -95,9 +99,13 @@ export class FilterChooserModel {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 this.persistValue = persistWith.persistValue ?? true;
+                this.persistFavorites = persistWith.persistFavorites ?? true;
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) initialValue = state.value;
+                if (this.persistFavorites && state?.favorites) {
+                    this.favorites = state.favorites.map(f => parseFilter(f));
+                }
 
                 this.addReaction({
                     track: () => this.persistState,
@@ -414,12 +422,36 @@ export class FilterChooserModel {
         });
     }
 
+    //--------------------
+    // Favorites
+    //--------------------
+    get favoritesOptions() {
+        const {favorites = []} = this;
+        return sortBy(favorites.map(value => {
+            const fieldFilters = this.toFieldFilters(value),
+                text = this.getOptionsForFilters(fieldFilters).map(it => it.label).join(' • ');
+            return {value, text};
+        }), it => it.text);
+    }
+
+    @action
+    addToFavorites() {
+        const {value, favorites = []} = this;
+        if (isEmpty(value) || this.isFavorite(value)) return;
+        this.favorites = [...favorites, value];
+    }
+
+    isFavorite(filter) {
+        return this.favorites?.find(f => f.equals(filter));
+    }
+
     //-------------------------
     // Persistence handling
     //-------------------------
     get persistState() {
         const ret = {};
         if (this.persistValue) ret.value = this.value;
+        if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
     }
 
@@ -517,4 +549,5 @@ export class FilterChooserModel {
  * @typedef {Object} FilterChooserPersistOptions
  * @extends PersistOptions
  * @property {boolean} [persistValue] - true (default) to save value to state.
+ * @property {boolean} [persistFavorites] - true (default) to include favorites.
  */

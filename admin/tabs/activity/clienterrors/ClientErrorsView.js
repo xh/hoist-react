@@ -8,7 +8,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
-import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {filterChooser, filterChooserFavoritesMenu} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -52,6 +52,8 @@ const tbar = hoistCmp.factory(
                 placeholder: 'Search...',
                 enableClear: true
             }),
+            filterChooserFavoritesMenu(),
+            toolbarSep(),
             button({
                 icon: Icon.reset(),
                 intent: 'danger',

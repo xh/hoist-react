@@ -68,3 +68,19 @@
     }
   }
 }
+
+.xh-filter-chooser-favorites {
+  &__add-btn.favorite {
+    color: var(--xh-orange) !important;
+  }
+
+  &__tag {
+    margin-right: var(--xh-pad-half-px);
+    padding: 3px 5px;
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg-alt);
+    border: var(--xh-border-solid);
+    border-radius: 2px;
+  }
+}
