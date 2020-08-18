@@ -16,14 +16,6 @@ export class Filter {
     get isFilter() {return true}
 
     /**
-     * Generate a complete string representation suitable for consumption by parse().
-     * @returns {string}
-     */
-    serialize() {
-        throw XH.exception('Not implemented.');
-    }
-
-    /**
      * Return a function that can be used to test a record or object.
      *
      * @param {Store} [store] - if provided, function returned will be appropriate

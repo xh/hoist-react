@@ -537,9 +537,13 @@ export class Store {
      */
     @action
     setFilter(filter) {
-        this.filter = parseFilter(filter);
-        if (!this.filter) this.setXhFilterText(null);
-        this.rebuildFiltered();
+        filter = parseFilter(filter);
+        if (this.filter != filter && !this.filter?.equals(filter)) {
+            this.filter = filter;
+            this.rebuildFiltered();
+        }
+
+        if (!filter) this.setXhFilterText(null);
     }
 
     @action

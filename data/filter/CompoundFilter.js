@@ -8,7 +8,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {parseFilter} from './Utils';
 import {Filter} from './Filter';
-import {compact, isString, isArray, isEmpty} from 'lodash';
+import {compact, isEmpty, isEqualWith} from 'lodash';
 
 /**
  * Represents a collection of Filters combined with either 'AND' or 'OR.
@@ -24,23 +24,11 @@ export class CompoundFilter extends Filter {
     op;
 
     /**
-     * Create a new CompoundFilter.  Accepts a CompoundFilter configuration or a string representation
-     * generated using CompoundFilter.serialize().
+     * Construct this object.
      *
-     * @param {(Object|string)|*[]} cfg - CompoundFilter configuration object, serialized JSON
-     *      string, or array of Filter configs.
-     */
-    static create(cfg) {
-        if (isString(cfg)) {
-            cfg = JSON.parse(cfg);
-        }
-        if (isArray(cfg)) {
-            cfg = {filters: cfg};
-        }
-        return !isEmpty(cfg.filters) ? new CompoundFilter(cfg) : null;
-    }
-
-    /**
+     * Not typically called directly by applications.  Create from config using parseFilter()
+     * instead.
+     *
      * @param {Object} c - CompoundFilter configuration.
      * @param {Filter[]|Object[]} c.filters - collection of Filters, or configs to create.
      * @param {string} [c.op] - logical operator 'AND' (default) or 'OR'
@@ -59,12 +47,6 @@ export class CompoundFilter extends Filter {
     //-----------------
     // Overrides
     //-----------------
-    serialize() {
-        const {op} = this,
-            filters = this.filters.map(f => f.serialize());
-        return JSON.stringify({filters, op});
-    }
-
     getTestFn(store) {
         const {op, filters} = this;
         if (isEmpty(filters)) return () => true;
@@ -76,6 +58,12 @@ export class CompoundFilter extends Filter {
     }
 
     equals(other) {
-        return other.isCompoundFilter && other.serialize() === this.serialize();
+        return other?.isCompoundFilter &&
+            other.op === this.op &&
+            isEqualWith(
+                other.filters,
+                this.filters,
+                (a, b) => a.isFilter && b.isFilter ? a.equals(b) : undefined
+            );
     }
 }

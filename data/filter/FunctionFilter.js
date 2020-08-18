@@ -5,7 +5,6 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 
@@ -23,20 +22,14 @@ export class FunctionFilter extends Filter {
     testFn;
 
     /**
-     * Create a new FunctionFilter.
+     * Construct this object
      *
-     * @param {(Object|function)} cfg - FunctionFilter configuration or raw function.
-     */
-    static create(cfg) {
-        if (isFunction(cfg)) {
-            cfg = {testFn: cfg};
-        }
-        return new FunctionFilter(cfg);
-    }
-
-    /**
+     * Not typically called directly by applications.  Create from config using parseFilter()
+     * instead.
+     *
      * @param {Object} c - Config object.
-     * @param {function} [c.testFn] - function receiving (Record|Object) as argument and returning a boolean.
+     * @param {function} c.testFn - function receiving (Record|Object) as argument and
+     *      returning a boolean.
      */
     constructor({testFn}) {
         super();
@@ -49,15 +42,11 @@ export class FunctionFilter extends Filter {
     //-----------------
     // Overrides
     //-----------------
-    serialize() {
-        throw XH.exception('FunctionFilter can not be serialized using serialize().');
-    }
-
     getTestFn(store) {
         return this.testFn;
     }
 
     equals(other) {
-        return other.isFunctionFilter && this.testFn === other.testFn;
+        return other?.isFunctionFilter && this.testFn === other.testFn;
     }
 }

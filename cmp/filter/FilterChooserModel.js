@@ -58,7 +58,6 @@ export class FilterChooserModel {
 
     // Option values with special handling
     static TRUNCATED = 'TRUNCATED';
-    static SUGGEST_PREFIX = '*SUGGEST*';
 
     /**
      * @param c - FilterChooserModel configuration.
@@ -127,42 +126,51 @@ export class FilterChooserModel {
      *      shown in this field.
      *
      * Currently this control only supports a flat collection of FilterFields, to
-     * be 'AND'ed together. Filter Values that cannot be parsed, or are not supported
+     * be 'AND'ed together. Filters that cannot be parsed or are not supported
      * will cause the control to be cleared.
      */
     @action
     setValue(value) {
+        // Always round trip the new value to internal state, but avoid
+        // spurious change to the external value.
         try {
             value = parseFilter(value);
             const fieldFilters = this.toFieldFilters(value),
                 options = this.getOptionsForFilters(fieldFilters);
-
             this.selectOptions = !isEmpty(options) ? options : null;
-            this.selectValue = sortBy(fieldFilters.map(f => f.serialize()), f => {
+            this.selectValue = sortBy(fieldFilters.map(this.serializeFilter), f => {
                 const idx = this.selectValue?.indexOf(f);
                 return isFinite(idx) && idx > -1 ? idx : fieldFilters.length;
             });
-            this.value = value;
+            if (!this.value?.equals(value)) {
+                console.debug('Setting FilterChooser value:', value);
+                this.value = value;
+            }
         } catch (e) {
             console.error('Failed to set value on FilterChoooserModel', e);
-            this.value = null;
             this.selectOptions = this.getOptionsForFilters([]);
             this.selectValue = [];
+            this.value = null;
         }
     }
 
-    //--------------------
-    // Value Handling/Processing
-    //--------------------
-    @action
-    setSelectValue(selectValue) {
-        // Separate suggestions from actual selected filters.
-        const [suggestions, filters] = partition(compact(flatten(selectValue)), v => {
-            return v.startsWith(FilterChooserModel.SUGGEST_PREFIX);
-        });
+    serializeFilter({field, op, value}) {
+        return JSON.stringify({field, op, value});
+    }
 
-        // Re-hydrate and round-trip selected filters through main value setter above.
-        this.setValue(this.recombineOrFilters(filters.map(f => FieldFilter.create(f))));
+    //---------------------------
+    // Value Handling/Processing
+    //---------------------------
+    setSelectValue(selectValue) {
+        // Rehydrate stringified values
+        selectValue = compact(flatten(selectValue)).map(JSON.parse);
+
+        // Separate suggestions from actual selected filters.
+        const [suggestions, filters] = partition(selectValue, v => v.isSuggestion);
+
+        // Round-trip selected filters through main value setter above.
+        this.setValue(this.recombineOrFilters(filters.map(f => new FieldFilter(f))));
+
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
@@ -200,7 +208,7 @@ export class FilterChooserModel {
         // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
         return flatMap(ret, (f) => {
             return isArray(f.value) ?
-                f.value.map(value => FieldFilter.create({...f, value})) :
+                f.value.map(value => new FieldFilter({...f, value})) :
                 f;
         });
     }
@@ -224,7 +232,7 @@ export class FilterChooserModel {
         if (!rsSelectCmp) return;
 
         const currentVal = rsSelectCmp.select.state.inputValue,
-            newVal = value.replace(FilterChooserModel.SUGGEST_PREFIX, ''),
+            newVal = value.displayName,
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
         rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
@@ -282,7 +290,7 @@ export class FilterChooserModel {
                 .filter(spec => spec.displayName.toLowerCase().startsWith(queryField.toLowerCase()))
                 .map(spec => ({
                     isSuggestion: true,
-                    value: `${FilterChooserModel.SUGGEST_PREFIX}${spec.displayName}`,
+                    value: JSON.stringify({isSuggestion: true, displayName: spec.displayName}),
                     spec
                 }));
             options.push(...suggestions);
@@ -366,13 +374,13 @@ export class FilterChooserModel {
         const {displayName, field} = spec,
             displayValue = spec.renderValue(value);
 
-        filter = FieldFilter.create(filter ?? {field, op, value});
+        filter = filter ?? new FieldFilter({field, op, value});
 
         return {
             displayName,
             displayValue,
             op,
-            value: filter.serialize(),
+            value: this.serializeFilter(filter),
             label: `${displayName} ${op} ${displayValue}`
         };
     }
@@ -509,5 +517,5 @@ export class FilterChooserModel {
 /**
  * @typedef {Object} FilterChooserPersistOptions
  * @extends PersistOptions
- * @property {boolean} [persistValue] - true (default) to include value (serialized filters)
+ * @property {boolean} [persistValue] - true (default) to save value to state.
  */

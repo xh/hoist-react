@@ -8,7 +8,7 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isString} from 'lodash';
+import {castArray, escapeRegExp, isArray, isString, isEqual} from 'lodash';
 
 import {Filter} from './Filter';
 
@@ -31,19 +31,11 @@ export class FieldFilter extends Filter {
     static ARRAY_OPERATORS = ['=', '!=', 'like'];
 
     /**
-     * Create a new FieldFilter. Accepts a FieldFilter configuration or a string representation
-     * generated using FieldFilter.serialize().
+     * Construct this object.
      *
-     * @param {(Object|string)} cfg - FieldFilter configuration as object or serialized JSON string.
-     */
-    static create(cfg) {
-        if (isString(cfg)) {
-            cfg = JSON.parse(cfg);
-        }
-        return new FieldFilter(cfg);
-    }
-
-    /**
+     * Not typically called directly by applications.  Create from config using parseFilter()
+     * instead.
+     *
      * @param {Object} c - FieldFilter configuration.
      * @param {(string|Field)} c.field - name of Field to filter or Field instance itself.
      * @param {string} c.op - operator to use in filter. Must be one of the OPERATORS.
@@ -72,11 +64,6 @@ export class FieldFilter extends Filter {
     //-----------------
     // Overrides
     //-----------------
-    serialize() {
-        const {field, op, value} = this;
-        return JSON.stringify({field, op, value});
-    }
-
     getTestFn(store) {
         let {field, op, value} = this,
             regExps;
@@ -115,6 +102,6 @@ export class FieldFilter extends Filter {
     }
 
     equals(other) {
-        return other.isFieldFilter && other.serialize() === this.serialize();
+        return other?.isFieldFilter && other.op === this.op && isEqual(other.value, this.value);
     }
 }
