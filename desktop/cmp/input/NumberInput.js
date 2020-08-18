@@ -48,9 +48,6 @@ export class NumberInput extends HoistInput {
         /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
         enableShorthandUnits: PT.bool,
 
-        /** True to take up the full width of container. */
-        fill: PT.bool,
-
         /** Ref handler that receives HTML <input> element backing this component. */
         inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
@@ -110,7 +107,7 @@ export class NumberInput extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, ...layoutProps} = this.getLayoutProps();
+            {width, flex, ...layoutProps} = this.getLayoutProps();
 
         return numericInput({
             value: this.formatRenderValue(this.renderValue),
@@ -118,7 +115,6 @@ export class NumberInput extends HoistInput {
             allowNumericCharactersOnly: !props.enableShorthandUnits,
             buttonPosition: 'none',
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: props.inputRef,
             leftIcon: props.leftIcon,
             max: props.max,
@@ -137,6 +133,7 @@ export class NumberInput extends HoistInput {
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, 200),
+                flex: withDefault(flex, null),
                 textAlign: withDefault(props.textAlign, 'right')
             },
             onBlur: this.onBlur,

@@ -28,9 +28,6 @@ export class TextArea extends HoistInput {
         /** True to commit on every change/keystroke, default false. */
         commitOnChange: PT.bool,
 
-        /** True to take up the full width of container. */
-        fill: PT.bool,
-
         /** Ref handler that receives HTML <input> element backing this component. */
         inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
@@ -55,14 +52,13 @@ export class TextArea extends HoistInput {
 
     render() {
         const props = this.getNonLayoutProps(),
-            {width, height, ...layoutProps} = this.getLayoutProps();
+            {width, height, flex, ...layoutProps} = this.getLayoutProps();
 
         return bpTextarea({
             value: this.renderValue || '',
 
             autoFocus: props.autoFocus,
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: props.inputRef,
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
@@ -73,10 +69,10 @@ export class TextArea extends HoistInput {
             style: {
                 ...props.style,
                 ...layoutProps,
+                height: withDefault(height, 100),
                 width: withDefault(width, 300),
-                height: withDefault(height, 100)
+                flex: withDefault(flex, null)
             },
-
             onBlur: this.onBlur,
             onChange: this.onChange,
             onFocus: this.onFocus,
