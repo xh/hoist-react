@@ -1,0 +1,70 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
+.xh-filter-chooser-option {
+  padding: 0 var(--xh-pad-px);
+
+  .name {
+    margin-right: var(--xh-pad-half-px);
+    color: var(--xh-intent-primary);
+  }
+
+  .operator {
+    margin-right: var(--xh-pad-half-px);
+    color: var(--xh-text-color-muted);
+    font-weight: bold;
+  }
+
+  .value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__history {
+    padding: var(--xh-pad-half-px) !important;
+  }
+
+  &__history-tag {
+    margin-right: var(--xh-pad-half-px);
+    padding: 3px 5px;
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg-alt);
+    border: var(--xh-border-solid);
+    border-radius: 2px;
+  }
+
+  &__truncated {
+    padding: var(--xh-pad-half-px) var(--xh-pad-px) !important;
+    margin-bottom: -4px;
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    background: var(--xh-bg-alt);
+    border-top: var(--xh-border-solid);
+    border-radius: 0 0 3px 3px;
+  }
+
+  &__suggestion {
+    .name {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-intent-primary);
+    }
+
+    .operators {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-text-color-muted);
+    }
+
+    .example {
+      margin-left: var(--xh-pad-half-px);
+      color: var(--xh-text-color-muted);
+      font-weight: bold;
+    }
+  }
+}

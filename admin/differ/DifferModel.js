@@ -4,15 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {p} from '@xh/hoist/cmp/layout';
+
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {p} from '@xh/hoist/cmp/layout';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
+
 import {DifferDetailModel} from './DifferDetailModel';
 
 /**
@@ -55,10 +57,11 @@ export class DifferModel  {
         this.parentGridModel = parentGridModel;
         this.entityName = entityName;
         this.url = entityName + 'DiffAdmin';
+
         this.gridModel = new GridModel({
             store: {
                 idSpec: 'name',
-                filter: (it) => it.data.status !== 'Identical'
+                filter: {field: 'status', op: '!=', value: 'Identical'}
             },
             emptyText: 'All records match!',
             selModel: 'multiple',

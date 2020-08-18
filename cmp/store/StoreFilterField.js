@@ -70,9 +70,6 @@ StoreFilterField.propTypes = {
      */
     filterBuffer: PT.number,
 
-    /** Fixed options for Filter to be generated. @see StoreFilter. */
-    filterOptions: PT.object,
-
     /**
      * GridModel whose Store this control should filter. When given a GridModel, this component
      * will, by default, use the fields for all *visible* columns when matching, as well as any
@@ -93,7 +90,7 @@ StoreFilterField.propTypes = {
     model: PT.object,
 
     /**
-     * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
+     * Callback to receive an updated Filter. Can be used in place of the `store` or
      * `gridModel` prop when direct filtering of a bound store by this component is not desired.
      * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
      */

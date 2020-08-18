@@ -5,30 +5,31 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {ReactiveSupport, ManagedSupport} from '@xh/hoist/core';
 import {action, observable, bindable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
+import {parseFilter} from './filter/Utils';
 import {
     castArray,
     differenceBy,
     has,
     isArray,
     isEmpty,
-    isFunction,
     isNil,
-    isPlainObject,
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {warnIf} from '../utils/js';
+
 import {Field} from './Field';
 import {RecordSet} from './impl/RecordSet';
 import {Record} from './Record';
-import {StoreFilter} from './StoreFilter';
 
 /**
  * A managed and observable set of local, in-memory Records.
  */
+@ReactiveSupport
+@ManagedSupport
 export class Store {
 
     /** @member {Field[]} */
@@ -37,6 +38,12 @@ export class Store {
     idSpec;
     /** @member {function} */
     processRawData;
+
+    /** @member {boolean} */
+    @observable filterIncludesChildren;
+
+    /** @member {Filter}  */
+    @observable.ref filter;
 
     /** @member {number} - timestamp (ms) of the last time this store's data was changed. */
     @observable lastUpdated;
@@ -50,7 +57,6 @@ export class Store {
     @observable.ref _committed;
     @observable.ref _current;
     @observable.ref _filtered;
-    _filter = null;
     _loadRootAsSummary = false;
 
     /** @private -- used internally by any StoreFilterField that is bound to this store. */
@@ -58,7 +64,7 @@ export class Store {
 
     /**
      * @param {Object} c - Store configuration.
-     * @param {(string[]|Object[]|Field[])} c.fields - Fields, Field names, or Field config objects.
+     * @param {(string[]|FieldConfig[]|Field[])} c.fields - Field names, configs, or instances.
      * @param {(function|string)} [c.idSpec] - specification for selecting or producing an immutable
      *      unique id for each record. May be either a string property name (default is 'id') or a
      *      function to create an id from the raw unprocessed data. Will be normalized to a function
@@ -68,8 +74,10 @@ export class Store {
      * @param {function} [c.processRawData] - function to run on each individual data object
      *      presented to loadData() prior to creating a Record from that object. This function
      *      must return an object, cloning the original object if edits are necessary.
-     * @param {(StoreFilter|Object|function)} [c.filter] - initial filter for Records, or a
-     *      StoreFilter config to create.
+     * @param {(Filter|*|*[])} [c.filter] - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
+     * @param {boolean} [c.filterIncludesChildren] - true if all children of a passing record should
+     *      also be considered passing (default false).
      * @param {boolean} [c.loadRootAsSummary] - true to treat the root node in hierarchical data as
      *      the summary record.
      * @param {Object[]} [c.data] - source data to load
@@ -79,17 +87,19 @@ export class Store {
         idSpec = 'id',
         processRawData = null,
         filter = null,
+        filterIncludesChildren = false,
         loadRootAsSummary = false,
         data
     }) {
         this.fields = this.parseFields(fields);
         this.idSpec = isString(idSpec) ? (data) => data[idSpec] : idSpec;
         this.processRawData = processRawData;
+        this.filter = parseFilter(filter);
+        this.filterIncludesChildren = filterIncludesChildren;
         this.lastLoaded = this.lastUpdated = Date.now();
         this._loadRootAsSummary = loadRootAsSummary;
 
         this.resetRecords();
-        this.setFilter(filter);
 
         if (data) this.loadData(data);
     }
@@ -267,7 +277,7 @@ export class Store {
     }
 
     /**
-     * Re-runs the StoreFilter on the current data. Applications only need to call this method if
+     * Re-runs the Filter on the current data. Applications only need to call this method if
      * the state underlying the filter, other than the record data itself, has changed. Store will
      * re-filter automatically whenever Record data is updated or modified.
      */
@@ -433,12 +443,17 @@ export class Store {
     }
 
     /**
-     * Get a specific Field, by name.
+     * Get a specific Field by name.
      * @param {string} name - field name to locate.
      * @return {Field}
      */
     getField(name) {
         return this.fields.find(it => it.name === name);
+    }
+
+    /** @return {string[]} */
+    get fieldNames() {
+        return this.fields.map(it => it.name);
     }
 
     /**
@@ -515,31 +530,29 @@ export class Store {
     }
 
     /**
-     * Apply a filter to this store. Records passing the filter will be exposed via its primary
-     * `records` collection and provided to consumers such as Grids. Records excluded by a filter
-     * remain available via the `allRecords` collection and methods such as `getById()`.
+     * Set a filter on this store.
      *
-     * @param {(StoreFilter|StoreFilterFunction|Object)} filter - StoreFilter to be applied to
-     *      Records, or a function or config to create one.
+     * @param {(Filter|*|*[])} filter - one or more filters or configs to create one.  If an
+     *      array, a single 'AND' filter will be created.
      */
+    @action
     setFilter(filter) {
-        if (isFunction(filter)) {
-            filter = new StoreFilter({fn: filter});
-        } else if (isPlainObject(filter)) {
-            filter = new StoreFilter(filter);
+        filter = parseFilter(filter);
+        if (this.filter != filter && !this.filter?.equals(filter)) {
+            this.filter = filter;
+            this.rebuildFiltered();
         }
 
-        this._filter = filter;
-
-        // If clearing filter, null out any local xhFilterText value, which may be used by a linked
-        // StoreFilterField to maintain its text value. (Note that SFFs can be bound to an
-        // app-specific model, so this does not guarantee they will be appropriately reset.)
         if (!filter) this.setXhFilterText(null);
+    }
 
+    @action
+    setFilterIncludesChildren(val) {
+        this.filterIncludesChildren = val;
         this.rebuildFiltered();
     }
 
-    /** Convenience method to remove any filter applied to this store. */
+    /** Convenience method to clear the Filter applied to this store. */
     clearFilter() {
         this.setFilter(null);
     }
@@ -561,11 +574,6 @@ export class Store {
      */
     setLoadRootAsSummary(loadRootAsSummary) {
         this._loadRootAsSummary = loadRootAsSummary;
-    }
-
-    /** @returns {StoreFilter} - the current filter (if any) applied to the store. */
-    get filter() {
-        return this._filter;
     }
 
     /** @returns {number} - the count of the filtered records in the store. */

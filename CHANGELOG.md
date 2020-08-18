@@ -4,6 +4,13 @@
 
 ### 🎁 New Features
 
+* Added enhanced support for data filtering, including:
+  * A new API for creating composable Filters in the package `@xh/hoist/data`.  This package
+  supports filtering both `Store`s and collections of objects, and has support for declarative
+  filters and combining multiple filters using boolean operations. See `Filter`.
+  * A new Component `FilterChooser` for displaying and editing `Filter`s via type-ahead queries.
+  * `StoreFilterField`, `Query`, `Store`, have all been adapted to use the new Filter API.
+  * A new convenience method `setFilter` has been added to `Grid` and `DataView`.
 * Added new `AppSpec.showBrowserContextMenu` config to control whether the browser's default context
   menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
@@ -12,6 +19,27 @@
   convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
   show or hide a single column.
 * By default, elided Grid column headers now show the full `headerName` value in a tooltip
+* `LocalDate` has gained new static factories `tommorrow()` and `yesterday()`.
+
+### 💥 Breaking Changes
+
+* Renamed the `data/Field.label` property to `displayName`.
+* Changed the `DimensionChooserModel.dimensions` config to require objects of the form `{name,
+  displayName, isLeafDimension}` when provided as an `Object[]`.
+  * Previously these objects were expected to be of the form `{value, label, isLeaf}`.
+  * Note however that this same config can now be passed the `dimensions` from a configured `Cube`
+    instead instead, which is the recommended approach and should DRY up dimension definitions for
+    typical use cases.
+* Changes required due to the new filter API:
+   * The classes `StoreFilter` and `ValueFilter` have been removed and replaced by `FunctionFilter`
+   and `FieldFilter`, respectively.  In most cases apps will need to make minimal or no changes.
+   * The `filters/setFilters` property on `Query` has been changed to `filter/setFilter`. In most
+   case apps should not need to change anything other than the name of this property-- the new
+   property will continue to support array representations of multiple filters.
+   * `Store` has gained a new property `filterIncludesChildren` to replace the functionality
+    previously provided by `StoreFilter.includesChildren`.
+   * `StoreFilterField.filterOptions` has been removed.  Set `filterIncludesChildren` directly
+   on the store instead.
 
 ### ✨ Style
 
