@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {
@@ -18,7 +19,6 @@ import {
     isString,
     keys,
     sortBy,
-    startCase,
     take,
     without
 } from 'lodash';
@@ -282,7 +282,7 @@ export class DimensionChooserModel {
         );
 
         return {
-            displayName: startCase(src.name),
+            displayName: genDisplayName(src.name),
             isLeafDimension: false,
             ...src
         };

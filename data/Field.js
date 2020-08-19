@@ -7,6 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {isDate, startCase} from 'lodash';
 
@@ -28,12 +29,12 @@ export class Field {
     constructor({
         name,
         type = FieldType.AUTO,
-        displayName = startCase(name),
+        displayName,
         defaultValue = null
     }) {
         this.name = name;
         this.type = type;
-        this.displayName = displayName;
+        this.displayName = withDefault(displayName, genDisplayName(name));
         this.defaultValue = defaultValue;
     }
 
@@ -95,10 +96,18 @@ export const FieldType = Object.freeze({
 });
 
 /**
+ * @param {string} fieldName - short name / code for a field.
+ * @return {string} - fieldName transformed into user-facing / longer name for display.
+ */
+export function genDisplayName(fieldName) {
+    return fieldName == 'id' ? 'ID' : startCase(fieldName);
+}
+
+/**
  * @typedef {Object} FieldConfig - ctor arguments for a Hoist data package Field.
  * @property {string} name - unique key representing this field.
  * @property {FieldType} [type] - default `FieldType.AUTO` indicates no conversion.
- * @property {string} [displayName] - user-friendly / longer name for display, defaults to `name`
- *      transformed via lodash `startCase` (e.g. fooBar -> Foo Bar).
+ * @property {string} [displayName] - user-facing / longer name for display, defaults to `name`
+ *      transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
  * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
  */

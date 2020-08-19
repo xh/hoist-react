@@ -96,8 +96,8 @@ export class CubeField extends Field {
  * @typedef {Object} CubeFieldConfig - extends {@see FieldConfig} with cube-specific configs.
  * @property {string} name - unique key representing this field.
  * @property {FieldType} [type] - default `FieldType.AUTO` indicates no conversion.
- * @property {string} [displayName] - user-friendly / longer name for display, defaults to `name`
- *      transformed via lodash `startCase` (e.g. fooBar -> Foo Bar).
+ * @property {string} [displayName] - user-facing / longer name for display, defaults to `name`
+ *      transformed via `genDisplayName()` (e.g. 'myField' -> 'My Field').
  * @property {*} [defaultValue] - value to be used for records with a null, or non-existent value.
  * @property {boolean} [c.isDimension] - true to allow this field to be used for grouping.
  * @property {(Aggregator|string)} [c.aggregator] - instance of a Hoist Cube Aggregator (from the
