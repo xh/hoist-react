@@ -74,13 +74,28 @@ export class FilterChooserFieldSpec {
     get isRangeType() { return this.filterType === 'range'}
     get isValueType() { return this.filterType === 'value'}
 
+    get isDateBasedFieldType() {
+        const {fieldType} = this;
+        return fieldType == FieldType.DATE || fieldType == FieldType.LOCAL_DATE;
+    }
+
+    get isNumericFieldType() {
+        const {fieldType} = this;
+        return fieldType == FieldType.INT || fieldType == FieldType.NUMBER;
+    }
+
+    get isBoolFieldType() {return this.fieldType == FieldType.BOOL}
+
     /**
      * @return {string} - a rendered example / representative data value to aid usability.
-     *      TODO - default return of upper fieldType is a bit rough (e.g. "INT")
      */
     get example() {
-        const {exampleValue, fieldType} = this;
-        return exampleValue ? this.renderValue(exampleValue) : fieldType.toUpperCase();
+        const {exampleValue} = this;
+        if (exampleValue) return this.renderValue(exampleValue);
+        if (this.isBoolFieldType) return 'true';
+        if (this.isDateBasedFieldType) return 'YYYYMMDD';
+        if (this.isNumericFieldType) return this.renderValue(1234);
+        return 'value';
     }
 
     /**
@@ -131,7 +146,7 @@ export class FilterChooserFieldSpec {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, op);
-        } else if (this.fieldType === FieldType.DATE || this.fieldType === FieldType.LOCAL_DATE) {
+        } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);
         } else {
             ret = value?.toString();
@@ -160,7 +175,7 @@ export class FilterChooserFieldSpec {
     parseValues(values, storeRecords) {
         if (values) return values; // If explicit values provided by caller, return as-is
         if (this.suggestValues) {
-            return this.fieldType === FieldType.BOOL ? [true, false] : this.extractValuesFromRecords(storeRecords);
+            return this.isBoolFieldType ? [true, false] : this.extractValuesFromRecords(storeRecords);
         }
         return null;
     }
@@ -171,7 +186,7 @@ export class FilterChooserFieldSpec {
     }
 
     getDefaultOperators() {
-        if (this.fieldType === FieldType.BOOL) return ['='];
+        if (this.isBoolFieldType) return ['='];
         return this.isValueType ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
