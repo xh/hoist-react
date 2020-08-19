@@ -435,10 +435,15 @@ export class FilterChooserModel {
     }
 
     @action
-    addToFavorites() {
-        const {value, favorites = []} = this;
-        if (isEmpty(value) || this.isFavorite(value)) return;
-        this.favorites = [...favorites, value];
+    addFavorite(filter) {
+        if (isEmpty(filter) || this.isFavorite(filter)) return;
+        const {favorites = []} = this;
+        this.favorites = [...favorites, filter];
+    }
+
+    @action
+    removeFavorite(filter) {
+        this.favorites = this.favorites.filter(f => !f.equals(filter));
     }
 
     isFavorite(filter) {

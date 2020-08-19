@@ -8,10 +8,10 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 
 /**
@@ -41,24 +41,15 @@ const addButton = hoistCmp.factory({
         return button({
             className: classNames('xh-filter-chooser-favorites__add-btn', isFavorite ? 'favorite' : null),
             icon: Icon.favorite({prefix: isFavorite ? 'fas' : 'fal'}),
-            onClick: () => model.addToFavorites()
+            onClick: () => model.addFavorite(model.value)
         });
     }
 });
 
 const favoritesMenu = hoistCmp.factory({
     render({model}) {
-        return menu({
-            items: [
-                ...model.favoritesOptions?.map(opt => favoriteMenuItem({...opt})),
-                menuDivider(),
-                menuItem({
-                    icon: Icon.table(),
-                    text: 'Manage Favorites',
-                    onClick: () => console.log('Manage favorites') // Todo: Dialog
-                })
-            ].filter(filterConsecutiveMenuSeparators())
-        });
+        const items = model.favoritesOptions?.map(opt => favoriteMenuItem({...opt}));
+        return !isEmpty(items) ? menu({items}) : null;
     }
 });
 
@@ -67,7 +58,15 @@ const favoriteMenuItem = hoistCmp.factory({
         return menuItem({
             text,
             className: 'xh-filter-chooser-favorites__item',
-            onClick: () => model.setValue(value)
+            onClick: () => model.setValue(value),
+            labelElement: button({
+                icon: Icon.cross(),
+                intent: 'danger',
+                onClick: (e) => {
+                    model.removeFavorite(value);
+                    e.stopPropagation();
+                }
+            })
         });
     }
 });
