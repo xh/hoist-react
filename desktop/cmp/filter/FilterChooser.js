@@ -14,6 +14,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 
 import './FilterChooser.scss';
@@ -151,8 +152,9 @@ const favoritesMenu = hoistCmp.factory({
         return menu({
             items: [
                 menuItem({
+                    icon: Icon.add({className: 'xh-intent-success'}),
                     text: 'Add to favorites',
-                    disabled: isFavorite,
+                    disabled: isEmpty(model.value) || isFavorite,
                     onClick: () => model.addFavorite(model.value)
                 }),
                 menuDivider(),
