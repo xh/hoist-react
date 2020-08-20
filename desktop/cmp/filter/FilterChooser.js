@@ -37,6 +37,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     flex: 1,
                     bind: 'selectValue',
                     ref: inputRef,
+                    placeholder: 'Filter...',
                     enableMulti: true,
                     enableClear: true,
                     queryFn: (q) => model.queryAsync(q),

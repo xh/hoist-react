@@ -30,8 +30,22 @@ Store's ability to infer its Fields from Grid Column definitions.
 
 We are looking to gradually invert this relationship, so that core information about an app's
 business objects and their properties is configured once at the `data/Field` level and then made
-available to related APIs and components such as grids, filters, and forms. These deeper
-integrations remain a work in progress.
+available to related APIs and components such as grids, filters, and forms. See note in New Features
+below regarding related updates to `GridModel.columns` config processing.
+
+#### Grid
+
+* Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
+  convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
+  show or hide a single column.
+* Elided Grid column headers now show the full `headerName` value in a tooltip.
+* Grid column definitions now accept a new `displayName` config as the recommended entry point for
+  defining a friendly user-facing label for a Column.
+  * If the GridModel's Store has configured a `displayName` for the linked data field, the column
+    will default to use that (if not otherwise specified).
+  * If specified or sourced from a Field, `displayName` will be used as the default value for the
+    pre-existing `headerName` and `chooserName` configs.
+* Grid columns backed by a Store Field of type `number` or `int` will be right-aligned by default.
 
 #### Other
 
@@ -39,10 +53,6 @@ integrations remain a work in progress.
   menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
-* Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
-  convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
-  show or hide a single column.
-* Elided Grid column headers now show the full `headerName` value in a tooltip.
 * `LocalDate` has gained new static factories `tomorrow()` and `yesterday()`.
 
 ### 💥 Breaking Changes
@@ -93,6 +103,7 @@ integrations remain a work in progress.
 ### 📚 Libraries
 
 * @blueprintjs/core `3.30 -> 3.31`
+* codemirror `5.56 -> 5.57`
 * store2 `2.11 -> 2.12`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)

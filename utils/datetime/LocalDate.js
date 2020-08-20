@@ -25,6 +25,10 @@ export class LocalDate {
     static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
+    // Very basic preliminary regex to partially validate input to LocalDate.get().
+    // Input fully validated as a date when passed to moment in constructor.
+    static fmtRegEx = new RegExp(/^\d{8}$/)
+
     _isoString;
     _moment;
     _date;
@@ -40,7 +44,7 @@ export class LocalDate {
      * @returns {LocalDate}
      */
     static get(s) {
-        throwIf(!isString(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
+        throwIf(!isString(s) || !LocalDate.fmtRegEx.test(s), 'LocalDate.get() requires a string of the form "YYYYMMDD"');
 
         let {_instances} = this,
             ret = _instances.get(s);

@@ -7,6 +7,7 @@
 
 import {FieldFilter, FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
@@ -74,13 +75,28 @@ export class FilterChooserFieldSpec {
     get isRangeType() { return this.filterType === 'range'}
     get isValueType() { return this.filterType === 'value'}
 
+    get isDateBasedFieldType() {
+        const {fieldType} = this;
+        return fieldType == FieldType.DATE || fieldType == FieldType.LOCAL_DATE;
+    }
+
+    get isNumericFieldType() {
+        const {fieldType} = this;
+        return fieldType == FieldType.INT || fieldType == FieldType.NUMBER;
+    }
+
+    get isBoolFieldType() {return this.fieldType == FieldType.BOOL}
+
     /**
      * @return {string} - a rendered example / representative data value to aid usability.
-     *      TODO - default return of upper fieldType is a bit rough (e.g. "INT")
      */
     get example() {
-        const {exampleValue, fieldType} = this;
-        return exampleValue ? this.renderValue(exampleValue) : fieldType.toUpperCase();
+        const {exampleValue} = this;
+        if (exampleValue) return this.renderValue(exampleValue);
+        if (this.isBoolFieldType) return 'true';
+        if (this.isDateBasedFieldType) return 'YYYYMMDD';
+        if (this.isNumericFieldType) return this.renderValue(1234);
+        return 'value';
     }
 
     /**
@@ -131,7 +147,7 @@ export class FilterChooserFieldSpec {
         let ret;
         if (isFunction(this.valueRenderer)) {
             ret = this.valueRenderer(value, op);
-        } else if (this.fieldType === FieldType.DATE || this.fieldType === FieldType.LOCAL_DATE) {
+        } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);
         } else {
             ret = value?.toString();
@@ -140,9 +156,22 @@ export class FilterChooserFieldSpec {
     }
 
     parseValue(value, op) {
-        return isFunction(this.valueParser) ?
-            this.valueParser(value, op) :
-            parseFieldValue(value, this.fieldType);
+        const {fieldType} = this;
+
+        if (isFunction(this.valueParser)) {
+            return this.valueParser(value, op);
+        }
+
+        // Special handling for default localDate parsing to avoid throwing within parseFieldValue
+        // when piping in special input values. Also supports user entering dash-separated dates,
+        // which is likely given that we show resolved dates in that format.
+        // TODO - consider a less-strict, more flexible version or flag for parseFieldValue.
+        if (fieldType == FieldType.LOCAL_DATE) {
+            value = value.replace(/-/g, '');
+            return LocalDate.fmtRegEx.test(value) ? LocalDate.get(value) : null;
+        } else {
+            return parseFieldValue(value, fieldType);
+        }
     }
 
     /**
@@ -160,7 +189,7 @@ export class FilterChooserFieldSpec {
     parseValues(values, storeRecords) {
         if (values) return values; // If explicit values provided by caller, return as-is
         if (this.suggestValues) {
-            return this.fieldType === FieldType.BOOL ? [true, false] : this.extractValuesFromRecords(storeRecords);
+            return this.isBoolFieldType ? [true, false] : this.extractValuesFromRecords(storeRecords);
         }
         return null;
     }
@@ -171,7 +200,7 @@ export class FilterChooserFieldSpec {
     }
 
     getDefaultOperators() {
-        if (this.fieldType === FieldType.BOOL) return ['='];
+        if (this.isBoolFieldType) return ['='];
         return this.isValueType ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
