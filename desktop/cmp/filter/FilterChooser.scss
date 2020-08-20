@@ -83,15 +83,23 @@
   }
 }
 
-// Todo: Rework this
-.xh-filter-chooser-favorites {
-  &__add-btn.favorite {
-    color: var(--xh-orange) !important;
+.xh-filter-chooser-favorite {
+  align-items: center;
+  max-width: 50vw;
+
+  .xh-hbox {
+    flex-wrap: wrap;
+  }
+
+  .xh-button {
+    padding: 0 !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
   }
 
   &__tag {
-    margin-right: var(--xh-pad-half-px);
-    padding: 3px 5px;
+    margin-right: 3px;
+    padding: 0 5px;
     color: var(--xh-text-color);
     font-size: var(--xh-font-size-small-px);
     background-color: var(--xh-bg-alt);

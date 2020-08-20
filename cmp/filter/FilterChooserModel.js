@@ -66,9 +66,6 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
-     *      shown in this field. Currently this control only edits and creates a flat collection of
-     *      FilterFields, to be 'AND' together.
      * @param {Store} c.store - Store to use for Field resolution as well as extraction of available
      *      Record values for field-specific suggestions. Note that configuring the store here does
      *      NOT cause that store to be automatically filtered or otherwise bound to the Filter.
@@ -77,22 +74,25 @@ export class FilterChooserModel {
      *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
      *      objects to select and customize fields available for filtering. Optional - if not
      *      provided, all Store Fields will be included with options defaulted based on their type.
+     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
+     *      shown in this field. Currently this control only edits and creates a flat collection of
+     *      FilterFields, to be 'AND' together.
+     * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filters.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
-        initialValue = null,
         store,
         fieldSpecs,
+        initialValue = null,
+        initialFavorites = [],
         maxResults = 10,
         persistWith
     }) {
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
 
-        this.initialValue = initialValue;
         this.store = store;
         this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
-
         this.maxResults = maxResults;
 
         // Read state from provider -- fail gently
@@ -105,7 +105,7 @@ export class FilterChooserModel {
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) initialValue = state.value;
                 if (this.persistFavorites && state?.favorites) {
-                    this.favorites = state.favorites.map(f => parseFilter(f));
+                    initialFavorites = state.favorites.map(f => parseFilter(f));
                 }
 
                 this.addReaction({
@@ -126,6 +126,7 @@ export class FilterChooserModel {
         });
 
         this.setValue(initialValue);
+        this.setFavorites(initialFavorites);
     }
 
     /**
@@ -430,9 +431,9 @@ export class FilterChooserModel {
         const {favorites = []} = this;
         return sortBy(favorites.map(value => {
             const fieldFilters = this.toFieldFilters(value),
-                text = this.getOptionsForFilters(fieldFilters).map(it => it.label).join(' • ');
-            return {value, text};
-        }), it => it.text);
+                labels = this.getOptionsForFilters(fieldFilters).map(it => it.label);
+            return {value, labels};
+        }), it => it.labels[0]);
     }
 
     @action
@@ -443,6 +444,11 @@ export class FilterChooserModel {
     @action
     closeFavoritesMenu() {
         this.favoritesIsOpen = false;
+    }
+
+    @action
+    setFavorites(filters) {
+        this.favorites = filters;
     }
 
     @action

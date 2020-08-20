@@ -6,13 +6,14 @@
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {box, div, hframe} from '@xh/hoist/cmp/layout';
+import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {Select, select} from '@xh/hoist/desktop/cmp/input';
 import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 
 import './FilterChooser.scss';
@@ -155,15 +156,15 @@ const favoritesMenu = hoistCmp.factory({
                 }),
                 menuDivider(),
                 ...options
-            ]
+            ].filter(filterConsecutiveMenuSeparators())
         });
     }
 });
 
 const favoriteMenuItem = hoistCmp.factory({
-    render({model, text, value}) {
+    render({model, value, labels}) {
         return menuItem({
-            text,
+            text: hbox(labels.map(label => favoriteTag({label}))),
             className: 'xh-filter-chooser-favorite',
             onClick: () => model.setValue(value),
             labelElement: button({
@@ -174,6 +175,15 @@ const favoriteMenuItem = hoistCmp.factory({
                     e.stopPropagation();
                 }
             })
+        });
+    }
+});
+
+const favoriteTag = hoistCmp.factory({
+    render({label}) {
+        return div({
+            className: 'xh-filter-chooser-favorite__tag',
+            item: label
         });
     }
 });
