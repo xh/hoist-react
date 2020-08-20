@@ -760,7 +760,7 @@ export class GridModel {
                 const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {
-                if (col.colId == colId) return col;
+                if (col.colId === colId) return col;
             }
         }
         return null;
@@ -934,7 +934,7 @@ export class GridModel {
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        // 4) Enhance/create config (if needed) and set Store.
+        // 4) Enhance store config and create (if needed), then set.
         if (isPlainObject(store)) {
             const storeConfig = this.enhanceStoreConfigFromColumns(store);
             this.store = this.markManaged(new Store(storeConfig));
@@ -984,7 +984,7 @@ export class GridModel {
         const numTypes = [FieldType.INT, FieldType.NUMBER];
         return colConfigs.map(col => {
             // Note this routine currently works with either Field instances or configs.
-            const field = storeFields.find(f => f.name == col.field);
+            const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
             return {
