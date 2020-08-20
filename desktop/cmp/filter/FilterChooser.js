@@ -25,6 +25,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             className,
             bind: 'selectValue',
             ref: inputRef,
+            placeholder: 'Filter...',
             enableMulti: true,
             enableClear: true,
             hideDropdownIndicator: true,
