@@ -67,6 +67,7 @@ const tbar = hoistCmp.factory(
                         placeholder: 'Search...',
                         enableClear: true
                     }),
+                    toolbarSep(),
                     button({
                         icon: Icon.reset(),
                         intent: 'danger',
