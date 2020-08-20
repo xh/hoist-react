@@ -4,18 +4,17 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {Select, select} from '@xh/hoist/desktop/cmp/input';
-import {menu, menuItem, menuDivider, popover} from '@xh/hoist/kit/blueprint';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {Select, select} from '@xh/hoist/desktop/cmp/input';
 import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {isEmpty} from 'lodash';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isEmpty} from 'lodash';
 
 import './FilterChooser.scss';
 
@@ -131,7 +130,7 @@ function favoritesIcon(model) {
     if (!model.persistFavorites) return null;
     const isFavorite = model.isFavorite(model.value);
     return Icon.favorite({
-        prefix: isFavorite ? 'fas' : 'fal',
+        prefix: isFavorite ? 'fas' : 'far',
         className: classNames(
             'xh-select__indicator',
             'xh-filter-chooser-favorite-icon',
@@ -147,20 +146,27 @@ function favoritesIcon(model) {
 const favoritesMenu = hoistCmp.factory({
     render({model}) {
         const options = model.favoritesOptions?.map(opt => favoriteMenuItem({...opt})),
-            isFavorite = model.isFavorite(model.value);
+            isFavorite = model.isFavorite(model.value),
+            addDisabled = isEmpty(model.value) || isFavorite,
+            items = [];
 
-        return menu({
-            items: [
-                menuItem({
-                    icon: Icon.add({className: 'xh-intent-success'}),
-                    text: 'Add to favorites',
-                    disabled: isEmpty(model.value) || isFavorite,
-                    onClick: () => model.addFavorite(model.value)
-                }),
-                menuDivider(),
-                ...options
-            ].filter(filterConsecutiveMenuSeparators())
-        });
+        if (isEmpty(options)) {
+            items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
+        } else {
+            items.push(...options);
+        }
+
+        items.push(
+            menuDivider(),
+            menuItem({
+                icon: Icon.add({className: addDisabled ? '' : 'xh-intent-success'}),
+                text: 'Add current filter to favorites',
+                disabled: addDisabled,
+                onClick: () => model.addFavorite(model.value)
+            })
+        );
+
+        return menu({items});
     }
 });
 
