@@ -7,6 +7,7 @@
 
 import {FieldFilter, FieldType, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
@@ -155,9 +156,22 @@ export class FilterChooserFieldSpec {
     }
 
     parseValue(value, op) {
-        return isFunction(this.valueParser) ?
-            this.valueParser(value, op) :
-            parseFieldValue(value, this.fieldType);
+        const {fieldType} = this;
+
+        if (isFunction(this.valueParser)) {
+            return this.valueParser(value, op);
+        }
+
+        // Special handling for default localDate parsing to avoid throwing within parseFieldValue
+        // when piping in special input values. Also supports user entering dash-separated dates,
+        // which is likely given that we show resolved dates in that format.
+        // TODO - consider a less-strict, more flexible version or flag for parseFieldValue.
+        if (fieldType == FieldType.LOCAL_DATE) {
+            value = value.replace(/-/g, '');
+            return LocalDate.fmtRegEx.test(value) ? LocalDate.get(value) : null;
+        } else {
+            return parseFieldValue(value, fieldType);
+        }
     }
 
     /**
