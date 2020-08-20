@@ -210,21 +210,24 @@ export class Column {
             this.fieldPath = splitFieldPath ? field.split('.') : field;
         }
 
-        this.colId = withDefault(colId, field);
+        this.colId = colId || field;
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
 
         // Note that parent GridModel might have already defaulted displayName from an associated
-        // `Store.field` when pre-processing Column configs - prior to calling this ctor.
-        this.displayName = withDefault(displayName, genDisplayName(this.colId));
+        // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
+        // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
+        this.displayName = displayName || genDisplayName(this.colId);
 
+        // In contrast, headerName supports a null or '' value when no header label is desired.
         this.headerName = withDefault(headerName, this.displayName);
+
         this.headerTooltip = headerTooltip;
         this.headerClass = headerClass;
         this.cellClass = cellClass;
         this.align = align;
-        this.headerAlign = headerAlign ?? align;
+        this.headerAlign = headerAlign || align;
 
         this.hidden = withDefault(hidden, false);
         warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
@@ -267,7 +270,7 @@ export class Column {
             'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
         );
 
-        this.chooserName = withDefault(chooserName, this.displayName);
+        this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
         this.chooserDescription = chooserDescription;
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
