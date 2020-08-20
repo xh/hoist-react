@@ -100,7 +100,7 @@ export const FieldType = Object.freeze({
  * @return {string} - fieldName transformed into user-facing / longer name for display.
  */
 export function genDisplayName(fieldName) {
-    return fieldName == 'id' ? 'ID' : startCase(fieldName);
+    return fieldName === 'id' ? 'ID' : startCase(fieldName);
 }
 
 /**
