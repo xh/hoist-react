@@ -5,11 +5,10 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {dateInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInput} from '@xh/hoist/desktop/cmp/input';
+import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -20,7 +19,7 @@ import {ClientErrorsModel} from './ClientErrorsModel';
 export const clientErrorsView = hoistCmp.factory({
     model: creates(ClientErrorsModel),
 
-    render({model}) {
+    render() {
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
@@ -35,7 +34,6 @@ export const clientErrorsView = hoistCmp.factory({
 
 const tbar = hoistCmp.factory(
     ({model}) => {
-        const {lookups} = model;
         return toolbar(
             button({
                 icon: Icon.angleLeft(),
@@ -47,19 +45,11 @@ const tbar = hoistCmp.factory(
             button({
                 icon: Icon.angleRight(),
                 onClick: () => model.adjustDates('add'),
-                disabled: model.endDate >= LocalDate.today()
+                disabled: model.endDate >= LocalDate.tomorrow()
             }),
-            toolbarSep(),
-            select({
-                bind: 'username',
-                placeholder: 'All Users',
-                options: lookups.usernames,
-                ...selectInputProps
-            }),
-            textInput({
-                bind: 'error',
-                placeholder: 'Search errors...',
-                width: 260,
+            filterChooser({
+                flex: 1,
+                placeholder: 'Search...',
                 enableClear: true
             }),
             button({
@@ -68,9 +58,8 @@ const tbar = hoistCmp.factory(
                 title: 'Reset query to defaults',
                 onClick: () => model.resetQuery()
             }),
-            filler(),
+            toolbarSep(),
             gridCountLabel({unit: 'error'}),
-            storeFilterField(),
             colChooserButton(),
             exportButton()
         );
@@ -78,4 +67,3 @@ const tbar = hoistCmp.factory(
 );
 
 const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
-const selectInputProps = {width: 160, enableClear: true};

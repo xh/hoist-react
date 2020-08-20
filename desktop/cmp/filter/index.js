@@ -4,11 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {StoreFilter} from '../../StoreFilter';
 
-export class NoMatchFilter extends StoreFilter {
-
-    constructor(record) {
-        super({fn: () => false});
-    }
-}
+export * from './FilterChooser';
+export * from '@xh/hoist/cmp/filter';

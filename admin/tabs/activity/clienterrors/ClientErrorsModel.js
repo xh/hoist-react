@@ -5,14 +5,16 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {usernameCol} from '@xh/hoist/admin/columns';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {fmtSpan} from '@xh/hoist/format';
+import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, comparer, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import moment from 'moment';
 
 @HoistModel
 @LoadSupport
@@ -20,18 +22,15 @@ export class ClientErrorsModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
-    @bindable.ref startDate = LocalDate.today().subtract(6, 'months');
-    @bindable.ref endDate = LocalDate.today();
-    @bindable username;
-    @bindable error;
+    @bindable.ref startDate;
+    @bindable.ref endDate;
 
     /** @member {GridModel} */
-    @managed gridModel
+    @managed gridModel;
     /** @member {FormModel} */
     @managed formModel;
-
-    /** @member {{}} - distinct values for key dimensions, used to power query selects. */
-    @bindable.ref lookups = {};
+    /** @member {FilterChooserModel} */
+    @managed filterChooserModel;
 
     get selectedRecord() {return this.gridModel.selectedRecord}
 
@@ -39,10 +38,27 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
+        this.startDate = this.getDefaultStartDate();
+        this.endDate = this.getDefaultEndDate();
+
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
             enableColChooser: true,
             enableExport: true,
+            store: {
+                fields: [
+                    {name: 'username', type: 'string'},
+                    {name: 'browser', type: 'string'},
+                    {name: 'device', type: 'string'},
+                    {name: 'userAgent', type: 'string'},
+                    {name: 'appVersion', type: 'string'},
+                    {name: 'appEnvironment', displayName: 'Environment', type: 'string'},
+                    {name: 'msg', displayName: 'User Message', type: 'string'},
+                    {name: 'error', displayName: 'Error Details', type: 'string'},
+                    {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                    {name: 'userAlerted', type: 'bool'}
+                ]
+            },
             exportOptions: {
                 filename: `${XH.appCode}-client-errors`,
                 columns: 'ALL'
@@ -94,6 +110,48 @@ export class ClientErrorsModel {
             ]
         });
 
+        this.filterChooserModel = new FilterChooserModel({
+            store: this.gridModel.store,
+            fieldSpecs: [
+                'username',
+                'browser',
+                'device',
+                'appVersion',
+                'appEnvironment',
+                'userAlerted',
+                {
+                    field: 'userAgent',
+                    suggestValues: false
+                },
+                {
+                    field: 'msg',
+                    suggestValues: false
+                },
+                {
+                    field: 'error',
+                    suggestValues: false
+                },
+                {
+                    field: 'dateCreated',
+                    exampleValue: Date.now(),
+                    valueParser: (v, op) => {
+                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                        if (!ret.isValid()) return null;
+
+                        // Note special handling for '>' & '<=' queries.
+                        if (['>', '<='].includes(op)) {
+                            ret = moment(ret).endOf('day');
+                        }
+
+                        return ret.toDate();
+                    },
+                    valueRenderer: (v) => fmtDate(v),
+                    ops: ['>', '>=', '<', '<=']
+                }
+            ],
+            persistWith: this.persistWith
+        });
+
         this.formModel = new FormModel({
             readonly: true,
             fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
@@ -102,30 +160,32 @@ export class ClientErrorsModel {
         this.addReaction({
             track: () => this.getParams(),
             run: () => this.loadAsync(),
-            equals: comparer.structural,
-            debounce: 100
+            equals: comparer.structural
         });
 
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
             run: (detailRec) => this.showEntryDetail(detailRec)
         });
+
+        this.addReaction({
+            track: () => this.filterChooserModel.value,
+            run: (v) => this.gridModel.setFilter(v),
+            fireImmediately: true
+        });
     }
 
     @action
     resetQuery() {
-        this.startDate = LocalDate.today().subtract(6, 'months');
-        this.endDate = LocalDate.today();
-        this.username = null;
-        this.error = null;
+        this.startDate = this.getDefaultStartDate();
+        this.endDate = this.getDefaultEndDate();
+        this.filterChooserModel.setValue(null);
     }
 
     async doLoadAsync(loadSpec) {
         const {gridModel} = this;
 
         try {
-            await this.loadLookupsAsync(loadSpec);
-
             const data = await XH.fetchJson({
                 url: 'clientErrorAdmin',
                 params: this.getParams(),
@@ -140,15 +200,6 @@ export class ClientErrorsModel {
             gridModel.clear();
             XH.handleException(e);
         }
-    }
-
-    async loadLookupsAsync(loadSpec) {
-        const lookups = await XH.fetchJson({
-            url: 'clientErrorAdmin/lookups',
-            loadSpec
-        });
-
-        this.setLookups(lookups);
     }
 
     @action
@@ -168,8 +219,9 @@ export class ClientErrorsModel {
         this.formattedErrorJson = formattedErrorJson;
     }
 
-    adjustDates(dir, toToday = false) {
-        const today = LocalDate.today(),
+    @action
+    adjustDates(dir) {
+        const tomorrow = LocalDate.tomorrow(),
             start = this.startDate,
             end = this.endDate,
             diff = end.diff(start),
@@ -178,21 +230,22 @@ export class ClientErrorsModel {
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd.diff(today) > 0 || toToday) {
-            newStart = today.subtract(Math.abs(diff));
-            newEnd = today;
+        if (newEnd > tomorrow) {
+            newStart = tomorrow.subtract(Math.abs(diff));
+            newEnd = tomorrow;
         }
 
-        this.setStartDate(newStart);
-        this.setEndDate(newEnd);
+        this.startDate = newStart;
+        this.endDate = newEnd;
     }
 
     getParams() {
-        return {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            username: this.username,
-            error: this.error
-        };
+        const {startDate, endDate} = this;
+        return {startDate, endDate};
     }
+
+    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
+    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
+    getDefaultEndDate() {return LocalDate.tomorrow()}
+
 }
