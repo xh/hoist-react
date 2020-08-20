@@ -45,6 +45,7 @@ below regarding related updates to `GridModel.columns` config processing.
     will default to use that (if not otherwise specified).
   * If specified or sourced from a Field, `displayName` will be used as the default value for the
     pre-existing `headerName` and `chooserName` configs.
+* Grid columns backed by a Store Field of type `number` or `int` will be right-aligned by default.
 
 #### Other
 
