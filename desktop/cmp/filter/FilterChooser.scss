@@ -5,6 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+.xh-filter-chooser {
+  .bp3-popover-wrapper,
+  .bp3-popover-target {
+    display: flex;
+    flex: 1;
+  }
+}
+
 .xh-filter-chooser-option {
   padding: 0 var(--xh-pad-px);
 
@@ -69,6 +77,13 @@
   }
 }
 
+.xh-filter-chooser-favorite-icon {
+  &--active {
+    color: var(--xh-orange) !important;
+  }
+}
+
+// Todo: Rework this
 .xh-filter-chooser-favorites {
   &__add-btn.favorite {
     color: var(--xh-orange) !important;

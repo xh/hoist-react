@@ -6,5 +6,4 @@
  */
 
 export * from './FilterChooser';
-export * from './FilterChooserFavoritesMenu';
 export * from '@xh/hoist/cmp/filter';

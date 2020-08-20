@@ -10,7 +10,7 @@ import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {dimensionChooser} from '@xh/hoist/desktop/cmp/dimensionchooser';
-import {filterChooser, filterChooserFavoritesMenu} from '@xh/hoist/desktop/cmp/filter';
+import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -67,7 +67,6 @@ const tbar = hoistCmp.factory(
                         placeholder: 'Search...',
                         enableClear: true
                     }),
-                    filterChooserFavoritesMenu(),
                     toolbarSep(),
                     button({
                         icon: Icon.reset(),

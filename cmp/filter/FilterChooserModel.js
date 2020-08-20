@@ -54,6 +54,7 @@ export class FilterChooserModel {
     // Implementation fields for Control
     @observable.ref selectOptions;
     @observable.ref selectValue;
+    @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
     /** @member {RawFilterChooserFieldSpec[]} */
@@ -432,6 +433,16 @@ export class FilterChooserModel {
                 text = this.getOptionsForFilters(fieldFilters).map(it => it.label).join(' • ');
             return {value, text};
         }), it => it.text);
+    }
+
+    @action
+    openFavoritesMenu() {
+        this.favoritesIsOpen = true;
+    }
+
+    @action
+    closeFavoritesMenu() {
+        this.favoritesIsOpen = false;
     }
 
     @action
