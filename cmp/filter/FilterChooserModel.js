@@ -76,8 +76,8 @@ export class FilterChooserModel {
      *      provided, all Store Fields will be included with options defaulted based on their type.
      * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
      *      shown in this field. Currently this control only edits and creates a flat collection of
-     *      FilterFields, to be 'AND' together.
-     * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filters.
+     *      FieldFilters, to be 'AND'ed together.
+     * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
