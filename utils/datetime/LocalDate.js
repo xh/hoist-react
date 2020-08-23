@@ -32,6 +32,7 @@ export class LocalDate {
     _isoString;
     _moment;
     _date;
+    _getterCache = new Map();
 
     //------------------------
     // Factories
@@ -100,34 +101,49 @@ export class LocalDate {
     //--------------------
     // Getters and basic methods.
     //--------------------
+    /** @return {string} */
     get isoString() {
         return this._isoString;
     }
 
+    /** @return {Date} */
     get date() {
         return new Date(this.timestamp);
     }
 
+    /** @return {moment} */
     get moment() {
         return this._moment.clone();
     }
 
+    /** @return {number} */
     get timestamp() {
         return this._date.getTime();
     }
 
+    /** @return {string} */
     format(...args) {
         return this._moment.format(...args);
     }
 
+    /** @return {string} */
     dayOfWeek() {
-        return this.format('dddd');
+        return this.cachedGet('dayOfWeek', () => this.format('dddd'));
     }
 
+    /** @return {boolean} */
     get isWeekday() {
-        const day = this._moment.day();
-        return day > 0 && day < 6;
+        return this.cachedGet('isWeekday', () => {
+            const day = this._moment.day();
+            return day > 0 && day < 6;
+        });
     }
+
+    /** @return {boolean} */
+    get isStartOfMonth() {return this === this.startOfMonth()}
+
+    /** @return {boolean} */
+    get isEndOfMonth() {return this === this.endOfMonth()}
 
     //----------------
     // Core overrides.
@@ -149,64 +165,83 @@ export class LocalDate {
     //--------------------------
     // Manipulate/Calendar logic
     //--------------------------
+    /** @return {LocalDate} */
     add(value, unit = 'days') {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.add(value, unit));
     }
 
+    /** @return {LocalDate} */
     subtract(value, unit = 'days') {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.subtract(value, unit));
     }
 
+    /** @return {LocalDate} */
     startOf(unit) {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.startOf(unit));
     }
 
+    /** @return {LocalDate} */
+    startOfMonth() {
+        return this.cachedGet('startOfMonth', () => this.startOf('month'));
+    }
+
+    /** @return {LocalDate} */
     endOf(unit) {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.endOf(unit));
     }
 
+    /** @return {LocalDate} */
+    endOfMonth() {
+        return this.cachedGet('endOfMonth', () => this.endOf('month'));
+    }
+
+    /** @return {LocalDate} */
     nextDay() {
-        return this.add(1);
+        return this.cachedGet('nextDay', () => this.add(1));
     }
 
+    /** @return {LocalDate} */
     previousDay() {
-        return this.subtract(1);
+        return this.cachedGet('previousDay', () => this.subtract(1));
     }
 
+    /** @return {LocalDate} */
     nextWeekday() {
-        switch (this._moment.day()) {
-            case 5:     return this.add(3);
-            case 6:     return this.add(2);
-            default:    return this.add(1);
-        }
+        return this.cachedGet('nextWeekday', () => {
+            switch (this._moment.day()) {
+                case 5:     return this.add(3);
+                case 6:     return this.add(2);
+                default:    return this.add(1);
+            }
+        });
     }
 
+    /** @return {LocalDate} */
     previousWeekday() {
-        switch (this._moment.day()) {
-            case 1:     return this.subtract(3);
-            case 7:     return this.subtract(2);
-            default:    return this.subtract(1);
-        }
+        return this.cachedGet('previousWeekday', () => {
+            switch (this._moment.day()) {
+                case 1:     return this.subtract(3);
+                case 7:     return this.subtract(2);
+                default:    return this.subtract(1);
+            }
+        });
     }
 
-    /**
-     * @returns {LocalDate} - the same date if already a weekday, or the next weekday.
-     */
+    /** @return {LocalDate} - the same date if already a weekday, or the next weekday. */
     currentOrNextWeekday() {
         return this.isWeekday ? this : this.nextWeekday();
     }
 
-    /**
-     * @returns {LocalDate} - the same date if already a weekday, or the previous weekday.
-     */
+    /** @return {LocalDate} - the same date if already a weekday, or the previous weekday. */
     currentOrPreviousWeekday() {
         return this.isWeekday ? this : this.previousWeekday();
     }
 
+    /** @return {number} */
     diff(other, unit = 'days') {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);
@@ -232,6 +267,18 @@ export class LocalDate {
             !LocalDate.VALID_UNITS.includes(unit),
             `Invalid unit for LocalDate adjustment: ${unit}`
         );
+    }
+
+    // Get from instance cache - for immutable getter transforms only.
+    cachedGet(key, fn) {
+        const {_getterCache} = this;
+        if (_getterCache.has(key)) {
+            return _getterCache.get(key);
+        } else {
+            const val = fn();
+            _getterCache.set(key, val);
+            return val;
+        }
     }
 }
 
