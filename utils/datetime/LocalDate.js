@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, computeOnce} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 import moment from 'moment';
 
@@ -27,12 +27,11 @@ export class LocalDate {
 
     // Very basic preliminary regex to partially validate input to LocalDate.get().
     // Input fully validated as a date when passed to moment in constructor.
-    static fmtRegEx = new RegExp(/^\d{8}$/)
+    static fmtRegEx = new RegExp(/^\d{8}$/);
 
     _isoString;
     _moment;
     _date;
-    _getterCache = new Map();
 
     //------------------------
     // Factories
@@ -127,16 +126,16 @@ export class LocalDate {
     }
 
     /** @return {string} */
+    @computeOnce
     dayOfWeek() {
-        return this.cachedGet('dayOfWeek', () => this.format('dddd'));
+        return this.format('dddd');
     }
 
     /** @return {boolean} */
+    @computeOnce
     get isWeekday() {
-        return this.cachedGet('isWeekday', () => {
-            const day = this._moment.day();
-            return day > 0 && day < 6;
-        });
+        const day = this._moment.day();
+        return day > 0 && day < 6;
     }
 
     /** @return {boolean} */
@@ -144,6 +143,12 @@ export class LocalDate {
 
     /** @return {boolean} */
     get isEndOfMonth() {return this === this.endOfMonth()}
+
+    /** @return {boolean} */
+    get isStartOfYear() {return this === this.startOfYear()}
+
+    /** @return {boolean} */
+    get isEndOfYear() {return this === this.endOfYear()}
 
     //----------------
     // Core overrides.
@@ -184,51 +189,59 @@ export class LocalDate {
     }
 
     /** @return {LocalDate} */
+    @computeOnce
     startOfMonth() {
-        return this.cachedGet('startOfMonth', () => this.startOf('month'));
+        return this.startOf('month');
     }
 
     /** @return {LocalDate} */
-    endOf(unit) {
-        this.ensureUnitValid(unit);
-        return LocalDate.from(this.moment.endOf(unit));
+    @computeOnce
+    startOfYear() {
+        return this.startOf('year');
     }
 
     /** @return {LocalDate} */
+    @computeOnce
     endOfMonth() {
-        return this.cachedGet('endOfMonth', () => this.endOf('month'));
+        return this.endOf('month');
     }
 
     /** @return {LocalDate} */
+    @computeOnce
+    endOfYear() {
+        return this.endOf('year');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
     nextDay() {
-        return this.cachedGet('nextDay', () => this.add(1));
+        return this.add(1);
     }
 
     /** @return {LocalDate} */
+    @computeOnce
     previousDay() {
-        return this.cachedGet('previousDay', () => this.subtract(1));
+        return this.subtract(1);
     }
 
     /** @return {LocalDate} */
+    @computeOnce
     nextWeekday() {
-        return this.cachedGet('nextWeekday', () => {
-            switch (this._moment.day()) {
-                case 5:     return this.add(3);
-                case 6:     return this.add(2);
-                default:    return this.add(1);
-            }
-        });
+        switch (this._moment.day()) {
+            case 5:     return this.add(3);
+            case 6:     return this.add(2);
+            default:    return this.add(1);
+        }
     }
 
     /** @return {LocalDate} */
+    @computeOnce
     previousWeekday() {
-        return this.cachedGet('previousWeekday', () => {
-            switch (this._moment.day()) {
-                case 1:     return this.subtract(3);
-                case 7:     return this.subtract(2);
-                default:    return this.subtract(1);
-            }
-        });
+        switch (this._moment.day()) {
+            case 1:     return this.subtract(3);
+            case 7:     return this.subtract(2);
+            default:    return this.subtract(1);
+        }
     }
 
     /** @return {LocalDate} - the same date if already a weekday, or the next weekday. */
@@ -257,7 +270,6 @@ export class LocalDate {
         this._isoString = s;
         this._moment = m;
         this._date = m.toDate();
-        Object.freeze(this);
     }
 
     ensureUnitValid(unit) {
@@ -267,18 +279,6 @@ export class LocalDate {
             !LocalDate.VALID_UNITS.includes(unit),
             `Invalid unit for LocalDate adjustment: ${unit}`
         );
-    }
-
-    // Get from instance cache - for immutable getter transforms only.
-    cachedGet(key, fn) {
-        const {_getterCache} = this;
-        if (_getterCache.has(key)) {
-            return _getterCache.get(key);
-        } else {
-            const val = fn();
-            _getterCache.set(key, val);
-            return val;
-        }
     }
 }
 
