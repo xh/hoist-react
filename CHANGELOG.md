@@ -4,17 +4,83 @@
 
 ### 🎁 New Features
 
+#### Data Filtering
+
+We have enhanced support for filtering data in Hoist Grids, Stores, and Cubes with an upgraded
+`Filter` API and a new `FilterChooser` component. This bundle of enhancements includes:
+
+* A new `@xh/hoist/data/filter` package to support the creation of composable filters, including the
+  following new classes:
+  * `FieldFilter` - filters by comparing the value of a given field to one or more given candidate
+    values using one of several supported operators.
+  * `FunctionFilter` - filters via a custom function specified by the developer.
+  * `CompoundFilter` - combines multiple filters (including other nested CompoundFilters) via an AND
+    or OR operator.
+* A new `FilterChooser` UI component that integrates tightly with these data package classes to
+  provide a user and developer friendly autocomplete-enabled UI for filtering data based on
+  dimensions (e.g. trader = jdoe, assetClass != Equities), metrics (e.g. P&L > 1m), or any
+  combination thereof.
+* Updates to `Store`, `StoreFilterField`, and `cube/Query` to use the new Filter API.
+* A new `setFilter()` convenience method to `Grid` and `DataView`.
+
+To get the most out of the new Filtering capabilities, developers are encouraged to add or expand
+the configs for any relevant `Store.fields` to include both their `type` and a `displayName`. Many
+applications might not have Field configs specified at all for their Stores, instead relying on
+Store's ability to infer its Fields from Grid Column definitions.
+
+We are looking to gradually invert this relationship, so that core information about an app's
+business objects and their properties is configured once at the `data/Field` level and then made
+available to related APIs and components such as grids, filters, and forms. See note in New Features
+below regarding related updates to `GridModel.columns` config processing.
+
+#### Grid
+
+* Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
+  convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
+  show or hide a single column.
+* Elided Grid column headers now show the full `headerName` value in a tooltip.
+* Grid column definitions now accept a new `displayName` config as the recommended entry point for
+  defining a friendly user-facing label for a Column.
+  * If the GridModel's Store has configured a `displayName` for the linked data field, the column
+    will default to use that (if not otherwise specified).
+  * If specified or sourced from a Field, `displayName` will be used as the default value for the
+    pre-existing `headerName` and `chooserName` configs.
+* Grid columns backed by a Store Field of type `number` or `int` will be right-aligned by default.
+* Added new `GridModel.showGroupRowCounts` config to allow easy hiding of group row member counts
+  within each full-width group row. Default is `true`, maintaining current behavior of showing the
+  counts for each group.
+
+#### Other
+
 * Added new `AppSpec.showBrowserContextMenu` config to control whether the browser's default context
   menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
-* Added new `GridModel.setColumnVisible()` method, along with `showColumn()` and `hideColumn()`
-  convenience methods. Can replace calls to `applyColumnStateChanges()` when all you need to do is
-  show or hide a single column.
-* Added new `GridModel.showGroupRowCounts` config to allow easy hiding of group row member counts
-  within each full-width group row. Default is `true`, maintaining current behavior of showing the
-  counts for each group.
-* By default, elided Grid column headers now show the full `headerName` value in a tooltip
+* `LocalDate` has gained several new static factories: `tomorrow()`, `yesterday()`,
+  `[start/end]OfMonth()`, and `[start/end]OfYear()`.
+* A new `@computeOnce` decorator allows for lazy computation and caching of the results of decorated
+  class methods or getters. Used in `LocalDate` and intended for similar immutable, long-lived
+  objects that can benefit from such caching.
+
+### 💥 Breaking Changes
+
+* Renamed the `data/Field.label` property to `displayName`.
+* Changed the `DimensionChooserModel.dimensions` config to require objects of the form `{name,
+  displayName, isLeafDimension}` when provided as an `Object[]`.
+  * Previously these objects were expected to be of the form `{value, label, isLeaf}`.
+  * Note however that this same config can now be passed the `dimensions` directly from a configured
+    `Cube` instead, which is the recommended approach and should DRY up dimension definitions for
+    typical use cases.
+* Changes required due to the new filter API:
+  * The classes `StoreFilter` and `ValueFilter` have been removed and replaced by `FunctionFilter`
+    and `FieldFilter`, respectively. In most cases apps will need to make minimal or no changes.
+  * The `filters/setFilters` property on `Query` has been changed to `filter/setFilter`. In most
+    case apps should not need to change anything other than the name of this property - the new
+    property will continue to support array representations of multiple filters.
+  * `Store` has gained a new property `filterIncludesChildren` to replace the functionality
+    previously provided by `StoreFilter.includesChildren`.
+  * `StoreFilterField.filterOptions` has been removed. Set `filterIncludesChildren` directly on the
+    store instead.
 
 ### ✨ Style
 
@@ -40,6 +106,12 @@
   same column.
 * Fixed issue where certain values (e.g. `%`) would break in `Column.tooltipElement`.
 * Fixed issue where newly loaded records in `Store` were not being frozen as promised by the API.
+
+### 📚 Libraries
+
+* @blueprintjs/core `3.30 -> 3.31`
+* codemirror `5.56 -> 5.57`
+* store2 `2.11 -> 2.12`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)
 

@@ -4,13 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {Rule, ValidationState} from '@xh/hoist/cmp/form';
 import {managed} from '@xh/hoist/core';
+import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
-import {compact, flatten, isEmpty, isFunction, isNil, isUndefined, startCase} from 'lodash';
-import {Rule} from '../validation/Rule';
-import {ValidationState} from '../validation/ValidationState';
+import {withDefault} from '@xh/hoist/utils/js';
+import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
 
 /**
  * Abstract Base class for FieldModels.
@@ -71,14 +72,14 @@ export class BaseFieldModel {
      */
     constructor({
         name,
-        displayName = startCase(name),
+        displayName,
         initialValue = null,
         disabled = false,
         readonly = false,
         rules = []
     }) {
         this.name = name;
-        this.displayName = displayName;
+        this.displayName = withDefault(displayName, genDisplayName(name));
         this.value = initialValue;
         this.initialValue = initialValue;
         this._disabled = disabled;
