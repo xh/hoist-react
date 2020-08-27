@@ -46,6 +46,9 @@ below regarding related updates to `GridModel.columns` config processing.
   * If specified or sourced from a Field, `displayName` will be used as the default value for the
     pre-existing `headerName` and `chooserName` configs.
 * Grid columns backed by a Store Field of type `number` or `int` will be right-aligned by default.
+* Added new `GridModel.showGroupRowCounts` config to allow easy hiding of group row member counts
+  within each full-width group row. Default is `true`, maintaining current behavior of showing the
+  counts for each group.
 
 #### Other
 
