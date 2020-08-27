@@ -201,6 +201,12 @@ export class LocalDate {
     }
 
     /** @return {LocalDate} */
+    endOf(unit) {
+        this.ensureUnitValid(unit);
+        return LocalDate.from(this.moment.endOf(unit));
+    }
+
+    /** @return {LocalDate} */
     @computeOnce
     endOfMonth() {
         return this.endOf('month');
