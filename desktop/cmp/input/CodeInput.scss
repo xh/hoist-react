@@ -4,14 +4,6 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-@import '~sass-material-colors/sass/sass-material-colors';
-
-//noinspection CssInvalidFunction
-@function mc-trans($color-name, $color-variant, $amount:0.5) {
-  @return transparentize(material-color($color-name, $color-variant), $amount);
-}
-
 .CodeMirror {
   font-family: var(--xh-font-family-mono);
   font-size: var(--xh-font-size-px);
@@ -23,23 +15,7 @@
   }
 
   .xh-code-input--highlight {
-    color: black !important;
-    background-color: #{mc-trans('amber', '700')};
-  }
-}
-
-.xh-dark .CodeMirror {
-  .xh-code-input--highlight {
-    color: black !important;
-    background-color: #{mc-trans('yellow', '400')};
-  }
-}
-
-.xh-dark .xh-code-input {
-  & > .CodeMirror {
-    .CodeMirror-selected {
-      background-color: #{mc-trans('yellow', '300', 0.4)};
-    }
+    background-color: var(--xh-bg-highlight);
   }
 }
 
@@ -66,7 +42,7 @@
     flex-direction: column;
 
     .CodeMirror-selected {
-      background-color: #{mc-trans('indigo', '300', 0.3)};
+      background-color: var(--xh-bg-highlight);
     }
 
     .CodeMirror-scroll {
@@ -140,6 +116,5 @@
     // See https://dfmcphee.com/flex-items-and-min-width-0/
     width: 0;
     min-width: 0;
-
   }
 }

@@ -47,23 +47,6 @@ import './CodeInput.scss';
 @LayoutSupport
 export class CodeInput extends HoistInput {
 
-    /** @member {CodeMirror} - a CodeMirror editor instance. */
-    editor;
-
-    /** CodeMirror SearchCursor add-on */
-    cursor;
-    /** @member {string} - local search input value. */
-    @bindable query;
-    /** @member {Object[]} - metadata on text matches for current search query. */
-    @observable.ref matches = [];
-    /** @member {?number} */
-    @observable currentMatchIdx = null;
-
-    get matchCount() {return this.matches.length}
-
-    @bindable fullScreen = false;
-    baseClassName = 'xh-code-input';
-
     static propTypes = {
         ...HoistInput.propTypes,
 
@@ -80,7 +63,7 @@ export class CodeInput extends HoistInput {
         editorProps: PT.object,
 
         /**
-         * True to enable case-insensitive search tool for input. Default false, except in
+         * True to enable case-insensitive searching within the input. Default false, except in
          * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
          * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
          */
@@ -96,8 +79,8 @@ export class CodeInput extends HoistInput {
         linter: PT.func,
 
         /**
-         * A CodeMirror language mode - default none (plain-text).
-         * See the CodeMirror docs ({@link https://codemirror.net/mode/}) regarding available modes.
+         * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
+         * ({@link https://codemirror.net/mode/}) regarding available modes.
          * Applications must import any mode they wish to enable.
          */
         mode: PT.string,
@@ -117,29 +100,40 @@ export class CodeInput extends HoistInput {
          */
         showFormatButton: PT.bool,
 
-        /** True (default) to display Fullscreen button at bottom-right of input. */
+        /** True (default) to display fullscreen button at bottom-right of input. */
         showFullscreenButton: PT.bool,
 
         /**
          * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
-         * Default is false unless enableSearch==true or in fullscreen mode. When false, action
-         * buttons show only when input is focused and float in the bottom-right corner.
+         * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
+         * action buttons show only when the input focused and float in the bottom-right corner.
          */
         showToolbar: PT.bool
     };
 
+
+    /** @member {CodeMirror} - a CodeMirror editor instance. */
+    editor;
+
+    // Support for internal search feature.
+    cursor = null;
+    @bindable query = '';
+    @observable currentMatchIdx = -1;
+    @observable.ref matches = [];
+    get matchCount() {return this.matches.length}
+
+    @observable fullScreen = false;
+    baseClassName = 'xh-code-input';
+
     get commitOnChange() {return withDefault(this.props.commitOnChange, true)}
 
     get showCopyButton() {return withDefault(this.props.showCopyButton, false)}
+
     get showFullscreenButton() {return withDefault(this.props.showFullscreenButton, true)}
+
     get showFormatButton() {
         const {disabled, readonly, formatter, showFormatButton} = this.props;
-        return (
-            !disabled &&
-            !readonly &&
-            isFunction(formatter) &&
-            withDefault(showFormatButton, true)
-        );
+        return (!disabled && !readonly && isFunction(formatter) && withDefault(showFormatButton, true));
     }
 
     get showAnyActionButtons() {
@@ -157,12 +151,12 @@ export class CodeInput extends HoistInput {
         if (showSearchInput) return true;
         // Show if prop enabled and at least one action button.
         if (props.showToolbar && showAnyActionButtons) return true;
-        // Show if fullscreen and prop not explicitly *disabled*.
-        return (fullScreen && props.showToolbar !== false);
+        // Show if fullscreen w/buttons and prop not explicitly *disabled*.
+        return (fullScreen && showAnyActionButtons && props.showToolbar !== false);
     }
 
     get actionButtons() {
-        const {showCopyButton, showFormatButton, showFullscreenButton, fullScreen, editor} = this;
+        const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
         return compact([
             showCopyButton ? clipboardButton({
                 text: null,
@@ -178,7 +172,7 @@ export class CodeInput extends HoistInput {
             showFullscreenButton ? button({
                 icon: this.fullScreen ? Icon.collapse() : Icon.expand(),
                 title: this.fullScreen ? 'Exit full screen' : 'Full screen',
-                onClick: () => this.setFullScreen(!fullScreen)
+                onClick: () => this.toggleFullScreen()
             }) : null
         ]);
     }
@@ -213,20 +207,17 @@ export class CodeInput extends HoistInput {
             }
         });
 
-        if (props.enableSearch || this.showFullscreenButton) {
-            this.addReaction({
-                track: () => this.query,
-                run: (query) => {
-                    if (query) {
-                        this.findAll();
-                    } else {
-                        this.clearSearchResults();
-                    }
-                },
-                fireImmediately: true,
-                debounce: 300
-            });
-        }
+        this.addReaction({
+            track: () => this.query,
+            run: (query) => {
+                if (query?.trim()) {
+                    this.findAll();
+                } else {
+                    this.clearSearchResults();
+                }
+            },
+            debounce: 300
+        });
     }
 
     render() {
@@ -247,7 +238,7 @@ export class CodeInput extends HoistInput {
                 isOpen: true,
                 canOutsideClickClose: true,
                 item: this.renderInput({flex: 1}),
-                onClose: () => this.setFullScreen(false)
+                onClose: () => this.toggleFullScreen()
             }),
             box({
                 className: 'xh-code-input--placeholder',
@@ -297,7 +288,7 @@ export class CodeInput extends HoistInput {
             // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
             frame({
                 flex: 1,
-                maxWidth: 500,
+                maxWidth: 400,
                 item: textInput({
                     width: null,
                     flex: 1,
@@ -342,14 +333,11 @@ export class CodeInput extends HoistInput {
     renderActionButtons() {
         const {hasFocus, actionButtons} = this;
 
-        if (!hasFocus || isEmpty(actionButtons)) {
-            return null;
-        }
-
-        return hbox({
-            className: 'xh-code-input__action-buttons',
-            items: actionButtons
-        });
+        return (hasFocus && actionButtons.length) ?
+            hbox({
+                className: 'xh-code-input__action-buttons',
+                items: actionButtons
+            }) : null;
     }
 
     //------------------
@@ -433,6 +421,10 @@ export class CodeInput extends HoistInput {
         }
     }
 
+    @action
+    toggleFullScreen() {
+        this.fullScreen = !this.fullScreen;
+    }
 
     //------------------------
     // Local Searching
@@ -440,7 +432,7 @@ export class CodeInput extends HoistInput {
     @action
     findAll() {
         this.clearSearchResults();
-        if (!this.query) return;
+        if (!this.query?.trim()) return;
 
         this.cursor = this.editor.getSearchCursor(this.query, 0, true);
 
