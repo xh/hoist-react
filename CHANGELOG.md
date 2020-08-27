@@ -58,6 +58,8 @@ below regarding related updates to `GridModel.columns` config processing.
 * A new `@computeOnce` decorator allows for lazy computation and caching of the results of decorated
   class methods or getters. Used in `LocalDate` and intended for similar immutable, long-lived
   objects that can benefit from such caching.
+* `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
+  provides an simple inline find feature for searching the input's contents.
 
 ### 💥 Breaking Changes
 
