@@ -21,7 +21,7 @@ import {isFunction, isNil} from 'lodash';
  *
  * @private and immutable.
  */
-export class FilterChooserFieldSpec {
+export class FieldSpec {
 
     /** @member {Field} */
     field;
@@ -102,7 +102,7 @@ export class FilterChooserFieldSpec {
     /**
      * @see FilterChooserFieldSpecConfig typedef for more details on these arguments -
      *      it documents the developer-facing API that will ultimately construct this class.
-     * @param {Object} c - FilterChooserFieldSpec configuration.
+     * @param {Object} c - FieldSpec configuration.
      * @param {Field} c.field
      * @param {string} [c.displayName]
      * @param {string[]} [c.ops]

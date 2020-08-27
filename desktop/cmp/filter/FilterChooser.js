@@ -14,7 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isEmpty, sortBy} from 'lodash';
 
 import './FilterChooser.scss';
 
@@ -78,9 +78,10 @@ FilterChooser.propTypes = {
 // Options
 //------------------
 function optionRenderer(opt) {
-    if (opt.isSuggestion) return suggestionOption(opt);
     if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
-    return filterOption(opt);
+    if (opt.op) return filterOption(opt);
+    if (opt.fieldSpec) return suggestionOption(opt);
+    return null;
 }
 
 const filterOption = hoistCmp.factory({
@@ -99,8 +100,8 @@ const filterOption = hoistCmp.factory({
 
 const suggestionOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({spec}) {
-        const {displayName, ops, example} = spec;
+    render({fieldSpec}) {
+        const {displayName, ops, example} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__suggestion',
             items: [
@@ -145,7 +146,7 @@ function favoritesIcon(model) {
 
 const favoritesMenu = hoistCmp.factory({
     render({model}) {
-        const options = model.favoritesOptions?.map(opt => favoriteMenuItem({...opt})),
+        const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
             addDisabled = isEmpty(model.value) || isFavorite,
             items = [];
@@ -153,7 +154,7 @@ const favoritesMenu = hoistCmp.factory({
         if (isEmpty(options)) {
             items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
         } else {
-            items.push(...options);
+            items.push(...options.map(it => favoriteMenuItem(it)));
         }
 
         items.push(
@@ -196,3 +197,12 @@ const favoriteTag = hoistCmp.factory({
         });
     }
 });
+
+function getFavoritesOptions(model) {
+    const ret = model.favoritesOptions.map(f => {
+        const labels = f.filterOptions.map(option => option.label);
+        return {value: f.value, labels};
+    });
+
+    return sortBy(ret, it => it.labels[0]);
+}
