@@ -5,6 +5,14 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+.xh-filter-chooser {
+  .bp3-popover-wrapper,
+  .bp3-popover-target {
+    display: flex;
+    flex: 1;
+  }
+}
+
 .xh-filter-chooser-option {
   padding: 0 var(--xh-pad-px);
 
@@ -66,5 +74,41 @@
       color: var(--xh-text-color-muted);
       font-weight: bold;
     }
+  }
+}
+
+.xh-filter-chooser-favorite-icon {
+  margin-left: var(--xh-pad-half-px);
+  &--active {
+    color: var(--xh-orange) !important;
+  }
+}
+
+.xh-filter-chooser-favorite {
+  align-items: center;
+  max-width: 50vw;
+
+  .xh-hbox {
+    flex-wrap: wrap;
+  }
+
+  .xh-button {
+    padding: 0 !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+  }
+
+  &__tag {
+    margin: 1px 3px 0 1px;
+    padding: 0 5px;
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg-alt);
+    border: var(--xh-border-solid);
+    border-radius: 2px;
+  }
+
+  &:hover {
+    background-color: var(--xh-bg-highlight);
   }
 }

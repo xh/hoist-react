@@ -35,12 +35,12 @@ import {actionColPad} from './Actions.scss';
  */
 export const actionCol = {
     colId: 'actions',
+    displayName: 'Actions',
     headerName: null,
     cellClass: 'xh-action-col-cell',
     align: 'center',
     sortable: false,
     resizable: false,
-    chooserName: 'Actions',
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {

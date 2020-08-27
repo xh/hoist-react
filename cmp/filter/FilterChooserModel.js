@@ -34,6 +34,9 @@ export class FilterChooserModel {
     /** @member Filter */
     @observable.ref value;
 
+    /** @member Filter[] */
+    @observable.ref favorites;
+
     /** @member {Store} */
     store;
 
@@ -46,10 +49,12 @@ export class FilterChooserModel {
     /** @member {PersistenceProvider} */
     @managed provider;
     persistValue = false;
+    persistFavorites = false;
 
     // Implementation fields for Control
     @observable.ref selectOptions;
     @observable.ref selectValue;
+    @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
     /** @member {RawFilterChooserFieldSpec[]} */
@@ -61,9 +66,6 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
-     *      shown in this field. Currently this control only edits and creates a flat collection of
-     *      FilterFields, to be 'AND' together.
      * @param {Store} c.store - Store to use for Field resolution as well as extraction of available
      *      Record values for field-specific suggestions. Note that configuring the store here does
      *      NOT cause that store to be automatically filtered or otherwise bound to the Filter.
@@ -72,22 +74,25 @@ export class FilterChooserModel {
      *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
      *      objects to select and customize fields available for filtering. Optional - if not
      *      provided, all Store Fields will be included with options defaulted based on their type.
+     * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
+     *      shown in this field. Currently this control only edits and creates a flat collection of
+     *      FieldFilters, to be 'AND'ed together.
+     * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
      * @param {number} [c.maxResults] - maximum number of results to show before truncating.
-     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence
+     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
-        initialValue = null,
         store,
         fieldSpecs,
+        initialValue = null,
+        initialFavorites = [],
         maxResults = 10,
         persistWith
     }) {
         throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
 
-        this.initialValue = initialValue;
         this.store = store;
         this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
-
         this.maxResults = maxResults;
 
         // Read state from provider -- fail gently
@@ -95,9 +100,13 @@ export class FilterChooserModel {
             try {
                 this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 this.persistValue = persistWith.persistValue ?? true;
+                this.persistFavorites = persistWith.persistFavorites ?? true;
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) initialValue = state.value;
+                if (this.persistFavorites && state?.favorites) {
+                    initialFavorites = state.favorites.map(f => parseFilter(f));
+                }
 
                 this.addReaction({
                     track: () => this.persistState,
@@ -117,6 +126,7 @@ export class FilterChooserModel {
         });
 
         this.setValue(initialValue);
+        this.setFavorites(initialFavorites);
     }
 
     /**
@@ -414,12 +424,56 @@ export class FilterChooserModel {
         });
     }
 
+    //--------------------
+    // Favorites
+    //--------------------
+    get favoritesOptions() {
+        const {favorites = []} = this;
+        return sortBy(favorites.map(value => {
+            const fieldFilters = this.toFieldFilters(value),
+                labels = this.getOptionsForFilters(fieldFilters).map(it => it.label);
+            return {value, labels};
+        }), it => it.labels[0]);
+    }
+
+    @action
+    openFavoritesMenu() {
+        this.favoritesIsOpen = true;
+    }
+
+    @action
+    closeFavoritesMenu() {
+        this.favoritesIsOpen = false;
+    }
+
+    @action
+    setFavorites(filters) {
+        this.favorites = filters;
+    }
+
+    @action
+    addFavorite(filter) {
+        if (isEmpty(filter) || this.isFavorite(filter)) return;
+        const {favorites = []} = this;
+        this.favorites = [...favorites, filter];
+    }
+
+    @action
+    removeFavorite(filter) {
+        this.favorites = this.favorites.filter(f => !f.equals(filter));
+    }
+
+    isFavorite(filter) {
+        return this.favorites?.find(f => f.equals(filter));
+    }
+
     //-------------------------
     // Persistence handling
     //-------------------------
     get persistState() {
         const ret = {};
         if (this.persistValue) ret.value = this.value;
+        if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
     }
 
@@ -517,4 +571,5 @@ export class FilterChooserModel {
  * @typedef {Object} FilterChooserPersistOptions
  * @extends PersistOptions
  * @property {boolean} [persistValue] - true (default) to save value to state.
+ * @property {boolean} [persistFavorites] - true (default) to include favorites.
  */
