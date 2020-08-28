@@ -88,8 +88,8 @@ export class QueryEngine {
             op = queryOp ?? '=', // If no operator included in query, assume '='
             ret = [];
 
-        const testField = (s) => this.getRegExp(queryField).test(s);
-        const testValue = (s) => this.getRegExp(queryValue).test(s);
+        const testField = (s) => this.getRegExp('^' + queryField).test(s);
+        const testValue = (s) => this.getRegExp('^' + queryValue).test(s);
         const specs = this.model.fieldSpecs.filter(spec => {
             if (!spec.supportsOperator(op)) return false;
 
@@ -106,13 +106,8 @@ export class QueryEngine {
             if (values && ['=', '!='].includes(op)) {
                 const nameMatches = testField(displayName);
                 values.forEach(value => {
-                    // Where both field and value specified use partial match for either side
-                    // If only one part provided just match against both together
-                    const match = fullQuery ?
-                        nameMatches && testValue(value) :
-                        testField(displayName + ' ' + value);
-
-                    if (match) {
+                    const valueMatches = fullQuery ? testValue(value) : testField(value);
+                    if (nameMatches || valueMatches) {
                         ret.push(this.createFilterOption(spec, op, value));
                     }
                 });
@@ -132,7 +127,7 @@ export class QueryEngine {
         if (!queryOp || isEmpty(queryValue)) return [];
 
         const op = queryOp;
-        const testField = (s) => this.getRegExp(queryField).test(s);
+        const testField = (s) => this.getRegExp('^' + queryField).test(s);
         const specs = this.model.fieldSpecs.filter(spec => {
             return spec.isRangeType && spec.supportsOperator(op) && testField(spec.displayName);
         });
@@ -154,9 +149,8 @@ export class QueryEngine {
     sortByQuery(options, query) {
         if (!query) return options;
 
-        const sortQuery = query.replace(/:$/, ''),
-            sortRe = this.getRegExp('^' + sortQuery),
-            queryLength = sortQuery.length;
+        const sortRe = this.getRegExp('^' + query),
+            queryLength = query.length;
 
         return sortBy(options, ({displayName, filter, op}) => {
             const value = filter?.value,

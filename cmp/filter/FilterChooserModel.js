@@ -88,7 +88,7 @@ export class FilterChooserModel {
         targetStore = null,
         initialValue = null,
         initialFavorites = [],
-        maxResults = 20,
+        maxResults = 10,
         persistWith
     }) {
         this.sourceStore = sourceStore;
@@ -244,7 +244,7 @@ export class FilterChooserModel {
     //---------------
     async queryAsync(query) {
         const {maxResults} = this,
-            results = this.queryEngine.queryAsync(query);
+            results = await this.queryEngine.queryAsync(query);
 
         if (maxResults > 0 && results.length > maxResults) {
             const truncateCount = results.length - maxResults;

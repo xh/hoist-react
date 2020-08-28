@@ -88,9 +88,10 @@ export class FilterChooserFieldSpec {
     }) {
         this.field = field;
         this.store = store;
-        const storeField = this.storeField = store?.getField(field);
 
-        this.fieldType = this.fieldType ?? storeField?.type ?? FieldType.AUTO;
+        const storeField = store?.getField(field);
+        this.storeField = storeField;
+        this.fieldType = fieldType ?? storeField?.type ?? FieldType.AUTO;
 
         this.displayName = displayName ?? storeField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
