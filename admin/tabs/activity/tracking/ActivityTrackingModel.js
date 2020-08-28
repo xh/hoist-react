@@ -98,7 +98,7 @@ export class ActivityTrackingModel {
 
         this.filterChooserModel = new FilterChooserModel({
             initialValue: this._defaultFilter,
-            store: this.cube.store,
+            sourceStore: this.cube.store,
             fieldSpecs: [
                 'category',
                 'month',

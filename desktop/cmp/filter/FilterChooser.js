@@ -80,7 +80,7 @@ FilterChooser.propTypes = {
 function optionRenderer(opt) {
     if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
     if (opt.op) return filterOption(opt);
-    if (opt.fieldSpec) return suggestionOption(opt);
+    if (opt.ops) return suggestionOption(opt);
     return null;
 }
 
@@ -100,8 +100,7 @@ const filterOption = hoistCmp.factory({
 
 const suggestionOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({fieldSpec}) {
-        const {displayName, ops, example} = fieldSpec;
+    render({displayName, ops, example}) {
         return hframe({
             className: 'xh-filter-chooser-option__suggestion',
             items: [

@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {FieldSpec} from './impl/FieldSpec';
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter, parseFieldValue} from '@xh/hoist/data';
@@ -38,8 +38,9 @@ export class FilterChooserModel {
     /** @member {Store} */
     store;
 
-    /** @member {FieldSpec[]} */
-    @observable.ref fieldSpecs = [];
+    /** @member {FilterChooserFieldSpec[]} */
+    @managed
+    fieldSpecs = [];
 
     /** @member {number} */
     maxResults;
@@ -55,8 +56,6 @@ export class FilterChooserModel {
     @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
-    _rawFieldSpecs;
-
     @managed
     queryEngine;
 
@@ -65,33 +64,36 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {Store} c.store - Store to use for Field resolution as well as extraction of available
-     *      Record values for field-specific suggestions. Note that configuring the store here does
-     *      NOT cause that store to be automatically filtered or otherwise bound to the Filter.
-     * @param {(string[]|FilterChooserFieldSpecConfig[])} [c.fieldSpecs] - specifies the Store
-     *      Fields this model will support for filtering and customizes how their available values
-     *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
-     *      objects to select and customize fields available for filtering. Optional - if not
-     *      provided, all Store Fields will be included with options defaulted based on their type.
+     * @param {(string[]|FilterChooserFieldSpec[]} [c.fieldSpecs] - specifies the fields
+     *      this model will support for filtering and customizes how their available values
+     *      will be parsed/displayed. Provide configs for `FilterChooserFieldSpec`.  If sourceStore is
+     *      provided, this may be specified as a list of fields in that store, or not provided at all,
+     *      indicating that all fields in sourceStore should be available filter sources.
+     * @param {Store} [c.sourceStore] - Store to be used to provide data for filter options and
+     *      available values.  Optional.  Provide in conjunction with fieldSpecs.
+     * @param {Store} [c.targetStore] - Store that will have its filter bound to the value
+     *      of this object.  Optional.  May be the same as sourceStore.  Leave undefined if you wish
+     *      to combine the output of this control with other filters, send to the server, or otherwise
+     *      handle manually.
      * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
      *      shown in this field. Currently this control only edits and creates a flat collection of
      *      FieldFilters, to be 'AND'ed together.
      * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
-     * @param {number} [c.maxResults] - maximum number of results to show before truncating.
+     * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
-        store,
         fieldSpecs,
+        sourceStore = null,
+        targetStore = null,
         initialValue = null,
         initialFavorites = [],
-        maxResults = 10,
+        maxResults = 20,
         persistWith
     }) {
-        throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
-
-        this.store = store;
-        this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
+        this.sourceStore = sourceStore;
+        this.targetStore = targetStore;
+        this.fieldSpecs = this.parseFieldSpecs(fieldSpecs);
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
 
@@ -119,14 +121,16 @@ export class FilterChooserModel {
             }
         }
 
-        this.addReaction({
-            track: () => this.store.lastUpdated,
-            run: () => this.updateFieldSpecs(),
-            fireImmediately: true
-        });
-
         this.setValue(initialValue);
         this.setFavorites(initialFavorites);
+
+        if (targetStore) {
+            this.addReaction({
+                track: () => this.value,
+                run: (v) => targetStore.setFilter(v),
+                fireImmediately: true
+            });
+        }
     }
 
     /**
@@ -293,10 +297,12 @@ export class FilterChooserModel {
     }
 
     createSuggestionOption(fieldSpec) {
+        const {displayName, ops} = fieldSpec;
         return {
-            fieldSpec,
-            value: JSON.stringify(fieldSpec),
-            label: fieldSpec.displayName
+            displayName,
+            ops,
+            value: JSON.stringify({displayName}),
+            label: displayName
         };
     }
 
@@ -351,43 +357,27 @@ export class FilterChooserModel {
     }
 
     //--------------------------------
-    // FieldSpec handling
+    // FilterChooserFieldSpec handling
     //--------------------------------
-    @action
-    updateFieldSpecs() {
-        const {store, _rawFieldSpecs} = this;
+    parseFieldSpecs(specs) {
+        const {sourceStore} = this;
 
-        this.fieldSpecs = _rawFieldSpecs.map(rawSpec => {
-            return new FieldSpec({
-                ...rawSpec,
-                storeRecords: store.allRecords
-            });
-        });
-    }
+        throwIf(
+            !sourceStore && (!specs || specs.some(isString)),
+            'Must provide a sourceStore if fieldSpecs are not provided, or provided as strings.'
+        );
 
-    // Normalize provided raw fieldSpecs / field name strings into partial configs ready for use
-    // in constructing FieldSpec instances when Store data is ready / updated.
-    parseRawFieldSpecs(rawSpecs) {
-        const {store} = this;
+        // If no specs provided, include all store fields.
+        if (!specs) specs = sourceStore.fieldNames;
 
-        // If no specs provided, include all Store Fields.
-        if (isEmpty(rawSpecs)) rawSpecs = store.fieldNames;
-
-        return flatMap(rawSpecs, spec => {
+        return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
-            const storeField = store.getField(spec.field);
-
-            if (!storeField) {
-                console.warn(`Field '${spec.field}' not found in linked Store - will be ignored.`);
-                return [];
-            }
-
-            return {...spec, field: storeField};
+            return new FilterChooserFieldSpec({...spec, store: sourceStore});
         });
     }
 
     getFieldSpec(fieldName) {
-        return this.fieldSpecs.find(it => it.field.name === fieldName);
+        return this.fieldSpecs.find(it => it.field === fieldName);
     }
 
     validateFilter(f) {
@@ -416,43 +406,6 @@ export class FilterChooserModel {
         return false;
     }
 }
-
-/**
- * @typedef {Object} FilterChooserFieldSpecConfig - developer-facing config API to customize
- *      filtering behavior at the Field level.
- * @property {string} field - name of Store Field to enable for filtering - must be resolvable to a
- *      known Field within the associated Store.
- * @property {string} [displayName] - optional override for `Field.displayName` for use within
- *      filtering component controls.
- * @property {string[]} [ops] - operators available for filtering. Optional, will default to
- *      a supported set based on the type of the provided Field.
- * @property {boolean} [suggestValues] - true to provide auto-complete options with data
- *      values sourced either automatically from Store data or as provided directly via the
- *      `values` config below. Default `true` when supported based on the type of the provided
- *      Field and operators. Set to `false` to disable extraction/suggestion of values from Store.
- * @property {[]} [values] - explicit list of available values to autocomplete for this Field.
- *      Optional, will otherwise be extracted and updated from available Store data if applicable.
- * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
- *      formatted string for display to the user for any given field value.
- * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
- *      filter chooser control into a typed data value suitable for use in filtering comparisons.
- * @property {*} [exampleValue] - sample / representative value used by components to aid usability.
- */
-
-
-/**
- * @callback FilterOptionValueRendererCb
- * @param {*} value
- * @param {string} op
- * @return {string} - formatted value suitable for display to the user.
- */
-
-/**
- * @callback FilterOptionValueParserCb
- * @param {string} input
- * @param {string} op
- * @return {*} - the parsed value.
- */
 
 /**
  * @typedef {Object} FilterChooserPersistOptions

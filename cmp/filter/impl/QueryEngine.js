@@ -36,7 +36,7 @@ export class QueryEngine {
     //
     // Returns a set of options appropriate for react-select to display.
     // Options will be one of the following, returned in the order below:
-    //  - suggestion, a suggested FieldSpec, to prompt the user further.
+    //  - suggestion, a suggested FilterChooserFieldSpec, to prompt the user further.
     //  - filter, a fully specified FieldFilter ready to be added to the value:
     //-----------------------------------------------------------------
     async queryAsync(query) {
@@ -144,7 +144,7 @@ export class QueryEngine {
     }
 
     createFilterOption(spec, op, value) {
-        return this.model.createFilterOption(new FieldFilter({field: spec.field.name, op, value}));
+        return this.model.createFilterOption(new FieldFilter({field: spec.field, op, value}));
     }
 
     getRegExp(pattern) {

@@ -5,25 +5,25 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {FieldFilter, FieldType, parseFieldValue} from '@xh/hoist/data';
+import {ReactiveSupport} from '@xh/hoist/core';
+import {FieldFilter, FieldType, parseFieldValue, genDisplayName} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
 /**
- * Defines the FieldFilter options available for a given Store Field and provides useful metadata
+ * Defines the filters options available for a given field and provides useful metadata
  * for including these options in UI affordances, including available data values for suggestion
  * if applicable / so configured.
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
- *
- * @private and immutable.
  */
-export class FieldSpec {
+@ReactiveSupport
+export class FilterChooserFieldSpec {
 
-    /** @member {Field} */
+    /** @member {String} */
     field;
 
     /** @member {string} */
@@ -35,10 +35,7 @@ export class FieldSpec {
     /** @member {boolean} */
     suggestValues;
 
-    /**
-     * @member {?Array} - data values available for suggestion, or null if suggestions disabled or
-     *      not supported by this object's filterType.
-     */
+    /** @member {?Array} - data values available for suggestion*/
     values;
 
     /** @member {FilterOptionValueRendererCb} */
@@ -51,7 +48,64 @@ export class FieldSpec {
     exampleValue;
 
     /** @return {FieldType} */
-    get fieldType() {return this.field.type}
+    fieldType;
+
+    /**
+     * @param {Object} c - FilterChooserFieldSpec configuration.
+     * @param {String} c.field - identifying field name to filter on.
+     * @param {Object} [c.fieldType] - type of field, will default from related store field,
+     *      if store provided, or 'AUTO'.
+     * @param {string} [c.displayName] - displayName, will default from related store field,
+     *      if store provided.
+     * @property {string[]} [ops] - operators available for filtering. Optional, will default to
+     *      a supported set based on the fieldType.
+     * @property {boolean} [suggestValues] - true to provide auto-complete options with data
+     *      values sourced either automatically from Store data or as provided directly via the
+     *      `values` config below. Default `true` when supported based on the fieldType.
+     *      Set to `false` to disable extraction/suggestion of values from Store.
+     * @property {[]} [values] - explicit list of available values to autocomplete for this field.
+     *      Optional, will otherwise be extracted and updated from available Store data if applicable.
+     * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
+     *      formatted string for display to the user for any given field value.
+     * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
+     *      filter chooser control into a typed data value suitable for use in filtering comparisons.
+     * @property {*} [exampleValue] - sample / representative value used by components to aid usability.
+     * @param {Store} [store] - store.  If provided and has a Field object matching the field
+     *      name on this object, that Field will be used for various defaults and lookup
+     *      values for this object.
+     */
+    constructor({
+        field,
+        fieldType,
+        displayName,
+        ops,
+        suggestValues,
+        values,
+        valueRenderer,
+        valueParser,
+        exampleValue,
+        store
+    }) {
+        this.field = field;
+        this.store = store;
+        const storeField = this.storeField = store?.getField(field);
+
+        this.fieldType = this.fieldType ?? storeField?.type ?? FieldType.AUTO;
+
+        this.displayName = displayName ?? storeField?.displayName ?? genDisplayName(field);
+        this.ops = this.parseOperators(ops);
+
+        // Enable value suggestion based on explicit config, filterType, or presence of values list.
+        this.suggestValues = !!(suggestValues ?? (this.isValueType || values));
+
+
+        // Read values available for suggestion from direct config if provided or store
+        this.loadValues(values);
+
+        this.valueRenderer = valueRenderer;
+        this.valueParser = valueParser;
+        this.exampleValue = exampleValue;
+    }
 
     /**
      * @return {string} - 'range' or 'value' - determines operations supported by this field.
@@ -99,50 +153,6 @@ export class FieldSpec {
         return 'value';
     }
 
-    /**
-     * @see FilterChooserFieldSpecConfig typedef for more details on these arguments -
-     *      it documents the developer-facing API that will ultimately construct this class.
-     * @param {Object} c - FieldSpec configuration.
-     * @param {Field} c.field
-     * @param {string} [c.displayName]
-     * @param {string[]} [c.ops]
-     * @param {boolean} [c.suggestValues]
-     * @param {[]} [c.values]
-     * @param {FilterOptionValueRendererCb} [c.valueRenderer]
-     * @param {FilterOptionValueParserCb} [c.valueParser]
-     * @param {*} [c.exampleValue]
-     * @param {Record[]} storeRecords - latest Records from the associated store, used if applicable
-     *      for extracting data values for autocomplete suggestions.
-     */
-    constructor({
-        field,
-        displayName,
-        ops,
-        suggestValues,
-        values,
-        valueRenderer,
-        valueParser,
-        exampleValue,
-        storeRecords
-    }) {
-        this.field = field;
-        this.displayName = displayName ?? field.displayName;
-        this.ops = this.parseOperators(ops);
-
-        // Enable value suggestion based on explicit config, filterType, or presence of values list.
-        this.suggestValues = suggestValues ?? (this.isValueType || values);
-
-        // Read values available for suggestion from direct config if provided, or extract from
-        // Store Records if suggestions enabled.
-        this.values = this.parseValues(values, storeRecords);
-
-        this.valueRenderer = valueRenderer;
-        this.valueParser = valueParser;
-        this.exampleValue = exampleValue;
-
-        Object.freeze(this);
-    }
-
     renderValue(value, op) {
         let ret;
         if (isFunction(this.valueRenderer)) {
@@ -182,16 +192,26 @@ export class FieldSpec {
         return this.ops.includes(op);
     }
 
-
     //------------------------
     // Implementation
     //------------------------
-    parseValues(values, storeRecords) {
-        if (values) return values; // If explicit values provided by caller, return as-is
-        if (this.suggestValues) {
-            return this.isBoolFieldType ? [true, false] : this.extractValuesFromRecords(storeRecords);
+    loadValues(values) {
+        if (values) {
+            this.values = values;
+            return;
         }
-        return null;
+
+        if (this.suggestValues) {
+            if (this.isBoolFieldType) {
+                this.values = [true, false];
+            } else if (this.store && this.storeField) {
+                this.addReaction({
+                    track: () => this.store.lastUpdated,
+                    run: () => this.loadValuesFromStore(),
+                    fireImmediately: true
+                });
+            }
+        }
     }
 
     parseOperators(ops) {
@@ -204,16 +224,29 @@ export class FieldSpec {
         return this.isValueType ? ['=', '!=', 'like'] : ['>', '>=', '<', '<=', '=', '!='];
     }
 
-    extractValuesFromRecords(storeRecords) {
-        const fieldName = this.field.name,
+    loadValuesFromStore() {
+        const {field, store} = this,
             values = new Set();
 
-        storeRecords.forEach(rec => {
-            const val = rec.get(fieldName);
+        store.records.forEach(rec => {
+            const val = rec.get(field);
             if (!isNil(val)) values.add(val);
         });
 
-        return Array.from(values);
+        this.values = Array.from(values);
     }
-
 }
+
+/**
+ * @callback FilterOptionValueRendererCb
+ * @param {*} value
+ * @param {string} op
+ * @return {string} - formatted value suitable for display to the user.
+ */
+
+/**
+ * @callback FilterOptionValueParserCb
+ * @param {string} input
+ * @param {string} op
+ * @return {*} - the parsed value.
+ */
