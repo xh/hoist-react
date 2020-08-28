@@ -88,6 +88,8 @@ export class GridModel {
     /** @member {GridGroupSortFn} */
     groupSortFn;
     /** @member {boolean} */
+    showGroupRowCounts;
+    /** @member {boolean} */
     enableColumnPinning;
     /** @member {boolean} */
     enableExport;
@@ -166,6 +168,8 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
+     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member rows
+     *      within each full-width group row.
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
@@ -224,6 +228,7 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+        showGroupRowCounts = true,
 
         persistWith,
 
@@ -264,6 +269,7 @@ export class GridModel {
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
+        this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.autosizeOptions = defaults(autosizeOptions, {

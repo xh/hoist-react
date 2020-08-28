@@ -46,6 +46,9 @@ below regarding related updates to `GridModel.columns` config processing.
   * If specified or sourced from a Field, `displayName` will be used as the default value for the
     pre-existing `headerName` and `chooserName` configs.
 * Grid columns backed by a Store Field of type `number` or `int` will be right-aligned by default.
+* Added new `GridModel.showGroupRowCounts` config to allow easy hiding of group row member counts
+  within each full-width group row. Default is `true`, maintaining current behavior of showing the
+  counts for each group.
 
 #### Other
 
@@ -53,7 +56,13 @@ below regarding related updates to `GridModel.columns` config processing.
   menu will be shown if no app-specific context menu (e.g. from a grid) would be triggered.
   * ⚠ Note this new config defaults to `false`, meaning the browser context menu will *not* be
     available. Developers should set to true for apps that expect/depend on the built-in menu.
-* `LocalDate` has gained new static factories `tomorrow()` and `yesterday()`.
+* `LocalDate` has gained several new static factories: `tomorrow()`, `yesterday()`,
+  `[start/end]OfMonth()`, and `[start/end]OfYear()`.
+* A new `@computeOnce` decorator allows for lazy computation and caching of the results of decorated
+  class methods or getters. Used in `LocalDate` and intended for similar immutable, long-lived
+  objects that can benefit from such caching.
+* `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
+  provides an simple inline find feature for searching the input's contents.
 
 ### 💥 Breaking Changes
 
@@ -104,6 +113,7 @@ below regarding related updates to `GridModel.columns` config processing.
 
 * @blueprintjs/core `3.30 -> 3.31`
 * codemirror `5.56 -> 5.57`
+* http-status-codes `1.4 -> 2.1`
 * store2 `2.11 -> 2.12`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)

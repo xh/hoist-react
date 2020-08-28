@@ -4,7 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
+import {throwIf, computeOnce} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 import moment from 'moment';
 
@@ -27,7 +27,7 @@ export class LocalDate {
 
     // Very basic preliminary regex to partially validate input to LocalDate.get().
     // Input fully validated as a date when passed to moment in constructor.
-    static fmtRegEx = new RegExp(/^\d{8}$/)
+    static fmtRegEx = new RegExp(/^\d{8}$/);
 
     _isoString;
     _moment;
@@ -100,34 +100,55 @@ export class LocalDate {
     //--------------------
     // Getters and basic methods.
     //--------------------
+    /** @return {string} */
     get isoString() {
         return this._isoString;
     }
 
+    /** @return {Date} */
     get date() {
         return new Date(this.timestamp);
     }
 
+    /** @return {moment} */
     get moment() {
         return this._moment.clone();
     }
 
+    /** @return {number} */
     get timestamp() {
         return this._date.getTime();
     }
 
+    /** @return {string} */
     format(...args) {
         return this._moment.format(...args);
     }
 
+    /** @return {string} */
+    @computeOnce
     dayOfWeek() {
         return this.format('dddd');
     }
 
+    /** @return {boolean} */
+    @computeOnce
     get isWeekday() {
         const day = this._moment.day();
         return day > 0 && day < 6;
     }
+
+    /** @return {boolean} */
+    get isStartOfMonth() {return this === this.startOfMonth()}
+
+    /** @return {boolean} */
+    get isEndOfMonth() {return this === this.endOfMonth()}
+
+    /** @return {boolean} */
+    get isStartOfYear() {return this === this.startOfYear()}
+
+    /** @return {boolean} */
+    get isEndOfYear() {return this === this.endOfYear()}
 
     //----------------
     // Core overrides.
@@ -149,34 +170,68 @@ export class LocalDate {
     //--------------------------
     // Manipulate/Calendar logic
     //--------------------------
+    /** @return {LocalDate} */
     add(value, unit = 'days') {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.add(value, unit));
     }
 
+    /** @return {LocalDate} */
     subtract(value, unit = 'days') {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.subtract(value, unit));
     }
 
+    /** @return {LocalDate} */
     startOf(unit) {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.startOf(unit));
     }
 
+    /** @return {LocalDate} */
+    @computeOnce
+    startOfMonth() {
+        return this.startOf('month');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
+    startOfYear() {
+        return this.startOf('year');
+    }
+
+    /** @return {LocalDate} */
     endOf(unit) {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.endOf(unit));
     }
 
+    /** @return {LocalDate} */
+    @computeOnce
+    endOfMonth() {
+        return this.endOf('month');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
+    endOfYear() {
+        return this.endOf('year');
+    }
+
+    /** @return {LocalDate} */
+    @computeOnce
     nextDay() {
         return this.add(1);
     }
 
+    /** @return {LocalDate} */
+    @computeOnce
     previousDay() {
         return this.subtract(1);
     }
 
+    /** @return {LocalDate} */
+    @computeOnce
     nextWeekday() {
         switch (this._moment.day()) {
             case 5:     return this.add(3);
@@ -185,6 +240,8 @@ export class LocalDate {
         }
     }
 
+    /** @return {LocalDate} */
+    @computeOnce
     previousWeekday() {
         switch (this._moment.day()) {
             case 1:     return this.subtract(3);
@@ -193,20 +250,17 @@ export class LocalDate {
         }
     }
 
-    /**
-     * @returns {LocalDate} - the same date if already a weekday, or the next weekday.
-     */
+    /** @return {LocalDate} - the same date if already a weekday, or the next weekday. */
     currentOrNextWeekday() {
         return this.isWeekday ? this : this.nextWeekday();
     }
 
-    /**
-     * @returns {LocalDate} - the same date if already a weekday, or the previous weekday.
-     */
+    /** @return {LocalDate} - the same date if already a weekday, or the previous weekday. */
     currentOrPreviousWeekday() {
         return this.isWeekday ? this : this.previousWeekday();
     }
 
+    /** @return {number} */
     diff(other, unit = 'days') {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);
@@ -222,7 +276,6 @@ export class LocalDate {
         this._isoString = s;
         this._moment = m;
         this._date = m.toDate();
-        Object.freeze(this);
     }
 
     ensureUnitValid(unit) {
