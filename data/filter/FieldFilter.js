@@ -8,13 +8,16 @@
 import {XH} from '@xh/hoist/core';
 import {parseFieldValue} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, escapeRegExp, isArray, isString, isEqual} from 'lodash';
+import {castArray, escapeRegExp, isArray, isEqual, isNil, isString} from 'lodash';
 
 import {Filter} from './Filter';
 
 /**
  * Filters by comparing the value of a given field to one or more given candidate values using one
  * of several supported operators.
+ *
+ * Note that the comparison operators [<,<=,>,>=] always return false for null and undefined values,
+ * favoring the behavior of Excel over Javascript's implicit conversion of nullish values to 0.
  *
  * Immutable.
  */
@@ -91,13 +94,25 @@ export class FieldFilter extends Filter {
             case '!=':
                 return r => !value.includes(getVal(r));
             case '>':
-                return r => getVal(r) > value;
+                return r => {
+                    const v = getVal(r);
+                    return !isNil(v) && v > value;
+                };
             case '>=':
-                return r => getVal(r) >= value;
+                return r => {
+                    const v = getVal(r);
+                    return !isNil(v) && v >= value;
+                };
             case '<':
-                return r => getVal(r) < value;
+                return r => {
+                    const v = getVal(r);
+                    return !isNil(v) && v < value;
+                };
             case '<=':
-                return r => getVal(r) <= value;
+                return r => {
+                    const v = getVal(r);
+                    return !isNil(v) && v <= value;
+                };
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
                 return r => regExps.some(re => re.test(getVal(r)));
