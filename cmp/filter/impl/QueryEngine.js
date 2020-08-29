@@ -6,6 +6,8 @@
  */
 
 import {FieldFilter} from '@xh/hoist/data';
+import {Option} from './Option';
+
 import {
     escapeRegExp,
     isEmpty,
@@ -75,10 +77,9 @@ export class QueryEngine {
         if (isEmpty(queryValue) || isEmpty(ret)) {
             const suggestions = model.fieldSpecs
                 .filter(spec => spec.displayName.toLowerCase().startsWith(queryField.toLowerCase()))
-                .map(spec => model.createSuggestionOption(spec));
+                .map(spec => Option.createFieldOption(spec));
             ret.push(...suggestions);
         }
-
 
         return ret;
     }
@@ -106,16 +107,21 @@ export class QueryEngine {
             if (values && ['=', '!='].includes(op)) {
                 const nameMatches = testField(displayName);
                 values.forEach(value => {
+                    if (nameMatches) {
+                        ret.push(this.createFilterOption(spec, op, value, 'field'));
+                        return;
+                    }
                     const valueMatches = fullQuery ? testValue(value) : testField(value);
-                    if (nameMatches || valueMatches) {
-                        ret.push(this.createFilterOption(spec, op, value));
+                    if (valueMatches) {
+                        ret.push(this.createFilterOption(spec, op, value, 'value'));
+                        return;
                     }
                 });
             } else if (fullQuery) {
                 // For filters which require a fully spec'ed query, create an option with the value.
                 const value = spec.parseValue(queryValue, op);
                 if (!isNil(value) && !isNaN(value)) {
-                    ret.push(this.createFilterOption(spec, op, value));
+                    ret.push(this.createFilterOption(spec, op, value, 'value'));
                 }
             }
         });
@@ -134,12 +140,12 @@ export class QueryEngine {
 
         return flatMap(specs, spec => {
             const value = spec.parseValue(queryValue, op);
-            return !isNil(value) && !isNaN(value) ? this.createFilterOption(spec, op, value) : [];
+            return !isNil(value) && !isNaN(value) ? this.createFilterOption(spec, op, value, 'field') : [];
         });
     }
 
-    createFilterOption(spec, op, value) {
-        return this.model.createFilterOption(new FieldFilter({field: spec.field, op, value}));
+    createFilterOption(spec, op, value, matchType) {
+        return Option.createFilterOption(new FieldFilter({field: spec.field, op, value}), spec, matchType);
     }
 
     getRegExp(pattern) {

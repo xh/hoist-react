@@ -107,11 +107,11 @@ export class ActivityTrackingModel {
                 'browser',
                 {
                     field: 'msg',
-                    suggestValues: false
+                    suggestValues: true
                 },
                 {
                     field: 'userAgent',
-                    suggestValues: false
+                    suggestValues: true
                 },
                 {
                     field: 'elapsed',

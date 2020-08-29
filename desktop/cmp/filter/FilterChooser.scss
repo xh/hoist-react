@@ -48,7 +48,7 @@
     border-radius: 2px;
   }
 
-  &__truncated {
+  &__message {
     padding: var(--xh-pad-half-px) var(--xh-pad-px) !important;
     margin-bottom: -4px;
     font-size: var(--xh-font-size-small-px);
@@ -58,7 +58,7 @@
     border-radius: 0 0 3px 3px;
   }
 
-  &__suggestion {
+  &__field {
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);

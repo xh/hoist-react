@@ -5,10 +5,12 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
+import {fmtNumber} from '@xh/hoist/format';
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
+import {Option} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, parseFilter, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, parseFilter} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -58,9 +60,6 @@ export class FilterChooserModel {
 
     @managed
     queryEngine;
-
-    // Option values with special handling
-    static TRUNCATED = 'TRUNCATED';
 
     /**
      * @param c - FilterChooserModel configuration.
@@ -181,12 +180,14 @@ export class FilterChooserModel {
         // Rehydrate stringified values
         selectValue = compact(flatten(selectValue)).map(JSON.parse);
 
-        // Separate suggestions from actual selected filters.
-        const [filters, suggestions] = partition(selectValue, v => v.op);
+        // Separate actual selected filters from field suggestion.
+        // (the former is just a transient value on the select control only)
+        const [filters, suggestions] = partition(selectValue, 'op');
 
-        // Round-trip selected filters through main value setter above.
+        // Round-trip actual filters through main value setter above.
         this.setValue(this.recombineOrFilters(filters.map(f => new FieldFilter(f))));
 
+        // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
@@ -250,10 +251,9 @@ export class FilterChooserModel {
             const truncateCount = results.length - maxResults;
             return [
                 ...results.slice(0, maxResults),
-                {value: FilterChooserModel.TRUNCATED, truncateCount}
+                Option.createMessageOption(`${fmtNumber(truncateCount)} results truncated`)
             ];
         }
-
         return results;
     }
 
@@ -279,31 +279,7 @@ export class FilterChooserModel {
     // Options
     //---------------------------------
     createFilterOption(filter) {
-        const {field, value, op} = filter,
-            spec = this.getFieldSpec(field);
-
-        throwIf(!spec, `Unknown FieldSpec for ${field}`);
-
-        const {fieldType, displayName} = spec,
-            displayValue = spec.renderValue(parseFieldValue(value, fieldType, null));
-
-        return {
-            displayName,
-            displayValue,
-            op,
-            value: JSON.stringify(filter),
-            label: `${displayName} ${op} ${displayValue}`
-        };
-    }
-
-    createSuggestionOption(fieldSpec) {
-        const {displayName, ops} = fieldSpec;
-        return {
-            displayName,
-            ops,
-            value: JSON.stringify({displayName}),
-            label: displayName
-        };
+        return Option.createFilterOption(filter, this.getFieldSpec(filter.field));
     }
 
     //--------------------

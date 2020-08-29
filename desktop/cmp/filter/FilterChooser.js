@@ -9,7 +9,6 @@ import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Select, select} from '@xh/hoist/desktop/cmp/input';
-import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -78,11 +77,29 @@ FilterChooser.propTypes = {
 // Options
 //------------------
 function optionRenderer(opt) {
-    if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
-    if (opt.op) return filterOption(opt);
-    if (opt.ops) return suggestionOption(opt);
+    console.log(opt);
+    switch (opt.type) {
+        case 'field' : return fieldOption(opt);
+        case 'filter': return filterOption(opt);
+        case 'msg': return messageOption(opt);
+    }
     return null;
 }
+
+const fieldOption = hoistCmp.factory({
+    model: false, observer: false, memo: false,
+    render({displayName, ops, example}) {
+        return hframe({
+            className: 'xh-filter-chooser-option__field',
+            items: [
+                div('e.g.'),
+                div({className: 'name', item: displayName}),
+                div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
+                div({className: 'example', item: example})
+            ]
+        });
+    }
+});
 
 const filterOption = hoistCmp.factory({
     model: false, observer: false,
@@ -98,27 +115,12 @@ const filterOption = hoistCmp.factory({
     }
 });
 
-const suggestionOption = hoistCmp.factory({
-    model: false, observer: false, memo: false,
-    render({displayName, ops, example}) {
-        return hframe({
-            className: 'xh-filter-chooser-option__suggestion',
-            items: [
-                div('e.g.'),
-                div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
-                div({className: 'example', item: example})
-            ]
-        });
-    }
-});
-
-const truncatedMessage = hoistCmp.factory({
+const messageOption = hoistCmp.factory({
     model: false, observer: false,
-    render({truncateCount}) {
+    render({label}) {
         return hframe({
-            className: 'xh-filter-chooser-option__truncated',
-            item: `${fmtNumber(truncateCount)} results truncated`
+            className: 'xh-filter-chooser-option__message',
+            item: label
         });
     }
 });
