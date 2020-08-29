@@ -63,20 +63,21 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {(string[]|FilterChooserFieldSpec[]} [c.fieldSpecs] - specifies the fields
-     *      this model will support for filtering and customizes how their available values
-     *      will be parsed/displayed. Provide configs for `FilterChooserFieldSpec`.  If sourceStore is
-     *      provided, this may be specified as a list of fields in that store, or not provided at all,
-     *      indicating that all fields in sourceStore should be available filter sources.
-     * @param {Store} [c.sourceStore] - Store to be used to provide data for filter options and
-     *      available values.  Optional.  Provide in conjunction with fieldSpecs.
-     * @param {Store} [c.targetStore] - Store that will have its filter bound to the value
-     *      of this object.  Optional.  May be the same as sourceStore.  Leave undefined if you wish
-     *      to combine the output of this control with other filters, send to the server, or otherwise
-     *      handle manually.
+     * @param {(string[]|FilterChooserFieldSpec[]} [c.fieldSpecs] - specifies the fields this model
+     *      supports for filtering and customizes how their available values will be parsed and
+     *      displayed. Used internally to create `FilterChooserFieldSpec` instances. If a
+     *      `sourceStore` is provided, this may be specified as a list of field names in that Store
+     *      to enable for filtering or be omitted entirely, indicating that all Store fields should
+     *      be filter-enabled.
+     * @param {Store} [c.sourceStore] - Store to be used to lookup matching Field-level defaults
+     *      for `fieldSpecs` and to provide suggested data values (if configured) from user input.
+     * @param {Store} [c.targetStore] - Store that should actually be filtered as this model's
+     *      value changes. May be the same as `sourceStore`. Leave undefined if you wish to combine
+     *      this model's values with other filters, send it to the server, or otherwise observe
+     *      and handle value changes manually.
      * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
-     *      shown in this field. Currently this control only edits and creates a flat collection of
-     *      FieldFilters, to be 'AND'ed together.
+     *      rendered and managed by FilterChooser. Note that FilterChooser currently can only
+     *      edit and create a flat collection of FieldFilters, to be 'AND'ed together.
      * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
      * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.

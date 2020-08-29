@@ -13,9 +13,8 @@ import {stripTags} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
 /**
- * Defines the filters options available for a given field and provides useful metadata
- * for including these options in UI affordances, including available data values for suggestion
- * if applicable / so configured.
+ * Defines field-level filtering options and provides metadata for presenting these options in
+ * UI affordances, including data values available for suggestion if applicable and configured.
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
@@ -23,8 +22,11 @@ import {isFunction, isNil} from 'lodash';
 @ReactiveSupport
 export class FilterChooserFieldSpec {
 
-    /** @member {String} */
+    /** @member {string} */
     field;
+
+    /** @member {Field} */
+    storeField
 
     /** @member {string} */
     displayName;
@@ -35,7 +37,7 @@ export class FilterChooserFieldSpec {
     /** @member {boolean} */
     suggestValues;
 
-    /** @member {?Array} - data values available for suggestion*/
+    /** @member {?Array} - data values available for suggestion. */
     values;
 
     /** @member {FilterOptionValueRendererCb} */
@@ -52,27 +54,29 @@ export class FilterChooserFieldSpec {
 
     /**
      * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {String} c.field - identifying field name to filter on.
-     * @param {Object} [c.fieldType] - type of field, will default from related store field,
-     *      if store provided, or 'AUTO'.
-     * @param {string} [c.displayName] - displayName, will default from related store field,
-     *      if store provided.
-     * @property {string[]} [ops] - operators available for filtering. Optional, will default to
-     *      a supported set based on the fieldType.
-     * @property {boolean} [suggestValues] - true to provide auto-complete options with data
-     *      values sourced either automatically from Store data or as provided directly via the
-     *      `values` config below. Default `true` when supported based on the fieldType.
-     *      Set to `false` to disable extraction/suggestion of values from Store.
-     * @property {[]} [values] - explicit list of available values to autocomplete for this field.
-     *      Optional, will otherwise be extracted and updated from available Store data if applicable.
-     * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
+     * @param {String} c.field - name of field configured by this class. If the controlling
+     *      FilterChooserModel has been configured with a `sourceStore` having a `Field` with the
+     *      same name, this class will use that `Field` to default several of the configs below.
+     * @param {Object} [c.fieldType] - type of field, defaulted from matching Store field if
+     *      available, or 'AUTO'.
+     * @param {string} [c.displayName] - user-facing / longer name for display, defaulted from
+     *      matching Store field if available.
+     * @param {string[]} [ops] - operators available for filtering, defaulted to a supported set
+     *      based on `fieldType`.
+     * @param {boolean} [suggestValues] - true to provide auto-complete options with data values
+     *      sourced either automatically from Store data or provided directly via the `values`
+     *      config below. Default is based on fieldType. Set to `false` to disable extraction and
+     *      suggestion of values from Store.
+     * @param {[]} [values] - explicit list of available values to autocomplete for this field.
+     *      If unspecified, values will be extracted and updated from Store data if applicable.
+     * @param {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
-     * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
-     *      filter chooser control into a typed data value suitable for use in filtering comparisons.
-     * @property {*} [exampleValue] - sample / representative value used by components to aid usability.
-     * @param {Store} [store] - store.  If provided and has a Field object matching the field
-     *      name on this object, that Field will be used for various defaults and lookup
-     *      values for this object.
+     * @param {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
+     *      filter chooser control into a typed data value for use in filtering comparisons.
+     * @param {*} [exampleValue] - sample / representative value displayed by `FilterChooser`
+     *      components to aid usability.
+     * @param {Store} [store] - set from controlling `FilterChooserModel.sourceStore` config, used
+     *      to source matching data `Field` and extract values if configured.
      */
     constructor({
         field,
@@ -98,7 +102,6 @@ export class FilterChooserFieldSpec {
 
         // Enable value suggestion based on explicit config, filterType, or presence of values list.
         this.suggestValues = !!(suggestValues ?? (this.isValueType || values));
-
 
         // Read values available for suggestion from direct config if provided or store
         this.loadValues(values);
@@ -127,8 +130,8 @@ export class FilterChooserFieldSpec {
         }
     }
 
-    get isRangeType() { return this.filterType === 'range'}
-    get isValueType() { return this.filterType === 'value'}
+    get isRangeType() { return this.filterType === 'range' }
+    get isValueType() { return this.filterType === 'value' }
 
     get isDateBasedFieldType() {
         const {fieldType} = this;
