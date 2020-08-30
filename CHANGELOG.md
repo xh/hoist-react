@@ -114,6 +114,7 @@ below regarding related updates to `GridModel.columns` config processing.
 * @blueprintjs/core `3.30 -> 3.31`
 * codemirror `5.56 -> 5.57`
 * http-status-codes `1.4 -> 2.1`
+* mobx-react `6.2 -> 6.3`
 * store2 `2.11 -> 2.12`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...develop)
