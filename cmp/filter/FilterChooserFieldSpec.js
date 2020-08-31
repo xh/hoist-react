@@ -13,9 +13,8 @@ import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
 /**
- * Defines the filters options available for a given field and provides useful metadata
- * for including these options in UI affordances, including available data values for suggestion
- * if applicable / so configured.
+ * Defines field-level filtering options and provides metadata for presenting these options in
+ * UI affordances, including data values available for suggestion if applicable and configured.
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
@@ -23,7 +22,7 @@ import {isFunction, isNil} from 'lodash';
 @ReactiveSupport
 export class FilterChooserFieldSpec {
 
-    /** @member {String} */
+    /** @member {string} */
     field;
 
     /** @member {string} */
@@ -38,7 +37,7 @@ export class FilterChooserFieldSpec {
     /** @member {boolean} */
     forceSelection;
 
-    /** @member {?Array} - data values available for suggestion*/
+    /** @member {?Array} - data values available for suggestion. */
     values;
 
     /** @member {FilterOptionValueRendererCb} */
@@ -60,23 +59,23 @@ export class FilterChooserFieldSpec {
      *      if store provided, or 'auto'.
      * @param {string} [c.displayName] - displayName, will default from related store field,
      *      if store provided.
-     * @property {string[]} [ops] - operators available for filtering. Optional, will default to
+     * @param {string[]} [ops] - operators available for filtering. Optional, will default to
      *      a supported set based on the fieldType.
-     * @property {*[]} [values] - explicit list of available values for this field.
-     * @property {boolean} [suggestValues] - true to provide auto-complete options with data
+     * @param {*[]} [values] - explicit list of available values for this field.
+     * @param {boolean} [suggestValues] - true to provide auto-complete options with data
      *      values for 'like', '=', and '!=' operators.  Defaults to true for value type fields
      *      (fieldType of 'string' or 'auto').  Otherwise false.
-     * @property {boolean} [forceSelection] - true to require value entered to be an available value
+     * @param {boolean} [forceSelection] - true to require value entered to be an available value
      *      in value collection for '=' and '!=' operators. Defaults to false for value type fields
      *      (fieldType of 'string' or 'auto').  Otherwise false.
-     * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
+     * @param {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
-     * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
-     *      filter chooser control into a typed data value suitable for use in filtering comparisons.
-     * @property {*} [exampleValue] - sample / representative value used by components to aid usability.
-     * @param {Store} [store] - store.  If provided and has a Field object matching the field
-     *      name on this object, that Field will be used for various defaults and lookup
-     *      values for this object.
+     * @param {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
+     *      filter chooser control into a typed data value for use in filtering comparisons.
+     * @param {*} [exampleValue] - sample / representative value displayed by `FilterChooser`
+     *      components to aid usability.
+     * @param {Store} [store] - set from controlling `FilterChooserModel.sourceStore` config, used
+     *      to source matching data `Field` and extract values if configured.
      */
     constructor({
         field,
@@ -135,8 +134,8 @@ export class FilterChooserFieldSpec {
         }
     }
 
-    get isRangeType() { return this.filterType === 'range'}
-    get isValueType() { return this.filterType === 'value'}
+    get isRangeType() { return this.filterType === 'range' }
+    get isValueType() { return this.filterType === 'value' }
 
     get isDateBasedFieldType() {
         const {fieldType} = this;
