@@ -32,7 +32,7 @@ export function useContextMenu(child, contextMenu) {
         e.preventDefault();
 
         // 1) Pre-process to an element (potentially via item list) or null
-        if (isFunction(contextMenu)) {
+        if (isFunction(contextMenuOutput)) {
             contextMenuOutput = contextMenu(e);
         }
         if (isArray(contextMenuOutput)) {
