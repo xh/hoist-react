@@ -63,6 +63,7 @@ below regarding related updates to `GridModel.columns` config processing.
   objects that can benefit from such caching.
 * `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
   provides an simple inline find feature for searching the input's contents.
+* The Admin console's Monitor Status tab is masked when monitors are either undefined or disabled.
 
 ### 💥 Breaking Changes
 
