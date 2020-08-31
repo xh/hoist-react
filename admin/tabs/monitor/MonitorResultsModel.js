@@ -39,8 +39,7 @@ export class MonitorResultsModel {
     get monitorMask() {
         const {results, loadModel} = this,
             monitorCount = results.length,
-            monitorsDisabled = results.every(monitor => monitor.status === 'INACTIVE');
-        // TODO - add another status to MonitorResult to distinguish between inactive and disabled
+            monitorsDisabled = results.every(monitor => !monitor.active);
 
         if (!monitorCount || monitorsDisabled) {
             return mask({
