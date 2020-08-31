@@ -1,6 +1,9 @@
 # Changelog
 
-## v36.0.0-SNAPSHOT - under development
+## v37.0.0-SNAPSHOT - unreleased
+
+
+## v36.0.0-rc1 - 2020-08-31
 
 ### 🎁 New Features
 
