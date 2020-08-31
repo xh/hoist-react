@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -33,6 +34,22 @@ export class MonitorResultsModel {
     @computed
     get failed() {
         return this.results.filter(monitor => monitor.status === 'FAIL').length;
+    }
+
+    get monitorMask() {
+        const {results, loadModel} = this,
+            monitorCount = results.length,
+            monitorsDisabled = results.every(monitor => monitor.status === 'INACTIVE');
+        // TODO - add another status to MonitorResult to distinguish between inactive and disabled
+
+        if (!monitorCount || monitorsDisabled) {
+            return mask({
+                message: !monitorCount ? 'No monitors defined' : 'Monitors disabled',
+                isDisplayed: true
+            });
+        }
+
+        return loadModel.isPending ? 'onLoad' : null;
     }
 
     constructor() {

@@ -17,7 +17,7 @@ export const monitorResultsPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             ref: model.viewRef,
-            mask: 'onLoad',
+            mask: model.monitorMask,
             className: 'xh-monitor-results-panel',
             tbar: monitorResultsToolbar(),
             item: monitorResultsDisplay()
