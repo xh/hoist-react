@@ -46,7 +46,9 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         defaultOptions: [],
                         openMenuOnClick: false,
                         openMenuOnFocus: false,
-                        isOptionDisabled: (opt) => opt.value === FilterChooserModel.TRUNCATED,
+                        isOptionDisabled: (opt) => opt.type === 'msg',
+                        noOptionsMessage: () => null,
+                        loadingMessage: () => null,
                         styles: {
                             menuList: (base) => ({...base, maxHeight: 'unset'})
                         },
@@ -77,7 +79,6 @@ FilterChooser.propTypes = {
 // Options
 //------------------
 function optionRenderer(opt) {
-    console.log(opt);
     switch (opt.type) {
         case 'field' : return fieldOption(opt);
         case 'filter': return filterOption(opt);
@@ -88,7 +89,8 @@ function optionRenderer(opt) {
 
 const fieldOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({displayName, ops, example}) {
+    render({fieldSpec}) {
+        const {displayName, ops, example} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__field',
             items: [
@@ -103,12 +105,12 @@ const fieldOption = hoistCmp.factory({
 
 const filterOption = hoistCmp.factory({
     model: false, observer: false,
-    render({displayName, op, displayValue}) {
+    render({filter, fieldSpec, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
             items: [
-                div({className: 'name', item: displayName}),
-                div({className: 'operator', item: op}),
+                div({className: 'name', item: fieldSpec.displayName}),
+                div({className: 'operator', item: filter.op}),
                 div({className: 'value', item: displayValue})
             ]
         });

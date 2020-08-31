@@ -8,7 +8,7 @@
 import {fmtNumber} from '@xh/hoist/format';
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
-import {Option} from './impl/Option';
+import {msgOption, filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
@@ -251,7 +251,7 @@ export class FilterChooserModel {
             const truncateCount = results.length - maxResults;
             return [
                 ...results.slice(0, maxResults),
-                Option.createMessageOption(`${fmtNumber(truncateCount)} results truncated`)
+                msgOption(`${fmtNumber(truncateCount)} results truncated`)
             ];
         }
         return results;
@@ -279,7 +279,7 @@ export class FilterChooserModel {
     // Options
     //---------------------------------
     createFilterOption(filter) {
-        return Option.createFilterOption(filter, this.getFieldSpec(filter.field));
+        return filterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
     }
 
     //--------------------

@@ -14,57 +14,53 @@ import {parseFieldValue} from '@xh/hoist/data';
  * (to support Select) that will have the following components:
  *
  *  type - is this a filter suggestion, a field suggestion, or a message? ['filter'|'field'|'msg']
- *  matchType - if suggestion, what type of match triggered? --  ['field'|'value'|null]
  *  value  - unique value for the underlying select input.
  *  label - unique display for the underlying select input.
+ *  isExact -- if based on a matching process, was this an exact, or caseless exact match?
  */
-export class Option {
 
-    /**
-     * Create an option representing an existing or suggested filter.
-     */
-    static createFilterOption(filter, spec, matchType = null) {
-        const {value, op} = filter,
-            {fieldType, displayName} = spec,
-            displayValue = spec.renderValue(parseFieldValue(value, fieldType, null));
+/**
+ * Create an option representing a field suggestion
+ */
+export function fieldOption({fieldSpec, isExact = false}) {
+    const {displayName} = fieldSpec;
+    return {
+        type: 'field',
+        value: JSON.stringify({displayName}),
+        label: displayName,
+        isExact,
 
-        return {
-            type: 'filter',
-            matchType,
-            value: JSON.stringify(filter),
-            label: `${displayName} ${op} ${displayValue}`,
+        fieldSpec
+    };
+}
 
-            displayName,
-            displayValue,
-            op
-        };
-    }
+/**
+ * Create an option representing an existing or suggested filter.
+ */
+export function filterOption({filter, fieldSpec, isExact = false}) {
+    const {fieldType, displayName} = fieldSpec,
+        displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
 
-    /**
-     * Create an option representing a field suggestion
-     */
-    static createFieldOption(fieldSpec) {
-        const {displayName, ops} = fieldSpec;
-        return {
-            type: 'field',
-            matchType: 'field',
-            value: JSON.stringify({displayName}),
-            label: displayName,
+    return {
+        type: 'filter',
+        value: JSON.stringify(filter),
+        label: `${displayName} ${filter.op} ${displayValue}`,
+        isExact,
 
-            displayName,
-            ops
-        };
-    }
+        displayValue,
+        filter,
+        fieldSpec
+    };
+}
 
-    /**
-     * Create an option representing an [unselectable] message
-     */
-    static createMessageOption(msg) {
-        return {
-            type: 'msg',
-            matchType: null,
-            value: msg,
-            label: msg
-        };
-    }
+/**
+ * Create an option representing an [unselectable] message
+ */
+export function msgOption(msg) {
+    return {
+        type: 'msg',
+        value: msg,
+        label: msg,
+        isExact: false
+    };
 }

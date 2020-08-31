@@ -9,7 +9,7 @@ import {ReactiveSupport} from '@xh/hoist/core';
 import {FieldFilter, FieldType, parseFieldValue, genDisplayName} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {stripTags} from '@xh/hoist/utils/js';
+import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 
 /**
@@ -35,6 +35,9 @@ export class FilterChooserFieldSpec {
     /** @member {boolean} */
     suggestValues;
 
+    /** @member {boolean} */
+    forceSelection;
+
     /** @member {?Array} - data values available for suggestion*/
     values;
 
@@ -54,17 +57,18 @@ export class FilterChooserFieldSpec {
      * @param {Object} c - FilterChooserFieldSpec configuration.
      * @param {String} c.field - identifying field name to filter on.
      * @param {Object} [c.fieldType] - type of field, will default from related store field,
-     *      if store provided, or 'AUTO'.
+     *      if store provided, or 'auto'.
      * @param {string} [c.displayName] - displayName, will default from related store field,
      *      if store provided.
      * @property {string[]} [ops] - operators available for filtering. Optional, will default to
      *      a supported set based on the fieldType.
+     * @property {*[]} [values] - explicit list of available values for this field.
      * @property {boolean} [suggestValues] - true to provide auto-complete options with data
-     *      values sourced either automatically from Store data or as provided directly via the
-     *      `values` config below. Default `true` when supported based on the fieldType.
-     *      Set to `false` to disable extraction/suggestion of values from Store.
-     * @property {[]} [values] - explicit list of available values to autocomplete for this field.
-     *      Optional, will otherwise be extracted and updated from available Store data if applicable.
+     *      values for 'like', '=', and '!=' operators.  Defaults to true for value type fields
+     *      (fieldType of 'string' or 'auto').  Otherwise false.
+     * @property {boolean} [forceSelection] - true to require value entered to be an available value
+     *      in value collection for '=' and '!=' operators. Defaults to false for value type fields
+     *      (fieldType of 'string' or 'auto').  Otherwise false.
      * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
      * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
@@ -80,6 +84,7 @@ export class FilterChooserFieldSpec {
         displayName,
         ops,
         suggestValues,
+        forceSelection,
         values,
         valueRenderer,
         valueParser,
@@ -96,11 +101,14 @@ export class FilterChooserFieldSpec {
         this.displayName = displayName ?? storeField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
 
-        // Enable value suggestion based on explicit config, filterType, or presence of values list.
-        this.suggestValues = !!(suggestValues ?? (this.isValueType || values));
+        this.suggestValues = suggestValues ?? this.isValueType;
+        this.forceSelection = forceSelection ?? this.isValueType;
 
+        throwIf(
+            !values && forceSelection,
+            `Must provide lookup values for field '${field}', or set forceSelection to false.`
+        );
 
-        // Read values available for suggestion from direct config if provided or store
         this.loadValues(values);
 
         this.valueRenderer = valueRenderer;
@@ -202,16 +210,18 @@ export class FilterChooserFieldSpec {
             return;
         }
 
-        if (this.suggestValues) {
-            if (this.isBoolFieldType) {
-                this.values = [true, false];
-            } else if (this.store && this.storeField) {
-                this.addReaction({
-                    track: () => this.store.lastUpdated,
-                    run: () => this.loadValuesFromStore(),
-                    fireImmediately: true
-                });
-            }
+        if (this.isBoolFieldType) {
+            this.values = [true, false];
+            return;
+        }
+
+        if (this.store && this.storeField && (this.suggestValues || this.forceSelection)) {
+            this.addReaction({
+                track: () => this.store.lastUpdated,
+                run: () => this.loadValuesFromStore(),
+                fireImmediately: true
+            });
+            return;
         }
     }
 
