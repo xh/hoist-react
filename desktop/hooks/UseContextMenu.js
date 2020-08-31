@@ -25,6 +25,7 @@ export function useContextMenu(child, contextMenu) {
     if (!child || isUndefined(contextMenu)) return child;
 
     const onContextMenu = (e) => {
+        let contextMenuOutput = contextMenu;
 
         // 0) Skip if already consumed, otherwise consume (Adapted from Blueprint 'ContextMenuTarget')
         if (e.defaultPrevented) return;
@@ -32,19 +33,19 @@ export function useContextMenu(child, contextMenu) {
 
         // 1) Pre-process to an element (potentially via item list) or null
         if (isFunction(contextMenu)) {
-            contextMenu = contextMenu(e);
+            contextMenuOutput = contextMenu(e);
         }
-        if (isArray(contextMenu)) {
-            contextMenu = !isEmpty(contextMenu) ? contextMenuEl({menuItems: contextMenu}) : null;
+        if (isArray(contextMenuOutput)) {
+            contextMenuOutput = !isEmpty(contextMenuOutput) ? contextMenuEl({menuItems: contextMenuOutput}) : null;
         }
-        if (contextMenu && !isValidElement(contextMenu)) {
+        if (contextMenuOutput && !isValidElement(contextMenuOutput)) {
             console.error("Incorrect specification of 'contextMenu' arg in useContextMenu()");
-            contextMenu = null;
+            contextMenuOutput = null;
         }
 
         // 2) Render via blueprint!
-        if (contextMenu) {
-            ContextMenu.show(contextMenu, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
+        if (contextMenuOutput) {
+            ContextMenu.show(contextMenuOutput, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
         }
     };
 
