@@ -1,6 +1,9 @@
 # Changelog
 
-## v36.0.0-SNAPSHOT - under development
+## v37.0.0-SNAPSHOT - unreleased
+
+
+## v36.0.0-rc1 - 2020-08-31
 
 ### 🎁 New Features
 
@@ -105,8 +108,6 @@ below regarding related updates to `GridModel.columns` config processing.
 
 ### 🐞 Bug Fixes
 
-* Fixed `UseContextMenu` hook so that if given a function for its 2nd arg `contextMenu`, that function
-  is run every time onContextMenu is called, not just the first time.
 * Fixed `Column.tooltipElement` so that it can work if a `headerTooltip` is also specified on the
   same column.
 * Fixed issue where certain values (e.g. `%`) would break in `Column.tooltipElement`.
