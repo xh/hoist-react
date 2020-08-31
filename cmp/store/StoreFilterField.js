@@ -23,9 +23,9 @@ import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
  * A Store can be bound to this component via either its `store` OR `gridModel` props, or manually
  * by writing an onFilterChange prop.
  *
- * This object will default to point to the store of a GridModel found in context, if neither a store,
- * nor a GridModel are provided.  If you *do* not want this behavior (e.g. you intend to manually
- * wire it with onFilterChange) be sure to set GridModel to *null*.
+ * If not configured to bind to a specific Store or GridModel, this component will bind by default
+ * to the store of the nearest GridModel found in context. If you do *not* want this behavior (e.g.
+ * you are using the `onFilterChange` callback) be sure to explicitly set GridModel to *null*.
  *
  * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
  * customized via the include/excludeFields props. See prop comments for details.
@@ -70,9 +70,6 @@ StoreFilterField.propTypes = {
      */
     filterBuffer: PT.number,
 
-    /** Fixed options for Filter to be generated. @see StoreFilter. */
-    filterOptions: PT.object,
-
     /**
      * GridModel whose Store this control should filter. When given a GridModel, this component
      * will, by default, use the fields for all *visible* columns when matching, as well as any
@@ -93,7 +90,7 @@ StoreFilterField.propTypes = {
     model: PT.object,
 
     /**
-     * Callback to receive an updated StoreFilter. Can be used in place of the `store` or
+     * Callback to receive an updated Filter. Can be used in place of the `store` or
      * `gridModel` prop when direct filtering of a bound store by this component is not desired.
      * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
      */

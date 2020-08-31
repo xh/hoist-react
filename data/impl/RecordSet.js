@@ -101,9 +101,10 @@ export class RecordSet {
 
     withFilter(filter) {
         if (!filter) return this;
-        const {fn, includeChildren} = filter;
-
-        const passes = new Map(),
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
+            test = filter.getTestFn(store),
+            passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
             mark = (rec) => passes.set(rec.id, rec);
 
@@ -123,7 +124,7 @@ export class RecordSet {
             };
         }
         this.recordMap.forEach(rec => {
-            if (!isMarked(rec) && fn(rec)) {
+            if (!isMarked(rec) && test(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
             }

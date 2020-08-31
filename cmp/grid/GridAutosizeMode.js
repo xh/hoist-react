@@ -7,8 +7,7 @@
 
 /**
  * Mode for Grid governing Autosize behavior.
- *
- * @enum {GridAutosizeMode}
+ * @enum {string}
  */
 export const GridAutosizeMode = Object.freeze({
 
@@ -29,7 +28,3 @@ export const GridAutosizeMode = Object.freeze({
     // ON_FIRST_LOAD: 'onFirstLoad'
 
 });
-
-/**
- * @typedef {string} GridAutosizeMode
- */

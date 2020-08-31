@@ -8,7 +8,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf, apiDeprecated, withDefault} from '@xh/hoist/utils/js';
-import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
+import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {stringify} from 'qs';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -62,7 +62,7 @@ export class FetchService {
             this.fetchInternalAsync({
                 ...opts,
                 headers: {'Accept': 'application/json', ...opts.headers}
-            }).then(r => [NO_CONTENT, RESET_CONTENT].includes(r.status) ? null : r.json()),
+            }).then(r => [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT].includes(r.status) ? null : r.json()),
             opts
         );
     }

@@ -46,8 +46,8 @@ export class LeftRightChooserModel {
      * @param {function} fn - predicate function for filtering.
      */
     setDisplayFilter(fn) {
-        this.leftModel.store.setFilter(fn);
-        this.rightModel.store.setFilter(fn);
+        this.leftModel.setFilter(fn);
+        this.rightModel.setFilter(fn);
     }
 
     /** Currently 'selected' values on the right hand side. */
