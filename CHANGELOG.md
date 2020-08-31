@@ -2,6 +2,11 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+#### Other
+
+* The Admin console's Monitor Status tab is masked when monitors are either undefined or disabled.
 
 ## v36.0.0-rc1 - 2020-08-31
 
@@ -66,7 +71,6 @@ below regarding related updates to `GridModel.columns` config processing.
   objects that can benefit from such caching.
 * `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
   provides an simple inline find feature for searching the input's contents.
-* The Admin console's Monitor Status tab is masked when monitors are either undefined or disabled.
 
 ### 💥 Breaking Changes
 
