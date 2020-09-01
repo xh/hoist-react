@@ -10,16 +10,22 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {pluralize} from '@xh/hoist/utils/js';
 
 export const monitorResultsToolbar = hoistCmp.factory(
     ({model}) => {
-        const {passed, warned, failed} = model;
+        const {passed, warned, failed, active} = model;
 
         return toolbar(
             button({
                 icon: Icon.refresh(),
                 text: 'Run all now',
                 onClick: () => model.forceRunAllMonitors()
+            }),
+            hbox({
+                items: [
+                    label(`${active} Active ${pluralize('monitor', active)}`)
+                ]
             }),
             hbox({
                 className: !failed ? 'hidden' : '',
