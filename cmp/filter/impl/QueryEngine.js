@@ -16,7 +16,8 @@ import {
     sortBy,
     flatMap,
     find,
-    castArray
+    castArray,
+    isFunction
 } from 'lodash';
 
 
@@ -46,7 +47,6 @@ export class QueryEngine {
         if (!q) return [];
 
         const ret = this.getOpts(q);
-
 
         return sortBy(castArray(ret), 'type', o => !o.isExact, 'label');
     }
@@ -94,36 +94,35 @@ export class QueryEngine {
             return msgOption(`'${spec.displayName}' does not support '${q.op}'.  Use ${valid}`);
         }
 
-
         // First get value matches.
         const ret = this.getValueMatchesForField(q, spec);
 
         // Add query value itself if needed and allowed
-        const value = spec.parseValue(q.value);
-        if (valueValid(value) &&
-            value !=  '' &
-            !(spec.forceSelection && q.isEqualityQuery) &&
-            !ret.some(it => it.filter?.value === value)) {
+        const value = spec.parseValue(q.value),
+            valueValid = !isNaN(value) && !isNil(value) && value !== '',
+            {forceSelection, suggestValues} = spec;
+        if (valueValid &&
+            (!forceSelection || !q.isEqualityQuery) &&
+            ret.every(it => it.filter?.value !== value)) {
             ret.push(
                 filterOption({
                     filter: new FieldFilter({field: spec.field, op: q.op, value}),
-                    fieldSpec: spec,
-                    isExact: true
+                    fieldSpec: spec
                 })
             );
         }
 
 
         if (isEmpty(ret)) {
-            // Keep template up, especially for example
-            ret.push(fieldOption({fieldSpec: spec, isExact: true}));
-
-            // If we had input, and we were able to parse it, lack of option is a reportable problem
-            if (q.value != '' && valueValid(value)) {
-                ret.push(msgOption('No matches found'));
+            // No input, and no suggestions coming. Keep template up and encourage user to type!
+            if (q.value === '' || !suggestValues) {
+                ret.push(fieldOption({fieldSpec: spec, isExact: true}));
             }
 
-            // todo: distinguish between partially parsed val, and failed parse. Warn for latter
+            // ... if we had valid input, a lack of expected suggestions a reportable problem
+            if (q.value !== '' && valueValid && suggestValues) {
+                ret.push(msgOption('No matches found'));
+            }
         }
 
         return ret;
@@ -133,33 +132,38 @@ export class QueryEngine {
     // 3) We have an op, but no field.-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     getAllFieldFilterOpts(q) {
-        if (!q.isValueQuery) return [];
         return flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q, spec));
     }
-
 
     //---------------------------------------------------------
     // Main utility to get value suggestions for a given field
     //--------------------------------------------------------
     getValueMatchesForField(q, spec) {
-        let {values} = spec;
-        if (!values || !spec.supportsOperator(q.op)) return [];
+        let {values, suggestValues} = spec;
+        if (!values || !suggestValues|| !q.isEqualityQuery || !spec.supportsOperator(q.op)) {
+            return [];
+        }
 
+        const value = spec.parseValue(q.value),
+            testFn = isFunction(suggestValues) ?
+                suggestValues(q.value, value) :
+                defaultSuggestValues(q.value, value);
 
-        const value = spec.parseValue(q.value);
-        if (!valueValid(value)) return [];
-
-        values = q.isValueQuery && spec.suggestValues ?
-            values.filter(v => caselessStartsWith(v, value)) :
-            values.filter(v => caselessEquals(v, value));
-
-        return values.map(v => (
-            filterOption({
-                filter: new FieldFilter({field: spec.field, op: q.op, value: v}),
-                fieldSpec: spec,
-                isExact: caselessEquals(v, value)
-            })
-        ));
+        // assume spec will not produce dup values.  React-select will de-dup identical opts as well
+        const ret = [];
+        values.forEach(v => {
+            const formattedValue = spec.renderValue(v);
+            if (testFn(formattedValue, v)) {
+                ret.push(
+                    filterOption({
+                        filter: new FieldFilter({field: spec.field, op: q.op, value: v}),
+                        fieldSpec: spec,
+                        isExact: value === v || caselessEquals(q.value, formattedValue)
+                    })
+                );
+            }
+        });
+        return ret;
     }
 
     get fieldSpecs() {
@@ -177,12 +181,14 @@ export class QueryEngine {
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {
-            const likeTailReg = new RegExp('(^| +)(l|li|lik)$', 'i');
+            // root of like at the end of field, with a space
+            const likeTailReg = new RegExp('( l| li| lik)$', 'i');
             if (field.match(likeTailReg)) {
                 field = field.replace(likeTailReg, '');
                 op = 'like';
             }
-            const neTailReg = new RegExp('(^| +)!$', 'i');
+            // ! at the end of field
+            const neTailReg = new RegExp('!$', 'i');
             if (field.match(neTailReg)) {
                 field = field.replace(neTailReg, '');
                 op = '!=';
@@ -195,7 +201,6 @@ export class QueryEngine {
             field,
             op,
             value,
-            isValueQuery: ['=', '!=', 'like'].includes(op),
             isEqualityQuery: ['=', '!='].includes(op)
         };
     }
@@ -212,6 +217,7 @@ function caselessEquals(target, query) {
     return target?.toString().toLowerCase() === query?.toString().toLowerCase();
 }
 
-function valueValid(v) {
-    return !isNaN(v) && !isNil(v);
+function defaultSuggestValues(queryString, queryValue) {
+    const regexp = new RegExp('\\b' + escapeRegExp(queryString), 'i');
+    return (formattedValue, value) => formattedValue.match(regexp);
 }

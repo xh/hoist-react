@@ -105,14 +105,8 @@ export class ActivityTrackingModel {
                 'username',
                 'device',
                 'browser',
-                {
-                    field: 'msg',
-                    suggestValues: true
-                },
-                {
-                    field: 'userAgent',
-                    suggestValues: true
-                },
+                'msg',
+                'userAgent',
                 {
                     field: 'elapsed',
                     valueRenderer: (v) => {

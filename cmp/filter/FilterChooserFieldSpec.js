@@ -62,16 +62,20 @@ export class FilterChooserFieldSpec {
      * @param {string[]} [ops] - operators available for filtering. Optional, will default to
      *      a supported set based on the fieldType.
      * @param {*[]} [values] - explicit list of available values for this field.
-     * @param {boolean} [suggestValues] - true to provide auto-complete options with data
-     *      values for 'like', '=', and '!=' operators.  Defaults to true for value type fields
-     *      (fieldType of 'string' or 'auto').  Otherwise false.
+     * @param {(boolean|FilterOptionSuggestValuesCb)} [suggestValues] - true to provide
+     *      auto-complete options with enumerated matches when user specifies '=', or'!='.
+     *      Defaults to true for fieldTypes of 'string' or 'auto', Otherwise false.  May be also
+     *      specified as the function to be used for the matching.  (If true a default "word start"
+     *      matching against the formatted value will be used.)
      * @param {boolean} [forceSelection] - true to require value entered to be an available value
-     *      in value collection for '=' and '!=' operators. Defaults to false for value type fields
-     *      (fieldType of 'string' or 'auto').  Otherwise false.
+     *      for '=' and '!=' operators.  Defaults to false.
      * @param {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
      * @param {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
+     * @param {FilterOptionValueMatcherCb} [valueSuggestFn] - function to test a value against user
+     *      entered input to determine if it should be "suggested" to user.  By default, the
+     *      string will be compared
      * @param {*} [exampleValue] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability.
      * @param {Store} [store] - set from controlling `FilterChooserModel.sourceStore` config, used
@@ -101,14 +105,14 @@ export class FilterChooserFieldSpec {
         this.ops = this.parseOperators(ops);
 
         this.suggestValues = suggestValues ?? this.isValueType;
-        this.forceSelection = forceSelection ?? this.isValueType;
-
-        throwIf(
-            !values && forceSelection,
-            `Must provide lookup values for field '${field}', or set forceSelection to false.`
-        );
+        this.forceSelection = forceSelection ?? false;
 
         this.loadValues(values);
+
+        throwIf(
+            !this.values && forceSelection,
+            `Must provide lookup values for field '${field}', or set forceSelection to false.`
+        );
 
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
@@ -174,21 +178,25 @@ export class FilterChooserFieldSpec {
     }
 
     parseValue(value, op) {
-        const {fieldType} = this;
+        try {
+            const {fieldType} = this;
 
-        if (isFunction(this.valueParser)) {
-            return this.valueParser(value, op);
-        }
+            if (isFunction(this.valueParser)) {
+                return this.valueParser(value, op);
+            }
 
-        // Special handling for default localDate parsing to avoid throwing within parseFieldValue
-        // when piping in special input values. Also supports user entering dash-separated dates,
-        // which is likely given that we show resolved dates in that format.
-        // TODO - consider a less-strict, more flexible version or flag for parseFieldValue.
-        if (fieldType == FieldType.LOCAL_DATE) {
-            value = value.replace(/-/g, '');
-            return LocalDate.fmtRegEx.test(value) ? LocalDate.get(value) : null;
-        } else {
-            return parseFieldValue(value, fieldType);
+            // Special handling for default localDate to supports user entering dash-separated dates,
+            // which is likely given that we show resolved dates in that format.
+            // TODO - consider a less-strict, more flexible version or flag for parseFieldValue.
+            if (fieldType == FieldType.LOCAL_DATE) {
+                value = value.replace(/-/g, '');
+                return LocalDate.fmtRegEx.test(value) ? LocalDate.get(value) : null;
+            }
+
+            return parseFieldValue(value, fieldType, undefined);
+
+        } catch (e) {
+            return undefined;
         }
     }
 
@@ -246,6 +254,15 @@ export class FilterChooserFieldSpec {
         this.values = Array.from(values);
     }
 }
+
+/**
+ * @callback FilterOptionSuggestValuesCb - a function to be run against all values returned by
+ *      the fieldSpecs values getter to determine if they should be considered suggestions.
+ * @param {string} query - raw user query
+ * @param {*} parsedQuery - parsed user query (or undefined, if parsing failed)
+ * @return {function} - a test function taking a formatted value and value, and
+ *      returning a boolean, if the value should be considered a match for query.
+ */
 
 /**
  * @callback FilterOptionValueRendererCb

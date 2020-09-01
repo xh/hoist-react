@@ -38,7 +38,10 @@ export class FilterChooserModel {
     @observable.ref favorites = [];
 
     /** @member {Store} */
-    store;
+    sourceStore;
+
+    /** @member {Store} */
+    targetStore;
 
     /** @member {FilterChooserFieldSpec[]} */
     @managed
