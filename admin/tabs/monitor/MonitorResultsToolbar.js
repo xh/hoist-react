@@ -10,22 +10,18 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {pluralize} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 
 export const monitorResultsToolbar = hoistCmp.factory(
     ({model}) => {
-        const {passed, warned, failed, active} = model;
+        const {passed, warned, failed, inactive, results} = model;
 
         return toolbar(
             button({
                 icon: Icon.refresh(),
                 text: 'Run all now',
+                disabled: isEmpty(results),
                 onClick: () => model.forceRunAllMonitors()
-            }),
-            hbox({
-                items: [
-                    label(`${active} Active ${pluralize('monitor', active)}`)
-                ]
             }),
             hbox({
                 className: !failed ? 'hidden' : '',
@@ -48,8 +44,15 @@ export const monitorResultsToolbar = hoistCmp.factory(
                     label(`${passed} passed`)
                 ]
             }),
+            hbox({
+                className: !inactive ? 'hidden' : '',
+                items: [
+                    Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
+                    label(`${inactive} inactive`)
+                ]
+            }),
             filler(),
-            relativeTimestamp({bind: 'lastRun', options: {emptyResult: 'No results available!'}})
+            relativeTimestamp({bind: 'lastRun'})
         );
     }
 );

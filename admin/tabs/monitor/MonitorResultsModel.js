@@ -36,8 +36,8 @@ export class MonitorResultsModel {
     }
 
     @computed
-    get active() {
-        return this.results.filter(monitor => monitor.active).length;
+    get inactive() {
+        return this.results.filter(monitor => monitor.status === 'INACTIVE').length;
     }
 
     constructor() {
