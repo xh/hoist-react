@@ -9,8 +9,9 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {monitorResultsDisplay} from './MonitorResultsDisplay';
 import {MonitorResultsModel} from './MonitorResultsModel';
-import './MonitorResultsPanel.scss';
 import {monitorResultsToolbar} from './MonitorResultsToolbar';
+import {isEmpty} from 'lodash';
+import './MonitorResultsPanel.scss';
 
 export const monitorResultsPanel = hoistCmp.factory({
     model: creates(MonitorResultsModel),
@@ -27,11 +28,8 @@ export const monitorResultsPanel = hoistCmp.factory({
 });
 
 
-function renderMask(model) {
-    const {results} = model,
-        monitorCount = results.length;
-
-    if (!monitorCount) {
+function renderMask({results}) {
+    if (isEmpty(results)) {
         return mask({
             message: 'No monitors active',
             isDisplayed: true
