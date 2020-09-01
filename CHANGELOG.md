@@ -2,6 +2,11 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+#### Other
+
+* The Admin console's Monitor Status tab is masked when monitors are either undefined or disabled.
 
 ## v36.0.0-rc1 - 2020-08-31
 
