@@ -111,7 +111,8 @@ export class ClientErrorsModel {
         });
 
         this.filterChooserModel = new FilterChooserModel({
-            store: this.gridModel.store,
+            sourceStore: this.gridModel.store,
+            targetStore: this.gridModel.store,
             fieldSpecs: [
                 'username',
                 'browser',
@@ -166,12 +167,6 @@ export class ClientErrorsModel {
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
             run: (detailRec) => this.showEntryDetail(detailRec)
-        });
-
-        this.addReaction({
-            track: () => this.filterChooserModel.value,
-            run: (v) => this.gridModel.setFilter(v),
-            fireImmediately: true
         });
     }
 

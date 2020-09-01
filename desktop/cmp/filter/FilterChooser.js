@@ -9,12 +9,11 @@ import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Select, select} from '@xh/hoist/desktop/cmp/input';
-import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isEmpty, sortBy} from 'lodash';
 
 import './FilterChooser.scss';
 
@@ -47,7 +46,9 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         defaultOptions: [],
                         openMenuOnClick: false,
                         openMenuOnFocus: false,
-                        isOptionDisabled: (opt) => opt.value === FilterChooserModel.TRUNCATED,
+                        isOptionDisabled: (opt) => opt.type === 'msg',
+                        noOptionsMessage: () => null,
+                        loadingMessage: () => null,
                         styles: {
                             menuList: (base) => ({...base, maxHeight: 'unset'})
                         },
@@ -78,31 +79,20 @@ FilterChooser.propTypes = {
 // Options
 //------------------
 function optionRenderer(opt) {
-    if (opt.isSuggestion) return suggestionOption(opt);
-    if (opt.value === FilterChooserModel.TRUNCATED) return truncatedMessage(opt);
-    return filterOption(opt);
+    switch (opt.type) {
+        case 'field' : return fieldOption(opt);
+        case 'filter': return filterOption(opt);
+        case 'msg': return messageOption(opt);
+    }
+    return null;
 }
 
-const filterOption = hoistCmp.factory({
-    model: false, observer: false,
-    render({displayName, op, displayValue}) {
-        return hframe({
-            className: 'xh-filter-chooser-option',
-            items: [
-                div({className: 'name', item: displayName}),
-                div({className: 'operator', item: op}),
-                div({className: 'value', item: displayValue})
-            ]
-        });
-    }
-});
-
-const suggestionOption = hoistCmp.factory({
+const fieldOption = hoistCmp.factory({
     model: false, observer: false, memo: false,
-    render({spec}) {
-        const {displayName, ops, example} = spec;
+    render({fieldSpec}) {
+        const {displayName, ops, example} = fieldSpec;
         return hframe({
-            className: 'xh-filter-chooser-option__suggestion',
+            className: 'xh-filter-chooser-option__field',
             items: [
                 div('e.g.'),
                 div({className: 'name', item: displayName}),
@@ -113,12 +103,26 @@ const suggestionOption = hoistCmp.factory({
     }
 });
 
-const truncatedMessage = hoistCmp.factory({
+const filterOption = hoistCmp.factory({
     model: false, observer: false,
-    render({truncateCount}) {
+    render({filter, fieldSpec, displayValue}) {
         return hframe({
-            className: 'xh-filter-chooser-option__truncated',
-            item: `${fmtNumber(truncateCount)} results truncated`
+            className: 'xh-filter-chooser-option',
+            items: [
+                div({className: 'name', item: fieldSpec.displayName}),
+                div({className: 'operator', item: filter.op}),
+                div({className: 'value', item: displayValue})
+            ]
+        });
+    }
+});
+
+const messageOption = hoistCmp.factory({
+    model: false, observer: false,
+    render({label}) {
+        return hframe({
+            className: 'xh-filter-chooser-option__message',
+            item: label
         });
     }
 });
@@ -145,7 +149,7 @@ function favoritesIcon(model) {
 
 const favoritesMenu = hoistCmp.factory({
     render({model}) {
-        const options = model.favoritesOptions?.map(opt => favoriteMenuItem({...opt})),
+        const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
             addDisabled = isEmpty(model.value) || isFavorite,
             items = [];
@@ -153,7 +157,7 @@ const favoritesMenu = hoistCmp.factory({
         if (isEmpty(options)) {
             items.push(menuItem({text: 'You have not yet saved any favorites...', disabled: true}));
         } else {
-            items.push(...options);
+            items.push(...options.map(it => favoriteMenuItem(it)));
         }
 
         items.push(
@@ -196,3 +200,12 @@ const favoriteTag = hoistCmp.factory({
         });
     }
 });
+
+function getFavoritesOptions(model) {
+    const ret = model.favoritesOptions.map(f => {
+        const labels = f.filterOptions.map(option => option.label);
+        return {value: f.value, labels};
+    });
+
+    return sortBy(ret, it => it.labels[0]);
+}

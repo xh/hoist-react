@@ -98,21 +98,15 @@ export class ActivityTrackingModel {
 
         this.filterChooserModel = new FilterChooserModel({
             initialValue: this._defaultFilter,
-            store: this.cube.store,
+            sourceStore: this.cube.store,
             fieldSpecs: [
                 'category',
                 'month',
                 'username',
                 'device',
                 'browser',
-                {
-                    field: 'msg',
-                    suggestValues: false
-                },
-                {
-                    field: 'userAgent',
-                    suggestValues: false
-                },
+                'msg',
+                'userAgent',
                 {
                     field: 'elapsed',
                     valueRenderer: (v) => {
