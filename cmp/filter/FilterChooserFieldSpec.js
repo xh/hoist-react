@@ -31,7 +31,7 @@ export class FilterChooserFieldSpec {
     /** @member {string[]} */
     ops;
 
-    /** @member {boolean} */
+    /** @member {(boolean | FilterOptionValuesSuggestValuesCb)} */
     suggestValues;
 
     /** @member {boolean} */
@@ -73,9 +73,6 @@ export class FilterChooserFieldSpec {
      *      formatted string for display to the user for any given field value.
      * @param {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
-     * @param {FilterOptionValueMatcherCb} [valueSuggestFn] - function to test a value against user
-     *      entered input to determine if it should be "suggested" to user.  By default, the
-     *      string will be compared
      * @param {*} [exampleValue] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability.
      * @param {Store} [store] - set from controlling `FilterChooserModel.sourceStore` config, used
