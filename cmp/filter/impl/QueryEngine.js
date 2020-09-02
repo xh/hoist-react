@@ -201,13 +201,13 @@ export class QueryEngine {
             // root of like at the end of field, with a space
             const likeTailReg = new RegExp('( l| li| lik)$', 'i');
             if (field.match(likeTailReg)) {
-                field = field.replace(likeTailReg, '');
+                field = field.replace(likeTailReg, '').trim();
                 op = 'like';
             }
             // ! at the end of field
             const neTailReg = new RegExp('!$', 'i');
             if (field.match(neTailReg)) {
-                field = field.replace(neTailReg, '');
+                field = field.replace(neTailReg, '').trim();
                 op = '!=';
             }
         }
