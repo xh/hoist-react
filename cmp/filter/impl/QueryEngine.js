@@ -100,16 +100,23 @@ export class QueryEngine {
             return msgOption(`'${spec.displayName}' does not support '${q.op}'.  Use ${valid}`);
         }
 
-        // Get main suggestions
-        let ret = this.getValueMatchesForField(q.op, q.value, spec);
-        ret = this.sortAndTruncate(ret);
+        let ret = [];
 
+        // Get suggestions if supported
+        const supportsSuggestions = spec.supportsSuggestions(q.op);
+        if (supportsSuggestions) {
+            ret = this.getValueMatchesForField(q.op, q.value, spec);
+            ret = this.sortAndTruncate(ret);
+            // if (isEmpty(ret)) {
+            //    ret.push(msgOption(`No matches found for '${q.value}'`));
+            // }
+        }
         // Add query value itself if needed and allowed
         const value = spec.parseValue(q.value),
             valueValid = !isNaN(value) && !isNil(value) && value !== '',
             {forceSelection, suggestValues} = spec;
         if (valueValid &&
-            (!forceSelection || !isEqualityOp(q.op)) &&
+            (!forceSelection || !supportsSuggestions) &&
             ret.every(it => it.filter?.value !== value)) {
             ret.push(
                 filterOption({
@@ -156,10 +163,9 @@ export class QueryEngine {
     }
 
     getValueMatchesForField(op, queryStr, spec) {
+        if (!spec.supportsSuggestions(op)) return [];
+
         let {values, suggestValues} = spec;
-        if (!values || !suggestValues || !isEqualityOp(op) || !spec.supportsOperator(op)) {
-            return [];
-        }
 
         const value = spec.parseValue(queryStr),
             testFn = isFunction(suggestValues) ?
@@ -240,8 +246,4 @@ function caselessEquals(target, queryStr) {
 function defaultSuggestValues(queryStr, queryValue) {
     const regexp = new RegExp('\\b' + escapeRegExp(queryStr), 'i');
     return (formattedValue, value) => formattedValue.match(regexp);
-}
-
-function isEqualityOp(op) {
-    return op === '=' || op === '!=';
 }

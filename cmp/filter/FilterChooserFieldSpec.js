@@ -199,10 +199,21 @@ export class FilterChooserFieldSpec {
 
     /**
      * @param {string} op
-     * @return {boolean} - true if the provided op is supported by this spec.
+     * @return {boolean}
      */
     supportsOperator(op) {
         return this.ops.includes(op);
+    }
+
+    /**
+     * @param {string} op
+     * @returns {boolean}
+     */
+    supportsSuggestions(op) {
+        return this.values &&
+            this.suggestValues &&
+            this.supportsOperator(op) &&
+            (op === '=' || op === '!=');
     }
 
     //------------------------
