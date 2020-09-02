@@ -4,9 +4,9 @@
 
 ### 🎁 New Features
 
-#### Other
+* Continued Usability improvements to FilterChooser
+* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
 
-* The Admin console's Monitor Status tab is masked when monitors are either undefined or disabled.
 
 ## v36.0.0-rc1 - 2020-08-31
 
