@@ -7,6 +7,7 @@
 
 import {FieldFilter} from '@xh/hoist/data';
 import {fieldOption, filterOption, msgOption} from './Option';
+import {fmtNumber} from '@xh/hoist/format';
 
 import {
     escapeRegExp,
@@ -46,63 +47,69 @@ export class QueryEngine {
         const q = this.getDecomposedQuery(query);
         if (!q) return [];
 
-        const ret = this.getOpts(q);
+        //-----------------------------------------------------------------------
+        // We respond in three primary states, described and implemented below.
+        //-----------------------------------------------------------------------
+        let ret = [];
+        if (q.field && !q.op) {
+            ret = this.openSearching(q);
+        } else if (q.field && q.op) {
+            ret = this.valueSearchingOnField(q);
+        } else if (!q.field && q.op && q.value) {
+            ret = this.valueSearchingOnAll(q);
+        }
 
-        return sortBy(castArray(ret), 'type', o => !o.isExact, 'label');
+        return castArray(ret);
     }
 
-    //---------------------
-    // Implementation
-    //---------------------
+    //------------------------------------------------------------------------
+    // 1) No op yet, so field not fixed -- get field or value matches.
+    //------------------------------------------------------------------------
+    openSearching(q) {
+        // Get main field suggestions
+        let ret = this.getFieldOpts(q.field);
 
-    //-----------------------------------------------------------------------
-    // We respond in three primary states, described and implemented below.
-    //-----------------------------------------------------------------------
-    getOpts(q) {
+        // Potentially provide some additional match ideas
+        if (ret.length === 1) {
+            // user clearly on a path to a single field, drilldown on it with = and an empty search
+            ret.push(...this.getValueMatchesForField('=', '', ret[0].fieldSpec));
+        } else {
+            // field search ongoing with options above.
+            // But in case user looking for values, try a general search with = and the text given
+            this.fieldSpecs.forEach(spec => {
+                ret.push(...this.getValueMatchesForField('=', q.field, spec));
+            });
+        }
 
-        if (q.field && !q.op) return this.getFieldOpts(q);
-        if (q.field && q.op)  return this.getSingleFieldFilterOpts(q);
-        if (!q.field && q.op && q.value) return this.getAllFieldFilterOpts(q);
+        ret = this.sortAndTruncate(ret);
 
-        return [];
+        return isEmpty(ret) ? msgOption(`No matches found for '${q.field}'`) : ret;
+
     }
 
-    //------------------------------------------------------
-    // 1) No op yet, so field not fixed -- get field matches.
-    //-----------------------------------------------------
-    getFieldOpts(q) {
-        const ret = this.fieldSpecs
-            .filter(s => caselessStartsWith(s.displayName, q.field))
-            .map(s => fieldOption({fieldSpec: s, isExact: caselessEquals(s.displayName, q.field)}));
-
-        return !isEmpty(ret) ? ret : msgOption(`No matching fields found for '${q.field}'`);
-    }
-
-
-    //---------------------------------------------------------------------------
-    // 2) We have an op and our field is set -- want limited suggestions on that!
-    //------------------------------------------------------------------------------
-    getSingleFieldFilterOpts(q) {
+    //----------------------------------------------------------------------------------
+    // 2) We have an op and our field is set -- produce suggestions on that field
+    //----------------------------------------------------------------------------------
+    valueSearchingOnField(q) {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
 
         // Validation
-        if (!spec) {
-            return msgOption(`No matching fields found for '${q.field}'`);
-        }
+        if (!spec) return msgOption(`No matching field found for '${q.field}'`);
         if (!spec.supportsOperator(q.op)) {
             const valid = spec.ops.map(it => "'" + it + "'").join(', ');
             return msgOption(`'${spec.displayName}' does not support '${q.op}'.  Use ${valid}`);
         }
 
-        // First get value matches.
-        const ret = this.getValueMatchesForField(q, spec);
+        // Get main suggestions
+        let ret = this.getValueMatchesForField(q.op, q.value, spec);
+        ret = this.sortAndTruncate(ret);
 
         // Add query value itself if needed and allowed
         const value = spec.parseValue(q.value),
             valueValid = !isNaN(value) && !isNil(value) && value !== '',
             {forceSelection, suggestValues} = spec;
         if (valueValid &&
-            (!forceSelection || !q.isEqualityQuery) &&
+            (!forceSelection || !isEqualityOp(q.op)) &&
             ret.every(it => it.filter?.value !== value)) {
             ret.push(
                 filterOption({
@@ -112,14 +119,14 @@ export class QueryEngine {
             );
         }
 
-
+        // Errors
         if (isEmpty(ret)) {
-            // No input, and no suggestions coming. Keep template up and encourage user to type!
+            // No input and no suggestions coming. Keep template up and encourage user to type!
             if (q.value === '' || !suggestValues) {
-                ret.push(fieldOption({fieldSpec: spec, isExact: true}));
+                ret.push(fieldOption({fieldSpec: spec}));
             }
 
-            // ... if we had valid input, a lack of expected suggestions a reportable problem
+            // If we had valid input and can suggest, empty is a reportable problem
             if (q.value !== '' && valueValid && suggestValues) {
                 ret.push(msgOption('No matches found'));
             }
@@ -129,25 +136,35 @@ export class QueryEngine {
     }
 
     //------------------------------------------------------------------------------------------
-    // 3) We have an op, but no field.-- look in *all* fields for matching candidates
+    // 3) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
-    getAllFieldFilterOpts(q) {
-        return flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q, spec));
+    valueSearchingOnAll(q) {
+        let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
+        ret = this.sortAndTruncate(ret);
+
+        return isEmpty(ret) ? msgOption('No matches found'): ret;
     }
 
-    //---------------------------------------------------------
-    // Main utility to get value suggestions for a given field
-    //--------------------------------------------------------
-    getValueMatchesForField(q, spec) {
+
+    //-------------------------------------------------
+    // Helpers to produce suggestions
+    //-------------------------------------------------
+    getFieldOpts(queryStr) {
+        return this.fieldSpecs
+            .filter(s => caselessStartsWith(s.displayName, queryStr))
+            .map(s => fieldOption({fieldSpec: s, isExact: caselessEquals(s.displayName, queryStr)}));
+    }
+
+    getValueMatchesForField(op, queryStr, spec) {
         let {values, suggestValues} = spec;
-        if (!values || !suggestValues|| !q.isEqualityQuery || !spec.supportsOperator(q.op)) {
+        if (!values || !suggestValues || !isEqualityOp(op) || !spec.supportsOperator(op)) {
             return [];
         }
 
-        const value = spec.parseValue(q.value),
+        const value = spec.parseValue(queryStr),
             testFn = isFunction(suggestValues) ?
-                suggestValues(q.value, value) :
-                defaultSuggestValues(q.value, value);
+                suggestValues(queryStr, value) :
+                defaultSuggestValues(queryStr, value);
 
         // assume spec will not produce dup values.  React-select will de-dup identical opts as well
         const ret = [];
@@ -156,9 +173,9 @@ export class QueryEngine {
             if (testFn(formattedValue, v)) {
                 ret.push(
                     filterOption({
-                        filter: new FieldFilter({field: spec.field, op: q.op, value: v}),
+                        filter: new FieldFilter({field: spec.field, op, value: v}),
                         fieldSpec: spec,
-                        isExact: value === v || caselessEquals(q.value, formattedValue)
+                        isExact: value === v || caselessEquals(formattedValue, queryStr)
                     })
                 );
             }
@@ -197,27 +214,34 @@ export class QueryEngine {
 
         if (!field && !op) return null;
 
-        return {
-            field,
-            op,
-            value,
-            isEqualityQuery: ['=', '!='].includes(op)
-        };
+        return {field, op, value};
+    }
+
+    sortAndTruncate(results) {
+        results = sortBy(results, o => o.type, o => !o.isExact, o => o.label);
+
+        const max = this.model.maxResults;
+        return max > 0 && results.length > max ?
+            [...results.slice(0, max), msgOption(`${max} of ${fmtNumber(results.length)} results shown`)] :
+            results;
     }
 }
-
 //----------------------
 // Local Helper functions
 //------------------------
-function caselessStartsWith(target, query) {
-    return target?.toString().toLowerCase().startsWith(query?.toString().toLowerCase());
+function caselessStartsWith(target, queryStr) {
+    return target?.toString().toLowerCase().startsWith(queryStr?.toString().toLowerCase());
 }
 
-function caselessEquals(target, query) {
-    return target?.toString().toLowerCase() === query?.toString().toLowerCase();
+function caselessEquals(target, queryStr) {
+    return target?.toString().toLowerCase() === queryStr?.toString().toLowerCase();
 }
 
-function defaultSuggestValues(queryString, queryValue) {
-    const regexp = new RegExp('\\b' + escapeRegExp(queryString), 'i');
+function defaultSuggestValues(queryStr, queryValue) {
+    const regexp = new RegExp('\\b' + escapeRegExp(queryStr), 'i');
     return (formattedValue, value) => formattedValue.match(regexp);
+}
+
+function isEqualityOp(op) {
+    return op === '=' || op === '!=';
 }

@@ -5,10 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {fmtNumber} from '@xh/hoist/format';
 import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
 import {QueryEngine} from './impl/QueryEngine';
-import {msgOption, filterOption} from './impl/Option';
+import {filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
 import {FieldFilter, parseFilter} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
@@ -248,17 +247,7 @@ export class FilterChooserModel {
     // Querying
     //---------------
     async queryAsync(query) {
-        const {maxResults} = this,
-            results = await this.queryEngine.queryAsync(query);
-
-        if (maxResults > 0 && results.length > maxResults) {
-            const truncateCount = results.length - maxResults;
-            return [
-                ...results.slice(0, maxResults),
-                msgOption(`${fmtNumber(truncateCount)} results truncated`)
-            ];
-        }
-        return results;
+        return this.queryEngine.queryAsync(query);
     }
 
     //--------------------
