@@ -65,12 +65,13 @@ export class FilterChooserModel {
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {(string[]|FilterChooserFieldSpec[]} [c.fieldSpecs] - specifies the fields this model
+     * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
      *      supports for filtering and customizes how their available values will be parsed and
-     *      displayed. Used internally to create `FilterChooserFieldSpec` instances. If a
-     *      `sourceStore` is provided, this may be specified as a list of field names in that Store
-     *      to enable for filtering or be omitted entirely, indicating that all Store fields should
-     *      be filter-enabled.
+     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a
+     *      `sourceStore` is provided, these may be specified as field names in that Store
+     *      or omitted entirely, indicating that all Store fields should be filter-enabled.
+     * @param {Object} [c.fieldSpecDefaults] - default properties to be
+     *      assigned to all FilterChooserFieldSpecs created by this object.
      * @param {Store} [c.sourceStore] - Store to be used to lookup matching Field-level defaults
      *      for `fieldSpecs` and to provide suggested data values (if configured) from user input.
      * @param {Store} [c.targetStore] - Store that should actually be filtered as this model's
@@ -86,6 +87,7 @@ export class FilterChooserModel {
      */
     constructor({
         fieldSpecs,
+        fieldSpecDefaults,
         sourceStore = null,
         targetStore = null,
         initialValue = null,
@@ -95,7 +97,7 @@ export class FilterChooserModel {
     }) {
         this.sourceStore = sourceStore;
         this.targetStore = targetStore;
-        this.fieldSpecs = this.parseFieldSpecs(fieldSpecs);
+        this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxResults = maxResults;
         this.queryEngine = new QueryEngine(this);
 
@@ -328,7 +330,7 @@ export class FilterChooserModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    parseFieldSpecs(specs) {
+    parseFieldSpecs(specs, fieldSpecDefaults) {
         const {sourceStore} = this;
 
         throwIf(
@@ -341,7 +343,11 @@ export class FilterChooserModel {
 
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
-            return new FilterChooserFieldSpec({...spec, store: sourceStore});
+            return new FilterChooserFieldSpec({
+                store: sourceStore,
+                ...fieldSpecDefaults,
+                ...spec
+            });
         });
     }
 
