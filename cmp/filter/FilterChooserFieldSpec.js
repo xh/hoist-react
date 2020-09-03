@@ -114,6 +114,11 @@ export class FilterChooserFieldSpec {
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
         this.example = this.parseExample(example);
+
+        throwIf(
+            !this.valueParser && this.fieldType === FieldType.DATE,
+            "Must provide an appropriate valueParser arg for fields with type 'date'"
+        );
     }
 
     /**
@@ -173,7 +178,7 @@ export class FilterChooserFieldSpec {
 
             // Special handling for default localDate to supports user entering dash-separated dates,
             // which is likely given that we show resolved dates in that format.
-            if (fieldType == FieldType.LOCAL_DATE) {
+            if (fieldType === FieldType.LOCAL_DATE) {
                 return LocalDate.get(value.replace(/-/g, ''));
             }
 
