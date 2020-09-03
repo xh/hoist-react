@@ -105,12 +105,12 @@ const fieldOption = hoistCmp.factory({
 
 const filterOption = hoistCmp.factory({
     model: false, observer: false,
-    render({filter, fieldSpec, displayValue}) {
+    render({fieldSpec, displayOp, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
             items: [
                 div({className: 'name', item: fieldSpec.displayName}),
-                div({className: 'operator', item: filter.op}),
+                div({className: 'operator', item: displayOp}),
                 div({className: 'value', item: displayValue})
             ]
         });
