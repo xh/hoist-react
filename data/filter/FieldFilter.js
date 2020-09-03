@@ -121,6 +121,14 @@ export class FieldFilter extends Filter {
         }
     }
 
+    isEmptyCheck() {
+        const {value, op} = this;
+        return (
+            isEqual(value, [null, '']) || isEqual(value, ['', null]) &&
+            (op === '!=' || op === '=')
+        );
+    }
+
     equals(other) {
         return other?.isFieldFilter && other.op === this.op && isEqual(other.value, this.value);
     }

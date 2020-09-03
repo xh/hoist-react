@@ -34,15 +34,25 @@ export function fieldOption({fieldSpec, isExact = false}) {
  * @return {FilterChooserOption}
  */
 export function filterOption({filter, fieldSpec, isExact = false}) {
-    const {fieldType, displayName} = fieldSpec,
+    let {fieldType, displayName} = fieldSpec,
+        displayOp,
+        displayValue;
+
+    if (filter.isEmptyCheck()) {
+        displayOp = 'is';
+        displayValue = (filter.op == '!=' ? 'not empty' : 'empty');
+    } else {
+        displayOp = filter.op,
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
+    }
 
     return {
         type: 'filter',
         value: JSON.stringify(filter),
-        label: `${displayName} ${filter.op} ${displayValue}`,
+        label: `${displayName} ${displayOp} ${displayValue}`,
         isExact,
 
+        displayOp,
         displayValue,
         filter,
         fieldSpec
