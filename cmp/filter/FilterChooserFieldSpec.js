@@ -6,7 +6,7 @@
  */
 
 import {ReactiveSupport} from '@xh/hoist/core';
-import {FieldFilter, FieldType, parseFieldValue, genDisplayName} from '@xh/hoist/data';
+import {FieldFilter, FieldType, genDisplayName, parseFieldValue} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
@@ -157,7 +157,7 @@ export class FilterChooserFieldSpec {
         const {exampleValue} = this;
         if (exampleValue) return this.renderValue(exampleValue);
         if (this.isBoolFieldType) return 'true';
-        if (this.isDateBasedFieldType) return 'YYYYMMDD';
+        if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
         if (this.isNumericFieldType) return this.renderValue(1234);
         return 'value';
     }
@@ -184,10 +184,8 @@ export class FilterChooserFieldSpec {
 
             // Special handling for default localDate to supports user entering dash-separated dates,
             // which is likely given that we show resolved dates in that format.
-            // TODO - consider a less-strict, more flexible version or flag for parseFieldValue.
             if (fieldType == FieldType.LOCAL_DATE) {
-                value = value.replace(/-/g, '');
-                return LocalDate.fmtRegEx.test(value) ? LocalDate.get(value) : null;
+                return LocalDate.get(value.replace(/-/g, ''));
             }
 
             return parseFieldValue(value, fieldType, undefined);
