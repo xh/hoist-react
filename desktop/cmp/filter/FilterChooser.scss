@@ -48,17 +48,11 @@
     border-radius: 2px;
   }
 
-  &__truncated {
-    padding: var(--xh-pad-half-px) var(--xh-pad-px) !important;
-    margin-bottom: -4px;
-    font-size: var(--xh-font-size-small-px);
+  &__message {
     color: var(--xh-text-color-muted);
-    background: var(--xh-bg-alt);
-    border-top: var(--xh-border-solid);
-    border-radius: 0 0 3px 3px;
   }
 
-  &__suggestion {
+  &__field {
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);

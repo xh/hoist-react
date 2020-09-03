@@ -5,21 +5,20 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {FilterChooserFieldSpec} from '@xh/hoist/cmp/filter/impl/FilterChooserFieldSpec';
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import {QueryEngine} from './impl/QueryEngine';
+import {filterOption} from './impl/Option';
 import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
-import {FieldFilter, parseFilter, parseFieldValue} from '@xh/hoist/data';
+import {FieldFilter, parseFilter} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     compact,
-    escapeRegExp,
     flatten,
     groupBy,
     isEmpty,
-    isNaN,
-    isNil,
     isString,
     partition,
     sortBy,
@@ -32,16 +31,20 @@ import {
 export class FilterChooserModel {
 
     /** @member Filter */
-    @observable.ref value;
+    @observable.ref value = null;
 
     /** @member Filter[] */
-    @observable.ref favorites;
+    @observable.ref favorites = [];
 
     /** @member {Store} */
-    store;
+    sourceStore;
+
+    /** @member {Store} */
+    targetStore;
 
     /** @member {FilterChooserFieldSpec[]} */
-    @observable.ref fieldSpecs = [];
+    @managed
+    fieldSpecs = [];
 
     /** @member {number} */
     maxResults;
@@ -57,43 +60,46 @@ export class FilterChooserModel {
     @observable favoritesIsOpen = false;
     inputRef = createObservableRef();
 
-    /** @member {RawFilterChooserFieldSpec[]} */
-    _rawFieldSpecs;
-
-
-    // Option values with special handling
-    static TRUNCATED = 'TRUNCATED';
+    @managed
+    queryEngine;
 
     /**
      * @param c - FilterChooserModel configuration.
-     * @param {Store} c.store - Store to use for Field resolution as well as extraction of available
-     *      Record values for field-specific suggestions. Note that configuring the store here does
-     *      NOT cause that store to be automatically filtered or otherwise bound to the Filter.
-     * @param {(string[]|FilterChooserFieldSpecConfig[])} [c.fieldSpecs] - specifies the Store
-     *      Fields this model will support for filtering and customizes how their available values
-     *      will be parsed/displayed. Provide simple Field names or `FilterChooserFieldSpecConfig`
-     *      objects to select and customize fields available for filtering. Optional - if not
-     *      provided, all Store Fields will be included with options defaulted based on their type.
+     * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
+     *      supports for filtering and customizes how their available values will be parsed and
+     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a
+     *      `sourceStore` is provided, these may be specified as field names in that Store
+     *      or omitted entirely, indicating that all Store fields should be filter-enabled.
+     * @param {Object} [c.fieldSpecDefaults] - default properties to be
+     *      assigned to all FilterChooserFieldSpecs created by this object.
+     * @param {Store} [c.sourceStore] - Store to be used to lookup matching Field-level defaults
+     *      for `fieldSpecs` and to provide suggested data values (if configured) from user input.
+     * @param {Store} [c.targetStore] - Store that should actually be filtered as this model's
+     *      value changes. May be the same as `sourceStore`. Leave undefined if you wish to combine
+     *      this model's values with other filters, send it to the server, or otherwise observe
+     *      and handle value changes manually.
      * @param {(Filter|* |[])} [c.initialValue] -  Configuration for a filter appropriate to be
-     *      shown in this field. Currently this control only edits and creates a flat collection of
-     *      FieldFilters, to be 'AND'ed together.
+     *      rendered and managed by FilterChooser. Note that FilterChooser currently can only
+     *      edit and create a flat collection of FieldFilters, to be 'AND'ed together.
      * @param {Filter[]} [c.initialFavorites] - initial favorites, an array of filter configurations.
-     * @param {number} [c.maxResults] - maximum number of results to show before truncating.
+     * @param {number} [c.maxResults] - maximum number of dropdown options to show before truncating.
      * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
      */
     constructor({
-        store,
         fieldSpecs,
+        fieldSpecDefaults,
+        sourceStore = null,
+        targetStore = null,
         initialValue = null,
         initialFavorites = [],
         maxResults = 10,
         persistWith
     }) {
-        throwIf(!store, 'Must provide a Store to resolve Fields and provide value suggestions.');
-
-        this.store = store;
-        this._rawFieldSpecs = this.parseRawFieldSpecs(fieldSpecs);
+        this.sourceStore = sourceStore;
+        this.targetStore = targetStore;
+        this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.maxResults = maxResults;
+        this.queryEngine = new QueryEngine(this);
 
         // Read state from provider -- fail gently
         if (persistWith) {
@@ -119,14 +125,16 @@ export class FilterChooserModel {
             }
         }
 
-        this.addReaction({
-            track: () => this.store.lastUpdated,
-            run: () => this.updateFieldSpecs(),
-            fireImmediately: true
-        });
-
         this.setValue(initialValue);
         this.setFavorites(initialFavorites);
+
+        if (targetStore) {
+            this.addReaction({
+                track: () => this.value,
+                run: (v) => targetStore.setFilter(v),
+                fireImmediately: true
+            });
+        }
     }
 
     /**
@@ -141,14 +149,20 @@ export class FilterChooserModel {
      */
     @action
     setValue(value) {
+
         // Always round trip the new value to internal state, but avoid
         // spurious change to the external value.
         try {
             value = parseFilter(value);
+
+            if (!this.validateFilter(value)) {
+                value = this.value ?? null;
+            }
+
             const fieldFilters = this.toFieldFilters(value),
-                options = this.getOptionsForFilters(fieldFilters);
+                options = fieldFilters.map(f => this.createFilterOption(f));
             this.selectOptions = !isEmpty(options) ? options : null;
-            this.selectValue = sortBy(fieldFilters.map(this.serializeFilter), f => {
+            this.selectValue = sortBy(fieldFilters.map(f => JSON.stringify(f)), f => {
                 const idx = this.selectValue?.indexOf(f);
                 return isFinite(idx) && idx > -1 ? idx : fieldFilters.length;
             });
@@ -158,7 +172,7 @@ export class FilterChooserModel {
             }
         } catch (e) {
             console.error('Failed to set value on FilterChoooserModel', e);
-            this.selectOptions = this.getOptionsForFilters([]);
+            this.selectOptions = [];
             this.selectValue = [];
             this.value = null;
         }
@@ -171,12 +185,14 @@ export class FilterChooserModel {
         // Rehydrate stringified values
         selectValue = compact(flatten(selectValue)).map(JSON.parse);
 
-        // Separate suggestions from actual selected filters.
-        const [suggestions, filters] = partition(selectValue, v => v.isSuggestion);
+        // Separate actual selected filters from field suggestion.
+        // (the former is just a transient value on the select control only)
+        const [filters, suggestions] = partition(selectValue, 'op');
 
-        // Round-trip selected filters through main value setter above.
+        // Round-trip actual filters through main value setter above.
         this.setValue(this.recombineOrFilters(filters.map(f => new FieldFilter(f))));
 
+        // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
     }
 
@@ -229,8 +245,11 @@ export class FilterChooserModel {
         });
     }
 
-    serializeFilter(filter) {
-        return JSON.stringify(filter);
+    //-------------
+    // Querying
+    //---------------
+    async queryAsync(query) {
+        return this.queryEngine.queryAsync(query);
     }
 
     //--------------------
@@ -251,189 +270,21 @@ export class FilterChooserModel {
         });
     }
 
-
-    //--------------------
-    // Querying
-    //--------------------
-    async queryAsync(query) {
-        const {maxResults} = this,
-            results = this.sortByQuery(this.filterByQuery(query), query);
-
-        if (maxResults > 0 && results.length > maxResults) {
-            const truncateCount = results.length - maxResults;
-            return [
-                ...results.slice(0, maxResults),
-                {value: FilterChooserModel.TRUNCATED, truncateCount}
-            ];
-        }
-
-        return results;
-    }
-
-    filterByQuery(query) {
-        if (isEmpty(query)) return [];
-
-        // Split query into field, operator and value.
-        const operatorReg = sortBy(FieldFilter.OPERATORS, o => -o.length)
-            .map(o => escapeRegExp(o))
-            .join('|');
-
-        const [queryField, queryOp, queryValue] = query
-            .split(this.getRegExp('(' + operatorReg + ')'))
-            .map(it => it.trim());
-
-        // Get options for the given query, according to the query type specified by the operator
-        const valueOps = ['=', '!=', 'like'],
-            rangeOps = ['>', '>=', '<', '<='],
-            options = [];
-
-        if (!queryOp || valueOps.includes(queryOp)) {
-            options.push(...this.getOptionsForValueQuery(queryField, queryValue, queryOp));
-        } else if (rangeOps.includes(queryOp)) {
-            options.push(...this.getOptionsForRangeQuery(queryField, queryValue, queryOp));
-        }
-
-        // Provide suggestions for field specs that partially match the query.
-        if (isEmpty(queryValue) || isEmpty(options)) {
-            const suggestions = this.fieldSpecs
-                .filter(spec => spec.displayName.toLowerCase().startsWith(queryField.toLowerCase()))
-                .map(spec => ({
-                    isSuggestion: true,
-                    value: JSON.stringify({isSuggestion: true, displayName: spec.displayName}),
-                    spec
-                }));
-            options.push(...suggestions);
-        }
-
-        return options;
-    }
-
-    getOptionsForValueQuery(queryField, queryValue, queryOp) {
-        const fullQuery = queryOp && !isEmpty(queryField) && !isEmpty(queryValue),
-            op = queryOp ?? '=', // If no operator included in query, assume '='
-            options = [];
-
-        const testField = (s) => this.getRegExp(queryField).test(s);
-        const testValue = (s) => this.getRegExp(queryValue).test(s);
-        const specs = this.fieldSpecs.filter(spec => {
-            if (!spec.supportsOperator(op)) return false;
-
-            // Value filters provide options based only on partial field match.
-            // Range filters support value operators (e.g. '=', '!='). Must provide full query.
-            return spec.isValueType ?
-                !fullQuery || testField(spec.displayName) :
-                fullQuery && testField(spec.displayName);
-        });
-
-        specs.forEach(spec => {
-            const {displayName, values} = spec;
-
-            if (values && ['=', '!='].includes(op)) {
-                const nameMatches = testField(displayName);
-                values.forEach(value => {
-                    // Where both field and value specified use partial match for either side
-                    // If only one part provided just match against both together
-                    const match = fullQuery ?
-                        nameMatches && testValue(value) :
-                        testField(displayName + ' ' + value);
-
-                    if (match) {
-                        options.push(this.createOption({spec, value, op}));
-                    }
-                });
-            } else if (fullQuery) {
-                // For filters which require a fully spec'ed query, create an option with the value.
-                const value = spec.parseValue(queryValue, op);
-                if (!isNil(value) && !isNaN(value)) {
-                    options.push(this.createOption({spec, value, op}));
-                }
-            }
-        });
-
-        return options;
-    }
-
-    getOptionsForRangeQuery(queryField, queryValue, queryOp) {
-        if (!queryOp || isEmpty(queryValue)) return [];
-
-        const op = queryOp;
-        const testField = (s) => this.getRegExp(queryField).test(s);
-        const specs = this.fieldSpecs.filter(spec => {
-            return spec.isRangeType && spec.supportsOperator(op) && testField(spec.displayName);
-        });
-
-        return flatMap(specs, spec => {
-            const value = spec.parseValue(queryValue, op);
-            return !isNil(value) && !isNaN(value) ? this.createOption({spec, value, op}) : [];
-        });
-    }
-
-    /** @param {FieldFilter[]} filters */
-    getOptionsForFilters(filters) {
-        return flatMap(filters, filter => {
-            const spec = this.getFieldSpec(filter.field);
-            if (!spec) return [];
-            const {op} = filter,
-                value = parseFieldValue(filter.value, spec.fieldType, null);
-            return this.createOption({spec, value, op, filter});
-        });
-    }
-
-    createOption({spec, value, op, filter}) {
-        const {displayName, field} = spec,
-            displayValue = spec.renderValue(value);
-
-        filter = filter ?? new FieldFilter({field, op, value});
-
-        return {
-            displayName,
-            displayValue,
-            op,
-            value: this.serializeFilter(filter),
-            label: `${displayName} ${op} ${displayValue}`
-        };
-    }
-
-    // Returns a case-insensitive reg exp for query testing
-    getRegExp(pattern) {
-        return new RegExp(pattern, 'ig');
-    }
-
-    sortByQuery(options, query) {
-        if (!query) return sortBy(options, it => it.value);
-
-        const sortQuery = query.replace(/:$/, ''),
-            sortRe = new RegExp('^' + sortQuery, 'i'),
-            queryLength = sortQuery.length;
-
-        return sortBy(options, it => {
-            const {value, displayName} = it;
-
-            let sorter;
-            if (it.isSuggestion) {
-                sorter = 0;
-            } else if (sortRe.test(value)) {
-                sorter = queryLength === value.length ? 1 : 2;
-            } else if (sortRe.test(displayName)) {
-                sorter = queryLength === value.length ? 3 : 4;
-            } else {
-                sorter = 5;
-            }
-
-            return `${sorter}-${displayName}-${value}`;
-        });
+    //---------------------------------
+    // Options
+    //---------------------------------
+    createFilterOption(filter) {
+        return filterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
     }
 
     //--------------------
     // Favorites
     //--------------------
     get favoritesOptions() {
-        const {favorites = []} = this;
-        return sortBy(favorites.map(value => {
-            const fieldFilters = this.toFieldFilters(value),
-                labels = this.getOptionsForFilters(fieldFilters).map(it => it.label);
-            return {value, labels};
-        }), it => it.labels[0]);
+        return this.favorites.map(value => ({
+            value,
+            filterOptions: this.toFieldFilters(value).map(f => this.createFilterOption(f))
+        }));
     }
 
     @action
@@ -447,15 +298,14 @@ export class FilterChooserModel {
     }
 
     @action
-    setFavorites(filters) {
-        this.favorites = filters;
+    setFavorites(favorites) {
+        this.favorites = favorites.filter(f => this.validateFilter(f));
     }
 
     @action
     addFavorite(filter) {
         if (isEmpty(filter) || this.isFavorite(filter)) return;
-        const {favorites = []} = this;
-        this.favorites = [...favorites, filter];
+        this.favorites = [...this.favorites, filter];
     }
 
     @action
@@ -480,92 +330,57 @@ export class FilterChooserModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    @action
-    updateFieldSpecs() {
-        const {store, _rawFieldSpecs} = this;
+    parseFieldSpecs(specs, fieldSpecDefaults) {
+        const {sourceStore} = this;
 
-        this.fieldSpecs = _rawFieldSpecs.map(rawSpec => {
+        throwIf(
+            !sourceStore && (!specs || specs.some(isString)),
+            'Must provide a sourceStore if fieldSpecs are not provided, or provided as strings.'
+        );
+
+        // If no specs provided, include all store fields.
+        if (!specs) specs = sourceStore.fieldNames;
+
+        return specs.map(spec => {
+            if (isString(spec)) spec = {field: spec};
             return new FilterChooserFieldSpec({
-                ...rawSpec,
-                storeRecords: store.allRecords
+                store: sourceStore,
+                ...fieldSpecDefaults,
+                ...spec
             });
         });
     }
 
-    // Normalize provided raw fieldSpecs / field name strings into partial configs ready for use
-    // in constructing FilterChooserFieldSpec instances when Store data is ready / updated.
-    parseRawFieldSpecs(rawSpecs) {
-        const {store} = this;
-
-        // If no specs provided, include all Store Fields.
-        if (isEmpty(rawSpecs)) rawSpecs = store.fieldNames;
-
-        return flatMap(rawSpecs, spec => {
-            if (isString(spec)) spec = {field: spec};
-            const storeField = store.getField(spec.field);
-
-            if (!storeField) {
-                console.warn(`Field '${spec.field}' not found in linked Store - will be ignored.`);
-                return [];
-            }
-
-            return {...spec, field: storeField};
-        });
+    getFieldSpec(fieldName) {
+        return this.fieldSpecs.find(it => it.field === fieldName);
     }
 
-    getFieldSpec(fieldName) {
-        return this.fieldSpecs.find(it => it.field.name === fieldName);
+    validateFilter(f) {
+        if (f === null) return true;
+        if (f.isFieldFilter) {
+            if (!this.getFieldSpec(f.field)) {
+                console.error(`Invalid Filter for FilterChooser: ${f.field}`);
+                return false;
+            }
+            return true;
+        }
+
+        if (f.isCompoundFilter) {
+            if (f.op != 'AND') {
+                console.error('Invalid "OR" filter for FilterChooser', f);
+                return false;
+            }
+            if (f.filters.some(it => !it.isFieldFilter)) {
+                console.error('Invalid complex filter for FilterChooser', f);
+                return false;
+            }
+            return f.filters.every(it => this.validateFilter(it));
+        }
+
+        console.error('Invalid filter for FilterChooser', f);
+        return false;
     }
 }
-
-/**
- * @typedef {Object} FilterChooserFieldSpecConfig - developer-facing config API to customize
- *      filtering behavior at the Field level.
- * @property {string} field - name of Store Field to enable for filtering - must be resolvable to a
- *      known Field within the associated Store.
- * @property {string} [displayName] - optional override for `Field.displayName` for use within
- *      filtering component controls.
- * @property {string[]} [ops] - operators available for filtering. Optional, will default to
- *      a supported set based on the type of the provided Field.
- * @property {boolean} [suggestValues] - true to provide auto-complete options with data
- *      values sourced either automatically from Store data or as provided directly via the
- *      `values` config below. Default `true` when supported based on the type of the provided
- *      Field and operators. Set to `false` to disable extraction/suggestion of values from Store.
- * @property {[]} [values] - explicit list of available values to autocomplete for this Field.
- *      Optional, will otherwise be extracted and updated from available Store data if applicable.
- * @property {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
- *      formatted string for display to the user for any given field value.
- * @property {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
- *      filter chooser control into a typed data value suitable for use in filtering comparisons.
- * @property {*} [exampleValue] - sample / representative value used by components to aid usability.
- */
-
-/**
- * @typedef {Object} RawFilterChooserFieldSpec - partially processed spec for internal use by this
- *     class. Identical to `FilterChooserFieldSpecConfig` but with resolved `Field` instance.
- * @property {Field} field
- * @property {string} displayName
- * @property {string[]} ops
- * @property {boolean} suggestValues
- * @property {[]} values
- * @property {FilterOptionValueRendererCb} [valueRenderer]
- * @property {FilterOptionValueParserCb} [valueParser]
- * @property {*} [exampleValue]
- */
-
-/**
- * @callback FilterOptionValueRendererCb
- * @param {*} value
- * @param {string} op
- * @return {string} - formatted value suitable for display to the user.
- */
-
-/**
- * @callback FilterOptionValueParserCb
- * @param {string} input
- * @param {string} op
- * @return {*} - the parsed value.
- */
 
 /**
  * @typedef {Object} FilterChooserPersistOptions
