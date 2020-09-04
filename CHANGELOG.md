@@ -1,15 +1,6 @@
 # Changelog
 
-## v36.0.0-rc2 - 2020-09-02
-
-### 🎁 New Features
-
-* Continued Usability improvements to FilterChooser
-* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
-
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0-rc1...v36.0.0-rc2)
-
-## v36.0.0-rc1 - 2020-08-31
+## v36.0.0 - 2020-09-04
 
 ### 🎁 New Features
 
@@ -72,6 +63,8 @@ below regarding related updates to `GridModel.columns` config processing.
   objects that can benefit from such caching.
 * `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
   provides an simple inline find feature for searching the input's contents.
+* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
+
 
 ### 💥 Breaking Changes
 
@@ -126,7 +119,7 @@ below regarding related updates to `GridModel.columns` config processing.
 * mobx-react `6.2 -> 6.3`
 * store2 `2.11 -> 2.12`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0-rc1)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0)
 
 
 ## v35.2.1 - 2020-07-31
