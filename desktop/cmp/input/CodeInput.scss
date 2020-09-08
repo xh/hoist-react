@@ -20,7 +20,7 @@
 }
 
 .xh-code-input {
-  flex-direction: column;
+  height: 100px;
 
   &.xh-input-invalid {
     div.CodeMirror {
@@ -35,40 +35,46 @@
     }
   }
 
-  & > .CodeMirror {
-    height: 100px;
+  &--inner-wrapper {
+    position: relative;
     flex: 1;
-    display: flex;
-    flex-direction: column;
 
-    .CodeMirror-selected {
-      background-color: var(--xh-bg-highlight);
-    }
+    & > .CodeMirror {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
 
-    .CodeMirror-scroll {
-      flex: 1;
-      box-sizing: content-box !important;
-    }
-
-    .CodeMirror-simplescroll-vertical,
-    .CodeMirror-simplescroll-horizontal {
-      background-color: var(--xh-scrollbar-bg);
-      > div {
-        background-color: var(--xh-scrollbar-thumb);
-        border: none;
+      .CodeMirror-selected {
+        background-color: var(--xh-bg-highlight);
       }
-    }
 
-    .CodeMirror-scrollbar-filler {
-      background-color: var(--xh-scrollbar-bg);
-    }
+      .CodeMirror-scroll {
+        box-sizing: content-box !important;
+      }
 
-    .CodeMirror-simplescroll-horizontal {
-      height: var(--xh-scrollbar-size-px);
-    }
+      .CodeMirror-simplescroll-vertical,
+      .CodeMirror-simplescroll-horizontal {
+        background-color: var(--xh-scrollbar-bg);
+        > div {
+          background-color: var(--xh-scrollbar-thumb);
+          border: none;
+        }
+      }
 
-    .CodeMirror-simplescroll-vertical {
-      width: var(--xh-scrollbar-size-px);
+      .CodeMirror-scrollbar-filler {
+        background-color: var(--xh-scrollbar-bg);
+      }
+
+      .CodeMirror-simplescroll-horizontal {
+        height: var(--xh-scrollbar-size-px);
+      }
+
+      .CodeMirror-simplescroll-vertical {
+        width: var(--xh-scrollbar-size-px);
+      }
     }
   }
 
@@ -106,15 +112,4 @@
     height: 90vh;
   }
 
-}
-
-.xh-form-field-inline .xh-code-input {
-  flex-direction: row;
-
-  & > .CodeMirror {
-    // Flex items won't shrink below their minimum content size, unless a width / min-width is defined.
-    // See https://dfmcphee.com/flex-items-and-min-width-0/
-    width: 0;
-    min-width: 0;
-  }
 }
