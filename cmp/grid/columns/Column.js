@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty} from 'lodash';
 import {Component} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -395,23 +395,21 @@ export class Column {
 
         // Tooltip Handling
         const {tooltip, tooltipElement} = this;
-        if (tooltip && !isFunction(tooltip)) {
-            // 1) Basic string -- use agGrid native
-            ret.tooltipValueGetter = (agParams) => agParams.value;
-        } else if (tooltip && isFunction(tooltip)) {
-            // 2) Enhanced string -- run through app function
+        if (tooltip || tooltipElement) {
             ret.tooltipValueGetter = (agParams) => {
-                return tooltip(
-                    agParams.value,
-                    {record: agParams.data, column: this, gridModel, agParams}
-                );
+                const value = isFunction(tooltip) ?
+                    tooltip(agParams.value, {record: agParams.data, column: me, gridModel, agParams}) :
+                    agParams.value;
+
+                // Note that due to a known AgGrid issue, a tooltip must always return a value
+                // or risk not showing when the value later changes.
+                // See https://github.com/xh/hoist-react/issues/2058
+                return isEmpty(value) ? '*EMPTY*' : value;
             };
-        } else if (tooltipElement) {
-            // 3) Full React element.
-            ret.tooltipValueGetter = (agParams) => agParams.value;
             ret.tooltipComponentFramework = class extends Component {
                 getReactContainerClasses() {
-                    return this.props.location === 'header' ? ['ag-tooltip'] : ['xh-grid-tooltip'];
+                    if (this.props.location === 'header') return ['ag-tooltip'];
+                    return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
                 }
                 render() {
                     const agParams = this.props,
@@ -420,13 +418,13 @@ export class Column {
                     if (location === 'header') return div(me.headerTooltip);
 
                     const record = api.getDisplayedRowAtIndex(rowIndex)?.data;
-                    if (record) {
+                    if (record && tooltipElement) {
                         // ag-Grid cmp gets escaped value, lookup raw value from record instead
                         const {store} = record,
                             value = me.getValueFn({record, column: me, gridModel, agParams, store});
                         return tooltipElement(value, {record, column: me, gridModel, agParams});
                     }
-                    return null;
+                    return agParams.value === '*EMPTY*' ? null : agParams.value;
                 }
             };
         }

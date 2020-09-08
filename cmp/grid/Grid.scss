@@ -193,6 +193,17 @@
 
 .xh-grid-tooltip {
   position: absolute;
+
+  &:empty {
+    display: none;
+  }
+
+  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  &--default {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+  }
 }
 
 //-----------
