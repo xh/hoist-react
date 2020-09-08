@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, frame, hbox, label, span} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -249,12 +249,15 @@ export class CodeInput extends HoistInput {
 
     renderInput(props) {
         const {showToolbar} = this;
-        return box({
+        return vbox({
             items: [
-                textArea({
-                    value: this.renderValue || '',
-                    ref: this.manageCodeEditor,
-                    onChange: this.onChange
+                div({
+                    className: 'xh-code-input--inner-wrapper',
+                    item: textArea({
+                        value: this.renderValue || '',
+                        ref: this.manageCodeEditor,
+                        onChange: this.onChange
+                    })
                 }),
                 showToolbar ? this.renderToolbar() : this.renderActionButtons()
             ],
