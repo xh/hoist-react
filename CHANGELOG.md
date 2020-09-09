@@ -5,6 +5,9 @@
 ### 🐞 Bug Fixes
 
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
+* `RestForm` editors will now source their default label from the corresponding `Field.displayName`
+  property. Previously an undocumented `label` config could be provided with each editor object -
+  this has been removed.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
 
