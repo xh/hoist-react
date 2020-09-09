@@ -149,7 +149,7 @@ export class RestFormModel {
         return merge({
             name,
             rules: restField.required ? [required] : [],
-            displayName: editor.label,
+            displayName: restField.displayName,
             readonly: restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),
             initialValue: restField.defaultValue
         }, editor.fieldModel);
