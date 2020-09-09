@@ -234,14 +234,14 @@ export class CodeInput extends HoistInput {
     renderFullscreen(props) {
         return fragment(
             dialog({
-                className: 'xh-code-input--dialog',
+                className: 'xh-code-input__dialog',
                 isOpen: true,
                 canOutsideClickClose: true,
                 item: this.renderInput({flex: 1}),
                 onClose: () => this.toggleFullScreen()
             }),
             box({
-                className: 'xh-code-input--placeholder',
+                className: 'xh-code-input__placeholder',
                 ...props
             })
         );
@@ -252,7 +252,7 @@ export class CodeInput extends HoistInput {
         return vbox({
             items: [
                 div({
-                    className: 'xh-code-input--inner-wrapper',
+                    className: 'xh-code-input__inner-wrapper',
                     item: textArea({
                         value: this.renderValue || '',
                         ref: this.manageCodeEditor,

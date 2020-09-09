@@ -32,7 +32,7 @@ export class PreferenceModel {
                 },
                 {
                     name: 'groupName',
-                    label: 'Group',
+                    displayName: 'Group',
                     lookupName: 'groupNames',
                     required: true,
                     enableCreate: true
@@ -91,8 +91,8 @@ export class PreferenceModel {
             {field: 'groupName'},
             {field: 'type'},
             {field: 'defaultValue'},
+            {field: 'notes', formField: {item: textArea({height: 100})}},
             {field: 'local'},
-            {field: 'notes', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
