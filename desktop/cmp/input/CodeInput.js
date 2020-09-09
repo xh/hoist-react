@@ -354,21 +354,15 @@ export class CodeInput extends HoistInput {
     };
 
     createCodeEditor(textAreaComp) {
-        const {editorProps, width, height} = this.props,
-            editorSpec = defaultsDeep(
-                editorProps,
-                this.createDefaults()
-            );
+        const editorSpec = defaultsDeep(
+            this.props.editorProps,
+            this.createDefaults()
+        );
 
         const taDom = ReactDOM.findDOMNode(textAreaComp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
-
-        if (width != null || height != null) {
-            editor.setSize(width, height);
-        }
-
         return editor;
     }
 
