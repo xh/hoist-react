@@ -93,7 +93,7 @@
   }
 
   &__toolbar {
-    z-index: 5; // render on top of code-mirror content to enable click
+    z-index: 3; // render on top of code-mirror content to enable click
 
     .xh-button {
       min-width: 22px;

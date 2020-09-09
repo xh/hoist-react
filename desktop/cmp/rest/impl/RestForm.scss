@@ -14,6 +14,7 @@
   }
 
   .xh-code-input {
+    // CodeInput does not take a box shadow - unsure why - this looks reasonable enough.
     border: 1px solid var(--xh-form-field-box-shadow-color-top);
   }
 
