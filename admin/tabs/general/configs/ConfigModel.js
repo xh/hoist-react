@@ -114,7 +114,7 @@ export class ConfigModel {
             {field: 'valueType'},
             {field: 'value'},
             {field: 'clientVisible'},
-            {field: 'note', formField: {item: textArea()}},
+            {field: 'note', formField: {item: textArea({height: 100})}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]

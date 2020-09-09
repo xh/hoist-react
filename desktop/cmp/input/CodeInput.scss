@@ -35,7 +35,7 @@
     }
   }
 
-  &--inner-wrapper {
+  &__inner-wrapper {
     position: relative;
     flex: 1;
 
@@ -93,7 +93,7 @@
   }
 
   &__toolbar {
-    z-index: 3; // render on top of code-mirror content to enable click
+    z-index: 5; // render on top of code-mirror content to enable click
 
     .xh-button {
       min-width: 22px;
@@ -107,7 +107,7 @@
     text-align: center;
   }
 
-  &--dialog {
+  &__dialog {
     width: 90vw;
     height: 90vh;
   }

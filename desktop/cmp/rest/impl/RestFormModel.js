@@ -14,7 +14,7 @@ import {isNil, merge} from 'lodash';
 @HoistModel
 export class RestFormModel {
 
-    // Parent RestGridModel
+    /** @member {RestGridModel} */
     parent = null;
 
     // Mutable State
@@ -31,6 +31,7 @@ export class RestFormModel {
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
     get editors()           {return this.parent.editors}
+    get gridModel()         {return this.parent.gridModel}
     get store()             {return this.parent.store}
     get loadModel()         {return this.store.loadModel}
 
@@ -77,7 +78,7 @@ export class RestFormModel {
 
         const valid = await this.formModel.validateAsync();
         if (!valid) {
-            XH.toast({message: 'Form not valid.  Please correct errors.'});
+            XH.toast({message: 'Form not valid. Please correct errors.'});
             return;
         }
 
@@ -100,7 +101,9 @@ export class RestFormModel {
         this.currentRecord = !isNil(rec) ? rec : {id: null};
         this.isAdd = isNil(rec) || isNil(rec.id);
         this.isOpen = true;
+
         const fields = this.editors.map(editor => this.fieldModelConfig(editor));
+
         XH.safeDestroy(this.formModel);
         const formModel = this.formModel = new FormModel({
             fields,
@@ -165,6 +168,7 @@ export class RestFormModel {
         const {currentRecord, store} = this,
             field = store.getField(typeField),
             formField = this.formModel.fields[typeField];
+
         let rawType = null;
         if (formField) {
             rawType = formField.value;
