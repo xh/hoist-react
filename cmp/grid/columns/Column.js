@@ -690,6 +690,7 @@ export function getAgHeaderClassFn(column) {
  * @callback Column~getValueFn - function to get the value of a Record field
  * @param {Object} params
  * @param {Record} params.record - row-level data Record.
+ * @param {string} params.field - name of data store field displayed in the column.
  * @param {Store} params.store - Store containing the grid data.
  * @param {Column} params.column - column for the cell being edited.
  * @param {GridModel} params.gridModel - gridModel for the grid.
