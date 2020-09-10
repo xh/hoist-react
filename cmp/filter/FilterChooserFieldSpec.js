@@ -31,7 +31,7 @@ export class FilterChooserFieldSpec {
     /** @member {string[]} */
     ops;
 
-    /** @member {(boolean | FilterOptionValuesSuggestValuesCb)} */
+    /** @member {(boolean|FilterOptionSuggestValuesCb)} */
     suggestValues;
 
     /** @member {boolean} */
@@ -46,36 +46,36 @@ export class FilterChooserFieldSpec {
     /** @member {FilterOptionValueParserCb} */
     valueParser;
 
-    /** @member {*} */
-    exampleValue;
+    /** @member {string} */
+    example;
 
     /** @return {FieldType} */
     fieldType;
 
     /**
      * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {String} c.field - identifying field name to filter on.
+     * @param {string} c.field - identifying field name to filter on.
      * @param {Object} [c.fieldType] - type of field, will default from related store field,
      *      if store provided, or 'auto'.
      * @param {string} [c.displayName] - displayName, will default from related store field,
      *      if store provided.
-     * @param {string[]} [ops] - operators available for filtering. Optional, will default to
+     * @param {string[]} [c.ops] - operators available for filtering. Optional, will default to
      *      a supported set based on the fieldType.
-     * @param {*[]} [values] - explicit list of available values for this field.
-     * @param {(boolean|FilterOptionSuggestValuesCb)} [suggestValues] - true to provide
+     * @param {*[]} [c.values] - explicit list of available values for this field.
+     * @param {(boolean|FilterOptionSuggestValuesCb)} [c.suggestValues] - true to provide
      *      auto-complete options with enumerated matches when user specifies '=', or'!='.
      *      Defaults to true for fieldTypes of 'string' or 'auto', Otherwise false.  May be also
      *      specified as the function to be used for the matching.  (If true a default "word start"
      *      matching against the formatted value will be used.)
-     * @param {boolean} [forceSelection] - true to require value entered to be an available value
+     * @param {boolean} [c.forceSelection] - true to require value entered to be an available value
      *      for '=' and '!=' operators.  Defaults to false.
-     * @param {FilterOptionValueRendererCb} [valueRenderer] - function to produce a suitably
+     * @param {FilterOptionValueRendererCb} [c.valueRenderer] - function to produce a suitably
      *      formatted string for display to the user for any given field value.
-     * @param {FilterOptionValueParserCb} [valueParser] - function to parse user's input from a
+     * @param {FilterOptionValueParserCb} [c.valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
-     * @param {*} [exampleValue] - sample / representative value displayed by `FilterChooser`
-     *      components to aid usability.
-     * @param {Store} [store] - set from controlling `FilterChooserModel.sourceStore` config, used
+     * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
+     *      components to aid usability
+     * @param {Store} [c.store] - set from controlling `FilterChooserModel.sourceStore` config, used
      *      to source matching data `Field` and extract values if configured.
      */
     constructor({
@@ -88,7 +88,7 @@ export class FilterChooserFieldSpec {
         values,
         valueRenderer,
         valueParser,
-        exampleValue,
+        example,
         store
     }) {
         this.field = field;
@@ -113,7 +113,12 @@ export class FilterChooserFieldSpec {
 
         this.valueRenderer = valueRenderer;
         this.valueParser = valueParser;
-        this.exampleValue = exampleValue;
+        this.example = this.parseExample(example);
+
+        throwIf(
+            !this.valueParser && this.fieldType === FieldType.DATE,
+            "Must provide an appropriate valueParser arg for fields with type 'date'"
+        );
     }
 
     /**
@@ -150,17 +155,6 @@ export class FilterChooserFieldSpec {
 
     get isBoolFieldType() {return this.fieldType == FieldType.BOOL}
 
-    /**
-     * @return {string} - a rendered example / representative data value to aid usability.
-     */
-    get example() {
-        const {exampleValue} = this;
-        if (exampleValue) return this.renderValue(exampleValue);
-        if (this.isBoolFieldType) return 'true';
-        if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
-        if (this.isNumericFieldType) return this.renderValue(1234);
-        return 'value';
-    }
 
     renderValue(value, op) {
         let ret;
@@ -184,7 +178,7 @@ export class FilterChooserFieldSpec {
 
             // Special handling for default localDate to supports user entering dash-separated dates,
             // which is likely given that we show resolved dates in that format.
-            if (fieldType == FieldType.LOCAL_DATE) {
+            if (fieldType === FieldType.LOCAL_DATE) {
                 return LocalDate.get(value.replace(/-/g, ''));
             }
 
@@ -238,6 +232,14 @@ export class FilterChooserFieldSpec {
         }
     }
 
+    parseExample(example) {
+        if (example) return example;
+        if (this.isBoolFieldType) return 'true | false';
+        if (this.isDateBasedFieldType) return 'YYYY-MM-DD';
+        if (this.isNumericFieldType) return this.renderValue(1234);
+        return 'value';
+    }
+
     parseOperators(ops) {
         ops = ops ?? this.getDefaultOperators();
         return ops.filter(it => FieldFilter.OPERATORS.includes(it));
@@ -252,7 +254,9 @@ export class FilterChooserFieldSpec {
         const {field, store} = this,
             values = new Set();
 
-        store.records.forEach(rec => {
+        // Note use of unfiltered recordset here to source suggest values. This allows chooser to
+        // suggest values from already-filtered fields that will expand the results when selected.
+        store.allRecords.forEach(rec => {
             const val = rec.get(field);
             if (!isNil(val)) values.add(val);
         });

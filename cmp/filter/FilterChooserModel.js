@@ -226,10 +226,10 @@ export class FilterChooserModel {
             }
         });
 
-        // 3) Finally unroll all multi-value filters to one value per filter.
+        // 3) Finally unroll non-empty check multi-value filters to one value per filter.
         // The multiple values for 'like' and '=' will later be restored to 'OR' semantics
         return flatMap(ret, (f) => {
-            return isArray(f.value) ?
+            return isArray(f.value) && !f.isEmptyCheck() ?
                 f.value.map(value => new FieldFilter({...f, value})) :
                 f;
         });

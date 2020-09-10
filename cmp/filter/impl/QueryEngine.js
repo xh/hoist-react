@@ -48,11 +48,13 @@ export class QueryEngine {
         if (!q) return [];
 
         //-----------------------------------------------------------------------
-        // We respond in three primary states, described and implemented below.
+        // We respond in four primary states, described and implemented below.
         //-----------------------------------------------------------------------
         let ret = [];
         if (q.field && !q.op) {
             ret = this.openSearching(q);
+        } else if (q.field && q.op === 'is') {
+            ret = this.withIsSearchingOnField(q);
         } else if (q.field && q.op) {
             ret = this.valueSearchingOnField(q);
         } else if (!q.field && q.op && q.value) {
@@ -87,8 +89,34 @@ export class QueryEngine {
 
     }
 
+    //--------------------------------------------------------
+    // 2) Op is the psuedo 'is' operator and field is set
+    //-------------------------------------------------------
+    withIsSearchingOnField(q) {
+        const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
+        if (!spec) return msgOption(`No matching field found for '${q.field}'`);
+
+        const ret = [];
+        ['empty', 'not empty'].forEach(value => {
+            if (caselessStartsWith(value, q.value)) {
+                const op = value.startsWith('not') ? '!=' : '=';
+                value = [null, ''];
+                ret.push(
+                    filterOption({
+                        filter: new FieldFilter({field: spec.field, op, value}),
+                        fieldSpec: spec,
+                        isExact: true
+                    })
+                );
+            }
+        });
+        return isEmpty(ret) ?
+            msgOption(`The 'is' operator supports 'empty' or 'not empty'`) :
+            ret;
+    }
+
     //----------------------------------------------------------------------------------
-    // 2) We have an op and our field is set -- produce suggestions on that field
+    // 3) We have an op and our field is set -- produce suggestions on that field
     //----------------------------------------------------------------------------------
     valueSearchingOnField(q) {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
@@ -107,9 +135,6 @@ export class QueryEngine {
         if (supportsSuggestions) {
             ret = this.getValueMatchesForField(q.op, q.value, spec);
             ret = this.sortAndTruncate(ret);
-            // if (isEmpty(ret)) {
-            //    ret.push(msgOption(`No matches found for '${q.value}'`));
-            // }
         }
         // Add query value itself if needed and allowed
         const value = spec.parseValue(q.value),
@@ -143,7 +168,7 @@ export class QueryEngine {
     }
 
     //------------------------------------------------------------------------------------------
-    // 3) We have an op and a value but no field-- look in *all* fields for matching candidates
+    // 4) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     valueSearchingOnAll(q) {
         let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
@@ -195,28 +220,43 @@ export class QueryEngine {
 
     getDecomposedQuery(raw) {
         if (isEmpty(raw)) return null;
-        const operatorReg = sortBy(FieldFilter.OPERATORS, o => -o.length)
-            .map(escapeRegExp)
-            .join('|');
+
+        // 'is' is a pseudo operator, both is and like need word boundaries
+        const ops = FieldFilter.OPERATORS.filter(it => it != 'like');
+        const operatorRegs = sortBy(ops, o => -o.length).map(escapeRegExp);
+        operatorRegs.push('\\blike\\b');
+        operatorRegs.push('\\is\\b');
+
         let [field = '', op = '', value = ''] = raw
-            .split(new RegExp('(' + operatorReg + ')', 'i'))
+            .split(new RegExp('(' + operatorRegs.join('|') + ')', 'i'))
             .map(s => s.trim());
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {
-            // root of like at the end of field, with a space
-            const likeTailReg = new RegExp('( l| li| lik)$', 'i');
-            if (field.match(likeTailReg)) {
-                field = field.replace(likeTailReg, '').trim();
-                op = 'like';
-            }
-            // ! at the end of field
-            const neTailReg = new RegExp('!$', 'i');
-            if (field.match(neTailReg)) {
-                field = field.replace(neTailReg, '').trim();
+
+            // catch partial 'like/is/!' at the end of an actual field -- move to operator
+            const catchOpSuffix = (suffix, operator) => {
+                const reg = new RegExp(suffix, 'i');
+                if (field.match(reg)) {
+                    const fieldPrefix = field.replace(reg, '').trim();
+                    if (this.fieldSpecs.find(f => caselessEquals(f.displayName, fieldPrefix))) {
+                        field = fieldPrefix;
+                        op = operator;
+                    }
+                }
+            };
+
+            if (!op) catchOpSuffix('( l| li| lik)$', 'like');
+            if (!op) catchOpSuffix(' i$', 'is');
+            if (!op) catchOpSuffix('!$', '!=');
+
+            // catch '!' alone -- user clearly wants to do some negation queries
+            if (!op && field === '!') {
                 op = '!=';
+                field = '';
             }
         }
+
 
         if (!field && !op) return null;
 

@@ -567,6 +567,7 @@ export class GridModel {
     @action
     setColumns(colConfigs) {
         this.validateColConfigs(colConfigs);
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
         const columns = colConfigs.map(c => this.buildColumn(c));
 
@@ -935,7 +936,7 @@ export class GridModel {
         this.validateColConfigs(colConfigs);
 
         // 2) Enhance colConfigs with field-level metadata provided by store, if any.
-        colConfigs = this.enhanceColConfigsFromStoreFields(colConfigs, store.fields);
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs, store);
 
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
@@ -982,9 +983,15 @@ export class GridModel {
         );
     }
 
-    // Selectively enhance raw column configs with field-level metadata from this model's store
-    // config, if any has been provided.
-    enhanceColConfigsFromStoreFields(colConfigs, storeFields) {
+    // Selectively enhance raw column configs with field-level metadata from this model's Store
+    // Fields. Takes store as an optional explicit argument to support calling from
+    // parseAndSetColumnsAndStore() with a raw store config, prior to actual store construction.
+    enhanceColConfigsFromStore(colConfigs, storeOrConfig) {
+        const store = storeOrConfig || this.store,
+            // Nullsafe no-op for first setColumns() call from within parseAndSetColumnsAndStore(),
+            // where store has not yet been set (but columns have already been enhanced).
+            storeFields = store?.fields;
+
         if (isEmpty(storeFields)) return colConfigs;
 
         const numTypes = [FieldType.INT, FieldType.NUMBER];

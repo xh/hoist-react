@@ -134,7 +134,7 @@ export class ClientErrorsModel {
                 },
                 {
                     field: 'dateCreated',
-                    exampleValue: Date.now(),
+                    example: 'YYYY-MM-DD',
                     valueParser: (v, op) => {
                         let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
                         if (!ret.isValid()) return null;

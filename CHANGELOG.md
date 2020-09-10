@@ -1,15 +1,31 @@
 # Changelog
 
-## v36.0.0-rc2 - 2020-09-02
+## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* Continued Usability improvements to FilterChooser
-* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
+* RestGrids now support bulk delete and bulk regrouping actions. These have been added to the
+  Preference and Config panels in the Hoist admin app.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0-rc1...v36.0.0-rc2)
+### 🐞 Bug Fixes
 
-## v36.0.0-rc1 - 2020-08-31
+* `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
+* `RestForm` editors source their default label from the corresponding `Field.displayName` property.
+  Previously an undocumented `label` config could be provided with each editor object - this has
+  been removed.
+* Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
+  applied from matching Store fields.
+
+### 💥 Breaking Changes
+
+* The `deleteSelection` and `editSelection` methods have been removed from `RestGridModel`. These
+  methods are no longer called internally by Hoist. This could be breaking change in the unlikely
+  event that an application is relying on them.
+
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
+
+## v36.0.0 - 2020-09-04
 
 ### 🎁 New Features
 
@@ -72,8 +88,8 @@ below regarding related updates to `GridModel.columns` config processing.
   objects that can benefit from such caching.
 * `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
   provides an simple inline find feature for searching the input's contents.
-* RestGrids now support bulk delete and bulk regrouping actions. These have been added to the
-  Preference and Config panels in the Hoist admin app.
+* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
+
 
 ### 💥 Breaking Changes
 
@@ -94,12 +110,6 @@ below regarding related updates to `GridModel.columns` config processing.
     previously provided by `StoreFilter.includesChildren`.
   * `StoreFilterField.filterOptions` has been removed. Set `filterIncludesChildren` directly on the
     store instead.
-  * The `deleteSelection` and `editSelection` methods have been removed from `RestGridModel`. These
-    methods are no longer called internally by Hoist. This could be breaking change in the unlikely
-    event that an application is relying on them.
-  * The `deleteSelection` and `editSelection` methods have been removed from `RestGridModel`. These
-    methods are no longer called internally by Hoist. This could be breaking change in the unlikely
-    event that an application is relying on them.
 
 ### ✨ Style
 
@@ -134,7 +144,7 @@ below regarding related updates to `GridModel.columns` config processing.
 * mobx-react `6.2 -> 6.3`
 * store2 `2.11 -> 2.12`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0-rc1)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0)
 
 
 ## v35.2.1 - 2020-07-31
