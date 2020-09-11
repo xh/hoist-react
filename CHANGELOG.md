@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 
+* `Select` fixed `selectOnFocus` when `enabledWindowed` is true.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
 * `RestForm` editors source their default label from the corresponding `Field.displayName` property.
   Previously an undocumented `label` config could be provided with each editor object - this has
