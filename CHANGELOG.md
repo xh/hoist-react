@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+
 ### 🐞 Bug Fixes
 
 * `Select` fixed `selectOnFocus` when `enabledWindowed` is true.
