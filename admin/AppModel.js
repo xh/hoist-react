@@ -87,7 +87,8 @@ export class AppModel {
                 path: '/preferences',
                 children: [
                     {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'}
+                    {name: 'userPrefs', path: '/userPrefs'},
+                    {name: 'jsonBlob', path: '/jsonBlob'}
                 ]
             }
         ];
