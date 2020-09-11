@@ -8,6 +8,10 @@
 * `RestForm` editors will now source their default label from the corresponding `Field.displayName`
   property. Previously an undocumented `label` config could be provided with each editor object -
   this has been removed.
+* Improved Timezone handling in Admin Activity Tracking.  Users will now see consistent bucketing
+  of activity into an "App Day"  that corresponds to the LocalDate when the event occurred in the
+  application's timezone.  This will not be effected by the timezone of either the client or server
+  computer.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
 
