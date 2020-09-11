@@ -39,9 +39,9 @@ const tbar = hoistCmp.factory(
                 icon: Icon.angleLeft(),
                 onClick: () => model.adjustDates('subtract')
             }),
-            dateInput({bind: 'startDate', ...dateInputProps}),
+            dateInput({bind: 'startDay', ...dateInputProps}),
             Icon.caretRight(),
-            dateInput({bind: 'endDate', ...dateInputProps}),
+            dateInput({bind: 'endDay', ...dateInputProps}),
             button({
                 icon: Icon.angleRight(),
                 onClick: () => model.adjustDates('add'),

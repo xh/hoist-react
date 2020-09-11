@@ -7,7 +7,7 @@
 import {usernameCol} from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {dateTimeCol, GridModel} from '@xh/hoist/cmp/grid';
+import {dateTimeCol, localDateCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {fmtDate, fmtSpan} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -22,8 +22,8 @@ export class ClientErrorsModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
-    @bindable.ref startDate;
-    @bindable.ref endDate;
+    @bindable.ref startDay;
+    @bindable.ref endDay;
 
     /** @member {GridModel} */
     @managed gridModel;
@@ -38,8 +38,8 @@ export class ClientErrorsModel {
     @observable formattedErrorJson;
 
     constructor() {
-        this.startDate = this.getDefaultStartDate();
-        this.endDate = this.getDefaultEndDate();
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
 
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
@@ -56,6 +56,7 @@ export class ClientErrorsModel {
                     {name: 'msg', displayName: 'User Message', type: 'string'},
                     {name: 'error', displayName: 'Error Details', type: 'string'},
                     {name: 'dateCreated', displayName: 'Timestamp', type: 'date'},
+                    {name: 'day', displayName: 'App Day', type: 'localDate'},
                     {name: 'userAlerted', type: 'bool'}
                 ]
             },
@@ -87,9 +88,7 @@ export class ClientErrorsModel {
                     align: 'center',
                     width: 50,
                     exportName: 'User Alerted?',
-                    renderer: v => {
-                        return v ? Icon.window({asHtml: true}) : '';
-                    }
+                    renderer: v => v ? Icon.window({asHtml: true}) : ''
                 },
                 {field: 'id', headerName: 'Entry ID', width: 100, align: 'right', hidden: true},
                 {field: 'username', ...usernameCol},
@@ -97,16 +96,16 @@ export class ClientErrorsModel {
                 {field: 'device', width: 100},
                 {field: 'userAgent', width: 130, hidden: true},
                 {field: 'appVersion', width: 130},
-                {field: 'appEnvironment', headerName: 'Environment', width: 130},
-                {field: 'msg', headerName: 'User Message', width: 130, hidden: true},
+                {field: 'appEnvironment',  width: 130},
+                {field: 'msg', width: 130, hidden: true},
                 {
                     field: 'error',
-                    headerName: 'Error Details',
                     flex: true,
                     minWidth: 150,
                     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
                 },
-                {field: 'dateCreated', headerName: 'Timestamp', ...dateTimeCol}
+                {field: 'dateCreated', ...dateTimeCol},
+                {field: 'day',  ...localDateCol}
             ]
         });
 
@@ -172,8 +171,8 @@ export class ClientErrorsModel {
 
     @action
     resetQuery() {
-        this.startDate = this.getDefaultStartDate();
-        this.endDate = this.getDefaultEndDate();
+        this.startDay = this.getDefaultStartDay();
+        this.endDay = this.getDefaultEndDay();
         this.filterChooserModel.setValue(null);
     }
 
@@ -216,31 +215,29 @@ export class ClientErrorsModel {
 
     @action
     adjustDates(dir) {
-        const tomorrow = LocalDate.tomorrow(),
-            start = this.startDate,
-            end = this.endDate,
+        const appDay = LocalDate.currentAppDay(),
+            start = this.startDay,
+            end = this.endDay,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd > tomorrow) {
-            newStart = tomorrow.subtract(Math.abs(diff));
-            newEnd = tomorrow;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        this.startDate = newStart;
-        this.endDate = newEnd;
+        this.startDay = newStart;
+        this.endDay = newEnd;
     }
 
     getParams() {
-        const {startDate, endDate} = this;
-        return {startDate, endDate};
+        const {startDay, endDay} = this;
+        return {startDay, endDay};
     }
 
-    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
-    getDefaultEndDate() {return LocalDate.tomorrow()}
-
+    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 }

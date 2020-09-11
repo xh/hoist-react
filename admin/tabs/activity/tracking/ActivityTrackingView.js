@@ -48,12 +48,12 @@ const tbar = hoistCmp.factory(
                         onClick: () => model.adjustDates('subtract')
                     }),
                     formField({
-                        field: 'startDate',
+                        field: 'startDay',
                         item: dateInput({...dateInputProps})
                     }),
                     Icon.caretRight(),
                     formField({
-                        field: 'endDate',
+                        field: 'endDay',
                         item: dateInput({...dateInputProps})
                     }),
                     button({
