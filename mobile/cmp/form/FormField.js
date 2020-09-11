@@ -143,6 +143,9 @@ FormField.propTypes = {
      */
     commitOnChange: PT.bool,
 
+    /** True to disable user interaction. Defaulted from backing FieldModel. */
+    disabled: PT.bool,
+
     /** Property name on bound FormModel from which to read/write data. */
     field: PT.string,
 
