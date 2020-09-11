@@ -155,10 +155,10 @@ export class ExceptionHandler {
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
-        ret.showAsError = ret.showAsError ?? !isRoutine;
-        ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
-        ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
-        ret.requireReload = ret.requireReload ?? false;
+        ret.showAsError = ret.showAsError || !isRoutine;
+        ret.logOnServer = ret.logOnServer || (ret.showAsError && !isAutoRefresh);
+        ret.showAlert = ret.showAlert || (!isAutoRefresh && !isFetchAborted);
+        ret.requireReload = ret.requireReload || e.requireReload;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';
