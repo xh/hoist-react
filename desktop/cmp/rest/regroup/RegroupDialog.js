@@ -7,7 +7,6 @@ import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {select} from '@xh/hoist/desktop/cmp/input';
 
 import {RegroupDialogModel} from './RegroupDialogModel';
-import '../impl/RestForm.scss';
 
 export const regroupDialog = hoistCmp.factory({
     model: uses(RegroupDialogModel),
