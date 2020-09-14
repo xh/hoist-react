@@ -4,11 +4,13 @@
 
 ### 🎁 New Features
 
-* RestGrids now support bulk delete and bulk regrouping actions. These have been added to the
-  Preference and Config panels in the Hoist admin app.
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+* RestGrids now support bulk delete and bulk regrouping actions.
+  These have been added to the Preference and Config panels in the Hoist admin app.
 
 ### 🐞 Bug Fixes
 
+* `Select` fixed `selectOnFocus` when `enabledWindowed` is true.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
 * `RestForm` editors source their default label from the corresponding `Field.displayName` property.
   Previously an undocumented `label` config could be provided with each editor object - this has
