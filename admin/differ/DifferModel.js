@@ -12,8 +12,9 @@ import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isNil, remove, trimEnd} from 'lodash';
 import React from 'react';
+import copy from 'clipboard-copy';
 
 import {DifferDetailModel} from './DifferDetailModel';
 
@@ -27,6 +28,7 @@ export class DifferModel  {
     parentGridModel;
     entityName;
     url;
+    clipboardContent;
 
     @managed
     detailModel = new DifferDetailModel({parent: this});
@@ -102,7 +104,7 @@ export class DifferModel  {
     }
 
     async doLoadAsync(loadSpec) {
-        if (loadSpec.isAutoRefresh || !this.remoteHost) return;
+        if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
         const remoteHost = trimEnd(this.remoteHost, '/'),
             // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
@@ -113,7 +115,9 @@ export class DifferModel  {
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
-                XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
+                this.clipboardContent ?
+                    Promise.resolve(cloneDeep(this.clipboardContent)) :
+                    XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
@@ -127,6 +131,20 @@ export class DifferModel  {
             } else {
                 XH.handleException(e, {showAsError: false, logOnServer: false});
             }
+        }
+    }
+
+    diffFromRemote() {
+        this.clipboardContent = null;
+        this.loadAsync();
+    }
+
+    async diffFromClipboardAsync() {
+        try {
+            await this.readConfigFromClipboardAsync();
+            this.loadAsync();
+        } catch (e) {
+            XH.handleException(e, {showAsError: false, logOnServer: false});
         }
     }
 
@@ -271,6 +289,27 @@ export class DifferModel  {
         }
 
         return local ? localType : remoteType;
+    }
+
+    async fetchLocalConfigsAsync() {
+        const {entityName, url} = this,
+            resp = await XH.fetchJson({url: `${url}/${entityName}s`});
+        return JSON.stringify(resp);
+    }
+
+    async readConfigFromClipboardAsync() {
+        try {
+            // see https://web.dev/async-clipboard/ for more about this new API
+            const text = await window.navigator.clipboard.readText(),
+                configs = JSON.parse(text);  // if this throws, it will throw here
+            this.clipboardContent = configs;
+            copy('');  // after successful copy, clear clipboard to remove potentially sensitive configs.
+        } catch (error) {
+            // if nothing found in clipboard, don't throw, reuse what is in memory
+            if (isNil(this.clipboardContent)) {
+                throw ('No configs in clipboard.');
+            }
+        }
     }
 
     @action

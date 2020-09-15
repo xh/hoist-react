@@ -7,6 +7,7 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -73,11 +74,25 @@ const tbar = hoistCmp.factory(
                 options: model.remoteHosts
             }),
             button({
-                text: 'Load Diff',
+                text: 'Diff from Remote',
                 icon: Icon.diff(),
                 intent: 'primary',
                 disabled: !model.remoteHost,
-                onClick: () => model.loadAsync()
+                onClick: () => model.diffFromRemote()
+            }),
+            button({
+                text: 'Diff from Clipboard',
+                icon: Icon.paste(),
+                intent: 'primary',
+                onClick: () => model.diffFromClipboardAsync()
+            }),
+            filler(),
+            clipboardButton({
+                text: 'Copy Configs',
+                intent: 'primary',
+                icon: Icon.copy(),
+                getCopyText: () => model.fetchLocalConfigsAsync(),
+                successMessage: 'Configs copied to clipboard.'
             })
         );
     }
