@@ -2,8 +2,13 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+
 ### 🐞 Bug Fixes
 
+* `Select` fixed `selectOnFocus` when `enabledWindowed` is true.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
 * `RestForm` editors will now source their default label from the corresponding `Field.displayName`
   property. Previously an undocumented `label` config could be provided with each editor object -

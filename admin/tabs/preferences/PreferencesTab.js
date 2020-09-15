@@ -9,6 +9,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {preferencePanel} from './PreferencePanel';
 import {userPreferencePanel} from './UserPreferencePanel';
+import {jsonBlobPanel} from './JsonBlobPanel';
 
 export const preferencesTab = hoistCmp.factory(
     () => tabContainer({
@@ -17,7 +18,8 @@ export const preferencesTab = hoistCmp.factory(
             switcherPosition: 'left',
             tabs: [
                 {id: 'prefs', icon: Icon.bookmark(), content: preferencePanel},
-                {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true}
+                {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true},
+                {id: 'jsonBlobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
             ]
         }
     })
