@@ -6,7 +6,6 @@
  */
 import {XH} from '@xh/hoist/core';
 import {throwIf, computeOnce} from '@xh/hoist/utils/js';
-import {MINUTES} from './DateTimeUtils';
 import {isString} from 'lodash';
 import moment from 'moment';
 
@@ -82,16 +81,19 @@ export class LocalDate {
 
     /** @returns {LocalDate} - a LocalDate representing the current day in the App TimeZone */
     static currentAppDay() {
-        const localOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES,
-            offset = XH.environmentService.get('appTimeZoneOffset');
-        return LocalDate.from(Date.now() + offset - localOffset);
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            appOffset = svc.get('appTimeZoneOffset');
+        return LocalDate.from(Date.now() + appOffset - clientOffset);
+
     }
 
     /** @returns {LocalDate} - a LocalDate representing the current day in the Server TimeZone */
     static currentServerDay() {
-        const localOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES,
-            offset = XH.environmentService.get('serverTimeZoneOffset');
-        return LocalDate.from(Date.now() + offset - localOffset);
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            serverOffset = svc.get('serverTimeZoneOffset');
+        return LocalDate.from(Date.now() + serverOffset - clientOffset);
     }
 
     /** @returns {LocalDate} - a LocalDate representing the next day. */
