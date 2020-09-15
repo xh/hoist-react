@@ -5,6 +5,9 @@
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+* Config Differ supports pasting in a remote config, for when the remote config cannot be accessed via XHR call.
+* ClipboardButton supports an Async funtion for its getCopyText config.
+* Paste icon added to Icon library.
 
 ### 🐞 Bug Fixes
 
