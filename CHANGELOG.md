@@ -15,6 +15,8 @@
   been removed.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
+* Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
+
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
 
