@@ -63,7 +63,7 @@ export class RestStore extends UrlStore {
                 this.loadModel
             );
 
-        this.loadAsync();
+        await this.loadAsync();
         return resp;
     }
 
