@@ -30,7 +30,7 @@ export class JsonBlobService {
      */
     async listAsync({
         type,
-        includeValue
+        includeValue = false
     }) {
         const results = await XH.fetchJson({
             url: 'jsonBlob/list',
