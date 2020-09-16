@@ -15,18 +15,31 @@ import {XH, HoistService} from '@xh/hoist/core';
 export class JsonBlobService {
 
     async getAsync(id) {
-        return XH.fetchJson({
+        const result = await XH.fetchJson({
             url: 'jsonBlob/get',
             params: {id}
         });
+        return this.parseBlob(result);
     }
 
-    /** Return all current user's blobs for given type */
-    async listAsync({type}) {
-        return XH.fetchJson({
+    /**
+     * Return all current user's blobs for given type
+     *
+     * @param {string} type - reference key for which type of data to list.
+     * @param {boolean} [includeValue] - true to include the full value string for each blob.
+     */
+    async listAsync({
+        type,
+        includeValue = false
+    }) {
+        const results = await XH.fetchJson({
             url: 'jsonBlob/list',
-            params: {type}
+            params: {
+                type,
+                includeValue
+            }
         });
+        return results.map(it => this.parseBlob(it));
     }
 
     /**
@@ -43,7 +56,7 @@ export class JsonBlobService {
         value,
         description
     }) {
-        return XH.fetchJson({
+        const result = await XH.fetchJson({
             url: 'jsonBlob/create',
             params: {
                 type,
@@ -52,6 +65,7 @@ export class JsonBlobService {
                 description
             }
         });
+        return this.parseBlob(result);
     }
 
     /**
@@ -68,7 +82,9 @@ export class JsonBlobService {
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
         if (description) params.description = description;
-        return XH.fetchJson({url: 'jsonBlob/update', params});
+
+        const result = await XH.fetchJson({url: 'jsonBlob/update', params});
+        return this.parseBlob(result);
     }
 
     async deleteAsync(id) {
@@ -76,6 +92,14 @@ export class JsonBlobService {
             url: 'jsonBlob/delete',
             params: {id}
         });
+    }
+
+    //--------------------
+    // Implementation
+    //--------------------
+    parseBlob(blob) {
+        if (blob?.value) blob.value = JSON.parse(blob.value);
+        return blob;
     }
 
 }
