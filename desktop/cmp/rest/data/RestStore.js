@@ -77,19 +77,6 @@ export class RestStore extends UrlStore {
             .linkTo(this.loadModel);
     }
 
-    async regroupRecordsAsync(ids, groupName) {
-        const {url} = this,
-            resp = await XH.fetchService.putJson({
-                url: `${url}/bulkUpdate`,
-                body: {ids, newParams: {groupName}}
-            }).linkTo(
-                this.loadModel
-            );
-
-        this.loadAsync();
-        return resp;
-    }
-
     //--------------------------------
     // Implementation
     //--------------------------------

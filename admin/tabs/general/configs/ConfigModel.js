@@ -12,7 +12,6 @@ import {
     cloneAction,
     bulkDeleteAction,
     editAction,
-    regroupAction,
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
@@ -93,8 +92,7 @@ export class ConfigModel {
             addAction,
             editAction,
             cloneAction,
-            bulkDeleteAction,
-            regroupAction
+            bulkDeleteAction
         ],
         prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',

@@ -11,7 +11,6 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {filter, isPlainObject, pickBy} from 'lodash';
 import {RestStore} from './data/RestStore';
-import {RegroupDialogModel} from './regroup/RegroupDialogModel';
 import {RestFormModel} from './impl/RestFormModel';
 
 export const addAction = {
@@ -63,13 +62,6 @@ export const bulkDeleteAction = {
     recordsRequired: true,
     actionFn: ({gridModel}) => gridModel.restGridModel.confirmBulkDeleteRecords()
 };
-
-export const regroupAction = {
-    text: 'Change Group',
-    icon: Icon.grip(),
-    recordsRequired: true,
-    actionFn: ({gridModel}) => gridModel.restGridModel.openRegroupDialog(gridModel)
-};
 /**
  * Core Model for a RestGrid.
  */
@@ -103,9 +95,6 @@ export class RestGridModel {
 
     @managed
     formModel = null;
-
-    @managed
-    regroupDialogModel
 
     get store() {return this.gridModel.store}
 
@@ -164,7 +153,6 @@ export class RestGridModel {
         });
 
         this.formModel = new RestFormModel(this);
-        this.regroupDialogModel = new RegroupDialogModel(this);
     }
 
     /** Load the underlying store. */
@@ -247,10 +235,6 @@ export class RestGridModel {
                 onConfirm: () => this.bulkDeleteRecordsAsync(records)
             });
         }
-    }
-
-    openRegroupDialog() {
-        this.regroupDialogModel.open();
     }
 
     async exportAsync(...args) {

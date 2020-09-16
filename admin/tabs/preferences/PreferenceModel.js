@@ -12,7 +12,6 @@ import {
     addAction,
     bulkDeleteAction,
     editAction,
-    regroupAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {DifferModel} from '../../differ/DifferModel';
@@ -91,8 +90,7 @@ export class PreferenceModel {
         menuActions: [
             addAction,
             editAction,
-            bulkDeleteAction,
-            regroupAction
+            bulkDeleteAction
         ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},
