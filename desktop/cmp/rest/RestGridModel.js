@@ -180,7 +180,7 @@ export class RestGridModel {
         this.formModel.openClone(clone);
     }
 
-    deleteRecord(record) {
+    async deleteRecord(record) {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
         this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
