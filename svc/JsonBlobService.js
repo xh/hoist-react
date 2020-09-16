@@ -15,11 +15,10 @@ import {XH, HoistService} from '@xh/hoist/core';
 export class JsonBlobService {
 
     async getAsync(id) {
-        const result = await XH.fetchJson({
-            url: 'jsonBlob/get',
+        return XH.fetchJson({
+            url: 'xh/getJsonBlob',
             params: {id}
         });
-        return this.parseBlob(result);
     }
 
     /**
@@ -30,16 +29,15 @@ export class JsonBlobService {
      */
     async listAsync({
         type,
-        includeValue = false
+        includeValue
     }) {
-        const results = await XH.fetchJson({
-            url: 'jsonBlob/list',
+        return XH.fetchJson({
+            url: 'xh/listJsonBlobs',
             params: {
                 type,
                 includeValue
             }
         });
-        return results.map(it => this.parseBlob(it));
     }
 
     /**
@@ -56,8 +54,8 @@ export class JsonBlobService {
         value,
         description
     }) {
-        const result = await XH.fetchJson({
-            url: 'jsonBlob/create',
+        return XH.fetchJson({
+            url: 'xh/createJsonBlob',
             params: {
                 type,
                 name,
@@ -65,7 +63,6 @@ export class JsonBlobService {
                 description
             }
         });
-        return this.parseBlob(result);
     }
 
     /**
@@ -82,24 +79,14 @@ export class JsonBlobService {
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
         if (description) params.description = description;
-
-        const result = await XH.fetchJson({url: 'jsonBlob/update', params});
-        return this.parseBlob(result);
+        return XH.fetchJson({url: 'xh/updateJsonBlob', params});
     }
 
     async deleteAsync(id) {
         return XH.fetchJson({
-            url: 'jsonBlob/delete',
+            url: 'xh/deleteJsonBlob',
             params: {id}
         });
-    }
-
-    //--------------------
-    // Implementation
-    //--------------------
-    parseBlob(blob) {
-        if (blob?.value) blob.value = JSON.parse(blob.value);
-        return blob;
     }
 
 }
