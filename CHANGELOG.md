@@ -17,9 +17,6 @@
   of activity into an "App Day"  that corresponds to the LocalDate when the event occurred in the
   application's timezone.  This will not be effected by the timezone of either the client or server
   computer.
-* `RestForm` editors source their default label from the corresponding `Field.displayName` property.
-  Previously an undocumented `label` config could be provided with each editor object - this has
-  been removed.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 
