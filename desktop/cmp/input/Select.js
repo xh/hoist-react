@@ -336,9 +336,9 @@ export class Select extends HoistInput {
 
                 // Use of creatable and async variants will create another level of nesting we must
                 // traverse to get to the underlying Select comp and its inputRef.
-                const refComp = rsRef.select,
-                    selectComp = refComp.inputRef ? refComp : refComp.select,
-                    inputElem = selectComp.inputRef;
+                let selectComp = rsRef.select;
+                while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+                const inputElem = selectComp?.inputRef;
 
                 if (this.hasFocus && inputElem && document.activeElement === inputElem) {
                     inputElem.select();
