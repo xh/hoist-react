@@ -80,7 +80,8 @@ export class PreferenceModel {
         unit: 'preference',
         filterFields: ['name', 'groupName'],
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting preferences can break running apps.'
+            del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
+
         },
         toolbarActions: [
             addAction,
