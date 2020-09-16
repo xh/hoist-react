@@ -60,9 +60,8 @@ export class DateInput extends HoistInput {
         /**
          * Month to display in calendar popover on first render.
          *
-         * If unspecified, BP's component will default to the month of the current value (if present), or today
-         * (if within min/max), or to the mid-point between min/max. Note that falling through to
-         * that last case can result in an unexpectedly far-future default!
+         * If unspecified will default to the month of the current value (if present) or closest
+         * valid value.
          */
         initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
@@ -76,18 +75,19 @@ export class DateInput extends HoistInput {
         rightElement: PT.element,
 
         /**
-         * Maximum (inclusive) valid date. Controls which dates can be selected via the calendar
-         * picker. Will reset any out-of-bounds manually entered input to `null`.
+         * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
+         * keyboard.  Will reset any out-of-bounds manually entered input to `null`.
          *
-         * Note this is distinct in these ways from FormModel based validation, which will leave an
-         * invalid date entry in place but flag as invalid via FormField. For cases where it is
-         * possible to use FormField, that is often a better choice.
+         * Note that this does not prevent the application from setting a value for this control
+         * programmatically out of this range.  It is also distinct from FormModel based validation,
+         * which will flag an invalid date in a Form. For Form usages, it may be advisable to set
+         * validation constraints in addition to this property.
          */
         maxDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
 
         /**
-         * Minimum (inclusive) valid date. Controls which dates can be selected via the calendar
-         * picker. Will reset any out-of-bounds manually entered input to `null`.
+         * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
+         * keyboard.  Will reset any out-of-bounds manually entered input to `null`.
          *
          * See note re. validation on maxDate, above.
          */
@@ -186,11 +186,27 @@ export class DateInput extends HoistInput {
         );
 
         const layoutProps = this.getLayoutProps(),
-            enablePicker = withDefault(props.enablePicker, true),
-            enableTextInput = withDefault(props.enableTextInput, true),
-            enableClear = withDefault(props.enableClear, false),
+            enablePicker = props.enablePicker ?? true,
+            enableTextInput = props.enableTextInput ?? true,
+            enableClear = props.enableClear ?? false,
             rightElement = withDefault(props.rightElement, this.renderButtons(enablePicker, enableTextInput, enableClear)),
             isOpen = enablePicker && this.popoverOpen && !props.disabled;
+
+        let {minDate, maxDate, initialMonth, renderValue} = this;
+
+        // If app has set an out-of-range date, we render it -- these bounds govern *manual* entry
+        // But need to relax constraints on the picker, to prevent BP from breaking badly
+        if (renderValue) {
+            if (minDate && renderValue < minDate) minDate = renderValue;
+            if (maxDate && renderValue > maxDate) maxDate = renderValue;
+        }
+
+        // BP chooses annoying mid-point if forced to guess initial month. Use closest bound instead
+        if (!initialMonth && !renderValue) {
+            const today = new Date();
+            if (minDate && today < minDate) initialMonth = minDate;
+            if (maxDate && today > maxDate) initialMonth = maxDate;
+        }
 
         return div({
             item: popover({
@@ -199,7 +215,7 @@ export class DateInput extends HoistInput {
                 usePortal: true,
                 autoFocus: false,
                 enforceFocus: false,
-                position: withDefault(props.popoverPosition, 'auto'),
+                position: props.popoverPosition ?? 'auto',
                 popoverRef: this.popoverRef,
                 onClose: this.onPopoverClose,
                 onInteraction: (nextOpenState) => {
@@ -211,11 +227,11 @@ export class DateInput extends HoistInput {
                 },
 
                 content: bpDatePicker({
-                    value: this.renderValue,
+                    value: renderValue,
                     onChange: this.onDatePickerChange,
-                    maxDate: this.maxDate,
-                    minDate: this.minDate,
-                    initialMonth: this.initialMonth,
+                    maxDate,
+                    minDate,
+                    initialMonth,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
                     timePrecision: this.timePrecision,
@@ -224,7 +240,7 @@ export class DateInput extends HoistInput {
 
                 item: div({
                     item: textInput({
-                        value: this.formatDate(this.renderValue),
+                        value: this.formatDate(renderValue),
                         className: this.getClassName(!enableTextInput && !props.disabled ? 'xh-date-input--picker-only' : null),
                         onCommit: this.onInputCommit,
                         rightElement,
@@ -318,10 +334,10 @@ export class DateInput extends HoistInput {
     };
 
     onKeyDown = (ev) => {
-        if (ev.key == 'Enter') {
+        if (ev.key === 'Enter') {
             this.doCommit();
             this.consumeEvent(ev);
-        } else if (this.popoverOpen && ev.key == 'Escape') {
+        } else if (this.popoverOpen && ev.key === 'Escape') {
             this.setPopoverOpen(false);
             this.consumeEvent(ev);
         } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
@@ -377,9 +393,9 @@ export class DateInput extends HoistInput {
     applyPrecision(date) {
         let {timePrecision} = this;
         date = clone(date);
-        if (timePrecision == 'second') {
+        if (timePrecision === 'second') {
             date.setMilliseconds(0);
-        } else if (timePrecision == 'minute') {
+        } else if (timePrecision === 'minute') {
             date.setSeconds(0, 0);
         } else {
             date.setHours(0, 0, 0, 0);
@@ -393,9 +409,9 @@ export class DateInput extends HoistInput {
 
         if (formatString) return formatString;
         let ret = 'YYYY-MM-DD';
-        if (timePrecision == 'minute') {
+        if (timePrecision === 'minute') {
             ret += ' HH:mm';
-        } else if (timePrecision == 'second') {
+        } else if (timePrecision === 'second') {
             ret += ' HH:mm:ss';
         }
         return ret;

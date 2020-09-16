@@ -996,13 +996,21 @@ export class GridModel {
 
         const numTypes = [FieldType.INT, FieldType.NUMBER];
         return colConfigs.map(col => {
+            // Recurse into children for column groups
+            if (col.children) {
+                return {
+                    ...col,
+                    children: this.enhanceColConfigsFromStore(col.children, storeOrConfig)
+                };
+            }
+
             // Note this routine currently works with either Field instances or configs.
             const field = storeFields.find(f => f.name === col.field);
             if (!field) return col;
 
             return {
                 displayName: field.displayName,
-                align:  numTypes.includes(field.type) ? 'right' : undefined,
+                align: numTypes.includes(field.type) ? 'right' : undefined,
                 ...col
             };
         });
@@ -1092,7 +1100,7 @@ export class GridModel {
 // This column is inserted whenever there is a flex column with maxWidth.
 // Special handling ensures it is maintained as the last column.
 //-------------------------------------------------------------------------
-const xhEmptyFlexCol =  {
+const xhEmptyFlexCol = {
     colId: 'xhEmptyFlex',
     headerName: null,
     // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.

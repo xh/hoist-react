@@ -16,16 +16,27 @@ export class JsonBlobService {
 
     async getAsync(id) {
         return XH.fetchJson({
-            url: 'jsonBlob/get',
+            url: 'xh/getJsonBlob',
             params: {id}
         });
     }
 
-    /** Return all current user's blobs for given type */
-    async listAsync({type}) {
+    /**
+     * Return all current user's blobs for given type
+     *
+     * @param {string} type - reference key for which type of data to list.
+     * @param {boolean} [includeValue] - true to include the full value string for each blob.
+     */
+    async listAsync({
+        type,
+        includeValue
+    }) {
         return XH.fetchJson({
-            url: 'jsonBlob/list',
-            params: {type}
+            url: 'xh/listJsonBlobs',
+            params: {
+                type,
+                includeValue
+            }
         });
     }
 
@@ -44,7 +55,7 @@ export class JsonBlobService {
         description
     }) {
         return XH.fetchJson({
-            url: 'jsonBlob/create',
+            url: 'xh/createJsonBlob',
             params: {
                 type,
                 name,
@@ -68,12 +79,12 @@ export class JsonBlobService {
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
         if (description) params.description = description;
-        return XH.fetchJson({url: 'jsonBlob/update', params});
+        return XH.fetchJson({url: 'xh/updateJsonBlob', params});
     }
 
     async deleteAsync(id) {
         return XH.fetchJson({
-            url: 'jsonBlob/delete',
+            url: 'xh/deleteJsonBlob',
             params: {id}
         });
     }
