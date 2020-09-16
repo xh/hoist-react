@@ -334,7 +334,7 @@ export class Select extends HoistInput {
                 const rsRef = this.reactSelectRef.current;
                 if (!rsRef) return;
 
-                // Use of creatable and async variants will create another level of nesting we must
+                // Use of windowedMode, creatable and async variants will create levels of nesting we must
                 // traverse to get to the underlying Select comp and its inputRef.
                 let selectComp = rsRef.select;
                 while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
