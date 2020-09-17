@@ -213,48 +213,43 @@ export class Select extends HoistInput {
     render() {
         const props = this.getNonLayoutProps(),
             {width, ...layoutProps} = this.getLayoutProps(),
-            components = {
-                DropdownIndicator: this.getDropdownIndicatorCmp(),
-                ClearIndicator: this.getClearIndicatorCmp(),
-                IndicatorSeparator: () => null
+            rsProps = {
+                value: this.renderValue,
+
+                autoFocus: props.autoFocus,
+                formatOptionLabel: this.formatOptionLabel,
+                isDisabled: props.disabled,
+                isMulti: props.enableMulti,
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                noOptionsMessage: this.noOptionsMessageFn,
+                openMenuOnFocus: props.openMenuOnFocus,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
+
+                // Minimize (or hide) bulky dropdown
+                components: {
+                    DropdownIndicator: this.getDropdownIndicatorCmp(),
+                    ClearIndicator: this.getClearIndicatorCmp(),
+                    IndicatorSeparator: () => null,
+                    ValueContainer: this.getValueContainerCmp(props.leftIcon)
+                },
+
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: this.getOrCreatePortalDiv(),
+
+                inputId: props.id,
+                classNamePrefix: 'xh-select',
+                theme: this.getThemeConfig(),
+
+                onBlur: this.onBlur,
+                onChange: this.onSelectChange,
+                onFocus: this.onFocus,
+
+                ref: this.reactSelectRef
             };
-
-        if (props.leftIcon) {
-            components.ValueContainer = this.getValueContainerCmp(props.leftIcon);
-        }
-
-        const rsProps = {
-            value: this.renderValue,
-
-            autoFocus: props.autoFocus,
-            formatOptionLabel: this.formatOptionLabel,
-            isDisabled: props.disabled,
-            isMulti: props.enableMulti,
-            // Explicit false ensures consistent default for single and multi-value instances.
-            isClearable: withDefault(props.enableClear, false),
-            menuPlacement: withDefault(props.menuPlacement, 'auto'),
-            noOptionsMessage: this.noOptionsMessageFn,
-            openMenuOnFocus: props.openMenuOnFocus,
-            placeholder: withDefault(props.placeholder, 'Select...'),
-            tabIndex: props.tabIndex,
-
-            // Minimize (or hide) bulky dropdown
-            components,
-
-            // A shared div is created lazily here as needed, appended to the body, and assigned
-            // a high z-index to ensure options menus render over dialogs or other modals.
-            menuPortalTarget: this.getOrCreatePortalDiv(),
-
-            inputId: props.id,
-            classNamePrefix: 'xh-select',
-            theme: this.getThemeConfig(),
-
-            onBlur: this.onBlur,
-            onChange: this.onSelectChange,
-            onFocus: this.onFocus,
-
-            ref: this.reactSelectRef
-        };
 
         if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
@@ -525,10 +520,10 @@ export class Select extends HoistInput {
     _leftIcon = null;
     _leftIconCmp = null;
     getValueContainerCmp(icon) {
-        if (this._leftIcon !== icon) {
+        if (!this._leftIconCmp || this._leftIcon !== icon) {
             this._leftIcon = icon;
             this._leftIconCmp = (props) => fragment(
-                span({className: 'xh-select__control__left-icon', item: icon}),
+                span({omit: !icon, className: 'xh-select__control__left-icon', item: icon}),
                 elem(components.ValueContainer, props)
             );
         }
