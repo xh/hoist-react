@@ -518,17 +518,17 @@ export class Select extends HoistInput {
 
     // cache to avoid unnecessary rerenders which cause loss of input focus while typing
     _leftIcon = null;
-    _leftIconCmp = null;
+    _valueContainerCmp = null;
     getValueContainerCmp(icon) {
-        if (!this._leftIconCmp || this._leftIcon !== icon) {
+        if (!this._valueContainerCmp || this._leftIcon !== icon) {
             this._leftIcon = icon;
-            this._leftIconCmp = (props) => fragment(
+            this._valueContainerCmp = (props) => fragment(
                 span({omit: !icon, className: 'xh-select__control__left-icon', item: icon}),
                 elem(components.ValueContainer, props)
             );
         }
 
-        return this._leftIconCmp;
+        return this._valueContainerCmp;
     }
 
     getDropdownIndicatorCmp() {
