@@ -4,6 +4,12 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import debouncePromise from 'debounce-promise';
+import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
+import PT from 'prop-types';
+import React from 'react';
+import {createFilter} from 'react-select';
+
 import {HoistInput} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
@@ -18,11 +24,9 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import debouncePromise from 'debounce-promise';
-import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
-import PT from 'prop-types';
-import React from 'react';
-import {createFilter} from 'react-select';
+
+import {SelectLeftIconFactory} from './impl/SelectLeftIconFactory';
+
 import './Select.scss';
 
 /**
@@ -89,6 +93,9 @@ export class Select extends HoistInput {
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
+
+        /** Icon to display inline on the left side of the input. */
+        leftIcon: PT.element,
 
         /** Function to return loading message during an async query. Passed current query input. */
         loadingMessageFn: PT.func,
@@ -208,42 +215,46 @@ export class Select extends HoistInput {
     render() {
         const props = this.getNonLayoutProps(),
             {width, ...layoutProps} = this.getLayoutProps(),
-            rsProps = {
-                value: this.renderValue,
-
-                autoFocus: props.autoFocus,
-                formatOptionLabel: this.formatOptionLabel,
-                isDisabled: props.disabled,
-                isMulti: props.enableMulti,
-                // Explicit false ensures consistent default for single and multi-value instances.
-                isClearable: withDefault(props.enableClear, false),
-                menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                noOptionsMessage: this.noOptionsMessageFn,
-                openMenuOnFocus: props.openMenuOnFocus,
-                placeholder: withDefault(props.placeholder, 'Select...'),
-                tabIndex: props.tabIndex,
-
-                // Minimize (or hide) bulky dropdown
-                components: {
-                    DropdownIndicator: this.getDropdownIndicatorFactory(),
-                    ClearIndicator: this.getClearIndicatorFactory(),
-                    IndicatorSeparator: () => null
-                },
-
-                // A shared div is created lazily here as needed, appended to the body, and assigned
-                // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: this.getOrCreatePortalDiv(),
-
-                inputId: props.id,
-                classNamePrefix: 'xh-select',
-                theme: this.getThemeConfig(),
-
-                onBlur: this.onBlur,
-                onChange: this.onSelectChange,
-                onFocus: this.onFocus,
-
-                ref: this.reactSelectRef
+            components = {
+                DropdownIndicator: this.getDropdownIndicatorFactory(),
+                ClearIndicator: this.getClearIndicatorFactory(),
+                IndicatorSeparator: () => null
             };
+
+        this.getLeftIconFactory(components);
+
+        const rsProps = {
+            value: this.renderValue,
+
+            autoFocus: props.autoFocus,
+            formatOptionLabel: this.formatOptionLabel,
+            isDisabled: props.disabled,
+            isMulti: props.enableMulti,
+            // Explicit false ensures consistent default for single and multi-value instances.
+            isClearable: withDefault(props.enableClear, false),
+            menuPlacement: withDefault(props.menuPlacement, 'auto'),
+            noOptionsMessage: this.noOptionsMessageFn,
+            openMenuOnFocus: props.openMenuOnFocus,
+            placeholder: withDefault(props.placeholder, 'Select...'),
+            tabIndex: props.tabIndex,
+
+            // Minimize (or hide) bulky dropdown
+            components,
+
+            // A shared div is created lazily here as needed, appended to the body, and assigned
+            // a high z-index to ensure options menus render over dialogs or other modals.
+            menuPortalTarget: this.getOrCreatePortalDiv(),
+
+            inputId: props.id,
+            classNamePrefix: 'xh-select',
+            theme: this.getThemeConfig(),
+
+            onBlur: this.onBlur,
+            onChange: this.onSelectChange,
+            onFocus: this.onFocus,
+
+            ref: this.reactSelectRef
+        };
 
         if (this.manageInputValue) {
             rsProps.inputValue = this.inputValue || '';
@@ -509,6 +520,22 @@ export class Select extends HoistInput {
     //------------------------
     // Other Implementation
     //------------------------
+
+    // these state holders are needed to prevent a re-rerender of the svg icon
+    // when the user types letters into the input.
+    // if the svg icon re-renders, the input loses focus.
+    _leftIcon = null;
+    _leftIconCmp = null;
+    getLeftIconFactory(components) {
+        if (this.props.leftIcon) {
+            if (this._leftIcon !== this.props.leftIcon) {
+                this._leftIcon = this.props.leftIcon;
+                this._leftIconCmp = SelectLeftIconFactory(this.props.leftIcon);
+            }
+            components.ValueContainer = this._leftIconCmp;
+        }
+    }
+
     getDropdownIndicatorFactory() {
         return this.props.hideDropdownIndicator ?
             () => null :

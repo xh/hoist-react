@@ -38,6 +38,13 @@
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
       }
+
+      &__left-icon {
+        margin-left: 4px;
+        width: 12px;
+        color: var(--xh-text-color-muted);
+        font-size: var(--xh-font-size-large-px);
+      }
     }
 
     &__placeholder {
