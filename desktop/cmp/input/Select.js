@@ -8,11 +8,11 @@ import debouncePromise from 'debounce-promise';
 import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
-import {createFilter} from 'react-select';
+import {createFilter, components} from 'react-select';
 
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, elem} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -24,8 +24,6 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-
-import {SelectLeftIconFactory} from './impl/SelectLeftIconFactory';
 
 import './Select.scss';
 
@@ -216,12 +214,14 @@ export class Select extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, ...layoutProps} = this.getLayoutProps(),
             components = {
-                DropdownIndicator: this.getDropdownIndicatorFactory(),
-                ClearIndicator: this.getClearIndicatorFactory(),
+                DropdownIndicator: this.getDropdownIndicatorCmp(),
+                ClearIndicator: this.getClearIndicatorCmp(),
                 IndicatorSeparator: () => null
             };
 
-        this.getLeftIconFactory(components);
+        if (props.leftIcon) {
+            components.ValueContainer = this.getValueContainerCmp(props.leftIcon);
+        }
 
         const rsProps = {
             value: this.renderValue,
@@ -521,34 +521,34 @@ export class Select extends HoistInput {
     // Other Implementation
     //------------------------
 
-    // these state holders are needed to prevent a re-rerender of the svg icon
-    // when the user types letters into the input.
-    // if the svg icon re-renders, the input loses focus.
+    // cache to avoid unnecessary rerenders which cause loss of input focus while typing
     _leftIcon = null;
     _leftIconCmp = null;
-    getLeftIconFactory(components) {
-        if (this.props.leftIcon) {
-            if (this._leftIcon !== this.props.leftIcon) {
-                this._leftIcon = this.props.leftIcon;
-                this._leftIconCmp = SelectLeftIconFactory(this.props.leftIcon);
-            }
-            components.ValueContainer = this._leftIconCmp;
+    getValueContainerCmp(icon) {
+        if (this._leftIcon !== icon) {
+            this._leftIcon = icon;
+            this._leftIconCmp = (props) => fragment(
+                span({className: 'xh-select__control__left-icon', item: icon}),
+                elem(components.ValueContainer, props)
+            );
         }
+
+        return this._leftIconCmp;
     }
 
-    getDropdownIndicatorFactory() {
+    getDropdownIndicatorCmp() {
         return this.props.hideDropdownIndicator ?
             () => null :
             () => Icon.chevronDown({className: 'xh-select__indicator'});
     }
 
     // As per example @ https://react-select.com/components#replaceable-components
-    getClearIndicatorFactory() {
+    getClearIndicatorCmp() {
         return (props) => {
             const {ref, ...restInnerProps} = props.innerProps;
             return div({
                 ...restInnerProps,
-                ref: ref,
+                ref,
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };

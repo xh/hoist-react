@@ -40,6 +40,7 @@
       }
 
       &__left-icon {
+        display: inherit;
         margin-left: 4px;
         width: 12px;
         color: var(--xh-text-color-muted);
