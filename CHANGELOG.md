@@ -5,7 +5,7 @@
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
-* `Select` supports a new prop: `leftIcon` for similar left side icon happiness as `textInput`.
+* The `select` input supports a new prop: `leftIcon`.
 
 ### 🐞 Bug Fixes
 
