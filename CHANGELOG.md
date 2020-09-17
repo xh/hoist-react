@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+* The `select` input supports a new prop: `leftIcon`.
 
 ### 🐞 Bug Fixes
 
