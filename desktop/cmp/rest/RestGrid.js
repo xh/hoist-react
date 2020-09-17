@@ -16,7 +16,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
-import {regroupDialog} from './regroup/RegroupDialog';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
@@ -32,7 +31,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
         ...props
     }) {
 
-        const {formModel, gridModel, regroupDialogModel} = model;
+        const {formModel, gridModel} = model;
 
         onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
             if (!row.data) return;
@@ -51,8 +50,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
                 item: grid({model: gridModel, agOptions, onRowDoubleClicked}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel}),
-            regroupDialog({model: regroupDialogModel})
+            restForm({model: formModel})
         );
     }
 });

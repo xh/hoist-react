@@ -11,7 +11,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {
     addAction,
-    bulkDeleteAction,
+    deleteAction,
     editAction
 } from '@xh/hoist/desktop/cmp/rest';
 
@@ -73,12 +73,12 @@ const modelSpec = {
     toolbarActions: [
         addAction,
         editAction,
-        bulkDeleteAction
+        deleteAction
     ],
     menuActions: [
         addAction,
         editAction,
-        bulkDeleteAction
+        deleteAction
     ],
     columns: [
         {field: 'name', width: 200},

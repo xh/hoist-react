@@ -10,18 +10,21 @@ import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
-    bulkDeleteAction,
+    deleteAction,
     editAction,
-    regroupAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {DifferModel} from '../../differ/DifferModel';
+import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 
 @HoistModel
 @LoadSupport
 export class PreferenceModel {
 
     persistWith = {localStorageKey: 'xhAdminPreferenceState'};
+
+    @managed
+    regroupDialogModel = new RegroupDialogModel(this)
 
     @managed
     gridModel = new RestGridModel({
@@ -86,13 +89,13 @@ export class PreferenceModel {
         toolbarActions: [
             addAction,
             editAction,
-            bulkDeleteAction
+            deleteAction
         ],
         menuActions: [
             addAction,
             editAction,
-            bulkDeleteAction,
-            regroupAction
+            deleteAction,
+            this.regroupDialogModel.regroupAction
         ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},

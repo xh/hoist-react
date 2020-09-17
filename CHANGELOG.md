@@ -5,8 +5,7 @@
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
-* RestGrids now support bulk delete and bulk regrouping actions.
-  These have been added to the Preference and Config panels in the Hoist admin app.
+* Admin Preference and Config panels now provide bulk regrouping actions.
 
 ### 🐞 Bug Fixes
 
@@ -18,13 +17,6 @@
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
-
-
-### 💥 Breaking Changes
-
-* The `deleteSelection` and `editSelection` methods have been removed from `RestGridModel`. These
-  methods are no longer called internally by Hoist. This could be breaking change in the unlikely
-  event that an application is relying on them.
 
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)

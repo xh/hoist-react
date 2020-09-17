@@ -7,30 +7,36 @@
 import {uniq} from 'lodash';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-
+import {Icon} from '@xh/hoist/icon/Icon';
 
 @HoistModel
 export class RegroupDialogModel {
 
-    @bindable.ref groupName = null;
+    _parent
 
+    @bindable.ref groupName = null;
     @observable.ref isOpen = false
 
-    restGridModel
+    regroupAction = {
+        text: 'Change Group',
+        icon: Icon.grip(),
+        recordsRequired: true,
+        actionFn: () => this.open()
+    };
 
     get options() {
-        return uniq(this.restGridModel.store.allRecords.map(it => it.data.groupName));
+        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName));
     }
 
     constructor(parent) {
-        this.restGridModel = parent;
+        this._parent = parent;
     }
 
     async saveAsync() {
-        const {restGridModel, groupName} = this,
-            {selection, store} = restGridModel,
+        const {_parent, groupName} = this,
+            {selection, store} = _parent.gridModel,
             ids = selection.map(it => it.id),
-            resp = await store.regroupRecordsAsync(ids, groupName),
+            resp = await store.bulkUpdateRecordsAsync(ids, {groupName}),
             intent = resp.fail > 0 ? 'warning' : 'success',
             message = `Change group complete with ${resp.fail} failures.`;
 
