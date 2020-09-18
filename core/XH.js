@@ -18,6 +18,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    JsonBlobService,
     LocalStorageService,
     PrefService,
     TrackService,
@@ -90,6 +91,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {JsonBlobService} */
+    jsonBlobService;
     /** @member {LocalStorageService} */
     localStorageService;
     /** @member {PrefService} */
@@ -585,7 +588,9 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(EnvironmentService, PrefService, ConfigService);
+            await this.installServicesAsync(
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            );
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );

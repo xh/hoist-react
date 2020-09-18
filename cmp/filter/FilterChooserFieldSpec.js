@@ -31,7 +31,7 @@ export class FilterChooserFieldSpec {
     /** @member {string[]} */
     ops;
 
-    /** @member {(boolean | FilterOptionValuesSuggestValuesCb)} */
+    /** @member {(boolean|FilterOptionSuggestValuesCb)} */
     suggestValues;
 
     /** @member {boolean} */
@@ -46,7 +46,7 @@ export class FilterChooserFieldSpec {
     /** @member {FilterOptionValueParserCb} */
     valueParser;
 
-    /** @member {String} */
+    /** @member {string} */
     example;
 
     /** @return {FieldType} */
@@ -54,7 +54,7 @@ export class FilterChooserFieldSpec {
 
     /**
      * @param {Object} c - FilterChooserFieldSpec configuration.
-     * @param {String} c.field - identifying field name to filter on.
+     * @param {string} c.field - identifying field name to filter on.
      * @param {Object} [c.fieldType] - type of field, will default from related store field,
      *      if store provided, or 'auto'.
      * @param {string} [c.displayName] - displayName, will default from related store field,
@@ -73,7 +73,7 @@ export class FilterChooserFieldSpec {
      *      formatted string for display to the user for any given field value.
      * @param {FilterOptionValueParserCb} [c.valueParser] - function to parse user's input from a
      *      filter chooser control into a typed data value for use in filtering comparisons.
-     * @param {String} [c.example] - sample / representative value displayed by `FilterChooser`
+     * @param {string} [c.example] - sample / representative value displayed by `FilterChooser`
      *      components to aid usability
      * @param {Store} [c.store] - set from controlling `FilterChooserModel.sourceStore` config, used
      *      to source matching data `Field` and extract values if configured.
@@ -254,7 +254,9 @@ export class FilterChooserFieldSpec {
         const {field, store} = this,
             values = new Set();
 
-        store.records.forEach(rec => {
+        // Note use of unfiltered recordset here to source suggest values. This allows chooser to
+        // suggest values from already-filtered fields that will expand the results when selected.
+        store.allRecords.forEach(rec => {
             const val = rec.get(field);
             if (!isNil(val)) values.add(val);
         });

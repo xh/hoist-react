@@ -1,15 +1,27 @@
 # Changelog
 
-## v36.0.0-rc2 - 2020-09-02
+## v37.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* Continued Usability improvements to FilterChooser
-* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
+* The `select` input supports a new prop: `leftIcon`.
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0-rc1...v36.0.0-rc2)
+### 🐞 Bug Fixes
 
-## v36.0.0-rc1 - 2020-08-31
+*  Fixed several cases where `selectOnFocus` prop on `Select` was not working.
+* `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
+* `RestForm` editors source their default label from the corresponding `Field.displayName` property.
+  Previously an undocumented `label` config could be provided with each editor object - this has
+  been removed.
+* Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
+  applied from matching Store fields.
+* Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
+
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
+
+## v36.0.0 - 2020-09-04
 
 ### 🎁 New Features
 
@@ -72,6 +84,8 @@ below regarding related updates to `GridModel.columns` config processing.
   objects that can benefit from such caching.
 * `CodeInput` and `JsonInput` get new `enableSearch` and `showToolbar` props. Enabling search
   provides an simple inline find feature for searching the input's contents.
+* The Admin console's Monitor Status tab displays more clearly when there are no active monitors.
+
 
 ### 💥 Breaking Changes
 
@@ -126,7 +140,7 @@ below regarding related updates to `GridModel.columns` config processing.
 * mobx-react `6.2 -> 6.3`
 * store2 `2.11 -> 2.12`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0-rc1)
+[Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0)
 
 
 ## v35.2.1 - 2020-07-31

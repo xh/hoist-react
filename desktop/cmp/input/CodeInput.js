@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, filler, fragment, frame, hbox, label, span} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment, frame, hbox, vbox, div, label, span} from '@xh/hoist/cmp/layout';
 import {elemFactory, HoistComponent, LayoutSupport, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -234,14 +234,14 @@ export class CodeInput extends HoistInput {
     renderFullscreen(props) {
         return fragment(
             dialog({
-                className: 'xh-code-input--dialog',
+                className: 'xh-code-input__dialog',
                 isOpen: true,
                 canOutsideClickClose: true,
                 item: this.renderInput({flex: 1}),
                 onClose: () => this.toggleFullScreen()
             }),
             box({
-                className: 'xh-code-input--placeholder',
+                className: 'xh-code-input__placeholder',
                 ...props
             })
         );
@@ -249,12 +249,15 @@ export class CodeInput extends HoistInput {
 
     renderInput(props) {
         const {showToolbar} = this;
-        return box({
+        return vbox({
             items: [
-                textArea({
-                    value: this.renderValue || '',
-                    ref: this.manageCodeEditor,
-                    onChange: this.onChange
+                div({
+                    className: 'xh-code-input__inner-wrapper',
+                    item: textArea({
+                        value: this.renderValue || '',
+                        ref: this.manageCodeEditor,
+                        onChange: this.onChange
+                    })
                 }),
                 showToolbar ? this.renderToolbar() : this.renderActionButtons()
             ],
@@ -351,21 +354,15 @@ export class CodeInput extends HoistInput {
     };
 
     createCodeEditor(textAreaComp) {
-        const {editorProps, width, height} = this.props,
-            editorSpec = defaultsDeep(
-                editorProps,
-                this.createDefaults()
-            );
+        const editorSpec = defaultsDeep(
+            this.props.editorProps,
+            this.createDefaults()
+        );
 
         const taDom = ReactDOM.findDOMNode(textAreaComp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
 
         editor.on('change', this.handleEditorChange);
-
-        if (width != null || height != null) {
-            editor.setSize(width, height);
-        }
-
         return editor;
     }
 
