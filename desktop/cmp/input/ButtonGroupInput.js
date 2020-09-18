@@ -28,13 +28,40 @@ export class ButtonGroupInput extends HoistInput {
         ...ButtonGroup.propTypes,
 
         /** True to allow buttons to be unselected (aka inactivated). Defaults to false. */
-        enableClear: PT.bool
+        enableClear: PT.bool,
+
+        /** Intent applied to each button. */
+        intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
+
+        /** True to create minimal-style buttons. */
+        minimal: PT.bool,
+
+        /** True to create outlined-style buttons. */
+        outlined: PT.bool
     };
 
     baseClassName = 'xh-button-group-input';
 
     render() {
-        const {children, minimal, disabled, enableClear, ...rest} = this.getNonLayoutProps();
+        const {
+            children,
+            //  HoistInput Props
+            bind,
+            disabled,
+            model,
+            onChange,
+            onCommit,
+            tabIndex,
+            value,
+            // ButtonGroupInput Props
+            enableClear,
+            // Button props applied to each child button
+            intent,
+            minimal,
+            outlined,
+            // ...and ButtonGroup gets all the rest
+            ...buttonGroupProps
+        } = this.getNonLayoutProps();
 
         const buttons = castArray(children).map(button => {
             if (!button) return null;
@@ -48,9 +75,9 @@ export class ButtonGroupInput extends HoistInput {
             const active = (this.renderValue === value);
             return React.cloneElement(button, {
                 active,
-                // key is a workaround for https://github.com/palantir/blueprint/issues/3971
-                key: `${active} ${value}`,
+                intent,
                 minimal: withDefault(minimal, false),
+                outlined: withDefault(outlined, false),
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => {
                     if (enableClear) {
@@ -58,13 +85,16 @@ export class ButtonGroupInput extends HoistInput {
                     } else {
                         this.noteValueChange(value);
                     }
-                }
+                },
+                // Workaround for https://github.com/palantir/blueprint/issues/3971
+                key: `${active} ${value}`
             });
         });
 
         return buttonGroup({
             items: buttons,
-            ...rest,
+            ...buttonGroupProps,
+            minimal: withDefault(minimal, outlined, false),
             ...this.getLayoutProps(),
             className: this.getClassName()
         });

@@ -60,7 +60,7 @@ function renderDefaultInput(name, model) {
         case 'number':
             return numberInput();
         case 'json':
-            return jsonInput();
+            return jsonInput({enableSearch: true, height: 250});
         case 'date':
             return dateInput();
         case 'localDate':

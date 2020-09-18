@@ -4,10 +4,9 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {AppState, HoistService, XH} from '@xh/hoist/core';
+import {AppState, HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES} from '@xh/hoist/utils/datetime';
-import {debounce} from 'lodash';
+import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -16,16 +15,14 @@ import {debounce} from 'lodash';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the AppSpec `idleDetectionEnabled` property, the `xhIdleTimeoutMins`
- * soft-config, and the `xh.disableIdleDetection` user preference to determine if and when it
- * should suspend the app.
- *
- * Not currently supported / enabled for mobile clients.
+ * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
+ * user preference to determine if and when it should suspend the app.
  */
 @HoistService
 export class IdleService {
 
-    ACTIVITY_EVENTS = ['keydown', 'mousemove', 'mousedown', 'scroll'];
+    @managed timer = null;
+    timeout = null;
 
     constructor() {
         this.addReaction({
@@ -38,36 +35,34 @@ export class IdleService {
     // Implementation
     //------------------------
     startMonitoring() {
-        const timeout = XH.getConf('xhIdleTimeoutMins') * MINUTES,
-            appEnabled = XH.appSpec.idleDetectionEnabled,
-            configEnabled = timeout > 0,
+        const idleConfig = XH.getConf('xhIdleConfig', {}),
+            {appTimeouts = {}, timeout} = idleConfig,
+            configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
+            configEnabled = configTimeout > 0,
             userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
-        if (appEnabled && configEnabled && userEnabled) {
-            this.startCountdown = debounce(() => this.suspendApp(), timeout, {trailing: true});
-            this.startCountdown();
-            this.createAppListeners();
+        if (configEnabled && userEnabled) {
+            this.timeout = configTimeout;
+            this.createTimer();
         }
     }
 
-    createAppListeners() {
-        this.ACTIVITY_EVENTS.forEach(e => {
-            window.addEventListener(e, this.startCountdown, true);
+    createTimer() {
+        this.timer = Timer.create({
+            runFn: () => this.checkInactivityTimeout(),
+            interval: 500
         });
     }
 
-    destroyAppListeners() {
-        this.ACTIVITY_EVENTS.forEach(e => {
-            window.removeEventListener(e, this.startCountdown, true);
-        });
+    checkInactivityTimeout() {
+        if (XH.appState === AppState.SUSPENDED) return;
+        if (olderThan(XH.lastActivityMs, this.timeout)) this.suspendApp();
     }
 
     suspendApp() {
-        if (XH.appState != AppState.SUSPENDED) {
-            XH.setAppState(AppState.SUSPENDED);
-            this.destroyAppListeners();
-            XH.webSocketService.shutdown();
-            Timer.cancelAll();
-        }
+        if (XH.appState === AppState.SUSPENDED) return;
+        XH.setAppState(AppState.SUSPENDED);
+        XH.webSocketService.shutdown();
+        Timer.cancelAll();
     }
 }

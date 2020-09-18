@@ -15,13 +15,14 @@ import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
-import {useHotkeys} from '@xh/hoist/desktop/hooks';
+import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
+import {useHotkeys, useContextMenu} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {IdleDialog} from './IdleDialog';
+import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -35,6 +36,7 @@ installDesktopImpls({
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel,
     StoreContextMenu
@@ -80,8 +82,9 @@ function viewForState() {
         case S.ACCESS_DENIED:
             return lockoutPanel();
         case S.RUNNING:
-        case S.SUSPENDED:
             return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
         case S.LOAD_FAILED:
         default:
             return null;
@@ -92,27 +95,32 @@ const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
 
     render({model}) {
-        return useHotkeys(
-            viewport(
-                vframe(
-                    impersonationBar(),
-                    updateBar(),
-                    refreshContextView({
-                        model: model.refreshContextModel,
-                        item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                    }),
-                    versionBar()
-                ),
-                mask({model: model.appLoadModel, spinner: true}),
-                messageSource(),
-                toastSource(),
-                optionsDialog(),
-                feedbackDialog(),
-                aboutDialog(),
-                idleDialog()
+        const {appSpec, appModel} = XH;
+        let ret = viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(appSpec.componentClass, {model: appModel}))
+                }),
+                versionBar()
             ),
-            globalHotKeys(model)
+            mask({model: model.appLoadModel, spinner: true}),
+            messageSource(),
+            toastSource(),
+            optionsDialog(),
+            feedbackDialog(),
+            aboutDialog()
         );
+
+        if (!appSpec.showBrowserContextMenu) {
+            ret = useContextMenu(ret, null);
+        }
+
+        ret = useHotkeys(ret, globalHotKeys(model));
+
+        return ret;
     }
 });
 
@@ -139,13 +147,10 @@ function globalHotKeys(model) {
     return ret;
 }
 
-const idleDialog = hoistCmp.factory({
-    displayName: 'IdleDialog',
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
     render() {
-        const dialogClass = XH.appSpec.idleDialogClass || IdleDialog;
-
-        return XH.appState == AppState.SUSPENDED && dialogClass ?
-            elem(dialogClass, {onReactivate: () => XH.reloadApp()}) :
-            null;
+        const content = XH.appSpec.idlePanel ?? idlePanel;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });

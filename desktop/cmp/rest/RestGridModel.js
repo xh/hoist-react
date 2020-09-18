@@ -109,7 +109,6 @@ export class RestGridModel {
      * @param {RestGridEditor[]} editors - specifications for fields to be displayed in editor form.
      * @param {*} ...rest - arguments for GridModel.
      */
-
     constructor({
         readonly = false,
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
@@ -239,12 +238,12 @@ export class RestGridModel {
 
 /**
  * @typedef {Object} RestGridEditor
- * @property {String} field - name of field to appear in the editor form.  Should correspond to member in
- *      the store's Fields collection.
- * @property {Object} formField - partial config for FormField to be used to display this field.  Used to specify
- *      control to be used for this Field.
- * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for form display.
- *      May be used for to specify additional validation requirements.
+ * @property {string} field - name of field to appear in the editor form - should match name of a
+ *      Store Field configured for this RestGridModel.
+ * @property {Object} formField - partial config for FormField to be used to display this field.
+ *      Can be used to specify or customize the input used for editing/displaying this Field.
+ * @property {Object} [fieldModel] - partial config for underlying FieldModel to be used for
+ *      form display. Can be used for to specify additional validation requirements.
  */
 
 /**

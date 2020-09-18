@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed} from '@xh/hoist/core';
+import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
@@ -17,11 +17,7 @@ import {preferencesTab} from './tabs/preferences/PreferencesTab';
 export class AppModel {
 
     @managed
-    tabModel = new TabContainerModel({
-        route: 'default',
-        switcherPosition: 'none',
-        tabs: this.createTabs()
-    });
+    _tabModel
 
     getRoutes() {
         return [
@@ -31,6 +27,17 @@ export class AppModel {
                 children: this.getTabRoutes()
             }
         ];
+    }
+
+    get tabModel() {
+        if (!this._tabModel) {
+            this._tabModel = new TabContainerModel({
+                route: 'default',
+                switcherPosition: 'none',
+                tabs: this.createTabs()
+            });
+        }
+        return this._tabModel;
     }
 
     //------------------------
@@ -80,7 +87,8 @@ export class AppModel {
                 path: '/preferences',
                 children: [
                     {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'}
+                    {name: 'userPrefs', path: '/userPrefs'},
+                    {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
             }
         ];
@@ -91,7 +99,7 @@ export class AppModel {
             {id: 'general', icon: Icon.info(), content: generalTab},
             {id: 'activity', icon: Icon.analytics(), content: activityTab},
             {id: 'logging', icon: Icon.fileText(), content: loggingTab},
-            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab},
+            {id: 'monitor', icon: Icon.shieldCheck(), content: monitorTab, omit: !XH.getConf('xhEnableMonitoring', true)},
             {id: 'preferences', icon: Icon.bookmark(), content: preferencesTab}
         ];
     }

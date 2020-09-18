@@ -8,7 +8,6 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {ContextMenuItem as CM} from '@xh/hoist/desktop/cmp/contextmenu';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
@@ -19,12 +18,11 @@ export const App = hoistCmp({
     displayName: 'App',
     model: uses(AppModel),
 
-    render() {
+    render({model}) {
         return panel({
             tbar: tbar(),
-            contextMenu: [CM.reloadApp(), CM.about(), CM.logout()],
             className: 'xh-admin-app-frame',
-            item: tabContainer()
+            item: tabContainer({model: model.tabModel})
         });
     }
 });

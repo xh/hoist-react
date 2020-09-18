@@ -17,7 +17,8 @@ import {isString} from 'lodash';
 export class Exception {
 
     /**
-     * Create and get back a Javascript Error object
+     * Create and get back a Javascript Error object.
+     * @see XH.exception - an alias for this factory off of XH.
      * @param {(Object|string)} cfg - Properties to add to the Error object.
      *      If a string, will become the 'message' value.
      * @returns {Error}
@@ -84,7 +85,26 @@ export class Exception {
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
             isFetchAborted: true,
-            fetchOptions
+            fetchOptions,
+            stack: null // Skip for fetch -- server-sourced exceptions do not include
+        });
+    }
+
+    /**
+     * Create an Error for when a fetch is timed out
+     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
+     * @param {Error} e - Error object for raw timeout
+     * @param {string} [message] - optional custom message
+     * @returns {Error}
+     */
+    static fetchTimeout(fetchOptions, e, message) {
+        message = message ?? `Failure calling '${fetchOptions.url}' - timed out after ${e.interval}ms.`;
+
+        return this.createInternal({
+            name: 'Fetch Timeout',
+            message,
+            fetchOptions,
+            stack: null
         });
     }
 
@@ -108,7 +128,8 @@ export class Exception {
             message,
             httpStatus: 0,  // native fetch doesn't put status on its Error
             originalMessage: e.message,
-            fetchOptions
+            fetchOptions,
+            stack: null
         });
     }
 

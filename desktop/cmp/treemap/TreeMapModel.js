@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset} from 'lodash';
+import {cloneDeep, get, isEmpty, isFinite, partition, set, sumBy, unset, sortBy} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -172,13 +172,13 @@ export class TreeMapModel {
     @computed
     get valueFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.valueField);
-        return field ? field.label : this.valueField;
+        return field ? field.displayName : this.valueField;
     }
 
     @computed
     get heatFieldLabel() {
         const field = this.store.fields.find(it => it.name === this.heatField);
-        return field ? field.label : this.heatField;
+        return field ? field.displayName : this.heatField;
     }
 
     @computed
@@ -282,8 +282,8 @@ export class TreeMapModel {
         // 1) Extract heat values and split into positive and negative
         const heatValues = this.store.records.map(it => it.data[this.heatField]);
         let [posHeatValues, negHeatValues] = partition(heatValues, it => it > 0);
-        posHeatValues = posHeatValues.sort();
-        negHeatValues = negHeatValues.map(it => Math.abs(it)).sort();
+        posHeatValues = sortBy(posHeatValues);
+        negHeatValues = sortBy(negHeatValues.map(it => Math.abs(it)));
 
         // 2) Calculate bounds and midpoints for each range
         let minPosHeat = 0, midPosHeat = 0, maxPosHeat = 0, minNegHeat = 0, midNegHeat = 0, maxNegHeat = 0;

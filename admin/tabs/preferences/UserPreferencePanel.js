@@ -10,12 +10,13 @@ import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
 
+
 export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 
 const modelSpec = {
-    stateModel: 'xhUserPreferenceGrid',
+    persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     enableColChooser: true,
     enableExport: true,
     store: {
@@ -24,14 +25,14 @@ const modelSpec = {
         fields: [
             {
                 name: 'name',
-                label: 'Pref',
+                displayName: 'Pref',
                 lookupName: 'names',
                 editable: 'onAdd',
                 required: true
             },
             {
                 name: 'groupName',
-                label: 'Group',
+                displayName: 'Group',
                 lookupName: 'groupNames',
                 editable: false
             },
@@ -41,7 +42,7 @@ const modelSpec = {
             },
             {
                 name: 'username',
-                label: 'User',
+                displayName: 'User',
                 required: true
             },
             {

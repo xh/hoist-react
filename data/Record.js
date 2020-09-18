@@ -5,7 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, has} from 'lodash';
 
 /**
  * Wrapper object for each data element within a {@see Store}. Records must be assigned a unique ID
@@ -62,6 +62,17 @@ export class Record {
     /** @returns {Field[]} */
     get fields() {
         return this.store.fields;
+    }
+
+    /**
+     * Return the current value of a field.
+     * This value will throw if the specified field is not present in this store.
+     * @returns {*}
+     */
+    get(fieldName) {
+        const {data} = this;
+        throwIf(!has(data, fieldName), `Cannot access data for unknown field: '${fieldName}'`);
+        return data[fieldName];
     }
 
     /**
@@ -190,7 +201,15 @@ export class Record {
     // --------------------------
     // Protected methods
     // --------------------------
-    /** Freezes this Record and its data. Not for application use. */
+    /**
+     * Freezes this Record and its data.
+     *
+     * Note that we freeze the Record post-construction in RecordSet, only when we know that
+     * it is going to be accepted in the new RecordSet (and is not a duplicate).  This is a
+     * performance optimization to avoid freezing transient records.
+     *
+     * Not for application use.
+     */
     freeze() {
         deepFreeze(this.data);
         Object.freeze(this);

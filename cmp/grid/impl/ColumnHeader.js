@@ -10,9 +10,11 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
+import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
+import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
 /**
  * A custom ag-Grid header component.
@@ -32,9 +34,8 @@ export const columnHeader = hoistCmp.factory({
         useOnMount(() => props.gridLocalModel.noteFrameworkCmpMounted());
 
         const sortIcon = () => {
-            const activeGridSorter = impl.activeGridSorter;
-            if (!activeGridSorter) return null;
-            const {abs, sort} = activeGridSorter;
+            const {abs, sort} = impl.activeGridSorter ?? {};
+            if (!sort) return null;
 
             let icon;
             if (sort === 'asc') {
@@ -64,19 +65,36 @@ export const columnHeader = hoistCmp.factory({
             impl.hasNonPrimarySort ? 'xh-grid-header-multisort' : null
         ];
 
-        let headerName = props.displayName;
-        if (impl.xhColumn && isFunction(impl.xhColumn.headerName)) {
-            const {xhColumn, gridModel} = impl;
-            headerName = xhColumn.headerName({column: xhColumn, gridModel});
+        const {xhColumn, gridModel} = impl,
+            {isDesktop} = XH;
+
+        const headerName = isFunction(xhColumn?.headerName) ?
+            xhColumn.headerName({column: xhColumn, gridModel}) :
+            props.displayName;
+
+        // If no app tooltip dynamically toggle a tooltip to display elided header
+        let onMouseEnter = null;
+        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
+            onMouseEnter = ({target: el}) => {
+                if (el.offsetWidth < el.scrollWidth) {
+                    el.setAttribute('title', headerName);
+                } else {
+                    el.removeAttribute('title');
+                }
+            };
         }
 
         return div({
             className: classNames(props.className, extraClasses),
-            onClick: impl.onClick,
-            onDoubleClick: impl.onDoubleClick,
-            onTouchEnd: impl.onTouchEnd,
+
+            onClick:        isDesktop  ? impl.onClick : null,
+            onDoubleClick:  isDesktop  ? impl.onDoubleClick : null,
+            onMouseDown:    isDesktop  ? impl.onMouseDown : null,
+            onTouchStart:   !isDesktop ? impl.onTouchStart : null,
+            onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
+
             items: [
-                span(headerName),
+                span({onMouseEnter, item: headerName}),
                 sortIcon(),
                 menuIcon()
             ]
@@ -97,10 +115,12 @@ class LocalModel {
     availableSorts;
 
     _doubleClick = false;
-    _lastTouch = Date.now();
+    _lastTouch = null;
+    _lastTouchStart = null;
+    _lastMouseDown = null;
 
-    constructor({gridModel, xhColumn, column: agColumn, enableSorting}) {
-        this.gridModel = gridModel;
+    constructor({gridLocalModel, xhColumn, column: agColumn, enableSorting}) {
+        this.gridModel = gridLocalModel.model;
         this.xhColumn = xhColumn;
         this.agColumn = agColumn;
         this.colId = agColumn.colId;
@@ -129,30 +149,38 @@ class LocalModel {
     }
 
     // Desktop click handling
+    onMouseDown = (e) => {
+        this._lastMouseDown = Date.now();
+    };
+
     onClick = (e) => {
-        if (XH.isMobile) return;
+        if (olderThan(this._lastMouseDown, 500)) return;  // avoid spurious reaction to drag end.
         this._doubleClick = false;
         this.updateSort(e.shiftKey);
     };
 
     onDoubleClick = () => {
-        if (XH.isMobile) return;
         this._doubleClick = true;
         this.autosize();
     };
 
     // Mobile touch handling
+    onTouchStart = (e) => {
+        this._lastTouchStart = Date.now();
+    };
+
     onTouchEnd = () => {
-        if (!XH.isMobile) return;
-        const time = Date.now();
-        if (time - this._lastTouch < 300) {
+        if (olderThan(this._lastTouchStart, 500)) return;  // avoid spurious reaction to drag end.
+
+        if (!olderThan(this._lastTouch, 300)) {
             this._doubleClick = true;
             this.autosize();
         } else {
             this._doubleClick = false;
             this.updateSort();
         }
-        this._lastTouch = time;
+
+        this._lastTouch = Date.now();
     };
 
     onFilterChanged = () => this.setIsFiltered(this.agColumn.isFilterActive());
@@ -196,15 +224,24 @@ class LocalModel {
             if (isFinite(currIdx)) idx = (currIdx + 1) % availableSorts.length;
         }
 
+
         return availableSorts[idx];
     }
 
     autosize() {
-        this.gridModel?.autoSizeColumns(this.colId);
+        const {gridModel} = this;
+        if (gridModel?.autosizeEnabled) {
+            gridModel.autosizeAsync({columns: this.colId, showMask: false});
+        }
     }
 
     parseAvailableSorts() {
-        const {absSort, sortingOrder, colId} = this.xhColumn;
+        const {
+            absSort = false,
+            sortingOrder = Column.DEFAULT_SORTING_ORDER,
+            colId = this.colId
+        } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
+
         const ret = sortingOrder.map(spec => {
             if (isString(spec) || spec === null) spec = {sort: spec};
             return new GridSorter({...spec, colId});

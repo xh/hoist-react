@@ -4,9 +4,15 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import debouncePromise from 'debounce-promise';
+import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge, isEqual} from 'lodash';
+import PT from 'prop-types';
+import React from 'react';
+import {createFilter, components} from 'react-select';
+
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {box, div, hbox, span, fragment} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport, elem} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -18,11 +24,7 @@ import {
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import debouncePromise from 'debounce-promise';
-import {castArray, isEmpty, isNil, isPlainObject, keyBy, merge} from 'lodash';
-import PT from 'prop-types';
-import React from 'react';
-import {createFilter} from 'react-select';
+
 import './Select.scss';
 
 /**
@@ -89,6 +91,9 @@ export class Select extends HoistInput {
 
         /** Field on provided options for sourcing each option's display text (default `label`). */
         labelField: PT.string,
+
+        /** Icon to display inline on the left side of the input. */
+        leftIcon: PT.element,
 
         /** Function to return loading message during an async query. Passed current query input. */
         loadingMessageFn: PT.func,
@@ -225,9 +230,10 @@ export class Select extends HoistInput {
 
                 // Minimize (or hide) bulky dropdown
                 components: {
-                    DropdownIndicator: this.getDropdownIndicatorFactory(),
-                    ClearIndicator: this.getClearIndicatorFactory(),
-                    IndicatorSeparator: () => null
+                    DropdownIndicator: this.getDropdownIndicatorCmp(),
+                    ClearIndicator: this.getClearIndicatorCmp(),
+                    IndicatorSeparator: () => null,
+                    ValueContainer: this.getValueContainerCmp(props.leftIcon)
                 },
 
                 // A shared div is created lazily here as needed, appended to the body, and assigned
@@ -334,11 +340,11 @@ export class Select extends HoistInput {
                 const rsRef = this.reactSelectRef.current;
                 if (!rsRef) return;
 
-                // Use of creatable and async variants will create another level of nesting we must
+                // Use of windowedMode, creatable and async variants will create levels of nesting we must
                 // traverse to get to the underlying Select comp and its inputRef.
-                const refComp = rsRef.select,
-                    selectComp = refComp.constructor.name === 'Select' ? refComp : refComp.select,
-                    inputElem = selectComp.inputRef;
+                let selectComp = rsRef.select;
+                while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+                const inputElem = selectComp?.inputRef;
 
                 if (this.hasFocus && inputElem && document.activeElement === inputElem) {
                     inputElem.select();
@@ -372,7 +378,7 @@ export class Select extends HoistInput {
                 const ret = this.findOption(value, false, option.options);
                 if (ret) return ret;
             } else {
-                if (option.value === value) return option;
+                if (isEqual(option.value, value)) return option;
             }
         }
 
@@ -509,19 +515,35 @@ export class Select extends HoistInput {
     //------------------------
     // Other Implementation
     //------------------------
-    getDropdownIndicatorFactory() {
+
+    // cache to avoid unnecessary rerenders which cause loss of input focus while typing
+    _leftIcon = null;
+    _valueContainerCmp = null;
+    getValueContainerCmp(icon) {
+        if (!this._valueContainerCmp || this._leftIcon !== icon) {
+            this._leftIcon = icon;
+            this._valueContainerCmp = (props) => fragment(
+                span({omit: !icon, className: 'xh-select__control__left-icon', item: icon}),
+                elem(components.ValueContainer, props)
+            );
+        }
+
+        return this._valueContainerCmp;
+    }
+
+    getDropdownIndicatorCmp() {
         return this.props.hideDropdownIndicator ?
             () => null :
             () => Icon.chevronDown({className: 'xh-select__indicator'});
     }
 
     // As per example @ https://react-select.com/components#replaceable-components
-    getClearIndicatorFactory() {
+    getClearIndicatorCmp() {
         return (props) => {
             const {ref, ...restInnerProps} = props.innerProps;
             return div({
                 ...restInnerProps,
-                ref: ref,
+                ref,
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };

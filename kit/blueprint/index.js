@@ -30,7 +30,7 @@ export {
 } from '@blueprintjs/core';
 
 // Yikes -- require two non-published classes.
-export {HotkeysEvents} from '@blueprintjs/core/lib/cjs/components/hotkeys/hotkeysEvents';
+export {HotkeysEvents} from '@blueprintjs/core/lib/esm/components/hotkeys/hotkeysEvents';
 
 export * from './Wrappers';
 export * from './Dialog';

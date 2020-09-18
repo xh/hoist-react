@@ -18,6 +18,7 @@
  */
 export let tabContainerImpl = null;
 export let storeFilterFieldImpl = null;
+export let pinPadImpl = null;
 export let colChooser = null;
 export let ColChooserModel = null;
 
@@ -29,6 +30,7 @@ export let ColChooserModel = null;
 export function installMobileImpls(impls) {
     tabContainerImpl = impls.tabContainerImpl;
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
+    pinPadImpl =  impls.pinPadImpl;
     colChooser = impls.colChooser;
     ColChooserModel = impls.ColChooserModel;
 }

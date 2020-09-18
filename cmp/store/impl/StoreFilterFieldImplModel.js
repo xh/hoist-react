@@ -119,16 +119,16 @@ export class StoreFilterFieldImplModel {
     }
 
     regenerateFilter() {
-        const {filter, filterText, filterOptions} = this,
+        const {filter, filterText} = this,
             activeFields = this.getActiveFields(),
             supportDotSeparated = !!activeFields.find(it => it.includes('.')),
             searchTerm = escapeRegExp(filterText),
             initializing = isUndefined(filter);
 
-        let fn = null;
+        let newFilter = null;
         if (searchTerm && !isEmpty(activeFields)) {
             const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
-            fn = (rec) => activeFields.some(f => {
+            newFilter = (rec) => activeFields.some(f => {
                 // Use of lodash get() slower than direct access - use only when needed to support
                 // dot-separated field paths. (See note in getActiveFields() below.)
                 const fieldVal = supportDotSeparated ? get(rec.data, f) : rec.data[f];
@@ -136,7 +136,6 @@ export class StoreFilterFieldImplModel {
             });
         }
 
-        const newFilter = fn ? {...filterOptions, fn} : null;
         if (filter === newFilter) return;
 
         this.filter = newFilter;

@@ -14,10 +14,12 @@ import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
-import {useOnMount} from '@xh/hoist/utils/react';
+import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
+import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
 import {aboutDialog} from './AboutDialog';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -30,6 +32,7 @@ import {versionBar} from './VersionBar';
 installMobileImpls({
     tabContainerImpl,
     storeFilterFieldImpl,
+    pinPadImpl,
     colChooser,
     ColChooserModel
 });
@@ -54,7 +57,7 @@ export const AppContainer = hoistCmp({
 
         return fragment(
             errorBoundary({
-                item: appContainerView(),
+                item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
             exceptionDialog()
@@ -66,45 +69,55 @@ export const AppContainer = hoistCmp({
 //-------------------
 // Implementation
 //-------------------
+function viewForState() {
+    const S = AppState;
+    switch (XH.appState) {
+        case S.PRE_AUTH:
+        case S.INITIALIZING:
+            return viewport(mask({isDisplayed: true, spinner: true}));
+        case S.LOGIN_REQUIRED:
+            return loginPanel();
+        case S.ACCESS_DENIED:
+            return lockoutPanel();
+        case S.RUNNING:
+            return appContainerView();
+        case S.SUSPENDED:
+            return idlePanelHost();
+        case S.LOAD_FAILED:
+        default:
+            return null;
+    }
+}
+
 const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
-    model: uses(AppContainerModel),
 
     render({model}) {
         if (model.caughtException) return null;
+        return viewport(
+            vframe(
+                impersonationBar(),
+                updateBar(),
+                refreshContextView({
+                    model: model.refreshContextModel,
+                    item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                }),
+                versionBar()
+            ),
+            mask({model: model.appLoadModel, spinner: true}),
+            messageSource(),
+            toastSource(),
+            feedbackDialog(),
+            optionsDialog(),
+            aboutDialog()
+        );
+    }
+});
 
-        const S = AppState;
-        switch (XH.appState) {
-            case S.PRE_AUTH:
-            case S.INITIALIZING:
-                return viewport(mask({isDisplayed: true, spinner: true}));
-            case S.LOGIN_REQUIRED:
-                return loginPanel();
-            case S.ACCESS_DENIED:
-                return lockoutPanel();
-            case S.LOAD_FAILED:
-                return null;
-            case S.RUNNING:
-            case S.SUSPENDED:
-                return viewport(
-                    vframe(
-                        impersonationBar(),
-                        updateBar(),
-                        refreshContextView({
-                            model: model.refreshContextModel,
-                            item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
-                        }),
-                        versionBar()
-                    ),
-                    mask({model: model.appLoadModel, spinner: true}),
-                    messageSource(),
-                    toastSource(),
-                    feedbackDialog(),
-                    optionsDialog(),
-                    aboutDialog()
-                );
-            default:
-                return null;
-        }
+const idlePanelHost = hoistCmp.factory({
+    displayName: 'IdlePanel',
+    render() {
+        const content = XH.appSpec.idlePanel ?? idlePanel;
+        return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
     }
 });
