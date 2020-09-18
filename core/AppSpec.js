@@ -46,6 +46,9 @@ export class AppSpec {
      *      continue working.  Specify as a React Component or an element factory.
      * @param {?string} [c.loginMessage] - Optional message to show on login form (for non-SSO apps).
      * @param {?string} [c.lockoutMessage] - Optional message to show users when denied access to app.
+     * @param {boolean} [c.showBrowserContextMenu] - True to show the built-in browser context menu
+     *      when no app-specific menu would be shown (e.g. from a Grid). False (the default)
+     *      prevents the browser menu from being shown anywhere upon right-click.
      */
     constructor({
         clientAppCode = XH.appCode,
@@ -58,6 +61,7 @@ export class AppSpec {
         checkAccess,
         trackAppLoad = true,
         webSocketsEnabled = false,
+        showBrowserContextMenu = false,
         idlePanel = null,
         loginMessage = null,
         lockoutMessage = null,
@@ -93,6 +97,8 @@ export class AppSpec {
         this.idlePanel = idlePanel;
         this.loginMessage = loginMessage;
         this.lockoutMessage = lockoutMessage;
+        this.showBrowserContextMenu = showBrowserContextMenu;
+
         Object.freeze(this);
     }
 }

@@ -26,7 +26,7 @@ export class ModelSpec {
 /**
  * Options for how a Model should be published to context.
  *
- * @enum {ModelPublishMode}
+ * @enum {string}
  * @see {uses}
  * @see {creates}
  */

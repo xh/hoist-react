@@ -16,7 +16,7 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {truncate} from 'lodash';
-import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {DifferModel} from '../../../differ/DifferModel';
 
 
 @HoistModel
@@ -40,14 +40,14 @@ export class ConfigModel {
                 },
                 {
                     name: 'groupName',
-                    label: 'Group',
+                    displayName: 'Group',
                     lookupName: 'groupNames',
                     required: true,
                     enableCreate: true
                 },
                 {
                     name: 'valueType',
-                    label: 'Type',
+                    displayName: 'Type',
                     lookupName: 'valueTypes',
                     editable: 'onAdd',
                     required: true
@@ -64,7 +64,8 @@ export class ConfigModel {
                     required: true
                 },
                 {
-                    name: 'note'
+                    name: 'note',
+                    displayName: 'Notes'
                 },
                 {
                     name: 'lastUpdated',
@@ -99,9 +100,9 @@ export class ConfigModel {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
-            {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
+            {field: 'groupName', width: 100, hidden: true},
             {field: 'name', width: 200},
-            {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
+            {field: 'valueType', width: 80, align: 'center'},
             {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
             {field: 'note', minWidth: 60, flex: true, tooltip: true},
@@ -113,15 +114,15 @@ export class ConfigModel {
             {field: 'groupName'},
             {field: 'valueType'},
             {field: 'value'},
+            {field: 'note', formField: {item: textArea({height: 100})}},
             {field: 'clientVisible'},
-            {field: 'note', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
     });
 
     @managed
-    differModel = new ConfigDifferModel(this.gridModel);
+    differModel = new DifferModel(this.gridModel, 'config');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();

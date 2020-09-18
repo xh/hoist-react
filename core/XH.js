@@ -18,6 +18,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    JsonBlobService,
     LocalStorageService,
     PrefService,
     TrackService,
@@ -90,6 +91,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {JsonBlobService} */
+    jsonBlobService;
     /** @member {LocalStorageService} */
     localStorageService;
     /** @member {PrefService} */
@@ -118,11 +121,12 @@ class XHClass {
     getConf(key, defaultVal)    {return this.configService.get(key, defaultVal)}
     getPref(key, defaultVal)    {return this.prefService.get(key, defaultVal)}
     setPref(key, val)           {return this.prefService.set(key, val)}
-    getEnv(key)                 {return this.environmentService.get(key)}
-    track(opts)                 {return this.trackService.track(opts)}
 
-    getUser()                   {return this.identityService ? this.identityService.getUser() : null}
-    getUsername()               {return this.identityService ? this.identityService.getUsername() : null}
+    // Make these robust, so they don't fail if called early in initialization sequence
+    track(opts)                 {return this.trackService?.track(opts)}
+    getEnv(key)                 {return this.environmentService?.get(key) ?? null}
+    getUser()                   {return this.identityService?.getUser() ?? null}
+    getUsername()               {return this.identityService?.getUsername() ?? null}
 
     get isMobileApp()           {return this.appSpec.isMobileApp}
     get clientAppCode()         {return this.appSpec.clientAppCode}
@@ -414,15 +418,17 @@ class XHClass {
      *      the exception log and alert.
      */
     handleException(exception, options) {
-        return this.exceptionHandler.handleException(exception, options);
+        this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Create a new exception.
-     * @see Exception.create
+     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
+     * @param {(Object|string)} cfg - properties to add to the returned Error.
+     *      If a string, will become the 'message' value.
+     * @returns {Error}
      */
-    exception(...args) {
-        return Exception.create(...args);
+    exception(cfg) {
+        return Exception.create(cfg);
     }
 
     //---------------------------
@@ -449,14 +455,12 @@ class XHClass {
     }
 
     /**
-     * Resets user customizations.
-     * Clears all user preferences and local grid state, then reloads the app.
+     * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
-        return XH.prefService.clearAllAsync().then(() => {
-            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
-            XH.reloadApp();
-        });
+        await this.prefService.clearAllAsync();
+        this.localStorageService.clear();
+        this.reloadApp();
     }
 
     /**
@@ -520,10 +524,9 @@ class XHClass {
             await this.installServicesAsync(FetchService);
             await this.installServicesAsync(TrackService);
 
-            // Special handling for EnvironmentService, which makes the first fetch back to the Grails layer.
-            // For expediency, we assume that if this trivial endpoint fails, we have a connectivity problem.
+            // pre-flight allows clean recognition when we have no server.
             try {
-                await this.installServicesAsync(EnvironmentService);
+                await XH.fetch({url: 'ping'});
             } catch (e) {
                 const pingURL = XH.isDevelopmentMode ?
                     `${XH.baseUrl}ping` :
@@ -531,12 +534,12 @@ class XHClass {
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
-                    message: `Client cannot reach UI server.  Please check UI server at the following location: ${pingURL}`,
-                    detail: e.message
+                    detail: e.message,
+                    message: 'Client cannot reach UI server.  Please check UI server at the ' +
+                        `following location: ${pingURL}`
                 });
             }
 
-            this.setDocTitle();
             this.setAppState(S.PRE_AUTH);
 
             // Instantiate appModel, await optional pre-auth init.
@@ -585,11 +588,15 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(PrefService, ConfigService);
+            await this.installServicesAsync(
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            );
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
             this.acm.init();
+
+            this.setDocTitle();
 
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
@@ -691,9 +698,14 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppName}`,
+                            msg: `Loaded ${this.clientAppCode}`,
                             elapsed: now - loadStarted - loginElapsed,
-                            data: getClientDeviceInfo()
+                            data: {
+                                appVersion: this.appVersion,
+                                appBuild: this.appBuild,
+                                locationHref: window.location.href,
+                                ...getClientDeviceInfo()
+                            }
                         });
                         disposer();
                         break;

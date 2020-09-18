@@ -35,12 +35,12 @@ import {actionColPad} from './Actions.scss';
  */
 export const actionCol = {
     colId: 'actions',
+    displayName: 'Actions',
     headerName: null,
     cellClass: 'xh-action-col-cell',
     align: 'center',
     sortable: false,
     resizable: false,
-    chooserName: 'Actions',
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {
@@ -64,9 +64,19 @@ export const actionCol = {
             const buttonEl = document.createElement('button');
             buttonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
 
-            if (disabled) buttonEl.setAttribute('disabled', 'true');
+            if (disabled) {
+                buttonEl.classList.add('xh-button--disabled');
+                buttonEl.setAttribute('disabled', 'true');
+            } else {
+                buttonEl.classList.add('xh-button--enabled');
+            }
+
             if (!isEmpty(tooltip)) buttonEl.setAttribute('title', tooltip);
-            if (!isEmpty(intent)) buttonEl.classList.add(`bp3-intent-${intent}`);
+            if (!isEmpty(intent)) {
+                buttonEl.classList.add(`bp3-intent-${intent}`, `xh-button--intent-${intent}`);
+            } else {
+                buttonEl.classList.add('xh-button--intent-none');
+            }
 
             buttonEl.innerHTML = convertIconToHtml(icon);
             buttonEl.addEventListener('click', (ev) => {

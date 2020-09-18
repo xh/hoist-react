@@ -16,6 +16,10 @@ import {wait} from '@xh/hoist/promise';
  * allowing ongoing rendering of UI updates (e.g. load masks) and generally keeping the browser
  * event loop running.
  *
+ * NOTE this is NOT for use cases where the `fn` arg is itself async - i.e. it does not await the
+ * call to `fn` and is instead for the opposite use case, where fn is *synchronous*. If looking to
+ * run an async operation over a collection, consider a for...of loop as per implementation below.
+ *
  * @param {Iterable} collection - items to iterate over
  * @param {Function} fn - called with each item.
  * @param {Object} [opts] - additional options.

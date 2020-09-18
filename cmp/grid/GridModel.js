@@ -7,12 +7,13 @@
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {Store, StoreSelectionModel} from '@xh/hoist/data';
+import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {
+    apiDeprecated,
     apiRemoved,
     debounced,
     deepFreeze,
@@ -86,6 +87,8 @@ export class GridModel {
     groupRowElementRenderer;
     /** @member {GridGroupSortFn} */
     groupSortFn;
+    /** @member {boolean} */
+    showGroupRowCounts;
     /** @member {boolean} */
     enableColumnPinning;
     /** @member {boolean} */
@@ -165,6 +168,8 @@ export class GridModel {
      * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
      *      colId and sort direction.
      * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width row grouping.
+     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member rows
+     *      within each full-width group row.
      * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
@@ -179,26 +184,26 @@ export class GridModel {
      *      install default context menu items.
      * @param {ExportOptions} [c.exportOptions] - default export options.
      * @param {RowClassFn} [c.rowClassFn] - closure to generate CSS class names for a row.
-     * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will override
-     *      `sizingMode` for group rows.
+     * @param {number} [c.groupRowHeight] - Height (in px) of a group row. Note that this will
+     *      override `sizingMode` for group rows.
      * @param {Grid~groupRowRendererFn} [c.groupRowRenderer] - function returning a string used to
      *      render group rows.
-     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a React
-     *      element used to render group rows.
+     * @param {Grid~groupRowElementRendererFn} [c.groupRowElementRenderer] - function returning a
+     *      React element used to render group rows.
      * @param {GridGroupSortFn} [c.groupSortFn] - function to use to sort full-row groups.
      *      Called with two group values to compare in the form of a standard JS comparator.
      *      Default is an ascending string sort. Set to `null` to prevent sorting of groups.
-     * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or token
-     *      strings with which to create grid context menu items.  May also be specified as a
-     *      function returning a StoreContextMenu.  Desktop only.
+     * @param {(array|GridStoreContextMenuFn)} [c.contextMenu] - array of RecordActions, configs or
+     *      token strings with which to create grid context menu items.  May also be specified as a
+     *      function returning a StoreContextMenu. Desktop only.
      * @param {boolean}  [c.useVirtualColumns] - Governs if the grid should reuse a limited set of
      *      DOM elements for columns visible in the scroll area (versus rendering all columns).
      *      Consider this performance optimization for grids with a very large number of columns
-     *      obscured by horizontal scrolling.  Note that setting this value to true may
-     *      limit the ability of the grid to autosize offscreen columns effectively.  Default false.
+     *      obscured by horizontal scrolling. Note that setting this value to true may limit the
+     *      ability of the grid to autosize offscreen columns effectively. Default false.
      * @param {GridAutosizeOptions} [c.autosizeOptions] - default autosize options.
-     * @param {Object}  [c.experimental] - flags for experimental features.  These features are designed
-     *      for early client-access and testing, but are not yet part of the Hoist API.
+     * @param {Object} [c.experimental] - flags for experimental features. These features are
+     *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {boolean} [c.experimental.externalSort] - Set to true to if application will be
      *      reloading data when the sortBy property changes on this model (either programmatically,
      *      or via user-click.)  Useful for applications with large data sets that are performing
@@ -223,6 +228,7 @@ export class GridModel {
         emptyText = null,
         sortBy = [],
         groupBy = null,
+        showGroupRowCounts = true,
 
         persistWith,
 
@@ -263,6 +269,7 @@ export class GridModel {
         this.groupRowRenderer = groupRowRenderer;
         this.groupRowElementRenderer = groupRowElementRenderer;
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
+        this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.autosizeOptions = defaults(autosizeOptions, {
@@ -288,8 +295,7 @@ export class GridModel {
         Object.assign(this, rest);
 
         this.colDefaults = colDefaults;
-        this.setColumns(columns);
-        this.store = this.parseStore(store);
+        this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
         this.setSortBy(sortBy);
@@ -320,7 +326,10 @@ export class GridModel {
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-        this.persistenceModel.clear();
+
+        if (this.persistenceModel) {
+            this.persistenceModel.clear();
+        }
     }
 
     /**
@@ -383,7 +392,8 @@ export class GridModel {
      * Scroll to ensure the selected record is visible.
      *
      * If multiple records are selected, scroll to the first record and then the last. This will do
-     * the minimum scrolling necessary to display the start of the selection and as much as possible of the rest.
+     * the minimum scrolling necessary to display the start of the selection and as much as
+     * possible of the rest.
      */
     ensureSelectionVisible() {
         const {records} = this.selModel,
@@ -447,7 +457,7 @@ export class GridModel {
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
      * This method will clear grid grouping if provided any ids without a corresponding column.
-     * @param {(string|string[])} colIds - column ID(s) for row grouping, or falsey value to ungroup.
+     * @param {(string|string[])} colIds - column ID(s) for row grouping, falsey value to ungroup.
      */
     @action
     setGroupBy(colIds) {
@@ -482,7 +492,7 @@ export class GridModel {
 
     /**
      * Set the location for a docked summary row. Requires `store.SummaryRecord` to be populated.
-     * @param {(string|boolean)} showSummary - true/'top' or 'bottom' to show summary, false to hide.
+     * @param {(string|boolean)} showSummary - true/'top' or 'bottom' to show, false to hide.
      */
     @action
     setShowSummary(showSummary) {
@@ -547,18 +557,17 @@ export class GridModel {
         this.store.clear();
     }
 
+    /** Filter the underlying store.*/
+    setFilter(filter) {
+        this.store.setFilter(filter);
+    }
+
+
     /** @param {Object[]} colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs) {
-        throwIf(
-            !isArray(colConfigs),
-            'GridModel requires an array of column configurations.'
-        );
-
-        throwIf(
-            colConfigs.some(c => !isPlainObject(c)),
-            'GridModel only accepts plain objects for Column or ColumnGroup configs'
-        );
+        this.validateColConfigs(colConfigs);
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
         const columns = colConfigs.map(c => this.buildColumn(c));
 
@@ -692,7 +701,7 @@ export class GridModel {
 
     /**
      * Return all leaf-level column ids - i.e. excluding column groups.
-     * @returns {String[]}
+     * @returns {string[]}
      */
     getLeafColumnIds() {
         return this.getLeafColumns().map(col => col.colId);
@@ -712,7 +721,7 @@ export class GridModel {
      * Call this method instead of inspecting the `hidden` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {boolean}
      */
     isColumnVisible(colId) {
@@ -721,12 +730,26 @@ export class GridModel {
     }
 
     /**
+     * @param {string} colId
+     * @param {boolean} visible
+     */
+    setColumnVisible(colId, visible) {
+        this.applyColumnStateChanges([{colId, hidden: !visible}]);
+    }
+
+    /** @param {string} colId */
+    showColumn(colId) {this.setColumnVisible(colId, true)}
+
+    /** @param {string} colId */
+    hideColumn(colId) {this.setColumnVisible(colId, false)}
+
+    /**
      * Determine if a leaf-level column is currently pinned.
      *
      * Call this method instead of inspecting the `pinned` property on the Column itself, as that
      * property is not updated with state changes.
      *
-     * @param {String} colId
+     * @param {string} colId
      * @returns {string}
      */
     getColumnPinned(colId) {
@@ -744,7 +767,7 @@ export class GridModel {
                 const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {
-                if (col.colId == colId) return col;
+                if (col.colId === colId) return col;
             }
         }
         return null;
@@ -845,7 +868,7 @@ export class GridModel {
     }
 
     autoSizeColumns(colIds) {
-        console.warn('`GridModel.autoSizeColumns` has been deprecated. Use `GridModel.autosizeAsync()` instead.');
+        apiDeprecated(true, 'GridModel.autoSizeColumns', "Use 'GridModel.autosizeAsync()' instead.");
         this.autosizeAsync({columns: colIds});
     }
 
@@ -878,21 +901,6 @@ export class GridModel {
         return sortBy(columns, [it => it._sortOrder]);
     }
 
-    validateColumns(cols) {
-        if (isEmpty(cols)) return;
-
-        const {groupIds, colIds} = this.collectIds(cols);
-
-        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
-        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
-
-        const treeCols = cols.filter(it => it.isTreeColumn);
-        warnIf(
-            this.treeMode && treeCols.length != 1,
-            'Grids in treeMode should include exactly one column with isTreeColumn:true.'
-        );
-    }
-
     collectIds(cols, groupIds = [], colIds = []) {
         cols.forEach(col => {
             if (col.colId) colIds.push(col.colId);
@@ -914,36 +922,115 @@ export class GridModel {
         }
     }
 
-    parseStore(store) {
+    // Store fields and column configs have a tricky bi-directional relationship in GridModel,
+    // both for historical reasons and developer convenience.
+    //
+    // Strategically, we wish to centralize more field-wise configuration at the `data/Field` level,
+    // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
+    // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
+    // in this case GridModel should work out the required Store fields from column definitions.
+    parseAndSetColumnsAndStore(colConfigs, store) {
+        // 1) Default and pre-validate configs.
         store = withDefault(store, {});
+        this.validateStoreConfig(store);
+        this.validateColConfigs(colConfigs);
 
-        if (store instanceof Store) {
-            return store;
-        }
+        // 2) Enhance colConfigs with field-level metadata provided by store, if any.
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs, store);
 
+        // 3) Create and set columns with (possibly) enhanced configs.
+        this.setColumns(colConfigs);
+
+        // 4) Enhance store config and create (if needed), then set.
         if (isPlainObject(store)) {
-            // Ensure store config has a complete set of fields for all configured columns.
-            const fields = store.fields || [],
-                storeFieldNames = map(fields, it => isString(it) ? it : it.name),
-                colFieldNames = this.calcFieldNamesFromColumns(),
-                missingFieldNames = difference(colFieldNames, storeFieldNames);
+            const storeConfig = this.enhanceStoreConfigFromColumns(store);
+            this.store = this.markManaged(new Store(storeConfig));
+        } else {
+            this.store = store;
+        }
+    }
 
-            // ID is always present on a Record, yet will never be listed within store.fields.
-            pull(missingFieldNames, 'id');
+    validateStoreConfig(store) {
+        throwIf(
+            !(store instanceof Store || isPlainObject(store)),
+            'GridModel.store config must be either an instance of a Store or a config to create one.'
+        );
+    }
 
-            if (missingFieldNames.length) {
-                store = {
-                    ...store,
-                    fields: [...fields, ...missingFieldNames]
+    validateColConfigs(colConfigs) {
+        throwIf(
+            !isArray(colConfigs),
+            'GridModel.columns config must be an array.'
+        );
+        throwIf(
+            colConfigs.some(c => !isPlainObject(c)),
+            'GridModel.columns config only accepts plain objects for Column or ColumnGroup configs.'
+        );
+    }
+
+    validateColumns(cols) {
+        if (isEmpty(cols)) return;
+
+        const {groupIds, colIds} = this.collectIds(cols);
+
+        ensureUnique(colIds, 'All colIds in a GridModel columns collection must be unique.');
+        ensureUnique(groupIds, 'All groupIds in a GridModel columns collection must be unique.');
+
+        const treeCols = cols.filter(it => it.isTreeColumn);
+        warnIf(
+            this.treeMode && treeCols.length != 1,
+            'Grids in treeMode should include exactly one column with isTreeColumn:true.'
+        );
+    }
+
+    // Selectively enhance raw column configs with field-level metadata from this model's Store
+    // Fields. Takes store as an optional explicit argument to support calling from
+    // parseAndSetColumnsAndStore() with a raw store config, prior to actual store construction.
+    enhanceColConfigsFromStore(colConfigs, storeOrConfig) {
+        const store = storeOrConfig || this.store,
+            // Nullsafe no-op for first setColumns() call from within parseAndSetColumnsAndStore(),
+            // where store has not yet been set (but columns have already been enhanced).
+            storeFields = store?.fields;
+
+        if (isEmpty(storeFields)) return colConfigs;
+
+        const numTypes = [FieldType.INT, FieldType.NUMBER];
+        return colConfigs.map(col => {
+            // Recurse into children for column groups
+            if (col.children) {
+                return {
+                    ...col,
+                    children: this.enhanceColConfigsFromStore(col.children, storeOrConfig)
                 };
             }
 
-            return this.markManaged(new Store(store));
-        }
+            // Note this routine currently works with either Field instances or configs.
+            const field = storeFields.find(f => f.name === col.field);
+            if (!field) return col;
 
-        throw XH.exception(
-            'GridModel.store value must be either an instance of a Store or a config for one.'
-        );
+            return {
+                displayName: field.displayName,
+                align: numTypes.includes(field.type) ? 'right' : undefined,
+                ...col
+            };
+        });
+    }
+
+    // Ensure store config has a complete set of fields for all configured columns. Note this
+    // requires columns to have been constructed and set, and will only work with a raw store
+    // config object, not an instance.
+    enhanceStoreConfigFromColumns(storeConfig) {
+        const fields = storeConfig.fields || [],
+            storeFieldNames = map(fields, it => isString(it) ? it : it.name),
+            colFieldNames = this.calcFieldNamesFromColumns(),
+            missingFieldNames = difference(colFieldNames, storeFieldNames);
+
+        // ID is always present on a Record, yet will never be listed within store.fields.
+        pull(missingFieldNames, 'id');
+
+        return isEmpty(missingFieldNames) ?
+            storeConfig :
+            {...storeConfig, fields: [...fields, ...missingFieldNames]};
     }
 
     calcFieldNamesFromColumns() {
@@ -1013,7 +1100,7 @@ export class GridModel {
 // This column is inserted whenever there is a flex column with maxWidth.
 // Special handling ensures it is maintained as the last column.
 //-------------------------------------------------------------------------
-const xhEmptyFlexCol =  {
+const xhEmptyFlexCol = {
     colId: 'xhEmptyFlex',
     headerName: null,
     // Tiny flex value set here to avoidFlexCol competing with other flex cols in the same grid.
@@ -1075,14 +1162,14 @@ const xhEmptyFlexCol =  {
  *      Default is true.
  * @property {function|string|string[]} [columns] - columns ids to autosize, or a function for
  *      testing if the given column should be autosized.  Typically used when calling
- *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the autosizable
- *      option on columns.
- * @property {string} [fillMode] - how to fill remaining space after the columns have been autosized.
- *      Valid options are ['all', 'left', 'right', 'none']. Default is 'none'. NOTE: This option is an
- *      advanced option that should be used with care -- setting it will mean that all available
- *      horizontal space will be allocated. If the grid is subsequently compressed in width, or
- *      content added to it, horizontal scrolling of the columns may result that may require an
- *      additional autosize.
+ *      autosizeAsync() manually.  To generally exclude a column from autosizing, see the
+ *      autosizable option on columns.
+ * @property {string} [fillMode] - how to fill remaining space after the columns have been
+ *      autosized. Valid options are ['all', 'left', 'right', 'none']. Default is 'none'. Note this
+ *      option is an advanced option that should be used with care - setting it will mean that all
+ *      available horizontal space will be allocated. If the grid is subsequently compressed in
+ *      width, or content added to it, horizontal scrolling of the columns may result that may
+ *      require an additional autosize.
  */
 
 
