@@ -4,13 +4,14 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dialog} from '@xh/hoist/kit/blueprint';
+
+import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 
 /**
  * A simple dialog component to collect user feedback from directly within the application.
@@ -25,12 +26,15 @@ export const feedbackDialog = hoistCmp.factory({
     render({model}) {
         if (!model.isOpen) return null;
 
+        const onClose = () => model.hide();
+
         return dialog({
             title: `${XH.clientAppName} Feedback`,
-            style: {width: 450},
-            isOpen: true,
-            onClose: () => model.hide(),
-            canOutsideClickClose: false,
+            model: {
+                size: {width: 450},
+                closeOnOutsideClick: false,
+                onClose
+            },
             items: [
                 textArea({
                     placeholder: 'Please enter your comments...',
@@ -45,7 +49,7 @@ export const feedbackDialog = hoistCmp.factory({
                     filler(),
                     button({
                         text: 'Cancel',
-                        onClick: () => model.hide()
+                        onClick: onClose
                     }),
                     button({
                         text: 'Send Feedback',

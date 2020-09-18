@@ -4,15 +4,16 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {hoistCmp, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
+import {XH, hoistCmp} from '@xh/hoist/core';
+import {pre, table, tbody, td, th, tr, filler, vframe} from '@xh/hoist/cmp/layout';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {stringifyErrorSafely} from '@xh/hoist/exception';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {stringifyErrorSafely} from '@xh/hoist/exception';
+
 import {dismissButton} from './ExceptionDialog';
 
 /**
@@ -45,12 +46,13 @@ export const exceptionDialogDetails = hoistCmp.factory(
         return dialog({
             title: 'Error Details',
             icon: Icon.search(),
-            isOpen: true,
-            isCloseButtonShown: !requireReload,
-            onClose: !requireReload ? () => model.close() : null,
-            style: {width: 800},
+            model: {
+                showCloseButton: !requireReload,
+                onClose: !requireReload ? () => model.close() : null,
+                size: {width: 800}
+            },
             items: [
-                dialogBody({
+                vframe({
                     className: 'xh-exception-dialog-details',
                     items: [
                         header,

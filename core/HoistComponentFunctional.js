@@ -67,7 +67,7 @@ export function hoistComponent(config) {
         isForwardRef = (render.length === 2);
 
     // 1) Default and validate the modelSpec
-    const modelSpec = withDefault(config.model, uses('*'));
+    const modelSpec = withDefault(config.model, uses('*', {publishMode: ModelPublishMode.NONE}));
     throwIf(
         modelSpec && !(modelSpec instanceof ModelSpec),
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."

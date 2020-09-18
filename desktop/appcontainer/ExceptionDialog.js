@@ -4,15 +4,19 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
+
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
+import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import './ExceptionDialog.scss';
+import {button} from '@xh/hoist/desktop/cmp/button';
+
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
+
 import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import './ExceptionDialog.scss';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
@@ -33,15 +37,17 @@ export const exceptionDialog = hoistCmp.factory({
 
         return fragment(
             dialog({
-                isOpen: true,
+                model: {
+                    showCloseButton: !options.requireReload,
+                    size: {width: 500},
+                    onClose
+                },
                 title: options.title,
-                isCloseButtonShown: !options.requireReload,
-                onClose,
                 icon: Icon.warning({size: 'lg'}),
-                items: [
-                    dialogBody(options.message),
-                    bbar()
-                ]
+                items: panel({
+                    item: options.message,
+                    bbar: bbar()
+                })
             }),
             exceptionDialogDetails()
         );
@@ -79,7 +85,6 @@ export const dismissButton = hoistCmp.factory(
     ({model}) => {
         const reloadRequired = model.options.requireReload,
             loginRequired = isSessionExpired(model.exception);
-
         return reloadRequired ?
             button({
                 icon: loginRequired ? Icon.login() : Icon.refresh(),
