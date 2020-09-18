@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import classNames from 'classnames';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {hbox, div, input} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
+import {div, hbox, input} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
-import {FileChooserModel} from './FileChooserModel';
-
+import classNames from 'classnames';
+import PT from 'prop-types';
 import './FileChooser.scss';
+import {FileChooserModel} from './FileChooserModel';
 
 
 /**

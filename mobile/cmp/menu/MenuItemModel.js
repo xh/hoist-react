@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -20,7 +20,7 @@ export class MenuItemModel {
     /**
      * @param {Object} c - MenuItemModel configuration.
      * @param {string} c.text - label to be displayed.
-     * @param {Object} [c.icon] - optional icon to be displayed.
+     * @param {Element} [c.icon] - optional icon to be displayed.
      * @param {function} [c.action] - Executed when the user clicks the menuitem.
      * @param {boolean} [c.disabled] - true to disable this item.
      * @param {boolean} [c.hidden] - true to hide this item.

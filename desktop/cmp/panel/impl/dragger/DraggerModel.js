@@ -2,15 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {HoistModel} from '@xh/hoist/core';
+import {XH, HoistModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {clamp, throttle} from 'lodash';
 
 @HoistModel
 export class DraggerModel {
+
+    ref = createObservableRef();
 
     panelModel;
     resizeState = null;
@@ -23,44 +25,78 @@ export class DraggerModel {
 
     constructor(panelModel) {
         this.panelModel = panelModel;
+        this.throttledSetSize = throttle(size => panelModel.setSize(size), 50);
+
+        // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
+        // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
+        this.addReaction({
+            track: () => this.ref.current,
+            run: (current) => {
+                if (current) this.addListeners(current);
+            }
+        });
+    }
+
+    addListeners(el) {
+        if (XH.isDesktop) {
+            el.addEventListener('dragstart', this.onDragStart);
+            el.addEventListener('drag', this.onDrag);
+            el.addEventListener('dragend', this.onDragEnd);
+        } else {
+            el.addEventListener('touchstart', this.onDragStart);
+            el.addEventListener('touchmove', this.onDrag, {passive: false});
+            el.addEventListener('touchend', this.onDragEnd);
+        }
     }
 
     onDragStart = (e) => {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
-        const {panelEl: panel} = this;
+        const {panelEl: panel, panelModel} = this;
 
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
-            'Resizable panel has no sibbling panel against which to resize.'
+            'Resizable panel has no sibling panel against which to resize.'
         );
 
-        this.resizeState = {startX: e.clientX, startY: e.clientY};
-        this.startSize = this.panelModel.size;
-        this.panelParent = panel.parentElement;
-        this.panelModel.setIsResizing(true);
-        this.dragBar = this.getDraggableSplitter(dragger);
-        this.panelParent.appendChild(this.dragBar);
-        this.diff = 0;
-        this.maxSize = this.startSize + this.getSiblingAvailSize();
         e.stopPropagation();
-    }
+
+        const {clientX, clientY} = this.parseEventPositions(e);
+        this.resizeState = {startX: clientX, startY: clientY};
+        this.startSize = panelModel.size;
+        this.panelParent = panel.parentElement;
+        panelModel.setIsResizing(true);
+
+        if (!panelModel.resizeWhileDragging) {
+            this.dragBar = this.getDraggableSplitter(dragger);
+            this.panelParent.appendChild(this.dragBar);
+            this.diff = 0;
+        }
+
+        // We will use whichever is smaller - the calculated available size, or the configured max size
+        const calcMaxSize = this.startSize + this.getSiblingAvailSize();
+        this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
+    };
 
     onDrag = (e) => {
         if (!this.resizeState) return;
-        if (!e.buttons || e.buttons.length == 0) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!this.isValidMouseEvent(e) && !this.isValidTouchEvent(e)) {
             this.onDragEnd();
             return;
         }
 
-        const {side} = this.panelModel,
-            {screenX, screenY, clientX, clientY} = e,
-            {startX, startY} = this.resizeState;
-
+        const {screenX, screenY, clientX, clientY} = this.parseEventPositions(e);
         // Skip degenerate final drag event from dropping over non-target
-        if (screenX == 0 && screenY === 0 && clientX === 0 && clientY === 0) {
+        if (screenX === 0 && screenY === 0 && clientX === 0 && clientY === 0) {
             return;
         }
+
+        const {side, resizeWhileDragging} = this.panelModel,
+            {startX, startY} = this.resizeState;
 
         switch (side) {
             case 'left':    this.diff = clientX - startX; break;
@@ -69,19 +105,24 @@ export class DraggerModel {
             case 'top':     this.diff = clientY - startY; break;
         }
 
-        this.moveDragBar();
-    }
+        if (resizeWhileDragging) {
+            this.updateSize(true);
+        } else {
+            this.moveDragBar();
+        }
+    };
 
     onDragEnd = () => {
         const {panelModel} = this;
         if (!panelModel.isResizing) return;
 
-        const size = Math.min(this.maxSize, Math.max(panelModel.minSize, this.startSize + this.diff));
-
-        panelModel.setSize(size);
         panelModel.setIsResizing(false);
 
-        this.panelParent.removeChild(this.dragBar);
+        if (!panelModel.resizeWhileDragging) {
+            this.updateSize();
+            this.panelParent.removeChild(this.dragBar);
+        }
+
         this.resizeState = null;
         this.startSize = null;
         this.maxSize = null;
@@ -89,6 +130,20 @@ export class DraggerModel {
         this.panelEl = null;
         this.panelParent = null;
         this.dragBar = null;
+    };
+
+    updateSize(throttle) {
+        const {minSize} = this.panelModel,
+            {startSize} = this;
+
+        if (startSize !== null) {
+            const size = clamp(startSize + this.diff, minSize, this.maxSize);
+            if (throttle) {
+                this.throttledSetSize(size);
+            } else {
+                this.panelModel.setSize(size);
+            }
+        }
     }
 
     getDraggableSplitter() {
@@ -106,12 +161,13 @@ export class DraggerModel {
     moveDragBar() {
         const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
             {side, minSize} = panelModel;
+
         if (!dragBar) return;
 
         const stl = dragBar.style;
         stl.display = 'block';
 
-        if (diff + startSize <= minSize) {               // constrain to minSize (which could be 0)
+        if (diff + startSize <= minSize) { // constrain to minSize (which could be 0)
             switch (side) {
                 case 'left':    stl.left =  (panel.offsetLeft + minSize) + 'px'; break;
                 case 'top':     stl.top =   (panel.offsetTop + minSize) + 'px'; break;
@@ -146,5 +202,18 @@ export class DraggerModel {
         return panelModel.vertical ?
             sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0):
             sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
+    }
+
+    parseEventPositions(e) {
+        const {screenX, screenY, clientX, clientY} = this.isValidTouchEvent(e) ? e.touches[0] : e;
+        return {screenX, screenY, clientX, clientY};
+    }
+
+    isValidMouseEvent(e) {
+        return e.buttons && e.buttons !== 0;
+    }
+
+    isValidTouchEvent(e) {
+        return e.touches && e.touches.length > 0;
     }
 }

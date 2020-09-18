@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {applyMixin, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
 import {decorate, observable, runInAction} from 'mobx';
 
@@ -26,7 +26,8 @@ export function LoadSupport(C) {
 
     decorate(C,  {
         lastLoadRequested: observable.ref,
-        lastLoadCompleted: observable.ref
+        lastLoadCompleted: observable.ref,
+        lastLoadException: observable.ref
     });
 
     return applyMixin(C, {
@@ -62,13 +63,40 @@ export function LoadSupport(C) {
                     'Unexpected param passed to loadAsync() - accepts loadSpec object only. If triggered via a reaction, ensure call is wrapped in a closure.'
                 );
 
+                // Skip auto-refresh if we have a pending triggered refresh
+                if (loadSpec.isAutoRefresh && this.loadModel.isPending) return;
+
                 runInAction(() => this.lastLoadRequested = new Date());
                 const loadModel = !loadSpec.isAutoRefresh ? this.loadModel : null;
+
+                let exception = null;
                 return this
                     .doLoadAsync(loadSpec)
                     .linkTo(loadModel)
+                    .catch(e => {
+                        exception = e;
+                        throw e;
+                    })
                     .finally(() => {
-                        runInAction(() => this.lastLoadCompleted = new Date());
+                        runInAction(() => {
+                            this.lastLoadCompleted = new Date();
+                            this.lastLoadException = exception;
+                        });
+
+                        if (C.isRefreshContextModel) return;
+
+                        const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
+                            msg = `[${C.name}] | ${getLoadTypeFromSpec(loadSpec)} | ${exception ? 'failed' : 'completed'} | ${elapsed}ms`;
+
+                        if (exception) {
+                            if (exception.isRoutine) {
+                                console.debug(msg, exception);
+                            } else {
+                                console.error(msg, exception);
+                            }
+                        } else {
+                            console.debug(msg);
+                        }
                     });
             },
 
@@ -108,6 +136,12 @@ export function LoadSupport(C) {
             }
         }
     });
+}
+
+function getLoadTypeFromSpec(loadSpec) {
+    if (loadSpec.isAutoRefresh) return 'Auto-Refresh';
+    if (loadSpec.isRefresh) return 'Refresh';
+    return 'Load';
 }
 
 /**

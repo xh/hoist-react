@@ -1,10 +1,15 @@
-import PT from 'prop-types';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
+import {Record, RecordAction, StoreSelectionModel} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {RecordAction, Record, StoreSelectionModel} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {Column} from '@xh/hoist/cmp/grid';
 import {first} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * Button component used by RecordActionBar and in grid action columns.
@@ -47,7 +52,7 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
             intent,
             title,
             disabled,
-            onClick: () => action.call({record, selection: selectedRecords, gridModel, column}),
+            onClick: () => action.call({record, selectedRecords, gridModel, column}),
             ...rest
         });
     }

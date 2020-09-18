@@ -2,18 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {usernameCol} from '@xh/hoist/admin/columns';
+import {dateTimeCol} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {usernameCol} from '@xh/hoist/admin/columns';
+import {truncate} from 'lodash';
 
-export const UserPreferencePanel = hoistCmp(
+
+export const userPreferencePanel = hoistCmp.factory(
     () => restGrid({model: modelSpec})
 );
 
 const modelSpec = {
-    stateModel: 'xhUserPreferenceGrid',
+    persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     enableColChooser: true,
     enableExport: true,
     store: {
@@ -22,14 +25,14 @@ const modelSpec = {
         fields: [
             {
                 name: 'name',
-                label: 'Pref',
+                displayName: 'Pref',
                 lookupName: 'names',
                 editable: 'onAdd',
                 required: true
             },
             {
                 name: 'groupName',
-                label: 'Group',
+                displayName: 'Group',
                 lookupName: 'groupNames',
                 editable: false
             },
@@ -39,7 +42,7 @@ const modelSpec = {
             },
             {
                 name: 'username',
-                label: 'User',
+                displayName: 'User',
                 required: true
             },
             {
@@ -67,7 +70,9 @@ const modelSpec = {
         {field: 'type', width: 100},
         {field: 'username', ...usernameCol},
         {field: 'groupName', hidden: true},
-        {field: 'userValue', minWidth: 200, flex: true}
+        {field: 'userValue', minWidth: 200, flex: true, renderer: truncateIfJson},
+        {field: 'lastUpdatedBy', width: 160, hidden: true},
+        {field: 'lastUpdated', ...dateTimeCol, hidden: true}
     ],
     editors: [
         {field: 'name'},
@@ -77,3 +82,7 @@ const modelSpec = {
         {field: 'lastUpdatedBy'}
     ]
 };
+
+function truncateIfJson(userValue, {record}) {
+    return record.data.type === 'json' ? truncate(userValue, {length: 500}) : userValue;
+}

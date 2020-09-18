@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {Children} from 'react';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
-
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {Children} from 'react';
+import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
-import {PanelModel} from '../PanelModel';
 
 export const resizeContainer = hoistCmp.factory({
     displayName: 'ResizeContainer',

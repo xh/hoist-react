@@ -2,25 +2,30 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {useRef, isValidElement} from 'react';
-import PT from 'prop-types';
-import {castArray, omitBy} from 'lodash';
-import {hoistCmp, uses, useContextModel, ModelPublishMode} from '@xh/hoist/core';
-import {vbox, vframe} from '@xh/hoist/cmp/layout';
+import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {
+    hoistCmp,
+    ModelPublishMode,
+    refreshContextView,
+    RenderMode,
+    useContextModel,
+    uses
+} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {castArray, omitBy} from 'lodash';
+import PT from 'prop-types';
+import {isValidElement, useRef} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
-import {PanelModel} from './PanelModel';
-
 import './Panel.scss';
+import {PanelModel} from './PanelModel';
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -43,7 +48,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
     memo: false,
     className: 'xh-panel',
 
-    render({model, ...props}, ref) {
+    render({model, className,  ...props}, ref) {
 
         const contextModel = useContextModel('*');
 
@@ -80,12 +85,11 @@ export const [Panel, panel] = hoistCmp.withFactory({
             resizable,
             collapsible,
             collapsed,
-            collapsedRenderMode,
+            renderMode,
             vertical,
-            showSplitter
+            showSplitter,
+            refreshContextModel
         } = model;
-
-        const requiresContainer = resizable || collapsible || showSplitter;
 
         if (collapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
@@ -93,7 +97,7 @@ export const [Panel, panel] = hoistCmp.withFactory({
         }
 
         let coreContents = null;
-        if (!collapsed || collapsedRenderMode == 'always' || (collapsedRenderMode == 'lazy' && wasDisplayed.current)) {
+        if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -118,24 +122,27 @@ export const [Panel, panel] = hoistCmp.withFactory({
             panelHeader({title, icon, compact: compactHeader, headerItems}) :
             null;
 
-
-        const item = vbox({
-            ref: !requiresContainer ? ref : undefined,
+        let item = vbox({
+            className: 'xh-panel__content',
             items: [
                 processedPanelHeader,
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
-            ...rest,
-            ...layoutProps
+            ...rest
         });
 
-        // 4) Return, wrapped in resizable and its affordances if needed.
-        return requiresContainer ?
-            resizeContainer({ref, item}) :
-            item;
+        if (refreshContextModel) {
+            item = refreshContextView({model: refreshContextModel, item});
+        }
+
+        // 4) Return wrapped in resizable and its affordances if needed.
+        return resizable || collapsible || showSplitter ?
+            resizeContainer({ref, item, className}) :
+            box({ref, item, className, ...layoutProps});
     }
+
 });
 
 function parseLoadDecorator(prop, name, contextModel) {

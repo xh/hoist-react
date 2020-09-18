@@ -2,13 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {RecordAction} from '@xh/hoist/data';
-import {convertIconToSvg} from '@xh/hoist/icon';
+import {convertIconToHtml} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
-
 import {actionColPad} from './Actions.scss';
 
 /**
@@ -37,16 +35,16 @@ import {actionColPad} from './Actions.scss';
  */
 export const actionCol = {
     colId: 'actions',
+    displayName: 'Actions',
     headerName: null,
     cellClass: 'xh-action-col-cell',
     align: 'center',
     sortable: false,
     resizable: false,
-    chooserName: 'Actions',
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column, agParams}) => {
-        if (agParams.node.group || (record && record.xhIsSummary)) return null;
+        if (agParams.node.group || (record && record.isSummary)) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
@@ -63,20 +61,30 @@ export const actionCol = {
             const {icon, intent, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             if (hidden) return;
 
-            const actionButtonEl = document.createElement('button');
-            actionButtonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
+            const buttonEl = document.createElement('button');
+            buttonEl.classList.add('bp3-button', 'bp3-minimal', 'bp3-small', 'xh-button', 'xh-record-action-button', 'xh-button--minimal');
 
-            if (disabled) actionButtonEl.setAttribute('disabled', 'true');
-            if (!isEmpty(tooltip)) actionButtonEl.setAttribute('title', tooltip);
-            if (!isEmpty(intent)) actionButtonEl.classList.add(`bp3-intent-${intent}`);
+            if (disabled) {
+                buttonEl.classList.add('xh-button--disabled');
+                buttonEl.setAttribute('disabled', 'true');
+            } else {
+                buttonEl.classList.add('xh-button--enabled');
+            }
 
-            actionButtonEl.innerHTML = convertIconToSvg(icon);
-            actionButtonEl.addEventListener('click', (ev) => {
+            if (!isEmpty(tooltip)) buttonEl.setAttribute('title', tooltip);
+            if (!isEmpty(intent)) {
+                buttonEl.classList.add(`bp3-intent-${intent}`, `xh-button--intent-${intent}`);
+            } else {
+                buttonEl.classList.add('xh-button--intent-none');
+            }
+
+            buttonEl.innerHTML = convertIconToHtml(icon);
+            buttonEl.addEventListener('click', (ev) => {
                 ev.stopPropagation();
-                action.actionFn({record, selectedRecords: [record], gridModel, column});
+                action.call({record, selectedRecords: [record], gridModel, column, buttonEl});
             });
 
-            buttonGroupEl.appendChild(actionButtonEl);
+            buttonGroupEl.appendChild(buttonEl);
         });
 
         return buttonGroupEl;

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {compactDateRenderer, dateRenderer, dateTimeRenderer, timeRenderer} from '@xh/hoist/format';
 import {ExportFormat} from './ExportFormat';
-import {dateRenderer, dateTimeRenderer, timeRenderer, compactDateRenderer} from '@xh/hoist/format';
 
 const defaults = {align: 'right'};
 

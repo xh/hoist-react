@@ -2,20 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
+import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
-
-import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-
-import {exceptionDialogDetails} from './ExceptionDialogDetails';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import './ExceptionDialog.scss';
+import {exceptionDialogDetails} from './ExceptionDialogDetails';
 
 /**
  * Dialog for display of exceptions, with support for viewing a detailed stacktrace
@@ -56,6 +53,12 @@ export const exceptionDialog = hoistCmp.factory({
 //--------------------------------
 const bbar = hoistCmp.factory(
     ({model}) => toolbar(
+        button({
+            omit: !XH.identityService?.isImpersonating,
+            icon: Icon.impersonate(),
+            text: 'End Impersonation',
+            onClick: () => XH.identityService.endImpersonateAsync()
+        }),
         filler(),
         button({
             icon: Icon.search(),
@@ -74,10 +77,13 @@ const bbar = hoistCmp.factory(
  */
 export const dismissButton = hoistCmp.factory(
     ({model}) => {
-        return model.options.requireReload ?
+        const reloadRequired = model.options.requireReload,
+            loginRequired = isSessionExpired(model.exception);
+
+        return reloadRequired ?
             button({
-                icon: Icon.refresh(),
-                text: isSessionExpired(model.exception) ? 'Login' : 'Reload App',
+                icon: loginRequired ? Icon.login() : Icon.refresh(),
+                text: loginRequired ? 'Login' : 'Reload App',
                 autoFocus: true,
                 onClick: () => XH.reloadApp()
             }) :

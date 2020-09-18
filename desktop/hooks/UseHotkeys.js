@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {HoistModel, useLocalModel} from '@xh/hoist/core';
-import {HotkeysEvents, hotkey as hotkeyBp, hotkeys as hotkeysBp} from '@xh/hoist/kit/blueprint';
-import {isPlainObject, isArray, isEmpty} from 'lodash';
+import {hotkey as hotkeyBp, hotkeys as hotkeysBp, HotkeysEvents} from '@xh/hoist/kit/blueprint';
+import {isArray, isEmpty, isPlainObject} from 'lodash';
 import {cloneElement, isValidElement} from 'react';
 
 /**

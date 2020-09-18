@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 // Host div for Select option menu portal.
 #xh-select-input-portal {
   z-index: 999;
@@ -31,6 +38,14 @@
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
       }
+
+      &__left-icon {
+        display: inherit;
+        margin-left: 4px;
+        width: 12px;
+        color: var(--xh-text-color-muted);
+        font-size: var(--xh-font-size-large-px);
+      }
     }
 
     &__placeholder {
@@ -48,11 +63,25 @@
 
     &__value-container input {
       opacity: 1 !important;
+      // Avoid unexpected scrollbar within input when using a custom font-face.
+      line-height: 15px;
+    }
+
+    &__indicators > div {
+      display: flex;
+      align-items: flex-end;
     }
 
     &__indicator {
-      padding: 0 var(--xh-pad-half-px);
-      color: var(--xh-border-color);
+      padding: 0 8px 0 0;
+      width: 20px;
+      color: var(--xh-text-color-muted);
+      font-size: var(--xh-font-size-large-px);
+
+      &:hover {
+        cursor: pointer;
+        color: var(--xh-text-color);
+      }
     }
 
     &__indicator-separator {
@@ -88,7 +117,13 @@
     }
 
     &__option {
-      padding-left: 0;
+      // Suppress the padding added by react-select on the option wrapper
+      padding: 0;
+
+      > * {
+        // Default padding for the inner option element
+        padding: var(--xh-pad-px);
+      }
 
       &--is-selected {
         // Suppress default highlighting - checkmark indicate selection.

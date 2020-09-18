@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core/HoistModel';
-import {observable, action, bindable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 
 /**
@@ -52,7 +52,7 @@ export class PendingTaskModel {
 
     /**
      * Link this model to a promise.
-     * Not typically called directly by applications - call Promise.link() instead.
+     * Not typically called directly by applications - call Promise.linkTo() instead.
      *
      * @param {Promise} promise
      * @param {?string} [message]

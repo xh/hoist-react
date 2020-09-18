@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {MINUTES, ONE_SECOND, olderThan} from '@xh/hoist/utils/datetime';
+import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {pull} from 'lodash';
+import {olderThan, MILLISECONDS, MINUTES} from '@xh/hoist/utils/datetime';
+import {throwIf} from '@xh/hoist/utils/js';
+import {pull, isNil, isFunction, isBoolean, isString} from 'lodash';
 
 /**
  *
@@ -28,8 +30,6 @@ export class Timer {
 
     static _timers = [];
 
-    CORE_INTERVAL = ONE_SECOND;
-
     runFn = null;
     interval = null;
     timeout = null;
@@ -39,23 +39,42 @@ export class Timer {
     cancelled = false;
     isRunning = false;
     lastRun = null;
-    
+
     /**
      * Create a new Timer.
      *
      * Main entry point, to get a new, managed timer.
      *
      * @param {function} runFn - return a promise to allow timer to block and prevent overlapping runs.
-     * @param {number} interval - interval between runs, in milliseconds. if <=0 job will not run.
-     * @param {number} [timeout] - timeout for action in milliseconds, null for no timeout.
-     * @param {number} [delay] - initial delay, in milliseconds
+     * @param {(number|function|string)} interval - interval between runs, in milliseconds.
+     *      if <=0 job will not run.  If specified as a function, will be re-evaluated after every
+     *      timer run.  If specified as a string, value will be assumed to be a config, and will be
+     *      looked up before every run.
+     * @param {(number|function|string)} [timeout] - timeout for action in milliseconds.
+     *      Like interval, this value may be specified as a function or a config key.
+     *      Set to null for no timeout.
+     * @param {number} intervalUnits -- units that the interval arg is specified in. Default is ms.
+     * @param {number} timeoutUnits -- units that the timeout arg is specified in. Default is ms.
+     * @param {(number|boolean)} [delay] - initial delay, in milliseconds.  If specified as true,
+     *      the value of the delay will be the same as interval.  Default to false.
      * @param {Object} [scope] - scope to run callback in
      */
-    static create({runFn, interval, delay=0, timeout=3*MINUTES, scope=this}) {
-        const ret = new Timer({runFn, interval, delay, timeout, scope});
+    static create({
+        runFn,
+        interval,
+        timeout = 3 * MINUTES,
+        intervalUnits = MILLISECONDS,
+        timeoutUnits = MILLISECONDS,
+        delay = false,
+        scope = this
+    }) {
+        const ret = new Timer({
+            runFn, interval, timeout, intervalUnits, timeoutUnits, delay, scope
+        });
         this._timers.push(ret);
         return ret;
     }
+
 
     /**
      * Permanently cancel *all* running timers.
@@ -82,7 +101,7 @@ export class Timer {
      * @param {number} interval between runs, in milliseconds. if <=0 job will not run.
      */
     setInterval(interval) {
-        this.interval = interval;
+        this.interval = this.parseDynamicVal(interval);
     }
 
     //----------------------
@@ -90,9 +109,13 @@ export class Timer {
     //----------------------
     constructor(args) {
         this.runFn = args.runFn.bind(args.scope);
-        this.interval = args.interval;
-        this.timeout = args.timeout;
-        this.delay = args.delay;
+        this.interval = this.parseDynamicVal(args.interval);
+        this.timeout = this.parseDynamicVal(args.timeout);
+        this.intervalUnits = args.intervalUnits;
+        this.timeoutUnits = args.timeoutUnits;
+        this.delay = this.parseDelay(args.delay);
+        throwIf(this.interval == null || this.runFn == null, 'Missing req arguments for Timer');
+
         wait(this.delay).then(() => this.heartbeatAsync());
     }
 
@@ -102,17 +125,19 @@ export class Timer {
     }
 
     async heartbeatAsync() {
-        if (!this.cancelled && !this.isRunning && this.intervalElapsed) {
+        const {cancelled, isRunning, intervalMs, lastRun} = this;
+        if (!cancelled && !isRunning && intervalMs > 0 && olderThan(lastRun, intervalMs)) {
             await this.doRunAsync();
         }
-        await wait(this.CORE_INTERVAL);
+        const heartBeatInterval = intervalMs > 0 && intervalMs < 2000 ? 250 : 1000;
+        await wait(heartBeatInterval);
         this.heartbeatAsync();
     }
 
     async doRunAsync() {
         this.isRunning = true;
         try {
-            await this.internalRunFn().timeout(this.timeout);
+            await this.internalRunFn().timeout(this.timeoutMs);
         } catch (e) {
             console.error('Error executing timer:', e);
         }
@@ -124,9 +149,30 @@ export class Timer {
         return this.runFn(); // Wrap to ensure we return a promise.
     }
 
-    get intervalElapsed() {
-        const {lastRun, interval} = this;
-        return interval >= 0 && olderThan(lastRun, interval);
+    parseDynamicVal(val) {
+        return isString(val) ? () => XH.configService.get(val) : val;
+    }
+
+    parseDelay(val) {
+        if (isBoolean(val)) return val ? this.intervalMs : 0;
+        return isFinite(val) ? val : 0;
+    }
+
+    get intervalMs() {
+        const {interval, intervalUnits} = this;
+        if (isNil(interval)) return null;
+        let ret = (isFunction(interval) ? interval() : interval) * intervalUnits;
+        if (ret > 0 && ret < 500) {
+            console.warn('Timer cannot be set for values less than 500ms.');
+            ret = 500;
+        }
+        return ret;
+    }
+
+    get timeoutMs() {
+        const {timeout, timeoutUnits} = this;
+        if (isNil(timeout)) return null;
+        return (isFunction(timeout) ? timeout() : timeout) * timeoutUnits;
     }
 
     destroy() {

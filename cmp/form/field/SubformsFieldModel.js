@@ -2,17 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, managed, HoistModel} from '@xh/hoist/core';
-import {isArray, flatMap, partition, clone, without, defaults, isUndefined} from 'lodash';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-
+import {clone, defaults, flatMap, isArray, isUndefined, partition, without} from 'lodash';
 import {FormModel} from '../FormModel';
-import {BaseFieldModel} from './BaseFieldModel';
 import {ValidationState} from '../validation/ValidationState';
+import {BaseFieldModel} from './BaseFieldModel';
 
 /**
  * A data field in a form whose value is a collection of FormModels (subforms).
@@ -50,7 +48,7 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
-    get values() {
+    getDataOrProxy() {
         return this.value.map(s => s.values);
     }
 
@@ -92,9 +90,8 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     get allErrors() {
-        const {errors} = this,
-            subErrs = flatMap(this.value, s => s.allErrors);
-        return errors ? [...errors, subErrs] : subErrs;
+        const subErrs = flatMap(this.value, s => s.allErrors);
+        return [...this.errors, ...subErrs];
     }
 
     @action
@@ -109,17 +106,6 @@ export class SubformsFieldModel extends BaseFieldModel {
         if (includeSubforms) {
             this.value.forEach(s => s.displayValidation());
         }
-    }
-
-    @computed
-    get validationState() {
-        const VS = ValidationState,
-            states = this.value.map(s => s.validationState);
-        states.push(super.validationState);
-
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown))  return VS.Unknown;
-        return VS.Valid;
     }
 
     @computed
@@ -188,5 +174,15 @@ export class SubformsFieldModel extends BaseFieldModel {
             [keep, destroy] = partition(_createdModels, m => initialValue.includes(m) || value.includes(m));
         this._createdModels = keep;
         XH.safeDestroy(destroy);
+    }
+
+    deriveValidationState() {
+        const VS = ValidationState,
+            states = this.value.map(s => s.validationState);
+        states.push(super.deriveValidationState());
+
+        if (states.includes(VS.NotValid)) return VS.NotValid;
+        if (states.includes(VS.Unknown)) return VS.Unknown;
+        return VS.Valid;
     }
 }

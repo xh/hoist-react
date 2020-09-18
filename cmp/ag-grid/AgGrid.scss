@@ -1,6 +1,12 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
 // Ag-grid installs an outer div around itself.
 // This should use height: auto rather than height: 100%, to allow layoutConfig to work.
-
 .xh-ag-grid > div {
   width: 100%;
   height: auto !important;
@@ -17,19 +23,24 @@
 }
 
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
-.ag-theme-balham.xh-ag-grid,
-.ag-theme-balham-dark.xh-ag-grid {
+// Note DataView excluded from these style customizations to give those views control over their
+// component-based item styling w/o being affected by default grid styles / sizing modes.
+// Please review DataView.scss when adjusting these styles, however, as some have been carried over
+// or modified for use with that component.
+*:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+*:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
-  .ag-root {
-    border: none;
+  .ag-root-wrapper {
     background-color: var(--xh-grid-bg);
+    // Remove default outer border - we usually render grids in bordered components such as panels.
+    border: none;
   }
 
-  // This ensures that rows will take up at least the full width of the grid in cases where there is no horizontal
-  // scrollbar
+  // This ensures that rows will take up at least the full width of the grid in cases where there
+  // is no horizontal scrollbar.
   .ag-center-cols-container {
     min-width: 100%;
   }
@@ -38,12 +49,15 @@
   // Core Header Classes
   //------------------------
   .ag-header {
-    color: var(--xh-grid-header-text-color);
     background-color: var(--xh-grid-header-bg);
     border-color: var(--xh-grid-header-border-color);
     font-family: var(--xh-grid-header-font-family);
-    font-size: var(--xh-grid-header-font-size-px);
-    font-weight: var(--xh-grid-header-font-weight);
+
+    .ag-header-row {
+      font-size: var(--xh-grid-header-font-size-px);
+      font-weight: var(--xh-grid-header-font-weight);
+      color: var(--xh-grid-header-text-color);
+    }
   }
 
   //------------------------
@@ -51,6 +65,7 @@
   //------------------------
   .ag-row {
     background-color: var(--xh-grid-bg);
+    color: var(--xh-grid-text-color);
 
     &.ag-row-selected {
       background-color: var(--xh-grid-bg-highlight);
@@ -59,14 +74,23 @@
     &.ag-row-group.ag-full-width-row {
       color: var(--xh-grid-group-text-color);
       background-color: var(--xh-grid-group-bg);
+
+      .ag-group-expanded,
+      .ag-group-contracted {
+        color: var(--xh-grid-group-text-color);
+      }
     }
 
-    .group-header-icon-expanded {
-      margin: 0 var(--xh-pad-half-px);
-    }
+    // Set a constant width, since the two icons are different sizes.
+    // This caused rows to jump around when expansion was toggled.
+    .ag-group-expanded,
+    .ag-group-contracted {
+      margin: 0;
+      width: var(--xh-grid-tree-indent);
 
-    .group-header-icon-contracted {
-      margin: 0 var(--xh-pad-half-px);
+      svg {
+        width: var(--xh-grid-tree-icon-px) !important;
+      }
     }
   }
 
@@ -91,12 +115,18 @@
     .ag-row {
       border-color: transparent;
 
-      // Deliberately keep border on full-width grouped rows even when we aren't otherwise adding row borders.
+      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
       &.ag-row-group.ag-full-width-row {
         border-color: var(--xh-grid-group-border-color);
       }
     }
+  }
+
+  // Suppress default border on last row for full-width group rows - avoids minor up/down shift
+  // when collapsing and expanding the last group.
+  .ag-row.ag-row-group.ag-full-width-row.ag-row-last {
+    border-bottom-width: 0;
   }
 
   // Row zebra striping
@@ -106,9 +136,10 @@
     }
   }
 
+  // When striping disabled, remove default ag-Grid striping.
   &--no-stripe-rows {
     .ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-      background-color: var(--xh-grid-bg);
+      background-color: unset;
     }
   }
 
@@ -127,6 +158,18 @@
   .ag-header-group-cell {
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
+
+    // Override ag-Grid defaults for the header separator to make it responsive to different header heights
+    &::after {
+      height: 50%;
+      margin-top: unset;
+      top: unset;
+    }
+
+    // Adjust left padding for tree columns.
+    &.xh-tree-column {
+      padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+    }
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
@@ -175,7 +218,33 @@
   }
 
   //------------------------
-  // Compact Mode
+  // Large Sizing Mode
+  //------------------------
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+
+    .ag-cell-value {
+      line-height: var(--xh-grid-large-line-height-px);
+    }
+
+    .ag-header .ag-header-row {
+      font-size: var(--xh-grid-large-header-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-large-header-lr-pad-px);
+      padding-right: var(--xh-grid-large-header-lr-pad-px);
+    }
+  }
+
+  //------------------------
+  // Compact Sizing Mode
   //------------------------
   &--compact {
     font-size: var(--xh-grid-compact-font-size-px);
@@ -184,8 +253,8 @@
       line-height: var(--xh-grid-compact-line-height-px);
     }
 
-    .ag-header {
-      font-size: var(--xh-grid-compact-font-size-px);
+    .ag-header .ag-header-row {
+      font-size: var(--xh-grid-compact-header-font-size-px);
     }
 
     .ag-cell {
@@ -201,20 +270,36 @@
   }
 
   //------------------------
-  // Tree Mode
+  // Tiny Sizing Mode
   //------------------------
-  .xh-grid--hierarchical & {
-    // Remove extra left margin (added above to non-tree/full-width group rows). In tree grids,
-    // this will cause horizontal mis-alignment between expandable and non-expandable sibling rows
-    // (and in general tighter padding preferred here vs. full-width groups).
-    .ag-row {
-      .group-header-icon-expanded {
-        margin: 0 var(--xh-pad-half-px) 0 0;
-      }
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
 
-      .group-header-icon-contracted {
-        margin: 0 var(--xh-pad-half-px) 0 0;
+    .ag-cell-value {
+      line-height: var(--xh-grid-tiny-line-height-px);
+    }
+
+    .ag-header .ag-header-row {
+      font-size: var(--xh-grid-tiny-header-font-size-px);
+    }
+
+    .ag-cell {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+
+      .xh-check-box {
+        padding-top: 1px;
+
+        .bp3-control-indicator {
+          font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
+        }
       }
+    }
+
+    .ag-header-cell,
+    .ag-header-group-cell {
+      padding-left: var(--xh-grid-tiny-header-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-header-lr-pad-px);
     }
   }
 
@@ -236,12 +321,43 @@
   // Hiding borders on typically-collapsed accessory panels. This avoids unexpected borders on the
   // right and bottom edges of the grids. Custom grids that wish to use these panels will likely
   // want to override and restore borders.
-  .ag-side-bar { border: none; }
+  .ag-side-bar {
+    border: none;
+  }
 
-  .ag-status-bar { border: none; }
+  .ag-status-bar {
+    border: none;
+  }
 
   // Disabling the "row loading" render overlay
-  .ag-bl-overlay { display: none; }
+  .ag-bl-overlay {
+    display: none;
+  }
+
+  // Adds padding to select all checkbox option in column set filter
+  .ag-set-filter-select-all {
+    padding: var(--xh-pad-half-px) 0;
+  }
+}
+
+// Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+// appear over bp dialogs with z-index of 20.
+.ag-theme-balham.ag-popup,
+.ag-theme-balham-dark.ag-popup {
+  .ag-popup-child {
+    z-index: 30;
+  }
+}
+
+//------------------------
+// Tree Mode
+//------------------------
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
+.xh-grid--hierarchical:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
+  // Vertically center tree grid affordances
+  .ag-row .ag-cell-wrapper.ag-row-group {
+    align-items: center;
+  }
 }
 
 //------------------------
@@ -268,7 +384,6 @@
 //------------------------
 .ag-theme-balham .ag-menu,
 .ag-theme-balham-dark .ag-menu {
-  z-index: 9999 !important; // always show context menus above other content, e.g. dialog
   font-family: var(--xh-font-family);
   background-color: var(--xh-bg-alt);
 
@@ -284,14 +399,5 @@
     text-align: center;
     padding-left: 8px;
     padding-right: 8px;
-  }
-}
-
-.ag-theme-balham,
-.ag-theme-balham-dark {
-  &.ag-popup {
-    .ag-tooltip {
-      z-index: 99999 !important; // always show tooltips above other content, e.g. context menus
-    }
   }
 }

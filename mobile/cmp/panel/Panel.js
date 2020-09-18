@@ -2,22 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement} from 'react';
-import PT from 'prop-types';
-import {castArray, omitBy} from 'lodash';
+import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {vbox, vframe} from '@xh/hoist/cmp/layout';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {panelHeader} from './impl/PanelHeader';
-
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-
+import {castArray, omitBy} from 'lodash';
+import PT from 'prop-types';
+import {isValidElement} from 'react';
+import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 
 /**
@@ -58,19 +56,26 @@ export const [Panel, panel] = hoistCmp.withFactory({
             layoutProps.flex = 'auto';
         }
 
-        // 1) Prepare combined layout with header above core.
+        // 2) Set coreContents element based on scrollable.
+        const coreContentsEl = scrollable ? div : vbox,
+            coreContents = coreContentsEl({
+                className: 'xh-panel__content',
+                items: castArray(children)
+            });
+
+        // 3) Prepare combined layout.
         return vbox({
+            className: classNames(className, scrollable ? 'xh-panel--scrollable' : null),
             items: [
                 panelHeader({title, icon, headerItems}),
                 parseToolbar(tbar),
-                vframe(castArray(children)),
+                coreContents,
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
             ...rest,
-            ...layoutProps,
-            className: classNames(className, scrollable ? 'xh-panel-scrollable' : null)
+            ...layoutProps
         });
     }
 });

@@ -2,20 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/general/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {Icon} from '@xh/hoist/icon';
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, creates} from '@xh/hoist/core';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {storeFilterField} from '@xh/hoist/cmp/store';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
 
-export const WebSocketPanel = hoistCmp({
+export const webSocketPanel = hoistCmp.factory({
 
     model: creates(WebSocketModel),
 

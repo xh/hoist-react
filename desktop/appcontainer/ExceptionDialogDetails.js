@@ -2,18 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {XH, hoistCmp} from '@xh/hoist/core';
-import {pre, table, tbody, td, th, tr, filler} from '@xh/hoist/cmp/layout';
-import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {Icon} from '@xh/hoist/icon';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {stringifyErrorSafely} from '@xh/hoist/exception';
-
+import {Icon} from '@xh/hoist/icon';
+import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {dismissButton} from './ExceptionDialog';
 
 /**
@@ -49,7 +48,7 @@ export const exceptionDialogDetails = hoistCmp.factory(
             isOpen: true,
             isCloseButtonShown: !requireReload,
             onClose: !requireReload ? () => model.close() : null,
-            style: {height: 600, width: 800},
+            style: {width: 800},
             items: [
                 dialogBody({
                     className: 'xh-exception-dialog-details',

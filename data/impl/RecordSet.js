@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {throwIf} from '../../utils/js';
+import equal from 'fast-deep-equal';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Internal container for Record management within a Store.
@@ -33,7 +34,7 @@ export class RecordSet {
     }
 
     get empty() {
-        return this.count == 0;
+        return this.count === 0;
     }
 
     getById(id) {
@@ -55,6 +56,16 @@ export class RecordSet {
         }
 
         return ret;
+    }
+
+    isEqual(other) {
+        if (this.count !== other.count) return false;
+
+        for (const [id, rec] of this.recordMap) {
+            if (rec !== other.recordMap.get(id)) return false;
+        }
+
+        return true;
     }
 
     //----------------------------------------------------------
@@ -84,11 +95,16 @@ export class RecordSet {
     // Editing operations that spawn new RecordSets.
     // Preserve all record references we can!
     //-----------------------------------------------
-    applyFilter(filter) {
-        if (!filter) return this;
-        const {fn, includeChildren} = filter;
+    normalize(target) {
+        return this.isEqual(target) ? target : this;
+    }
 
-        const passes = new Map(),
+    withFilter(filter) {
+        if (!filter) return this;
+        const {store} = this,
+            includeChildren = store.filterIncludesChildren,
+            test = filter.getTestFn(store),
+            passes = new Map(),
             isMarked = (rec) => passes.has(rec.id),
             mark = (rec) => passes.set(rec.id, rec);
 
@@ -108,7 +124,7 @@ export class RecordSet {
             };
         }
         this.recordMap.forEach(rec => {
-            if (!isMarked(rec) && fn(rec)) {
+            if (!isMarked(rec) && test(rec)) {
                 mark(rec);
                 if (includeChildren) markChildren(rec);
             }
@@ -127,17 +143,21 @@ export class RecordSet {
         return new RecordSet(this.store, passes);
     }
 
-    loadRecords(recordMap) {
-        // Reuse existing Record object instances where possible if they resolve as equal to their
-        // new counterparts. See note on Store.loadRecords().
-        if (!this.empty) {
+    withNewRecords(recordMap) {
+        // Reuse existing Record object instances where possible.  See Store.loadData().
+        // Be sure to freeze any new records that are accepted.  See Record.freeze()
+        if (this.empty) {
+            recordMap.forEach(r => r.freeze());
+        } else {
             const newIds = recordMap.keys();
             for (let id of newIds) {
                 const currRec = this.getById(id),
                     newRec = recordMap.get(id);
 
-                if (currRec && currRec.isEqual(newRec)) {
+                if (currRec && this.areRecordsEqual(currRec, newRec)) {
                     recordMap.set(id, currRec);
+                } else {
+                    newRec.freeze();
                 }
             }
         }
@@ -145,7 +165,8 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    updateData({update, add, remove}) {
+    withTransaction({update, add, remove}) {
+        // Be sure to freeze any new records that are accepted.  See Record.freeze()
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
@@ -165,8 +186,7 @@ export class RecordSet {
             allRemoves.forEach(it => newRecords.delete(it));
         }
 
-        // 1) Updates - cannot modify hierarchy by design, and incoming records do not have any
-        //    parent pointers. Assign the parentId of the existing rec to maintain the tree.
+        // 1) Updates
         if (update) {
             update.forEach(rec => {
                 const {id} = rec,
@@ -176,8 +196,8 @@ export class RecordSet {
                     console.debug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
-                rec.parentId = existing.parentId;
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 
@@ -187,6 +207,7 @@ export class RecordSet {
                 const {id} = rec;
                 throwIf(newRecords.has(id), `Attempted to insert duplicate record: ${id}`);
                 newRecords.set(id, rec);
+                rec.freeze();
             });
         }
 
@@ -199,6 +220,10 @@ export class RecordSet {
     //------------------------
     // Implementation
     //------------------------
+    areRecordsEqual(rec1, rec2) {
+        return equal(rec1.treePath, rec2.treePath) && equal(rec1.data, rec2.data);
+    }
+
     computeChildrenMap(recordMap) {
         const ret = new Map();
         recordMap.forEach(r => {

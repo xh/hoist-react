@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {applyMixin} from '@xh/hoist/utils/js';
 
@@ -29,7 +28,7 @@ export function ManagedSupport(C) {
              * @returns object passed.
              */
             markManaged(obj) {
-                this._xhManagedInstances = this._xhManagedInstances || [];
+                this._xhManagedInstances = this._xhManagedInstances ?? [];
                 this._xhManagedInstances.push(obj);
                 return obj;
             }
@@ -37,11 +36,8 @@ export function ManagedSupport(C) {
 
         chains: {
             destroy() {
-                const props = this._xhManagedProperties;
-                if (props) props.forEach(p => XH.safeDestroy(this[p]));
-
-                const instances = this._xhManagedInstances;
-                if (instances) instances.forEach(o => XH.safeDestroy(o));
+                XH.safeDestroy(this._xhManagedProperties);
+                XH.safeDestroy(this._xhManagedInstances);
             }
         }
     });
@@ -53,7 +49,7 @@ export function ManagedSupport(C) {
  * via {@see ManagedSupport} when the referencing object is destroyed.
  */
 export function managed(target, property, descriptor) {
-    target._xhManagedProperties = target._xhManagedProperties || [];
+    target._xhManagedProperties = target._xhManagedProperties ?? [];
     target._xhManagedProperties.push(property);
     return descriptor;
 }

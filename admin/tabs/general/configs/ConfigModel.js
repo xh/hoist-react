@@ -2,28 +2,32 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {boolCheckCol} from '@xh/hoist/cmp/grid';
-import {
-    RestGridModel,
-    RestStore,
-    addAction,
-    editAction,
-    cloneAction,
-    deleteAction
-} from '@xh/hoist/desktop/cmp/rest';
-import {ConfigDifferModel} from './differ/ConfigDifferModel';
+import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {
+    addAction,
+    cloneAction,
+    deleteAction,
+    editAction,
+    RestGridModel,
+    RestStore
+} from '@xh/hoist/desktop/cmp/rest';
+import {truncate} from 'lodash';
+import {DifferModel} from '../../../differ/DifferModel';
+
 
 @HoistModel
 @LoadSupport
 export class ConfigModel {
 
+    persistWith = {localStorageKey: 'xhAdminConfigState'};
+
     @managed
     gridModel = new RestGridModel({
-        stateModel: 'xhConfigGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         store: new RestStore({
@@ -36,14 +40,14 @@ export class ConfigModel {
                 },
                 {
                     name: 'groupName',
-                    label: 'Group',
+                    displayName: 'Group',
                     lookupName: 'groupNames',
                     required: true,
                     enableCreate: true
                 },
                 {
                     name: 'valueType',
-                    label: 'Type',
+                    displayName: 'Type',
                     lookupName: 'valueTypes',
                     editable: 'onAdd',
                     required: true
@@ -60,7 +64,8 @@ export class ConfigModel {
                     required: true
                 },
                 {
-                    name: 'note'
+                    name: 'note',
+                    displayName: 'Notes'
                 },
                 {
                     name: 'lastUpdated',
@@ -74,7 +79,7 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps!'
+            del: 'Are you sure you want to delete? Deleting configs can break running apps.'
         },
         toolbarActions: [
             addAction,
@@ -95,33 +100,42 @@ export class ConfigModel {
         sortBy: 'name',
         groupBy: 'groupName',
         columns: [
+            {field: 'groupName', width: 100, hidden: true},
             {field: 'name', width: 200},
-            {field: 'valueType', headerName: 'Type', width: 80, align: 'center'},
-            {field: 'value', width: 200, renderer: this.maskIfPwd, tooltip: this.maskIfPwd},
+            {field: 'valueType', width: 80, align: 'center'},
+            {field: 'value', width: 200, renderer: this.configRenderer, tooltip: this.configRenderer},
             {field: 'clientVisible', ...boolCheckCol, headerName: 'Client?', width: 75},
-            {field: 'groupName', headerName: 'Group', width: 100, hidden: true},
-            {field: 'note', minWidth: 60, flex: true, tooltip: true}
+            {field: 'note', minWidth: 60, flex: true, tooltip: true},
+            {field: 'lastUpdatedBy', width: 160, hidden: true},
+            {field: 'lastUpdated', ...dateTimeCol, hidden: true}
         ],
         editors: [
             {field: 'name'},
             {field: 'groupName'},
             {field: 'valueType'},
             {field: 'value'},
+            {field: 'note', formField: {item: textArea({height: 100})}},
             {field: 'clientVisible'},
-            {field: 'note', formField: {item: textArea()}},
             {field: 'lastUpdated'},
             {field: 'lastUpdatedBy'}
         ]
     });
 
     @managed
-    differModel = new ConfigDifferModel(this.gridModel);
+    differModel = new DifferModel(this.gridModel, 'config');
 
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
-    maskIfPwd(value, {record}) {
-        return record.valueType === 'pwd' ? '*****' : value;
+    configRenderer(value, {record}) {
+        switch (record.data.valueType) {
+            case 'pwd':
+                return '*****';
+            case 'json':
+                return truncate(value, {length: 500});
+            default:
+                return value;
+        }
     }
 }

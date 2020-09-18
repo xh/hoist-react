@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isFunction, isString, startCase} from 'lodash';
+import {genDisplayName} from '@xh/hoist/data';
+import {apiRemoved, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {getAgHeaderClassFn} from './Column';
 
 /**
@@ -18,10 +18,11 @@ export class ColumnGroup {
      * @param {Object} c - ColumnGroup configuration.
      * @param {Object[]} c.children - Column or ColumnGroup configs for children of this group.
      * @param {string} [c.groupId] - unique identifier for the ColumnGroup within its grid.
-     * @param {Column~headerNameFn|string} [c.headerName] - display text for column group header.
+     * @param {Column~headerNameFn|element} [c.headerName] - display text for column group header.
      * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
      *      header. Supports both string values or a function to generate strings.
-     * @param {string} [c.align] - horizontal alignment of cell contents.
+     * @param {string} [c.headerAlign] - horizontal alignment of header contents.
+     *      Valid values are:  'left' (default), 'right' or 'center'.
      * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
      *      desktop implementations. Note these options may be used / overwritten by the framework
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
@@ -34,10 +35,13 @@ export class ColumnGroup {
         groupId,
         headerName,
         headerClass,
-        align,
+        headerAlign,
         agOptions,
+        align,
         ...rest
     }, gridModel) {
+        apiRemoved(align, 'align', "Use 'headerAlign' instead.");
+
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
         throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 
@@ -45,9 +49,9 @@ export class ColumnGroup {
 
         this.groupId = withDefault(groupId, headerName);
 
-        this.headerName = withDefault(headerName, startCase(this.groupId));
+        this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
-        this.align = align;
+        this.headerAlign = headerAlign;
 
         this.children = children.map(c => gridModel.buildColumn(c));
 

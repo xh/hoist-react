@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useRef} from 'react';
-import {elem, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {refreshContextView} from '@xh/hoist/core/refresh';
-import {page as onsenPage} from '@xh/hoist/kit/onsen';
-import {TabRenderMode} from '@xh/hoist/enums';
-
 import {TabModel} from '@xh/hoist/cmp/tab';
+import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {page} from '@xh/hoist/kit/onsen';
+import {elementFromContent} from '@xh/hoist/utils/react';
+import {useRef} from 'react';
+import './Tabs.scss';
 
 /**
  * @private
@@ -34,18 +33,20 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode == TabRenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode == TabRenderMode.LAZY && !wasActivated.current)
+                (renderMode == RenderMode.UNMOUNT_ON_HIDE) ||
+                (renderMode == RenderMode.LAZY && !wasActivated.current)
             )
         ) {
-            // Note: We must render an empty placeholder Onsen page to work with Onsen's tabbar.
-            return onsenPage();
+            // Note: We must render an empty placeholder page to work with Onsen's tabbar.
+            return page({className: 'xh-tab-page'});
         }
-        const contentElem = content.isHoistComponent ? elem(content) : content();
 
         return refreshContextView({
             model: refreshContextModel,
-            item: contentElem
+            item: page({
+                className: 'xh-tab-page',
+                item: elementFromContent(content)
+            })
         });
     }
 });

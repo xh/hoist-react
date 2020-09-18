@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
-import {div, filler, form, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, form} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
-import {page} from '@xh/hoist/mobile/cmp/page';
+import {panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-
 import './LoginPanel.scss';
 
 /**
@@ -26,9 +25,10 @@ export const loginPanel = hoistCmp.factory({
     model: creates(LoginPanelModel),
 
     render({model}) {
-        const {loginMessage} = XH.appSpec;
+        const {loginMessage} = XH.appSpec,
+            {isValid, loadModel, warning, loginInProgress} = model;
 
-        return page({
+        return panel({
             className: 'xh-login',
             items: [
                 toolbar(
@@ -36,8 +36,9 @@ export const loginPanel = hoistCmp.factory({
                     XH.clientAppName,
                     filler()
                 ),
-                vframe({
+                panel({
                     className: 'xh-login__body',
+                    mask: loadModel,
                     items: [
                         form({
                             className: 'xh-login__fields',
@@ -64,15 +65,15 @@ export const loginPanel = hoistCmp.factory({
                         }),
                         div({
                             className: 'xh-login__warning',
-                            omit: !model.warning,
-                            item: model.warning
+                            omit: !warning,
+                            item: warning
                         }),
                         button({
                             icon: Icon.login(),
-                            text: 'Login',
+                            text: loginInProgress ? 'Please wait...' : 'Login',
                             modifier: 'cta',
-                            disabled: !model.isValid,
-                            onClick: () => model.submit()
+                            disabled: !isValid || loginInProgress,
+                            onClick: () => model.submitAsync()
                         })
                     ]
                 })

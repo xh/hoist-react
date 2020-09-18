@@ -2,16 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, HoistService} from '@xh/hoist/core';
 import {ExportFormat} from '@xh/hoist/cmp/grid';
+import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
-import {castArray, sortBy, isArray, isFunction, isNil, isString, uniq} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isString, sortBy, uniq, compact} from 'lodash';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -24,28 +23,28 @@ export class GridExportService {
      * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      *
      * @param {GridModel} gridModel - GridModel to export.
-     * @param {Object} [options] - Export options.
-     * @param {(string|function)} [options.filename] - name for export file, or closure to generate.
-     *      Do not include the file extension - that will be appended based on the specified type.
-     * @param {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
-     * @param {(string|string[])} [options.columns] - columns to include in export. Supports tokens
-     *      'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
-     *      colIds to include (can be used in conjunction with VISIBLE to export all visible and
-     *      enumerated columns).
+     * @param {ExportOptions} [options] - Export options.
      */
     async exportAsync(gridModel, {
         filename = 'export',
         type = 'excelTable',
         columns = 'VISIBLE'
     } = {}) {
-        throwIf(!gridModel, 'GridModel required for export');
-        throwIf(!isString(filename) && !isFunction(filename), 'Export filename must be either a string or a closure');
-        throwIf(!['excel', 'excelTable', 'csv'].includes(type), `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
-        throwIf(!isArray(columns) && !['ALL', 'VISIBLE'].includes(columns), 'Invalid columns config - must be "ALL", "VISIBLE" or an array of colIds');
+        throwIf(!gridModel,
+            'GridModel required for export');
+        throwIf(!isString(filename) && !isFunction(filename),
+            'Export filename must be either a string or a closure');
+        throwIf(!['excel', 'excelTable', 'csv'].includes(type),
+            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
+        throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
+            'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
+        );
 
         if (isFunction(filename)) filename = filename(gridModel);
 
-        const exportColumns = this.getExportableColumns(gridModel, columns),
+        const config = XH.configService.get('xhExportConfig', {}),
+            exportColumns = this.getExportableColumns(gridModel, columns),
+            summaryRecord = gridModel.store.summaryRecord,
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns),
             rows = [];
@@ -55,12 +54,28 @@ export class GridExportService {
             return;
         }
 
-        rows.push(this.getHeaderRow(exportColumns, type));
-        rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
+        rows.push(this.getHeaderRow(exportColumns, type, gridModel));
+
+        // If the grid includes a summary row, add it to the export payload as a root-level node
+        if (gridModel.showSummary && summaryRecord) {
+            rows.push(
+                this.getRecordRow(gridModel, summaryRecord, exportColumns, 0),
+                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, 1)
+            );
+        } else {
+            rows.push(...this.getRecordRowsRecursive(gridModel, records, exportColumns, 0));
+        }
 
         // Show separate 'started' and 'complete' toasts for larger (i.e. slower) exports.
         // We use cell count as a heuristic for speed - this may need to be tweaked.
-        if (rows.length * exportColumns.length > 3000) {
+        const cellCount = rows.length * exportColumns.length;
+        if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
+            XH.toast({
+                message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                intent: 'warning',
+                icon: Icon.download()
+            });
+        } else if (cellCount > withDefault(config.toastCellThreshold, 3000)) {
             XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
                 intent: 'primary',
@@ -102,6 +117,12 @@ export class GridExportService {
     // Implementation
     //-----------------------
     getExportableColumns(gridModel, columns) {
+        if (isFunction(columns)) {
+            return compact(
+                columns(gridModel).map(it => gridModel.getColumn(it))
+            );
+        }
+
         const toExport = castArray(columns),
             includeAll = toExport.includes('ALL'),
             includeViz = toExport.includes('VISIBLE');
@@ -112,11 +133,9 @@ export class GridExportService {
         }).filter(col => {
             const {colId, excludeFromExport} = col;
             return (
-                !excludeFromExport &&
-                (
-                    includeAll ||
-                    toExport.includes(colId) ||
-                    (includeViz && gridModel.isColumnVisible(colId))
+                toExport.includes(colId) ||
+                (!excludeFromExport &&
+                    (includeAll || (includeViz && gridModel.isColumnVisible(colId)))
                 )
             );
         });
@@ -140,8 +159,22 @@ export class GridExportService {
         });
     }
 
-    getHeaderRow(columns, type) {
-        const headers = columns.map(it => it.exportName);
+    getHeaderRow(columns, type, gridModel) {
+        const headers = columns.map(it => {
+            let ret = isFunction(it.exportName) ?
+                it.exportName({column: it, gridModel}) :
+                it.exportName;
+
+            if (!isString(ret)) {
+                console.warn(
+                    'Tried to export column ' + it.colId + ' with an invalid "exportName", ' +
+                    'probably caused by setting "headerName" to a React element. Please specify an ' +
+                    'appropriate "exportName". Defaulting to ' + it.colId
+                );
+                ret = it.colId;
+            }
+            return ret;
+        });
         if (type === 'excelTable' && uniq(headers).length !== headers.length) {
             console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers.');
         }
@@ -149,15 +182,28 @@ export class GridExportService {
     }
 
     getRecordRowsRecursive(gridModel, records, columns, depth) {
-        const {sortBy, treeMode} = gridModel,
+        const {sortBy, treeMode, agApi} = gridModel,
             ret = [];
 
         records = [...records];
 
+        // Sort using comparator functions we pass to ag-Grid - imitating rendered data
         [...sortBy].reverse().forEach(it => {
-            const compFn = it.comparator.bind(it),
+            const column = gridModel.getColumn(it.colId);
+            if (!column) return;
+
+            const {field, getValueFn} = column,
+                compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
-            records.sort((a, b) => compFn(a[it.colId], b[it.colId]) * direction);
+
+            records.sort((a, b) => {
+                const valueA = getValueFn({record: a, field, column, gridModel}),
+                    valueB = getValueFn({record: b, field, column, gridModel}),
+                    agNodeA = agApi?.getRowNode(a.id),
+                    agNodeB = agApi?.getRowNode(b.id);
+
+                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
+            });
         });
 
         records.forEach(record => {
@@ -171,21 +217,28 @@ export class GridExportService {
     }
 
     getRecordRow(gridModel, record, columns, depth) {
-        const data = columns.map(it => this.getCellData(gridModel, record, it));
+        let aggData = null;
+        if (gridModel.treeMode && record.children.length) {
+            aggData = gridModel.agApi.getRowNode(record.id).aggData;
+        }
+        const data = columns.map(it => this.getCellData(gridModel, record, it, aggData));
         return {data, depth};
     }
 
-    getCellData(gridModel, record, column) {
-        const {field, exportValue} = column;
+    getCellData(gridModel, record, column, aggData) {
+        const {field, exportValue, getValueFn} = column;
 
+        let value = getValueFn({record, field, column, gridModel});
         // Modify value using exportValue
-        let value = record[field];
-        if (isString(exportValue) && record[exportValue] !== null) {
+        if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
-            value = record[exportValue];
+            value = record.data[exportValue];
         } else if (isFunction(exportValue)) {
             // If export value is a function that transforms the value
             value = exportValue(value);
+        } else if (aggData && !isNil(aggData[field])) {
+            // If we found aggregate data calculated by agGrid
+            value = aggData[field];
         }
 
         if (isNil(value)) return null;
@@ -226,3 +279,15 @@ export class GridExportService {
         }
     }
 }
+
+/**
+ * @typedef {Object} ExportOptions - options for exporting grid records to a file.
+ * @property {(string|function)} [options.filename] - name for export file, or closure to generate.
+ *      Do not include the file extension - that will be appended based on the specified type.
+ * @property {string} [options.type] - type of export - one of ['excel', 'excelTable', 'csv'].
+ * @property {(string|string[]|function)} [options.columns] - columns to include in export. Supports
+ *      tokens 'VISIBLE' (default - all currently visible cols), 'ALL' (all columns), or specific
+ *      column IDs to include (can be used in conjunction with VISIBLE to export all visible and
+ *      enumerated columns). Also supports a function taking the GridModel, and returning an array
+ *      of column IDs to include.
+ */

@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {cloneElement} from 'react';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import PT from 'prop-types';
+import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/ColChooser';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from './Button';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {div, vbox} from '@xh/hoist/cmp/layout';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid';
+import PT from 'prop-types';
+import {cloneElement} from 'react';
+import {button, Button} from './Button';
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection and discovery of
@@ -28,6 +28,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
 
     render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+        const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
             icon: withDefault(icon, Icon.gridPanel()),
@@ -40,7 +41,11 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             return cloneElement(displayButton, {disabled: true});
         }
 
-        const {colChooserModel} = gridModel;
+        if (!colChooserModel) {
+            console.error('No ColChooserModel available on bound GridModel - ensure enableColChooser config is set to true.');
+            return cloneElement(displayButton, {disabled: true});
+        }
+
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),

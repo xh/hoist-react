@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {useEffect} from 'react';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
-import {useContextModel} from '@xh/hoist/core/index';
+import {useContextModel} from '@xh/hoist/core';
+import {useEffect} from 'react';
 
 /**
  * Establishes an area of the application with an independent RefreshContextModel.

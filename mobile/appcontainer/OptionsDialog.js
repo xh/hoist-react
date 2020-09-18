@@ -2,18 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {vframe, filler} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/mobile/cmp/dialog';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
-import {form} from '@xh/hoist/cmp/form';
-import {formField} from '@xh/hoist/mobile/cmp/form';
-import {button} from '@xh/hoist/mobile/cmp/button';
-
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
+import {form} from '@xh/hoist/cmp/form';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {formField} from '@xh/hoist/mobile/cmp/form';
+import {mask} from '@xh/hoist/mobile/cmp/mask';
 import './OptionsDialog.scss';
 
 /**

@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
-import {Dialog, FocusStyleManager, Overlay, Popover} from '@blueprintjs/core';
 import './styles.scss';
 
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines
@@ -31,7 +30,7 @@ export {
 } from '@blueprintjs/core';
 
 // Yikes -- require two non-published classes.
-export {HotkeysEvents} from '@blueprintjs/core/lib/cjs/components/hotkeys/hotkeysEvents';
+export {HotkeysEvents} from '@blueprintjs/core/lib/esm/components/hotkeys/hotkeysEvents';
 
 export * from './Wrappers';
 export * from './Dialog';

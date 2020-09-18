@@ -2,15 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/input';
-
+import PT from 'prop-types';
 import './TextArea.scss';
 
 /**
@@ -33,6 +31,9 @@ export class TextArea extends HoistInput {
         /** True to take up the full width of container. */
         fill: PT.bool,
 
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+
         /** Callback for normalized keydown event. */
         onKeyDown: PT.func,
 
@@ -51,7 +52,7 @@ export class TextArea extends HoistInput {
     get commitOnChange() {
         return withDefault(this.props.commitOnChange, false);
     }
-    
+
     render() {
         const props = this.getNonLayoutProps(),
             {width, height, ...layoutProps} = this.getLayoutProps();
@@ -62,6 +63,7 @@ export class TextArea extends HoistInput {
             autoFocus: props.autoFocus,
             disabled: props.disabled,
             fill: props.fill,
+            inputRef: props.inputRef,
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,

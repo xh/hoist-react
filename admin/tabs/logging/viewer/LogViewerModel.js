@@ -2,18 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {createRef} from 'react';
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {find} from 'lodash';
-import {action, observable, bindable} from '@xh/hoist/mobx';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, persist, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {SECONDS, olderThan} from '@xh/hoist/utils/datetime';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
+import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-
+import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
@@ -23,8 +21,13 @@ import {LogDisplayModel} from './LogDisplayModel';
 @LoadSupport
 export class LogViewerModel {
 
+    persistWith = {localStorageKey: 'xhAdminLogViewerState'};
+
     // Form State/Display options
-    @bindable tail = true;
+    @bindable
+    @persist
+    tail = false;
+
     @bindable startLine = null;
     @bindable maxLines = 1000;
     @bindable pattern = '';
@@ -43,6 +46,7 @@ export class LogViewerModel {
     @managed
     filesGridModel = new GridModel({
         enableExport: true,
+        persistWith: this.persistWith,
         store: new UrlStore({
             url: 'logViewerAdmin/listFiles',
             idSpec: 'filename',
@@ -62,8 +66,8 @@ export class LogViewerModel {
 
         this.timer = Timer.create({
             runFn: () => this.autoRefreshLines(),
-            delay: 5 * SECONDS,
-            interval: 5 * SECONDS
+            interval: 5 * SECONDS,
+            delay: true
         });
     }
 
@@ -72,7 +76,7 @@ export class LogViewerModel {
         const {store, selModel} = this.filesGridModel;
         await store.loadAsync(loadSpec);
         if (selModel.isEmpty) {
-            const latestAppLog = find(store.records, ['filename', `${XH.appCode}.log`]);
+            const latestAppLog = store.records.find(rec => rec.data.filename == `${XH.appCode}.log`);
             if (latestAppLog) {
                 selModel.select(latestAppLog);
             }
@@ -87,10 +91,10 @@ export class LogViewerModel {
         return {
             track: () => this.filesGridModel.selectedRecord,
             run: (rec) => {
-                this.file = rec ? rec.filename : null;
+                this.file = rec?.data?.filename;
                 this.loadLog();
             },
-            delay: 300
+            debounce: {interval: 300, leading: true}
         };
     }
 

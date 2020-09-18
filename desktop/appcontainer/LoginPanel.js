@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
 import {div, filler, form, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
@@ -12,7 +11,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-
 import './LoginPanel.scss';
 
 /**
@@ -27,10 +25,10 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {warning} = model;
+            {loadModel, warning, isValid, loginInProgress} = model;
 
         const onKeyDown = (ev) => {
-            if (ev.key === 'Enter') model.submit();
+            if (ev.key === 'Enter') model.submitAsync();
         };
 
         return viewport({
@@ -42,6 +40,7 @@ export const loginPanel = hoistCmp.factory({
                 icon: Icon.login(),
                 className: 'xh-login',
                 width: 300,
+                mask: loadModel,
                 items: [
                     vspacer(10),
                     form(
@@ -78,11 +77,11 @@ export const loginPanel = hoistCmp.factory({
                 bbar: [
                     filler(),
                     button({
-                        text: 'Login',
+                        text: loginInProgress ? 'Please wait...' : 'Login',
                         intent: 'primary',
                         icon: Icon.login(),
-                        disabled: !model.isValid,
-                        onClick: () => model.submit()
+                        disabled: !isValid || loginInProgress,
+                        onClick: () => model.submitAsync()
                     })
                 ]
             })

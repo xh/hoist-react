@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {tab as blueprintTab, tabs as blueprintTabs} from '@xh/hoist/kit/blueprint';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {withDefault} from '@xh/hoist/utils/js';
-
 import classNames from 'classnames';
+import PT from 'prop-types';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -27,7 +26,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
 
-    render({model, className, ...props}) {
+    render({model, className, animate, ...props}) {
         const {id, tabs, activeTabId} = model;
 
         const orientation = withDefault(props.orientation, 'top'),
@@ -47,12 +46,16 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory({
                 });
             }),
             ...props,
+            animate: withDefault(animate, false),
             className: classNames(className, `xh-tab-switcher--${orientation}`)
         });
     }
 });
 
 TabSwitcher.propTypes = {
+    /** True to animate the indicator when switching tabs. False (default) to change instantly. */
+    animate: PT.bool,
+
     /** Primary component model instance. */
     model: PT.instanceOf(TabContainerModel),
 

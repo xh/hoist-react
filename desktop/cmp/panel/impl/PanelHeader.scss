@@ -10,12 +10,22 @@
   &__title {
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: var(--xh-title-font-family);
     font-size: var(--xh-title-font-size-px);
+  }
+
+  &__items {
+    align-items: center;
+
+    > :not(:last-child) {
+      margin-right: var(--xh-tbar-item-pad-px);
+    }
   }
 
   // Header glyph.
   & > .svg-inline--fa {
-    margin: 0 6px 0 2px;
+    font-size: var(--xh-title-icon-size-px);
+    margin: 0 var(--xh-pad-px) 0 var(--xh-pad-half-px);
   }
 
   // Header "tool" buttons.
@@ -50,7 +60,7 @@
       flex-direction: column-reverse !important;
 
       & > .svg-inline--fa {
-        margin: 10px 0 0 0;
+        margin: var(--xh-pad-px) 0 0 0;
       }
 
       .xh-panel-header__title {

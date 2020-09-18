@@ -2,19 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
-import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
 
 /**
- * @private
- *
  * Support for making models available to components via React context.
  * Not created directly by applications. Components specify how/if they publish/source their
  * models from context via the `model` config option passed into the `hoistCmp()` factory.
  * Hoist will in turn create and manage instances of this class to power those links.
+ * @private
  */
 export class ModelLookup {
     model;
@@ -67,9 +66,8 @@ export class ModelLookup {
 }
 
 /**
- * @private
- *
  * Context used to publish a ModelLookup
+ * @private
  */
 export const ModelLookupContext = createContext(null);
 

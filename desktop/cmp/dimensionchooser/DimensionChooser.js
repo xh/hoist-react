@@ -2,19 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {vbox, hbox} from '@xh/hoist/cmp/layout/index';
-import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {popover} from '@xh/hoist/kit/blueprint';
-import {Icon} from '@xh/hoist/icon';
-import {div} from '@xh/hoist/cmp/layout';
-import {select, Select} from '@xh/hoist/desktop/cmp/input';
-import {defaults, size, isEmpty} from 'lodash';
-
 import {DimensionChooserModel} from '@xh/hoist/cmp/dimensionchooser';
+import {div} from '@xh/hoist/cmp/layout';
+import {hbox, vbox} from '@xh/hoist/cmp/layout/index';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {select, Select} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {defaults, isEmpty, size} from 'lodash';
+import PT from 'prop-types';
 import './DimensionChooser.scss';
 
 const INDENT = 10;        // Indentation applied at each level.
@@ -23,6 +22,7 @@ const LEFT_PAD = 5;       // Left-padding for inputs.
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
     displayName: 'DimensionChooser',
@@ -41,10 +41,13 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         emptyText = 'Ungrouped',
         popoverWidth = 250,
         popoverTitle = 'Group By',
+        popoverPosition = 'bottom',
         selectProps
     }) {
-        const {isMenuOpen, activeMode, value, dimensions} = model;
-        const getCurrDimensionLabels = () => value.map(it => dimensions[it].label),
+        const {isMenuOpen, activeMode, value} = model;
+        const getCurrDimensionLabels = () => {
+                return value.map(dimName => model.getDimDisplayName(dimName));
+            },
             getButtonText = () => {
                 const staticText = buttonText;
                 if (staticText != undefined) return staticText;
@@ -83,7 +86,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
                 isOpen: isMenuOpen,
                 targetClassName: 'xh-dim-popover',
                 popoverClassName: 'xh-dim-chooser-popover xh-popup--framed',
-                position: 'bottom',
+                position: popoverPosition,
                 content: contentCmp({popoverWidth, popoverTitle, selectProps, emptyText}),
                 // Handle user clicks outside of the popover (which would by default close it).
                 onInteraction: (nextOpenState, e) => {
@@ -131,10 +134,19 @@ DimensionChooser.propTypes = {
     /** Width in pixels of the popover menu itself. */
     popoverWidth: PT.number,
 
+    /** Position for chooser popover, as per Blueprint docs. */
+    popoverPosition: PT.oneOf([
+        'top-left', 'top', 'top-right',
+        'right-top', 'right', 'right-bottom',
+        'bottom-right', 'bottom', 'bottom-left',
+        'left-bottom', 'left', 'left-top',
+        'auto'
+    ]),
+
     /**
      * Additional props passed directly to editor Select components. Use with care - not all
      * props are supported and can easily conflict with this component's usage. Defaulted
-     * props for override include `menuPosition` and
+     * props for override include `menuPlacement` and `enableFilter`.
      */
     selectProps: PT.object,
 
@@ -143,9 +155,6 @@ DimensionChooser.propTypes = {
 };
 
 
-//---------------------------
-// sub components
-//---------------------------
 const historyMenu = hoistCmp.factory(
     ({model, popoverWidth, popoverTitle, emptyText}) => vbox({
         width: popoverWidth,
@@ -297,13 +306,13 @@ const addButtonOrSelect = hoistCmp.factory(
 
 const historyItems = hoistCmp.factory(
     ({model, emptyText}) => {
-        const {history, dimensions} = model;
+        const {history} = model;
         return buttonGroup({
             className: 'xh-dim-history-items',
             vertical: true,
             items: [
                 history.map((value, i) => {
-                    const labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+                    const labels = isEmpty(value) ? [emptyText] : value.map(dimName => model.getDimDisplayName(dimName));
                     return button({
                         minimal: true,
                         title: ` ${labels.map((it, i) => ' '.repeat(i) + '\u203a '.repeat(i ? 1 : 0) + it).join('\n')}`,
@@ -321,7 +330,7 @@ const historyItems = hoistCmp.factory(
 );
 
 const titleBar = hoistCmp.factory(
-    ({popoverTitle, popoverWidth}) => {
+    ({popoverTitle}) => {
         if (!popoverTitle) return null;
 
         return div({

@@ -2,23 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {
-    jsonInput,
-    select,
-    numberInput,
-    switchInput,
-    textInput,
-    dateInput
-} from '@xh/hoist/desktop/cmp/input';
-
-import {RestFormModel} from './RestFormModel';
-
-import {assign} from 'lodash';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {
+    dateInput,
+    jsonInput,
+    numberInput,
+    select,
+    switchInput,
+    textInput
+} from '@xh/hoist/desktop/cmp/input';
+import {assign} from 'lodash';
+import {RestFormModel} from './RestFormModel';
 
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
@@ -59,10 +56,11 @@ function renderDefaultInput(name, model) {
         case 'bool':
             return renderBoolean(fieldModel);
         case 'int':
+            return numberInput({precision: 0});
         case 'number':
             return numberInput();
         case 'json':
-            return jsonInput();
+            return jsonInput({enableSearch: true, height: 250});
         case 'date':
             return dateInput();
         case 'localDate':

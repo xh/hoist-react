@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {PendingTaskModel} from '@xh/hoist/utils/async';
-import {observable, computed, action} from '@xh/hoist/mobx';
 import {assign} from 'lodash';
-
 import {AppOption} from './AppOption';
 
 /**
@@ -39,7 +38,7 @@ export class OptionsDialogModel {
     // Setting options
     //-------------------
     setOptions(options) {
-        this.options = options.map(o => new AppOption(o));
+        this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields});
     }

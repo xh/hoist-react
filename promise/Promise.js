@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
 import {action} from '@xh/hoist/mobx';
-import {isFunction, isNumber, isPlainObject, castArray} from 'lodash';
+import {Exception} from '@xh/hoist/exception';
+import {castArray, isFunction, isNumber, isPlainObject} from 'lodash';
 
 /**
  * Start a new promise chain.
@@ -79,8 +79,8 @@ const enhancePromise = (promisePrototype) => {
          * Version of catch() that will only catch certain exceptions.
          * @see Promise.catch()
          *
-         * @param {function} selector - closure that takes an exception and returns a boolean.
-         *      May also be specified as a list of exceptions names to be handled.
+         * @param {(function|string|string[])} selector - closure that takes an exception and
+         *      returns a boolean. May also be specified as an exception name or list of names.
          *      Only exceptions passing this selector will be handled by this method.
          * @param {function} [fn]
          */
@@ -104,7 +104,7 @@ const enhancePromise = (promisePrototype) => {
         /**
          * Version of catchDefault() that will only catch certain exceptions.
          *
-         * @param {function} selector - see catchWhen().
+         * @param {(function|string|string[])} selector - see catchWhen().
          * @param {Object} [options] - options suitable for passing to XH.handleException().
          */
         catchDefaultWhen(selector, options) {
@@ -178,13 +178,16 @@ const enhancePromise = (promisePrototype) => {
         timeout(config) {
             if (config == null) return this;
             if (isNumber(config)) config = {interval: config};
-            config.message = config.message || 'Operation timed out';
+            const interval = config.interval,
+                message = config.message ?? `Operation timed out after ${interval}ms.`;
 
             let completed = false;
             const promise = this.finally(() => completed = true);
 
-            const deadline = wait(config.interval).then(() => {
-                throwIf(!completed, config.message);
+            const deadline = wait(interval).then(() => {
+                if (!completed) {
+                    throw Exception.create({name: 'Timeout Exception', message, interval});
+                }
             });
 
             return Promise.race([deadline, promise]);
@@ -198,7 +201,7 @@ const enhancePromise = (promisePrototype) => {
          *
          * @param {Object|PendingTaskModel} cfg -- Configuration object, or PendingTaskModel
          * @param {PendingTaskModel} cfg.model - PendingTaskModel to link to.
-         * @param {String} [cfg.message] - Optional custom message for use by PendingTaskModel.
+         * @param {string} [cfg.message] - Optional custom message for use by PendingTaskModel.
          * @param {boolean} [cfg.omit] - optional flag to indicate linkage should be skipped
          *      If true, this method is no-op.  Provided as convenience for conditional masking.
          */

@@ -2,21 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {elemFactory, ModelPublishMode} from '@xh/hoist/core';
+import {CreatesSpec, elemFactory, ModelPublishMode, ModelSpec, uses} from '@xh/hoist/core';
+import {useOwnedModelLinker} from '@xh/hoist/core/impl/UseOwnedModelLinker';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isFunction, isPlainObject, isString} from 'lodash';
 import {useObserver} from 'mobx-react';
 import {forwardRef, memo, useContext, useDebugValue, useState} from 'react';
-import {
-    ModelLookup,
-    ModelLookupContext,
-    modelLookupContextProvider,
-    useOwnedModelLinker
-} from './impl';
-import {CreatesSpec, ModelSpec, uses} from './modelspec';
-import classNames from 'classnames';
+import {ModelLookup, ModelLookupContext, modelLookupContextProvider} from './impl/ModelLookup';
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -78,7 +73,7 @@ export function hoistComponent(config) {
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
-    // 2) Decorate with behaviors
+    // 2) Decorate with function wrappers with behaviors
     let ret = render;
     if (isObserver) {
         ret = (props, ref) => useObserver(() => render(props, ref));
@@ -89,6 +84,11 @@ export function hoistComponent(config) {
     if (className) {
         ret = wrapWithClassName(ret, className);
     }
+    // 2a) Apply display name to wrapped function.  This is the "pre-react" functional component.
+    // and react dev tools expect it to be named.
+    ret.displayName = displayName;
+
+    // 3) Decorate with built-in react HOCs (these trampoline displayName)
     if (isForwardRef) {
         ret = forwardRef(ret);
     }
@@ -96,7 +96,7 @@ export function hoistComponent(config) {
         ret = memo(ret);
     }
 
-    // 3) Mark and return
+    // 4) Mark and return
     ret.displayName = displayName;
     ret.isHoistComponent = true;
 

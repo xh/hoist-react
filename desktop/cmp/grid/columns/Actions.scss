@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 $action-col-pad: 5;
@@ -32,15 +32,46 @@ $action-col-pad-px: $action-col-pad * 1px;
   }
 }
 
-// Tighten up buttons in compact grids to avoid clipping/overflow.
-.xh-ag-grid--compact {
-  .xh-action-col-cell {
-    button.xh-record-action-button {
-      padding-top: 4px;
-      min-height: unset;
+// Tighten up buttons in for the various grid sizing modes to avoid clipping/overflow.
+.xh-ag-grid {
+  &--large {
+    .xh-action-col-cell {
+      button.xh-record-action-button {
+        min-height: 28px;
+        max-height: 28px;
+        padding-top: 4px;
 
-      svg.svg-inline--fa {
-        width: 0.9em;
+        svg.svg-inline--fa {
+          width: 1.2em;
+        }
+      }
+    }
+  }
+
+  &--compact {
+    .xh-action-col-cell {
+      button.xh-record-action-button {
+        min-height: 20px;
+        max-height: 20px;
+        padding-top: 4px;
+
+        svg.svg-inline--fa {
+          width: 0.9em;
+        }
+      }
+    }
+  }
+
+  &--tiny {
+    .xh-action-col-cell {
+      button.xh-record-action-button {
+        padding-top: 1px;
+        max-height: 14px;
+        min-height: 14px;
+
+        svg.svg-inline--fa {
+          width: 0.7em;
+        }
       }
     }
   }

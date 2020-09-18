@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {Rule, ValidationState} from '@xh/hoist/cmp/form';
 import {managed} from '@xh/hoist/core';
-import {flatten, isEmpty, startCase, partition, isFunction, isUndefined} from 'lodash';
-import {observable, action, computed} from '@xh/hoist/mobx';
-import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {genDisplayName} from '@xh/hoist/data';
+import {action, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-
-import {ValidationState} from '../validation/ValidationState';
-import {Rule} from '../validation/Rule';
+import {PendingTaskModel} from '@xh/hoist/utils/async/PendingTaskModel';
+import {withDefault} from '@xh/hoist/utils/js';
+import {compact, flatten, isEmpty, isFunction, isNil, isUndefined} from 'lodash';
 
 /**
  * Abstract Base class for FieldModels.
@@ -36,9 +35,7 @@ export class BaseFieldModel {
     @observable displayName;
 
     /** @member {Rule[]} */
-    @observable.ref rules = [];
-    /** @member {String[]} - validation errors, or null if validation has not been run. */
-    @observable.ref errors = null;
+    rules = null;
 
     /**
      * @member {boolean} - true to trigger the display of any validation error messages by this
@@ -48,8 +45,16 @@ export class BaseFieldModel {
      */
     @observable validationDisplayed = false;
 
+    //----------------------
+    // Implementation State
+    //----------------------
     @observable _disabled;
     @observable _readonly;
+
+    // An array with the result of evaluating each rule.  Each element will be array of strings
+    // containing any validation errors for the rule.  If validation for the rule has not
+    // completed will contain null
+    @observable _errors;
 
     @managed
     _validationTask = new PendingTaskModel();
@@ -63,24 +68,24 @@ export class BaseFieldModel {
      * @param {boolean} [c.disabled] - true to disable the input control for this field.
      * @param {boolean} [c.readonly] - true to render a read-only value (vs. an input control).
      * @param {(Rule[]|Object[]|Function[])} [c.rules] - Rules, rule configs, or validation
-     *      functions to apply to this field. (All validation functions supplied will be combined
-     *      to create a single Rule.)
+     *      functions to apply to this field.
      */
     constructor({
         name,
-        displayName = startCase(name),
+        displayName,
         initialValue = null,
         disabled = false,
         readonly = false,
         rules = []
     }) {
         this.name = name;
-        this.displayName = displayName;
+        this.displayName = withDefault(displayName, genDisplayName(name));
         this.value = initialValue;
         this.initialValue = initialValue;
         this._disabled = disabled;
         this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
+        this._errors = this.rules.map(() => null);
     }
 
     //-----------------------------
@@ -101,20 +106,19 @@ export class BaseFieldModel {
         });
     }
 
-    /** Proxy for accessing all of the current data values in this field by name. */
-    get values() {
-        return this.value;
-    }
-
-    /** Current data in this field, fully enumerated. */
+    /**
+     * Current data/value stored within this field.
+     *
+     * For standard, single-field FieldModels, returns the current value stored in the field.
+     * Overridden by SubformsFieldModels, which return the data for each sub-form in an array.
+     */
     getData() {
         return this.value;
     }
 
     /** @member {boolean} */
     get disabled() {
-        const {formModel} = this;
-        return !!(this._disabled || (formModel && formModel.disabled));
+        return !!(this._disabled || this.formModel?.disabled);
     }
 
     @action
@@ -124,8 +128,7 @@ export class BaseFieldModel {
 
     /** @member {boolean} */
     get readonly() {
-        const {formModel} = this;
-        return !!(this._readonly || (formModel && formModel.readonly));
+        return !!(this._readonly || this.formModel?.readonly);
     }
 
     @action
@@ -138,9 +141,16 @@ export class BaseFieldModel {
         this.value = v;
     }
 
-    /** @member {String[]} - all validation errors for this field and its sub-forms. */
+    /** @member {string[]} - all validation errors for this field. */
+    @computed
+    get errors() {
+        return compact(flatten(this._errors));
+    }
+
+
+    /** @member {string[]} - all validation errors for this field and its sub-forms. */
     get allErrors() {
-        return this.errors || [];
+        return this.errors;
     }
 
     /**
@@ -162,9 +172,9 @@ export class BaseFieldModel {
 
         // Force an immediate 'Unknown' state -- the async recompute leaves the old state in place until it completed.
         // (We want that for a value change, but not reset/init)  Force the recompute only if needed.
-        this.errors = null;
+        this._errors.fill(null);
         wait(0).then(() => {
-            if (!this.isValidationPending && this.validationState == ValidationState.Unknown) {
+            if (!this.isValidationPending && this.validationState === ValidationState.Unknown) {
                 this.computeValidationAsync();
             }
         });
@@ -193,22 +203,19 @@ export class BaseFieldModel {
     }
 
     /** Validation state of the field. */
+    @computed
     get validationState() {
-        const VS = ValidationState;
-        const {errors, rules} = this;
-        return (errors == null) ?
-            isEmpty(rules) ? VS.Valid : VS.Unknown :
-            isEmpty(errors) ? VS.Valid : VS.NotValid;
+        return this.deriveValidationState();
     }
 
     /** @member {boolean} - true if this field is confirmed to be Valid. */
     get isValid() {
-        return this.validationState == ValidationState.Valid;
+        return this.validationState === ValidationState.Valid;
     }
 
     /** @member {boolean} - true if this field is confirmed to be NotValid. */
     get isNotValid() {
-        return this.validationState == ValidationState.NotValid;
+        return this.validationState === ValidationState.NotValid;
     }
 
     /**
@@ -243,33 +250,46 @@ export class BaseFieldModel {
         return this.isValid;
     }
 
-
     //------------------------
     // Implementation
     //------------------------
+
+    // Used by the dynamic FormModel.values proxy to dynamically navigate forms data by name.
+    getDataOrProxy() {
+        return this.value;
+    }
+
+
     processRuleSpecs(ruleSpecs) {
-        // Peel off raw validations into a single rule spec
-        const [constraints, rules] = partition(ruleSpecs, isFunction);
-        if (!isEmpty(constraints)) {
-            rules.push({check: constraints});
-        }
-        return rules.map(r => r instanceof Rule ? r : new Rule(r));
+        return ruleSpecs.map(spec => {
+            if (spec instanceof Rule) return spec;
+            if (isFunction(spec)) return new Rule({check: spec});
+            return new Rule(spec);
+        });
     }
 
     async computeValidationAsync() {
-        const runId = ++this._validationRunId;
-        return this
-            .evaluateAsync(this.rules)
-            .thenAction(errors => {
-                if (runId == this._validationRunId) {
-                    this.errors = errors;
-                }
-                return this.validationState;
-            }).linkTo(this._validationTask);
+        await this.evaluateAsync().linkTo(this._validationTask);
+        return this.validationState;
     }
 
-    async evaluateAsync(rules) {
-        const promises = rules.map(r => r.evaluateAsync(this));
-        return flatten(await Promise.all(promises));
+    async evaluateAsync() {
+        const runId = ++this._validationRunId;
+        const promises = this.rules.map(async (r, idx) => {
+            const result = await r.evaluateAsync(this);
+            if (runId === this._validationRunId) {
+                runInAction(() => this._errors[idx] = result);
+            }
+        });
+        await Promise.all(promises);
+    }
+
+    deriveValidationState() {
+        const VS = ValidationState;
+        const {_errors} = this;
+
+        if (_errors.some(e => !isEmpty(e))) return VS.NotValid;
+        if (_errors.some(e => isNil(e))) return VS.Unknown;
+        return VS.Valid;
     }
 }

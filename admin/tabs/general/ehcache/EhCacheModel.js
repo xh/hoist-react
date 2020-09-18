@@ -2,22 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, HoistModel, managed, LoadSupport} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import {emptyFlexCol, numberCol} from '@xh/hoist/cmp/grid';
 import {trimEnd} from 'lodash';
 
 @HoistModel
 @LoadSupport
 export class EhCacheModel {
 
+    persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+
     @managed
     gridModel = new GridModel({
-        stateModel: 'xhEhCacheGrid',
+        persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
         store: new UrlStore({
@@ -36,8 +36,7 @@ export class EhCacheModel {
             {field: 'name', width: 360},
             {field: 'heapSize', ...numberCol, headerName: 'Heap Size (MB)', width: 130},
             {field: 'entries', ...numberCol, width: 120},
-            {field: 'status', width: 120},
-            {...emptyFlexCol}
+            {field: 'status', width: 120}
         ]
     });
 
@@ -49,7 +48,7 @@ export class EhCacheModel {
             XH.toast({message: 'Caches Cleared'});
         }).catchDefault();
     }
-    
+
     async doLoadAsync(loadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }

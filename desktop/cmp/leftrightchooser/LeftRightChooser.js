@@ -2,19 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {cloneDeep} from 'lodash';
-import {hoistCmp, uses} from '@xh/hoist/core';
-import {vbox, hframe} from '@xh/hoist/cmp/layout';
 import {grid} from '@xh/hoist/cmp/grid';
-
-import {LeftRightChooserModel} from './LeftRightChooserModel';
-
-import {description} from './impl/Description';
+import {hframe, vbox} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {cloneDeep} from 'lodash';
+import PT from 'prop-types';
 import {chooserToolbar} from './impl/ChooserToolbar';
+import {description} from './impl/Description';
 import './LeftRightChooser.scss';
+import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {hbox, div, filler} from '@xh/hoist/cmp/layout';
 
 /**
  * A standardized header for a Panel component
@@ -17,7 +17,6 @@ export const panelHeader = hoistCmp.factory({
     model: false, memo: false, observer: false,
 
     render({className, title, icon, headerItems = []}) {
-
         if (!title && !icon && !headerItems.length) return null;
 
         return hbox({
@@ -26,8 +25,7 @@ export const panelHeader = hoistCmp.factory({
                 icon || null,
                 title ?
                     div({
-                        className: 'xh-panel-header-title',
-                        flex: 1,
+                        className: 'xh-panel-header__title',
                         item: title
                     }) :
                     filler(),

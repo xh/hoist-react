@@ -1,7 +1,7 @@
 # Welcome to Hoist React
 
 Hoist is a web application development toolkit developed by
-[Extremely Heavy Industries](https://xh.io/).
+[Extremely Heavy](https://xh.io/).
 
 Hoist is designed as a "full stack" UI development framework, meaning that it has both server and
 client components that work together to provide an integrated set of tools and utilities for quickly
@@ -37,18 +37,24 @@ at the class/component level and for essential public methods.
 
 ## Hoist usage, licensing, and support
 
-While we maintain open access to the Hoist codebase via these public repositories, Hoist is intended
-for use by clients of Extremely Heavy Industries who are working with us to develop custom
-applications for their enterprise.
+Hoist is currently developed exclusively by Extremely Heavy and intended for use by XH and our
+client partners to develop enterprise web applications with XH's guidance and direction. That said,
+we have released the toolkit under the permissive and open Apache 2.0 license. This allows other
+developers, regardless of whether they are current XH clients or not, to checkout, use, modify, and
+otherwise explore Hoist and its source code. See [this project's license file](LICENSE.md) for the
+full license.
 
-Please refer to the
-[Hoist Core readme](https://github.com/xh/hoist-core#hoist-usage-licensing-and-support) for
-additional terms and conditions, all of which apply equally and entirely to Hoist React.
+We have selected an open source license as part of our ongoing commitment to openness, transparency,
+and ease-of-use, and to clarify and emphasize the suitability of Hoist for use within a wide variety
+of enterprise software projects. Note, however, that we cannot at this time commit to any particular
+support or contribution model outside of our consulting work. But if you are interested in Hoist
+and/or think it might be helpful for a project, please don't hesitate to
+[contact us](https://xh.io/contact)!
 
 ## Key Libraries and Dependencies
 
 📚 Hoist React is built on a collection of remarkable third-party libraries that have been
-selected, combined and integrated by Extremely Heavy Industries. To make the best use of this
+selected, combined and integrated by Extremely Heavy. To make the best use of this
 framework, please review the technologies below.
 
 |   Library    |                                          Notes                                          |                Link                |
@@ -64,28 +70,27 @@ framework, please review the technologies below.
 
 ### Library Licensing Considerations
 
-👮 The majority of the libraries listed above and included within Hoist React as dependencies are
+⚖️ The majority of the libraries listed above and included within Hoist React as dependencies are
 open-source and fully free to use. Wherever possible, we have aimed to minimize exposure to
 third-party license costs and restrictions. The exceptions to this rule are listed below. For these
 libraries, client application(s) using Hoist React must acquire and register appropriate licenses.
 
-**Ag-Grid Enterprise** is required by Hoist React due to its support for a number of key, enterprise
-only features, including row grouping and tree grids. Ag-Grid offers several
-[licensing models](https://www.ag-grid.com/license-pricing.php) and requires a license key to be
-included with the application codebase to verify compliance and avoid console warnings. An
-appropriate key can be installed in any Hoist React application by via the `agGridLicenseKey`
-parameter to `configureWebpack()` within
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js).
+**Ag-Grid** is released by its developer under a dual licensing model, with the community edition
+available under a permissive MIT license and the Enterprise edition requiring a [paid license from
+ag-Grid](https://www.ag-grid.com/license-pricing.php). Applications wishing to use grids in Hoist
+React will need to provide a licensed version of ag-Grid.  A free community version is
+available, however many applications will want to license the enterprise version in order to make
+use of the important extra functionality it provides, including row grouping and tree grids.
 
 **Font Awesome** provides a greatly extended set of icons via its
 [Pro license](https://fontawesome.com/pro), and Hoist React references / relies on several of these
 icons. A pro license includes access to a private npm repository to download the extended library,
-accessed via a unique URL. ExHI can configure appropriate access via npm configuration files or an
+accessed via a unique URL. XH can configure appropriate access via npm configuration files or an
 enterprise npm repository proxy.
 
 **HighCharts HighStock** is the primary charting library in Hoist, and offers several [licensing and
-support options](https://shop.highsoft.com/highstock) for commercial use. Highcharts does not
-require the registration or maintenance of any in-code licence keys.
+support options](https://shop.highsoft.com/highstock) for commercial use. Application wishing to use
+charts in Hoist will need to provide a licensed version of Highcharts.
 
 ## ECMAScript 2016+
 
@@ -126,7 +131,7 @@ Promise prototype, including:
 + `linkTo` - for integration with a `PendingTaskModel` to track and report on state across one or
   more async operations.
 
-💡 Note that by convention all methods returning a Promise within Hoist React (and ExHI-developed
+💡 Note that by convention all methods returning a Promise within Hoist React (and XH-developed
 applications) are suffixed with the qualifier `Async`, e.g. `loadUsersAsync` or
 `restoreDefaultsAsync`. The framework does not rely on this convention for any programmatic
 behaviors, but we have found it to be a helpful indicator of any Promise-based, asynchronous API.
@@ -168,7 +173,7 @@ state changes and other updates.
 Three distinct types of objects (in the form of classes) compromise the backbone of a Hoist
 application: **Models, Components, and Services**. Any non-trivial application will define and
 create multiple instances of these core object types, and understanding how Hoist defines and uses
-these three core artifacts is essential to understanding how we at ExHI build and structure apps.
+these three core artifacts is essential to understanding how we at XH build and structure apps.
 
 Hoist provides three corresponding decorators to mark a class as a particular type of object and to
 install shared functionality and extended features provided by the framework. A fourth decorator is
@@ -446,7 +451,7 @@ echo "rootProject.name = \"%appCode%\"" > settings.gradle
 This step could be avoided by checking in a `settings.gradle` with the app and, should you need the
 special plugin development setup outlined above, manually deleting or renaming it (and remembering
 to not check that change into source control). In many cases, in-line Grails plugin development will
-be a rarity or limited to ExHI or a smaller set of developers.
+be a rarity or limited to XH or a smaller set of developers.
 
 ### 2\) Server and Client Builds
 
@@ -535,7 +540,7 @@ the desired version, making them (as a pair) a complete and deployable instance 
 
 Applications should be checked in with a `/docker/` directory containing Dockerfiles and configs for
 both the server and client containers. Both can be based on
-[public images published by ExHI](https://hub.docker.com/r/xhio/), although an inspection of
+[public images published by XH](https://hub.docker.com/r/xhio/), although an inspection of
 [those](https://github.com/xh/xh-tomcat) [images](https://github.com/xh/xh-nginx) will show that
 they are very thin layers on top of the official Tomcat and nginx images on Docker Hub.
 
@@ -791,7 +796,7 @@ sudo docker system prune -af
 - [ ] Theming and styles
 - [ ] Bundled formatters and renderers (Dates, numbers)
 - [ ] Exception handling and error reporting
-- [ ] Admin console + custom snap-ins
+- [ ] Admin console and custom snap-ins
 - [ ] ....
 
 🙏 Thanks for your patience as we continue to build out this documentation.
@@ -800,4 +805,4 @@ sudo docker system prune -af
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2019 Extremely Heavy Industries Inc.
+Copyright © 2020 Extremely Heavy Industries Inc.

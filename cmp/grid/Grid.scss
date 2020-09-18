@@ -1,4 +1,11 @@
-.xh-grid {
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
+.xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
   //------------------------
@@ -32,6 +39,7 @@
   }
 
   .xh-grid-header {
+    margin-top: 1px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -44,9 +52,11 @@
       text-overflow: ellipsis;
     }
 
-    svg {
-      margin-left: var(--xh-pad-half-px);
+    .xh-grid-header-sort-icon,
+    .xh-grid-header-menu-icon {
       color: var(--xh-grid-header-icon-color);
+      margin-left: var(--xh-pad-half-px);
+      width: 1.5em;
     }
 
     &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
@@ -81,35 +91,68 @@
     padding-left: 0;
     padding-right: 0;
   }
+}
 
-  //------------------------
-  // Trees and Grouping
-  //------------------------
-  &--hierarchical {
-    // Generate indentations for tree grids with hierarchical data.
-    // Based upon https://github.com/ag-grid/ag-grid/blob/master/packages/ag-grid-community/src/styles/ag-grid.scss#L1084
-    $xh-tree-indent: 10px !default;
-
-    @for $i from 0 to 50 {
-      .ag-ltr .ag-row-group-indent-#{$i} {
-        padding-left: $i * $xh-tree-indent;
-      }
+//------------------------
+// Trees and Grouping
+//------------------------
+.xh-grid--hierarchical:not(.xh-data-view) {
+  // Generate indentations for tree grids with hierarchical data.
+  .ag-ltr {
+    .ag-row-group-indent-0 {
+      padding-left: calc(0 * var(--xh-grid-tree-indent));
     }
 
-    .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: 20px;
+    .ag-row-group-indent-1 {
+      padding-left: calc(1 * var(--xh-grid-tree-indent));
     }
 
-    .ag-group-contracted + .ag-group-value:not(:empty) {
-      margin-left: 0;
+    .ag-row-group-indent-2 {
+      padding-left: calc(2 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-3 {
+      padding-left: calc(3 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-4 {
+      padding-left: calc(4 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-5 {
+      padding-left: calc(5 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-6 {
+      padding-left: calc(6 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-7 {
+      padding-left: calc(7 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-8 {
+      padding-left: calc(8 * var(--xh-grid-tree-indent));
+    }
+
+    .ag-row-group-indent-9 {
+      padding-left: calc(9 * var(--xh-grid-tree-indent));
     }
   }
 
-  // Suppress default indenting when grid is in tree mode but no root records have children.
-  &--flat {
-    .ag-ltr .ag-row-group-leaf-indent {
-      margin-left: 0;
-    }
+  .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: var(--xh-grid-tree-indent);
+  }
+
+  .ag-group-contracted + .ag-group-value:not(:empty) {
+    margin-left: 0;
+  }
+}
+
+// Suppress default indenting when grid is in tree mode but no root records have children.
+.xh-grid--flat:not(.xh-data-view) {
+  .ag-ltr .ag-row-group-leaf-indent {
+    margin-left: 0;
   }
 }
 
@@ -145,5 +188,105 @@
   .xh-multifield-renderer-field,
   .xh-multifield-renderer-delimiter {
     margin: 0 0 0 2px;
+  }
+}
+
+.xh-grid-tooltip {
+  position: absolute;
+
+  &:empty {
+    display: none;
+  }
+
+  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  &--default {
+    padding: var(--xh-pad-half-px);
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+  }
+}
+
+//-----------
+// Autosize
+//-----------
+.xh-grid-autosize-canvas {
+  position: absolute;
+  display: none;
+}
+
+.xh-grid-autosize-cell {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-font-size-px);
+  font-family: var(--xh-grid-font-family);
+  visibility: hidden;
+  display: none;
+  white-space: nowrap;
+
+  // This property is not actually used in rendering, but is provided here
+  // for later interpretation by GridAutosizeService.getIndentation()
+  left: var(--xh-grid-tree-indent);
+
+  &--active {
+    display: inline-block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-font-size-px);
+    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-font-size-px);
+    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-font-size-px);
+    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+  }
+}
+
+.xh-grid-autosize-header {
+  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  font-size: var(--xh-grid-header-font-size-px);
+  font-weight: var(--xh-grid-header-font-weight);
+  font-family: var(--xh-grid-header-font-family);
+  flex-direction: row;
+  visibility: hidden;
+  display: none;
+  white-space: nowrap;
+
+  .xh-grid-header-sort-icon,
+  .xh-grid-header-menu-icon {
+    margin-left: var(--xh-pad-half-px);
+    width: 1.5em;
+    display: none;
+  }
+
+  &--active {
+    display: inline-flex;
+  }
+
+  &--sort .xh-grid-header-sort-icon {
+    display: block;
+  }
+
+  &--menu .xh-grid-header-menu-icon {
+    display: block;
+  }
+
+  &--large {
+    font-size: var(--xh-grid-large-header-font-size-px);
+    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+  }
+
+  &--compact {
+    font-size: var(--xh-grid-compact-header-font-size-px);
+    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+  }
+
+  &--tiny {
+    font-size: var(--xh-grid-tiny-header-font-size-px);
+    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
   }
 }

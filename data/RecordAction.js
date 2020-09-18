@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isNumber, isNil, isEmpty} from 'lodash';
+import {isBoolean, isEmpty, isNil, isNumber} from 'lodash';
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
@@ -43,7 +43,7 @@ export class RecordAction {
      * @param {Object} c - RecordAction configuration.
      * @param {string} [c.text] - label to be displayed.
      * @param {string} [c.secondaryText] - additional label to be displayed, usually in a minimal fashion.
-     * @param {Object} [c.icon] - icon to be displayed.
+     * @param {Element} [c.icon] - icon to be displayed.
      * @param {string} [c.intent] - intent to be used for rendering the action.
      * @param {string} [c.tooltip] - tooltip to display when hovering over the action.
      * @param {Object[]} [c.items] - child actions.
@@ -140,7 +140,11 @@ export class RecordAction {
      */
     call({record, selectedRecords, gridModel, column, ...rest}) {
         if (!this.actionFn) return;
-        this.actionFn({action: this, record, selectedRecords, gridModel, column, ...rest});
+
+        let store = record?.store;
+        if (!store) store = gridModel?.store;
+
+        this.actionFn({action: this, record, selectedRecords, store, gridModel, column, ...rest});
     }
 
     meetsRecordRequirement(count) {
@@ -168,7 +172,7 @@ export class RecordAction {
  * @param {RecordAction} p.action - the action itself.
  * @param {Object} p.defaultConfig - default display config for the action
  * @param {Object} [p.record] - row data object (entire row, if any).
- * @param {Object[]} [p.selection] - all currently selected records (if any).
+ * @param {Object[]} [p.selectedRecords] - all currently selected records (if any).
  * @param {*} [p...rest] - additional data provided by the context where this action presides
  * @returns {Object} - display configs to override for this render of the action.
  */

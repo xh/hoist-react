@@ -2,17 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {isNumber, isNaN, isNil} from 'lodash';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {numericInput} from '@xh/hoist/kit/blueprint';
-import {fmtNumber} from '@xh/hoist/format';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {fmtNumber} from '@xh/hoist/format';
+import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
+import {withDefault} from '@xh/hoist/utils/js';
+import {isNaN, isNil, isNumber} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * Number input, with optional support for formatted of display value, shorthand units, and more.
@@ -51,6 +50,9 @@ export class NumberInput extends HoistInput {
 
         /** True to take up the full width of container. */
         fill: PT.bool,
+
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
@@ -91,11 +93,17 @@ export class NumberInput extends HoistInput {
         /** Alignment of entry text within control, default 'right'. */
         textAlign: PT.oneOf(['left', 'right']),
 
+        /**
+         * Text appended to the rendered value within control when not editing.
+         * Can be used to append e.g. "%" or a unit without need for an external right label.
+         */
+        valueLabel: PT.string,
+
         /** True to pad with trailing zeros out to precision, default false. */
         zeroPad: PT.bool
     };
 
-    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))(k|m|b)\b/i;
+    static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     baseClassName = 'xh-number-input';
 
@@ -114,6 +122,7 @@ export class NumberInput extends HoistInput {
             buttonPosition: 'none',
             disabled: props.disabled,
             fill: props.fill,
+            inputRef: props.inputRef,
             leftIcon: props.leftIcon,
             max: props.max,
             majorStepSize: props.majorStepSize,
@@ -142,7 +151,7 @@ export class NumberInput extends HoistInput {
 
     onValueChange = (val, valAsString) => {
         this.noteValueChange(valAsString);
-    }
+    };
 
     toExternal(val) {
         val = this.parseValue(val);
@@ -157,11 +166,10 @@ export class NumberInput extends HoistInput {
     onKeyDown = (ev) => {
         if (ev.key === 'Enter') this.doCommit();
         if (this.props.onKeyDown) this.props.onKeyDown(ev);
-    }
+    };
 
     formatRenderValue(value) {
         if (value == null) return '';
-
         if (this.hasFocus) return value;
 
         const {zeroPad, displayWithCommas} = this.props,
@@ -210,8 +218,7 @@ export class NumberInput extends HoistInput {
     }
 
     get precision() {
-        const {precision} = this.props;
-        return precision != null ? precision : 4;
+        return this.props.precision ?? 4;
     }
 }
 export const numberInput = elemFactory(NumberInput);

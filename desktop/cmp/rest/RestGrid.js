@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {cloneElement, isValidElement} from 'react';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import {grid} from '@xh/hoist/cmp/grid';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {restGridToolbar} from './impl/RestGridToolbar';
-import {restForm} from './impl/RestForm';
-import {RestGridModel} from './RestGridModel';
+import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {withDefault} from '@xh/hoist/utils/js';
 import PT from 'prop-types';
+import {cloneElement, isValidElement} from 'react';
+import {restForm} from './impl/RestForm';
+import {restGridToolbar} from './impl/RestGridToolbar';
+import {RestGridModel} from './RestGridModel';
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory({
     displayName: 'RestGrid',
@@ -30,17 +30,16 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
     }) {
 
         const {formModel, gridModel} = model;
-        if (!onRowDoubleClicked)  {
-            onRowDoubleClicked = (row) => {
-                if (!row.data) return;
 
-                if (!model.readonly) {
-                    formModel.openEdit(row.data);
-                } else {
-                    formModel.openView(row.data);
-                }
-            };
-        }
+        onRowDoubleClicked = withDefault(onRowDoubleClicked,  (row) => {
+            if (!row.data) return;
+
+            if (!model.readonly) {
+                formModel.openEdit(row.data);
+            } else {
+                formModel.openView(row.data);
+            }
+        });
 
         return fragment(
             panel({

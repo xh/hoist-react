@@ -2,16 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
+import {hspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button as onsenButton, Button as OnsenButton} from '@xh/hoist/kit/onsen';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {hspacer} from '@xh/hoist/cmp/layout';
 import classNames from 'classnames';
-
+import PT from 'prop-types';
 import './Button.scss';
 
 /**

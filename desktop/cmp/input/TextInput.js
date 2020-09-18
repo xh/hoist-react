@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
-import {div} from '@xh/hoist/cmp/layout';
 import {HoistInput} from '@xh/hoist/cmp/input';
+import {div} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
+import PT from 'prop-types';
 
 /**
  * A single-line text input with additional support for embedded icons/elements.
@@ -45,6 +45,9 @@ export class TextInput extends HoistInput {
 
         /** True to show a "clear" button as the right element. default false */
         enableClear: PT.bool,
+
+        /** Ref handler that receives HTML <input> element backing this component. */
+        inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
 
         /** Icon to display inline on the left side of the input. */
         leftIcon: PT.element,
@@ -84,7 +87,7 @@ export class TextInput extends HoistInput {
         const props = this.getNonLayoutProps(),
             {width, flex, ...layoutProps} = this.getLayoutProps();
 
-        const isClearable = (this.internalValue !== null);
+        const isClearable = !isEmpty(this.internalValue);
 
         return div({
             item: inputGroup({
@@ -93,6 +96,7 @@ export class TextInput extends HoistInput {
                 autoComplete: withDefault(props.autoComplete, props.type == 'password' ? 'new-password' : 'nope'),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
+                inputRef: props.inputRef,
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement: props.rightElement || (props.enableClear && isClearable ? this.renderClearButton() : null),
@@ -138,7 +142,9 @@ export class TextInput extends HoistInput {
     }
 
     onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
+        let {value} = ev.target;
+        if (value === '') value = null;
+        this.noteValueChange(value);
     };
 
     onKeyDown = (ev) => {

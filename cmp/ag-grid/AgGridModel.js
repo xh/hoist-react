@@ -1,7 +1,13 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, observable} from '@xh/hoist/mobx';
-import {set, isNil, isEmpty, cloneDeep, isArray, last, isEqual, has, startCase} from 'lodash';
-import {throwIf} from '../../utils/js';
+import {throwIf, apiDeprecated} from '@xh/hoist/utils/js';
+import {cloneDeep, has, isArray, isEmpty, isEqual, isNil, last, set, startCase} from 'lodash';
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -18,8 +24,8 @@ export class AgGridModel {
     //------------------------
     // Grid Style
     //------------------------
-    /** @member {boolean} */
-    @bindable compact;
+    /** @member {string} */
+    @bindable sizingMode;
     /** @member {boolean} */
     @bindable rowBorders;
     /** @member {boolean} */
@@ -38,7 +44,7 @@ export class AgGridModel {
 
     /**
      * @param {Object} [c] - AgGridModel configuration.
-     * @param {boolean} [c.compact] - true to render with a smaller font size and tighter padding.
+     * @param {string} [c.sizingMode] - one of large, standard, compact, tiny
      * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
      * @param {boolean} [c.rowBorders] - true to render row borders.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
@@ -46,14 +52,18 @@ export class AgGridModel {
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
      */
     constructor({
-        compact = false,
+        sizingMode = 'standard',
         showHover = false,
         rowBorders = false,
         cellBorders = false,
         stripeRows = true,
-        showCellFocus = false
+        showCellFocus = false,
+        compact
     } = {}) {
-        this.compact = compact;
+        apiDeprecated(compact, 'compact', "Use 'sizingMode' instead");
+        if (compact) sizingMode = 'compact';
+
+        this.sizingMode = sizingMode;
         this.showHover = showHover;
         this.rowBorders = rowBorders;
         this.cellBorders = cellBorders;
@@ -61,9 +71,16 @@ export class AgGridModel {
         this.showCellFocus = showCellFocus;
 
         this.addReaction({
-            track: () => this.compact,
+            track: () => this.sizingMode,
             run: () => {
-                if (this.agApi) this.agApi.resetRowHeights();
+                const api = this.agApi;
+                if (!api) return;
+                api.resetRowHeights();
+
+                // Reset summary row data to respond to row height change
+                // See: https://www.ag-grid.com/javascript-grid-row-height/#height-for-pinned-rows
+                this.setPinnedTopRowData(this.getPinnedTopRowData());
+                this.setPinnedBottomRowData(this.getPinnedBottomRowData());
             }
         });
     }
@@ -383,7 +400,7 @@ export class AgGridModel {
     }
 
     /**
-     * @returns {Number} - the id of the first row in the grid, after sorting and filtering, which
+     * @returns {number} - the id of the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
     getFirstSelectableRowNodeId() {

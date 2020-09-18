@@ -2,26 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {Icon} from '@xh/hoist/icon';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {withDefault} from '@xh/hoist/utils/js';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * Desktop implementation of StoreFilterField.
  * @private
  */
-export function storeFilterFieldImpl({implModel, ...props}) {
+export function storeFilterFieldImpl(props) {
     return textInput({
-        value: implModel.value,
+        commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
-        placeholder: withDefault(props.placeholder, 'Quick filter'),
-        className: props.className,
-        style: props.style,
-        width: withDefault(props.width, 180),
-        onChange: (v) => implModel.setValue(v, {applyImmediately: false})
+        placeholder: 'Quick filter',
+        width: 180,
+        ...props
     });
 }

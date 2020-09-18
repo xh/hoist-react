@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {configure} from 'mobx';
 
 export {
@@ -20,9 +19,7 @@ export {
     when,
     comparer
 } from 'mobx';
-
 export {observer} from 'mobx-react';
-
 export {settable, bindable} from './decorators';
 
 configure({enforceActions: 'observed'});

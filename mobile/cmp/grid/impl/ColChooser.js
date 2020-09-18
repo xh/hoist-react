@@ -2,19 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, uses, useLocalModel} from '@xh/hoist/core';
 import {div, filler} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-
-import {dragDropContext, droppable, draggable} from '@xh/hoist/kit/react-beautiful-dnd';
-
 import './ColChooser.scss';
 import {ColChooserModel} from './ColChooserModel';
 
@@ -38,7 +36,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, visibleColumns, hiddenColumns} = model;
+        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns} = model;
         const impl = useLocalModel(LocalModel);
         impl.model = model;
 
@@ -48,14 +46,15 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
             icon: Icon.gridPanel(),
             className,
             item: div({
-                className: 'xh-col-chooser-internal',
+                className: 'xh-col-chooser__internal',
                 item: dragDropContext({
                     onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
-                            className: 'xh-col-chooser-section',
+                            className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
+                                row({col: pinnedColumn}),
                                 droppable({
                                     droppableId: 'visible-columns',
                                     item: (dndProps) => columnList({
@@ -79,7 +78,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
 
                         panel({
                             title: 'Available Columns',
-                            className: 'xh-col-chooser-section',
+                            className: 'xh-col-chooser__section',
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
@@ -99,7 +98,6 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
                 button({
                     text: 'Reset',
                     modifier: 'quiet',
-                    omit: !gridModel.stateModel,
                     onClick: () => model.restoreDefaults()
                 }),
                 filler(),
@@ -127,7 +125,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
 const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
-            className: classNames('xh-col-chooser-list', className),
+            className: classNames('xh-col-chooser__list', className),
             items: [
                 ...cols.map((col, idx) => draggableRow({col, idx})),
                 placeholder
@@ -161,8 +159,14 @@ const draggableRow = hoistCmp.factory({
 
 const row = hoistCmp.factory({
     render({model, col, isDragging, ...props}, ref) {
+        if (!col) return null;
+
         let {colId, text, pinned, hidden, locked, exclude} = col;
         if (exclude) return null;
+
+        const getDragIcon = (pinned) => {
+            return pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'});
+        };
 
         const getButtonIcon = (locked, hidden) => {
             if (locked) return Icon.lock();
@@ -172,17 +176,17 @@ const row = hoistCmp.factory({
 
         return div({
             className: classNames(
-                'xh-col-chooser-row',
-                pinned ? 'xh-col-chooser-row-pinned' : null,
-                isDragging ? 'xh-col-chooser-row-dragging' : null
+                'xh-col-chooser__row',
+                pinned ? 'xh-col-chooser__row--pinned' : null,
+                isDragging ? 'xh-col-chooser__row--dragging' : null
             ),
             items: [
                 div({
-                    className: 'xh-col-chooser-row-grabber',
-                    item: pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'})
+                    className: 'xh-col-chooser__row__grabber',
+                    item: getDragIcon(pinned)
                 }),
                 div({
-                    className: 'xh-col-chooser-row-text',
+                    className: 'xh-col-chooser__row__text',
                     item: text
                 }),
                 button({
@@ -206,7 +210,7 @@ class LocalModel {
 
     onDragEnd = (result) => {
         const {model} = this,
-            {columns} = model,
+            {pinFirst, columns} = model,
             {draggableId, destination} = result;
 
         if (!destination) return; // dropped outside of a droppable list
@@ -217,23 +221,23 @@ class LocalModel {
 
         // Move to correct idx within list of columns
         let toIdx = destination.index;
+        if (pinFirst) toIdx++;
         if (hide) toIdx = columns.length;
 
         model.setHidden(draggableId, hide);
         model.moveToIndex(draggableId, toIdx);
-        model.updatePinnedColumn();
     };
 
     onHiddenToggleClick = (colId, hide) => {
         const {model} = this,
-            {visibleColumns, hiddenColumns} = model;
+            {pinFirst, visibleColumns, hiddenColumns} = model;
 
         // When moving between lists, set idx to appear at the end of the destination sublist
         let toIdx = visibleColumns.length;
+        if (pinFirst) toIdx++;
         if (hide) toIdx += hiddenColumns.length;
 
         model.moveToIndex(colId, toIdx);
         model.setHidden(colId, hide);
-        model.updatePinnedColumn();
     };
 }

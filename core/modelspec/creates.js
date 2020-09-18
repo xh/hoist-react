@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ModelSpec, ModelPublishMode} from './ModelSpec';
+import {ModelPublishMode, ModelSpec} from './ModelSpec';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing

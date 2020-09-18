@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {stringify} from 'qs';
-import {isFunction, isPlainObject, isNil, isDate, omitBy} from 'lodash';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
+import {throwIf, apiDeprecated, withDefault} from '@xh/hoist/utils/js';
+import {StatusCodes} from 'http-status-codes';
+import {isDate, isFunction, isNil, omitBy} from 'lodash';
+import {stringify} from 'qs';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 
 /**
  * Service to send an HTTP request to a URL.
@@ -30,7 +31,7 @@ import {NO_CONTENT, RESET_CONTENT} from 'http-status-codes';
 @HoistService
 export class FetchService {
 
-    autoAbortControllers = {};
+    abortControllers = {};
     defaultHeaders = {};
 
     /**
@@ -48,11 +49,88 @@ export class FetchService {
      * @returns {Promise<Response>} - Promise which resolves to a Fetch Response.
      */
     async fetch(opts) {
+        return this.withTimeoutAsync(this.fetchInternalAsync(opts), opts);
+    }
+
+    /**
+     * Send an HTTP request and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async fetchJson(opts) {
+        return this.withTimeoutAsync(
+            this.fetchInternalAsync({
+                ...opts,
+                headers: {'Accept': 'application/json', ...opts.headers}
+            }).then(r => [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT].includes(r.status) ? null : r.json()),
+            opts
+        );
+    }
+
+    /**
+     * Send a GET request and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async getJson(opts) {
+        return this.fetchJson({method: 'GET', ...opts});
+    }
+
+    /**
+     * Send a POST request with a JSON body and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async postJson(opts) {
+        return this.sendJsonInternalAsync({method: 'POST', ...opts});
+    }
+
+    /**
+     * Send a PUT request with a JSON body and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async putJson(opts) {
+        return this.sendJsonInternalAsync({method: 'PUT', ...opts});
+    }
+
+    /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async patchJson(opts) {
+        return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
+    }
+
+    /**
+     * Send a DELETE request with optional JSON body and decode the optional response as JSON.
+     * @param {FetchOptions} opts
+     * @returns {Promise} the decoded JSON object, or null if the response had no content.
+     */
+    async deleteJson(opts) {
+        return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
+    }
+
+    //-----------------------
+    // Implementation
+    //-----------------------
+    async withTimeoutAsync(promise, opts) {
+        const timeout = withDefault(opts.timeout, 30 * SECONDS);
+        return promise
+            .timeout(timeout)
+            .catchWhen('Timeout Exception', e => {
+                throw Exception.fetchTimeout(opts, e, opts.timeout?.message);
+            });
+    }
+
+    async fetchInternalAsync(opts) {
+        const {defaultHeaders, abortControllers} = this;
         let {url, method, headers, body, params, autoAbortKey} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
         throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
-        warnIf(opts.contentType, 'contentType has been deprecated - please pass a "Content-Type" header instead.');
-        warnIf(opts.acceptJson, 'acceptJson has been deprecated - please pass an {"Accept": "application/json"} header instead.');
+        apiDeprecated(opts.contentType, 'contentType', 'Please pass a "Content-Type" header instead.');
+        apiDeprecated(opts.acceptJson, 'acceptJson', 'Please pass an {"Accept": "application/json"} header instead.');
 
         // 1) Compute / install defaults
         if (!method) {
@@ -64,28 +142,23 @@ export class FetchService {
         }
 
         // 2) Compute headers
-        const {defaultHeaders} = this,
-            baseHeaders = {
-                'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded': 'text/plain'
-            },
-            headerEntries = Object.assign(
-                baseHeaders,
-                isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders,
-                isPlainObject(headers) ? headers : {}
-            );
+        const headerEntries = {
+            'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded' : 'text/plain',
+            ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
+            ...headers
+        };
 
         headers = new Headers(omitBy(headerEntries, isNil));
 
         // 3) Prepare merged options
-        const fetchOpts = Object.assign({
+        const fetchOpts = {
             credentials: 'include',
-            redirect: 'follow'
-        }, {
+            redirect: 'follow',
             method,
             headers,
             body,
             ...opts.fetchOpts
-        });
+        };
 
         // 3) Preprocess and apply params
         if (params) {
@@ -106,23 +179,24 @@ export class FetchService {
         }
 
         // 4) Cancel prior request, and add new AbortController if autoAbortKey used
+        let abortCtrl;
         if (autoAbortKey) {
             this.abort(autoAbortKey);
-            const ctlr = new AbortController();
-            fetchOpts.signal = ctlr.signal;
-            this.autoAbortControllers[autoAbortKey] = ctlr;
+            abortCtrl = new AbortController();
+            fetchOpts.signal = abortCtrl.signal;
+            abortControllers[autoAbortKey] = abortCtrl;
         }
 
         let ret;
         try {
             ret = await fetch(url, fetchOpts);
         } catch (e) {
-            if (e.name == 'AbortError') throw Exception.fetchAborted(opts, e);
+            if (e.name === 'AbortError') throw Exception.fetchAborted(opts, e);
             throw Exception.serverUnavailable(opts, e);
-        }
-
-        if (autoAbortKey) {
-            delete this.autoAbortControllers[autoAbortKey];
+        } finally {
+            if (abortCtrl && abortControllers[autoAbortKey] === abortCtrl) {
+                delete abortControllers[autoAbortKey];
+            }
         }
 
         if (!ret.ok) {
@@ -133,86 +207,7 @@ export class FetchService {
         return ret;
     }
 
-    /**
-     * Send an HTTP request and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
-     */
-    async fetchJson(opts) {
-        const ret = await this.fetch({
-            ...opts,
-            headers: {'Accept': 'application/json', ...opts.headers}
-        });
-        switch (ret.status) {
-            case NO_CONTENT:
-            case RESET_CONTENT:
-                return null;
-            default:
-                return ret.json();
-        }
-    }
-
-    /**
-     * Send a GET request and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
-     */
-    async getJson(opts) {
-        return this.fetchJson({
-            method: 'GET',
-            ...opts
-        });
-    }
-
-    /**
-     * Send a POST request with a JSON bod, and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
-     */
-    async postJson(opts) {
-        return this.sendJson({
-            method: 'POST',
-            ...opts
-        });
-    }
-
-    /**
-     * Send a PUT request with a JSON body and decode the response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
-     */
-    async putJson(opts) {
-        return this.sendJson({
-            method: 'PUT',
-            ...opts
-        });
-    }
-
-    /**
-     * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * @param {FetchOptions} opts
-     * @returns {Promise} the decoded JSON object, or null if the response had no content.
-     */
-    async deleteJson(opts) {
-        return this.sendJson({
-            method: 'DELETE',
-            ...opts
-        });
-    }
-
-
-    //-----------------------
-    // Implementation
-    //-----------------------
-    abort(key) {
-        const ctrl = this.autoAbortControllers[key];
-        if (ctrl) {
-            delete this.autoAbortControllers[key];
-            ctrl.abort();
-        }
-    }
-
-    async sendJson(opts) {
+    async sendJsonInternalAsync(opts) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),
@@ -221,6 +216,14 @@ export class FetchService {
                 ...opts.headers
             }
         });
+    }
+
+    abort(key) {
+        const ctrl = this.abortControllers[key];
+        if (ctrl) {
+            delete this.abortControllers[key];
+            ctrl.abort();
+        }
     }
 
     async safeResponseTextAsync(response) {
@@ -235,7 +238,8 @@ export class FetchService {
         if (isDate(value))      return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
-    }
+    };
+
 }
 
 /**
@@ -250,6 +254,9 @@ export class FetchService {
  *      the method will be set to POST if there are params, otherwise GET.
  * @property {Object} [headers] - headers to send with this request. A Content-Type header will
  *      be set if not provided by the caller directly or via one of the xxxJson convenience methods.
+ * @property {(number|Object)} [timeout] - ms to wait for response before rejecting with a timeout
+ *      exception.  Defaults to 30 seconds, but may be specified as null to specify no timeout.
+ *      May also be specified as an object to customise the exception. See Promise.timeout().
  * @property {Object} [fetchOpts] - options to pass to the underlying fetch request.
  *      @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
  * @property {Object} [qsOpts] - options to pass to the param converter library, qs.

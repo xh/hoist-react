@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-
 import {DockViewModel} from './DockViewModel';
 
 /**
@@ -25,6 +24,12 @@ export class DockContainerModel {
     /** @member {string} */
     direction;
 
+    /** @member {RenderMode} */
+    renderMode;
+
+    /** @member {RefreshMode} */
+    refreshMode;
+
     /**
      * @param {Object} [c] - DockContainerModel configuration.
      * @param {Object[]} [c.views] - DockViewModel configs to be displayed.
@@ -32,18 +37,26 @@ export class DockContainerModel {
      *      the container. Valid values are 'ltr', 'rtl' - the default of 'rtl' causes the first
      *      view to be docked to the bottom right of the container with each subsequent view docked
      *      to the left of view before it.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering DockViews. Can be set
+     *      per-tab via `DockViewModel.renderMode`. See enum for description of supported modes.
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DockViews. Can be set
+     *      per-tab via `DockViewModel.refreshMode`. See enum for description of supported modes.
      */
     constructor({
         views = [],
-        direction = 'rtl'
+        direction = 'rtl',
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY
     } = {}) {
         views = views.filter(v => !v.omit);
 
-        ensureUniqueBy(views, 'id');
+        ensureUniqueBy(views, 'id', 'Multiple DockContainerModel views have the same id.');
         throwIf(!['ltr', 'rtl'].includes(direction), 'Unsupported value for direction.');
 
-        this.direction = direction;
         this.views = views.map(v => new DockViewModel({...v, containerModel: this}));
+        this.direction = direction;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
     }
 
     getView(id) {

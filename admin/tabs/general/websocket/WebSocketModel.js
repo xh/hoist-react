@@ -2,18 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {createRef} from 'react';
 import {required} from '@xh/hoist/cmp/form';
-import {compactDateCol, emptyFlexCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {compactDateCol, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
+import {createRef} from 'react';
 
 @HoistModel
 @LoadSupport
@@ -52,8 +52,8 @@ export class WebSocketModel {
                 align: 'center',
                 width: 40,
                 renderer: v => v ?
-                    convertIconToSvg(Icon.circle({prefix: 'fas'}), {classes: ['xh-green']}) :
-                    convertIconToSvg(Icon.circle({prefix: 'fal'}), {classes: ['xh-red']})
+                    Icon.circle({prefix: 'fas', className: 'xh-green', asHtml: true}) :
+                    Icon.circle({prefix: 'fal', className: 'xh-red', asHtml: true})
             },
             {field: 'key', width: 160},
             {field: 'user', width: 250},
@@ -61,8 +61,7 @@ export class WebSocketModel {
             {field: 'sentMessageCount', headerName: 'Sent', ...numberCol, width: 90},
             {field: 'lastSentTime', headerName: 'Last Sent', ...compactDateCol, width: 140},
             {field: 'receivedMessageCount', headerName: 'Received', ...numberCol, width: 90},
-            {field: 'lastReceivedTime', headerName: 'Last Received', ...compactDateCol, width: 140},
-            {...emptyFlexCol}
+            {field: 'lastReceivedTime', headerName: 'Last Received', ...compactDateCol, width: 140}
         ]
     })
 
@@ -77,7 +76,7 @@ export class WebSocketModel {
                 }
             },
             interval: 5 * SECONDS,
-            delay: 5 * SECONDS
+            delay: true
         });
     }
 
@@ -100,7 +99,7 @@ export class WebSocketModel {
             title: 'Send test alert',
             icon: Icon.bullhorn(),
             confirmProps: {text: 'Send'},
-            message: `Send an in-app alert to ${selectedRecord.authUser} with the text below.`,
+            message: `Send an in-app alert to ${selectedRecord.data.authUser} with the text below.`,
             input: {
                 item: textInput({autoFocus: true, selectOnFocus: true}),
                 initialValue: 'This is a test alert',
@@ -111,7 +110,7 @@ export class WebSocketModel {
         XH.fetchJson({
             url: 'webSocketAdmin/pushToChannel',
             params: {
-                channelKey: selectedRecord.key,
+                channelKey: selectedRecord.data.key,
                 topic: XH.webSocketService.TEST_MSG_TOPIC,
                 message
             }

@@ -2,13 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, uses} from '@xh/hoist/core';
-import PT from 'prop-types';
-import {throwIf} from '@xh/hoist/utils/js';
-
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
+import {throwIf} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
 import {DockContainerModel} from './DockContainerModel';
 
 /**
@@ -33,7 +32,7 @@ export const [DockContainer, dockContainer] = hoistCmp.withFactory({
     className: 'xh-dock-container',
 
     render(props) {
-        throwIf(XH.isMobile, 'DockContainer is not implemented on mobile');
+        throwIf(XH.isMobileApp, 'DockContainer is not implemented on mobile');
         return desktopDockContainerImpl(props);
     }
 

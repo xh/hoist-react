@@ -2,42 +2,38 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {isValidElement, createRef} from 'react';
-import PT from 'prop-types';
-import {
-    isNil,
-    isString,
-    merge,
-    xor,
-    dropRightWhile,
-    dropWhile,
-    isEmpty,
-    isFunction,
-    isArray,
-    last,
-    isEqual,
-    map,
-    isFinite
-} from 'lodash';
-import {observable, computed, runInAction} from '@xh/hoist/mobx';
-import {hoistCmp, XH, uses, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {fragment, frame} from '@xh/hoist/cmp/layout';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
-import {agGrid, AG_COMPACT_ROW_HEIGHTS, AG_ROW_HEIGHTS} from '@xh/hoist/cmp/ag-grid';
-import {ColumnGroupHeader} from './impl/ColumnGroupHeader';
-import {ColumnHeader} from './impl/ColumnHeader';
-import {GridModel} from './GridModel';
-import {withShortDebug} from '@xh/hoist/utils/js';
-
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {colChooser as desktopColChooser, StoreContextMenu} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-
-import './Grid.scss';
+import {convertIconToHtml, Icon} from '@xh/hoist/icon';
+import {div} from '@xh/hoist/cmp/layout';
+import {computed, observable, observer, action, runInAction} from '@xh/hoist/mobx';
+import {isDisplayed, withShortDebug} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isDisplayed} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
+import {
+    isArray,
+    isEmpty,
+    isEqual,
+    isFinite,
+    isFunction,
+    isNil,
+    isString,
+    map,
+    merge,
+    xor
+} from 'lodash';
+import PT from 'prop-types';
+import {createRef, isValidElement} from 'react';
+import './Grid.scss';
+import {GridModel} from './GridModel';
+import {columnGroupHeader} from './impl/ColumnGroupHeader';
+import {columnHeader} from './impl/ColumnHeader';
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -56,14 +52,14 @@ import classNames from 'classnames';
  * @see GridModel
  */
 export const [Grid, grid] = hoistCmp.withFactory({
-    displayName: 'GridModel',
+    displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',
 
     render({model, className, ...props}) {
 
         const impl = useLocalModel(() => new LocalModel(model, props)),
-            platformColChooser = XH.isMobile ? mobileColChooser : desktopColChooser;
+            platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser;
 
         // Don't render the agGridReact element with data or columns. Instead rely on API methods
         return fragment(
@@ -150,15 +146,20 @@ class LocalModel {
     model;
     agOptions;
     propsKeyDown;
-    viewRef = createRef()
+    viewRef = createRef();
 
     // The minimum required row height specified by the columns (if any) */
     @computed
     get rowHeight() {
-        const agHeights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS,
-            modelHeight = XH.isMobile ? agHeights.mobile : agHeights.desktop,
-            columnHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
-        return isFinite(columnHeight) ? Math.max(modelHeight, columnHeight) : modelHeight;
+        const gridDefaultHeight = AgGrid.getRowHeightForSizingMode(this.model.sizingMode),
+            maxColHeight = Math.max(...map(this.model.columns, 'rowHeight').filter(isFinite));
+
+        return isFinite(maxColHeight) ? Math.max(gridDefaultHeight, maxColHeight) : gridDefaultHeight;
+    }
+
+    @computed
+    get groupRowHeight() {
+        return this.model.groupRowHeight ?? AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
     }
 
     // Observable stamp incremented every time the ag-Grid receives a new set of data.
@@ -168,6 +169,11 @@ class LocalModel {
     // Do any root level records have children?
     @observable isHierarchical = false;
 
+    // Have framework components been mounted? As of AgGrid v23, there is a noticeable
+    // delay between AgGrid.onGridReady and framework components (e.g. Column Headers)
+    // being rendered. By tracking this, we can wait until they have been rendered
+    // before we trigger the first data reaction and remove the loading overlay.
+    @observable frameworkCmpsMounted = false;
 
     constructor(model, props) {
         this.model = model;
@@ -189,7 +195,8 @@ class LocalModel {
         let ret = {
             model: model.agGridModel,
             deltaSort: useDeltaSort && !model.treeMode,
-            deltaRowDataMode: !useTransactions,
+            immutableData: !useTransactions,
+            suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowNodeId: (data) => data.id,
             defaultColDef: {
                 sortable: true,
@@ -198,49 +205,55 @@ class LocalModel {
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
-            headerHeight: props.hideHeaders ? 0 : undefined,
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: convertIconToSvg(
-                    Icon.angleDown(),
-                    {classes: ['group-header-icon-expanded']}
-                ),
-                groupContracted: convertIconToSvg(
-                    Icon.angleRight(),
-                    {classes: ['group-header-icon-contracted']}
-                ),
-                clipboardCopy: convertIconToSvg(Icon.copy())
+                groupExpanded: Icon.angleDown({asHtml: true, className: 'ag-group-expanded'}),
+                groupContracted: Icon.angleRight({asHtml: true, className: 'ag-group-contracted'}),
+                clipboardCopy: Icon.copy({asHtml: true})
             },
-            frameworkComponents: {agColumnHeader: ColumnHeader, agColumnGroupHeader: ColumnGroupHeader},
+            frameworkComponents: {
+                agColumnHeader: (props) => columnHeader({gridLocalModel: this, ...props}),
+                agColumnGroupHeader: (props) => columnGroupHeader(props)
+            },
             rowSelection: model.selModel.mode,
             rowDeselection: true,
-            getRowHeight: () => this.rowHeight,
+            getRowHeight: (params) => params.node?.group ? this.groupRowHeight : this.rowHeight,
             getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
-            overlayNoRowsTemplate: model.emptyText || '<span></span>',
-            onRowClicked: props.onRowClicked,
+            noRowsOverlayComponentFramework: observer(() => div(model.emptyText)),
+            onRowClicked: (e) => {
+                this.onRowClicked(e);
+                if (props.onRowClicked) props.onRowClicked(e);
+            },
             onRowDoubleClicked: props.onRowDoubleClicked,
             onCellClicked: props.onCellClicked,
             onCellDoubleClicked: props.onCellDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
-            onGridSizeChanged: this.onGridSizeChanged,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
             processCellForClipboard: this.processCellForClipboard,
-            defaultGroupSortComparator: this.groupSortComparator,
+            defaultGroupSortComparator: model.groupSortFn ? this.groupSortComparator : undefined,
             groupDefaultExpanded: 1,
             groupUseEntireRow: true,
-            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using deltaRowDataMode
+            groupRowInnerRenderer: model.groupRowRenderer,
+            groupRowRendererFramework: model.groupRowElementRenderer,
+            groupRowRendererParams: {suppressCount: !model.showGroupRowCounts},
+            rememberGroupStateWhenNewData: true, // turning this on by default so group state is maintained when apps are not using immutableData
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
-            }
+            },
+            autoSizePadding: 3 // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental
         };
 
+        if (props.hideHeaders) {
+            ret.headerHeight = 0;
+        }
+
         // Platform specific defaults
-        if (XH.isMobile) {
+        if (XH.isMobileApp) {
             ret = {
                 ...ret,
                 suppressContextMenu: true,
@@ -279,7 +292,7 @@ class LocalModel {
     getContextMenuItems = (params) => {
         const {model} = this,
             {store, selModel, contextMenu} = model;
-        if (!contextMenu || XH.isMobile) return null;
+        if (!contextMenu || XH.isMobileApp) return null;
 
         let menu = null;
         if (isFunction(contextMenu)) {
@@ -288,7 +301,6 @@ class LocalModel {
             menu = new StoreContextMenu({items: contextMenu, gridModel: model});
         }
         if (!menu) return null;
-
 
         const recId = params.node ? params.node.id : null,
             record = isNil(recId) ? null : store.getById(recId, true),
@@ -307,10 +319,13 @@ class LocalModel {
     };
 
     buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
-        let items = [];
+        const items = [];
+
         recordActions.forEach(action => {
+            if (isNil(action)) return;
+
             if (action === '-') {
-                if (last(items) !== 'separator') items.push('separator');
+                items.push('separator');
                 return;
             }
 
@@ -338,7 +353,7 @@ class LocalModel {
 
             let icon = displaySpec.icon;
             if (isValidElement(icon)) {
-                icon = convertIconToSvg(icon);
+                icon = convertIconToHtml(icon);
             }
 
             items.push({
@@ -352,9 +367,7 @@ class LocalModel {
             });
         });
 
-        items = dropRightWhile(items, it => it === 'separator');
-        items = dropWhile(items, it => it === 'separator');
-        return items;
+        return items.filter(filterConsecutiveMenuSeparators());
     }
 
     //------------------------
@@ -365,51 +378,47 @@ class LocalModel {
             {agGridModel, store, experimental} = model;
 
         return {
-            track: () => [agGridModel.agApi, model.showSummary, store.lastLoaded, store.lastUpdated, store._filtered],
-            run: ([api, showSummary, lastLoaded, lastUpdated, newRs]) => {
-                if (!api) return;
+            track: () => [agGridModel.agApi, this.frameworkCmpsMounted, store.lastLoaded, store.lastUpdated, store._filtered, model.showSummary],
+            run: ([api, frameworkCmpsMounted, lastLoaded, lastUpdated, newRs]) => {
+                if (!api || !frameworkCmpsMounted) return;
 
                 const isUpdate = lastUpdated > lastLoaded,
                     prevRs = this._prevRs,
-                    newCount = newRs.count,
-                    prevCount = prevRs ? prevRs.count : 0,
-                    deltaCount = newCount - prevCount;
+                    prevCount = prevRs ? prevRs.count : 0;
 
                 withShortDebug(`${isUpdate ? 'Updated' : 'Loaded'} Grid`, () => {
-                    if (prevCount != 0 && experimental.useTransactions) {
+                    if (prevCount !== 0 && experimental.useTransactions) {
                         const transaction = this.genTransaction(newRs, prevRs);
                         console.debug(this.transactionLogStr(transaction));
 
                         if (!this.transactionIsEmpty(transaction)) {
-                            api.updateRowData(transaction);
+                            api.applyTransaction(transaction);
                         }
                     } else {
                         api.setRowData(newRs.list);
                     }
 
-                    this.updatePinnedSummaryRowData();
-
-                    // If row count changing to/from a small amt, force col resizing to account for
-                    // possible appearance/disappearance of the vertical scrollbar.
-                    if (deltaCount != 0 && (prevCount < 100 || newCount < 100)) {
-                        api.sizeColumnsToFit();
+                    if (experimental.externalSort) {
+                        const {sortBy} = model;
+                        if (!isEqual(sortBy, this._lastSortBy)) api.setSortModel(sortBy);
+                        this._lastSortBy = sortBy;
                     }
+
+                    this.updatePinnedSummaryRowData();
 
                     const refreshCols = model.columns.filter(c => !c.hidden && c.rendererIsComplex);
                     if (!isEmpty(refreshCols)) {
                         api.refreshCells({columns: refreshCols.map(c => c.colId), force: true});
                     }
 
-                    if (!experimental.suppressUpdateExpandStateOnDataLoad) {
-                        model.noteAgExpandStateChange();
-                    }
+                    model.noteAgExpandStateChange();
                 }, this);
 
                 runInAction(() => {
                     this._prevRs = newRs;
 
                     // Set flag if data is hierarchical.
-                    this.isHierarchical = model.treeMode && store.allRootCount != store.allCount;
+                    this.isHierarchical = model.treeMode && store.allRootCount !== store.allCount;
 
                     // Increment version counter to trigger selectionReaction w/latest data.
                     this._dataVersion++;
@@ -440,11 +449,13 @@ class LocalModel {
     }
 
     sortReaction() {
-        const {agGridModel} = this.model;
+        const {agGridModel} = this.model,
+            {externalSort} = this.model.experimental;
+
         return {
             track: () => [agGridModel.agApi, this.model.sortBy],
             run: ([api, sortBy]) => {
-                if (api) api.setSortModel(sortBy);
+                if (api && !externalSort) api.setSortModel(sortBy);
             }
         };
     }
@@ -469,7 +480,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
                     api.setColumnDefs(this.getColumnDefs());
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -491,25 +501,20 @@ class LocalModel {
 
                 // 1) Columns all in right place -- simply update incorrect props we maintain
                 if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
-                    let hadChanges = false;
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
                             id = col.colId;
 
                         if (agCol.width != col.width) {
                             colApi.setColumnWidth(id, col.width);
-                            hadChanges = true;
                         }
                         if (agCol.hide != col.hidden) {
                             colApi.setColumnVisible(id, !col.hidden);
-                            hadChanges = true;
                         }
                         if (agCol.pinned != col.pinned) {
                             colApi.setColumnPinned(id, col.pinned);
-                            hadChanges = true;
                         }
                     });
-                    if (hadChanges) api.sizeColumnsToFit();
                     return;
                 }
 
@@ -529,7 +534,6 @@ class LocalModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     colApi.setColumnState(colState);
                 });
-                api.sizeColumnsToFit();
             }
         };
     }
@@ -538,7 +542,7 @@ class LocalModel {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = (data) => !data.xhIsSummary,
+            filterSummaryFn = (record) => !record.isSummary,
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
@@ -571,7 +575,7 @@ class LocalModel {
                 }
             });
 
-            if (newList.length != (prevList.length + add.length)) {
+            if (newList.length !== (prevList.length + add.length)) {
                 remove = prevList.filter(rec => !newRs.getById(rec.id));
             }
 
@@ -593,11 +597,16 @@ class LocalModel {
         return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
+    @action
+    noteFrameworkCmpMounted() {
+        this.frameworkCmpsMounted = true;
+    }
+
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
     getDataPath = (data) => {
-        return data.xhTreePath;
+        return data.treePath;
     };
 
     onSelectionChanged = () => {
@@ -624,7 +633,6 @@ class LocalModel {
     };
 
     onRowGroupOpened = () => {
-        this.model.agGridModel.agApi.sizeColumnsToFit();
         this.model.noteAgExpandStateChange();
     };
 
@@ -639,12 +647,6 @@ class LocalModel {
     onColumnVisible = (ev) => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
-        }
-    };
-
-    onGridSizeChanged = (ev) => {
-        if (isDisplayed(this.viewRef.current)) {
-            ev.api.sizeColumnsToFit();
         }
     };
 
@@ -684,5 +686,24 @@ class LocalModel {
         }
 
         if (this.propsKeyDown) this.propsKeyDown(evt);
-    }
+    };
+
+    onRowClicked = (evt) => {
+        const {selModel} = this.model;
+        if (evt.rowPinned) {
+            selModel.clear();
+        }
+    };
 }
+
+/**
+ * @callback Grid~groupRowRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {string} - the formatted value for display.
+ */
+
+/**
+ * @callback Grid~groupRowElementRendererFn - renderer for a group row
+ * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
+ * @return {Element} - the React element to render.
+ */

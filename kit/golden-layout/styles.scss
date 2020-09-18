@@ -1,0 +1,152 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2020 Extremely Heavy Industries Inc.
+ */
+
+@import '../../styles/helpers';
+
+.lm_goldenlayout {
+  background: var(--xh-bg-alt);
+
+  .lm_header {
+    display: flex;
+    background: rgba(0, 0, 0, 0.06);
+    min-height: 25px;
+
+    .xh-dash-container-add-button {
+      padding: 5px;
+      color: #999;
+
+      &:hover {
+        cursor: pointer;
+        color: var(--xh-text-color);
+      }
+    }
+
+    .lm_tabs {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: -1px; // Allows vertical overflow of 1px, without scrollbars
+    }
+
+    .lm_controls {
+      position: relative;
+    }
+
+    .lm_tab {
+      display: flex;
+      align-items: center;
+      margin: 2px 0 0 2px;
+      padding: 4px 8px;
+      font-family: var(--xh-font-family);
+      font-size: var(--xh-font-size-px);
+      line-height: 1;
+      background: var(--xh-bg-alt);
+      border: var(--xh-border-solid);
+      border-bottom: none;
+      color: var(--xh-text-color);
+
+      &.lm_active {
+        background: var(--xh-bg);
+        border-bottom: 1px solid var(--xh-bg);
+      }
+
+      svg {
+        margin-right: 6px;
+        font-size: 12px;
+        color: var(--xh-text-color);
+      }
+
+      .lm_close_tab {
+        display: none;
+      }
+
+      .lm_title {
+        white-space: nowrap;
+      }
+
+      .title-form {
+        display: none;
+
+        input {
+          padding: 2px 0 1px;
+          width: 140px;
+          max-width: 100%;
+          font-family: var(--xh-font-family);
+          font-size: var(--xh-font-size-px);
+          color: var(--xh-text-color);
+          background: none;
+          border: 1px solid var(--xh-intent-primary);
+          border-width: 0 0 1px;
+        }
+      }
+    }
+
+    .lm_tab.lm_active.show-title-form {
+      .lm_title {
+        display: none;
+      }
+
+      .title-form {
+        display: block;
+      }
+    }
+  }
+
+  .lm_tabdropdown_list .lm_tab {
+    border-bottom: var(--xh-border-solid);
+  }
+
+  .lm_splitter {
+    opacity: 1;
+    background: var(--xh-resizable-bg);
+
+    &.lm_horizontal {
+      border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+      border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    }
+
+    &.lm_vertical {
+      border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+      border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    }
+  }
+
+  .lm_content {
+    display: flex;
+    border: none;
+    border-top: var(--xh-border-solid);
+    background: var(--xh-bg);
+  }
+}
+
+.lm_dragProxy {
+  .lm_header .lm_tab {
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    line-height: 1;
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-font-size-px);
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+    color: var(--xh-text-color);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .lm_content {
+    display: none;
+  }
+}
+
+// On touch devices, we must ensure that the tab itself is never
+// the target for touch events. Instead, it's children (icon, title)
+// are the target.
+body:not(.xh-desktop) .lm_goldenlayout .lm_header .lm_tab {
+  pointer-events: none;
+
+  & * {
+    pointer-events: auto;
+  }
+}

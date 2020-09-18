@@ -2,15 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
-import {textarea as textareaTag, div} from '@xh/hoist/cmp/layout';
-import {withDefault} from '@xh/hoist/utils/js';
 import {HoistInput} from '@xh/hoist/cmp/input';
-
+import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
+import {withDefault} from '@xh/hoist/utils/js';
+import PT from 'prop-types';
 import './TextArea.scss';
 
 /**

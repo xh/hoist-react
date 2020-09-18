@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
 import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {assign} from 'lodash';
@@ -25,7 +24,7 @@ export class ContextMenuItem {
     /**
      * @param {Object} c - ContextMenuItem configuration.
      * @param {string} c.text - label to be displayed.
-     * @param {Object} [c.icon] - icon to be displayed.
+     * @param {Element} [c.icon] - icon to be displayed.
      * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
      * @param {Object[]} [c.items] - child menu items.
      * @param {boolean} [c.disabled] - true to disable this item.

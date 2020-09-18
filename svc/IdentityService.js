@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -73,6 +73,11 @@ export class IdentityService {
      * and refreshes the application to present a login panel.
      */
     async logoutAsync() {
+        try {
+            await XH.appModel.logoutAsync();
+        } catch (e) {
+            console.error('Error calling XH.appModel.logoutAsync()', e);
+        }
         return XH
             .fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
@@ -87,9 +92,9 @@ export class IdentityService {
         return this._authUser !== this._apparentUser;
     }
 
-    /** Can the unerlying user impersonate other users? */
+    /** Can the underlying user impersonate other users? */
     get canImpersonate() {
-        return this._authUser.isHoistAdmin;
+        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
     }
 
     /**
@@ -101,7 +106,7 @@ export class IdentityService {
      * @param {string} username - the end-user to impersonate
      */
     async impersonateAsync(username) {
-        throwIf(!this.canImpersonate, 'User does not have right to impersonate.');
+        throwIf(!this.canImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
         return XH.fetchJson({
             url: 'xh/impersonate',
             params: {

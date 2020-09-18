@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 .xh-admin-about-panel {
@@ -13,9 +13,9 @@
     margin-right: 6px;
   }
 
-  h1,
   h2 {
     font-weight: 300;
+    margin-top: var(--xh-pad-double-px) !important;
   }
 
   table {
@@ -33,7 +33,7 @@
   th {
     padding: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
-    width: 140px;
+    width: 180px;
     text-align: right;
     vertical-align: top;
   }
@@ -43,6 +43,12 @@
   }
 
   &__blurb {
-    margin: var(--xh-pad-px);
+    align-items: center;
+    padding: var(--xh-pad-px);
+
+    .xh-corp-logo {
+      margin-right: var(--xh-pad-double-px);
+      width: 100px;
+    }
   }
 }

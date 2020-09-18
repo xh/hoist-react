@@ -2,25 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import React, {cloneElement, useContext, useState, Children} from 'react';
-import PT from 'prop-types';
-import {isUndefined, isDate, isFinite, isBoolean, isNil, kebabCase} from 'lodash';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
-
-import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
-import {tooltip} from '@xh/hoist/kit/blueprint';
-import {FormContext, FieldModel} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
 import {HoistInput} from '@xh/hoist/cmp/input';
-import {box, div, span, label as labelEl} from '@xh/hoist/cmp/layout';
+import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
+import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {fmtDateTime, fmtDate, fmtNumber} from '@xh/hoist/format';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getReactElementName} from '@xh/hoist/utils/react';
+import {tooltip} from '@xh/hoist/kit/blueprint';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {getLayoutProps} from '@xh/hoist/utils/react';
-
+import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import PT from 'prop-types';
+import React, {Children, cloneElement, useContext, useState} from 'react';
 import './FormField.scss';
 
 /**
@@ -47,8 +44,14 @@ export const [FormField, formField] = hoistCmp.withFactory({
     render({model, className, field, children, info, ...props}) {
 
         // Resolve FieldModel
-        const formContext = useContext(FormContext),
-            formModel = formContext.model;
+        const formContext = useContext(FormContext);
+        errorIf(
+            isEmpty(formContext),
+            `Form field could not find valid FormContext. ` +
+            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
+            `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
+        );
+        const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
         // Model related props
@@ -59,7 +62,12 @@ export const [FormField, formField] = hoistCmp.withFactory({
             notValid = model?.isNotValid || false,
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
-            requiredStr = (isRequired && !readonly) ? span(' *') : null;
+            requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
+            requiredIndicator = (isRequired && !readonly && requiredStr) ?
+                span({
+                    item: ' ' + requiredStr,
+                    className: 'xh-form-field-required-indicator'
+                }) : null;
 
         // Child related props
         const child = getValidChild(children),
@@ -76,7 +84,9 @@ export const [FormField, formField] = hoistCmp.withFactory({
             labelAlign = defaultProp('labelAlign', props, formContext, 'left'),
             labelWidth = defaultProp('labelWidth', props, formContext, null),
             label = defaultProp('label', props, formContext, model?.displayName),
-            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined);
+            commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
+            tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
+            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport');
 
         // Styles
         const classes = [childCssName];
@@ -84,6 +94,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
+        if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
 
@@ -105,7 +116,8 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 target: childEl,
                 targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName: !blockChildren.includes(getReactElementName(child)) || child.props.width ? 'span' : 'div',
-                position: 'right',
+                position: tooltipPosition,
+                boundary: tooltipBoundary,
                 disabled: !displayNotValid,
                 content: getErrorTooltipContent(errors)
             });
@@ -119,7 +131,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field-label',
-                    items: [label, requiredStr],
+                    items: [label, requiredIndicator],
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelAlign,
@@ -164,6 +176,9 @@ FormField.propTypes = {
      */
     commitOnChange: PT.bool,
 
+    /** True to disable user interaction. Defaulted from backing FieldModel. */
+    disabled: PT.bool,
+
     /** Property name on bound FormModel from which to read/write data. */
     field: PT.string,
 
@@ -205,7 +220,28 @@ FormField.propTypes = {
      * Optional function for use in readonly mode. Called with the Field's current value
      * and should return an element suitable for presentation to the end-user.
      */
-    readonlyRenderer: PT.func
+    readonlyRenderer: PT.func,
+
+    /** The indicator to display next to a required field. Defaults to `*`. */
+    requiredIndicator: PT.string,
+
+    /**
+     * Minimal validation tooltip will try to fit within the corresponding boundary.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
+
+    /**
+     * Position for minimal validation tooltip.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipPosition: PT.oneOf([
+        'top-left', 'top', 'top-right',
+        'right-top', 'right', 'right-bottom',
+        'bottom-right', 'bottom', 'bottom-left',
+        'left-bottom', 'left', 'left-top',
+        'auto', 'auto-start', 'auto-end'
+    ])
 };
 
 const readonlyChild = hoistCmp.factory({
@@ -230,7 +266,7 @@ const editableChild = hoistCmp.factory({
         const overrides = {
             model,
             bind: 'value',
-            disabled,
+            disabled: props.disabled || disabled,
             id: childId
         };
 
@@ -262,7 +298,7 @@ const editableChild = hoistCmp.factory({
 //--------------------------------
 // Helper Functions
 //---------------------------------
-const blockChildren = ['TextInput', 'JsonInput', 'Select'];
+const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
     const child = Children.only(children);
@@ -290,5 +326,6 @@ function getErrorTooltipContent(errors) {
 }
 
 function defaultProp(name, props, formContext, defaultVal) {
-    return withDefault(props[name], formContext.fieldDefaults[name], defaultVal);
+    const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
+    return withDefault(props[name], fieldDefault, defaultVal);
 }

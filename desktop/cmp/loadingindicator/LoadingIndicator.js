@@ -2,20 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {hoistCmp} from '@xh/hoist/core';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {hoistCmp} from '@xh/hoist/core';
 import {spinner} from '@xh/hoist/kit/blueprint';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
 import {withDefault} from '@xh/hoist/utils/js';
-import {truncate} from 'lodash';
-
 import classNames from 'classnames';
-
+import {truncate} from 'lodash';
+import PT from 'prop-types';
 import './LoadingIndicator.scss';
 
 /**
@@ -36,7 +33,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory({
             maxMessageLength = withDefault(props.maxMessageLength, 30),
             message = truncate(withDefault(props.message, model?.message), {length: maxMessageLength}),
             showSpinner = withDefault(props.spinner, true),
-            corner = withDefault(props.corner, true);
+            corner = withDefault(props.corner, 'br');
 
         if (!isDisplayed || (!showSpinner && !message)) return null;
 

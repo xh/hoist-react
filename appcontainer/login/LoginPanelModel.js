@@ -2,42 +2,58 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, computed, bindable} from '@xh/hoist/mobx';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {bindable, computed} from '@xh/hoist/mobx';
+import {PendingTaskModel} from '@xh/hoist/utils/async';
+import {debounced} from '@xh/hoist/utils/js';
 
 /**
  * Support for Forms-based Login.
- *
- *  @private
+ * @private
  */
 @HoistModel
 export class LoginPanelModel {
 
     @bindable username = '';
     @bindable password = '';
-    @observable warning = '';
+    @bindable warning = '';
+    @bindable loginInProgress = false;
+
+    @managed loadModel = new PendingTaskModel();
 
     @computed
     get isValid() {
         return this.username && this.password;
     }
 
-    submit() {
-        if (!this.isValid) return;
+    // Debounce to defend against double-click fast enough to get through masking + button disable.
+    @debounced(300)
+    async submitAsync() {
+        const {username, password, loadModel, isValid} = this;
+        if (!isValid) return;
 
-        const {username, password} = this;
-        XH.fetchJson({
-            url: 'xh/login',
-            params: {username, password}
-        }).thenAction(r => {
-            this.warning = r.success ? '' : 'Login Incorrect';
-            if (r.success) {
-                XH.completeInitAsync();
+        try {
+            this.setLoginInProgress(true);
+            const resp = await XH.fetchJson({
+                url: 'xh/login',
+                params: {username, password}
+            }).linkTo(
+                loadModel
+            ).catchDefault({
+                hideParams: ['password']
+            });
+
+            if (resp.success) {
+                this.setWarning('');
+                await XH.completeInitAsync();
+            } else {
+                this.setWarning('Login incorrect.');
             }
-        }).catchDefault({
-            hideParams: ['password']
-        });
+        } finally {
+            this.setLoginInProgress(false);
+        }
+
     }
 }

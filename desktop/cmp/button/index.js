@@ -2,11 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-export * from './AppMenuButton';
+
+// Export button first as others (e.g. AppMenuButton) depend on its static propTypes.
 export * from './Button';
+export * from './AppMenuButton';
 export * from './ButtonGroup';
+export * from './ColAutosizeButton';
 export * from './ColChooserButton';
 export * from './ExportButton';
 export * from './FeedbackButton';

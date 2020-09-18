@@ -1,5 +1,5 @@
 .xh-toolbar {
-  padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
+  padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
   color: var(--xh-tbar-text-color);
   background-color: var(--xh-tbar-bg);
   width: 100%;
@@ -7,7 +7,27 @@
   align-items: center;
   flex-wrap: nowrap;
 
-  > * {
+  // Overflow box
+  .bp3-overflow-list {
+    flex: 1;
+    align-items: center;
+
+    > * {
+      white-space: nowrap;
+
+      // The overflow space needs to be able to shrink - BP checks this to determine overflow
+      &:not(.bp3-overflow-list-spacer) {
+        flex-shrink: 0;
+      }
+
+      &:not([class*='xh-no-pad']) {
+        margin-left: var(--xh-tbar-item-pad-px);
+      }
+    }
+  }
+
+  // Non-overflow mode
+  &:not(&--overflow) > * {
     white-space: nowrap;
     flex-shrink: 0;
 
@@ -36,6 +56,7 @@
     }
   }
 
+  // Vertical mode
   &--vertical {
     width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
@@ -65,6 +86,33 @@
 
     &.bp3-inline {
       margin-right: 0;
+    }
+  }
+}
+
+.xh-toolbar-overflow-popover {
+  border: 1px solid var(--xh-tbar-border-color);
+
+  .bp3-popover-arrow-border,
+  .bp3-popover-arrow-fill {
+    fill: var(--xh-tbar-border-color) !important;
+  }
+
+  .bp3-popover-content {
+    color: var(--xh-tbar-text-color);
+    background-color: var(--xh-tbar-bg);
+
+    & > .xh-vbox {
+      align-items: flex-start;
+
+      & > * {
+        margin: 2px var(--xh-tbar-item-pad-px);
+      }
+
+      .xh-toolbar__separator {
+        border-bottom: 1px solid var(--xh-tbar-separator-color);
+        align-self: stretch;
+      }
     }
   }
 }

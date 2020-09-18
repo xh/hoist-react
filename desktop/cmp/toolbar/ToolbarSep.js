@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
-
+import {hoistCmp} from '@xh/hoist/core';
 import './Toolbar.scss';
 
 /**
@@ -14,7 +13,7 @@ import './Toolbar.scss';
  */
 export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
     displayName: 'ToolbarSeparator',
-    model: false, observable: false,
+    model: false, observer: false,
     className: 'xh-toolbar__separator',
 
     render(props) {

@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, XH, uses, useLocalModel} from '@xh/hoist/core';
-import {frame} from '@xh/hoist/cmp/layout';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {div, frame} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, elem, XH} from '@xh/hoist/core';
+import {splitLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {useOnUnmount} from '@xh/hoist/utils/react';
-
-import {agGridReact, AgGridModel} from './index';
+import {isNil} from 'lodash';
 import './AgGrid.scss';
+import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+import {AgGridModel} from './AgGridModel';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -31,20 +32,29 @@ import './AgGrid.scss';
  * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
  * managed option would conflict with or complicate access to those features.
  */
-export const AG_ROW_HEIGHTS = {mobile: 34, desktop: 28};
-export const AG_COMPACT_ROW_HEIGHTS = {mobile: 30, desktop: 24};
-
 export const [AgGrid, agGrid] = hoistCmp.withFactory({
     displayName: 'AgGrid',
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
     render({model, key, className, onGridReady, ...props}) {
-        const [layoutProps, agGridProps] = splitLayoutProps(props),
-            {compact, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
-            {darkTheme, isMobile} = XH;
 
-        const impl = useLocalModel(() => new LocalModel(model));
+        if (!AgGridReact) {
+            console.error(
+                'ag-Grid has not been imported in to this application. Please import and ' +
+                'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'ag-Grid library not available.'
+            });
+        }
+
+        const [layoutProps, agGridProps] = splitLayoutProps(props),
+            {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
+            {darkTheme, isDesktop} = XH;
+
+        const impl = useLocalModel(() => new LocalModel(model, agGridProps));
         impl.onGridReady = onGridReady;
 
         useOnUnmount(() => {
@@ -55,29 +65,45 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
             className: classNames(
                 className,
                 darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
-                compact ? 'xh-ag-grid--compact' : 'xh-ag-grid--standard',
+                `xh-ag-grid--${sizingMode}`,
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
-                !isMobile && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
+                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
-            item: agGridReact({
+            item: elem(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 navigateToNextCell: impl.navigateToNextCell,
+                headerHeight: model.headerHeight,
 
                 // Pass others on directly.
                 ...agGridProps,
 
-                // Always specify an onGridReady handler to wire the model to the ag APIs, but note
-                // the implementation will also call any onGridReady passed via props.
+                // These handlers are overridden, but also delegate to props passed
                 onGridReady: impl.noteGridReady
             })
         });
     }
 });
+
+/**
+ * Row heights (in pixels) enumerated here and available for global override if required
+ * by stomping on these values directly. To override for individual grids, supply a custom
+ * `getRowHeight` function as a direct prop to this component, or via `Grid.agOptions`.
+ */
+AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
+AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
+AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
+
+/**
+ * Header heights (in pixels)
+ */
+AgGrid.HEADER_HEIGHTS = {large: 36, standard: 32, compact: 28, tiny: 22};
+AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
+AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 
 @HoistModel
 class LocalModel {
@@ -85,8 +111,21 @@ class LocalModel {
     model;
     onGridReady;
 
-    constructor(model) {
+    constructor(model, agGridProps) {
         this.model = model;
+        this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(model) :  null;
+
+        // Only update header height if was not explicitly provided to the component
+        if (isNil(agGridProps.headerHeight)) {
+            this.addReaction({
+                track: () => [this.model.agApi, this.model.sizingMode],
+                run: ([api, sizingMode]) => {
+                    if (!api) return;
+                    const height = AgGrid.getHeaderHeightForSizingMode(sizingMode);
+                    api.setHeaderHeight(height);
+                }
+            });
+        }
     }
 
     noteGridReady = (agParams) => {
@@ -96,48 +135,11 @@ class LocalModel {
         }
     };
 
-    getRowHeight = () => {
-        const heights = this.model.compact ? AG_COMPACT_ROW_HEIGHTS : AG_ROW_HEIGHTS;
-        return XH.isMobile ? heights.mobile : heights.desktop;
-    };
-
     navigateToNextCell = (agParams) => {
-        if (XH.isMobile) return;
-
-        const {nextCellPosition, previousCellPosition, event} = agParams,
-            {agApi} = this.model,
-            shiftKey = event.shiftKey,
-            prevIndex = previousCellPosition ? previousCellPosition.rowIndex : null,
-            nextIndex = nextCellPosition ? nextCellPosition.rowIndex : null,
-            prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
-            nextNode = nextIndex != null ? agApi.getDisplayedRowAtIndex(nextIndex) : null,
-            prevNodeIsParent = prevNode && prevNode.allChildrenCount,
-            KEY_UP = 38, KEY_DOWN = 40, KEY_LEFT = 37, KEY_RIGHT = 39;
-
-        switch (agParams.key) {
-            case KEY_DOWN:
-            case KEY_UP:
-                if (nextNode) {
-                    if (!shiftKey || !prevNode.isSelected()) {
-                        // 0) Simple move of selection
-                        nextNode.setSelected(true, true);
-                    } else {
-                        // 1) Extend or shrink multi-selection.
-                        if (!nextNode.isSelected()) {
-                            nextNode.setSelected(true, false);
-                        } else {
-                            prevNode.setSelected(false, false);
-                        }
-                    }
-                }
-                return nextCellPosition;
-            case KEY_LEFT:
-                if (prevNodeIsParent && prevNode.expanded) prevNode.setExpanded(false);
-                return nextCellPosition;
-            case KEY_RIGHT:
-                if (prevNodeIsParent && !prevNode.expanded) prevNode.setExpanded(true);
-                return nextCellPosition;
-            default:
+        if (this.rowKeyNavSupport) {
+            return this.rowKeyNavSupport.navigateToNextCell(agParams);
         }
     };
+
+    getRowHeight = () => AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
 }

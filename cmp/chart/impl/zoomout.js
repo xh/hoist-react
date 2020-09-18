@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -10,6 +10,7 @@
  * Gesture can be used in place of the default "reset zoom" button.
  */
 export function installZoomoutGesture(Highcharts) {
+    if (!Highcharts) return;
     Highcharts.wrap(Highcharts.Chart.prototype, 'init', function(proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 

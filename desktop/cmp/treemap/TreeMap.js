@@ -2,24 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
 import {box, div, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useLocalModel, uses, XH, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {start} from '@xh/hoist/promise';
 import {withShortDebug} from '@xh/hoist/utils/js';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import PT from 'prop-types';
 import React from 'react';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import {createObservableRef, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
-
 import './TreeMap.scss';
-
 import {TreeMapModel} from './TreeMapModel';
 
 /**
@@ -36,8 +40,20 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     className: 'xh-treemap',
 
     render({model, className, ...props}) {
+
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js.  See Toolbox for an example.'
+            );
+            return 'Highcharts not available';
+        }
+
         const impl = useLocalModel(() => new LocalModel(model)),
-            ref = useOnResize((e) => impl.resizeChartAsync(e), 100);
+            ref = composeRefs(
+                useOnResize(impl.onResizeAsync, {debounce: 100}),
+                useOnVisibleChange(impl.onVisibleChange)
+            );
 
         const renderError = (error) => frame({
             className: 'xh-treemap__error-message',
@@ -81,7 +97,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory({
     }
 });
 
-TreeMapModel.propTypes = {
+TreeMap.propTypes = {
     /** Primary component model instance. */
     model: PT.oneOfType([PT.instanceOf(TreeMapModel), PT.object])
 };
@@ -123,10 +139,14 @@ class LocalModel {
         });
     }
 
-
     createOrReloadHighChart() {
         const chartElem = this.chartRef.current;
-        if (!chartElem) return;
+        if (!chartElem) {
+            // Ensure any chart instance is cleaned up if the ref drops.
+            // This will ensure it is recreated on next render cycle when the ref and DOM are back.
+            this.destroyHighChart();
+            return;
+        }
 
         // Extract and compare a subset of the config across calls to determine if we should
         // recreate the entire chart or just reload the series data.
@@ -149,39 +169,46 @@ class LocalModel {
         if (!chartElem) return;
 
         const newData = config.series[0].data,
-            parentEl = chartElem.parentElement;
+            parentEl = chartElem.parentElement,
+            parentDims = {
+                width: parentEl.offsetWidth,
+                height: parentEl.offsetHeight
+            };
 
-        assign(config.chart, {
-            width: parentEl.offsetWidth,
-            height: parentEl.offsetHeight,
-            renderTo: chartElem
-        });
+        this.destroyHighChart();
 
+        // Skip creating HighCharts instance if hidden - we will
+        // instead create when it becomes visible
+        if (parentDims.width === 0 || parentDims.height === 0) return;
+
+        assign(config.chart, parentDims, {renderTo: chartElem});
         withShortDebug(`Creating new TreeMap | ${newData.length} records`, () => {
-            this.destroyHighChart();
             this.chart = Highcharts.chart(config);
         }, this);
     }
 
     reloadSeriesData(newData) {
         if (!this.chart) return;
-
         withShortDebug(`Updating TreeMap series | ${newData.length} records`, () => {
             this.chart.series[0].setData(newData, true, false);
         }, this);
     }
 
-    async resizeChartAsync(e) {
+    onResizeAsync = async ({width, height}) => {
         if (!this.chart) return;
-
         await start(() => {
-            const {width, height} = e[0].contentRect;
             if (width > 0 && height > 0) {
                 this.chart.setSize(width, height, false);
             }
         });
         this.updateLabelVisibility();
-    }
+    };
+
+    onVisibleChange = (visible) => {
+        if (visible && !this.chart) {
+            this.createOrReloadHighChart();
+        }
+    };
 
     destroy() {
         this.destroyHighChart();
@@ -220,10 +247,10 @@ class LocalModel {
     }
 
     getModelConfig() {
-        const {data, highchartsConfig, algorithm, tooltip, maxNodes} = this.model,
+        const {data, algorithm, tooltip, maxNodes, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
-        return {
+        return merge({
             tooltip: {
                 enabled: !!tooltip,
                 useHTML: true,
@@ -252,9 +279,8 @@ class LocalModel {
                     style: {textOutline: 'none', visibility: 'hidden'}
                 },
                 events: {click: this.onClick}
-            }],
-            ...highchartsConfig
-        };
+            }]
+        }, highchartsConfig);
     }
 
     //----------------------
@@ -292,7 +318,7 @@ class LocalModel {
         if (maxDepth && gridModel && gridModel.treeMode) {
             toSelect = new Set(selectedIds.map(id => {
                 const record = store.getById(id);
-                return record ? record.xhTreePath.slice(0, maxDepth).pop() : null;
+                return record ? record.treePath.slice(0, maxDepth).pop() : null;
             }));
         } else {
             toSelect = new Set(selectedIds);
@@ -302,6 +328,8 @@ class LocalModel {
         this.chart.series[0].data.forEach(node => {
             node.select(toSelect.has(node.id), true);
         });
+
+        if (gridModel) gridModel.ensureSelectionVisible();
     }
 
     //----------------------
@@ -340,9 +368,9 @@ class LocalModel {
     //----------------------
     defaultTooltip = (record) => {
         const {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel} = this.model,
-            name = record[labelField],
-            value = record[valueField],
-            heat = record[heatField],
+            name = record.data[labelField],
+            value = record.data[valueField],
+            heat = record.data[heatField],
             labelDiv = `<div class='xh-treemap-tooltip__label'>${name}</div>`,
             valueDiv = (`
                 <div class='xh-treemap-tooltip__row'>

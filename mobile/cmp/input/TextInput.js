@@ -2,15 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import PT from 'prop-types';
-import {HoistComponent, LayoutSupport, elemFactory} from '@xh/hoist/core';
+import {HoistInput} from '@xh/hoist/cmp/input';
+import {elemFactory, HoistComponent, LayoutSupport} from '@xh/hoist/core';
 import {input} from '@xh/hoist/kit/onsen';
 import {withDefault} from '@xh/hoist/utils/js';
-import {HoistInput} from '@xh/hoist/cmp/input';
-
+import PT from 'prop-types';
 import './TextInput.scss';
 
 /**
@@ -98,7 +96,9 @@ export class TextInput extends HoistInput {
     }
 
     onChange = (ev) => {
-        this.noteValueChange(ev.target.value);
+        let {value} = ev.target;
+        if (value === '') value = null;
+        this.noteValueChange(value);
     };
 
     onKeyDown = (ev) => {

@@ -2,16 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
+import {span} from '@xh/hoist/cmp/layout';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isString} from 'lodash';
 import moment from 'moment';
-import {span} from '@xh/hoist/cmp/layout';
-
-import {saveOriginal, createRenderer} from './FormatUtils';
 import {fmtSpan} from './FormatMisc';
-import {isLocalDate} from '@xh/hoist/utils/datetime';
+import {createRenderer, saveOriginal} from './FormatUtils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
     DATETIME_FMT = 'YYYY-MM-DD h:mma',
@@ -23,7 +21,7 @@ const INVALID_DATE = moment(null).format();
 /**
  * Render dates and times with specified format
  *
- * @param {*} v - a date value to format, can be any value MomentJs can parse.
+ * @param {*} v - a date value to format, can be any value MomentJs can parse or a LocalDate.
  *      @see {@link https://momentjs.com/docs/#/parsing/|MomentJS Docs}
  * @param {(Object|string)} [opts] - a MomentJs format string or an options object.
  * @param {string} [opts.nullDisplay] - display string for null values.
@@ -35,8 +33,7 @@ const INVALID_DATE = moment(null).format();
  *      Not typically used by applications.
  */
 export function fmtDate(v, opts = {}) {
-    if (v == null) return opts.nullDisplay || '';
-    if (isString(v)) return v;
+    if (v == null) return opts.nullDisplay ?? '';
     if (isString(opts)) opts = {fmt: opts};
 
     defaults(opts, {fmt: DATE_FMT, tooltip: null});

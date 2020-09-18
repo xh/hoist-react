@@ -2,23 +2,27 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import PT from 'prop-types';
-import {assign, castArray, clone, merge} from 'lodash';
-import {bindable} from '@xh/hoist/mobx';
+import {useEffect} from 'react';
+import composeRefs from '@seznam/compose-react-refs';
+import {box, div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-
-import {XH, hoistCmp, uses, useLocalModel, HoistModel} from '@xh/hoist/core';
-import {div, box} from '@xh/hoist/cmp/layout';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
-
-import {LightTheme} from './theme/Light';
-import {DarkTheme} from './theme/Dark';
-
+import {bindable, runInAction} from '@xh/hoist/mobx';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
+import {assign, castArray, clone, isEqual, merge, omit} from 'lodash';
+import PT from 'prop-types';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
+import {DarkTheme} from './theme/Dark';
+import {LightTheme} from './theme/Light';
+
 installZoomoutGesture(Highcharts);
 
 /**
@@ -32,11 +36,25 @@ export const [Chart, chart] = hoistCmp.withFactory({
     className: 'xh-chart',
 
     render({model, className, aspectRatio, ...props}) {
-        const impl = useLocalModel(LocalModel),
-            ref = useOnResize((e) => impl.resizeChart(e));
 
-        impl.setAspectRatio(aspectRatio);
-        impl.model = model;
+        if (!Highcharts) {
+            console.error(
+                'Highcharts has not been imported in to this application. Please import and ' +
+                'register in Bootstrap.js. See the XH Toolbox app for an example.'
+            );
+            return div({
+                className: 'xh-text-color-accent xh-pad',
+                item: 'Highcharts library not available.'
+            });
+        }
+
+        const impl = useLocalModel(() => new LocalModel(model, aspectRatio)),
+            ref = composeRefs(
+                useOnResize(impl.onResize),
+                useOnVisibleChange(impl.onVisibleChange)
+            );
+
+        useEffect(() => impl.setAspectRatio(aspectRatio), [impl, aspectRatio]);
 
         // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
         const layoutProps = getLayoutProps(props);
@@ -44,9 +62,6 @@ export const [Chart, chart] = hoistCmp.withFactory({
         if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
             layoutProps.flex = 1;
         }
-
-        // No-op on first render - will re-render upon setting the chartRef
-        impl.renderHighChart();
 
         // Inner div required to be the ref for the chart element
         return box({
@@ -77,30 +92,89 @@ Chart.propTypes = {
 class LocalModel {
     @bindable aspectRatio;
     chartRef = createObservableRef();
-    chart = null;
     model;
+    prevSeriesConfig;
+
+    constructor(model, aspectRatio) {
+        this.model = model;
+        this.aspectRatio = aspectRatio;
+        this.addReaction({
+            track: () => [
+                this.aspectRatio,
+                this.chartRef.current,
+                model.highchartsConfig,
+                XH.darkTheme
+            ],
+            run: () => this.renderHighChart()
+        });
+        this.addReaction({
+            track: () => model.series,
+            run: () => this.updateSeries()
+        });
+    }
+
+    set chart(newChart) {
+        runInAction(() => this.model.highchart = newChart);
+    }
+
+    get chart() {
+        return this.model.highchart;
+    }
+
+    updateSeries() {
+        const newSeries = this.model.series,
+            seriesConfig = newSeries.map(it => omit(it, 'data')),
+            {prevSeriesConfig, chart} = this,
+            sameConfig = chart && isEqual(seriesConfig, prevSeriesConfig),
+            sameSeriesCount = chart && prevSeriesConfig?.length === seriesConfig.length;
+
+        // If metadata not changed or # of series the same we can do more minimal in-place updates
+        if (sameConfig) {
+            newSeries.forEach((s, i) => chart.series[i].setData(s.data, false));
+            chart.redraw();
+        } else if (sameSeriesCount) {
+            newSeries.forEach((s, i) => chart.series[i].update(s, false));
+            chart.redraw();
+        } else {
+            this.renderHighChart();
+        }
+        this.prevSeriesConfig = seriesConfig;
+    }
 
     renderHighChart() {
         this.destroyHighChart();
         const chartElem = this.chartRef.current;
         if (chartElem) {
             const config = this.getMergedConfig(),
-                parentEl = chartElem.parentElement;
+                parentEl = chartElem.parentElement,
+                parentDims = {
+                    width: parentEl.offsetWidth,
+                    height: parentEl.offsetHeight
+                };
 
-            assign(config.chart, this.getChartDims({
-                width: parentEl.offsetWidth,
-                height: parentEl.offsetHeight
-            }));
+            // Skip creating HighCharts instance if hidden - we will
+            // instead create when it becomes visible
+            if (parentDims.width === 0 || parentDims.height === 0) return;
+
+            const dims = this.getChartDims(parentDims);
+            assign(config.chart, dims);
 
             config.chart.renderTo = chartElem;
             this.chart = Highcharts.chart(config);
         }
     }
 
-    resizeChart(e) {
-        const {width, height} = this.getChartDims(e[0].contentRect);
+    onResize = (size) => {
+        if (!this.chart) return;
+        const {width, height} = this.getChartDims(size);
         this.chart.setSize(width, height, false);
-    }
+    };
+
+    onVisibleChange = (visible) => {
+        if (visible && !this.chart) {
+            this.renderHighChart();
+        }
+    };
 
     getChartDims({width, height}) {
         const {aspectRatio} = this;
@@ -192,6 +266,10 @@ class LocalModel {
     getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
+                // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming.
+                // This is especially important when Navigator shown; first reload of data can cause a surprising tiny rezoom.
+                minPadding: 0,
+                maxPadding: 0,
                 dateTimeLabelFormats: {
                     day: '%e-%b-%y',
                     week: '%e-%b-%y',

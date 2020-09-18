@@ -2,16 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
-import PT from 'prop-types';
-import {XH, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
+import {button, menuButton, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {menu} from '@xh/hoist/mobile/cmp/menu';
+import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
-import {button, navigatorBackButton, menuButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
-
+import PT from 'prop-types';
 import './AppBar.scss';
 
 /**
@@ -38,7 +37,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         hideRefreshButton,
         appMenuButtonProps = {},
         backButtonProps = {},
-        refreshButtonProps = {}
+        refreshButtonProps = {},
+        appMenuButtonPosition = 'right'
     }) {
 
         const navigatorModel = useContextModel(NavigatorModel);
@@ -52,6 +52,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                         navigatorBackButton({
                             omit: hideBackButton,
                             ...backButtonProps
+                        }),
+                        menuButton({
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'left',
+                            ...appMenuButtonProps
                         }),
                         ...leftItems || []
                     ]
@@ -79,29 +83,45 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
                             ...refreshButtonProps
                         }),
                         menuButton({
-                            omit: hideAppMenuButton,
+                            omit: hideAppMenuButton || appMenuButtonPosition != 'right',
                             ...appMenuButtonProps
                         })
                     ]
-                })
+                }),
+                appMenu({align: appMenuButtonPosition})
             ]
         });
     }
 });
+
+const appMenu = hoistCmp.factory({
+    displayName: 'AppMenu',
+
+    render({align}) {
+        const menuModel = XH.appModel.appMenuModel;
+        if (!menuModel) return null;
+        return menu({
+            model: menuModel,
+            width: 260,
+            align
+        });
+    }
+});
+
 
 AppBar.propTypes = {
     /** App icon to display to the left of the title. */
     icon: PT.element,
 
     /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
-    title: PT.string,
+    title: PT.node,
 
     /** Items to be added to the left side of the AppBar, before the title buttons. */
     leftItems: PT.node,
 
     /** Items to be added to the right side of the AppBar, before the refresh button. */
     rightItems: PT.node,
-    
+
     /** True to hide the AppMenuButton. */
     hideAppMenuButton: PT.bool,
 
@@ -113,6 +133,9 @@ AppBar.propTypes = {
 
     /** Allows overriding the default properties of the App Menu button. @see MenuButton */
     appMenuButtonProps: PT.object,
+
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition: PT.oneOf(['left', 'right']),
 
     /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
     backButtonProps: PT.object,

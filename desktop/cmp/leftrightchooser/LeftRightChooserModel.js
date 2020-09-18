@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {computed} from '@xh/hoist/mobx';
-import {convertIconToSvg, Icon} from '@xh/hoist/icon';
 
 /**
  * A Model for managing the state of a LeftRightChooser.
@@ -46,20 +46,20 @@ export class LeftRightChooserModel {
      * @param {function} fn - predicate function for filtering.
      */
     setDisplayFilter(fn) {
-        this.leftModel.store.setFilter(fn);
-        this.rightModel.store.setFilter(fn);
+        this.leftModel.setFilter(fn);
+        this.rightModel.setFilter(fn);
     }
 
     /** Currently 'selected' values on the right hand side. */
     @computed
     get rightValues() {
-        return this.rightModel.store.allRecords.map(it => it.value);
+        return this.rightModel.store.allRecords.map(it => it.data.value);
     }
 
     /** Currently 'selected' values on the left hand side. */
     @computed
     get leftValues() {
-        return this.leftModel.store.allRecords.map(it => it.value);
+        return this.leftModel.store.allRecords.map(it => it.data.value);
     }
 
     /**
@@ -164,14 +164,14 @@ export class LeftRightChooserModel {
     // Implementation
     //------------------------
     getTextColRenderer(side) {
-        const groupingEnabled = side == 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
-            lockSvg = convertIconToSvg(Icon.lock({prefix: 'fal'}));
+        const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
+            lockSvg = Icon.lock({prefix: 'fal', asHtml: true});
 
         return (v, {record}) => {
             const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return `
                 <div class='xh-lr-chooser__item-row ${groupClass}'>
-                    ${v} ${record.locked ? lockSvg : ''}
+                    ${v} ${record.data.locked ? lockSvg : ''}
                 </div>
             `;
         };
@@ -193,8 +193,9 @@ export class LeftRightChooserModel {
 
     moveRows(rows) {
         rows.forEach(rec => {
-            if (rec.locked) return;
-            rec.raw.side = (rec.side === 'left' ? 'right' : 'left');
+            const {locked, side} = rec.data;
+            if (locked) return;
+            rec.raw.side = (side === 'left' ? 'right' : 'left');
         });
 
         this.refreshStores();

@@ -2,18 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-
-import {XH, HoistModel} from '@xh/hoist/core';
-import {observable, action} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {
+    HoistModel,
+    managed,
+    ManagedRefreshContextModel,
+    PersistenceProvider,
+    PrefProvider,
+    RefreshMode,
+    RenderMode,
+    XH
+} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {start} from '@xh/hoist/promise';
+import {apiRemoved} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse functionality, including the option to persist such state into a Hoist preference.
+ * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
 @HoistModel
 export class PanelModel {
@@ -26,13 +34,18 @@ export class PanelModel {
     collapsible;
     defaultSize;
     minSize;
+    maxSize;
     defaultCollapsed;
     side;
-    collapsedRenderMode;
+    renderMode;
+    refreshMode;
     prefName;
     showSplitter;
     showSplitterCollapseButton;
     showHeaderCollapseButton;
+
+    @managed refreshContextModel;
+    @managed provider;
 
     //---------------------
     // Observable State
@@ -46,23 +59,30 @@ export class PanelModel {
     /** Is this panel currently resizing? */
     @observable isResizing = false;
 
+    get isActive() {
+        return !this.collapsed;
+    }
+
     /**
-     * @param {Object} config
-     * @param {boolean} [config.resizable] - Can panel be resized?
-     * @param {boolean} [config.resizeWhileDragging] - Redraw panel as resize happens?
-     * @param {boolean} [config.collapsible] - Can panel be collapsed, showing only its header?
-     * @param {number} config.defaultSize - Default size of panel (in pixels).
-     * @param {number} config.minSize - Minimum size that panel can be resized to (in pixels).
-     * @param {number} [config.defaultCollapsed] - Default collapsed state.
-     * @param {string} config.side - Side of panel that it collapses/shrinks toward. This also corresponds
+     * @param {Object} c - PanelModel configuration
+     * @param {boolean} [c.resizable] - Can panel be resized?
+     * @param {boolean} [c.resizeWhileDragging] - Redraw panel as resize happens?
+     * @param {boolean} [c.collapsible] - Can panel be collapsed, showing only its header?
+     * @param {number} c.defaultSize - Default size (in px) of the panel.
+     * @param {number} [c.minSize] - Minimum size (in px) to which the panel can be resized.
+     * @param {?number} [c.maxSize] - Maximum size (in px) to which the panel can be resized.
+     * @param {boolean} [c.defaultCollapsed] - Default collapsed state.
+     * @param {string} c.side - Side towards which the panel collapses or shrinks. This relates
      *      to the position within a parent vbox or hbox in which the panel should be placed.
-     * @param {string} [config.collapsedRenderMode] - How should collapsed content be rendered?
-     *      Valid values include 'lazy', 'always', and 'unmountOnHide'.
-     * @param {string} [config.prefName] - preference name to store sizing and collapsed state.
-     * @param {boolean} [config.showSplitter] - Should a splitter be rendered at the panel edge?
-     * @param {boolean} [config.showSplitterCollapseButton] - Should the collapse button be visible
+     * @param {RenderMode} [c.renderMode] - How should collapsed content be rendered?
+     *      Ignored if collapsible is false.
+     * @param {RefreshMode} [c.refreshMode] - How should collapsed content be refreshed?
+     *      Ignored if collapsible is false.
+     * @param {PersistOptions} [c.persistWith] - options governing persistence.
+     * @param {boolean} [c.showSplitter] - Should a splitter be rendered at the panel edge?
+     * @param {boolean} [c.showSplitterCollapseButton] - Should the collapse button be visible
      *      on the splitter? Only applicable if the splitter is visible and the panel is collapsible.
-     * @param {boolean} [config.showHeaderCollapseButton] - Should a collapse button be added to the
+     * @param {boolean} [c.showHeaderCollapseButton] - Should a collapse button be added to the
      *      end of the panel header? Only applicable if the panel is collapsible.
      */
     constructor({
@@ -71,13 +91,16 @@ export class PanelModel {
         resizeWhileDragging = false,
         defaultSize,
         minSize = 0,
+        maxSize = null,
         defaultCollapsed = false,
         side,
-        collapsedRenderMode = 'lazy',
-        prefName = null,
+        renderMode = RenderMode.LAZY,
+        refreshMode = RefreshMode.ON_SHOW_LAZY,
+        persistWith = null,
         showSplitter = resizable || collapsible,
         showSplitterCollapseButton = showSplitter && collapsible,
-        showHeaderCollapseButton = true
+        showHeaderCollapseButton = true,
+        ...rest
     }) {
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
@@ -87,41 +110,59 @@ export class PanelModel {
             resizable = false;
         }
 
-        // Set immutables
+        apiRemoved(rest.prefName, 'prefName', 'Specify "persistWith" instead.');
+
+        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
+            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
+            maxSize = null;
+        }
+
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
         this.minSize = Math.min(minSize, defaultSize);
+        this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
-        this.collapsedRenderMode = collapsedRenderMode;
+        this.renderMode = renderMode;
+        this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = showHeaderCollapseButton;
 
-        if (prefName && !XH.prefService.hasKey(prefName)) {
-            console.warn(`Unknown preference for storing state of Panel '${prefName}'`);
-            prefName = null;
+        if (this.collapsible) {
+            this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
-        this.prefName = prefName;
 
-        // Set observable state
-        const initial = prefName ? XH.getPref(prefName) : {};
-        this.setSize(withDefault(initial.size, defaultSize));
-        this.setCollapsed(withDefault(initial.collapsed, defaultCollapsed));
-
-        if (prefName) {
-            this.addReaction(this.prefReaction());
+        // Read state from provider -- fail gently
+        let state = null;
+        if (persistWith) {
+            try {
+                this.provider = PersistenceProvider.create({path: 'panel', ...persistWith});
+                state = this.provider.read() ?? this.legacyState();
+            } catch (e) {
+                console.error(e);
+                XH.safeDestroy(this.provider);
+                this.provider = null;
+            }
         }
-    }
 
-    isComponentModel() {
-        return true;
+        // Initialize state.
+        this.setSize(state?.size ?? defaultSize);
+        this.setCollapsed(state?.collapsed ?? defaultCollapsed);
+
+        // Attach to provider last
+        if (this.provider) {
+            this.addReaction({
+                track: () => [this.collapsed, this.size],
+                run: ([collapsed, size]) => this.provider.write({collapsed, size})
+            });
+        }
     }
 
     //----------------------
-    // Actions
+    // Actions + public setters
     //----------------------
     @action
     setCollapsed(collapsed) {
@@ -135,6 +176,10 @@ export class PanelModel {
         this.dispatchResize();
     }
 
+    toggleCollapsed() {
+        this.setCollapsed(!this.collapsed);
+    }
+
     @action
     setSize(v) {
         this.size = v;
@@ -146,8 +191,12 @@ export class PanelModel {
         if (!v) this.dispatchResize();
     }
 
-    toggleCollapsed() {
-        this.setCollapsed(!this.collapsed);
+    /**
+     * Enable/disable dynamic re-rendering of contents while dragging to resize.
+     * @param {boolean} v
+     */
+    setResizeWhileDragging(v) {
+        this.resizeWhileDragging = v;
     }
 
     //---------------------------------------------
@@ -165,12 +214,22 @@ export class PanelModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    prefReaction() {
-        return {
-            track: () => [this.collapsed, this.size],
-            run: ([collapsed, size]) => XH.setPref(this.prefName, {collapsed, size}),
-            delay: 500   // prefs are already batched, keep tight.
-        };
+    legacyState() {
+        const {provider} = this;
+        if (provider instanceof PrefProvider) {
+            try {
+                const data = XH.getPref(provider.key);
+                if (data && !isNil(data.collapsed) && !isNil(data.size)) {
+                    provider.write(data);
+                    provider.clear('collapsed');
+                    provider.clear('size');
+                    return data;
+                }
+            } catch (e) {
+                console.error('Failed reading legacy state');
+            }
+        }
+        return null;
     }
 
     dispatchResize() {

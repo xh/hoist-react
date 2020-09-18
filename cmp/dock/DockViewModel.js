@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
-import {bindable, observable, action} from '@xh/hoist/mobx';
+import {HoistModel, managed, ManagedRefreshContextModel, XH} from '@xh/hoist/core';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -24,10 +24,26 @@ export class DockViewModel {
     @bindable icon;
     @observable docked;
     @observable collapsed;
+    width;
+    height;
+    collapsedWidth;
     allowClose;
     allowDialog;
 
     containerModel;
+    @managed refreshContextModel;
+
+    get isActive() {
+        return !this.collapsed;
+    }
+
+    get renderMode() {
+        return this._renderMode ?? this.containerModel.renderMode;
+    }
+
+    get refreshMode() {
+        return this._refreshMode ?? this.containerModel.refreshMode;
+    }
 
     /**
      * @param {Object} c - DockViewModel configuration.
@@ -35,9 +51,17 @@ export class DockViewModel {
      * @param {DockContainerModel} c.containerModel - parent DockContainerModel. Provided by the
      *      container when constructing these models - no need to specify manually.
      * @param {string} [c.title] - Title text added to the header.
-     * @param {Icon} [c.icon] - An icon placed at the left-side of the header.
-     * @param {Object} c.content - content to be rendered by this DockedView. Component class or a
-     *      custom element factory of the form returned by elemFactory.
+     * @param {Element} [c.icon] - An icon placed at the left-side of the header.
+     * @param {(Object|function)} c.content - content to be rendered by this DockView.
+     *      HoistComponent or a function returning a react element.
+     * @param {number} [c.width] - width in pixels. If not set, width will be determined by the content.
+     * @param {number} [c.height] - height in pixels. If not set, height will be determined by the content.
+     * @param {number} [c.collapsedWidth] - width of collapsed header in pixels. If not set, width
+     *      will be determined by the length of the title.
+     * @param {RenderMode} [c.renderMode] - strategy for rendering this DockView. If null, will
+     *      default to its container's mode. See enum for description of supported modes.
+     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing this DockView. If null, will
+     *      default to its container's mode. See enum for description of supported modes.
      * @param {boolean} [c.docked] - true (default) to initialise in dock, false to use Dialog.
      *      Respects allowDialog.
      * @param {boolean} [c.collapsed] - true to initialise collapsed, false (default) for expanded.
@@ -51,6 +75,11 @@ export class DockViewModel {
         title,
         icon,
         content,
+        width,
+        height,
+        collapsedWidth,
+        refreshMode,
+        renderMode,
         docked = true,
         collapsed = false,
         allowClose = true,
@@ -62,10 +91,19 @@ export class DockViewModel {
         this.title = title;
         this.icon = icon;
         this.content = content;
+        this.width = width;
+        this.height = height;
+        this.collapsedWidth = collapsedWidth;
+
         this.docked = docked;
         this.collapsed = collapsed;
         this.allowClose = allowClose;
         this.allowDialog = allowDialog;
+
+        this._renderMode = renderMode;
+        this._refreshMode = refreshMode;
+
+        this.refreshContextModel = new ManagedRefreshContextModel(this);
     }
 
     //-----------------------

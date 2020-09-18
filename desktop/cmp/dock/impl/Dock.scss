@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2019 Extremely Heavy Industries Inc.
+ * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
 .xh-dock-container {
@@ -33,18 +33,24 @@
 }
 
 .xh-dock-view {
+  display: flex;
   flex: 0 0 auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
 
   &__header {
-    align-items: center;
+    position: relative;
     height: var(--xh-title-height-px);
-    padding: var(--xh-title-pad-px);
     color: var(--xh-title-text-color);
     background-color: var(--xh-title-bg);
     border-top-right-radius: var(--xh-border-radius-px);
     border-top-left-radius: var(--xh-border-radius-px);
+
+    &__inner {
+      padding: var(--xh-title-pad-px);
+      height: var(--xh-title-height-px);
+      align-items: center;
+    }
 
     &__icon {
       margin: 0 6px 0 2px;
@@ -60,7 +66,11 @@
 
     &--compact {
       height: var(--xh-title-compact-height-px);
-      padding: 0 0 0 var(--xh-pad-half-px);
+
+      .xh-dock-view__header__inner {
+        height: var(--xh-title-compact-height-px);
+        padding: 0 0 0 var(--xh-pad-half-px);
+      }
 
       .xh-dock-view__header__title {
         font-size: var(--xh-title-compact-font-size-px);
@@ -73,7 +83,16 @@
     }
   }
 
+  &:not(&--collapsed) &__header__inner {
+    // Use absolute positioning to take the inner header out of flex consideration
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
   &__body {
+    flex: 1;
     background-color: var(--xh-bg);
     border: var(--xh-border-solid);
     border-width: 0 1px;
