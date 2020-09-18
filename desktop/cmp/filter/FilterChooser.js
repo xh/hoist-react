@@ -8,12 +8,13 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {Select, select} from '@xh/hoist/desktop/cmp/input';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
+import classNames from 'classnames';
+import PT from 'prop-types';
 
 import './FilterChooser.scss';
 
@@ -37,6 +38,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                     bind: 'selectValue',
                     ref: inputRef,
                     placeholder: 'Filter...',
+                    leftIcon: Icon.filter(),
                     enableMulti: true,
                     enableClear: true,
                     queryFn: (q) => model.queryAsync(q),
@@ -71,7 +73,20 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
 });
 
 FilterChooser.propTypes = {
-    ...Select.propTypes
+    /** True to focus the control on render. */
+    autoFocus: PT.bool,
+
+    /** True to show a "clear" button at the right of the control.  Defaults to true. */
+    enableClear: PT.bool,
+
+    /** Icon to display inline on the left side of the input. */
+    leftIcon: PT.element,
+
+    /** Placement of the dropdown menu relative to the input control. */
+    menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
+
+    /** Text to display when control is empty. */
+    placeholder: PT.string
 };
 
 
