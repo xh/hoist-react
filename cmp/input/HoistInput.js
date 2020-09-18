@@ -262,7 +262,7 @@ export class HoistInput extends Component {
     /**
      * Override of HoistComponent so we can add the xh-input and xh-input-invalid classes.
      * @param {...String} extraClassNames
-     * @returns {String}
+     * @returns {string}
      */
     getClassName(...extraClassNames) {
         const field = this.getField(),

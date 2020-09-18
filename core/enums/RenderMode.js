@@ -7,10 +7,8 @@
 
 /**
  * Options for how contents should be rendered by their parent container.
- *
  * Used by TabContainerModel, DashContainerModel, and PanelModel.
- *
- * @enum {RenderMode}
+ * @enum {string}
  */
 export const RenderMode = Object.freeze({
 
@@ -24,7 +22,3 @@ export const RenderMode = Object.freeze({
     UNMOUNT_ON_HIDE: 'unmountOnHide'
 
 });
-
-/**
- * @typedef {string} RenderMode
- */

@@ -18,6 +18,7 @@ import {
     GridExportService,
     IdentityService,
     IdleService,
+    JsonBlobService,
     LocalStorageService,
     PrefService,
     TrackService,
@@ -90,6 +91,8 @@ class XHClass {
     identityService;
     /** @member {IdleService} */
     idleService;
+    /** @member {JsonBlobService} */
+    jsonBlobService;
     /** @member {LocalStorageService} */
     localStorageService;
     /** @member {PrefService} */
@@ -415,15 +418,17 @@ class XHClass {
      *      the exception log and alert.
      */
     handleException(exception, options) {
-        return this.exceptionHandler.handleException(exception, options);
+        this.exceptionHandler.handleException(exception, options);
     }
 
     /**
-     * Create a new exception.
-     * @see Exception.create
+     * Create a new exception - {@see Exception} for Hoist conventions / extensions to JS Errors.
+     * @param {(Object|string)} cfg - properties to add to the returned Error.
+     *      If a string, will become the 'message' value.
+     * @returns {Error}
      */
-    exception(...args) {
-        return Exception.create(...args);
+    exception(cfg) {
+        return Exception.create(cfg);
     }
 
     //---------------------------
@@ -450,14 +455,12 @@ class XHClass {
     }
 
     /**
-     * Resets user customizations.
-     * Clears all user preferences and local grid state, then reloads the app.
+     * Resets user preferences and any persistent local application state, then reloads the app.
      */
     async restoreDefaultsAsync() {
-        return XH.prefService.clearAllAsync().then(() => {
-            XH.localStorageService.removeIf(key => key.startsWith('gridState'));
-            XH.reloadApp();
-        });
+        await this.prefService.clearAllAsync();
+        this.localStorageService.clear();
+        this.reloadApp();
     }
 
     /**
@@ -585,7 +588,9 @@ class XHClass {
             // Complete initialization process
             this.setAppState(S.INITIALIZING);
             await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(EnvironmentService, PrefService, ConfigService);
+            await this.installServicesAsync(
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
+            );
             await this.installServicesAsync(
                 AutoRefreshService, IdleService, GridAutosizeService, GridExportService, WebSocketService
             );
@@ -693,9 +698,14 @@ class XHClass {
                     case AppState.RUNNING:
                         XH.track({
                             category: 'App',
-                            msg: `Loaded ${this.clientAppName}`,
+                            msg: `Loaded ${this.clientAppCode}`,
                             elapsed: now - loadStarted - loginElapsed,
-                            data: getClientDeviceInfo()
+                            data: {
+                                appVersion: this.appVersion,
+                                appBuild: this.appBuild,
+                                locationHref: window.location.href,
+                                ...getClientDeviceInfo()
+                            }
                         });
                         disposer();
                         break;

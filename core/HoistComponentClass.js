@@ -73,7 +73,7 @@ export function HoistComponent(C) {
                     // 1) Return any model instance that has already been processed / set on the Component.
                     if (!isUndefined(_model)) return _model;
 
-                    // 2) Otherwise we will source, validate, and memoize as appropriated
+                    // 2) Otherwise we will source, validate, and memoize as appropriate.
                     const {modelClass} = C,
                         propsModel = props.model;
                     let ret = null;

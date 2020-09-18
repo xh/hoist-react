@@ -26,6 +26,20 @@ export const required = ({value, displayName}) => {
     ) return `${displayName} is required.`;
 };
 
+/**
+ * Validate an email address.
+ * From https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181.
+ *
+ * @type ConstraintCb
+ */
+export const validEmail = ({value, displayName}) => {
+    if (isNil(value)) return null;
+
+    // eslint-disable-next-line no-useless-escape
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        isValid = re.test(value);
+    if (!isValid) return `${displayName} is not a properly formatted address.`;
+};
 
 /**
  * Validate length of a string.
@@ -109,7 +123,7 @@ export function dateIs({min, max, fmt = 'YYYY-MM-DD'}) {
 /**
 * Apply a constraint to an array of values, e.g values coming from a tag picker.
 *
-* @param {function()} the executed constraint function to use on the array of values
+* @param {function} constraint - the executed constraint function to use on the array of values
 * @returns ConstraintCb
 */
 export function constrainAll(constraint) {

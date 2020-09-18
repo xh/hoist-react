@@ -6,9 +6,6 @@
  */
 import {configure} from 'mobx';
 
-// As per https://github.com/mobxjs/mobx-react-lite/#observer-batching
-import 'mobx-react-lite/batchingForReactDom';
-
 export {
     action,
     autorun,

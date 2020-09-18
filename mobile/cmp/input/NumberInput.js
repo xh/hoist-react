@@ -10,6 +10,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isNaN} from 'lodash';
 import PT from 'prop-types';
 import './NumberInput.scss';
 
