@@ -209,7 +209,7 @@ export class RestGridModel {
                 message,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => delFn()
+                onConfirm: delFn
             });
         }
     }
