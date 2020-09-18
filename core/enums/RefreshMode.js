@@ -6,12 +6,10 @@
  */
 
 /**
- * Options for how content should be refreshed via their built-in RefreshContextModel when they receive
- * a refresh request while inactive/hidden or are (re)activated by their parent container.
- *
+ * Options for how content should be refreshed via their built-in RefreshContextModel when they
+ * receive a refresh request while inactive/hidden or are (re)activated by their parent container.
  * Used by TabContainerModel and DashContainerModel.
- *
- * @enum {RefreshMode}
+ * @enum {string}
  */
 export const RefreshMode = Object.freeze({
 
@@ -28,7 +26,3 @@ export const RefreshMode = Object.freeze({
     SKIP_HIDDEN: 'skipHidden'
 
 });
-
-/**
- * @typedef {string} RefreshMode
- */

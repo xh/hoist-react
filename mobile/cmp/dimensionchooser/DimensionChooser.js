@@ -23,6 +23,7 @@ const LEFT_PAD = 5;       // Left-padding for inputs.
 
 /**
  * Control for selecting a list of dimensions for grouping APIs.
+ * @see DimensionChooserModel
  */
 export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
     displayName: 'DimensionChooser',
@@ -35,8 +36,10 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         buttonWidth = 150,
         emptyText = '[Ungrouped]'
     }) {
-        const {value, dimensions} = model,
-            labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+        const {value} = model,
+            labels = isEmpty(value) ?
+                [emptyText] :
+                value.map(dimName => model.getDimDisplayName(dimName));
 
         return div(
             dialogCmp({dialogWidth, emptyText}),
@@ -49,6 +52,7 @@ export const [DimensionChooser, dimensionChooser] = hoistCmp.withFactory({
         );
     }
 });
+
 DimensionChooser.propTypes = {
     /** Width in pixels of the target button (that triggers show of popover). */
     buttonWidth: PT.number,
@@ -96,10 +100,12 @@ const dialogCmp = hoistCmp.factory(
 //---------------------------
 const historyMenu = hoistCmp.factory(
     ({model, emptyText}) => {
-        const {history, dimensions} = model,
+        const {history} = model,
             historyItems = history.map((value, i) => {
                 const isActive = value === model.value,
-                    labels = isEmpty(value) ? [emptyText] : value.map(h => dimensions[h].label);
+                    labels = isEmpty(value) ?
+                        [emptyText] :
+                        value.map(dimName => model.getDimDisplayName(dimName));
 
                 return button({
                     className: classNames('dim-history-btn', isActive ? 'dim-history-btn--active' : null),

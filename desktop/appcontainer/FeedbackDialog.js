@@ -5,11 +5,11 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {dialog} from '@xh/hoist/desktop/cmp/dialog';
-import {hoistCmp, uses} from '@xh/hoist/core';
 import {filler} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {button} from '@xh/hoist/desktop/cmp/button';
 
 import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 
@@ -29,7 +29,7 @@ export const feedbackDialog = hoistCmp.factory({
         const onClose = () => model.hide();
 
         return dialog({
-            title: 'Submit Feedback',
+            title: `${XH.clientAppName} Feedback`,
             model: {
                 size: {width: 450},
                 closeOnOutsideClick: false,
@@ -39,6 +39,7 @@ export const feedbackDialog = hoistCmp.factory({
                 textArea({
                     placeholder: 'Please enter your comments...',
                     width: null,
+                    autoFocus: true,
                     height: 250,
                     style: {marginBottom: 2},
                     commitOnChange: true,
@@ -51,8 +52,9 @@ export const feedbackDialog = hoistCmp.factory({
                         onClick: onClose
                     }),
                     button({
-                        text: 'Send',
+                        text: 'Send Feedback',
                         intent: 'success',
+                        minimal: false,
                         disabled: !model.message,
                         onClick: () => model.submitAsync()
                     })

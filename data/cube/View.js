@@ -7,47 +7,35 @@
 
 import {castArray, groupBy, isEmpty, map} from 'lodash';
 import {action, observable} from 'mobx';
-import {ValueFilter} from './filter/ValueFilter';
+import {FieldFilter} from '@xh/hoist/data';
+
 import {throwIf} from '../../utils/js';
 import {Cube} from './Cube';
+import {Query} from './Query';
 import {createAggregateRow} from './impl/AggregateRow';
 import {createLeafRow} from './impl/LeafRow';
 
 /**
  * Primary interface for consuming grouped and aggregated data from the cube.
- *
- * Not created directly by application.  Applications should use the method
- * Cube.createView() instead.
+ * Applications should create via the {@see Cube.createView()} factory.
  */
 export class View {
 
-    /**
-     * @member {Query}
-     * Query defining this View.  Update with updateView();
-     */
+    /** @member {Query} - Query defining this View. Update via `updateView()`. */
     @observable.ref
     query = null;
 
     /**
-     * @member {Object}
-     * Results of this view.  Will contain a single property 'rows' containing an array of
-     * hierarchical data objects. This is an observable property.
+     * @member {Object} - results of this view, an observable object with a `rows` property
+     *      containing an array of hierarchical data objects.
      */
     @observable.ref
     result = null;
 
-    /**
-     * @member {Store[]}
-     * Stores to which results of this view should be (re)loaded
-     */
+    /** @member {Store[]} - Stores to which results of this view should be (re)loaded. */
     stores = null;
 
-    /**
-     * @member {Object}
-     *
-     * Cube info associated with the view when it was last updated.
-     * This is an observable property.
-     */
+    /** @member {Object} - observable Cube info associated with this View when last updated. */
     @observable.ref
     info = null;
 
@@ -56,15 +44,14 @@ export class View {
     _leafMap = null;
 
     /**
-     * @private.  Applications should use createView() instead.
+     * @private - applications should use `Cube.createView()`.
      *
      * @param {Object} c - config object.
      * @param {Query} c.query - query to be used to construct this view.
-     * @param {(Store[] | Store)} [c.stores] - Stores to be loaded/reloaded with
-     *      data from this view.  Optional. To receive data only, use the
-     *      rows property instead.
-     * @param {boolean} [c.connect] - true to updated rows property and loaded
-     *      store when data in the underlying cube is changed.
+     * @param {(Store[]|Store)} [c.stores] - Stores to be loaded/reloaded with data from this view.
+     *      Optional - to receive data only, observe/read this class's `result` property instead.
+     * @param {boolean} [c.connect] - true to reactively update this class's `result` and connected
+     *      store(s) (if any) when data in the underlying Cube is changed.
      */
     constructor({query, connect = false, stores = []}) {
         this.query = query;
@@ -79,30 +66,28 @@ export class View {
     //--------------------
     // Main Public API
     //--------------------
-    get cube() {
-        return this.query.cube;
+    /** @return {Cube} */
+    get cube() {return this.query.cube}
+
+    /** @return {CubeField[]} */
+    get fields() {return this.query.fields}
+
+    /** @return {boolean} */
+    get isConnected() {return this.cube.viewIsConnected(this)}
+
+    /** @return {boolean} */
+    get isFiltered() {
+        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filter);
     }
 
-    get fields() {
-        return this.query.fields;
-    }
-
-    get isConnected() {
-        return this.cube._connectedViews.has(this);
-    }
-
-    disconnect() {
-        this.cube._connectedViews.delete(this);
-    }
+    /** Stop receiving live updates into this view when the linked Cube data changes. */
+    disconnect() {this.cube.disconnectView(this)}
 
     /**
-     * Change the query in some way.
+     * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
-     * Setting this property will cause the data in this view to be re-computed to reflect
-     * the new query.
-     *
-     * @param {Object} overrides - changes to be applied to the query.  May include any
-     *      arguments to the query constructor, other than cube.
+     * @param {Object} overrides - changes to be applied to the query. May include any arguments to
+     *      the query constructor, other than cube.
      */
     @action
     updateQuery(overrides) {
@@ -207,7 +192,8 @@ export class View {
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupLeaves, val) => {
             appliedDimensions[dimName] = val;
-            const id = parentId + Cube.RECORD_ID_DELIMITER + ValueFilter.encode(dimName, val);
+            const filter = new FieldFilter({field: dimName, op: '=', value: val});
+            const id = parentId + Cube.RECORD_ID_DELIMITER + Query.filterAsString(filter);
             const newChildren = this.groupAndInsertLeaves(groupLeaves, dimensions.slice(1), id, appliedDimensions);
             return createAggregateRow(this, id, newChildren, dim, val, appliedDimensions);
         });
@@ -216,28 +202,26 @@ export class View {
     // return a list of simple updates for leaves we have or false if leaf population changing
     getSimpleUpdates(t) {
         if (!t) return [];
-        const {filters} = this.query,
-            {_leafMap} = this,
-            recordFilter = (r) => filters.every(f => f.fn(r));
+        const {_leafMap, query} = this;
 
-        // 1) Simple case: no filters
-        if (isEmpty(filters)) {
+        // 1) Simple case: no filter
+        if (!query.filter) {
             return isEmpty(t.add) && isEmpty(t.remove) ? t.update : false;
         }
 
-        // 2) Examine, accounting for filters
+        // 2) Examine, accounting for filter
         // 2a) Relevant adds or removes fail us
-        if (t.add?.some(recordFilter)) return false;
+        if (t.add?.some(rec => query.test(rec))) return false;
         if (t.remove?.some(id => _leafMap.has(id))) return false;
 
         // 2b) Examine updates, if they change w.r.t. filter then fail otherwise take relevant
         const ret = [];
         if (t.update) {
             for (const r of t.update) {
-                const passes = recordFilter(r),
+                const passes = query.test(r),
                     present = _leafMap.has(r.id);
-                if (passes !== present) return false;
 
+                if (passes !== present) return false;
                 if (present) ret.push(r);
             }
         }
@@ -247,11 +231,8 @@ export class View {
 
     generateLeaves(records) {
         const ret = new Map();
-        let {filters} = this.query;
-        if (isEmpty(filters)) filters = null;
-
         records.forEach(rec => {
-            if (!filters || filters.every(f => f.fn(rec))) {
+            if (this.query.test(rec)) {
                 ret.set(rec.id, createLeafRow(this, rec));
             }
         });

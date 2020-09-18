@@ -123,7 +123,8 @@ export const Icon = {
     cloudUpload(p)      {return Icon.icon({...p,  iconName: 'cloud-upload'})},
     code(p)             {return Icon.icon({...p,  iconName: 'code'})},
     collapse(p)         {return Icon.icon({...p,  iconName: 'compress-alt'})},
-    comment(p)          {return Icon.icon({...p,  iconName: 'comment-dots'})},
+    // Sorry FontAwesome, but I swear your chat bubble is backwards....  - ATM
+    comment(p)          {return Icon.icon({...p,  iconName: 'comment-dots', className: classNames(p?.className, 'fa-flip-horizontal')})},
     contact(p)          {return Icon.icon({...p,  iconName: 'address-card'})},
     copy(p)             {return Icon.icon({...p,  iconName: 'copy'})},
     cross(p)            {return Icon.icon({...p,  iconName: 'times'})},
@@ -182,6 +183,7 @@ export const Icon = {
     inbox(p)            {return Icon.icon({...p,  iconName: 'inbox'})},
     info(p)             {return Icon.icon({...p,  iconName: 'info-circle'})},
     institution(p)      {return Icon.icon({...p,  iconName: 'university'})},
+    json(p)             {return Icon.icon({...p,  iconName: 'brackets-curly'})},
     learn(p)            {return Icon.icon({...p,  iconName: 'graduation-cap'})},
     link(p)             {return Icon.icon({...p,  iconName: 'link'})},
     list(p)             {return Icon.icon({...p,  iconName: 'align-justify'})},
@@ -189,6 +191,7 @@ export const Icon = {
     lock(p)             {return Icon.icon({...p,  iconName: 'lock'})},
     login(p)            {return Icon.icon({...p,  iconName: 'sign-in'})},
     logout(p)           {return Icon.icon({...p,  iconName: 'sign-out'})},
+    magic(p)            {return Icon.icon({...p,  iconName: 'magic'})},
     mail(p)             {return Icon.icon({...p,  iconName: 'envelope'})},
     mapSigns(p)         {return Icon.icon({...p,  iconName: 'map-signs'})},
     mask(p)             {return Icon.icon({...p,  iconName: 'mask'})},
@@ -256,7 +259,7 @@ export const Icon = {
      * Create an Icon for a file with default styling appropriate for the file type.
      *
      * @param {Object} c - See Icon.icon().
-     * @param {String} [c.filename] - filename to be used to create icon.  Name will be parsed
+     * @param {string} [c.filename] - filename to be used to create icon.  Name will be parsed
      *      for an extension.  If not provided or recognized, a default icon will be returned.
      * @returns {(Element|string)}
      */

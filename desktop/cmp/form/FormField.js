@@ -94,6 +94,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
         if (inline) classes.push('xh-form-field-inline');
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
+        if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
 
@@ -174,6 +175,9 @@ FormField.propTypes = {
      * Defaulted from containing Form.
      */
     commitOnChange: PT.bool,
+
+    /** True to disable user interaction. Defaulted from backing FieldModel. */
+    disabled: PT.bool,
 
     /** Property name on bound FormModel from which to read/write data. */
     field: PT.string,

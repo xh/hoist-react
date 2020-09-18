@@ -10,5 +10,5 @@
  */
 export const usernameCol = {
     headerName: 'User',
-    width: 120
+    width: 160
 };

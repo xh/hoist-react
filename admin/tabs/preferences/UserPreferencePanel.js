@@ -25,14 +25,14 @@ const modelSpec = {
         fields: [
             {
                 name: 'name',
-                label: 'Pref',
+                displayName: 'Pref',
                 lookupName: 'names',
                 editable: 'onAdd',
                 required: true
             },
             {
                 name: 'groupName',
-                label: 'Group',
+                displayName: 'Group',
                 lookupName: 'groupNames',
                 editable: false
             },
@@ -42,7 +42,7 @@ const modelSpec = {
             },
             {
                 name: 'username',
-                label: 'User',
+                displayName: 'User',
                 required: true
             },
             {
