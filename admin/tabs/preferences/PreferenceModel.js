@@ -10,7 +10,7 @@ import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
-    bulkDeleteAction,
+    deleteAction,
     editAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
@@ -86,12 +86,12 @@ export class PreferenceModel {
         toolbarActions: [
             addAction,
             editAction,
-            bulkDeleteAction
+            deleteAction
         ],
         menuActions: [
             addAction,
             editAction,
-            bulkDeleteAction
+            deleteAction
         ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},

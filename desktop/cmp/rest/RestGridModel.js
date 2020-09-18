@@ -48,19 +48,11 @@ export const deleteAction = {
     text: 'Delete',
     icon: Icon.delete(),
     intent: 'danger',
-    recordsRequired: 1,
+    recordsRequired: true,
     displayFn: ({record}) => ({
         hidden: record && record.id === null // Hide this action if we are acting on a "new" record
     }),
-    actionFn: ({record, gridModel}) => gridModel.restGridModel.confirmDeleteRecord(record)
-};
-
-export const bulkDeleteAction = {
-    text: 'Delete',
-    icon: Icon.delete(),
-    intent: 'danger',
-    recordsRequired: true,
-    actionFn: ({gridModel}) => gridModel.restGridModel.confirmBulkDeleteRecords()
+    actionFn: ({gridModel}) => gridModel.restGridModel.confirmDeleteRecords()
 };
 /**
  * Core Model for a RestGrid.
@@ -110,7 +102,7 @@ export class RestGridModel {
      * @param {Object[]|RecordAction[]} [menuActions] - actions to display in the grid context menu. Defaults to add, edit, delete.
      * @param {Object[]|RecordAction[]} [formActions] - actions to display in the form toolbar. Defaults to delete.
      * @param {Object} [actionWarning] - map of action (e.g. 'add'/'edit'/'del') to string or a fn to create one. See default prop.
-     *      Function will be passed selected record(s) to be acted upon.
+     *      Function will be passed an array of selected records to be acted upon.
      * @param {string} [unit] - name that describes records in this grid.
      * @param {string[]} [filterFields] - Names of fields to include in this grid's quick filter logic.
      * @param {PrepareCloneFn} [prepareCloneFn] - called prior to passing the original record and cloned record to the editor form
@@ -204,35 +196,20 @@ export class RestGridModel {
         this.formModel.openView(record);
     }
 
-    confirmDeleteRecord(record) {
-        const warning = this.actionWarning.del;
-
-        if (!warning) {
-            this.deleteRecord(record);
-        } else {
-            const message = isFunction(warning) ? warning(record) : warning;
-            XH.confirm({
-                message,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => this.deleteRecord(record)
-            });
-        }
-    }
-
-    confirmBulkDeleteRecords() {
+    confirmDeleteRecords() {
         const records = this.selection,
-            warning = this.actionWarning.del;
+            warning = this.actionWarning.del,
+            delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records) : this.deleteRecord(records[0]);
 
         if (!warning) {
-            this.bulkDeleteRecordsAsync(records);
+            delFn();
         } else {
             const message = isFunction(warning) ? warning(records) : warning;
             XH.confirm({
                 message,
                 title: 'Warning',
                 icon: Icon.warning({size: 'lg'}),
-                onConfirm: () => this.bulkDeleteRecordsAsync(records)
+                onConfirm: () => delFn()
             });
         }
     }

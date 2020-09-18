@@ -10,7 +10,7 @@ import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
     cloneAction,
-    bulkDeleteAction,
+    deleteAction,
     editAction,
     RestGridModel,
     RestStore
@@ -86,13 +86,13 @@ export class ConfigModel {
             addAction,
             editAction,
             cloneAction,
-            bulkDeleteAction
+            deleteAction
         ],
         menuActions: [
             addAction,
             editAction,
             cloneAction,
-            bulkDeleteAction
+            deleteAction
         ],
         prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
         unit: 'config',

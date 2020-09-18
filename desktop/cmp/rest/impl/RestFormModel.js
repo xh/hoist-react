@@ -84,7 +84,7 @@ export class RestFormModel {
         }
 
         if (warning) {
-            const message = isFunction(warning) ? warning(this.currentRecord) : warning,
+            const message = isFunction(warning) ? warning([this.currentRecord]) : warning,
                 confirmed = await XH.confirm({
                     message,
                     title: 'Warning',
