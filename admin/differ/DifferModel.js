@@ -5,16 +5,15 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {p} from '@xh/hoist/cmp/layout';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {cloneDeep, isEqual, isNil, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, remove, trimEnd} from 'lodash';
 import React from 'react';
-import copy from 'clipboard-copy';
 
 import {DifferDetailModel} from './DifferDetailModel';
 
@@ -161,6 +160,7 @@ export class DifferModel  {
 
     processFailedLoad() {
         this.gridModel.clear();
+        this.clipboardContent = null;
         this.setHasLoaded(false);
     }
 
@@ -298,17 +298,19 @@ export class DifferModel  {
     }
 
     async readConfigFromClipboardAsync() {
+        // Try/catch locally to re-throw with consistent error message if clipboard cannot be read
+        // or parsed into JSON w/expected format for any reason.
+        let content = null;
         try {
-            // see https://web.dev/async-clipboard/ for more about this new API
-            const text = await window.navigator.clipboard.readText(),
-                configs = JSON.parse(text);  // if this throws, it will throw here
-            this.clipboardContent = configs;
-            copy('');  // after successful copy, clear clipboard to remove potentially sensitive configs.
-        } catch (error) {
-            // if nothing found in clipboard, don't throw, reuse what is in memory
-            if (isNil(this.clipboardContent)) {
-                throw ('No configs in clipboard.');
-            }
+            content = await window.navigator.clipboard.readText();
+            content = JSON.parse(content);
+        } catch (e) {
+            console.warn('Error reading config from clipboard', e);
+        }
+
+        this.clipboardContent = content;
+        if (!this.clipboardContent?.data) {
+            throw XH.exception('Clipboard did not contain remote data in the expected JSON format.');
         }
     }
 

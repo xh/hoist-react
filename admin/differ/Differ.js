@@ -21,6 +21,7 @@ import {DifferModel} from './DifferModel';
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
 
+    /** @param {DifferModel} model */
     render({model}) {
         return fragment(
             dialog({
@@ -37,6 +38,7 @@ export const differ = hoistCmp.factory({
 });
 
 const contents = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
         return panel({
             tbar: tbar(),
@@ -46,7 +48,7 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: 'Select/enter a remote host to compare against...',
+                    item: `No ${model.entityName}s loaded for comparison.`,
                     padding: 10
                 }),
             bbar: [
@@ -62,7 +64,9 @@ const contents = hoistCmp.factory(
 );
 
 const tbar = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
+        const entityDispName = capitalize(model.entityName) + 's';
         return toolbar(
             span('Compare with'),
             select({
@@ -80,6 +84,7 @@ const tbar = hoistCmp.factory(
                 disabled: !model.remoteHost,
                 onClick: () => model.diffFromRemote()
             }),
+            span('- or -'),
             button({
                 text: 'Diff from Clipboard',
                 icon: Icon.paste(),
@@ -88,11 +93,11 @@ const tbar = hoistCmp.factory(
             }),
             filler(),
             clipboardButton({
-                text: 'Copy Configs',
+                text: `Copy ${entityDispName}`,
                 intent: 'primary',
                 icon: Icon.copy(),
                 getCopyText: () => model.fetchLocalConfigsAsync(),
-                successMessage: 'Configs copied to clipboard.'
+                successMessage: `${entityDispName} copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
             })
         );
     }
