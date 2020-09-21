@@ -22,7 +22,9 @@ export class ClientErrorsModel {
 
     persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
+    /** @member {LocalDate} */
     @bindable.ref startDay;
+    /** @member {LocalDate} */
     @bindable.ref endDay;
 
     /** @member {GridModel} */
@@ -231,6 +233,13 @@ export class ClientErrorsModel {
 
         this.startDay = newStart;
         this.endDay = newEnd;
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    @action
+    adjustStartDate(value, unit) {
+        this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
     getParams() {

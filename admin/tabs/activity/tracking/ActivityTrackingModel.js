@@ -57,6 +57,7 @@ export class ActivityTrackingModel {
         return `${XH.appName} Activity`;
     }
 
+    /** @return {LocalDate} */
     get endDay() {return this.formModel.values.endDay}
 
     _monthFormat = 'MMM YYYY';
@@ -288,6 +289,13 @@ export class ActivityTrackingModel {
 
         startDay.setValue(newStart);
         endDay.setValue(newEnd);
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    adjustStartDate(value, unit) {
+        const newStart = this.endDay.subtract(value, unit).nextDay();
+        this.formModel.fields.startDay.setValue(newStart);
     }
 
     toggleRowExpandCollapse(agParams) {

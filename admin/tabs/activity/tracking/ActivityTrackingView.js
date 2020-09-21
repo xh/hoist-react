@@ -16,6 +16,7 @@ import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {buttonGroup} from '@xh/hoist/kit/blueprint';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityTrackingModel, PERSIST_ACTIVITY} from './ActivityTrackingModel';
 import {chartsPanel} from './charts/ChartsPanel';
@@ -38,6 +39,7 @@ export const activityTrackingView = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory(
+    /** @param {ActivityTrackingModel} model */
     ({model}) => {
         return toolbar(
             form({
@@ -59,13 +61,17 @@ const tbar = hoistCmp.factory(
                     button({
                         icon: Icon.angleRight(),
                         onClick: () => model.adjustDates('add'),
-                        disabled: model.endDate >= LocalDate.tomorrow()
+                        disabled: model.endDay >= LocalDate.currentAppDay()
                     }),
+                    buttonGroup(
+                        button({text: '6m', outlined: true, width: 40, onClick: () => model.adjustStartDate(6, 'months')}),
+                        button({text: '1m', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'months')}),
+                        button({text: '7d', outlined: true, width: 40, onClick: () => model.adjustStartDate(7, 'days')}),
+                        button({text: '1d', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'days')})
+                    ),
                     toolbarSep(),
                     filterChooser({
-                        leftIcon: Icon.search(),
                         flex: 1,
-                        placeholder: 'Search...',
                         enableClear: true
                     }),
                     toolbarSep(),
@@ -82,6 +88,7 @@ const tbar = hoistCmp.factory(
 );
 
 const aggregateView = hoistCmp.factory(
+    /** @param {ActivityTrackingModel} model */
     ({model}) => {
         return panel({
             title: 'Aggregate Activity Report',
