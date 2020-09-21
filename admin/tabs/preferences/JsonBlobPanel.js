@@ -24,8 +24,7 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fields: [
             {
-                name: 'username',
-                displayName: 'User',
+                name: 'owner',
                 required: true
             },
             {
@@ -66,12 +65,12 @@ const modelSpec = {
             }
         ]
     },
-    sortBy: ['username', 'name'],
+    sortBy: ['owner', 'name'],
     groupBy: 'type',
     unit: 'blob',
-    filterFields: ['name', 'username', 'type', 'value', 'description'],
+    filterFields: ['name', 'owner', 'type', 'value', 'description'],
     columns: [
-        {field: 'username', width: 200},
+        {field: 'owner', width: 200},
         {field: 'name', width: 200},
         {field: 'type', width: 200},
         {field: 'description', width: 200},
@@ -82,7 +81,7 @@ const modelSpec = {
         {field: 'lastUpdatedBy', width: 160, hidden: true}
     ],
     editors: [
-        {field: 'username'},
+        {field: 'owner'},
         {field: 'name'},
         {field: 'type'},
         {field: 'description', formField: {item: textArea()}},
