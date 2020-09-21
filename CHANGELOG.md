@@ -11,6 +11,10 @@
   migration of user grid state after an upgrade to Hoist v35.0.0 or greater. The value of this
   property will continue to default to 'key', preserving the existing upgrade behavior of the
   initial v35 release.
+* Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
+* `ColChooserButton` supports a `mode` prop to specify when column changes are committed. `mode`
+  defaults to `'commitOnChange'`, while `'commitOnSave'` applies column changes via the Save button
+  and omits the otherwise immediately reactive Reset button.
 
 ### 🐞 Bug Fixes
 
