@@ -181,12 +181,14 @@ export class RestGridModel {
 
     async bulkDeleteRecordsAsync(records) {
         throwIf(this.readonly, 'Records not deleted: this grid is read-only');
-        return this.store.bulkDeleteRecordsAsync(records).then(resp => {
-            const intent = resp.fail > 0 ? 'warning' : 'success',
-                message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
+        return this.store.bulkDeleteRecordsAsync(records)
+            .then(resp => {
+                const intent = resp.fail > 0 ? 'warning' : 'success',
+                    message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
 
-            XH.toast({intent, message});
-        }).catchDefault();
+                XH.toast({intent, message});
+            })
+            .catchDefault();
     }
 
     editRecord(record) {
