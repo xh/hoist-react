@@ -5,9 +5,9 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
-import {p} from '@xh/hoist/cmp/layout';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {p} from '@xh/hoist/cmp/layout';
+import {HoistModel, LoadSupport, managed, XH} from '@xh/hoist/core';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
@@ -27,6 +27,7 @@ export class DifferModel  {
     parentGridModel;
     entityName;
     url;
+    clipboardContent;
 
     @managed
     detailModel = new DifferDetailModel({parent: this});
@@ -102,7 +103,7 @@ export class DifferModel  {
     }
 
     async doLoadAsync(loadSpec) {
-        if (loadSpec.isAutoRefresh || !this.remoteHost) return;
+        if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
         const remoteHost = trimEnd(this.remoteHost, '/'),
             // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
@@ -113,7 +114,9 @@ export class DifferModel  {
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
-                XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
+                this.clipboardContent ?
+                    Promise.resolve(cloneDeep(this.clipboardContent)) :
+                    XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
@@ -130,6 +133,20 @@ export class DifferModel  {
         }
     }
 
+    diffFromRemote() {
+        this.clipboardContent = null;
+        this.loadAsync();
+    }
+
+    async diffFromClipboardAsync() {
+        try {
+            await this.readConfigFromClipboardAsync();
+            this.loadAsync();
+        } catch (e) {
+            XH.handleException(e, {showAsError: false, logOnServer: false});
+        }
+    }
+
     processResponse(resp) {
         const local = this.cleanRawData(resp[0].data),
             remote = this.cleanRawData(resp[1].data),
@@ -143,6 +160,7 @@ export class DifferModel  {
 
     processFailedLoad() {
         this.gridModel.clear();
+        this.clipboardContent = null;
         this.setHasLoaded(false);
     }
 
@@ -271,6 +289,29 @@ export class DifferModel  {
         }
 
         return local ? localType : remoteType;
+    }
+
+    async fetchLocalConfigsAsync() {
+        const {entityName, url} = this,
+            resp = await XH.fetchJson({url: `${url}/${entityName}s`});
+        return JSON.stringify(resp);
+    }
+
+    async readConfigFromClipboardAsync() {
+        // Try/catch locally to re-throw with consistent error message if clipboard cannot be read
+        // or parsed into JSON w/expected format for any reason.
+        let content = null;
+        try {
+            content = await window.navigator.clipboard.readText();
+            content = JSON.parse(content);
+        } catch (e) {
+            console.warn('Error reading config from clipboard', e);
+        }
+
+        this.clipboardContent = content;
+        if (!this.clipboardContent?.data) {
+            throw XH.exception('Clipboard did not contain remote data in the expected JSON format.');
+        }
     }
 
     @action

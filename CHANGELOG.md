@@ -5,12 +5,16 @@
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary JSON data.
-* The `Select` input supports a new 'leftIcon' prop.
 * `GridModelPersistOptions` now supports a `legacyStateKey` property. This key will identify the
   pre-v35 location for grid state, and can be used by applications to provide a more flexible
   migration of user grid state after an upgrade to Hoist v35.0.0 or greater. The value of this
   property will continue to default to 'key', preserving the existing upgrade behavior of the
   initial v35 release.
+* The Admin Config and Pref diff tools now support pasting in a config for comparison instead of
+  loading one from a remote server (useful for deployments where the remote config cannot be
+  accessed via an XHR call).
+* The `ClipboardButton.getCopyText` prop now supports async functions.
+* The `Select` input supports a new `leftIcon` prop.
 
 ### 🐞 Bug Fixes
 
