@@ -6,8 +6,8 @@
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
 * The `select` input supports a new prop: `leftIcon`.
-* RestGrids now support bulk delete. This has been added to the Preference and Config panels
-  in the Hoist admin app.
+* `RestGrid` now supports bulk delete when multiple rows are selected.  
+* `RestGridModel.actionWarning` messages may now be specified as functions. 
 
 ### 🐞 Bug Fixes
 
