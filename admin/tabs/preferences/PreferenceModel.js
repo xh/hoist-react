@@ -8,12 +8,7 @@ import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {
-    addAction,
-    deleteAction,
-    editAction,
-    RestGridModel
-} from '@xh/hoist/desktop/cmp/rest';
+import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {DifferModel} from '../../differ/DifferModel';
 
 @HoistModel
@@ -83,16 +78,6 @@ export class PreferenceModel {
             del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
 
         },
-        toolbarActions: [
-            addAction,
-            editAction,
-            deleteAction
-        ],
-        menuActions: [
-            addAction,
-            editAction,
-            deleteAction
-        ],
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},
             {field: 'name', width: 200},
