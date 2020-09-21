@@ -19,8 +19,8 @@ Error tracking tabs described below.
   accessed via an XHR call).
 * The `ClipboardButton.getCopyText` prop now supports async functions.
 * The `Select` input supports a new `leftIcon` prop.
-* RestGrids now support bulk delete. This has been added to the Preference and Config panels
-  in the Hoist admin app.
+* `RestGrid` now supports bulk delete when multiple rows are selected.
+* `RestGrid`'s `actionWarning` messages may now be specified as functions.
 
 ### 🐞 Bug Fixes
 
