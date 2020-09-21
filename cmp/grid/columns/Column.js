@@ -317,7 +317,9 @@ export class Column {
                 colId: this.colId,
                 headerValueGetter: (agParams) => {
                     return agParams.location === 'header' ?
-                        isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName :
+                        isFunction(headerName) ?
+                            this.chooserName :
+                            headerName :
                         this.chooserName;
                 },
                 headerClass: getAgHeaderClassFn(this),

@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString, isObject} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -77,7 +77,8 @@ export const columnHeader = hoistCmp.factory({
         if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
-                    el.setAttribute('title', headerName);
+                    const title = isObject(headerName) ? xhColumn?.chooserName : headerName;
+                    el.setAttribute('title', title);
                 } else {
                     el.removeAttribute('title');
                 }
