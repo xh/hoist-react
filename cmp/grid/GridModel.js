@@ -1179,4 +1179,9 @@ const xhEmptyFlexCol = {
  * @property {boolean} [persistColumns] - true to include column information (default true)
  * @property {boolean} [persistGrouping] - true to include grouping information (default true)
  * @property {boolean} [persistSort] - true to include sorting information (default true)
+ * @property {String}  [legacyStateKey] - key to be used to identify location of legacy
+ *      grid state from LocalStorage.  This key will identify the pre-v35 location for grid
+ *      state, and will be used as an initial source of grid state after an upgrade to
+ *      v35.0.0 or greater.  Defaults to the new value of 'key'.  If no legacy state is
+ *      available at this location, the key is ignored.
  */

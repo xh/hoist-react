@@ -14,8 +14,8 @@
       box-shadow: var(--xh-form-field-box-shadow);
       display: inline;
       overflow: hidden;
-      padding-left: var(--xh-pad-px);
-      padding-right: var(--xh-pad-px);
+      padding-left: var(--xh-pad-px) !important;
+      padding-right: var(--xh-pad-px) !important;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
