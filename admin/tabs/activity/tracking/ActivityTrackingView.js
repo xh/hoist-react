@@ -63,6 +63,7 @@ const tbar = hoistCmp.factory(
                     }),
                     toolbarSep(),
                     filterChooser({
+                        leftIcon: Icon.search(),
                         flex: 1,
                         placeholder: 'Search...',
                         enableClear: true

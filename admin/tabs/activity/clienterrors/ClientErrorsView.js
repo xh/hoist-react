@@ -48,6 +48,7 @@ const tbar = hoistCmp.factory(
                 disabled: model.endDate >= LocalDate.tomorrow()
             }),
             filterChooser({
+                leftIcon: Icon.search(),
                 flex: 1,
                 placeholder: 'Search...',
                 enableClear: true
