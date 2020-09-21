@@ -172,20 +172,21 @@ export class RestGridModel {
         this.formModel.openClone(clone);
     }
 
-    async deleteRecord(record) {
+    async deleteRecordAsync(record) {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
-        this.store.deleteRecordAsync(record)
+        return this.store.deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .catchDefault();
     }
 
     async bulkDeleteRecordsAsync(records) {
         throwIf(this.readonly, 'Records not deleted: this grid is read-only');
-        const resp = await this.store.bulkDeleteRecordsAsync(records),
-            intent = resp.fail > 0 ? 'warning' : 'success',
-            message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
+        return this.store.bulkDeleteRecordsAsync(records).then(resp => {
+            const intent = resp.fail > 0 ? 'warning' : 'success',
+                message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${resp.fail} failures`;
 
-        XH.toast({intent, message});
+            XH.toast({intent, message});
+        }).catchDefault();
     }
 
     editRecord(record) {
@@ -199,7 +200,7 @@ export class RestGridModel {
     confirmDeleteRecords() {
         const records = this.selection,
             warning = this.actionWarning.del,
-            delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records).catchDefault() : this.deleteRecord(records[0]);
+            delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records) : this.deleteRecordAsync(records[0]);
 
         if (!warning) {
             delFn();
