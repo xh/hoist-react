@@ -39,7 +39,7 @@
     "@xh/react-onsenui": "~0.1.2",
     "classnames": "~2.2.6",
     "clipboard-copy": "~3.1.0",
-    "codemirror": "~5.57.0",
+    "codemirror": "~5.58.0",
     "compare-versions": "~3.6.0",
     "core-js": "~3.6.5",
     "debounce-promise": "~3.1.0",
@@ -47,10 +47,10 @@
     "fast-deep-equal": "~3.1.1",
     "filesize": "~6.1.0",
     "golden-layout": "~1.5.9",
-    "http-status-codes": "~2.1.2",
+    "http-status-codes": "~2.1.4",
     "lodash": "~4.17.20",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~5.15.6",
+    "mobx": "~5.15.7",
     "mobx-react": "~6.3.0",
     "moment": "~2.24.0",
     "numbro": "~2.2.0",
@@ -67,7 +67,7 @@
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
     "store2": "~2.12.0",
-    "ua-parser-js": "~0.7.21"
+    "ua-parser-js": "~0.7.22"
   },
   "peerDependencies": {
     "react": "~16.13.1",
@@ -76,8 +76,8 @@
   },
   "devDependencies": {
     "@xh/hoist-dev-utils": "^5.3.0",
-    "husky": "~4.2.5",
-    "lint-staged": "~10.2.13",
+    "husky": "~4.3.0",
+    "lint-staged": "~10.4.0",
     "react": "~16.13.1",
     "react-dom": "~16.13.1",
     "react-dom-factories": "~1.0.2",
@@ -86,7 +86,7 @@
     "stylelint-scss": "~3.18.0"
   },
   "resolutions": {
-    "jimp": "^0.16.0",
+    "jimp": "^0.16.1",
     "resize-img": "^2.0.0"
   }
 }
