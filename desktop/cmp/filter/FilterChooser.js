@@ -12,6 +12,7 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty, sortBy} from 'lodash';
 import classNames from 'classnames';
 import PT from 'prop-types';
@@ -27,7 +28,6 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     className: 'xh-filter-chooser',
     render({model, className, ...props}) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {autoFocus, enableClear, leftIcon, menuPlacement, placeholder} = chooserProps,
             {inputRef, selectOptions, favoritesIsOpen} = model;
 
         return box({
@@ -35,15 +35,17 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             ...layoutProps,
             item: popover({
                 item: select({
-                    autoFocus,
-                    menuPlacement,
                     flex: 1,
                     bind: 'selectValue',
                     ref: inputRef,
-                    placeholder: placeholder ?? 'Filter...',
-                    leftIcon: leftIcon ?? Icon.filter(),
+
+                    autoFocus: chooserProps.autoFocus,
+                    menuPlacement: chooserProps.menuPlacement,
+                    placeholder: withDefault(chooserProps.placeholder, 'Filter...'),
+                    leftIcon: withDefault(chooserProps.leftIcon, Icon.filter()),
+                    enableClear: withDefault(chooserProps.enableClear, true),
+
                     enableMulti: true,
-                    enableClear: enableClear ?? true,
                     queryFn: (q) => model.queryAsync(q),
                     options: selectOptions,
                     optionRenderer,
