@@ -2,6 +2,10 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update. This is
+required to support both the new `JsonBlobService` and updates to the Admin Activity and Client
+Error tracking tabs described below.
+
 ### 🎁 New Features
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary JSON data.
@@ -25,11 +29,9 @@
   this has been removed.
 * Improved time zone handling in the Admin Console "Activity Tracking" and "Client Errors" tabs.
   * Users will now see consistent bucketing of activity into an "App Day" that corresponds to the
-    LocalDate when the event occurred in the application's timezone and is consistently reported
-    independent of the time zones on the local browser or deployment server.
-  * ⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update.
-    Earlier versions of hoist-core will not parse the updated parameters required for date range
-    selection on these Admin activity tabs.
+    LocalDate when the event occurred in the application's timezone.
+  * This day will be reported consistently regardless of the time zones of the local browser or
+    deployment server.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
