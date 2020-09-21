@@ -626,8 +626,13 @@ export class GridModel {
     // This avoids a storm of events looping through the reaction when selecting in bulk.
     @debounced(0)
     noteAgSelectionStateChanged() {
-        const {selModel, agGridModel} = this;
-        selModel.select(agGridModel.getSelectedRowNodeIds());
+        const {selModel, agGridModel, isReady} = this;
+
+        // Debounce allows for cases where grid has been unmounted and is no longer ready when
+        // this reaction runs. Handle as a no-op (leaving selModel unchanged) to avoid throwing.
+        if (isReady) {
+            selModel.select(agGridModel.getSelectedRowNodeIds());
+        }
     }
 
     /**
