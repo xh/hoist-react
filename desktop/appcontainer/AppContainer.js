@@ -63,7 +63,11 @@ export const AppContainer = hoistCmp({
                 item: viewForState(),
                 onError: (e) => XH.handleException(e, {requireReload: true})
             }),
-            exceptionDialog()
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
@@ -107,11 +111,9 @@ const appContainerView = hoistCmp.factory({
                 versionBar()
             ),
             mask({model: model.appLoadModel, spinner: true}),
-            messageSource(),
-            toastSource(),
-            optionsDialog(),
+            aboutDialog(),
             feedbackDialog(),
-            aboutDialog()
+            optionsDialog()
         );
 
         if (!appSpec.showBrowserContextMenu) {
