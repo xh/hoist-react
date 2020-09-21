@@ -6,15 +6,15 @@
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
 * The `select` input supports a new prop: `leftIcon`.
-* `GridModelPersistOptions` now supports a `legacyStateKey` property.  This key will identify
-   the pre-v35 location for grid state, and can be used by applications to provide a more
-   flexible migration of user grid state after an upgrade to Hoist v35.0.0 or greater.  The value
-   of this property will continue to default to 'key', preserving the existing upgrade behavior
-   of the initial v35 release.
+* `GridModelPersistOptions` now supports a `legacyStateKey` property. This key will identify the
+  pre-v35 location for grid state, and can be used by applications to provide a more flexible
+  migration of user grid state after an upgrade to Hoist v35.0.0 or greater. The value of this
+  property will continue to default to 'key', preserving the existing upgrade behavior of the
+  initial v35 release.
 
 ### 🐞 Bug Fixes
 
-*  Fixed several cases where `selectOnFocus` prop on `Select` was not working.
+* Fixed several cases where `selectOnFocus` prop on `Select` was not working.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
 * `RestForm` editors source their default label from the corresponding `Field.displayName` property.
   Previously an undocumented `label` config could be provided with each editor object - this has
@@ -23,6 +23,9 @@
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
 
+### 📚 Libraries
+
+* codemirror `5.57 -> 5.58`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
 
