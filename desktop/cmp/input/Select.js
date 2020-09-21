@@ -233,7 +233,7 @@ export class Select extends HoistInput {
                     DropdownIndicator: this.getDropdownIndicatorCmp(),
                     ClearIndicator: this.getClearIndicatorCmp(),
                     IndicatorSeparator: () => null,
-                    ValueContainer: this.getValueContainerCmp(props.leftIcon)
+                    ValueContainer: this.getValueContainerCmp()
                 },
 
                 // A shared div is created lazily here as needed, appended to the body, and assigned
@@ -515,17 +515,17 @@ export class Select extends HoistInput {
     //------------------------
     // Other Implementation
     //------------------------
-
-    // cache to avoid unnecessary rerenders which cause loss of input focus while typing
-    _leftIcon = null;
+    // cache to avoid re-renders and focus issues, note this "freezes" leftIcon
     _valueContainerCmp = null;
-    getValueContainerCmp(icon) {
-        if (!this._valueContainerCmp || this._leftIcon !== icon) {
-            this._leftIcon = icon;
-            this._valueContainerCmp = (props) => fragment(
-                span({omit: !icon, className: 'xh-select__control__left-icon', item: icon}),
-                elem(components.ValueContainer, props)
-            );
+    getValueContainerCmp() {
+        if (!this._valueContainerCmp) {
+            const {leftIcon} = this.props;
+            this._valueContainerCmp = leftIcon ?
+                (props) => fragment(
+                    span({className: 'xh-select__control__left-icon', item: leftIcon}),
+                    elem(components.ValueContainer, props)
+                ) :
+                components.ValueContainer;
         }
 
         return this._valueContainerCmp;
