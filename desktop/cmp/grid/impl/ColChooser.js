@@ -32,7 +32,7 @@ export const colChooser = hoistCmp.factory({
     className: 'xh-col-chooser',
 
     render({model, className, width, height}) {
-        const {isPopoverOpen} = model;
+        const commitOnChange = model.mode === 'commitOnChange';
 
         return panel({
             className,
@@ -45,17 +45,20 @@ export const colChooser = hoistCmp.factory({
                     leftRightChooserFilter({fields: ['text']}),
                     filler(),
                     button({
+                        omit: !commitOnChange,
                         text: 'Reset',
                         icon: Icon.undo({className: 'xh-red'}),
                         onClick: () => model.restoreDefaults()
                     }),
-                    toolbarSep(),
+                    toolbarSep({
+                        omit: !commitOnChange
+                    }),
                     button({
-                        text: isPopoverOpen ? 'Close' : 'Cancel',
+                        text: commitOnChange ? 'Close' : 'Cancel',
                         onClick: () => model.close()
                     }),
                     button({
-                        omit: isPopoverOpen,
+                        omit: commitOnChange,
                         text: 'Save',
                         icon: Icon.check({className: 'xh-green'}),
                         onClick: () => {

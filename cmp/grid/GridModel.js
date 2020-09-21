@@ -132,7 +132,8 @@ export class GridModel {
         'exportCsv',
         '-',
         'colChooser',
-        'autosizeColumns'
+        'autosizeColumns',
+        'restoreDefaults'
     ];
 
     /** @private - initial state provided to ctor - powers restoreDefaults(). */

@@ -37,7 +37,10 @@ export class StoreContextMenu {
      *          `exportExcel` - same as above.
      *          `exportCsv` - export grid data to CSV via Hoist's server-side export capabilities.
      *          `exportLocal` - export grid data to Excel via ag-Grid's built-in client side export.
-     *          `'autosizeColumns` - autosize columns to fit their contents.
+     *          `autosizeColumns` - autosize columns to fit their contents.
+     *          `restoreDefaults` - restore grid defaults.
+     *              @see GridModel.restoreDefaults
+     *
      *
      * @param {GridModel} [c.gridModel] - GridModel to bind to this contextMenu, used to enable
      *      implementation of menu items / tokens above.
@@ -136,6 +139,12 @@ export class StoreContextMenu {
                     icon: Icon.arrowsLeftRight(),
                     hidden: !gridModel?.autosizeEnabled,
                     actionFn: () => gridModel.autosizeAsync()
+                });
+            case 'restoreDefaults':
+                return new RecordAction({
+                    text: 'Restore Grid Defaults',
+                    icon: Icon.reset(),
+                    actionFn: () => gridModel.restoreDefaults()
                 });
             default:
                 return token;

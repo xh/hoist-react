@@ -26,6 +26,13 @@ export class ColChooserModel {
     // Show in popover
     @observable isPopoverOpen = false;
 
+    /*
+     * Default mode for ColChooserDialog and ColChooserButton components is 'commitOnChange'.
+     * When 'mode' prop is specified by colChooserButton component, the dialog component
+     * follows that mode for consistency.
+     */
+    @observable mode = 'commitOnChange';
+
     /**
      * @param {GridModel} gridModel - model for the grid to be managed.
      */
@@ -39,7 +46,7 @@ export class ColChooserModel {
             leftSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
-                if (this.isPopoverOpen) this.commit();
+                if (this.mode === 'commitOnChange') this.commit();
             }
         });
     }
@@ -82,7 +89,12 @@ export class ColChooserModel {
     restoreDefaults() {
         this.gridModel.restoreDefaults();
         this.syncChooserData();
-        if (this.isPopoverOpen) this.commit();
+        this.commit();
+    }
+
+    @action
+    setMode(mode) {
+        this.mode = mode;
     }
 
     //------------------------

@@ -26,8 +26,9 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
     displayName: 'ColChooserButton',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, chooserWidth, chooserHeight, ...rest}) {
+    render({icon, title, gridModel, popoverPosition, mode, chooserWidth, chooserHeight, ...rest}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
+        mode = withDefault(mode, 'commitOnChange');
         const colChooserModel = gridModel?.colChooserModel;
 
         const displayButton = button({
@@ -45,6 +46,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
             console.error('No ColChooserModel available on bound GridModel - ensure enableColChooser config is set to true.');
             return cloneElement(displayButton, {disabled: true});
         }
+
+        colChooserModel.setMode(mode);
 
         return popover({
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
@@ -86,6 +89,9 @@ ColChooserButton.propTypes = {
         'left-bottom', 'left', 'left-top',
         'auto'
     ]),
+
+    /** Defaults to 'commitOnChange' mode. Will show 'Reset' button and hide 'Save' button. */
+    mode: PT.oneOf(['commitOnChange', 'commitOnSave']),
 
     /** Width for the opened chooser */
     chooserWidth: PT.number,
