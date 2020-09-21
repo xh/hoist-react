@@ -2,15 +2,25 @@
 
 ## v37.0.0-SNAPSHOT - unreleased
 
+⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update. This is
+required to support both the new `JsonBlobService` and updates to the Admin Activity and Client
+Error tracking tabs described below.
+
 ### 🎁 New Features
 
-* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
-* The `select` input supports a new prop: `leftIcon`.
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary JSON data.
 * `GridModelPersistOptions` now supports a `legacyStateKey` property. This key will identify the
   pre-v35 location for grid state, and can be used by applications to provide a more flexible
   migration of user grid state after an upgrade to Hoist v35.0.0 or greater. The value of this
   property will continue to default to 'key', preserving the existing upgrade behavior of the
   initial v35 release.
+* The Admin Config and Pref diff tools now support pasting in a config for comparison instead of
+  loading one from a remote server (useful for deployments where the remote config cannot be
+  accessed via an XHR call).
+* The `ClipboardButton.getCopyText` prop now supports async functions.
+* The `Select` input supports a new `leftIcon` prop.
+* `RestGrid` now supports bulk delete when multiple rows are selected.
+* `RestGrid`'s `actionWarning` messages may now be specified as functions.
 * Added new `restoreDefaults` action to default `StoreContextMenu` for `GridModel`.
 * `ColChooserButton` supports a `mode` prop to specify when column changes are committed. `mode`
   defaults to `'commitOnChange'`, while `'commitOnSave'` applies column changes via the Save button
@@ -20,9 +30,14 @@
 
 * Fixed several cases where `selectOnFocus` prop on `Select` was not working.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
-* `RestForm` editors source their default label from the corresponding `Field.displayName` property.
-  Previously an undocumented `label` config could be provided with each editor object - this has
-  been removed.
+* `RestForm` editors will now source their default label from the corresponding `Field.displayName`
+  property. Previously an undocumented `label` config could be provided with each editor object -
+  this has been removed.
+* Improved time zone handling in the Admin Console "Activity Tracking" and "Client Errors" tabs.
+  * Users will now see consistent bucketing of activity into an "App Day" that corresponds to the
+    LocalDate when the event occurred in the application's timezone.
+  * This day will be reported consistently regardless of the time zones of the local browser or
+    deployment server.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.

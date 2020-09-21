@@ -30,6 +30,7 @@ export class ConfigModel {
         persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
+        selModel: 'multiple',
         store: new RestStore({
             url: 'rest/configAdmin',
             reloadLookupsOnLoad: true,
@@ -79,7 +80,7 @@ export class ConfigModel {
             ]
         }),
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting configs can break running apps.'
+            del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
         },
         toolbarActions: [
             addAction,

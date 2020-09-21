@@ -7,6 +7,7 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -20,6 +21,7 @@ import {DifferModel} from './DifferModel';
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
 
+    /** @param {DifferModel} model */
     render({model}) {
         return fragment(
             dialog({
@@ -36,6 +38,7 @@ export const differ = hoistCmp.factory({
 });
 
 const contents = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
         return panel({
             tbar: tbar(),
@@ -45,7 +48,7 @@ const contents = hoistCmp.factory(
                     agOptions: {popupParent: null}
                 }) :
                 frame({
-                    item: 'Select/enter a remote host to compare against...',
+                    item: `No ${model.entityName}s loaded for comparison.`,
                     padding: 10
                 }),
             bbar: [
@@ -61,7 +64,9 @@ const contents = hoistCmp.factory(
 );
 
 const tbar = hoistCmp.factory(
+    /** @param {DifferModel} model */
     ({model}) => {
+        const entityDispName = capitalize(model.entityName) + 's';
         return toolbar(
             span('Compare with'),
             select({
@@ -73,11 +78,26 @@ const tbar = hoistCmp.factory(
                 options: model.remoteHosts
             }),
             button({
-                text: 'Load Diff',
+                text: 'Diff from Remote',
                 icon: Icon.diff(),
                 intent: 'primary',
                 disabled: !model.remoteHost,
-                onClick: () => model.loadAsync()
+                onClick: () => model.diffFromRemote()
+            }),
+            span('- or -'),
+            button({
+                text: 'Diff from Clipboard',
+                icon: Icon.paste(),
+                intent: 'primary',
+                onClick: () => model.diffFromClipboardAsync()
+            }),
+            filler(),
+            clipboardButton({
+                text: `Copy ${entityDispName}`,
+                intent: 'primary',
+                icon: Icon.copy(),
+                getCopyText: () => model.fetchLocalConfigsAsync(),
+                successMessage: `${entityDispName} copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
             })
         );
     }
