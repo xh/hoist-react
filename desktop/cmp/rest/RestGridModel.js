@@ -74,7 +74,9 @@ export class RestGridModel {
     actionWarning = {
         add: null,
         edit: null,
-        del: 'Are you sure you want to delete the selected record?'
+        del: (recs) => (recs.length > 1 ?
+            `Are you sure you want to delete the selected ${recs.length} ${pluralize(this.unit)}?` :
+            `Are you sure you want to delete the selected ${this.unit}?`)
     };
 
     prepareCloneFn;

@@ -70,9 +70,6 @@ const modelSpec = {
     groupBy: 'groupName',
     unit: 'preference',
     filterFields: ['name', 'username'],
-    actionWarning: {
-        del: (records) =>  `Are you sure you want to delete ${records.length} user preference(s)?`
-    },
     toolbarActions: [
         addAction,
         editAction,
