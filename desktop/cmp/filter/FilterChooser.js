@@ -26,7 +26,8 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...props}) {
-        const [layoutProps, rest] = splitLayoutProps(props),
+        const [layoutProps, chooserProps] = splitLayoutProps(props),
+            {autoFocus, enableClear, leftIcon, menuPlacement, placeholder} = chooserProps,
             {inputRef, selectOptions, favoritesIsOpen} = model;
 
         return box({
@@ -34,13 +35,15 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
             ...layoutProps,
             item: popover({
                 item: select({
+                    autoFocus,
+                    menuPlacement,
                     flex: 1,
                     bind: 'selectValue',
                     ref: inputRef,
-                    placeholder: 'Filter...',
-                    leftIcon: Icon.filter(),
+                    placeholder: placeholder ?? 'Filter...',
+                    leftIcon: leftIcon ?? Icon.filter(),
                     enableMulti: true,
-                    enableClear: true,
+                    enableClear: enableClear ?? true,
                     queryFn: (q) => model.queryAsync(q),
                     options: selectOptions,
                     optionRenderer,
@@ -57,8 +60,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
                         components: {
                             DropdownIndicator: () => favoritesIcon(model)
                         }
-                    },
-                    ...rest
+                    }
                 }),
                 content: favoritesMenu(),
                 isOpen: favoritesIsOpen,
