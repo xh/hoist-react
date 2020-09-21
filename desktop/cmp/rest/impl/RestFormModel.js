@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {isFunction} from 'lodash';
 import {FormModel, required} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -83,11 +84,13 @@ export class RestFormModel {
         }
 
         if (warning) {
-            const confirmed = await XH.confirm({
-                message: warning,
-                title: 'Warning',
-                icon: Icon.warning({size: 'lg'})
-            });
+            const message = isFunction(warning) ? warning([this.currentRecord]) : warning,
+                confirmed = await XH.confirm({
+                    message,
+                    title: 'Warning',
+                    icon: Icon.warning({size: 'lg'})
+                });
+
             if (!confirmed) return;
         }
 

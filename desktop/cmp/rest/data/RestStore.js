@@ -53,6 +53,20 @@ export class RestStore extends UrlStore {
         );
     }
 
+    async bulkDeleteRecordsAsync(records) {
+        const {url} = this,
+            ids = records.map(it => it.id),
+            resp = await XH.fetchJson({
+                url: `${url}/bulkDelete`,
+                params: {ids}
+            }).linkTo(
+                this.loadModel
+            );
+
+        await this.loadAsync();
+        return resp;
+    }
+
     async addRecordAsync(rec) {
         return this.saveRecordInternalAsync(rec, true)
             .linkTo(this.loadModel);

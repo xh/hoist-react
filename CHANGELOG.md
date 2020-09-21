@@ -19,6 +19,8 @@ Error tracking tabs described below.
   accessed via an XHR call).
 * The `ClipboardButton.getCopyText` prop now supports async functions.
 * The `Select` input supports a new `leftIcon` prop.
+* `RestGrid` now supports bulk delete when multiple rows are selected.
+* `RestGrid`'s `actionWarning` messages may now be specified as functions.
 
 ### 🐞 Bug Fixes
 

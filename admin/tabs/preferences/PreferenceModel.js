@@ -4,11 +4,11 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {truncate} from 'lodash';
 import {boolCheckCol, dateTimeCol} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSupport, managed} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {truncate} from 'lodash';
 import {DifferModel} from '../../differ/DifferModel';
 
 @HoistModel
@@ -22,6 +22,7 @@ export class PreferenceModel {
         persistWith: this.persistWith,
         enableColChooser: true,
         enableExport: true,
+        selModel: 'multiple',
         store: {
             url: 'rest/preferenceAdmin',
             reloadLookupsOnLoad: true,
@@ -74,7 +75,8 @@ export class PreferenceModel {
         unit: 'preference',
         filterFields: ['name', 'groupName'],
         actionWarning: {
-            del: 'Are you sure you want to delete? Deleting preferences can break running apps.'
+            del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
+
         },
         columns: [
             {field: 'local', ...boolCheckCol, width: 70},
