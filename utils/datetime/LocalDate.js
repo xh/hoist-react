@@ -4,6 +4,7 @@
  *
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {throwIf, computeOnce} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 import moment from 'moment';
@@ -76,6 +77,23 @@ export class LocalDate {
     /** @returns {LocalDate} - a LocalDate representing the current day. */
     static today() {
         return this.from(moment());
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the current day in the App TimeZone */
+    static currentAppDay() {
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            appOffset = svc.get('appTimeZoneOffset');
+        return LocalDate.from(Date.now() + appOffset - clientOffset);
+
+    }
+
+    /** @returns {LocalDate} - a LocalDate representing the current day in the Server TimeZone */
+    static currentServerDay() {
+        const svc = XH.environmentService,
+            clientOffset = svc.get('clientTimeZoneOffset'),
+            serverOffset = svc.get('serverTimeZoneOffset');
+        return LocalDate.from(Date.now() + serverOffset - clientOffset);
     }
 
     /** @returns {LocalDate} - a LocalDate representing the next day. */

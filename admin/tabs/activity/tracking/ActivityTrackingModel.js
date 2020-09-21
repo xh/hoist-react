@@ -57,7 +57,8 @@ export class ActivityTrackingModel {
         return `${XH.appName} Activity`;
     }
 
-    get endDate() {return this.formModel.values.endDate}
+    /** @return {LocalDate} */
+    get endDay() {return this.formModel.values.endDay}
 
     _monthFormat = 'MMM YYYY';
     _defaultDims = ['day', 'username'];
@@ -66,8 +67,8 @@ export class ActivityTrackingModel {
     constructor() {
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDate', initialValue: this.getDefaultStartDate()},
-                {name: 'endDate', initialValue: this.getDefaultEndDate()}
+                {name: 'startDay', initialValue: this.getDefaultStartDay()},
+                {name: 'endDay', initialValue: this.getDefaultEndDay()}
             ]
         });
 
@@ -177,7 +178,7 @@ export class ActivityTrackingModel {
                     field: 'day',
                     width: 200,
                     align: 'right',
-                    headerName: 'Date Range',
+                    headerName: 'App Day',
                     renderer: this.dateRangeRenderer,
                     exportValue: this.dateRangeRenderer,
                     comparator: this.dateRangeComparator.bind(this),
@@ -193,7 +194,7 @@ export class ActivityTrackingModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [vals.startDate, vals.endDate];
+                return [vals.startDay, vals.endDay];
             },
             run: () => this.loadAsync(),
             debounce: 100
@@ -216,7 +217,7 @@ export class ActivityTrackingModel {
             });
 
             data.forEach(it => {
-                it.day = LocalDate.from(it.dateCreated);
+                it.day = LocalDate.from(it.day);
                 it.month = it.day.format(this._monthFormat);
             });
 
@@ -263,31 +264,38 @@ export class ActivityTrackingModel {
     resetQuery() {
         const {formModel, filterChooserModel, dimChooserModel, _defaultDims, _defaultFilter} = this;
         formModel.init({
-            startDate: this.getDefaultStartDate(),
-            endDate: this.getDefaultEndDate()
+            startDay: this.getDefaultStartDay(),
+            endDay: this.getDefaultEndDay()
         });
         filterChooserModel.setValue(_defaultFilter);
         dimChooserModel.setValue(_defaultDims);
     }
 
     adjustDates(dir) {
-        const {startDate, endDate} = this.formModel.fields,
-            tomorrow = LocalDate.tomorrow(),
-            start = startDate.value,
-            end = endDate.value,
+        const {startDay, endDay} = this.formModel.fields,
+            appDay = LocalDate.currentAppDay(),
+            start = startDay.value,
+            end = endDay.value,
             diff = end.diff(start),
             incr = diff + 1;
 
         let newStart = start[dir](incr),
             newEnd = end[dir](incr);
 
-        if (newEnd > tomorrow) {
-            newStart = tomorrow.subtract(Math.abs(diff));
-            newEnd = tomorrow;
+        if (newEnd > appDay) {
+            newStart = appDay.subtract(Math.abs(diff));
+            newEnd = appDay;
         }
 
-        startDate.setValue(newStart);
-        endDate.setValue(newEnd);
+        startDay.setValue(newStart);
+        endDay.setValue(newEnd);
+    }
+
+    // Set the start date by taking the end date and pushing back [value] [units] - then pushing
+    // forward one day as the day range query is inclusive.
+    adjustStartDate(value, unit) {
+        const newStart = this.endDay.subtract(value, unit).nextDay();
+        this.formModel.fields.startDay.setValue(newStart);
     }
 
     toggleRowExpandCollapse(agParams) {
@@ -337,8 +345,7 @@ export class ActivityTrackingModel {
         }
     }
 
-    // TODO - see https://github.com/xh/hoist-react/issues/400 for why we push endDate out to tomorrow.
-    getDefaultStartDate() {return LocalDate.today().subtract(1, 'months')}
-    getDefaultEndDate() {return LocalDate.tomorrow()}
+    getDefaultStartDay() {return LocalDate.currentAppDay()}
+    getDefaultEndDay() {return LocalDate.currentAppDay()}
 
 }
