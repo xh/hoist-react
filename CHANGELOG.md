@@ -6,6 +6,11 @@
 
 * Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
 * The `select` input supports a new prop: `leftIcon`.
+* `GridModelPersistOptions` now supports a `legacyStateKey` property.  This key will identify
+   the pre-v35 location for grid state, and can be used by applications to provide a more
+   flexible migration of user grid state after an upgrade to Hoist v35.0.0 or greater.  The value
+   of this property will continue to default to 'key', preserving the existing upgrade behavior
+   of the initial v35 release.
 
 ### 🐞 Bug Fixes
 
