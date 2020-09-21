@@ -5,6 +5,7 @@
  * Copyright © 2020 Extremely Heavy Industries Inc.
  */
 import {XH, HoistService} from '@xh/hoist/core';
+import {castArray} from 'lodash';
 
 /**
  * Service to read and set user-specific named json values.
@@ -16,16 +17,27 @@ export class JsonBlobService {
 
     async getAsync(id) {
         return XH.fetchJson({
-            url: 'jsonBlob/get',
+            url: 'xh/getJsonBlob',
             params: {id}
         });
     }
 
-    /** Return all current user's blobs for given type */
-    async listAsync({type}) {
+    /**
+     * Return a list of blobs.
+     *
+     * @param {string} type - reference key for which type of data to list.
+     * @param {(string|string[])} [owners] - owner(s) for whom to return blobs. Defaults to current user.
+     * @param {boolean} [includeValue] - true to include the full value string for each blob.
+     */
+    async listAsync({
+        type,
+        owners = XH.getUsername(),
+        includeValue
+    }) {
+        owners = JSON.stringify(castArray(owners));
         return XH.fetchJson({
-            url: 'jsonBlob/list',
-            params: {type}
+            url: 'xh/listJsonBlobs',
+            params: {type, owners, includeValue}
         });
     }
 
@@ -35,22 +47,20 @@ export class JsonBlobService {
      * @param {string} type - reference key for which type of data this is.
      * @param {string} name.
      * @param {(Object|Array)} value - json serializable data to saved.
+     * @param {string} [owner] - defaults to current user.
      * @param {string} [description] - optional description.
      */
     async createAsync({
         type,
         name,
         value,
+        owner = XH.getUsername(),
         description
     }) {
+        value = JSON.stringify(value);
         return XH.fetchJson({
-            url: 'jsonBlob/create',
-            params: {
-                type,
-                name,
-                value: JSON.stringify(value),
-                description
-            }
+            url: 'xh/createJsonBlob',
+            params: {type, name, value, owner, description}
         });
     }
 
@@ -68,12 +78,12 @@ export class JsonBlobService {
         if (name) params.name = name;
         if (value) params.value = JSON.stringify(value);
         if (description) params.description = description;
-        return XH.fetchJson({url: 'jsonBlob/update', params});
+        return XH.fetchJson({url: 'xh/updateJsonBlob', params});
     }
 
     async deleteAsync(id) {
         return XH.fetchJson({
-            url: 'jsonBlob/delete',
+            url: 'xh/deleteJsonBlob',
             params: {id}
         });
     }

@@ -4,20 +4,39 @@
 
 ### 🎁 New Features
 
-* Added new `JsonBlobService` for saving and updating named chunks of arbitrary json.
-* Config Differ supports pasting in a remote config, for when the remote config cannot be accessed via XHR call.
-* ClipboardButton supports an Async funtion for its getCopyText config.
-* Paste icon added to Icon library.
+* Added new `JsonBlobService` for saving and updating named chunks of arbitrary JSON data.
+* `GridModelPersistOptions` now supports a `legacyStateKey` property. This key will identify the
+  pre-v35 location for grid state, and can be used by applications to provide a more flexible
+  migration of user grid state after an upgrade to Hoist v35.0.0 or greater. The value of this
+  property will continue to default to 'key', preserving the existing upgrade behavior of the
+  initial v35 release.
+* The Admin Config and Pref diff tools now support pasting in a config for comparison instead of
+  loading one from a remote server (useful for deployments where the remote config cannot be
+  accessed via an XHR call).
+* The `ClipboardButton.getCopyText` prop now supports async functions.
+* The `Select` input supports a new `leftIcon` prop.
 
 ### 🐞 Bug Fixes
 
-* `Select` fixed `selectOnFocus` when `enabledWindowed` is true.
+* Fixed several cases where `selectOnFocus` prop on `Select` was not working.
 * `FilterChooser` auto-suggest values sourced from the *unfiltered* records on `sourceStore`.
-* `RestForm` editors source their default label from the corresponding `Field.displayName` property.
-  Previously an undocumented `label` config could be provided with each editor object - this has
-  been removed.
+* `RestForm` editors will now source their default label from the corresponding `Field.displayName`
+  property. Previously an undocumented `label` config could be provided with each editor object -
+  this has been removed.
+* Improved time zone handling in the Admin Console "Activity Tracking" and "Client Errors" tabs.
+  * Users will now see consistent bucketing of activity into an "App Day" that corresponds to the
+    LocalDate when the event occurred in the application's timezone and is consistently reported
+    independent of the time zones on the local browser or deployment server.
+  * ⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update.
+    Earlier versions of hoist-core will not parse the updated parameters required for date range
+    selection on these Admin activity tabs.
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
+* Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
+
+### 📚 Libraries
+
+* codemirror `5.57 -> 5.58`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
 
