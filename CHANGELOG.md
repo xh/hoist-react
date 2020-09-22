@@ -1,5 +1,10 @@
 # Changelog
 
+## v37.0.0-SNAPSHOT - unreleased
+
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.1.0...develop)
+
+
 ## v36.1.0 - 2020-09-22
 
 ⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update. This is
