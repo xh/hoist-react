@@ -1,6 +1,6 @@
 # Changelog
 
-## v37.0.0-SNAPSHOT - unreleased
+## v36.1.0 - 2020-09-22
 
 ⚠ NOTE - apps should update to `hoist-core >= 8.3.0` when taking this hoist-react update. This is
 required to support both the new `JsonBlobService` and updates to the Admin Activity and Client
@@ -42,7 +42,7 @@ Error tracking tabs described below.
 
 * codemirror `5.57 -> 5.58`
 
-[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...develop)
+[Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...v36.1.0)
 
 ## v36.0.0 - 2020-09-04
 
