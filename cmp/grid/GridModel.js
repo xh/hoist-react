@@ -164,6 +164,8 @@ export class GridModel {
      *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
      * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
      *      config or string `mode` with which to create one.
+     * @param {(ColChooserModel|Object|boolean)} [c.colChooserModel] - ColChooserModel, or a
+     *      config with which to create one, or boolean `true` to enable default.
      * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
      * @param {?string} [c.emptyText] - text/HTML to display if grid has no records.
      *      Defaults to null, in which case no empty text will be shown.
@@ -227,6 +229,7 @@ export class GridModel {
         treeMode = false,
         showSummary = false,
         selModel,
+        colChooserModel,
         emptyText = null,
         sortBy = [],
         groupBy = null,
@@ -243,7 +246,6 @@ export class GridModel {
         compact,
 
         enableColumnPinning = true,
-        enableColChooser = false,
         enableExport = false,
         exportOptions = {},
         rowClassFn = null,
@@ -312,7 +314,7 @@ export class GridModel {
             showCellFocus
         });
 
-        this.colChooserModel = enableColChooser ? this.createChooserModel() : null;
+        this.colChooserModel = this.parseColChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
         this.experimental = this.parseExperimental(experimental);
