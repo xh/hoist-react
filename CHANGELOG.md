@@ -29,9 +29,7 @@
 * Resetting Grid columns to their default state (e.g. via the Column Chooser) retains enhancements
   applied from matching Store fields.
 * Desktop `DateInput` now handles out-of-bounds dates without throwing exception during rendering.
-* A grid column header that has a function for headerName argument or element/object for resolved headerName
-  now falls back to column.chooserName for the value to display when dragging the column header
-  or in the column header tooltip.
+* Dragging a grid column with element based header no longer displays [object Object] in draggable.
 
 ### 📚 Libraries
 

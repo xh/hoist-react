@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty} from 'lodash';
+import {castArray, clone, find, get, isArray, isFinite, isFunction, isNil, isNumber, isEmpty, isString} from 'lodash';
 import {Component} from 'react';
 import {GridSorter} from '../impl/GridSorter';
 import {ExportFormat} from './ExportFormat';
@@ -316,11 +316,9 @@ export class Column {
                 field,
                 colId: this.colId,
                 headerValueGetter: (agParams) => {
-                    return agParams.location === 'header' ?
-                        isFunction(headerName) ?
-                            this.chooserName :
-                            headerName :
-                        this.chooserName;
+                    return agParams.location === 'header' && isString(headerName) ?
+                        headerName :
+                        this.displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,

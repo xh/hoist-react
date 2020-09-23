@@ -12,7 +12,7 @@ import {useOnMount, createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import classNames from 'classnames';
-import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString, isObject} from 'lodash';
+import {filter, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import {GridSorter} from './GridSorter';
 import {Column} from '@xh/hoist/cmp/grid/columns/Column';
 
@@ -68,7 +68,7 @@ export const columnHeader = hoistCmp.factory({
         const {xhColumn, gridModel} = impl,
             {isDesktop} = XH;
 
-        const headerName = isFunction(xhColumn?.headerName) ?
+        const headerElem = isFunction(xhColumn?.headerName) ?
             xhColumn.headerName({column: xhColumn, gridModel}) :
             props.displayName;
 
@@ -77,7 +77,7 @@ export const columnHeader = hoistCmp.factory({
         if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
             onMouseEnter = ({target: el}) => {
                 if (el.offsetWidth < el.scrollWidth) {
-                    const title = isObject(headerName) ? xhColumn?.chooserName : headerName;
+                    const title = isString(headerElem) ? headerElem : props.displayName;
                     el.setAttribute('title', title);
                 } else {
                     el.removeAttribute('title');
@@ -95,7 +95,7 @@ export const columnHeader = hoistCmp.factory({
             onTouchEnd:     !isDesktop ? impl.onTouchEnd : null,
 
             items: [
-                span({onMouseEnter, item: headerName}),
+                span({onMouseEnter, item: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]
